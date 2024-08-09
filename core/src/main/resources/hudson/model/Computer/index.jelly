@@ -38,17 +38,17 @@ THE SOFTWARE.
           <j:when test="${it.temporarilyOffline}">
             <l:hasPermission permission="${it.CONNECT}">
               <form method="post" action="toggleOffline">
-                <f:submit value="${%submit.temporarilyOffline}"  />
+                <f:submit value="${%submit.temporarilyOffline}"/>
               </form>
               <form method="post" action="setOfflineCause">
-              <f:submit primary="false" value="${%submit.updateOfflineCause}"  />
+              <f:submit primary="false" value="${%submit.updateOfflineCause}"/>
               </form>
             </l:hasPermission>
           </j:when>
           <j:otherwise>
             <l:hasPermission permission="${it.DISCONNECT}">
               <form method="post" action="markOffline">
-                <f:submit primary="false" value="${%submit.not.temporarilyOffline}"  />
+                <f:submit primary="false" value="${%submit.not.temporarilyOffline}" tooltip="${%submit.not.temporarilyOffline.tooltip}"/>
               </form>
             </l:hasPermission>
           </j:otherwise>
@@ -58,7 +58,11 @@ THE SOFTWARE.
 
       <st:include page="index-top.jelly" it="${it}" />
 
-      <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
+      <j:if test="${it.temporarilyOfflineCause!=null}">
+        <st:include it="${it.temporarilyOfflineCause}" page="cause.jelly" />
+      </j:if>
+
+      <j:if test="${it.isOfflineAfterDisconnect()}">
         <st:include it="${it.offlineCause}" page="cause.jelly" />
       </j:if>
 

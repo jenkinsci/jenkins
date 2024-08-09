@@ -26,6 +26,7 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -52,6 +53,7 @@ import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.OfflineCause;
+import hudson.slaves.SlaveComputer;
 import hudson.util.TagCloud;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -99,10 +101,10 @@ public class NodeTest {
         for (ComputerListener l : ComputerListener.all()) {
             l.onOnline(node.toComputer(), TaskListener.NULL);
         }
-        assertEquals("Node should have offline cause which was set.", cause, node.toComputer().getOfflineCause());
+        assertEquals("Node should have offline cause which was set.", cause, node.toComputer().getTemporarilyOfflineCause());
         OfflineCause cause2 = new OfflineCause.ByCLI("another message");
         node.setTemporaryOfflineCause(cause2);
-        assertEquals("Node should have original offline cause after setting another.", cause, node.toComputer().getOfflineCause());
+        assertEquals("Node should have original offline cause after setting another.", cause, node.toComputer().getTemporarilyOfflineCause());
     }
 
     @Test
@@ -114,19 +116,21 @@ public class NodeTest {
         final User someone = User.getOrCreateByIdOrFullName("someone@somewhere.com");
         try (ACLContext ignored = ACL.as2(someone.impersonate2())) {
             computer.doToggleOffline("original message");
-            cause = (OfflineCause.UserCause) computer.getOfflineCause();
-            assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
+            cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
+            assertTrue(cause.toString(), cause.toString().matches("^.*?Marked temporarily offline by someone@somewhere.com : original message"));
             assertEquals(someone, cause.getUser());
         }
+
         final User root = User.getOrCreateByIdOrFullName("root@localhost");
         try (ACLContext ignored = ACL.as2(root.impersonate2())) {
             computer.doChangeOfflineCause("new message");
-            cause = (OfflineCause.UserCause) computer.getOfflineCause();
-            assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
+            cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
+            assertTrue(cause.toString(), cause.toString().matches("^.*?Marked temporarily offline by root@localhost : new message"));
             assertEquals(root, cause.getUser());
 
             computer.doToggleOffline(null);
             assertNull(computer.getOfflineCause());
+            assertNull(computer.getTemporarilyOfflineCause());
         }
     }
 
@@ -139,8 +143,8 @@ public class NodeTest {
             computer.doToggleOffline("original message");
         }
 
-        cause = (OfflineCause.UserCause) computer.getOfflineCause();
-        assertThat(cause.toString(), endsWith("Disconnected by anonymous : original message"));
+        cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
+        assertThat(cause.toString(), endsWith("Marked temporarily offline by anonymous : original message"));
         assertEquals(User.getUnknown(), cause.getUser());
 
 
@@ -148,13 +152,44 @@ public class NodeTest {
         try (ACLContext ctxt = ACL.as2(root.impersonate2())) {
             computer.doChangeOfflineCause("new message");
         }
-        cause = (OfflineCause.UserCause) computer.getOfflineCause();
-        assertThat(cause.toString(), endsWith("Disconnected by root@localhost : new message"));
+        cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
+        assertThat(cause.toString(), endsWith("Marked temporarily offline by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
         computer.doToggleOffline(null);
         assertNull(computer.getOfflineCause());
+        assertNull(computer.getTemporarilyOfflineCause());
     }
+
+    @Test
+    public void testDisconnectDoesNotOverwriteTemporarilyOfflineCause() throws Exception {
+        Node node = j.createOnlineSlave();
+        Computer computer = node.toComputer();
+        OfflineCause.UserCause cause;
+
+        final User someone = User.getOrCreateByIdOrFullName("someone@somewhere.com");
+        try (ACLContext ignored = ACL.as2(someone.impersonate2())) {
+            computer.doToggleOffline("original message");
+            cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
+            assertTrue(cause.toString(), cause.toString().matches("^.*?Marked temporarily offline by someone@somewhere.com : original message"));
+            assertThat(computer.getTemporarilyOfflineCauseReason(), equalTo("original message"));
+            assertEquals(someone, cause.getUser());
+        }
+
+        final User root = User.getOrCreateByIdOrFullName("root@localhost");
+        try (ACLContext ignored = ACL.as2(root.impersonate2())) {
+            ((SlaveComputer) computer).doDoDisconnect("disconnect message");
+            cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
+            assertTrue(cause.toString(), cause.toString().matches("^.*?Marked temporarily offline by someone@somewhere.com : original message"));
+            assertThat(computer.getTemporarilyOfflineCauseReason(), equalTo("original message"));
+            assertEquals(someone, cause.getUser());
+
+            cause = (OfflineCause.UserCause) computer.getOfflineCause();
+            assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : disconnect message"));
+            assertThat(computer.getOfflineCauseReason(), equalTo("disconnect message"));
+            assertEquals(root, cause.getUser());
+        }
+}
 
     @Test
     public void testGetLabelCloud() throws Exception {

@@ -119,7 +119,7 @@ public class ComputerStateTest {
         assertThat(result, succeededSilently());
         assertTrue(slave.toComputer().isOffline());
 
-        OfflineCause.UserCause cause = (OfflineCause.UserCause) slave.toComputer().getOfflineCause();
+        OfflineCause.UserCause cause = (OfflineCause.UserCause) slave.toComputer().getTemporarilyOfflineCause();
         assertThat(cause.toString(), endsWith("Custom cause message"));
         assertThat(cause.getUser(), equalTo(command.user()));
     }

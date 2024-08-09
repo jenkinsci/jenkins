@@ -50,11 +50,16 @@ THE SOFTWARE.
     <s:attribute name="icon">
       @since 2.411
     </s:attribute>
+    <s:attribute name="tooltip">
+      Used as tooltip of the button
+
+      @since TODO
+    </s:attribute>
     <s:attribute name="clazz" />
   </s:documentation>
 
   <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" formNoValidate="formNoValidate"
-          class="jenkins-button jenkins-submit-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
+          class="jenkins-button jenkins-submit-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}" tooltip="${attrs.tooltip}">
     <j:if test="${attrs.icon != null}">
       <l:icon src="${attrs.icon}" />
     </j:if>

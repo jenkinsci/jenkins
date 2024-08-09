@@ -136,15 +136,37 @@ public abstract class OfflineCause {
         // null when unknown
         private /*final*/ @CheckForNull String userId;
 
+        /**
+         * Taken offline by user.
+         *
+         * @param user user that took agent offline
+         * @param message Reason for setting it offline
+         * @deprecated use {@link UserCause#UserCause(User, String, boolean)}
+         */
+        @Deprecated
         public UserCause(@CheckForNull User user, @CheckForNull String message) {
+            this(user, message, false);
+        }
+
+        /**
+         * Taken offline by user.
+         *
+         * @param user user that took agent offline
+         * @param message Reason for setting it offline
+         * @param temporarily indicates that the offline cause is a temporarily offline cause
+         * @since TODO
+         */
+        public UserCause(@CheckForNull User user, @CheckForNull String message, boolean temporarily) {
             this(
                     user != null ? user.getId() : null,
-                    message != null ? " : " + message : ""
+                    message != null ? " : " + message : "",
+                    temporarily
             );
         }
 
-        private UserCause(String userId, String message) {
-            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS2.getName(), message));
+        private UserCause(String userId, String message, boolean temporarily) {
+            super(temporarily ? hudson.slaves.Messages._SlaveComputer_SetTempOfflineBy(userId != null ? userId : Jenkins.ANONYMOUS2.getName(), message) :
+                hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS2.getName(), message));
             this.userId = userId;
         }
 

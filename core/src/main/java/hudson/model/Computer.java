@@ -174,8 +174,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Contains info about reason behind computer being offline.
+     * This is set when the computer gets disconnected (e.g. due to something calling
+     * {@link #disconnect(OfflineCause)}, the remote process terminating or network problems).
+     * For historic reasons this is also set when a computer is set temporarily offline.
      */
     protected volatile OfflineCause offlineCause;
+
+    /**
+     * Contains the information why the computer was put temporarily offline. Temporarily offline means
+     * that the computer is not accepting new tasks for execution, but it can be still connected.
+     */
+    protected volatile OfflineCause temporarilyOfflineCause;
 
     private long connectTime = 0;
 
@@ -358,7 +367,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * If the computer was offline (either temporarily or not),
+     * If the computer is offline (either temporarily or not),
      * this method will return the cause.
      *
      * @return
@@ -370,7 +379,20 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * If the computer was offline (either temporarily or not),
+     * If the computer is temporarily offline
+     * this method will return the cause.
+     *
+     * @return
+     *      null if the system was put temporarily offline without given a cause.
+     * @since TODO
+     */
+    @Exported
+    public OfflineCause getTemporarilyOfflineCause() {
+        return temporarilyOfflineCause;
+    }
+
+    /**
+     * If the computer is offline (either temporarily or not),
      * this method will return the cause as a string (without user info).
      *
      * @return
@@ -378,17 +400,48 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getOfflineCauseReason() {
-        if (offlineCause == null) {
+        return getOfflineCauseReason(offlineCause, false);
+    }
+
+    /**
+     * If the computer is temporarily offline,
+     * this method will return the cause as a string (without user info).
+     *
+     * @return
+     *      empty string if the system was put temporarily offline without given a cause.
+     * @since TODO
+     */
+    @Exported
+    public String getTemporarilyOfflineCauseReason() {
+        return getOfflineCauseReason(temporarilyOfflineCause, true);
+    }
+
+    /**
+     * Return the given cause as a string (without user info).
+     *
+     * @param cause
+     *      The cause from which to extract the reason as string.
+     *
+     * @return
+     *      empty string if the cause is null
+     */
+    private static String getOfflineCauseReason(OfflineCause cause, boolean temporarilyOfflineCause) {
+        if (cause == null) {
             return "";
         }
+        String gsub_base = null;
         // fetch the localized string for "Disconnected By"
-        String gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("", "");
+        if (temporarilyOfflineCause) {
+            gsub_base = hudson.slaves.Messages.SlaveComputer_SetTempOfflineBy("", "");
+        } else {
+            gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("", "");
+        }
         // regex to remove commented reason base string
         String gsub1 = "^" + gsub_base + "[\\w\\W]* \\: ";
         // regex to remove non-commented reason base string
         String gsub2 = "^" + gsub_base + "[\\w\\W]*";
 
-        String newString = offlineCause.toString().replaceAll(gsub1, "");
+        String newString = cause.toString().replaceAll(gsub1, "");
         return newString.replaceAll(gsub2, "");
     }
 
@@ -637,6 +690,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * Helper for the UI
+     *
+     * @return true if the agent is offline and not trying to connect currently and the cause differs from the temporarily offline cause
+     * @since TODO
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean isOfflineAfterDisconnect() {
+        return offlineCause != null && offlineCause != temporarilyOfflineCause && isOffline() && !isConnecting();
+    }
+
+    /**
      * This method is called to determine whether manual launching of the agent is allowed at this point in time.
      * @return {@code true} if manual launching of the agent is allowed at this point in time.
      */
@@ -711,11 +775,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      offline.
      */
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
-        offlineCause = temporarilyOffline ? cause : null;
+        temporarilyOfflineCause = temporarilyOffline ? cause : null;
+        offlineCause = temporarilyOfflineCause;
         this.temporarilyOffline = temporarilyOffline;
         Node node = getNode();
         if (node != null) {
-            node.setTemporaryOfflineCause(offlineCause);
+            node.setTemporaryOfflineCause(temporarilyOfflineCause);
         }
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
@@ -737,7 +802,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public String getIcon() {
         // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
+        if (isTemporarilyOffline() && getTemporarilyOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
         // The computer is not accepting tasks, e.g. because the availability demands it being offline.
         if (!isAcceptingTasks()) {
             return "symbol-computer-not-accepting";
@@ -765,7 +830,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     public String getIconAltText() {
         // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "[temporarily offline by user]";
+        if (isTemporarilyOffline() && getTemporarilyOfflineCause() instanceof OfflineCause.UserCause) return "[temporarily offline by user]";
         // There is a "technical" reason the computer will not accept new builds
         if (isOffline() || !isAcceptingTasks()) return "[offline]";
         return "[online]";
@@ -822,7 +887,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             // Computer is created, avoid pushing an empty status
             // as that could overwrite any status that the Node
             // brought along from its persisted config data.
-            node.setTemporaryOfflineCause(this.offlineCause);
+            node.setTemporaryOfflineCause(this.temporarilyOfflineCause);
         }
     }
 
@@ -1428,7 +1493,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             checkPermission(DISCONNECT);
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
             setTemporarilyOffline(!temporarilyOffline,
-                    new OfflineCause.UserCause(User.current(), offlineMessage));
+                    new OfflineCause.UserCause(User.current(), offlineMessage, true));
         } else {
             checkPermission(CONNECT);
             setTemporarilyOffline(!temporarilyOffline, null);
@@ -1441,7 +1506,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         checkPermission(DISCONNECT);
         offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
         setTemporarilyOffline(true,
-                new OfflineCause.UserCause(User.current(), offlineMessage));
+                new OfflineCause.UserCause(User.current(), offlineMessage, true));
         return HttpResponses.redirectToDot();
     }
 
