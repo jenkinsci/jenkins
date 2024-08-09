@@ -24,8 +24,7 @@
 
 package lib.layout;
 
-import jenkins.widgets.ExecutorsWidget;
-import jenkins.widgets.HasWidgetHelper;
+import hudson.model.FreeStyleProject;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlLink;
 import org.htmlunit.html.HtmlPage;
@@ -61,8 +60,10 @@ public class AjaxTest {
     @Test
     @Issue("JENKINS-65288")
     public void ajaxPageRenderingPossibleWithoutJellyTrace() throws Exception {
+        FreeStyleProject p = r.createProject(FreeStyleProject.class, "foo");
+
         JenkinsRule.WebClient wc = r.createWebClient();
-        HtmlPage htmlPage = wc.goTo(getExecutorsWidgetAjaxViewUrl());
+        HtmlPage htmlPage = wc.goTo(p.getUrl() + "buildHistory/ajax");
         r.assertGoodStatus(htmlPage);
     }
 
@@ -72,19 +73,16 @@ public class AjaxTest {
     @Test
     @Issue("JENKINS-65288")
     public void ajaxPageRenderingPossibleWithJellyTrace() throws Exception {
+        FreeStyleProject p = r.createProject(FreeStyleProject.class, "foo");
         boolean currentValue = JellyFacet.TRACE;
         try {
             JellyFacet.TRACE = true;
 
             JenkinsRule.WebClient wc = r.createWebClient();
-            HtmlPage htmlPage = wc.goTo(getExecutorsWidgetAjaxViewUrl());
+            HtmlPage htmlPage = wc.goTo(p.getUrl() + "buildHistory/ajax");
             r.assertGoodStatus(htmlPage);
         } finally {
             JellyFacet.TRACE = currentValue;
         }
-    }
-
-    private String getExecutorsWidgetAjaxViewUrl() {
-        return HasWidgetHelper.getWidget(r.jenkins.getPrimaryView(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax";
     }
 }

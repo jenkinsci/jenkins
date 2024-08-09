@@ -65,7 +65,7 @@ public class Security2278Test {
     @Test
     public void testUi() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient();
-        final HtmlPage topPage = webClient.goTo("");
+        final HtmlPage topPage = webClient.goTo("computer/status");
         final String contentAsString = topPage.getWebResponse().getContentAsString();
         assertThat(contentAsString, containsString("Build Executor Status"));
         assertThat(contentAsString, containsString("Unknown Task"));
@@ -76,7 +76,7 @@ public class Security2278Test {
     @Test
     public void testUiWithPermission() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient().login("alice");
-        final HtmlPage topPage = webClient.goTo("");
+        final HtmlPage topPage = webClient.goTo("computer/status");
         final String contentAsString = topPage.getWebResponse().getContentAsString();
         assertThat(contentAsString, containsString("Build Executor Status"));
         assertThat(contentAsString, not(containsString("Unknown Task")));
