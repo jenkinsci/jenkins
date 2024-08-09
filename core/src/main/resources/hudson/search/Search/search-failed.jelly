@@ -43,7 +43,14 @@ THE SOFTWARE.
           <ol>
             <j:forEach var="i" items="${items}">
               <li id="item_${i.path}">
-                <a href="?q=${h.urlEncode(i.path)}">${i.path}</a>
+                <j:choose>
+                  <j:when test="${i.projectName!=null}">
+                    <a href="${rootURL}/${i.item.searchUrl}">${i.path} <small>(${i.projectName})</small></a>
+                  </j:when>
+                  <j:otherwise>
+                    <a href="${rootURL}/${i.item.searchUrl}">${i.path}</a>
+                  </j:otherwise>
+                </j:choose>
               </li>
             </j:forEach>
           </ol>
