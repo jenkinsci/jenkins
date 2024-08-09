@@ -663,6 +663,7 @@ public class AbstractProjectTest {
         for (String p : projects) {
             JSONObject o = new JSONObject();
             o.put("name", p);
+            o.put("url", JSONObject.fromObject(null));
             expected.add(o);
         }
         assertThat(suggestions.containsAll(expected), is(true));

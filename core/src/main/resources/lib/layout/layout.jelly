@@ -179,6 +179,7 @@ THE SOFTWARE.
     <script src="${resURL}/jsbundles/app.js" type="text/javascript" defer="true" />
   </head>
   <body id="jenkins" class="${removeYUI ? '' : 'yui-skin-sam'} ${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}">
+    <l:command-palette />
 
     <j:if test="${layoutType!='full-screen'}">
       <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
