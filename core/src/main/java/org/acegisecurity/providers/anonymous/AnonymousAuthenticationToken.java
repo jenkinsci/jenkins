@@ -36,6 +36,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Deprecated
 public class AnonymousAuthenticationToken implements Authentication, Serializable {
+    private static final long serialVersionUID = 1L;
 
     // TODO perhaps better to extend AbstractAuthenticationToken
     private final org.springframework.security.authentication.AnonymousAuthenticationToken delegate;
