@@ -40,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,6 +54,7 @@ import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
@@ -356,7 +356,7 @@ public class SetupWizardTest {
             if (responseBody != null) {
                 response.getHeaders().add(HttpHeader.CONTENT_TYPE, "text/plain; charset=utf-8");
                 response.setStatus(HttpStatus.OK_200);
-                response.write(true, ByteBuffer.wrap(responseBody.getBytes(StandardCharsets.UTF_8)), callback);
+                Content.Sink.write(response, true, responseBody, callback);
                 return true;
             } else {
                 Response.writeError(request, response, callback, HttpStatus.NOT_FOUND_404);
