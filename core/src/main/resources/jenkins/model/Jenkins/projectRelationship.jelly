@@ -26,73 +26,67 @@ THE SOFTWARE.
   Displays two projects side by side and show their relationship
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${%Project Relationship}">
-    <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Project Relationship}" />
+    <st:include page="sidepanel.jelly"/>
+    <l:breadcrumb title="${%Project Relationship}"/>
 
     <l:main-panel>
       <l:app-bar title="${%Project Relationship}">
-        <t:help href="projectRelationship-help" />
+        <t:help href="projectRelationship-help"/>
       </l:app-bar>
 
+      <p>
+        ${%body}
+      </p>
+
       <form action="projectRelationship" method="get">
-        <table width="100%">
-          <tr>
-            <j:set var="names" value="${app.jobNames}" />
-            <td style="text-align:right;">
-              ${%upstream project}:
-              <f:editableComboBox id="lhs" name="lhs" value="${request.getParameter('lhs')}" items="${names}" />
-            </td>
-            <td style="width:32px; text-align:center;"><l:icon class="icon-next icon-md"/></td>
-            <td>
-              ${%downstream project}:
-              <f:editableComboBox id="rhs" name="rhs" value="${request.getParameter('rhs')}" items="${names}" />
-            </td>
-          </tr>
-          <tr>
-            <td colspan="3" style="text-align:right">
-              <f:submit value="${%Compare}" />
-            </td>
-          </tr>
+        <div class="jenkins-form-item">
+          <label class="jenkins-form-label" for="lhs">${%upstream project}:</label>
+          <f:combobox id="lhs" fillUrl="fillJobNameItems" name="lhs" value="${request.getParameter('lhs')}"/>
+        </div>
 
-          <j:if test="${!empty(request.getParameter('lhs')) and !empty(request.getParameter('rhs'))}">
-            <j:set var="jl" value="${app.getItemByFullName(request.getParameter('lhs'))}" />
-            <j:set var="jr" value="${app.getItemByFullName(request.getParameter('rhs'))}" />
+        <div class="jenkins-form-item">
+          <label class="jenkins-form-label" for="rhs">${%downstream project}:</label>
+          <f:combobox id="rhs" fillUrl="fillJobNameItems" name="rhs" value="${request.getParameter('rhs')}"/>
+        </div>
+        <f:submit value="${%Compare}"/>
 
-            <j:choose>
-              <j:when test="${jl==null}">
-                <tr><td colspan="3" class="error">
-                  No such project '${request.getParameter('lhs')}'
-                </td></tr>
-              </j:when>
-              <j:when test="${jr==null}">
-                <tr><td colspan="3" class="error">
-                  No such project '${request.getParameter('rhs')}'
-                </td></tr>
-              </j:when>
-              <j:otherwise>
+        <j:if test="${!empty(request.getParameter('lhs')) and !empty(request.getParameter('rhs'))}">
+          <j:set var="jl" value="${app.getItemByFullName(request.getParameter('lhs'))}"/>
+          <j:set var="jr" value="${app.getItemByFullName(request.getParameter('rhs'))}"/>
+
+          <j:choose>
+            <j:when test="${jl==null}">
+              <p class="error">No such project '${request.getParameter('lhs')}'</p>
+            </j:when>
+            <j:when test="${jr==null}">
+              <p class="error">No such project '${request.getParameter('rhs')}'</p>
+            </j:when>
+            <j:otherwise>
+              <table width="100%">
                 <j:set var="relation" value="${jl.getRelationship(jr)}"/>
                 <j:if test="${empty(relation)}">
-                  <tr><td colspan="3" class="error">
-                    ${%There are no fingerprint records that connect these two projects.}
-                  </td></tr>
+                  <p class="error">${%There are no fingerprint records that connect these two projects.}</p>
                 </j:if>
                 <j:forEach var="e" items="${relation}">
                   <tr>
                     <td style="text-align:right">
                       <t:buildLink job="${jl}" number="${e.key}"/>
                     </td>
-                    <td><st:nbsp/></td>
+                    <td>
+                      <st:nbsp/>
+                    </td>
                     <td>
                       <t:buildRangeLink job="${jr}" range="${e.value}"/>
                     </td>
                   </tr>
                 </j:forEach>
-              </j:otherwise>
-            </j:choose>
-          </j:if>
-        </table>
+              </table>
+            </j:otherwise>
+          </j:choose>
+        </j:if>
       </form>
     </l:main-panel>
   </l:layout>
