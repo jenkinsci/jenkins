@@ -57,7 +57,7 @@ THE SOFTWARE.
   <st:adjunct includes="lib.form.radioBlock.radioBlock"/>
 
   <div class="radioBlock-container">
-    <div class="tr help-sibling radio-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+    <div class="tr help-sibling radio-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
       <div class="jenkins-radio-help-wrapper">
         <div class="jenkins-radio">
           <input type="radio"
@@ -82,6 +82,6 @@ THE SOFTWARE.
       <d:invokeBody />
     </div>
     <!-- end marker -->
-    <div class="tr ${attrs.inline?'':'row-set-end'} radio-block-end row-group-end" style="display:none"></div>
+    <div class="tr ${attrs.inline?'':'row-set-end'} radio-block-end" style="display:none"></div>
   </div>
 </j:jelly>
