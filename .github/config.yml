@@ -20,6 +20,6 @@ firstPRMergeComment: >
 
   <a href="https://www.jenkins.io/participate/" target="_blank">
    <picture>
-     <img width="600" src="https://raw.githubusercontent.com/jenkinsci/jenkins/master/.github/images/jenkins-welcome.svg">
+     <img width="600" alt="Participate in and contribute to the Jenkins project" src="https://raw.githubusercontent.com/jenkinsci/jenkins/master/.github/images/jenkins-welcome.svg">
    </picture>
   </a>

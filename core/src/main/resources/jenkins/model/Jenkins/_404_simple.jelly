@@ -48,7 +48,7 @@ THE SOFTWARE.
             </head>
             <body style="font-family: system-ui, sans-serif">
                 <h1 style="text-align: center">
-                    <img src="${imagesURL}/rage.svg" height="179" width="154" style="vertical-align: middle"/>
+                    <img src="${imagesURL}/rage.svg" height="179" width="154" style="vertical-align: middle" alt=""/>
                     <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
                 </h1>
                 <div style="text-align: center">
