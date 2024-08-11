@@ -30,6 +30,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import hudson.model.User;
+import hudson.security.ACL;
+import jenkins.model.Jenkins;
+
 /**
  * {@link SearchIndex} built on a {@link Map}.
  *
@@ -66,16 +70,37 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
         if (isCaseSensitive) {
           token = token.toLowerCase();
         }
+
+        // Determine if the current user should be restricted from seeing other users names
+        boolean restrictUserNames = currentUserHasReadOnlyPermission();
+
         for (SMT o : allAsIterable()) {
             String name = getName(o);
             if (isCaseSensitive)
                 name = name.toLowerCase();
-            if (o != null && name.contains(token))
+
+            if (o != null && name.contains(token) && (!restrictUserNames || !isUserItem(o)))
                 result.add(o);
         }
     }
 
     protected String getName(SMT o) {
         return o.getDisplayName();
+    }
+
+    protected boolean isUserItem(SMT o) {
+        if (o instanceof User) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean currentUserHasReadOnlyPermission() {
+        // Get the current user's ACL (Access Control List)
+        ACL acl = Jenkins.get().getACL();
+
+        // Check for read-only permissions
+        return acl.hasPermission(Jenkins.getAuthentication(), Jenkins.READ) &&
+                !acl.hasPermission(Jenkins.getAuthentication(), Jenkins.ADMINISTER);
     }
 }
