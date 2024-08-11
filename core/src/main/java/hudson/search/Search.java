@@ -198,11 +198,11 @@ public class Search implements StaplerProxy {
             return hasMoreResults;
         }
     }
-    //Export this result to front-end!!
+
     @ExportedBean
     public static class Result {
         @Exported
-        public List<Item> suggestions = new ArrayList<>();//we be empty and add on in autoCompletionCandidates?!
+        public List<Item> suggestions = new ArrayList<>();
     }
 
     @ExportedBean(defaultVisibility = 999)
@@ -210,7 +210,7 @@ public class Search implements StaplerProxy {
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String name;
-        //This Item will be added to suggestion array while processing in autoCompletionCandidates.
+
         public Item(String name) {
             this.name = name;
         }
@@ -273,7 +273,6 @@ public class Search implements StaplerProxy {
      * or more than one match was found.
      * @since 1.527
      */
-    //The index function call this find function to find suggestion items
     public static SuggestedItem find(SearchIndex index, String query, SearchableModelObject searchContext) {
         List<SuggestedItem> r = find(Mode.FIND, index, query, searchContext);
         if (r.isEmpty()) {
@@ -382,7 +381,6 @@ public class Search implements StaplerProxy {
         }
     }
 
-    //called by the other find
     private static List<SuggestedItem> find(Mode m, SearchIndex index, String tokenList, SearchableModelObject searchContext) {
         TokenList tokens = new TokenList(tokenList);
         if (tokens.length() == 0) return Collections.emptyList();   // no tokens given
@@ -401,7 +399,7 @@ public class Search implements StaplerProxy {
             items.clear();
             m.find(index, token, items);
             for (SearchItem si : items) {
-                paths[w].add(SuggestedItem.build(searchContext, si));//here is calling for suggestion items
+                paths[w].add(SuggestedItem.build(searchContext, si));
                 LOGGER.log(Level.FINE, "found search item: {0}", si.getSearchName());
             }
             w++;
