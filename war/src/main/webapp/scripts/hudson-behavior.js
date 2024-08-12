@@ -954,9 +954,9 @@ function makeButton(e, onclick) {
   classNames.remove("primary");
   classNames.remove("submit-button");
   classNames.remove("yui-button");
-  classNames.forEach((cn) => {
-    button.classList.add(cn);
-  });
+  for (let i = 0; i < classNames.length; i++) {
+    button.classList.add(classNames.item(i));
+  }
 
   function Button(button) {
     this.button = button;
