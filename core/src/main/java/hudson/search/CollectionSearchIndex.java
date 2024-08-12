@@ -33,6 +33,7 @@ import java.util.Map;
 import hudson.model.User;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 
 /**
  * {@link SearchIndex} built on a {@link Map}.
@@ -72,7 +73,7 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
         }
 
         // Determine if the current user should be restricted from seeing other users names
-        boolean restrictUserNames = currentUserHasReadOnlyPermission();
+        boolean restrictUserNames = anonymousUserHasReadOnlyPermission();
 
         for (SMT o : allAsIterable()) {
             String name = getName(o);
@@ -95,12 +96,22 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
         return false;
     }
 
-    private boolean currentUserHasReadOnlyPermission() {
+    private boolean anonymousUserHasReadOnlyPermission() {
         // Get the current user's ACL (Access Control List)
         ACL acl = Jenkins.get().getACL();
 
-        // Check for read-only permissions
-        return acl.hasPermission(Jenkins.getAuthentication(), Jenkins.READ) &&
+        // Get the current user's authentication
+        Authentication authentication = Jenkins.getAuthentication();
+
+        // Check if authentication is null or not
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return acl.hasPermission(Jenkins.getAuthentication(), Jenkins.READ) &&
+                    !acl.hasPermission(Jenkins.getAuthentication(), Jenkins.ADMINISTER);
+        }
+        // Check if the current user is anonymous
+        boolean isAnonymous = "anonymous".equals(authentication.getPrincipal());
+        // Check for read-only permissions and ensure the user is anonymous
+        return isAnonymous && acl.hasPermission(Jenkins.getAuthentication(), Jenkins.READ) &&
                 !acl.hasPermission(Jenkins.getAuthentication(), Jenkins.ADMINISTER);
     }
 }
