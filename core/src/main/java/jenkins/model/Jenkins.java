@@ -183,6 +183,7 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.AdministrativeError;
 import hudson.util.ClockDifference;
+import hudson.util.ComboBoxModel;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DaemonThreadFactory;
@@ -1906,6 +1907,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             names.add(j.getFullName());
         names.sort(String.CASE_INSENSITIVE_ORDER);
         return names;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public ComboBoxModel doFillJobNameItems() {
+        return new ComboBoxModel(getJobNames());
     }
 
     @Override
