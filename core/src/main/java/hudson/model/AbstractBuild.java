@@ -150,7 +150,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      *
      * @since 1.137
      */
-    private volatile Set<String> culprits;
+    private transient Set<String> culprits;
 
     /**
      * During the build this field remembers {@link hudson.tasks.BuildWrapper.Environment}s created by
