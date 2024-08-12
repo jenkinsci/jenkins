@@ -30,6 +30,9 @@ function load(options = {}) {
 
   // Avoid fetching if the page isn't active
   if (document.hidden) {
+    if (buildHistoryPage.dataset.pageHasUp === "false") {
+      createRefreshTimeout();
+    }
     return;
   }
 
@@ -101,6 +104,7 @@ function updateCardControls(parameters) {
 
   buildHistoryPage.dataset.pageEntryNewest = parameters.pageEntryNewest;
   buildHistoryPage.dataset.pageEntryOldest = parameters.pageEntryOldest;
+  buildHistoryPage.dataset.pageHasUp = parameters.pageHasUp;
 }
 
 paginationPrevious.addEventListener("click", () => {
