@@ -674,6 +674,12 @@ THE SOFTWARE.
             <!-- stat collection pointless -->
             <hudson.model.UsageStatistics.disabled>true</hudson.model.UsageStatistics.disabled>
             <hudson.Main.development>true</hudson.Main.development>
+            <!--
+              Prevent org.apache.xalan.processor.TransformerFactoryImpl from being loaded from the Maven classpath,
+              instead preferring com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl as is used in
+              production contexts.
+            -->
+            <javax.xml.transform.TransformerFactory>com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl</javax.xml.transform.TransformerFactory>
           </systemProperties>
           <webApp>
             <!-- Allows resources to be reloaded, and enable nicer console logging. -->
