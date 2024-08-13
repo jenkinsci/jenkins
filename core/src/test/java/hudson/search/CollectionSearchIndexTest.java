@@ -1,17 +1,17 @@
 package hudson.search;
 
-import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import hudson.model.User;
+import hudson.security.ACL;
+import java.util.*;
+import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
-import jenkins.model.Jenkins;
-import hudson.security.ACL;
-import org.acegisecurity.Authentication;
-
-import java.util.*;
+import org.mockito.MockitoAnnotations;
 
 public class CollectionSearchIndexTest {
 
@@ -20,7 +20,10 @@ public class CollectionSearchIndexTest {
 
     @Before
     public void setUp() {
-        // Create a mock implementation of CollectionSearchIndex
+        // Initialize mocks before every test to ensure isolation
+        MockitoAnnotations.openMocks(this);
+
+        // Reinitialize the CollectionSearchIndex for each test
         index = new CollectionSearchIndex<SearchableModelObject>() {
             @Override
             protected SearchItem get(String key) {
@@ -29,19 +32,16 @@ public class CollectionSearchIndexTest {
 
             @Override
             protected Collection<SearchableModelObject> all() {
-                // mock collection for testing
                 return List.of(
                         createMockUser("Alice"),
                         createMockUser("Bob"),
                         createMockUser("Charlie")
                 );
             }
+
             @Override
             public boolean isUserItem(SearchableModelObject obj) {
-                if (obj instanceof User) {
-                    return true;
-                }
-                return false;
+                return obj instanceof User;
             }
         };
     }

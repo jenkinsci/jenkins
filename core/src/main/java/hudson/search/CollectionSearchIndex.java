@@ -25,13 +25,12 @@
 package hudson.search;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.User;
+import hudson.security.ACL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import hudson.model.User;
-import hudson.security.ACL;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 
@@ -80,7 +79,7 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
             if (isCaseSensitive)
                 name = name.toLowerCase();
 
-            if (o != null && name.contains(token) && (!restrictUserNames || !isUserItem(o)))
+            if (name.contains(token) && (!restrictUserNames || !isUserItem(o)))
                 result.add(o);
         }
     }
