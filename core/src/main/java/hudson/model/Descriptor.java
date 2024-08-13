@@ -327,16 +327,6 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
     }
 
     /**
-     * Optional description for the configurable object
-     *
-     * @since TODO
-     */
-    @Nullable
-    public String getDescription() {
-        return null;
-    }
-
-    /**
      * Uniquely identifies this {@link Descriptor} among all the other {@link Descriptor}s.
      *
      * <p>
