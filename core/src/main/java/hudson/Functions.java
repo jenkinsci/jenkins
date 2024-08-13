@@ -54,7 +54,6 @@ import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.PasswordParameterDefinition;
-import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.model.TimeZoneProperty;
@@ -153,6 +152,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.console.ConsoleUrlProvider;
+import jenkins.console.WithConsoleUrl;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
@@ -1912,14 +1912,12 @@ public class Functions {
      * @return the absolute URL for accessing the build console for the executable, or null if there is no build associated with the executable
      * @since 2.433
      */
-    public static @CheckForNull String getConsoleUrl(Queue.Executable executable) {
-        if (executable == null) {
-            return null;
-        } else if (executable instanceof Run) {
-            return ConsoleUrlProvider.getRedirectUrl((Run<?, ?>) executable);
+    public static @CheckForNull String getConsoleUrl(Object executable) {
+        if (executable instanceof WithConsoleUrl) {
+            String consoleUrl = ((WithConsoleUrl) executable).getConsoleUrl();
+            return consoleUrl != null ? Stapler.getCurrentRequest().getContextPath() + '/' + consoleUrl : null;
         } else {
-            // Handles cases such as PlaceholderExecutable for Pipeline node steps.
-            return getConsoleUrl(executable.getParentExecutable());
+            return null;
         }
     }
 
