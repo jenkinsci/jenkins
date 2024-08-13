@@ -39,8 +39,8 @@ THE SOFTWARE.
 
   <properties>
     <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
-    <slf4jVersion>2.0.13</slf4jVersion>
-    <stapler.version>1892.v73465f3d074d</stapler.version>
+    <slf4jVersion>2.0.16</slf4jVersion>
+    <stapler.version>1894.v82b_2fb_35519d</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -72,7 +72,7 @@ THE SOFTWARE.
         <!-- JENKINS-21160: Remoting also depends on args4j; please update accordingly -->
         <groupId>args4j</groupId>
         <artifactId>args4j</artifactId>
-        <version>2.33</version>
+        <version>2.37</version>
       </dependency>
       <dependency>
         <groupId>com.github.spotbugs</groupId>
@@ -304,7 +304,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.winp</groupId>
         <artifactId>winp</artifactId>
-        <version>1.30</version>
+        <version>1.31</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
