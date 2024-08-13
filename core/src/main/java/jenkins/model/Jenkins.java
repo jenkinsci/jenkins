@@ -183,6 +183,7 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.AdministrativeError;
 import hudson.util.ClockDifference;
+import hudson.util.ComboBoxModel;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DaemonThreadFactory;
@@ -1908,6 +1909,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return names;
     }
 
+    @Restricted(NoExternalUse.class)
+    public ComboBoxModel doFillJobNameItems() {
+        return new ComboBoxModel(getJobNames());
+    }
+
     @Override
     public List<Action> getViewActions() {
         return getActions();
@@ -2355,12 +2361,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
-        if (!Jenkins.get().hasPermission(SYSTEM_READ)) {
+        if (!AdministrativeMonitor.hasPermissionToDisplay()) {
             return Collections.emptyList();
         }
         return administrativeMonitors.stream().filter(m -> {
             try {
-                return Jenkins.get().hasPermission(m.getRequiredPermission()) && m.isEnabled() && m.isActivated();
+                return m.hasRequiredPermission() && m.isEnabled() && m.isActivated();
             } catch (Throwable x) {
                 LOGGER.log(Level.WARNING, null, x);
                 return false;

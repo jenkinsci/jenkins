@@ -1011,6 +1011,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      *      null if no information is available (for example,
      *      if no build was done yet.)
      */
+    @SuppressWarnings("deprecation")
     @Override
     public Node getLastBuiltOn() {
         // where was it built on?

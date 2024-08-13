@@ -107,6 +107,7 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
                     return null;
                 }
 
+                @Deprecated
                 @Override
                 public Node getLastBuiltOn() {
                     return null;

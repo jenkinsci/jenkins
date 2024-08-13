@@ -903,57 +903,79 @@ function escapeHTML(html) {
 }
 
 /**
- * Wraps a <button> into YUI button.
+ * Replaces a <input> with a <button class="jenkins-button">
  *
  * @param e
  *      button element
  * @param onclick
  *      onclick handler
  * @return
- *      YUI Button widget.
+ *      wrapper with some functions (formerly a YUI widget).
+ * @deprecated use <button class="jenkins-button"> and attach event listeners with standard javascript
  */
 function makeButton(e, onclick) {
-  var h = e.onclick;
-  var clsName = e.className;
-  var n = e.name;
+  console.warn(
+    "Deprecated call to makeButton - use <button class='jenkins-button'> instead and standard javascript to attach listeners.",
+  );
+  const h = e.onclick;
+  const n = e.name;
 
-  var attributes = {};
-  // YUI Button class interprets value attribute of <input> as HTML
-  // similar to how the child nodes of a <button> are treated as HTML.
-  // in standard HTML, we wouldn't expect the former case, yet here we are!
-  if (e.tagName === "INPUT") {
-    attributes.label = escapeHTML(e.value);
+  const button = document.createElement("button");
+  if (e.id) {
+    button.id = e.id;
   }
-  var btn = new YAHOO.widget.Button(e, attributes);
   if (onclick != null) {
-    btn.addListener("click", onclick);
+    button.addEventListener("click", onclick);
   }
   if (h != null) {
-    btn.addListener("click", h);
-  }
-  var be = btn.get("element");
-  var classesSeparatedByWhitespace = clsName.split(" ");
-  for (let i = 0; i < classesSeparatedByWhitespace.length; i++) {
-    var singleClass = classesSeparatedByWhitespace[i];
-    if (singleClass) {
-      be.classList.add(singleClass);
-    }
+    button.addEventListener("click", h);
   }
   if (n) {
     // copy the name
-    be.setAttribute("name", n);
+    button.setAttribute("name", n);
   }
-
-  // keep the data-* attributes from the source
-  var length = e.attributes.length;
+  if (e.type === "submit" || e.type === "button") {
+    button.type = e.type;
+  }
+  const length = e.attributes.length;
   for (let i = 0; i < length; i++) {
-    var attribute = e.attributes[i];
-    var attributeName = attribute.name;
+    const attribute = e.attributes[i];
+    const attributeName = attribute.name;
     if (attributeName.startsWith("data-")) {
-      btn._button.setAttribute(attributeName, attribute.value);
+      button.setAttribute(attributeName, attribute.value);
     }
   }
-  return btn;
+  button.innerText = e.value;
+  button.classList.add("jenkins-button");
+  const classNames = e.classList;
+  if (classNames.contains("primary") || classNames.contains("submit-button")) {
+    button.classList.add("jenkins-button--primary");
+  }
+  classNames.remove("primary");
+  classNames.remove("submit-button");
+  classNames.remove("yui-button");
+  for (let i = 0; i < classNames.length; i++) {
+    button.classList.add(classNames.item(i));
+  }
+
+  function Button(button) {
+    this.button = button;
+  }
+  Button.prototype.set = function (attributeName, value) {
+    if (attributeName === "disabled") {
+      if (value) {
+        this.button.disabled = "disabled";
+      } else {
+        this.button.removeAttribute("disabled");
+      }
+    }
+  };
+  Button.prototype.getForm = function () {
+    return this.button.closest("form");
+  };
+  e.parentNode.insertBefore(button, e);
+  e.remove();
+  return new Button(button);
 }
 
 /*
@@ -2199,14 +2221,13 @@ function getStyle(e, a) {
  */
 // eslint-disable-next-line no-unused-vars
 function ensureVisible(e) {
-  var viewport = YAHOO.util.Dom.getClientRegion();
-  var pos = YAHOO.util.Dom.getRegion(e);
-
-  var Y = viewport.top;
-  var H = viewport.height;
+  const scrollTop = document.documentElement.scrollTop;
+  let Y = scrollTop;
+  let H = window.innerHeight;
+  let c = 0;
 
   function handleStickers(name, f) {
-    var e = document.getElementById(name);
+    const e = document.getElementById(name);
     if (e) {
       f(e);
     }
@@ -2218,6 +2239,7 @@ function ensureVisible(e) {
     t = t.clientHeight;
     Y += t;
     H -= t;
+    c += t;
   });
 
   handleStickers("bottom-sticker", function (b) {
@@ -2225,17 +2247,15 @@ function ensureVisible(e) {
     H -= b;
   });
 
-  var y = pos.top;
-  var h = pos.height;
+  const box = e.getBoundingClientRect();
+  const y = Math.round(box.top + scrollTop);
+  const h = e.offsetHeight;
+  const d = y + h - (Y + H);
 
-  var d = y + h - (Y + H);
-  if (d > 0) {
-    document.body.scrollTop += d;
-  } else {
-    d = Y - y;
-    if (d > 0) {
-      document.body.scrollTop -= d;
-    }
+  if (h > H) {
+    document.documentElement.scrollTop = y - c;
+  } else if (d > 0) {
+    document.documentElement.scrollTop += d;
   }
 }
 

@@ -63,7 +63,7 @@ THE SOFTWARE.
               </td>
               <td>
                 <div class="jenkins-table__cell__button-wrapper">
-                  <a href="${user.url}/configure" class="jenkins-button jenkins-button--tertiary">
+                  <a href="${user.url}/" class="jenkins-button jenkins-button--tertiary">
                     <l:icon src="symbol-settings" />
                   </a>
                 </div>

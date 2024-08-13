@@ -1,0 +1,74 @@
+<!--
+The MIT License
+
+Copyright (c) 2022, CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Security category for UserProperty
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+    <l:layout permission="${app.ADMINISTER}" title="${%title}">
+        <st:include page="sidepanel.jelly" it="${it.targetUser}" />
+        <l:main-panel>
+            <f:form method="post" action="configSubmit" name="config">
+                <h1>
+                    ${%title}
+                </h1>
+
+                <j:set var="instance" value="${it}"/>
+                <j:set var="descriptors" value="${it.myCategoryDescriptors}" />
+                <j:set var="instances" value="${it.targetUser.properties}" />
+                <j:set var="thisAction" value="${it}" />
+                <j:set var="hasItems" value="${!descriptors.isEmpty()}" />
+                <j:choose>
+                    <j:when test="${hasItems}">
+                        <j:forEach var="d" items="${descriptors}" varStatus="loop">
+                            <j:if test="${d.enabled}">
+                                <f:section title="${d.displayName}">
+                                    <j:set var="it" value="${thisAction.targetUser}" />
+                                    <j:set var="descriptor" value="${d}" />
+                                    <j:set var="instance" value="${instances[d]}" />
+                        
+                                    <f:rowSet name="userProperty${loop.index}">
+                                        <st:include from="${d}" page="${d.configPage}"/>
+                                    </f:rowSet>
+                                </f:section>
+                            </j:if>
+                        </j:forEach>
+                    </j:when>
+                    <j:otherwise>
+                        <div class="jenkins-alert jenkins-alert-info jenkins-form-item">
+                            ${%warningNoItems}
+                        </div>
+                    </j:otherwise>
+                </j:choose>
+                
+                <f:bottomButtonBar>
+                    <f:submit value="${%Save}" />
+                    <f:apply />
+                </f:bottomButtonBar>
+            </f:form>
+            <st:adjunct includes="lib.form.confirm" />
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
