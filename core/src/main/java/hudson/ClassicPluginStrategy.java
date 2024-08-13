@@ -252,7 +252,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         for (Dependency d : DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion)) {
             LOGGER.fine(() -> "implied dep " + pluginName + " → " + d.shortName);
-            pluginManager.considerDetachedPlugin(d.shortName);
+            pluginManager.considerDetachedPlugin(d.shortName, pluginName);
             optionalDependencies.add(d);
         }
     }
