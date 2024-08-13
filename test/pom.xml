@@ -63,7 +63,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-lang3-api</artifactId>
-        <version>3.14.0-76.vda_5591261cfe</version>
+        <version>3.16.0-82.ve2b_07d659d95</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
