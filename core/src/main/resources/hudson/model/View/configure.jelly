@@ -47,7 +47,7 @@ THE SOFTWARE.
           </f:entry>
         </f:section>
 
-        <f:section title="Filter">
+        <f:section title="Filter widgets">
           <f:entry field="filterQueue">
             <f:checkbox title="${%Filter build queue}"
                         description="If checked, only jobs in this view will be shown in the queue" />
