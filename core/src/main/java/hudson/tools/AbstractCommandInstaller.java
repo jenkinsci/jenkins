@@ -90,7 +90,7 @@ public abstract class AbstractCommandInstaller extends ToolInstaller {
             extends ToolInstallerDescriptor<TInstallerClass> {
 
         public FormValidation doCheckCommand(@QueryParameter String value) {
-            if (value.length() > 0) {
+            if (!value.isEmpty()) {
                 return FormValidation.ok();
             } else {
                 return FormValidation.error(Messages.CommandInstaller_no_command());
@@ -98,7 +98,7 @@ public abstract class AbstractCommandInstaller extends ToolInstaller {
         }
 
         public FormValidation doCheckToolHome(@QueryParameter String value) {
-            if (value.length() > 0) {
+            if (!value.isEmpty()) {
                 return FormValidation.ok();
             } else {
                 return FormValidation.error(Messages.CommandInstaller_no_toolHome());

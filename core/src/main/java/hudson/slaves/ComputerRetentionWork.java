@@ -25,13 +25,15 @@
 package hudson.slaves;
 
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.model.AperiodicWork;
 import hudson.model.Computer;
 import hudson.model.Node;
-import hudson.model.PeriodicWork;
 import hudson.model.Queue;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
+import jenkins.model.GlobalComputerRetentionCheckIntervalConfiguration;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -42,7 +44,7 @@ import org.jenkinsci.Symbol;
  * @author Stephen Connolly
  */
 @Extension @Symbol("computerRetention")
-public class ComputerRetentionWork extends PeriodicWork {
+public class ComputerRetentionWork extends AperiodicWork {
 
     /**
      * Use weak hash map to avoid leaking {@link Computer}.
@@ -51,12 +53,18 @@ public class ComputerRetentionWork extends PeriodicWork {
 
     @Override
     public long getRecurrencePeriod() {
-        return MIN;
+        return ExtensionList.lookupSingleton(GlobalComputerRetentionCheckIntervalConfiguration.class).getComputerRetentionCheckInterval() * 1000L;
+    }
+
+    @Override
+    public AperiodicWork getNewInstance() {
+        // ComputerRetentionWork is a singleton.
+        return this;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void doRun() {
+    protected void doAperiodicRun() {
         final long startRun = System.currentTimeMillis();
         for (final Computer c : Jenkins.get().getComputers()) {
             Queue.withLock(new Runnable() {
@@ -67,8 +75,7 @@ public class ComputerRetentionWork extends PeriodicWork {
                         return;
                     if (!nextCheck.containsKey(c) || startRun > nextCheck.get(c)) {
                         // at the moment I don't trust strategies to wait more than 60 minutes
-                        // strategies need to wait at least one minute
-                        final long waitInMins = Math.max(1, Math.min(60, c.getRetentionStrategy().check(c)));
+                        final long waitInMins = Math.max(0, Math.min(60, c.getRetentionStrategy().check(c)));
                         nextCheck.put(c, startRun + TimeUnit.MINUTES.toMillis(waitInMins));
                     }
                 }

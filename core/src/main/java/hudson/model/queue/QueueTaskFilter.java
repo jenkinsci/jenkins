@@ -52,6 +52,7 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getAssignedLabel();
     }
 
+    @Deprecated
     @Override
     public Node getLastBuiltOn() {
         return base.getLastBuiltOn();

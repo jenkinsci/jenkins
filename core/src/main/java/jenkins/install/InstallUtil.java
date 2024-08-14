@@ -234,7 +234,7 @@ public class InstallUtil {
             if (configFile.exists()) {
                 try {
                     String lastVersion = XMLUtils.getValue("/hudson/version", configFile);
-                    if (lastVersion.length() > 0) {
+                    if (!lastVersion.isEmpty()) {
                         LOGGER.log(Level.FINE, "discovered serialized lastVersion {0}", lastVersion);
                         return lastVersion;
                     }

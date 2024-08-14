@@ -1,5 +1,7 @@
 package executable;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.junit.jupiter.api.Test;
 
@@ -9,34 +11,28 @@ class MainTest {
     void unsupported() {
         assertJavaCheckFails(8, false);
         assertJavaCheckFails(8, true);
+        assertJavaCheckFails(11, false);
+        assertJavaCheckFails(11, true);
     }
 
     @Test
     void supported() {
-        assertJavaCheckPasses(11, false);
-        assertJavaCheckPasses(11, true);
         assertJavaCheckPasses(17, false);
         assertJavaCheckPasses(17, true);
+        assertJavaCheckPasses(21, false);
+        assertJavaCheckPasses(21, true);
     }
 
     @Test
     void future() {
-        assertJavaCheckFails(12, false);
-        assertJavaCheckFails(13, false);
-        assertJavaCheckFails(14, false);
-        assertJavaCheckFails(15, false);
-        assertJavaCheckFails(16, false);
         assertJavaCheckFails(18, false);
         assertJavaCheckFails(19, false);
         assertJavaCheckFails(20, false);
-        assertJavaCheckPasses(12, true);
-        assertJavaCheckPasses(13, true);
-        assertJavaCheckPasses(14, true);
-        assertJavaCheckPasses(15, true);
-        assertJavaCheckPasses(16, true);
+        assertJavaCheckFails(22, false);
         assertJavaCheckPasses(18, true);
         assertJavaCheckPasses(19, true);
         assertJavaCheckPasses(20, true);
+        assertJavaCheckPasses(22, true);
     }
 
     private static void assertJavaCheckFails(int releaseVersion, boolean enableFutureJava) {
@@ -51,17 +47,10 @@ class MainTest {
                     releaseVersion, enableFutureJava);
         }
 
-        // TODO use assertThrows once we drop support for Java 8 in this module
-        boolean failed;
-        try {
-            Main.verifyJavaVersion(releaseVersion, enableFutureJava);
-            failed = false;
-        } catch (UnsupportedClassVersionError error) {
-            failed = true;
-        }
-        if (!failed) {
-            throw new AssertionError(message);
-        }
+        assertThrows(
+                UnsupportedClassVersionError.class,
+                () -> Main.verifyJavaVersion(releaseVersion, enableFutureJava),
+                message);
     }
 
     private static void assertJavaCheckPasses(int releaseVersion, boolean enableFutureJava) {

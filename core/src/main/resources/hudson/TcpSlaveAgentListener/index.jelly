@@ -40,8 +40,11 @@ THE SOFTWARE.
   <!-- reduce the number of client connection attempts during protocol negotiation -->
   <st:header name="X-Jenkins-Agent-Protocols" value="${app.tcpSlaveAgentListener.agentProtocolNames}"/>
   <!-- publish minimum supported version of remoting agent -->
-  <j:getStatic var="rmvh" className="hudson.remoting.Engine" field="REMOTING_MINIMUM_VERSION_HEADER"/>
-  <st:header name="${rmvh}" value="${app.tcpSlaveAgentListener.remotingMinimumVersion}"/>
+  <j:getStatic var="allowUnsupportedRemotingVersions" className="hudson.slaves.SlaveComputer" field="ALLOW_UNSUPPORTED_REMOTING_VERSIONS"/>
+  <j:if test="${!allowUnsupportedRemotingVersions}">
+    <j:getStatic var="rmvh" className="hudson.remoting.Engine" field="REMOTING_MINIMUM_VERSION_HEADER"/>
+    <st:header name="${rmvh}" value="${app.tcpSlaveAgentListener.remotingMinimumVersion}"/>
+  </j:if>
 
   Jenkins
 </j:jelly>

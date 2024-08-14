@@ -183,7 +183,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
 
     /**
      * Required permission to view this admin monitor.
-     * By default {@link Jenkins#ADMINISTER}, but {@link Jenkins#SYSTEM_READ} is also supported.
+     * By default {@link Jenkins#ADMINISTER}, but {@link Jenkins#SYSTEM_READ} or {@link Jenkins#MANAGE} are also supported.
      * <p>
      *     Changing this permission check to return {@link Jenkins#SYSTEM_READ} will make the active
      *     administrative monitor appear on {@code manage.jelly} and on the globally visible
@@ -191,14 +191,60 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *     {@link #doDisable(StaplerRequest, StaplerResponse)} will still always require Administer permission.
      * </p>
      * <p>
+     *     This method only allows for a single permission to be returned. If more complex permission checks are required,
+     *     override {@link #checkRequiredPermission()} and {@link #hasRequiredPermission()} instead.
+     * </p>
+     * <p>
      *     Implementers need to ensure that {@code doAct} and other web methods perform necessary permission checks:
      *     Users with System Read permissions are expected to be limited to read-only access.
      *     Form UI elements that change system state, e.g. toggling a feature on or off, need to be hidden from users
      *     lacking Administer permission.
      * </p>
+     * @since 2.233
+     * @deprecated Callers should use {@link #checkRequiredPermission()} or {@link #hasRequiredPermission()}.
      */
+    @Deprecated
     public Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
+    }
+
+    /**
+     * Checks if the current user has the minimum required permission to view this administrative monitor.
+     * <p>
+     * Subclasses may override this method and {@link #hasRequiredPermission()} instead of {@link #getRequiredPermission()} to perform more complex permission checks,
+     * for example, checking either {@link Jenkins#MANAGE} or {@link Jenkins#SYSTEM_READ}.
+     * </p>
+     * @see #getRequiredPermission()
+     * @see #hasRequiredPermission()
+     * @since 2.468
+     */
+    public void checkRequiredPermission() {
+        Jenkins.get().checkPermission(getRequiredPermission());
+    }
+
+    /**
+     * Checks if the current user has the minimum required permission to view this administrative monitor.
+     * <p>
+     * Subclasses may override this method and {@link #checkRequiredPermission} instead of {@link #getRequiredPermission()} to perform more complex permission checks,
+     * for example, checking either {@link Jenkins#MANAGE} or {@link Jenkins#SYSTEM_READ}.
+     * </p>
+     * @see #getRequiredPermission()
+     * @see #checkRequiredPermission()
+     * @since 2.468
+     */
+    public boolean hasRequiredPermission() {
+        return Jenkins.get().hasPermission(getRequiredPermission());
+    }
+
+    /**
+     * Checks if the current user has the minimum required permission to view any administrative monitor.
+     *
+     * @return true if the current user has the minimum required permission to view any administrative monitor.
+     *
+     * @since 2.468
+     */
+    public static boolean hasPermissionToDisplay() {
+        return Jenkins.get().hasAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
     }
 
     /**
@@ -207,7 +253,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     @Override
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
-        Jenkins.get().checkPermission(getRequiredPermission());
+        checkRequiredPermission();
         return this;
     }
 

@@ -192,7 +192,7 @@ public class UpdateSite {
     @Deprecated
     public @CheckForNull Future<FormValidation> updateDirectly(final boolean signatureCheck) {
         if (! getDataFile().exists() || isDue()) {
-            return Jenkins.get().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
+            return Jenkins.get().getUpdateCenter().updateService.submit(new Callable<>() {
                 @Override public FormValidation call() throws Exception {
                     return updateDirectlyNow(signatureCheck);
                 }

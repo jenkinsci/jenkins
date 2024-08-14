@@ -139,10 +139,12 @@ import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.DiskFileItem;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.javax.JavaxServletDiskFileUpload;
+import org.apache.commons.fileupload2.javax.JavaxServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -613,7 +615,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }});
     }
 
-    void considerDetachedPlugin(String shortName) {
+    void considerDetachedPlugin(String shortName, String source) {
         if (new File(rootDir, shortName + ".jpi").isFile() ||
             new File(rootDir, shortName + ".hpi").isFile() ||
             new File(rootDir, shortName + ".jpl").isFile() ||
@@ -625,7 +627,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (String loadedFile : loadPluginsFromWar(getDetachedLocation(), (dir, name) -> normalisePluginName(name).equals(shortName))) {
             String loaded = normalisePluginName(loadedFile);
             File arc = new File(rootDir, loaded + ".jpi");
-            LOGGER.info(() -> "Loading a detached plugin as a dependency: " + arc);
+            LOGGER.info(() -> "Loading a detached plugin " + arc + " as a dependency of " + source);
             try {
                 plugins.add(strategy.createPluginWrapper(arc));
             } catch (IOException e) {
@@ -714,6 +716,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         Manifest manifest = parsePluginManifest(hpiResUrl);
+        if (manifest == null) {
+            return;
+        }
+
         String dependencySpec = manifest.getMainAttributes().getValue("Plugin-Dependencies");
         if (dependencySpec != null) {
             String[] dependencyTokens = dependencySpec.split(",");
@@ -1099,7 +1105,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /*package*/ static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
-        try (URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi})) {
+        try (URLClassLoader cl = new URLClassLoader("Temporary classloader for parsing " + bundledJpi.toString(), new URL[]{bundledJpi}, ClassLoader.getSystemClassLoader())) {
             InputStream in = null;
             try {
                 URL res = cl.findResource(PluginWrapper.MANIFEST_FILENAME);
@@ -1832,13 +1838,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         @Override
-        public void copy(File target) throws Exception {
-            fileItem.write(target);
+        public void copy(File target) throws IOException {
+            try {
+                fileItem.write(Util.fileToPath(target));
+            } catch (UncheckedIOException e) {
+                throw e.getCause();
+            }
         }
 
         @Override
         public void cleanup() {
-            fileItem.delete();
+            try {
+                fileItem.delete();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
     }
 
@@ -1873,8 +1887,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             String fileName = "";
             PluginCopier copier;
             File tmpDir = Files.createTempDirectory("uploadDir").toFile();
-            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory(DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD, tmpDir));
-            List<FileItem> items = upload.parseRequest(req);
+            JavaxServletFileUpload<DiskFileItem, DiskFileItemFactory> upload = new JavaxServletDiskFileUpload(DiskFileItemFactory.builder().setFile(tmpDir).get());
+            List<DiskFileItem> items = upload.parseRequest(req);
             String string = items.get(1).getString();
             if (string != null && !string.isBlank()) {
                 // this is a URL deployment
@@ -2337,7 +2351,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         public UberClassLoader(List<PluginWrapper> activePlugins) {
-            super(PluginManager.class.getClassLoader());
+            super("UberClassLoader", PluginManager.class.getClassLoader());
             this.activePlugins = activePlugins;
         }
 
@@ -2402,6 +2416,22 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         public String toString() {
             // only for debugging purpose
             return "classLoader " +  getClass().getName();
+        }
+
+        // TODO Remove this once we require post 2024-07 remoting minimum version and deleted ClassLoaderProxy#fetchJar(URL)
+        @SuppressFBWarnings(
+                value = "DMI_COLLECTION_OF_URLS",
+                justification = "All URLs point to local files, so no DNS lookup.")
+        @Restricted(NoExternalUse.class)
+        public boolean isPluginJar(URL jarUrl) {
+            for (PluginWrapper plugin : activePlugins) {
+                if (plugin.classLoader instanceof URLClassLoader) {
+                    if (Set.of(((URLClassLoader) plugin.classLoader).getURLs()).contains(jarUrl)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 
