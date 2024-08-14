@@ -74,7 +74,9 @@ function menuItem(options) {
   if (options.onClick) {
     item.addEventListener("click", (event) => options.onClick(event));
   }
-
+  if (options.onKeyPress) {
+    item.onkeypress = options.onKeyPress;
+  }
   return item;
 }
 
