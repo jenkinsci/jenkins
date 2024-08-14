@@ -147,7 +147,7 @@ THE SOFTWARE.
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
       <version>2250.v03a_1295b_0a_30</version>
       <scope>test</scope>
@@ -163,13 +163,13 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness-tools</artifactId>
       <version>2.2</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
-          <groupId>${project.groupId}</groupId>
+          <groupId>org.jenkins-ci.main</groupId>
           <artifactId>jenkins-test-harness</artifactId>
         </exclusion>
       </exclusions>
