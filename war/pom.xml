@@ -46,7 +46,7 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <mina-sshd-api.version>2.13.1-117.v2f1a_b_66ff91d</mina-sshd-api.version>
+    <mina-sshd-api.version>2.13.2-125.v200281b_61d59</mina-sshd-api.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
     <remoting.minimum.supported.version>3256.3258.v858f3c9a_f69d</remoting.minimum.supported.version>
     <node.version>20.16.0</node.version>
@@ -88,6 +88,11 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>websocket-jetty10</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>websocket-jetty12-ee8</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -157,7 +162,9 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
                     <exclude>org.jenkins-ci.main:websocket-jetty10</exclude>
+                    <exclude>org.jenkins-ci.main:websocket-jetty12-ee8</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
+                    <exclude>org.jvnet.winp:winp</exclude>
                     <exclude>org.kohsuke.stapler:stapler</exclude>
                     <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
                     <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
@@ -300,14 +307,14 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1280.v310a_78b_9a_1e0</version>
+                  <version>1284.vf75d778f98c5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1322.v857eeeea_9902</version>
+                  <version>1332.vc21122317a_8e</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -365,7 +372,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>snakeyaml-api</artifactId>
-                  <version>2.2-111.vc6598e30cc65</version>
+                  <version>2.2-121.v5a_68b_9300b_d4</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -425,14 +432,14 @@ THE SOFTWARE.
                   <!-- detached after 2.86 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>107.v773860566e2e</version>
+                  <version>115.vd8b_301cc15d0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.112 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jdk-tool</artifactId>
-                  <version>73.vddf737284550</version>
+                  <version>80.v8a_dee33ed6f0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -495,7 +502,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api, checks-api, commons-text-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-lang3-api</artifactId>
-                  <version>3.14.0-76.vda_5591261cfe</version>
+                  <version>3.16.0-82.ve2b_07d659d95</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -629,14 +636,14 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-maven-plugin</artifactId>
-        <version>10.0.20</version>
+        <groupId>org.eclipse.jetty.ee8</groupId>
+        <artifactId>jetty-ee8-maven-plugin</artifactId>
+        <version>12.0.12</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
-          <reload>manual</reload>
+          <scan>0</scan>
           <httpConnector>
             <host>${host}</host>
             <port>${port}</port>
@@ -644,7 +651,9 @@ THE SOFTWARE.
           <loginServices>
             <loginService implementation="org.eclipse.jetty.security.HashLoginService">
               <name>default</name>
-              <config>${basedir}/src/realm.properties</config>
+              <config implementation="org.eclipse.jetty.maven.MavenResource">
+                <resourceAsString>${basedir}/src/realm.properties</resourceAsString>
+              </config>
             </loginService>
           </loginServices>
           <systemProperties>
@@ -665,6 +674,12 @@ THE SOFTWARE.
             <!-- stat collection pointless -->
             <hudson.model.UsageStatistics.disabled>true</hudson.model.UsageStatistics.disabled>
             <hudson.Main.development>true</hudson.Main.development>
+            <!--
+              Prevent org.apache.xalan.processor.TransformerFactoryImpl from being loaded from the Maven classpath,
+              instead preferring com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl as is used in
+              production contexts.
+            -->
+            <javax.xml.transform.TransformerFactory>com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl</javax.xml.transform.TransformerFactory>
           </systemProperties>
           <webApp>
             <!-- Allows resources to be reloaded, and enable nicer console logging. -->

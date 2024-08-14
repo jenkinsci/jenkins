@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
 import javax.servlet.ServletContextEvent;
-import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.ee8.webapp.WebAppContext;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assume;
@@ -103,7 +103,7 @@ public class SystemPropertiesTest {
      * @param value value of the property
      */
     protected void setWebAppInitParameter(String property, String value) {
-        Assume.assumeThat(j.jenkins.servletContext, Matchers.instanceOf(ContextHandler.Context.class));
-        ((ContextHandler.Context) j.jenkins.servletContext).getContextHandler().getInitParams().put(property, value);
+        Assume.assumeThat(j.jenkins.servletContext, Matchers.instanceOf(WebAppContext.Context.class));
+        ((WebAppContext.Context) j.jenkins.servletContext).getContextHandler().getInitParams().put(property, value);
     }
 }
