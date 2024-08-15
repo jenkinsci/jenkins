@@ -300,7 +300,7 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1341.va_2819b_414686</version>
+                  <version>1354.va_70a_fe478c7f</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -314,7 +314,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1332.vc21122317a_8e</version>
+                  <version>1336.vee415d95c521</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
