@@ -47,7 +47,13 @@ THE SOFTWARE.
           </f:entry>
         </f:section>
 
-        <f:section title="${%Widgets}">
+        <!-- subtypes can put entries here. -->
+        <st:include page="configure-entries.jelly" optional="true" />
+
+        <!-- view property configurations -->
+        <f:descriptorList descriptors="${it.getVisiblePropertyDescriptors()}" instances="${it.properties}" />
+
+        <f:section title="${%Widgets}" description="Control what the view's widgets display">
           <f:entry field="filterQueue">
             <f:checkbox title="${%Filter build queue}"
                         description="If checked, only jobs in this view will be shown in the queue" />
@@ -57,12 +63,6 @@ THE SOFTWARE.
                         description="If checked, only those build executors will be shown that could execute the jobs in this view" />
           </f:entry>
         </f:section>
-
-        <!-- subtypes can put entries here. -->
-        <st:include page="configure-entries.jelly" optional="true" />
-
-        <!-- view property configurations -->
-        <f:descriptorList descriptors="${it.getVisiblePropertyDescriptors()}" instances="${it.properties}" />
 
         <f:bottomButtonBar>
           <f:submit value="${%OK}" />

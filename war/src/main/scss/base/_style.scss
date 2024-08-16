@@ -410,15 +410,11 @@ img.icon-help {
 div.listview-jobs {
   display: flex;
   flex-direction: column;
-  border: 2px solid red;
-  //max-height: 300px;
-  //overflow: auto;
-  //margin-left: -15px;
-  //padding-left: 15px;
 
   .nested {
-    border-left: 2px solid green;
+    border-left: 2px solid color-mix(in srgb, var(--input-border), transparent);
     margin-left: 10px;
+    padding-left: 22px;
   }
 }
 
