@@ -621,7 +621,7 @@ public class Functions {
  */
 
     @Restricted(NoExternalUse.class)
-    public static String validateIconSize(String iconSize) throws SecurityException {
+    public static String validateIconSize(String iconSize) {
        try{
         if (!ICON_SIZE.matcher(iconSize).matches()) {
             throw new SecurityException("invalid iconSize");
