@@ -408,10 +408,18 @@ img.icon-help {
 
 /* ============================ list view entries ======================== */
 div.listview-jobs {
-  max-height: 300px;
-  overflow: auto;
-  margin-left: -15px;
-  padding-left: 15px;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid red;
+  //max-height: 300px;
+  //overflow: auto;
+  //margin-left: -15px;
+  //padding-left: 15px;
+
+  .nested {
+    border-left: 2px solid green;
+    margin-left: 10px;
+  }
 }
 
 /* ============================ health report hover ========================== */
