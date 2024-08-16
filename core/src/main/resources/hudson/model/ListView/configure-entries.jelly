@@ -51,7 +51,7 @@ THE SOFTWARE.
   </f:section>
 
   <j:if test="${it.hasJobFilterExtensions()}">
-    <f:section title="${%Filters}" description="Control which jobs show up in the view based on specific conditions">
+    <f:section title="${%Filters}" description="Filter the jobs that show in the view based on specific conditions">
       <f:repeatableHeteroProperty field="jobFilters" hasHeader="true" addCaption="${%Add Job Filter}" />
     </f:section>
   </j:if>
