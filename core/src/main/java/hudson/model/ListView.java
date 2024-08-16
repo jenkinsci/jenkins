@@ -442,14 +442,14 @@ public class ListView extends View implements DirectlyModifiableView {
     protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
         JSONObject json = req.getSubmittedForm();
         synchronized (this) {
-//            recurse = json.optBoolean("recurse", true);
+            recurse = json.optBoolean("recurse", true);
             jobNames.clear();
             Iterable<? extends TopLevelItem> items;
-//            if (recurse) {
+            if (recurse) {
                 items = getOwner().getItemGroup().getAllItems(TopLevelItem.class);
-//            } else {
-//                items = getOwner().getItemGroup().getItems();
-//            }
+            } else {
+                items = getOwner().getItemGroup().getItems();
+            }
             for (TopLevelItem item : items) {
                 String relativeNameFrom = item.getRelativeNameFrom(getOwner().getItemGroup());
                 if (req.getParameter("item_" + relativeNameFrom) != null) {
