@@ -31,10 +31,11 @@ THE SOFTWARE.
   <j:invokeStatic var="triggers" className="hudson.triggers.Trigger" method="for_">
     <j:arg value="${it}" type="hudson.model.Item" />
   </j:invokeStatic>
-  <f:descriptorList title="${%Build Triggers}"
+  <f:descriptorList title="${%Triggers}"
                     descriptors="${triggers}"
                     instances="${it.triggers}"
-                    icon="symbol-trigger">
+                    icon="symbol-trigger"
+                    description="Set up automated actions that start your build based on specific events, like code changes or scheduled times">
     <d:invokeBody />
     <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
     <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />
