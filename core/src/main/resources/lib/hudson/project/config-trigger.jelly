@@ -35,6 +35,7 @@ THE SOFTWARE.
                     descriptors="${triggers}"
                     instances="${it.triggers}"
                     icon="symbol-trigger"
+                    field="triggers"
                     description="Set up automated actions that start your build based on specific events, like code changes or scheduled times">
     <d:invokeBody />
     <!-- pseudo-trigger to configure URL to trigger builds remotely. -->

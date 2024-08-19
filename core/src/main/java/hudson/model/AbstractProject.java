@@ -1828,7 +1828,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
         for (Trigger t : triggers())
             t.stop();
-        triggers.replaceBy(buildDescribable(req, Trigger.for_(this)));
+        triggers.rebuild(req, json.getJSONObject("triggers"), Trigger.for_(this));
         for (Trigger t : triggers())
             t.start(this, true);
     }
