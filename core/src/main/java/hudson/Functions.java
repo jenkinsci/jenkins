@@ -614,21 +614,19 @@ public class Functions {
     
 
  /**
-   * Validates the provided icon size against a predefined pattern.
-   *
-   * @param iconSize the icon size string to validate; must not be null
-   * @return the validated icon size if it matches the expected pattern or if it is valid
-   * @throws SecurityException if the icon size is invalid
-   */
-
-    @Restricted(NoExternalUse.class)
-    public static String validateIconSize(@NonNull String iconSize) throws SecurityException{
-	if(!ICON_SIZE.matcher(iconSize).matches()) {
-            throw new SecurityException("Invalid iconSize: " + iconSize);
-	 }
-	return iconSize;
-
+  * Validates the given icon size.
+  *
+  * @param iconSize the size of the icon to validate; must not be null
+  * @return the validated icon size if valid
+  * @throws SecurityException if the icon size is invalid
+  */
+  @Restricted(NoExternalUse.class)
+  public static String validateIconSize(@NonNull String iconSize) throws SecurityException {
+    if (!ICON_SIZE.matcher(iconSize).matches()) {
+        throw new SecurityException("Invalid iconSize: " + iconSize);
     }
+    return iconSize;
+}
 
 
     /**
