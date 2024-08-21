@@ -618,7 +618,7 @@ public class Functions {
    *
    * @param iconSize the icon size string to validate; must not be null
    * @return the validated icon size if it matches the expected pattern or if it is valid
-   * @throws SecurityException if the icon size is invalid or if any other error occurs during             validation
+   * @throws SecurityException if the icon size is invalid
    */
 
     @Restricted(NoExternalUse.class)
