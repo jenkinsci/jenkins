@@ -612,27 +612,20 @@ public class Functions {
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
     
-    /**
- * Validates the provided icon size against a predefined pattern.
- *
- * @param iconSize the icon size string to validate
- * @return the validated icon size if it matches the expected pattern
- * @throws SecurityException if the icon size is invalid or if any other error occurs during validation
- */
+ /**
+   * Validates the provided icon size against a predefined pattern.
+   *
+   * @param iconSize the icon size string to validate; must not be null
+   * @return the validated icon size if it matches the expected pattern or if it is valid
+   * @throws SecurityException if the icon size is invalid or if any other error occurs during             validation
+   */
 
     @Restricted(NoExternalUse.class)
-    public static String validateIconSize(String iconSize) {
-       try{
+    public static String validateIconSize(@NonNull String iconSize) throws SecurityException{
         if (!ICON_SIZE.matcher(iconSize).matches()) {
-            throw new SecurityException("invalid iconSize");
+            throw new SecurityException("Invalid iconSize" + iconSize);
         }
-       }
-       catch(RuntimeException e){
-	 throw new SecurityException("A error occurred while validating the icon size",e);
-       }
-       catch(Exception e){
-	throw new SecurityException("A general error occurred while validating icon size",e);
-       }
+
         return iconSize;
     }
 
