@@ -1,6 +1,8 @@
 .jenkins-table__checkbox-container {
   position: relative;
   display: flex;
+  align-items: center;
+  gap: 0.2rem;
 }
 
 .jenkins-table__checkbox {
@@ -142,9 +144,10 @@
   left: 1.375rem;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
   border-radius: 0.8rem;
   z-index: 999;
-  padding: 0.4rem;
+  padding: 0.4rem 0.4rem 1rem;
   box-shadow:
     inset 0 0 0 2px rgba(white, 0.05),
     0 0 0 1px rgba(black, 0.05),
