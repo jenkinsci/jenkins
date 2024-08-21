@@ -307,7 +307,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1291.v60776881903c</version>
+                  <version>1295.vf2321cf6c27e</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
