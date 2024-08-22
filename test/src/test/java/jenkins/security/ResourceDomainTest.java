@@ -399,7 +399,7 @@ public class ResourceDomainTest {
     }
 
     @Test
-    public void authenticatedCannotAccessResourceDomain() throws Exception {
+    public void authenticatedCannotAccessResourceDomainUnlessAllowedBySystemProperty() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         final MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
         authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().to("admin").grant(Jenkins.READ).everywhere().toEveryone();
@@ -415,6 +415,14 @@ public class ResourceDomainTest {
         }
         try (JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("admin")) {
             assertThat(assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(resourceUrl))).getStatusCode(), is(400));
+        }
+
+        ResourceDomainRootAction.ALLOW_AUTHENTICATED_USER = true;
+        try (JenkinsRule.WebClient wc = j.createWebClient().withBasicApiToken("admin")) {
+            assertThat(wc.getPage(new URL(resourceUrl)).getWebResponse().getStatusCode(), is(200));
+        }
+        try (JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("admin")) {
+            assertThat(wc.getPage(new URL(resourceUrl)).getWebResponse().getStatusCode(), is(200));
         }
     }
 }
