@@ -1907,18 +1907,14 @@ public class Functions {
     }
 
     /**
-     * Computes the link to the console for the run for the specified executable, taking {@link ConsoleUrlProvider} into account.
-     * @param executable the executable (normally a {@link Run})
-     * @return the absolute URL for accessing the build console for the executable, or null if there is no build associated with the executable
+     * Computes the link to the console for the run for the specified object, taking {@link ConsoleUrlProvider} into account.
+     * @param withConsoleUrl the object to compute a console url for (can be {@link Run}, a {@code PlaceholderExecutable}...)
+     * @return the absolute URL for accessing the build console for the given object, or null if there is no console URL defined for the object.
      * @since 2.433
      */
-    public static @CheckForNull String getConsoleUrl(Object executable) {
-        if (executable instanceof WithConsoleUrl) {
-            String consoleUrl = ((WithConsoleUrl) executable).getConsoleUrl();
-            return consoleUrl != null ? Stapler.getCurrentRequest().getContextPath() + '/' + consoleUrl : null;
-        } else {
-            return null;
-        }
+    public static @CheckForNull String getConsoleUrl(WithConsoleUrl withConsoleUrl) {
+        String consoleUrl = withConsoleUrl.getConsoleUrl();
+        return consoleUrl != null ? Stapler.getCurrentRequest().getContextPath() + '/' + consoleUrl : null;
     }
 
     /**
