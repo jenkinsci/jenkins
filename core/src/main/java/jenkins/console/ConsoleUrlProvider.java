@@ -63,7 +63,7 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
      * <p>Should only be used in the context of serving an HTTP request.
      * @param run the build
      * @return the URL for the console for the specified build, relative to the context of Jenkins (should not start with {@code /}), or {@code null}
-     * if this implementation does not want to server a special console view for this build.
+     * if this implementation does not want to serve a special console view for this build.
      */
     @CheckForNull String getConsoleUrl(Run<?, ?> run);
 
