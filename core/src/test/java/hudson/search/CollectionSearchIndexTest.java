@@ -53,7 +53,7 @@ public class CollectionSearchIndexTest {
     }
 
     @Test
-    public void testSuggestWithAnonymousReadOnlyPermission() {
+    public void testSuggestWithRestrictedReadPermission() {
         try (MockedStatic<UserSearchProperty> userSearchPropertyMock = mockStatic(UserSearchProperty.class);
              MockedStatic<Jenkins> jenkinsMock = mockStatic(Jenkins.class)) {
 
@@ -65,13 +65,10 @@ public class CollectionSearchIndexTest {
             ACL acl = mock(ACL.class);
             Authentication authentication = mock(Authentication.class);
 
-            // Simulate anonymous user by mocking Authentication to return "anonymous" principal
-            when(authentication.getPrincipal()).thenReturn("anonymous");
-            when(authentication.isAuthenticated()).thenReturn(false);
-
             when(jenkins.getACL()).thenReturn(acl);
             when(Jenkins.getAuthentication()).thenReturn(authentication);
-            when(acl.hasPermission(eq(authentication), eq(Jenkins.READ))).thenReturn(true);
+            when(acl.hasPermission(eq(authentication), eq(Jenkins.RESTRICTED_READ))).thenReturn(true);
+            when(acl.hasPermission(eq(authentication), eq(Jenkins.READ))).thenReturn(false);
             when(acl.hasPermission(eq(authentication), eq(Jenkins.ADMINISTER))).thenReturn(false);
 
             jenkinsMock.when(Jenkins::get).thenReturn(jenkins);
@@ -79,13 +76,43 @@ public class CollectionSearchIndexTest {
             List<SearchItem> result = new ArrayList<>();
             index.suggest("a", result);
 
-            // Anonymous user with read-only permission should not see any users in search suggestions
+            // user with RestrictedRead permission cannot see users in search suggestions
             assertEquals(0, result.size());
         }
     }
 
     @Test
-    public void testSuggestWithReadOnlyPermission() {
+    public void testSuggestWithReadPermission() {
+        try (MockedStatic<UserSearchProperty> userSearchPropertyMock = mockStatic(UserSearchProperty.class);
+             MockedStatic<Jenkins> jenkinsMock = mockStatic(Jenkins.class)) {
+
+            // Mock UserSearchProperty
+            userSearchPropertyMock.when(UserSearchProperty::isCaseInsensitive).thenReturn(true);
+
+            // Mock Jenkins and ACL for read user
+            Jenkins jenkins = mock(Jenkins.class);
+            ACL acl = mock(ACL.class);
+            Authentication authentication = mock(Authentication.class);
+
+
+            when(jenkins.getACL()).thenReturn(acl);
+            when(acl.hasPermission(eq(authentication), eq(Jenkins.RESTRICTED_READ))).thenReturn(true);
+            when(acl.hasPermission(eq(authentication), eq(Jenkins.READ))).thenReturn(true);
+            when(acl.hasPermission(eq(authentication), eq(Jenkins.ADMINISTER))).thenReturn(false);
+
+            jenkinsMock.when(Jenkins::get).thenReturn(jenkins);
+            jenkinsMock.when(Jenkins::getAuthentication).thenReturn(authentication);
+
+            List<SearchItem> result = new ArrayList<>();
+            index.suggest("a", result);
+
+            // read user can see users in search suggestions
+            assertEquals(2, result.size());
+        }
+    }
+
+    @Test
+    public void testSuggestWithAdminPermission() {
         try (MockedStatic<UserSearchProperty> userSearchPropertyMock = mockStatic(UserSearchProperty.class);
              MockedStatic<Jenkins> jenkinsMock = mockStatic(Jenkins.class)) {
 
@@ -97,12 +124,10 @@ public class CollectionSearchIndexTest {
             ACL acl = mock(ACL.class);
             Authentication authentication = mock(Authentication.class);
 
-            when(authentication.getPrincipal()).thenReturn("readOnlyUser");
-            when(authentication.isAuthenticated()).thenReturn(true);
-
             when(jenkins.getACL()).thenReturn(acl);
             when(acl.hasPermission(eq(authentication), eq(Jenkins.READ))).thenReturn(true);
-            when(acl.hasPermission(eq(authentication), eq(Jenkins.ADMINISTER))).thenReturn(false);
+            when(acl.hasPermission(eq(authentication), eq(Jenkins.RESTRICTED_READ))).thenReturn(true);
+            when(acl.hasPermission(eq(authentication), eq(Jenkins.ADMINISTER))).thenReturn(true);
 
             jenkinsMock.when(Jenkins::get).thenReturn(jenkins);
             jenkinsMock.when(Jenkins::getAuthentication).thenReturn(authentication);
@@ -110,35 +135,7 @@ public class CollectionSearchIndexTest {
             List<SearchItem> result = new ArrayList<>();
             index.suggest("a", result);
 
-            // log in read-only user can also get to search for other users
-            assertEquals(2, result.size());
-        }
-    }
-
-    @Test
-    public void testSuggestWithAdminPermission() {
-        try (MockedStatic<UserSearchProperty> userSearchPropertyMock = mockStatic(UserSearchProperty.class);
-             MockedStatic<Jenkins> jenkinsMock = mockStatic(Jenkins.class)) {
-
-            userSearchPropertyMock.when(UserSearchProperty::isCaseInsensitive).thenReturn(true);
-
-            Jenkins jenkins = mock(Jenkins.class);
-            ACL acl = mock(ACL.class);
-            Authentication authentication = mock(Authentication.class);
-
-            when(authentication.getPrincipal()).thenReturn("adminUser");
-            when(authentication.isAuthenticated()).thenReturn(true);
-
-            when(jenkins.getACL()).thenReturn(acl);
-            when(acl.hasPermission(eq(authentication), eq(Jenkins.READ))).thenReturn(true);
-            when(acl.hasPermission(eq(authentication), eq(Jenkins.ADMINISTER))).thenReturn(true);
-
-            jenkinsMock.when(Jenkins::get).thenReturn(jenkins);
-
-            List<SearchItem> result = new ArrayList<>();
-            index.suggest("a", result);
-
-            // admin is able to search other users
+            // admin user can see users in search suggestions
             assertEquals(2, result.size());
         }
     }

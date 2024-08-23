@@ -303,8 +303,8 @@ public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
     @Override
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
-        if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.get().checkPermission(Jenkins.READ);
+        if (!Jenkins.get().hasPermission(Jenkins.RESTRICTED_READ)) {
+            return null;
         }
         return this;
     }

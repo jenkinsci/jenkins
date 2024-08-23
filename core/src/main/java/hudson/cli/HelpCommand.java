@@ -50,7 +50,7 @@ public class HelpCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        if (!Jenkins.get().hasPermission(Jenkins.READ)) {
+        if (!Jenkins.get().hasPermission(Jenkins.RESTRICTED_READ)) {
             throw new AccessDeniedException("You must authenticate to access this Jenkins.\n"
                     + CLI.usage());
         }

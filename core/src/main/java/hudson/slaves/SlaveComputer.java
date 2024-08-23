@@ -902,7 +902,7 @@ public class SlaveComputer extends Computer {
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            if (!Jenkins.get().hasPermission(Jenkins.READ)) {
+            if (!Jenkins.get().hasPermission(Jenkins.RESTRICTED_READ)) {
                 return new LowPermissionResponse();
             }
         }

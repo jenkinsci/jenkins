@@ -72,14 +72,14 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
         }
 
         // Determine if the current user should be restricted from seeing other users names
-        boolean restrictUserNames = anonymousUserHasReadOnlyPermission();
+        boolean restrictUserNames = isUserNameRestrictionRequired();
 
         for (SMT o : allAsIterable()) {
             String name = getName(o);
             if (isCaseSensitive)
                 name = name.toLowerCase();
 
-            if (name.contains(token) && (!restrictUserNames || !isUserItem(o)))
+            if (name.contains(token) && (!restrictUserNames ||  ( !isUserItem(o))))
                 result.add(o);
         }
     }
@@ -95,22 +95,18 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
         return false;
     }
 
-    private boolean anonymousUserHasReadOnlyPermission() {
-        // Get the current user's ACL (Access Control List)
-        ACL acl = Jenkins.get().getACL();
 
+    private boolean isUserNameRestrictionRequired() {
         // Get the current user's authentication
         Authentication authentication = Jenkins.getAuthentication();
 
-        // Check if authentication is null or not
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return acl.hasPermission(Jenkins.getAuthentication(), Jenkins.READ) &&
-                    !acl.hasPermission(Jenkins.getAuthentication(), Jenkins.ADMINISTER);
-        }
-        // Check if the current user is anonymous
-        boolean isAnonymous = "anonymous".equals(authentication.getPrincipal());
-        // Check for read-only permissions and ensure the user is anonymous
-        return isAnonymous && acl.hasPermission(Jenkins.getAuthentication(), Jenkins.READ) &&
-                !acl.hasPermission(Jenkins.getAuthentication(), Jenkins.ADMINISTER);
+        // Retrieve ACL and check for RESTRICTED_READ permission
+        ACL acl = Jenkins.get().getACL();
+        boolean hasRestrictedReadPermission = acl.hasPermission(authentication, Jenkins.RESTRICTED_READ);
+        boolean hasReadPermission = acl.hasPermission(authentication, Jenkins.READ);
+        boolean hasAdminPermission = acl.hasPermission(authentication, Jenkins.ADMINISTER);
+
+        // Restrict only if the user has RESTRICTED_READ and does not have READ or ADMINISTER
+        return hasRestrictedReadPermission && !hasReadPermission && !hasAdminPermission;
     }
 }

@@ -5196,7 +5196,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Override
     public Object getTarget() {
         try {
-            checkPermission(READ);
+            checkPermission(RESTRICTED_READ);
         } catch (AccessDeniedException e) {
             if (!isSubjectToMandatoryReadPermissionCheck(Stapler.getCurrentRequest().getRestOfPath())) {
                 return this;
@@ -5778,6 +5778,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             new Permission[] { MANAGE, SYSTEM_READ };
 
     public static final Permission READ = new Permission(PERMISSIONS, "Read", Messages._Hudson_ReadPermission_Description(), Permission.READ, PermissionScope.JENKINS);
+    public static final Permission RESTRICTED_READ = new Permission(
+            PERMISSIONS,
+            "RestrictedRead",
+            Messages._Hudson_RestrictedReadPermission_Description(),
+            Jenkins.READ,
+            PermissionScope.JENKINS
+    );
+
     /** @deprecated in Jenkins 2.222 use {@link Jenkins#ADMINISTER} instead */
     @Deprecated
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(), ADMINISTER, PermissionScope.JENKINS);

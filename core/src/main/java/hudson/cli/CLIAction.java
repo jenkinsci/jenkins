@@ -99,7 +99,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
     public void doCommand(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
         final Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.READ);
+        jenkins.checkPermission(Jenkins.RESTRICTED_READ);
 
         // Strip trailing slash
         final String commandName = req.getRestOfPath().substring(1);

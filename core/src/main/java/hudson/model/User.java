@@ -1041,7 +1041,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            if (!Jenkins.get().hasPermission(Jenkins.READ)) {
+            if (!Jenkins.get().hasPermission(Jenkins.RESTRICTED_READ)) {
                 return null;
             }
         }
