@@ -58,9 +58,9 @@ public class ConsoleUrlProviderTest {
         // Custom URL without leading slash
         b.setDescription("custom my/build/console");
         assertCustomConsoleUrl(r.contextPath + "/my/build/console", b);
-        // Custom URL with leading slash
+        // Custom URL with leading slash -> not supported, falls back to default
         b.setDescription("custom /my/build/console");
-        assertCustomConsoleUrl(r.contextPath + "/my/build/console", b);
+        assertCustomConsoleUrl(r.contextPath + '/' + b.getUrl() + "console", b);
         // Default URL is used when extensions throw exceptions.
         b.setDescription("NullPointerException");
         assertCustomConsoleUrl(r.contextPath + '/' + b.getUrl() + "console", b);
