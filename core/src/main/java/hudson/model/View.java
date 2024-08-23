@@ -510,8 +510,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
         }
         // Check root project for sub-job projects (e.g. matrix jobs).
-        if (item.task instanceof AbstractProject<?, ?>) {
-            AbstractProject<?, ?> project = (AbstractProject<?, ?>) item.task;
+        if (item.task instanceof AbstractProject<?, ?> project) {
             return viewItems.contains(project.getRootProject());
         }
         return false;
@@ -855,8 +854,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         List<Run> lastBuilds = new ArrayList<>();
         for (TopLevelItem item : getItems()) {
-            if (item instanceof Job) {
-                Job job = (Job) item;
+            if (item instanceof Job job) {
                 Run lb = job.getLastBuild();
                 if (lb != null)    lastBuilds.add(lb);
             }

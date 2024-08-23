@@ -28,7 +28,7 @@ THE SOFTWARE.
   Displays the console output
 -->
 <?jelly escape-by-default='true'?>
-<st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout title="${it.fullDisplayName} Console">
     <st:include page="sidepanel.jelly" />
 
@@ -84,4 +84,4 @@ THE SOFTWARE.
       </j:choose>
     </l:main-panel>
   </l:layout>
-</st:compress>
+</j:jelly>

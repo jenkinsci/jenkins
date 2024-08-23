@@ -31,6 +31,7 @@ import hudson.Extension;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.util.HttpResponses;
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -152,6 +153,11 @@ public class UserSeedProperty extends UserProperty {
         @Override
         public boolean isEnabled() {
             return !DISABLE_USER_SEED && !HIDE_USER_SEED_SECTION;
+        }
+
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Security.class);
         }
     }
 }

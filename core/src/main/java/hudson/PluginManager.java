@@ -615,7 +615,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }});
     }
 
-    void considerDetachedPlugin(String shortName) {
+    void considerDetachedPlugin(String shortName, String source) {
         if (new File(rootDir, shortName + ".jpi").isFile() ||
             new File(rootDir, shortName + ".hpi").isFile() ||
             new File(rootDir, shortName + ".jpl").isFile() ||
@@ -627,7 +627,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (String loadedFile : loadPluginsFromWar(getDetachedLocation(), (dir, name) -> normalisePluginName(name).equals(shortName))) {
             String loaded = normalisePluginName(loadedFile);
             File arc = new File(rootDir, loaded + ".jpi");
-            LOGGER.info(() -> "Loading a detached plugin as a dependency: " + arc);
+            LOGGER.info(() -> "Loading a detached plugin " + arc + " as a dependency of " + source);
             try {
                 plugins.add(strategy.createPluginWrapper(arc));
             } catch (IOException e) {
@@ -716,6 +716,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         Manifest manifest = parsePluginManifest(hpiResUrl);
+        if (manifest == null) {
+            return;
+        }
+
         String dependencySpec = manifest.getMainAttributes().getValue("Plugin-Dependencies");
         if (dependencySpec != null) {
             String[] dependencyTokens = dependencySpec.split(",");
@@ -2412,6 +2416,22 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         public String toString() {
             // only for debugging purpose
             return "classLoader " +  getClass().getName();
+        }
+
+        // TODO Remove this once we require post 2024-07 remoting minimum version and deleted ClassLoaderProxy#fetchJar(URL)
+        @SuppressFBWarnings(
+                value = "DMI_COLLECTION_OF_URLS",
+                justification = "All URLs point to local files, so no DNS lookup.")
+        @Restricted(NoExternalUse.class)
+        public boolean isPluginJar(URL jarUrl) {
+            for (PluginWrapper plugin : activePlugins) {
+                if (plugin.classLoader instanceof URLClassLoader) {
+                    if (Set.of(((URLClassLoader) plugin.classLoader).getURLs()).contains(jarUrl)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 

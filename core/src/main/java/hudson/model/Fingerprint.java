@@ -608,7 +608,7 @@ public class Fingerprint implements ModelObject, Saveable {
         public synchronized String toString() {
             StringBuilder buf = new StringBuilder();
             for (Range r : ranges) {
-                if (buf.length() > 0)  buf.append(',');
+                if (!buf.isEmpty())  buf.append(',');
                 buf.append(r);
             }
             return buf.toString();
@@ -787,7 +787,7 @@ public class Fingerprint implements ModelObject, Saveable {
             public static String serialize(RangeSet src) {
                 StringBuilder buf = new StringBuilder(src.ranges.size() * 10);
                 for (Range r : src.ranges) {
-                    if (buf.length() > 0)  buf.append(',');
+                    if (!buf.isEmpty())  buf.append(',');
                     if (r.isSingle())
                         buf.append(r.start);
                     else

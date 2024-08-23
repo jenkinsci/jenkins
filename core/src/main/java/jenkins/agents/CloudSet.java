@@ -41,7 +41,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
@@ -131,7 +130,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Override
     public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
-        Jenkins.get().clouds.stream().forEach(c -> m.add(c));
+        Jenkins.get().clouds.stream().forEach(m::add);
         return m;
     }
 
@@ -265,7 +264,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         }
         var namesList = Arrays.asList(names);
         var clouds = new ArrayList<>(Jenkins.get().clouds);
-        Collections.sort(clouds, Comparator.comparingInt(c -> getIndexOf(namesList, c)));
+        clouds.sort(Comparator.comparingInt(c -> getIndexOf(namesList, c)));
         Jenkins.get().clouds.replaceBy(clouds);
         rsp.sendRedirect2(".");
     }

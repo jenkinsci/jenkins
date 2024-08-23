@@ -22,20 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <l:ajax>
-    <j:choose>
-      <j:when test="${it.size() > 0}">
-	<table class="pane hasPageData" page-entry-newest="${it.newestOnPage}" page-entry-oldest="${it.oldestOnPage}" page-has-up="${it.hasUpPage}" page-has-down="${it.hasDownPage}">
-	  <st:include page="entries.jelly" />
-	</table>
-      </j:when>
-      <j:otherwise>
-	<table class="pane"></table>
-      </j:otherwise>
-    </j:choose>
+    <j:if test="${it.size() > 0}">
+      <div data-page-entry-newest="${it.newestOnPage}"
+           data-page-entry-oldest="${it.oldestOnPage}"
+           data-page-has-up="${it.hasUpPage}"
+           data-page-has-down="${it.hasDownPage}">
+        <st:include page="entries.jelly" />
+      </div>
+    </j:if>
   </l:ajax>
 </j:jelly>
