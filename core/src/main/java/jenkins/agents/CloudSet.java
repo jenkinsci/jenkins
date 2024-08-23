@@ -41,7 +41,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
@@ -131,7 +130,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Override
     public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
-        Jenkins.get().clouds.stream().forEach(c -> m.add(c));
+        Jenkins.get().clouds.stream().forEach(m::add);
         return m;
     }
 
@@ -242,9 +241,13 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
      */
     @POST
     public synchronized void doDoCreate(StaplerRequest req, StaplerResponse rsp,
-                                            @QueryParameter String type) throws IOException, ServletException, Descriptor.FormException {
+                                            @QueryParameter String cloudDescriptorName) throws IOException, ServletException, Descriptor.FormException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        Cloud cloud = Cloud.all().find(type).newInstance(req, req.getSubmittedForm());
+        Descriptor<Cloud> cloudDescriptor = Cloud.all().findByName(cloudDescriptorName);
+        if (cloudDescriptor == null) {
+            throw new Failure(String.format("No cloud type ‘%s’ is known", cloudDescriptorName));
+        }
+        Cloud cloud = cloudDescriptor.newInstance(req, req.getSubmittedForm());
         if (!Jenkins.get().clouds.add(cloud)) {
             LOGGER.log(Level.WARNING, () -> "Creating duplicate cloud name " + cloud.name + ". Plugin " + Jenkins.get().getPluginManager().whichPlugin(cloud.getClass()) + " should be updated to support user provided name.");
         }
@@ -261,7 +264,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         }
         var namesList = Arrays.asList(names);
         var clouds = new ArrayList<>(Jenkins.get().clouds);
-        Collections.sort(clouds, Comparator.comparingInt(c -> getIndexOf(namesList, c)));
+        clouds.sort(Comparator.comparingInt(c -> getIndexOf(namesList, c)));
         Jenkins.get().clouds.replaceBy(clouds);
         rsp.sendRedirect2(".");
     }

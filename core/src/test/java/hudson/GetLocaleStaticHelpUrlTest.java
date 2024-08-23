@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.lang.Klass;
 
@@ -189,6 +190,24 @@ public class GetLocaleStaticHelpUrlTest {
         );
         URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
         assertThatLocaleResourceIs(id, "help-id_zh_CN.html");
+    }
+
+    @Issue("JENKINS-73246")
+    @Test
+    public void getStaticHelpUrlAcceptEnFirst() {
+        // Accept-Language: en-US,en;q=0.9,de;q=0.8
+        StaplerRequest req = mockStaplerRequest(
+                Locale.US,
+                Locale.ENGLISH,
+                Locale.GERMAN
+        );
+
+        Klass klass = mockKlass(
+                "help-id.html",
+                "help-id_de.html"
+        );
+        URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
+        assertThatLocaleResourceIs(id, "help-id.html");
     }
 
     private StaplerRequest mockStaplerRequest(Locale... localeArr) {

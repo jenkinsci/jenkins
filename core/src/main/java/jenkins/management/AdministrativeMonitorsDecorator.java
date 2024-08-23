@@ -139,7 +139,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
      * @return the list of active monitors if we should display them, otherwise null.
      */
     public Collection<AdministrativeMonitor> getMonitorsToDisplay() {
-        if (!Jenkins.get().hasPermission(Jenkins.SYSTEM_READ)) {
+        if (!(AdministrativeMonitor.hasPermissionToDisplay())) {
             return null;
         }
 
@@ -150,7 +150,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
         }
         List<Ancestor> ancestors = req.getAncestors();
 
-        if (ancestors == null || ancestors.size() == 0) {
+        if (ancestors == null || ancestors.isEmpty()) {
             // ???
             return null;
         }

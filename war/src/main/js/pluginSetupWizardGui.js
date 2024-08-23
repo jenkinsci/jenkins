@@ -288,6 +288,7 @@ var createPluginSetupWizard = function (appendTarget) {
         if (document.activeElement !== e) {
           e.focus();
         }
+        // eslint-disable-next-line no-unused-vars
       } catch (ex) {
         // ignored, unable to restore focus
       }

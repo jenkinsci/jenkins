@@ -32,7 +32,7 @@ $.when(getItems()).done(function (data) {
       if (desc.indexOf('&lt;a href="') === -1) {
         return desc;
       }
-      // eslint-disable-next-line
+      // eslint-disable-next-line no-useless-escape
       var newDesc = desc.replace(/\&lt;/g, "<").replace(/\&gt;/g, ">");
       return newDesc;
     }
@@ -60,6 +60,7 @@ $.when(getItems()).done(function (data) {
       }
       cleanValidationMessages(context);
       $(messageId).removeClass("input-message-disabled");
+      enableSubmit(false);
     }
 
     function cleanValidationMessages(context) {
@@ -69,7 +70,7 @@ $.when(getItems()).done(function (data) {
     }
 
     function enableSubmit(status) {
-      var btn = $("form .footer .btn-decorator button[type=submit]");
+      var btn = $(".bottom-sticker-inner button[type=submit]");
       if (status === true) {
         if (btn.hasClass("disabled")) {
           btn.removeClass("disabled");
@@ -144,8 +145,10 @@ $.when(getItems()).done(function (data) {
 
       var iconDiv = drawIcon(elem);
       item.appendChild(iconDiv);
+      var labelContainer = document.createElement("div");
+      item.appendChild(labelContainer);
 
-      var label = item.appendChild(document.createElement("label"));
+      var label = labelContainer.appendChild(document.createElement("label"));
 
       var radio = label.appendChild(document.createElement("input"));
       radio.type = "radio";
@@ -157,7 +160,7 @@ $.when(getItems()).done(function (data) {
 
       displayName.appendChild(document.createTextNode(elem.displayName));
 
-      var desc = item.appendChild(document.createElement("div"));
+      var desc = labelContainer.appendChild(document.createElement("div"));
       desc.className = "desc";
       desc.innerHTML = checkForLink(elem.description);
 
@@ -193,7 +196,10 @@ $.when(getItems()).done(function (data) {
 
     function drawIcon(elem) {
       var iconDiv = document.createElement("div");
-      if (elem.iconClassName && elem.iconQualifiedUrl) {
+      if (elem.iconXml) {
+        iconDiv.className = "icon";
+        iconDiv.innerHTML = elem.iconXml;
+      } else if (elem.iconClassName && elem.iconQualifiedUrl) {
         iconDiv.className = "icon";
 
         var img1 = document.createElement("img");

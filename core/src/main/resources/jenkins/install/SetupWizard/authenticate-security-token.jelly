@@ -19,7 +19,7 @@
                     <p>${%jenkins.install.findSecurityTokenMessage(it.initialAdminPasswordFile)}</p>
                     <p>${%authenticate-security-token.copy.password}</p>
                     <j:if test="${error}">
-                        <div class="alert alert-danger">
+                        <div class="jenkins-alert jenkins-alert-danger">
                           <strong>${%authenticate-security-token.error}</strong> ${%authenticate-security-token.password.incorrect}
                         </div>
                     </j:if>

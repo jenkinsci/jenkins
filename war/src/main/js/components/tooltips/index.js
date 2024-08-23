@@ -5,7 +5,6 @@ const TOOLTIP_BASE = {
   arrow: false,
   theme: "tooltip",
   animation: "tooltip",
-  appendTo: document.body,
 };
 
 /**
@@ -21,6 +20,10 @@ function registerTooltip(element) {
 
   const tooltip = element.getAttribute("tooltip");
   const htmlTooltip = element.getAttribute("data-html-tooltip");
+  let appendTo = document.body;
+  if (element.hasAttribute("data-tooltip-append-to-parent")) {
+    appendTo = "parent";
+  }
   if (
     tooltip !== null &&
     tooltip.trim().length > 0 &&
@@ -40,6 +43,7 @@ function registerTooltip(element) {
           onHidden(instance) {
             instance.reference.setAttribute("title", instance.props.content);
           },
+          appendTo: appendTo,
         },
         TOOLTIP_BASE,
       ),
@@ -58,6 +62,7 @@ function registerTooltip(element) {
               instance.reference.getAttribute("data-tooltip-interactive") ===
               "true";
           },
+          appendTo: appendTo,
         },
         TOOLTIP_BASE,
       ),

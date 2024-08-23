@@ -105,7 +105,7 @@ public class PluginWrapperTest {
     @Issue("JENKINS-66563")
     @Test
     public void insertJarsIntoClassPath() throws Exception {
-        try (URLClassLoader2 cl = new URLClassLoader2(new URL[0])) {
+        try (URLClassLoader2 cl = new URLClassLoader2("Test", new URL[0])) {
             assertInjectingJarsWorks(cl);
         }
     }

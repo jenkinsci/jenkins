@@ -98,6 +98,8 @@ import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.symbol.Symbol;
+import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -508,8 +510,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
         }
         // Check root project for sub-job projects (e.g. matrix jobs).
-        if (item.task instanceof AbstractProject<?, ?>) {
-            AbstractProject<?, ?> project = (AbstractProject<?, ?>) item.task;
+        if (item.task instanceof AbstractProject<?, ?> project) {
             return viewItems.contains(project.getRootProject());
         }
         return false;
@@ -801,11 +802,20 @@ public abstract class View extends AbstractModelObject implements AccessControll
             String iconClassName = descriptor.getIconClassName();
             if (iconClassName != null && !iconClassName.isBlank()) {
                 metadata.put("iconClassName", iconClassName);
-                if (resUrl != null) {
-                    Icon icon = IconSet.icons
-                            .getIconByClassSpec(String.join(" ", iconClassName, iconStyle));
-                    if (icon != null) {
-                        metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(resUrl));
+                if (iconClassName.startsWith("symbol-")) {
+                    String iconXml = Symbol.get(new SymbolRequest.Builder()
+                            .withName(iconClassName.split(" ")[0].substring(7))
+                            .withPluginName(Functions.extractPluginNameFromIconSrc(iconClassName))
+                            .withClasses("icon-xlg")
+                            .build());
+                    metadata.put("iconXml", iconXml);
+                } else {
+                    if (resUrl != null) {
+                        Icon icon = IconSet.icons
+                                .getIconByClassSpec(String.join(" ", iconClassName, iconStyle));
+                        if (icon != null) {
+                            metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(resUrl));
+                        }
                     }
                 }
             }
@@ -844,8 +854,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         List<Run> lastBuilds = new ArrayList<>();
         for (TopLevelItem item : getItems()) {
-            if (item instanceof Job) {
-                Job job = (Job) item;
+            if (item instanceof Job job) {
                 Run lb = job.getLastBuild();
                 if (lb != null)    lastBuilds.add(lb);
             }

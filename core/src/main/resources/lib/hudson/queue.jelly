@@ -74,7 +74,9 @@ THE SOFTWARE.
               <j:set var="stuck" value="${item.isStuck()}"/>
               <j:choose>
                 <j:when test="${h.hasPermission(item.task,item.task.READ)}">
-                  <a href="${rootURL}/${item.task.url}" class="model-link inside tl-tr" tooltip="${item.causesDescription} ${item.why} ${item.params} \n ${%WaitingFor(item.inQueueForString)}">
+                  <a href="${rootURL}/${item.task.url}" class="model-link inside tl-tr"
+                     tooltip="${item.causesDescription} ${item.why} ${item.params} \n ${%WaitingFor(item.inQueueForString)}"
+                     data-tooltip-append-to-parent="true">
                     <l:breakable value="${item.displayName}"/>
                   </a>
                   <!-- TODO include estimated number as in BuildHistoryWidget/entries.jelly if possible -->
