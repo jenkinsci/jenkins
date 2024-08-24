@@ -6,6 +6,7 @@ $dropdown-padding: 0.4rem;
   border-radius: 15px;
   box-shadow: var(--dropdown-box-shadow);
   outline: none !important;
+  background: color-mix(in sRGB, var(--background) 85%, transparent);
   backdrop-filter: var(--dropdown-backdrop-filter);
   max-width: unset !important;
   max-height: 75vh;
