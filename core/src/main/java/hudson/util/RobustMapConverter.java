@@ -66,8 +66,9 @@ final class RobustMapConverter extends MapConverter {
 
     private Object read(HierarchicalStreamReader reader, UnmarshallingContext context, Map map) {
         if (!reader.hasMoreChildren()) {
-            // TODO: Can we improve the error message?
-            RobustReflectionConverter.addErrorInContext(context, new ConversionException("Invalid format for entry in map"));
+            var exception = new ConversionException("Invalid map entry");
+            reader.appendErrors(exception);
+            RobustReflectionConverter.addErrorInContext(context, exception);
             return ERROR;
         }
         reader.moveDown();

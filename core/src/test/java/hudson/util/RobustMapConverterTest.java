@@ -186,10 +186,5 @@ public class RobustMapConverterTest {
 
     private static final class Data {
         Map<String, String> map;
-
-        @Override
-        public String toString() {
-            return "Data[" + map + "]";
-        }
     }
 }
