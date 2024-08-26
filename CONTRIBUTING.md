@@ -14,8 +14,6 @@ This page provides information about contributing code to the Jenkins core codeb
    - Apache Maven 3.8.1 or above. You can [download Maven here](https://maven.apache.org/download.cgi).
      In the Jenkins project we usually use the most recent Maven release.
    - Any IDE which supports importing Maven projects.
-   - Install [Node.js 20.x](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
-     - Frontend tasks are run using [yarn](https://yarnpkg.com/). Run `npm install -g yarn` to install it.
 4. Set up your development environment as described in [Preparing for Plugin Development](https://www.jenkins.io/doc/developer/tutorial/prepare/)
 
 If you want to contribute to Jenkins, or just learn about the project,
@@ -27,6 +25,8 @@ You can find them by using this query (check the link) for [newbie friendly issu
 
 The Jenkins core build flow is built around Maven.
 You can read a description of the [building and debugging process here](https://www.jenkins.io/doc/developer/building/).
+
+### Building the WAR file
 
 If you want simply to build the `jenkins.war` file as fast as possible without tests, run:
 
@@ -40,13 +40,30 @@ If you want to debug the WAR file without using Maven plugins,
 You can run the executable with [Remote Debug Flags](https://stackoverflow.com/questions/975271/remote-debugging-a-java-application)
 and then attach IDE Debugger to it.
 
-To launch a development instance, after the above command, run:
+### Launching a development instance
+
+To launch a development instance, after [building the WAR file](#building-the-war-file), run:
 
 ```sh
-mvn -pl war jetty:run
+MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run
 ```
 
 (Beware that `maven-plugin` builds will not work in this mode, due to class loading conflicts.)
+
+### Running the Yarn frontend build
+
+To run the Yarn frontend build, after [building the WAR file](#building-the-war-file), add the downloaded versions of Node and Yarn to your path:
+
+```sh
+export PATH=$PWD/war/node:$PWD/war/node/yarn/dist/bin:$PATH
+```
+
+Then you can run Yarn with e.g.
+
+```sh
+cd war
+yarn
+```
 
 ### Building frontend assets
 
@@ -55,13 +72,14 @@ To work on the `war` module frontend assets, two processes are needed at the sam
 On one terminal, start a development server that will not process frontend assets:
 
 ```sh
-mvn -pl war jetty:run -Dskip.yarn
+MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run -Dskip.yarn
 ```
 
-On another terminal, move to the war folder and start a [webpack](https://webpack.js.org/) dev server:
+On another terminal, move to the `war` folder and start a [webpack](https://webpack.js.org/) dev server, after [adding Node and Yarn to your path](#running-the-yarn-frontend-build):
 
 ```sh
-cd war; yarn start
+cd war
+yarn start
 ```
 
 ### Gitpod
@@ -86,11 +104,24 @@ For linting we use a number of tools:
 
 These are all configured to run as part of the Maven build, although they will be skipped if you are building with the `quick-build` profile.
 
-To automatically fix most issues run:
+To automatically fix backend issues, run:
 
-```bash
+```sh
 mvn spotless:apply
-mvn -pl war frontend:yarn -Dfrontend.yarn.arguments=lint:fix
+```
+
+To view frontend issues, after [adding Node and Yarn to your path](#running-the-yarn-frontend-build), run:
+
+```sh
+cd war
+yarn lint
+```
+
+To fix frontend issues, after [adding Node and Yarn to your path](#running-the-yarn-frontend-build), run:
+
+```sh
+cd war
+yarn lint:fix
 ```
 
 ## Testing changes
@@ -110,14 +141,6 @@ There are 3 profiles for tests:
 In addition to the included tests, you can also find extra integration and UI
 tests in the [Acceptance Test Harness (ATH)](https://github.com/jenkinsci/acceptance-test-harness) repository.
 If you propose complex UI changes, you should create new ATH tests for them.
-
-### JavaScript unit tests
-
-In case there's only need to run the JS tests:
-
-```sh
-cd war; yarn test
-```
 
 ## Proposing Changes
 

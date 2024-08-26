@@ -43,7 +43,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * as the catch-all "unclassified".) Categories themselves are extensible &mdash; plugins may introduce
  * its own category as well, although that should only happen if you are creating a big enough subsystem.
  *
- * @since TODO
+ * @since 2.468
  * @see UserProperty
  */
 public abstract class UserPropertyCategory implements ExtensionPoint, ModelObject {

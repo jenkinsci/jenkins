@@ -25,7 +25,6 @@
 
 package hudson.model;
 
-import static hudson.model.queue.Executables.getParentOf;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
@@ -39,9 +38,6 @@ import hudson.XmlFile;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.model.queue.SubTask;
-import hudson.model.queue.Tasks;
-import hudson.model.queue.WorkUnit;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
@@ -57,12 +53,8 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -705,11 +697,13 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      *
      * <p>
      * Any exception indicates the deletion has failed, but {@link AbortException} would prevent the caller
-     * from showing the stack trace. This
+     * from showing the stack trace.
+     * @see ItemDeletion
      */
     @Override
     public void delete() throws IOException, InterruptedException {
         checkPermission(DELETE);
+        ItemListener.checkBeforeDelete(this);
         boolean responsibleForAbortingBuilds = !ItemDeletion.contains(this);
         boolean ownsRegistration = ItemDeletion.register(this);
         if (!ownsRegistration && ItemDeletion.isRegistered(this)) {
@@ -719,87 +713,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         try {
             // if a build is in progress. Cancel it.
             if (responsibleForAbortingBuilds || ownsRegistration) {
-                Queue queue = Queue.getInstance();
-                if (this instanceof Queue.Task) {
-                    // clear any items in the queue so they do not get picked up
-                    queue.cancel((Queue.Task) this);
-                }
-                // now cancel any child items - this happens after ItemDeletion registration, so we can use a snapshot
-                for (Queue.Item i : queue.getItems()) {
-                    Item item = Tasks.getItemOf(i.task);
-                    while (item != null) {
-                        if (item == this) {
-                            if (!queue.cancel(i)) {
-                                LOGGER.warning(() -> "failed to cancel " + i);
-                            }
-                            break;
-                        }
-                        if (item.getParent() instanceof Item) {
-                            item = (Item) item.getParent();
-                        } else {
-                            break;
-                        }
-                    }
-                }
-                // interrupt any builds in progress (and this should be a recursive test so that folders do not pay
-                // the 15 second delay for every child item). This happens after queue cancellation, so will be
-                // a complete set of builds in flight
-                Map<Executor, Queue.Executable> buildsInProgress = new LinkedHashMap<>();
-                for (Computer c : Jenkins.get().getComputers()) {
-                    for (Executor e : c.getAllExecutors()) {
-                        final WorkUnit workUnit = e.getCurrentWorkUnit();
-                        final Queue.Executable executable = workUnit != null ? workUnit.getExecutable() : null;
-                        final SubTask subtask = executable != null ? getParentOf(executable) : null;
-
-                        if (subtask != null) {
-                            Item item = Tasks.getItemOf(subtask);
-                            while (item != null) {
-                                if (item == this) {
-                                    buildsInProgress.put(e, e.getCurrentExecutable());
-                                    e.interrupt(Result.ABORTED);
-                                    break;
-                                }
-                                if (item.getParent() instanceof Item) {
-                                    item = (Item) item.getParent();
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (!buildsInProgress.isEmpty()) {
-                    // give them 15 seconds or so to respond to the interrupt
-                    long expiration = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
-                    // comparison with executor.getCurrentExecutable() == computation currently should always be true
-                    // as we no longer recycle Executors, but safer to future-proof in case we ever revisit recycling
-                    while (!buildsInProgress.isEmpty() && expiration - System.nanoTime() > 0L) {
-                        // we know that ItemDeletion will prevent any new builds in the queue
-                        // ItemDeletion happens-before Queue.cancel so we know that the Queue will stay clear
-                        // Queue.cancel happens-before collecting the buildsInProgress list
-                        // thus buildsInProgress contains the complete set we need to interrupt and wait for
-                        for (Iterator<Map.Entry<Executor, Queue.Executable>> iterator =
-                             buildsInProgress.entrySet().iterator();
-                             iterator.hasNext(); ) {
-                            Map.Entry<Executor, Queue.Executable> entry = iterator.next();
-                            // comparison with executor.getCurrentExecutable() == executable currently should always be
-                            // true as we no longer recycle Executors, but safer to future-proof in case we ever
-                            // revisit recycling.
-                            if (!entry.getKey().isAlive()
-                                    || entry.getValue() != entry.getKey().getCurrentExecutable()) {
-                                iterator.remove();
-                            }
-                            // I don't know why, but we have to keep interrupting
-                            entry.getKey().interrupt(Result.ABORTED);
-                        }
-                        Thread.sleep(50L);
-                    }
-                    if (!buildsInProgress.isEmpty()) {
-                        throw new Failure(Messages.AbstractItem_FailureToStopBuilds(
-                                buildsInProgress.size(), getFullDisplayName()
-                        ));
-                    }
-                }
+                ItemDeletion.cancelBuildsInProgress(this);
             }
             if (this instanceof ItemGroup) {
                 // delete individual items first
