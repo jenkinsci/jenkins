@@ -99,6 +99,13 @@ THE SOFTWARE.
                         </span>
                       </a>
                     </div>
+                    <j:if test="${p.hasMandatoryDependencies()}">
+                      <div class="dependency-list">
+                        <j:forEach var="dependency" items="${p.mandatoryDependencies}">
+                          <span data-plugin-id="${dependency.shortName}" />
+                        </j:forEach>
+                      </div>
+                    </j:if>
                     <div class="jenkins-!-margin-top-1">
                       <j:set var="indexPage" value="${p.indexPage.toString()}"/>
                       <j:set var="excerpt"
