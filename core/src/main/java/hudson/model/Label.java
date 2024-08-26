@@ -591,7 +591,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public static Set<LabelAtom> parse(@CheckForNull String labels) {
         final Set<LabelAtom> r = new TreeSet<>();
         labels = fixNull(labels);
-        if (labels.length() > 0) {
+        if (!labels.isEmpty()) {
             Jenkins j = Jenkins.get();
             LabelAtom labelAtom = j.tryGetLabelAtom(labels);
             if (labelAtom == null) {

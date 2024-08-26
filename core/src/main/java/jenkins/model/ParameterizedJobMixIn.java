@@ -218,6 +218,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
 
         Queue.Item item = Jenkins.get().getQueue().schedule2(asJob(), delay.getTimeInSeconds(), getBuildCause(asJob(), req)).getItem();
         if (item != null) {
+            // TODO JENKINS-66105 use SC_SEE_OTHER if !ScheduleResult.created
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
         } else {
             rsp.sendRedirect(".");
@@ -346,7 +347,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
          * (Would have been done entirely as an interface with default methods had this been designed for Java 8.)
          */
         default ParameterizedJobMixIn<JobT, RunT> getParameterizedJobMixIn() {
-            return new ParameterizedJobMixIn<JobT, RunT>() {
+            return new ParameterizedJobMixIn<>() {
                 @SuppressWarnings("unchecked") // untypable
                 @Override protected JobT asJob() {
                     return (JobT) ParameterizedJob.this;

@@ -34,7 +34,7 @@ public class DownloadServiceTest {
     private static void assertRoots(String expected, URL resource) throws Exception {
         assertNotNull(resource);
         JSONObject json = JSONObject.fromObject(DownloadService.loadJSON(resource));
-        @SuppressWarnings("unchecked") Set<String> keySet = json.keySet();
+        Set<String> keySet = json.keySet();
         assertEquals(expected, new TreeSet<>(keySet).toString());
     }
 

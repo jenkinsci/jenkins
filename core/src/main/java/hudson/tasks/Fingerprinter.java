@@ -182,7 +182,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
             Map<String, String> record = new HashMap<>();
 
-            if (targets.length() != 0) {
+            if (!targets.isEmpty()) {
                 String expandedTargets = targets;
                 if (build instanceof AbstractBuild) { // no expansion for pipelines
                     expandedTargets = environment.expand(expandedTargets);

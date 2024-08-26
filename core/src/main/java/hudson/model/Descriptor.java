@@ -294,8 +294,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
 
         // detect an type error
         Type bt = Types.getBaseClass(getClass(), Descriptor.class);
-        if (bt instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) bt;
+        if (bt instanceof ParameterizedType pt) {
             // this 't' is the closest approximation of T of Descriptor<T>.
             Class t = Types.erasure(pt.getActualTypeArguments()[0]);
             if (!t.isAssignableFrom(clazz))
@@ -595,6 +594,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
                 return verifyNewInstance(bindJSON(req, clazz, formData, true));
             }
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | RuntimeException e) {
+            if (e instanceof RuntimeException && e instanceof HttpResponse) {
+                throw (RuntimeException) e;
+            }
             throw new LinkageError("Failed to instantiate " + clazz + " from " + RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(formData), e);
         }
     }
@@ -675,7 +677,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
                                 + actualType.getName() + " " + json);
                     }
                 } catch (Exception x) {
-                    LOGGER.log(Level.WARNING, "falling back to default instantiation " + actualType.getName() + " " + json, x);
+                    LOGGER.log(x instanceof HttpResponse ? Level.FINE : Level.WARNING, "falling back to default instantiation " + actualType.getName() + " " + json, x);
                     // If nested objects are not using newInstance, bindJSON will wind up throwing the same exception anyway,
                     // so logging above will result in a duplicated stack trace.
                     // However if they *are* then this is the only way to find errors in that newInstance.
@@ -688,8 +690,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
 
         @Override
         public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
-            if (jsonSource instanceof JSONObject) {
-                JSONObject json = (JSONObject) jsonSource;
+            if (jsonSource instanceof JSONObject json) {
                 if (isApplicable(targetTypeErasure, json)) {
                     LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
                     try {
@@ -895,8 +896,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
     protected List<String> getPossibleViewNames(String baseName) {
         List<String> names = new ArrayList<>();
         for (Facet f : WebApp.get(Jenkins.get().servletContext).facets) {
-            if (f instanceof JellyCompatibleFacet) {
-                JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
+            if (f instanceof JellyCompatibleFacet jcf) {
                 for (String ext : jcf.getScriptExtensions())
                     names.add(baseName + ext);
             }
