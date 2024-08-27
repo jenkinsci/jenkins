@@ -39,7 +39,7 @@ THE SOFTWARE.
         <st:statusCode value="${response.getStatus()}" />
         <html>
             <head>
-                <title>${%title(javax.servlet.error.message?:'Not Found')}</title>
+                <title>${%title(jakarta.servlet.error.message?:'Not Found')}</title>
                 <link rel="icon" href="${resURL}/favicon.svg" type="image/svg+xml" />
                 <link rel="alternate icon" href="${resURL}/favicon.ico" sizes="any" />
                 <!-- TODO Determine need for these -->
@@ -52,7 +52,7 @@ THE SOFTWARE.
                     <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
                 </h1>
                 <div style="text-align: center">
-                    <h2>${%title(javax.servlet.error.message?:'Not Found')}</h2>
+                    <h2>${%title(jakarta.servlet.error.message?:'Not Found')}</h2>
                     <a href="${h.inferHudsonURL(request)}">${%Back to Jenkins}</a>
                 </div>
             </body>

@@ -37,6 +37,10 @@ import hudson.model.FreeStyleProject;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
 import hudson.util.StreamTaskListener;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -46,10 +50,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
@@ -68,8 +68,8 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 public class CLITest {
 
@@ -150,11 +150,11 @@ public class CLITest {
         }
 
         @Override public Object getTarget() {
-            doDynamic(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
+            doDynamic(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
             return this;
         }
 
-        public void doDynamic(StaplerRequest req, StaplerResponse rsp) {
+        public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) {
             rsp.setStatus(200);
         }
 
@@ -230,15 +230,15 @@ public class CLITest {
         }
 
         @Override public Object getTarget() {
-            throw doDynamic(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
+            throw doDynamic(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
         }
 
-        public HttpResponses.HttpResponseException doDynamic(StaplerRequest req, StaplerResponse rsp) {
+        public HttpResponses.HttpResponseException doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) {
             final String url = req.getRequestURIWithQueryString().replaceFirst("/cli-proxy", "");
             // Custom written redirect so no traces of Jenkins are present in headers
             return new HttpResponses.HttpResponseException() {
                 @Override
-                public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException {
+                public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException {
                     rsp.setHeader("Location", url);
                     rsp.setContentType("text/html");
                     rsp.setStatus(HttpURLConnection.HTTP_MOVED_TEMP);

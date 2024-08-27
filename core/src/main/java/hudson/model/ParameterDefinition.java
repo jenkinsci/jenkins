@@ -41,6 +41,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -59,7 +60,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <p>
  * Three classes are used to model build parameters. First is the
  * {@link ParameterDescriptor}, which tells Hudson what kind of implementations are
- * available. From {@link ParameterDescriptor#newInstance(StaplerRequest, JSONObject)},
+ * available. From {@link ParameterDescriptor#newInstance(StaplerRequest2, JSONObject)},
  * Hudson creates {@link ParameterDefinition}s based on the job configuration.
  * For example, if the user defines two string parameters "database-type" and
  * "appserver-type", we'll get two {@link StringParameterDefinition} instances
@@ -69,7 +70,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * When a job is configured with {@link ParameterDefinition} (or more precisely,
  * {@link ParametersDefinitionProperty}, which in turns retains {@link ParameterDefinition}s),
  * user would have to enter the values for the defined build parameters.
- * The {@link #createValue(StaplerRequest, JSONObject)} method is used to convert this
+ * The {@link #createValue(StaplerRequest2, JSONObject)} method is used to convert this
  * form submission into {@link ParameterValue} objects, which are then accessible
  * during a build.
  *
@@ -85,12 +86,12 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <h3>config.jelly</h3>
  * {@link ParameterDefinition} class uses {@code config.jelly} to contribute a form
  * fragment in the job configuration screen. Values entered there are fed back to
- * {@link ParameterDescriptor#newInstance(StaplerRequest, JSONObject)} to create {@link ParameterDefinition}s.
+ * {@link ParameterDescriptor#newInstance(StaplerRequest2, JSONObject)} to create {@link ParameterDefinition}s.
  *
  * <h3>index.jelly</h3>
  * The {@code index.jelly} view contributes a form fragment in the page where the user
  * enters actual values of parameters for a build. The result of this form submission
- * is then fed to {@link ParameterDefinition#createValue(StaplerRequest, JSONObject)} to
+ * is then fed to {@link ParameterDefinition#createValue(StaplerRequest2, JSONObject)} to
  * create {@link ParameterValue}s.
  *
  * @see StringParameterDefinition
@@ -183,14 +184,37 @@ public abstract class ParameterDefinition implements
      * and submits it to the server.
      */
     @CheckForNull
-    public abstract ParameterValue createValue(StaplerRequest req, JSONObject jo);
+    public /* abstract */ ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
+        return Util.ifOverridden(
+                () -> createValue(StaplerRequest.fromStaplerRequest2(req), jo),
+                ParameterDefinition.class,
+                getClass(),
+                "createValue",
+                StaplerRequest.class,
+                JSONObject.class);
+    }
+
+    /**
+     * @deprecated use {@link #createValue(StaplerRequest2, JSONObject)}
+     */
+    @CheckForNull
+    @Deprecated
+    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+        return Util.ifOverridden(
+                () -> createValue(StaplerRequest.toStaplerRequest2(req), jo),
+                ParameterDefinition.class,
+                getClass(),
+                "createValue",
+                StaplerRequest2.class,
+                JSONObject.class);
+    }
 
     /**
      * Create a parameter value from a GET with query string.
      * If no value is available in the request, it returns a default value if possible, or null.
      *
      * <p>
-     * Unlike {@link #createValue(StaplerRequest, JSONObject)}, this method is intended to support
+     * Unlike {@link #createValue(StaplerRequest2, JSONObject)}, this method is intended to support
      * the programmatic POST-ing of the build URL. This form is less expressive (as it doesn't support
      * the tree form), but it's more scriptable.
      *
@@ -202,8 +226,28 @@ public abstract class ParameterDefinition implements
      *      If the parameter is deemed required but was missing in the submission.
      */
     @CheckForNull
-    public abstract ParameterValue createValue(StaplerRequest req);
+    public /* abstract */ ParameterValue createValue(StaplerRequest2 req) {
+        return Util.ifOverridden(
+                () -> createValue(StaplerRequest.fromStaplerRequest2(req)),
+                ParameterDefinition.class,
+                getClass(),
+                "createValue",
+                StaplerRequest.class);
+    }
 
+    /**
+     * @deprecated use {@link #createValue(StaplerRequest2)}
+     */
+    @CheckForNull
+    @Deprecated
+    public ParameterValue createValue(StaplerRequest req) {
+        return Util.ifOverridden(
+                () -> createValue(StaplerRequest.toStaplerRequest2(req)),
+                ParameterDefinition.class,
+                getClass(),
+                "createValue",
+                StaplerRequest2.class);
+    }
 
     /**
      * Create a parameter value from the string given in the CLI.

@@ -24,11 +24,13 @@
 
 package jenkins.model;
 
+import hudson.Util;
 import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Job property which may or may not be present.
@@ -52,10 +54,22 @@ public abstract class OptionalJobProperty<J extends Job<?, ?>> extends JobProper
         protected OptionalJobPropertyDescriptor() {}
 
         @Override
+        public JobProperty<?> newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
+            if (Util.isOverridden(OptionalJobPropertyDescriptor.class, getClass(), "newInstance", StaplerRequest.class, JSONObject.class)) {
+                return newInstance(req != null ? StaplerRequest.fromStaplerRequest2(req) : null, formData);
+            } else {
+                return formData.optBoolean("specified") ? super.newInstance(req, formData) : null;
+            }
+        }
+
+        /**
+         * @deprecated use {@link #newInstance(StaplerRequest2, JSONObject)}
+         */
+        @Deprecated
+        @Override
         public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return formData.optBoolean("specified") ? super.newInstance(req, formData) : null;
         }
-
     }
 
 }

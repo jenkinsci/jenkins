@@ -92,7 +92,7 @@ public class OldDataMonitorTest {
     /**
      * Note that this doesn't actually run slowly, it just ensures that
      * the {@link OldDataMonitor#changeListener}'s {@code onChange()} can complete
-     * while {@link OldDataMonitor#doDiscard(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)}
+     * while {@link OldDataMonitor#doDiscard(org.kohsuke.stapler.StaplerRequest2, org.kohsuke.stapler.StaplerResponse2)}
      * is still running.
      *
      */
@@ -114,7 +114,7 @@ public class OldDataMonitorTest {
         ExecutorService executors = Executors.newSingleThreadExecutor();
 
         Future<Void> discardFuture = executors.submit(() -> {
-            oldDataMonitor.doDiscard(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
+            oldDataMonitor.doDiscard(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
             return null;
         });
 

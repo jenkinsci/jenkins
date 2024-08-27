@@ -50,7 +50,7 @@ public class ReloadConfigurationCommand extends CLICommand {
         // Or perhaps simpler to inline the thread body of doReload?
         j.doReload();
         Object app;
-        while ((app = WebApp.get(j.servletContext).getApp()) instanceof HudsonIsLoading) {
+        while ((app = WebApp.get(j.getServletContext()).getApp()) instanceof HudsonIsLoading) {
             Thread.sleep(100);
         }
         if (app instanceof Jenkins) {

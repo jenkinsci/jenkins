@@ -76,7 +76,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * {@link BuildCommand} test.
@@ -274,7 +274,7 @@ public class BuildCommandTest {
         }
 
         @Override
-        public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+        public ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
             return createValue("BAR");
         }
 

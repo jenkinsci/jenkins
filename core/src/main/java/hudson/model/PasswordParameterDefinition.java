@@ -36,7 +36,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Parameter whose value is a {@link Secret} and is hidden from the UI.
@@ -80,7 +80,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
-    public PasswordParameterValue createValue(StaplerRequest req, JSONObject jo) {
+    public PasswordParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
         PasswordParameterValue value = req.bindJSON(PasswordParameterValue.class, jo);
         if (value.getValue().getPlainText().equals(DEFAULT_VALUE)) {
             value = new PasswordParameterValue(getName(), getDefaultValue());

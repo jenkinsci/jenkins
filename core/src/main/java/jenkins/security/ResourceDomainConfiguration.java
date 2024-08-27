@@ -31,6 +31,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
 import hudson.util.FormValidation;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -43,7 +44,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
 import jenkins.diagnostics.RootUrlNotSetMonitor;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
@@ -57,7 +57,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.verb.POST;
 
 /**
@@ -134,7 +134,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
             return FormValidation.error(Messages.ResourceDomainConfiguration_InvalidRootURL(ex.getMessage()));
         }
 
-        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
         if (currentRequest != null) {
             String currentRequestHost = currentRequest.getServerName();
 

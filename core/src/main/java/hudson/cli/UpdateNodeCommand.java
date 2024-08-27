@@ -26,8 +26,8 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.Node;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
-import javax.servlet.ServletException;
 import org.kohsuke.args4j.Argument;
 
 /**

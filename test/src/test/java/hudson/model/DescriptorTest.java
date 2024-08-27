@@ -49,7 +49,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class DescriptorTest {
@@ -115,7 +115,7 @@ public class DescriptorTest {
             return id;
         }
 
-        @Override public Builder newInstance(StaplerRequest req, JSONObject formData) {
+        @Override public Builder newInstance(StaplerRequest2 req, JSONObject formData) {
             return new BuilderImpl(id);
         }
 
@@ -213,7 +213,7 @@ public class DescriptorTest {
             return id;
         }
 
-        @Override public D3 newInstance(StaplerRequest req, JSONObject formData) {
+        @Override public D3 newInstance(StaplerRequest2 req, JSONObject formData) {
             return new D3(id);
         }
     }
@@ -242,7 +242,7 @@ public class DescriptorTest {
         final Descriptor.FormException fe = new Descriptor.FormException("My Message", cause, "fake");
         FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () ->
             rule.executeOnServer((Callable<Void>) () -> {
-                fe.generateResponse(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), Jenkins.get());
+                fe.generateResponse(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2(), Jenkins.get());
                 return null;
             }));
         String response = ex.getResponse().getContentAsString();

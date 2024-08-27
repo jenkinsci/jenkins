@@ -24,20 +24,22 @@
 
 package jenkins.security.stapler;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.json.JsonBody;
@@ -49,10 +51,14 @@ final class WebMethodConstants {
      * If a method has at least one of those parameters, it is considered as an implicit web method
      */
     private static final List<Class<?>> WEB_METHOD_PARAMETERS = List.of(
+            StaplerRequest2.class,
             StaplerRequest.class,
             HttpServletRequest.class,
+            javax.servlet.http.HttpServletRequest.class,
+            StaplerResponse2.class,
             StaplerResponse.class,
-            HttpServletResponse.class
+            HttpServletResponse.class,
+            javax.servlet.http.HttpServletResponse.class
     );
 
     static final Set<String> WEB_METHOD_PARAMETERS_NAMES = Collections.unmodifiableSet(

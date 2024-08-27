@@ -28,15 +28,15 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletException;
 import org.jvnet.tiger_types.Types;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 
 /**
@@ -113,12 +113,12 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
      * Serves the JavaScript file associated with this console annotator factory.
      */
     @WebMethod(name = "script.js")
-    public void doScriptJs(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doScriptJs(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         rsp.serveFile(req, getResource("/script.js"), TimeUnit.DAYS.toMillis(1));
     }
 
     @WebMethod(name = "style.css")
-    public void doStyleCss(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doStyleCss(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         rsp.serveFile(req, getResource("/style.css"), TimeUnit.DAYS.toMillis(1));
     }
 

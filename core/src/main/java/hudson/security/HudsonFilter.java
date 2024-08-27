@@ -26,17 +26,18 @@ package hudson.security;
 
 import static java.util.logging.Level.SEVERE;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.logging.Logger;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.CompatibleFilter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.RememberMeServices;
@@ -52,7 +53,7 @@ import org.springframework.security.web.authentication.RememberMeServices;
  * @author Kohsuke Kawaguchi
  * @since 1.160
  */
-public class HudsonFilter implements Filter {
+public class HudsonFilter implements CompatibleFilter {
     /**
      * The SecurityRealm specific filter.
      */

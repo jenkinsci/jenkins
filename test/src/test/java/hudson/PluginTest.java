@@ -25,9 +25,9 @@
 package hudson;
 
 import hudson.model.UpdateCenter;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.concurrent.Future;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import org.junit.Ignore;
 import org.junit.Rule;

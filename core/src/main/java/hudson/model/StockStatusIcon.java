@@ -29,9 +29,9 @@ public final class StockStatusIcon extends AbstractStatusIcon {
     @Override
     public String getImageOf(String size) {
         if (image.endsWith(".svg")) {
-            return Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH + "/images/svgs/" + image;
+            return Stapler.getCurrentRequest2().getContextPath() + Jenkins.RESOURCE_PATH + "/images/svgs/" + image;
         } else {
-            return Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH +
+            return Stapler.getCurrentRequest2().getContextPath() + Jenkins.RESOURCE_PATH +
                 "/images/" + size + "/" + image;
         }
     }

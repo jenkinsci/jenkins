@@ -97,8 +97,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -381,7 +381,7 @@ public class DirectoryBrowserSupportTest {
             return null;
         }
 
-        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws Exception {
+        public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws Exception {
             String hash = req.getRestOfPath().substring(1);
             for (byte[] file : files) {
                 if (Util.getDigestOf(new ByteArrayInputStream(file)).equals(hash)) {

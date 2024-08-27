@@ -34,14 +34,14 @@ import hudson.model.Node;
 import hudson.model.Slave;
 import hudson.util.DescriptorList;
 import hudson.util.FormValidation;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * {@link Descriptor} for {@link Slave}.
@@ -83,7 +83,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
      * @param name
      *      Name of the new node.
      */
-    public void handleNewNodePage(ComputerSet computerSet, String name, StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void handleNewNodePage(ComputerSet computerSet, String name, StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         computerSet.checkName(name);
         req.setAttribute("descriptor", this);
         req.getView(computerSet, "_new.jelly").forward(req, rsp);

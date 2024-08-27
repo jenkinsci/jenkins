@@ -38,7 +38,7 @@ import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.EvaluationTrace;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Telemetry implementation gathering information about Stapler dispatch routes.
@@ -86,7 +86,7 @@ public class StaplerDispatches extends Telemetry {
     public static class StaplerTrace extends EvaluationTrace.ApplicationTracer {
 
         @Override
-        protected void record(StaplerRequest staplerRequest, String s) {
+        protected void record(StaplerRequest2 staplerRequest, String s) {
             if (Telemetry.isDisabled()) {
                 // do not collect traces while usage statistics are disabled
                 return;

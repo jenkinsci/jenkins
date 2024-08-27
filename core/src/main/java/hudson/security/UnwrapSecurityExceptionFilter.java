@@ -24,14 +24,14 @@
 
 package hudson.security;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import java.io.IOException;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import org.apache.commons.jelly.JellyTagException;
+import org.kohsuke.stapler.CompatibleFilter;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
@@ -43,7 +43,7 @@ import org.springframework.security.web.access.ExceptionTranslationFilter;
  *
  * @author Kohsuke Kawaguchi
  */
-public class UnwrapSecurityExceptionFilter implements Filter {
+public class UnwrapSecurityExceptionFilter implements CompatibleFilter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }

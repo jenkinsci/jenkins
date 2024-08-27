@@ -26,17 +26,17 @@ package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.security.UnwrapSecurityExceptionFilter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import java.io.IOException;
 import java.util.function.Function;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import org.acegisecurity.AcegiSecurityException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CompatibleFilter;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 
 /**
@@ -44,7 +44,7 @@ import org.springframework.security.web.access.ExceptionTranslationFilter;
  * Used by other filters like {@link UnwrapSecurityExceptionFilter} and {@link ExceptionTranslationFilter}.
  */
 @Restricted(NoExternalUse.class)
-public class AcegiSecurityExceptionFilter implements Filter {
+public class AcegiSecurityExceptionFilter implements CompatibleFilter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {

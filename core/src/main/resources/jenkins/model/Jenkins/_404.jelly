@@ -29,8 +29,8 @@ THE SOFTWARE.
       Generally kept very similar to 'oops.jelly'.
     -->
     <st:statusCode value="${response.getStatus()}" />
-    ${request.session.setAttribute('from', request.getAttribute('javax.servlet.error.request_uri'))}
-    <l:layout title="${%title(javax.servlet.error.message?:'Not Found')}" type="one-column">
+    ${request.session.setAttribute('from', request.getAttribute('jakarta.servlet.error.request_uri'))}
+    <l:layout title="${%title(jakarta.servlet.error.message?:'Not Found')}" type="one-column">
         <l:header />
         <l:main-panel>
             <h1 style="text-align: center">
@@ -38,7 +38,7 @@ THE SOFTWARE.
                 <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
             </h1>
             <div id="error-description" style="text-align: center">
-                <h2>${%title(javax.servlet.error.message?:'Not Found')}</h2>
+                <h2>${%title(jakarta.servlet.error.message?:'Not Found')}</h2>
                 <j:if test="${!request.getAttribute('jenkins.security.ResourceDomainRootAction.error')}">
 	                <p>
 	                    <j:choose>

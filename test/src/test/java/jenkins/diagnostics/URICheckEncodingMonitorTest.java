@@ -22,7 +22,7 @@ public class URICheckEncodingMonitorTest {
     public void emptyValueInResponse() throws Exception {
         j.executeOnServer(() -> {
                 URICheckEncodingMonitor monitor = new URICheckEncodingMonitor();
-                FormValidation validation = monitor.doCheckURIEncoding(Stapler.getCurrentRequest());
+                FormValidation validation = monitor.doCheckURIEncoding(Stapler.getCurrentRequest2());
                 assertThat(validation.kind, is(FormValidation.Kind.WARNING));
                 assertThat(validation.getMessage(), containsString("Your container doesn’t use UTF-8 to decode URLs."));
                 return null;
