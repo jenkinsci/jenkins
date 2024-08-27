@@ -328,7 +328,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* not final for Groovy */ int VALID_FOR_MINUTES = SystemProperties.getInteger(ResourceDomainRootAction.class.getName() + ".validForMinutes", 30);
 
-    /* Escape hatch for a fix part of SECURITY-3314 / CVE-2024-23897 (Variant 2) */
+    /* Escape hatch for a security hardening preventing one of the known ways to elevate arbitrary file read to RCE */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* not final for Groovy */ boolean ALLOW_AUTHENTICATED_USER = SystemProperties.getBoolean(ResourceDomainRootAction.class.getName() + ".allowAuthenticatedUser", false);
 }
