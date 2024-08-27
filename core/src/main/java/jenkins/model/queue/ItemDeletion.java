@@ -198,7 +198,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
      * Cancels any builds in progress of this item (if a job) or descendants (if a folder).
      * Also cancels any associated queue items.
      * @param initiatingItem an item being deleted
-     * @since TODO
+     * @since 2.470
      */
     public static void cancelBuildsInProgress(@NonNull Item initiatingItem) throws Failure, InterruptedException {
         Queue queue = Queue.getInstance();

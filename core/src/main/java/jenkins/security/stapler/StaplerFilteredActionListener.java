@@ -50,7 +50,7 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
 
     @Override
     public boolean onDoActionTrigger(Function f, StaplerRequest req, StaplerResponse rsp, Object node) {
-        LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
+        LOGGER.log(Level.FINER, LOG_MESSAGE, new Object[]{
                 req.getPathInfo(),
                 f.getSignature(),
         });
@@ -59,7 +59,7 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
 
     @Override
     public boolean onGetterTrigger(Function f, StaplerRequest req, StaplerResponse rsp, Object node, String expression) {
-        LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
+        LOGGER.log(Level.FINER, LOG_MESSAGE, new Object[]{
                 req.getPathInfo(),
                 f.getSignature(),
         });
@@ -68,7 +68,7 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
 
     @Override
     public boolean onFieldTrigger(FieldRef f, StaplerRequest req, StaplerResponse staplerResponse, Object node, String expression) {
-        LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
+        LOGGER.log(Level.FINER, LOG_MESSAGE, new Object[]{
                 req.getPathInfo(),
                 f.getSignature(),
         });
@@ -77,7 +77,7 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
 
     @Override
     public boolean onDispatchTrigger(StaplerRequest req, StaplerResponse rsp, Object node, String viewName) {
-        LOGGER.warning(() -> "New Stapler dispatch rules result in the URL \"" + req.getPathInfo() + "\" no longer being allowed. " +
+        LOGGER.finer(() -> "New Stapler dispatch rules result in the URL \"" + req.getPathInfo() + "\" no longer being allowed. " +
                 "If you consider it safe to use, add the following to the whitelist: \"" + node.getClass().getName() + " " + viewName + "\". " +
                 "Learn more: https://www.jenkins.io/redirect/stapler-facet-restrictions");
         return false;

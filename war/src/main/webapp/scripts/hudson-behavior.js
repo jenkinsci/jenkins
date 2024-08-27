@@ -954,9 +954,9 @@ function makeButton(e, onclick) {
   classNames.remove("primary");
   classNames.remove("submit-button");
   classNames.remove("yui-button");
-  classNames.forEach((cn) => {
-    button.classList.add(cn);
-  });
+  for (let i = 0; i < classNames.length; i++) {
+    button.classList.add(classNames.item(i));
+  }
 
   function Button(button) {
     this.button = button;
@@ -1329,49 +1329,6 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
       registerRegexpValidator(e, /^[1-9]\d*$/, "Not a positive integer");
-    },
-  );
-
-  Behaviour.specify(
-    "INPUT.auto-complete",
-    "input-auto-complete",
-    ++p,
-    function (e) {
-      // form field with auto-completion support
-      // insert the auto-completion container
-      var div = document.createElement("DIV");
-      e.parentNode.insertBefore(div, e.nextElementSibling);
-      e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
-
-      var ds = new YAHOO.util.XHRDataSource(e.getAttribute("autoCompleteUrl"));
-      ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
-      ds.responseSchema = {
-        resultsList: "suggestions",
-        fields: ["name"],
-      };
-
-      // Instantiate the AutoComplete
-      var ac = new YAHOO.widget.AutoComplete(e, div, ds);
-      ac.generateRequest = function (query) {
-        return "?value=" + query;
-      };
-      ac.autoHighlight = false;
-      ac.prehighlightClassName = "yui-ac-prehighlight";
-      ac.animSpeed = 0;
-      ac.formatResult = ac.formatEscapedResult;
-      ac.useShadow = true;
-      ac.autoSnapContainer = true;
-      ac.delimChar = e.getAttribute("autoCompleteDelimChar");
-      ac.doBeforeExpandContainer = function (textbox, container) {
-        // adjust the width every time we show it
-        container.style.width = textbox.clientWidth + "px";
-        var Dom = YAHOO.util.Dom;
-        Dom.setXY(container, [
-          Dom.getX(textbox),
-          Dom.getY(textbox) + textbox.offsetHeight,
-        ]);
-        return true;
-      };
     },
   );
 
