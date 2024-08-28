@@ -1095,6 +1095,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     protected void removeExecutor(final Executor e) {
         final Runnable task = () -> {
+            var idle = false;
             synchronized (Computer.this) {
                 executors.remove(e);
                 oneOffExecutors.remove(e);
@@ -1104,9 +1105,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     if (ciBase != null) { // TODO confirm safe to assume non-null and use getInstance()
                         ciBase.removeComputer(Computer.this);
                     }
-                } else if (isIdle()) {
-                    threadPoolForRemoting.submit(() -> Listeners.notify(ComputerListener.class, false, l -> l.onIdle(this)));
+                } else {
+                    idle = isIdle();
                 }
+            }
+            if (idle) {
+                Listeners.notify(ComputerListener.class, false, l -> l.onIdle(this));
             }
         };
         if (!Queue.tryWithLock(task)) {
