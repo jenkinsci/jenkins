@@ -213,9 +213,7 @@ public class JNLPLauncher extends ComputerLauncher {
         sb.append("-name ");
         sb.append(computerName);
         sb.append(' ');
-        if (isWebSocket()) {
-            sb.append("-webSocket ");
-        }
+        sb.append("-webSocket ");
         if (tunnel != null) {
             sb.append(" -tunnel ");
             sb.append(tunnel);
