@@ -33,6 +33,7 @@ import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.ResourceActivity;
 import java.io.IOException;
+import jenkins.model.queue.ITask;
 
 /**
  * A component of {@link Queue.Task} that represents a computation carried out by a single {@link Executor}.
@@ -46,7 +47,7 @@ import java.io.IOException;
  *
  * @since 1.377
  */
-public interface SubTask extends ResourceActivity {
+public interface SubTask extends ResourceActivity, ITask {
     /**
      * If this task needs to be run on a node with a particular label,
      * return that {@link Label}. Otherwise null, indicating

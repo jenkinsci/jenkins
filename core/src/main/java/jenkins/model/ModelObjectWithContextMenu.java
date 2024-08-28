@@ -255,7 +255,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          *
          * @since 1.513
          */
-        public ContextMenu add(Computer c) {
+        public ContextMenu add(IComputer c) {
             return add(new MenuItem()
                 .withDisplayName(c.getDisplayName())
                 .withIconClass(c.getIconClassName())

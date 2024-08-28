@@ -30,6 +30,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.Initializer;
@@ -47,12 +49,14 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.IComputer;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
@@ -106,15 +110,34 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return monitors.toList();
     }
 
-    @Exported(name = "computer", inline = true)
+    /**
+     * @deprecated Use {@link #getComputers()} instead.
+     * @return All {@link Computer} instances managed by this set.
+     */
+    @Deprecated
     public Computer[] get_all() {
-        return Jenkins.get().getComputers();
+        return getComputers().stream().filter(Computer.class::isInstance).toArray(Computer[]::new);
+    }
+
+    /**
+     * @return All {@link IComputer} instances managed by this set.
+     */
+    @Exported(name = "computer", inline = true)
+    public Collection<? extends IComputer> getComputers() {
+        return ExtensionList.lookupFirst(ComputerSource.class).get();
+    }
+
+    /**
+     * Allows plugins to override the displayed list of computers.
+     */
+    public interface ComputerSource extends ExtensionPoint {
+        Collection<? extends IComputer> get();
     }
 
     @Override
     public ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         ContextMenu m = new ContextMenu();
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             m.add(c);
         }
         return m;
@@ -170,7 +193,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     @Exported
     public int getTotalExecutors() {
         int r = 0;
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             if (c.isOnline())
                 r += c.countExecutors();
         }
@@ -183,7 +206,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     @Exported
     public int getBusyExecutors() {
         int r = 0;
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             if (c.isOnline())
                 r += c.countBusy();
         }
@@ -195,7 +218,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     public int getIdleExecutors() {
         int r = 0;
-        for (Computer c : get_all())
+        for (IComputer c : getComputers())
             if ((c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
                 r += c.countIdle();
         return r;
@@ -214,7 +237,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     public void do_launchAll(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             if (c.isLaunchSupported())
                 c.connect(true);
         }
@@ -501,5 +524,13 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             LOGGER.log(Level.SEVERE, "Failed to instantiate " + d.clazz, e);
         }
         return null;
+    }
+
+    @Extension(ordinal = -1)
+    public static class ComputerSourceImpl implements ComputerSource {
+        @Override
+        public Collection<? extends IComputer> get() {
+            return Jenkins.get().getComputersCollection();
+        }
     }
 }

@@ -1,0 +1,180 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2024 CloudBees, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+package jenkins.model;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.model.Computer;
+import hudson.model.Node;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import java.util.List;
+import java.util.concurrent.Future;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+
+/**
+ * Interface for computer-like objects meant to be passed to {@code t:executors} tag.
+ *
+ * @since TODO
+ */
+@Restricted(Beta.class)
+public interface IComputer extends AccessControlled {
+    /**
+     * Returns {@link Node#getNodeName() the name of the node}.
+     */
+    @NonNull
+    String getName();
+
+    /**
+     * Used to render the list of executors.
+     * @return a snapshot of the executor display information
+     */
+    @NonNull
+    List<? extends IDisplayExecutor> getDisplayExecutors();
+
+    /**
+     * @return {@code true} if the node is offline. {@code false} if it is online.
+     */
+    boolean isOffline();
+
+    /**
+     * @return the node name for UI purposes.
+     */
+    @NonNull
+    String getDisplayName();
+
+    /**
+     * Returns {@code true} if the computer is accepting tasks. Needed to allow agents programmatic suspension of task
+     * scheduling that does not overlap with being offline.
+     *
+     * @return {@code true} if the computer is accepting tasks
+     * @see hudson.slaves.RetentionStrategy#isAcceptingTasks(Computer)
+     * @see hudson.model.Node#isAcceptingTasks()
+     */
+    boolean isAcceptingTasks();
+
+    /**
+     * @return the URL where to reach specifically this computer, relative to Jenkins URL.
+     */
+    @NonNull
+    String getUrl();
+
+    /**
+     * @return {@code true} if this computer has a defined offline cause, @{code false} otherwise.
+     */
+    default boolean hasOfflineCause() {
+        return getOfflineCauseReason() != null;
+    }
+
+    /**
+     * If the computer was offline (either temporarily or not),
+     * this method will return the cause as a string (without user info).
+     * <p>
+     * {@code hasOfflineCause() == true} implies this must be non-null.
+     *
+     * @return
+     *      empty string if the system was put offline without given a cause.
+     */
+    @Nullable
+    String getOfflineCauseReason();
+
+    /**
+     * @return true if the node is currently connecting to the Jenkins controller.
+     */
+    boolean isConnecting();
+
+    /**
+     * Returns the icon for this computer.
+     * <p>
+     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
+     *
+     * @see #getIconClassName()
+     */
+    String getIcon();
+
+    /**
+     * Returns the alternative text for the computer icon.
+     */
+    String getIconAltText();
+
+    /**
+     * Returns the class name that will be used to look up the icon.
+     * <p>
+     * This class name will be added as a class tag to the html img tags where the icon should
+     * show up followed by a size specifier given by {@link Icon#toNormalizedIconSizeClass(String)}
+     * The conversion of class tag to src tag is registered through {@link IconSet#addIcon(Icon)}
+     *
+     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
+     */
+    String getIconClassName();
+
+    /**
+     * Returns the number of {@link IExecutor}s that are doing some work right now.
+     */
+    int countBusy();
+    /**
+     * Returns the current size of the executor pool for this computer.
+     */
+    int countExecutors();
+
+    /**
+     * @return true if the computer is online.
+     */
+    boolean isOnline();
+    /**
+     * @return the number of {@link IExecutor}s that are idle right now.
+     */
+    int countIdle();
+
+    /**
+     * @return true if this computer can be launched by Jenkins proactively and automatically.
+     *
+     * <p>
+     * For example, inbound agents return {@code false} from this, because the launch process
+     * needs to be initiated from the agent side.
+     */
+    boolean isLaunchSupported();
+
+    /**
+     * Attempts to connect this computer.
+     *
+     * @param forceReconnect If true and a connect activity is already in progress, it will be cancelled and
+     *                       the new one will be started. If false, and a connect activity is already in progress, this method
+     *                       will do nothing and just return the pending connection operation.
+     * @return A {@link Future} representing pending completion of the task. The 'completion' includes
+     * both a successful completion and a non-successful completion (such distinction typically doesn't
+     * make much sense because as soon as {@link IComputer} is connected it can be disconnected by some other threads.)
+     */
+    Future<?> connect(boolean forceReconnect);
+
+    @NonNull
+    @Override
+    default ACL getACL() {
+        return Jenkins.get().getAuthorizationStrategy().getACL(this);
+    }
+}
