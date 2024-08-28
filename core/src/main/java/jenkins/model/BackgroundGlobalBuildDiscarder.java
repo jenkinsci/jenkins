@@ -57,12 +57,9 @@ public class BackgroundGlobalBuildDiscarder extends AsyncPeriodicWork {
     }
 
     public static void processJob(TaskListener listener, Job job) {
-        listener.getLogger().println("Processing " + job.getFullName());
         GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().forEach(strategy -> {
             String displayName = strategy.getDescriptor().getDisplayName();
-            listener.getLogger().println("Offering " + job.getFullName() + " to " + displayName);
             if (strategy.isApplicable(job)) {
-                listener.getLogger().println(job.getFullName() + " accepted by " + displayName);
                 try {
                     strategy.apply(job);
                 } catch (Exception ex) {
