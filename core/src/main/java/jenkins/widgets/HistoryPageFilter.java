@@ -242,8 +242,8 @@ public class HistoryPageFilter<T> {
 
     private long getNextBuildNumber(@NonNull Object entry) {
         // TODO refactor into method on HistoryWidget
-        if (widget != null && widget.owner instanceof Job) {
-            return ((Job) widget.owner).getNextBuildNumber();
+        if (widget != null && widget.owner instanceof Job job) {
+            return job.getNextBuildNumber();
         }
 
         // TODO maybe this should be an error?
@@ -284,8 +284,7 @@ public class HistoryPageFilter<T> {
             }
             addQueueItem(item);
             return true;
-        } else if (entry instanceof HistoricalBuild) {
-            HistoricalBuild run = (HistoricalBuild) entry;
+        } else if (entry instanceof HistoricalBuild run) {
             if (searchString != null && !fitsSearchParams(run)) {
                 return false;
             }
