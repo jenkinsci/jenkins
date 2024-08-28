@@ -100,6 +100,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -114,6 +115,7 @@ import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.ErrorLoggingExecutorService;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
+import jenkins.util.Timer;
 import jenkins.widgets.HasWidgets;
 import net.jcip.annotations.GuardedBy;
 import org.jenkins.ui.icon.Icon;
@@ -1103,7 +1105,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                         ciBase.removeComputer(Computer.this);
                     }
                 } else if (isIdle()) {
-                    Listeners.notify(ComputerListener.class, false, l -> l.onIdle(this));
+                    threadPoolForRemoting.submit(() -> Listeners.notify(ComputerListener.class, false, l -> l.onIdle(this)));
                 }
             }
         };
