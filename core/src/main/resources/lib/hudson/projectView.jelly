@@ -67,7 +67,7 @@ THE SOFTWARE.
       </div>
 
       <div class="jenkins-mobile-hide">
-        <div class="jenkins-projectstatus-table">
+        <div class="app-project-status-table">
           <table id="projectstatus" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
             <thead>
               <tr>

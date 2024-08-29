@@ -84,7 +84,7 @@
 }
 
 body.two-column #main-panel {
-  width: calc(100% - var(--sidep-panel-width));
+  width: calc(100% - var(--side-panel-width));
   flex: 1;
   display: block;
 }
@@ -98,7 +98,7 @@ body.full-screen #main-panel {
 }
 
 body.two-column #side-panel {
-  width: var(--sidep-panel-width);
+  width: var(--side-panel-width);
 }
 
 /* stylelint-disable-next-line media-query-no-invalid */
@@ -118,7 +118,7 @@ body.two-column #side-panel {
   }
 }
 
-.jenkins-projectstatus-table {
+.app-project-status-table {
   width: 100%;
   overflow-x: auto;
 }
@@ -126,7 +126,7 @@ body.two-column #side-panel {
 @media (width >= 1170px) {
   body.two-column #main-panel {
     width: calc(
-      100% - calc(var(--sidep-panel-width) + calc(var(--section-padding) * 2))
+      100% - calc(var(--side-panel-width) + calc(var(--section-padding) * 2))
     );
   }
 }
