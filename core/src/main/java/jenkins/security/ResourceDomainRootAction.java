@@ -117,7 +117,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             return null;
         }
 
-        if (!ACL.isAnonymous2(Jenkins.getAuthentication2())) {
+        if (!ALLOW_AUTHENTICATED_USER && !ACL.isAnonymous2(Jenkins.getAuthentication2())) {
             rsp.sendError(400);
             return null;
         }
@@ -327,4 +327,8 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
     // Not @Restricted because the entire class is
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* not final for Groovy */ int VALID_FOR_MINUTES = SystemProperties.getInteger(ResourceDomainRootAction.class.getName() + ".validForMinutes", 30);
+
+    /* Escape hatch for a security hardening preventing one of the known ways to elevate arbitrary file read to RCE */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* not final for Groovy */ boolean ALLOW_AUTHENTICATED_USER = SystemProperties.getBoolean(ResourceDomainRootAction.class.getName() + ".allowAuthenticatedUser", false);
 }
