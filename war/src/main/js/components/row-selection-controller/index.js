@@ -4,7 +4,10 @@ const rowSelectionControllers = document.querySelectorAll(
 
 rowSelectionControllers.forEach((headerCheckbox) => {
   const table = headerCheckbox.closest(".jenkins-table");
-  const tableCheckboxes = table.querySelectorAll("input[type='checkbox']");
+  const checkboxClass = headerCheckbox.dataset.checkboxClass;
+  const tableCheckboxes = table.querySelectorAll(
+    `input[type='checkbox'].${checkboxClass}`,
+  );
   const moreOptionsButton = table.querySelector(
     ".jenkins-table__checkbox-options",
   );

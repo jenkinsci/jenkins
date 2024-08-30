@@ -26,10 +26,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
   <st:documentation>
     Controls checkbox selections in tables
+    <st:attribute name="class" use="required">
+      Used for the queryselector to find the checkboxes that should change state when clicking
+      one of the available buttons.
+    </st:attribute>
   </st:documentation>
 
   <div class="jenkins-table__checkbox-container">
-    <button type="button" class="jenkins-table__checkbox">
+    <button type="button" class="jenkins-table__checkbox" data-checkbox-class="${attrs.class}">
       <l:icon src="symbol-check" class="jenkins-table__checkbox__all-symbol" />
       <l:icon src="symbol-indeterminate" class="jenkins-table__checkbox__indeterminate-symbol" />
     </button>
