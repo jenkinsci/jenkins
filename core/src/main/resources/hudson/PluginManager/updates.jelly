@@ -69,7 +69,7 @@ THE SOFTWARE.
                 <tr>
                   <l:isAdmin>
                     <th data-sort-disable="true">
-                      <l:rowSelectionController>
+                      <l:rowSelectionController class="app-checkbox-install-plugin">
                         <j:if test="${app.updateCenter.hasIncompatibleUpdates(cache)}">
                           <button tooltip="${%CompatibleTooltip}" type="button" data-select="compatible" class="jenkins-button jenkins-button--tertiary">
                             <div class="jenkins-table__checkbox-dropdown__icon">
@@ -101,7 +101,7 @@ THE SOFTWARE.
                                    id="plugin.${p.name}.${p.sourceId}"
                                    checked="${installedOk ? 'checked' : null}"
                                    disabled="${installedOk ? 'disabled' : null}"
-                                   data-compat-warning="${!p.isCompatible(cache)}"/>
+                                   data-compat-warning="${!p.isCompatible(cache)}" class="app-checkbox-install-plugin"/>
                             <label for="plugin.${p.name}.${p.sourceId}" />
                           </span>
                         </td>
