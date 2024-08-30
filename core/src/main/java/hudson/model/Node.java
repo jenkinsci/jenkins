@@ -576,7 +576,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     @Deprecated
     @Override
     public Node reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws FormException {
-        return reconfigure(StaplerRequest.toStaplerRequest2(req), form);
+        return reconfigureImpl(StaplerRequest.toStaplerRequest2(req), form);
     }
 
     private Node reconfigureImpl(@NonNull final StaplerRequest2 req, JSONObject form) throws FormException {
