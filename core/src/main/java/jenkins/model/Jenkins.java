@@ -4446,6 +4446,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @deprecated use {@link #doLogout(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doLogout(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         try {
             doLogout(req != null ? StaplerRequest.toStaplerRequest2(req) : null, rsp != null ? StaplerResponse.toStaplerResponse2(rsp) : null);
