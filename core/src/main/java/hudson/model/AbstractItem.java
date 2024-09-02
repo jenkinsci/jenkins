@@ -845,7 +845,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      * @deprecated use {@link #doConfigDotXml(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
-    @WebMethod(name = "config.xml")
+    @StaplerNotDispatchable
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
             throws IOException {
         doConfigDotXmlImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
