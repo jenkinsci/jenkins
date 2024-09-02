@@ -36,6 +36,7 @@ public interface ModelObjectWithChildren extends ModelObject {
      * @deprecated use {@link #doChildrenContextMenu(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     default ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         if (Util.isOverridden(ModelObjectWithChildren.class, getClass(), "doChildrenContextMenu", StaplerRequest2.class, StaplerResponse2.class)) {
             return doChildrenContextMenu(StaplerRequest.toStaplerRequest2(request), StaplerResponse.toStaplerResponse2(response));
