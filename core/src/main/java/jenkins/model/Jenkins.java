@@ -4861,6 +4861,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @deprecated use {@link #doSafeExit(StaplerRequest2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public HttpResponse doSafeExit(StaplerRequest req) throws IOException {
         return doSafeExit(req != null ? StaplerRequest.toStaplerRequest2(req) : null);
     }
