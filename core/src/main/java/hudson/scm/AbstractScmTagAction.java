@@ -35,6 +35,7 @@ import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import jenkins.model.RunAction2;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;

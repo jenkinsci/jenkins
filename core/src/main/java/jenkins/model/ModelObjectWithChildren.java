@@ -3,6 +3,7 @@ package jenkins.model;
 import hudson.Util;
 import hudson.model.ModelObject;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;

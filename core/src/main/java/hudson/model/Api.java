@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 import javax.xml.transform.stream.StreamResult;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.xml.FilteredFunctionContext;
 import org.dom4j.CharacterData;
 import org.dom4j.Document;

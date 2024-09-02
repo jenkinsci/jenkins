@@ -115,6 +115,7 @@ import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.security.stapler.StaplerDispatchable;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import jenkins.util.io.OnMaster;

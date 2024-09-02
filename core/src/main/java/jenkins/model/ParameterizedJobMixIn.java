@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.lazy.LazyBuildMixIn;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.triggers.TriggeredItem;
 import jenkins.util.TimeDuration;
