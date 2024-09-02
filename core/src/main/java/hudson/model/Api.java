@@ -243,6 +243,7 @@ public class Api extends AbstractModelObject {
      * @deprecated use {@link #doJson(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         try {
             doJsonImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
