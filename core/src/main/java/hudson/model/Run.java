@@ -2384,7 +2384,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @deprecated use {@link #doDoDelete(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
-    @RequirePOST
+    @StaplerNotDispatchable
     public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         try {
             doDoDeleteImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
