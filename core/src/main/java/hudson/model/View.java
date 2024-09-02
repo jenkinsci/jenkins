@@ -789,6 +789,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *      null if fails.
      * @since TODO
      */
+    @StaplerNotDispatchable
     public /* abstract */ Item doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         if (Util.isOverridden(View.class, getClass(), "doCreateItem", StaplerRequest.class, StaplerResponse.class)) {
             try {
