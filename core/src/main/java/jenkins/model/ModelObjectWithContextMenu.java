@@ -76,6 +76,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
      * @deprecated use {@link #doContextMenu(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     default ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         if (Util.isOverridden(ModelObjectWithContextMenu.class, getClass(), "doContextMenu", StaplerRequest2.class, StaplerResponse2.class)) {
             return doContextMenu(StaplerRequest.toStaplerRequest2(request), StaplerResponse.toStaplerResponse2(response));
