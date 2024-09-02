@@ -165,6 +165,7 @@ public abstract class Graph {
      * @deprecated use {@link #doPng(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doPng(StaplerRequest req, StaplerResponse rsp) throws IOException {
         doPngImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
     }
