@@ -1921,7 +1921,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @deprecated use {@link #doUploadPlugin(StaplerRequest2)}
      */
     @Deprecated
-    @RequirePOST
+    @StaplerNotDispatchable
     public HttpResponse doUploadPlugin(StaplerRequest req) throws IOException, javax.servlet.ServletException {
         try {
             return doUploadPluginImpl(StaplerRequest.toStaplerRequest2(req));
