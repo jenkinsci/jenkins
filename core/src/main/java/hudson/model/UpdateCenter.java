@@ -452,6 +452,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
      * @deprecated use {@link #doConnectionStatus(StaplerRequest2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     @Restricted(DoNotUse.class)
     public HttpResponse doConnectionStatus(StaplerRequest request) {
         return doConnectionStatusImpl(StaplerRequest.toStaplerRequest2(request));
