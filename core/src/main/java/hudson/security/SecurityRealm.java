@@ -358,6 +358,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @since 1.314
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doLogout(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         try {
             doLogoutImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
