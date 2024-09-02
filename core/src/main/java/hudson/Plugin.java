@@ -267,6 +267,7 @@ public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
      * @deprecated use {@link #doDynamic(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         try {
             doDynamicImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
