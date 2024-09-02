@@ -692,7 +692,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @deprecated use {@link #doSubmitDescription(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
-    @RequirePOST
+    @StaplerNotDispatchable
     public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         doSubmitDescriptionImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
     }
