@@ -237,6 +237,7 @@ public abstract class Graph {
      * @deprecated use {@link #doMap(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doMap(StaplerRequest req, StaplerResponse rsp) throws IOException {
         doMapImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
     }
