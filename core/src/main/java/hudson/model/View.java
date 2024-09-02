@@ -806,6 +806,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @deprecated use {@link #doCreateItem(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         if (Util.isOverridden(View.class, getClass(), "doCreateItem", StaplerRequest2.class, StaplerResponse2.class)) {
             try {
