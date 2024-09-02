@@ -420,6 +420,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
          * @deprecated use {@link #doBuild(StaplerRequest2, StaplerResponse2, TimeDuration)}
          */
         @Deprecated
+        @StaplerNotDispatchable
         default void doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, javax.servlet.ServletException {
             try {
                 getParameterizedJobMixIn().doBuild(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), delay);
