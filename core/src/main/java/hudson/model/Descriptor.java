@@ -1016,6 +1016,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
      * @deprecated use {@link #doHelp(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doHelp(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         try {
             doHelpImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
