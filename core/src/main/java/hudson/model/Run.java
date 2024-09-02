@@ -2300,6 +2300,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @deprecated use {@link #doConsoleText(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         doConsoleTextImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
     }
