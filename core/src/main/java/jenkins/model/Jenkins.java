@@ -4922,6 +4922,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @deprecated use {@link #doScriptText(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         try {
             _doScript(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), StaplerRequest.toStaplerRequest2(req).getView(this, "_scriptText.jelly"), FilePath.localChannel, getACL());
