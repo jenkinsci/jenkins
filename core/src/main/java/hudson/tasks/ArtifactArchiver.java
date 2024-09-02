@@ -389,7 +389,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                             if (bd instanceof LogRotator) {
                                 LogRotator lr = (LogRotator) bd;
                                 if (lr.getArtifactNumToKeep() == -1) {
-                                    p.setBuildDiscarder(new LogRotator(lr.getDaysToKeep(), lr.getNumToKeep(), lr.getArtifactDaysToKeep(), 1));
+                                    LogRotator newLr = new LogRotator(lr.getDaysToKeep(), lr.getNumToKeep(), lr.getArtifactDaysToKeep(), 1);
+                                    newLr.setRemoveLastBuild(lr.isRemoveLastBuild());
+                                    p.setBuildDiscarder(newLr);
                                 } else {
                                     LOG.log(Level.WARNING, "will not clobber artifactNumToKeep={0} in {1}", new Object[] {lr.getArtifactNumToKeep(), p});
                                 }
