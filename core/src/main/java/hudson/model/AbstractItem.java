@@ -708,7 +708,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      * @deprecated use {@link #doDoDelete(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
-    @RequirePOST
+    @StaplerNotDispatchable
     public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException, InterruptedException {
         doDoDeleteImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
     }
