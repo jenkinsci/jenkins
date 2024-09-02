@@ -108,6 +108,7 @@ public class AnnotatedLargeText<T> extends LargeText {
      * @deprecated use {@link #doProgressiveHtml(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doProgressiveHtml(StaplerRequest req, StaplerResponse rsp) throws IOException {
         doProgressiveHtmlImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
     }
