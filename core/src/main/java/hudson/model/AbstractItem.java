@@ -667,7 +667,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      * @deprecated use {@link #doSubmitDescription(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
-    @RequirePOST
+    @StaplerNotDispatchable
     public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         try {
             doSubmitDescriptionImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
