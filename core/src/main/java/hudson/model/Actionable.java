@@ -388,6 +388,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @deprecated use {@link #doContextMenu(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     @Override
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return doContextMenuImpl(StaplerRequest.toStaplerRequest2(request), StaplerResponse.toStaplerResponse2(response));
