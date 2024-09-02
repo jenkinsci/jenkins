@@ -279,6 +279,7 @@ public class Api extends AbstractModelObject {
      * @deprecated use {@link #doPython(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doPython(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         try {
             doPythonImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
