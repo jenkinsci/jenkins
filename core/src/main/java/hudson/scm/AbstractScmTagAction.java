@@ -128,6 +128,7 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
      * @deprecated use {@link #doIndex(StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @StaplerNotDispatchable
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         try {
             doIndexImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
