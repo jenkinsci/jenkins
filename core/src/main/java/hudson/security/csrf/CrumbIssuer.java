@@ -99,7 +99,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      */
     @Deprecated
     public String getCrumb(javax.servlet.ServletRequest request) {
-        return getCrumb(request != null ? ServletRequestWrapper.toJakartaServletRequest(request) : null);
+        return getCrumb(request != null ? wrap(request) : null);
     }
 
     /**
@@ -211,7 +211,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
     @Deprecated
     public boolean validateCrumb(javax.servlet.ServletRequest request, String salt, String crumb) {
         return Util.ifOverridden(
-                () -> validateCrumb(request != null ? ServletRequestWrapper.toJakartaServletRequest(request) : null, salt, crumb),
+                () -> validateCrumb(request != null ? wrap(request) : null, salt, crumb),
                 CrumbIssuer.class,
                 getClass(),
                 "validateCrumb",
