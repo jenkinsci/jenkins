@@ -84,7 +84,7 @@
 }
 
 body.two-column #main-panel {
-  width: calc(100% - 320px);
+  width: calc(100% - var(--side-panel-width));
   flex: 1;
   display: block;
 }
@@ -98,7 +98,7 @@ body.full-screen #main-panel {
 }
 
 body.two-column #side-panel {
-  width: 340px;
+  width: var(--side-panel-width);
 }
 
 /* stylelint-disable-next-line media-query-no-invalid */
@@ -118,9 +118,16 @@ body.two-column #side-panel {
   }
 }
 
+.app-project-status-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
 @media (width >= 1170px) {
   body.two-column #main-panel {
-    width: calc(100% - 370px);
+    width: calc(
+      100% - calc(var(--side-panel-width) + calc(var(--section-padding) * 2))
+    );
   }
 }
 
