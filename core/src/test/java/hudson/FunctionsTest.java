@@ -61,7 +61,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.mockito.MockedStatic;
 
 public class FunctionsTest {
@@ -96,14 +96,14 @@ public class FunctionsTest {
     @Test
     public void testGetActionUrl_absolutePath() {
         String contextPath = "/jenkins";
-        StaplerRequest req = createMockRequest(contextPath);
+        StaplerRequest2 req = createMockRequest(contextPath);
         String[] paths = {
             "/",
             "/foo/bar",
         };
 
         try (MockedStatic<Stapler> mocked = mockStatic(Stapler.class)) {
-            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
             for (String path : paths) {
                 String result = Functions.getActionUrl(null, createMockAction(path));
                 assertEquals(contextPath + path, result);
@@ -115,14 +115,14 @@ public class FunctionsTest {
     public void testGetActionUrl_relativePath() {
         String contextPath = "/jenkins";
         String itUrl = "iturl/";
-        StaplerRequest req = createMockRequest(contextPath);
+        StaplerRequest2 req = createMockRequest(contextPath);
         String[] paths = {
             "foo/bar",
             "./foo/bar",
             "../foo/bar",
         };
         try (MockedStatic<Stapler> mocked = mockStatic(Stapler.class)) {
-            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
             for (String path : paths) {
                 String result = Functions.getActionUrl(itUrl, createMockAction(path));
                 assertEquals(contextPath + "/" + itUrl + path, result);
@@ -133,14 +133,14 @@ public class FunctionsTest {
     @Test
     public void testGetRelativeLinkTo_JobContainedInView() {
         String contextPath = "/jenkins";
-        StaplerRequest req = createMockRequest(contextPath);
+        StaplerRequest2 req = createMockRequest(contextPath);
         try (
                 MockedStatic<Stapler> mocked = mockStatic(Stapler.class);
                 MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
         ) {
             Jenkins j = createMockJenkins(mockedJenkins);
             ItemGroup parent = j;
-            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
             View view = mock(View.class);
             when(view.getOwner()).thenReturn(j);
             when(j.getItemGroup()).thenReturn(j);
@@ -155,14 +155,14 @@ public class FunctionsTest {
     @Test
     public void testGetRelativeLinkTo_JobFromComputer() {
         String contextPath = "/jenkins";
-        StaplerRequest req = createMockRequest(contextPath);
+        StaplerRequest2 req = createMockRequest(contextPath);
         try (
                 MockedStatic<Stapler> mocked = mockStatic(Stapler.class);
                 MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
         ) {
             Jenkins j = createMockJenkins(mockedJenkins);
             ItemGroup parent = j;
-            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
             Computer computer = mock(Computer.class);
             createMockAncestors(req, createAncestor(computer, "."), createAncestor(j, "../.."));
             TopLevelItem i = createMockItem(parent, "job/i/");
@@ -175,14 +175,14 @@ public class FunctionsTest {
     @Test
     public void testGetRelativeLinkTo_JobNotContainedInView() {
         String contextPath = "/jenkins";
-        StaplerRequest req = createMockRequest(contextPath);
+        StaplerRequest2 req = createMockRequest(contextPath);
         try (
                 MockedStatic<Stapler> mocked = mockStatic(Stapler.class);
                 MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
         ) {
             Jenkins j = createMockJenkins(mockedJenkins);
             ItemGroup parent = j;
-            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
             View view = mock(View.class);
             when(view.getOwner().getItemGroup()).thenReturn(parent);
             createMockAncestors(req, createAncestor(j, "../.."), createAncestor(view, "."));
@@ -198,7 +198,7 @@ public class FunctionsTest {
     @Test
     public void testGetRelativeLinkTo_JobContainedInViewWithinItemGroup() {
         String contextPath = "/jenkins";
-        StaplerRequest req = createMockRequest(contextPath);
+        StaplerRequest2 req = createMockRequest(contextPath);
         try (
                 MockedStatic<Stapler> mocked = mockStatic(Stapler.class);
                 MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
@@ -206,7 +206,7 @@ public class FunctionsTest {
             Jenkins j = createMockJenkins(mockedJenkins);
             TopLevelItemAndItemGroup parent = mock(TopLevelItemAndItemGroup.class);
             when(parent.getShortUrl()).thenReturn("parent/");
-            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
             View view = mock(View.class);
             when(view.getOwner()).thenReturn(parent);
             when(parent.getItemGroup()).thenReturn(parent);
@@ -220,13 +220,13 @@ public class FunctionsTest {
 
     @Issue("JENKINS-17713")
     @Test public void getRelativeLinkTo_MavenModules() {
-        StaplerRequest req = createMockRequest("/jenkins");
+        StaplerRequest2 req = createMockRequest("/jenkins");
         try (
                 MockedStatic<Stapler> mocked = mockStatic(Stapler.class);
                 MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
         ) {
             Jenkins j = createMockJenkins(mockedJenkins);
-            mocked.when(Stapler::getCurrentRequest).thenReturn(req);
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
             TopLevelItemAndItemGroup ms = mock(TopLevelItemAndItemGroup.class);
             when(ms.getShortUrl()).thenReturn("job/ms/");
             // TODO "." (in second ancestor) is what Stapler currently fails to do. Could edit test to use ".." but set a different request path?
@@ -266,7 +266,7 @@ public class FunctionsTest {
         assertEquals(".. » top", Functions.getRelativeDisplayNameFrom(i2, ig));
     }
 
-    private void createMockAncestors(StaplerRequest req, Ancestor... ancestors) {
+    private void createMockAncestors(StaplerRequest2 req, Ancestor... ancestors) {
         List<Ancestor> ancestorsList = Arrays.asList(ancestors);
         when(req.getAncestors()).thenReturn(ancestorsList);
     }
@@ -307,8 +307,8 @@ public class FunctionsTest {
         return action;
     }
 
-    private static StaplerRequest createMockRequest(String contextPath) {
-        StaplerRequest req = mock(StaplerRequest.class);
+    private static StaplerRequest2 createMockRequest(String contextPath) {
+        StaplerRequest2 req = mock(StaplerRequest2.class);
         when(req.getContextPath()).thenReturn(contextPath);
         return req;
     }

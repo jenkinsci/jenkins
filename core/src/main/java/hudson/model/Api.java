@@ -25,6 +25,10 @@
 package hudson.model;
 
 import hudson.ExtensionList;
+import hudson.Util;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
@@ -34,11 +38,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.stream.StreamResult;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.xml.FilteredFunctionContext;
 import org.dom4j.CharacterData;
 import org.dom4j.Document;
@@ -52,7 +55,9 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.Flavor;
 import org.kohsuke.stapler.export.Model;
@@ -96,7 +101,7 @@ public class Api extends AbstractModelObject {
     /**
      * Exposes the bean as XML.
      */
-    public void doXml(StaplerRequest req, StaplerResponse rsp,
+    public void doXml(StaplerRequest2 req, StaplerResponse2 rsp,
                       @QueryParameter String xpath,
                       @QueryParameter String wrapper,
                       @QueryParameter String tree,
@@ -212,7 +217,7 @@ public class Api extends AbstractModelObject {
     /**
      * Generate schema.
      */
-    public void doSchema(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doSchema(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         setHeaders(rsp);
         rsp.setContentType("application/xml");
         StreamResult r = new StreamResult(rsp.getOutputStream());
@@ -223,7 +228,32 @@ public class Api extends AbstractModelObject {
     /**
      * Exposes the bean as JSON.
      */
-    public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doJson(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(Api.class, getClass(), "doJson", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                doJson(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            doJsonImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doJson(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doJsonImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private void doJsonImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         if (req.getParameter("jsonp") == null || permit(req)) {
             setHeaders(rsp);
             rsp.serveExposedBean(req, bean, req.getParameter("jsonp") == null ? Flavor.JSON : Flavor.JSONP);
@@ -235,12 +265,37 @@ public class Api extends AbstractModelObject {
     /**
      * Exposes the bean as Python literal.
      */
-    public void doPython(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doPython(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(Api.class, getClass(), "doPython", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                doPython(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            doPythonImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doPython(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public void doPython(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doPythonImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private void doPythonImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         setHeaders(rsp);
         rsp.serveExposedBean(req, bean, Flavor.PYTHON);
     }
 
-    private boolean permit(StaplerRequest req) {
+    private boolean permit(StaplerRequest2 req) {
         for (SecureRequester r : ExtensionList.lookup(SecureRequester.class)) {
             if (r.permit(req, bean)) {
                 return true;
@@ -250,7 +305,7 @@ public class Api extends AbstractModelObject {
     }
 
     @Restricted(NoExternalUse.class)
-    protected void setHeaders(StaplerResponse rsp) {
+    protected void setHeaders(StaplerResponse2 rsp) {
         rsp.setHeader("X-Jenkins", Jenkins.VERSION);
         rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
         // to be really defensive against dumb browsers not taking into consideration the content-type being set

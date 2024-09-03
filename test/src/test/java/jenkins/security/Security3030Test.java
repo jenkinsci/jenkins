@@ -33,6 +33,7 @@ import hudson.ExtensionList;
 import hudson.model.RootAction;
 import hudson.util.HttpResponses;
 import hudson.util.MultipartFormDataParser;
+import jakarta.servlet.ServletException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -42,7 +43,6 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
-import javax.servlet.ServletException;
 import org.apache.commons.fileupload2.core.FileUploadByteCountLimitException;
 import org.apache.commons.fileupload2.core.FileUploadException;
 import org.apache.commons.fileupload2.core.FileUploadFileCountLimitException;
@@ -56,57 +56,57 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.RequestImpl;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.verb.POST;
 
 public class Security3030Test {
-    // TODO Consider parameterizing with Stapler (RequestImpl/StaplerRequestFormAction) + Jenkins (MultipartFormDataParser/MultipartFormDataParserAction)
+    // TODO Consider parameterizing with Stapler (RequestImpl/StaplerRequest2FormAction) + Jenkins (MultipartFormDataParser/MultipartFormDataParserAction)
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
     @Test
     public void fewFilesStapler() throws IOException {
-        assertSubmissionOK(StaplerRequestFormAction.instance(), 20, 10, 1024 * 1024);
-        assertSubmissionOK(StaplerRequestFormAction.instance(), 10, 41, 10);
+        assertSubmissionOK(StaplerRequest2FormAction.instance(), 20, 10, 1024 * 1024);
+        assertSubmissionOK(StaplerRequest2FormAction.instance(), 10, 41, 10);
     }
 
     @Test
     public void tooManyFilesStapler() throws Exception {
-        ServletException ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 10, 1000, 20, FileUploadFileCountLimitException.class);
+        ServletException ex = assertSubmissionThrows(StaplerRequest2FormAction.instance(), 10, 1000, 20, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILES"));
-        ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1000, 10, 10, FileUploadFileCountLimitException.class);
+        ex = assertSubmissionThrows(StaplerRequest2FormAction.instance(), 1000, 10, 10, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILES"));
         try (FieldValue v = withStaticField(RequestImpl.class, "FILEUPLOAD_MAX_FILES", 10_000)) {
-            assertSubmissionOK(StaplerRequestFormAction.instance(), 1000, 10, 10);
-            ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 10_000, 10, 10, FileUploadFileCountLimitException.class);
+            assertSubmissionOK(StaplerRequest2FormAction.instance(), 1000, 10, 10);
+            ex = assertSubmissionThrows(StaplerRequest2FormAction.instance(), 10_000, 10, 10, FileUploadFileCountLimitException.class);
             assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILES"));
         }
-        ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 10, 1000, 20, FileUploadFileCountLimitException.class);
+        ex = assertSubmissionThrows(StaplerRequest2FormAction.instance(), 10, 1000, 20, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILES"));
-        ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1000, 10, 10, FileUploadFileCountLimitException.class);
+        ex = assertSubmissionThrows(StaplerRequest2FormAction.instance(), 1000, 10, 10, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILES"));
     }
 
     @Test
     public void tooLargeFilesStapler() throws Exception {
-        assertSubmissionOK(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024);
+        assertSubmissionOK(StaplerRequest2FormAction.instance(), 1, 50, 10 * 1024 * 1024);
         try (FieldValue v = withStaticField(RequestImpl.class, "FILEUPLOAD_MAX_FILE_SIZE", 1024 * 1024)) {
-            assertSubmissionOK(StaplerRequestFormAction.instance(), 200, 100, 1024);
-            ServletException ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadByteCountLimitException.class);
+            assertSubmissionOK(StaplerRequest2FormAction.instance(), 200, 100, 1024);
+            ServletException ex = assertSubmissionThrows(StaplerRequest2FormAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadByteCountLimitException.class);
             assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILE_SIZE"));
         }
-        assertSubmissionOK(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024);
+        assertSubmissionOK(StaplerRequest2FormAction.instance(), 1, 50, 10 * 1024 * 1024);
     }
 
     @Test
     public void tooLargeSubmissionStapler() throws Exception {
-        assertSubmissionOK(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024);
+        assertSubmissionOK(StaplerRequest2FormAction.instance(), 1, 50, 10 * 1024 * 1024);
         try (FieldValue v = withStaticField(RequestImpl.class, "FILEUPLOAD_MAX_SIZE", 1024 * 1024)) {
-            assertSubmissionOK(StaplerRequestFormAction.instance(), 200, 100, 1024);
-            ServletException ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadSizeException.class);
+            assertSubmissionOK(StaplerRequest2FormAction.instance(), 200, 100, 1024);
+            ServletException ex = assertSubmissionThrows(StaplerRequest2FormAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadSizeException.class);
             assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_SIZE"));
         }
-        assertSubmissionOK(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024);
+        assertSubmissionOK(StaplerRequest2FormAction.instance(), 1, 50, 10 * 1024 * 1024);
     }
 
     @Test
@@ -265,7 +265,7 @@ public class Security3030Test {
         }
 
         @POST
-        public HttpResponse doSubmitMultipart(StaplerRequest req) throws FileUploadException, ServletException, IOException {
+        public HttpResponse doSubmitMultipart(StaplerRequest2 req) throws FileUploadException, ServletException, IOException {
             if (expectedWrapped == null) {
                 actualWrapped = null;
                 actual = null;
@@ -284,7 +284,7 @@ public class Security3030Test {
             }
         }
 
-        private HttpResponse processMultipartAndUnwrap(StaplerRequest req) throws FileUploadException, ServletException, IOException {
+        private HttpResponse processMultipartAndUnwrap(StaplerRequest2 req) throws FileUploadException, ServletException, IOException {
             try {
                 return processMultipart(req);
             } catch (ServletException ex) {
@@ -298,7 +298,7 @@ public class Security3030Test {
             }
         }
 
-        protected abstract HttpResponse processMultipart(StaplerRequest req) throws ServletException, IOException;
+        protected abstract HttpResponse processMultipart(StaplerRequest2 req) throws ServletException, IOException;
 
         public void setExpectedWrapped(Class<? extends T> expectedWrapped) {
             this.expectedWrapped = expectedWrapped;
@@ -314,12 +314,12 @@ public class Security3030Test {
     }
 
     @TestExtension
-    public static class StaplerRequestFormAction extends FileUploadAction<FileUploadException> {
-        public static StaplerRequestFormAction instance() {
-            return ExtensionList.lookupSingleton(StaplerRequestFormAction.class);
+    public static class StaplerRequest2FormAction extends FileUploadAction<FileUploadException> {
+        public static StaplerRequest2FormAction instance() {
+            return ExtensionList.lookupSingleton(StaplerRequest2FormAction.class);
         }
 
-        protected HttpResponse processMultipart(StaplerRequest req) throws ServletException, IOException {
+        protected HttpResponse processMultipart(StaplerRequest2 req) throws ServletException, IOException {
             req.getFileItem2("any-name");
             return HttpResponses.ok();
         }
@@ -331,7 +331,7 @@ public class Security3030Test {
             return ExtensionList.lookupSingleton(MultipartFormDataParserAction.class);
         }
 
-        protected HttpResponse processMultipart(StaplerRequest req) throws ServletException {
+        protected HttpResponse processMultipart(StaplerRequest2 req) throws ServletException {
             new MultipartFormDataParser(req);
             return HttpResponses.ok();
         }

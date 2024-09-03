@@ -80,7 +80,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Build by using Maven.
@@ -479,7 +479,7 @@ public class Maven extends Builder {
         }
 
         @Override
-        public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public Builder newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             if (req == null) {
                 // This state is prohibited according to the Javadoc of the super method.
                 throw new FormException("Maven Build Step new instance method is called for null Stapler request. "

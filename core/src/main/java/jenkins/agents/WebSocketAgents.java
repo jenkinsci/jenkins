@@ -57,8 +57,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 @Extension
 @Restricted(NoExternalUse.class)
@@ -71,7 +71,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         return WebSockets.isSupported() ? "wsagents" : null;
     }
 
-    public HttpResponse doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public HttpResponse doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         String agent = req.getHeader(JnlpConnectionState.CLIENT_NAME_KEY);
         String secret = req.getHeader(JnlpConnectionState.SECRET_KEY);
         String remoteCapabilityStr = req.getHeader(Capability.KEY);

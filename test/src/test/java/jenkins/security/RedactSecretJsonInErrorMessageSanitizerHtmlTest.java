@@ -53,8 +53,8 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 
 @Restricted(NoExternalUse.class)
@@ -121,7 +121,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
 
         public JSONObject lastJsonReceived;
 
-        public void doSubmitTest(StaplerRequest req, StaplerResponse res) throws Exception {
+        public void doSubmitTest(StaplerRequest2 req, StaplerResponse2 res) throws Exception {
             lastJsonReceived = req.getSubmittedForm();
 
             res.setStatus(200);
@@ -250,7 +250,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         public TestDescribable testDescribable;
 
         @POST
-        public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws Exception {
+        public void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws Exception {
             Jenkins.get().getDescriptorOrDie(TestDescribable.class).newInstance(req, req.getSubmittedForm());
         }
 
@@ -276,7 +276,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         public TestDescribable testDescribable;
 
         @POST
-        public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws Exception {
+        public void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws Exception {
             req.bindJSON(TestDescribable.class, req.getSubmittedForm());
         }
 

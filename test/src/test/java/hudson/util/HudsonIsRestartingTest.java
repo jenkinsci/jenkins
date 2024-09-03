@@ -1,6 +1,6 @@
 package hudson.util;
 
-import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
+import static jakarta.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -20,7 +20,7 @@ public class HudsonIsRestartingTest {
     @Test
     @Issue("JENKINS-55062")
     public void withPrefix() throws Exception {
-        j.jenkins.servletContext.setAttribute("app", new HudsonIsRestarting(false));
+        j.jenkins.getServletContext().setAttribute("app", new HudsonIsRestarting(false));
         JenkinsRule.WebClient wc = j.createWebClient()
                 // this is a failure page already
                 .withThrowExceptionOnFailingStatusCode(false)

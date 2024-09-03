@@ -28,15 +28,15 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 
 @Extension(ordinal = Integer.MIN_VALUE)
@@ -66,7 +66,7 @@ public class ShutdownLink extends ManagementLink {
     }
 
     @POST
-    public synchronized void doPrepare(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+    public synchronized void doPrepare(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, InterruptedException {
         Jenkins.get().checkPermission(Jenkins.MANAGE);
 
         JSONObject submittedForm = req.getSubmittedForm();
@@ -77,7 +77,7 @@ public class ShutdownLink extends ManagementLink {
     }
 
     @POST
-    public synchronized void doCancel(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doCancel(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.MANAGE);
 
         LOGGER.log(Level.FINE, "Shutdown cancel requested by user {0}", Jenkins.getAuthentication().getName());

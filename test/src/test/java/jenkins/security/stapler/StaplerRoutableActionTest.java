@@ -6,7 +6,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 
 @Issue("SECURITY-400")
@@ -29,7 +29,7 @@ public class StaplerRoutableActionTest extends StaplerAbstractTest {
             replyOk();
         }
 
-        public void doWebMethod4(StaplerRequest request) {
+        public void doWebMethod4(StaplerRequest2 request) {
             replyOk();
         }
 

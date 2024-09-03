@@ -65,8 +65,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -310,7 +310,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
     @RequirePOST
-    public HttpResponse doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public HttpResponse doAct(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (req.hasParameter("no")) {
             disable(true);
             return HttpResponses.redirectViaContextPath("/manage");
@@ -324,7 +324,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Remove those items from the data map.
      */
     @RequirePOST
-    public HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) {
+    public HttpResponse doUpgrade(StaplerRequest2 req, StaplerResponse2 rsp) {
         final String thruVerParam = req.getParameter("thruVer");
         final VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
 
@@ -341,7 +341,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Remove those items from the data map.
      */
     @RequirePOST
-    public HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
+    public HttpResponse doDiscard(StaplerRequest2 req, StaplerResponse2 rsp) {
         saveAndRemoveEntries(entry -> entry.getValue().max == null);
 
         return HttpResponses.forwardToPreviousPage();
@@ -377,7 +377,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         data.keySet().removeAll(removed);
     }
 
-    public HttpResponse doIndex(StaplerResponse rsp) throws IOException {
+    public HttpResponse doIndex(StaplerResponse2 rsp) throws IOException {
         return new HttpRedirect("manage");
     }
 

@@ -46,7 +46,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.WebMethod;
 
@@ -66,7 +66,7 @@ public abstract class StaplerAbstractTest {
         j = rule;
         j.jenkins.setCrumbIssuer(null);
 
-        this.webApp = (WebApp) j.jenkins.servletContext.getAttribute(WebApp.class.getName());
+        this.webApp = (WebApp) j.jenkins.getServletContext().getAttribute(WebApp.class.getName());
 
         webApp.setFilteredGetterTriggerListener((f, req, rst, node, expression) -> {
             filteredGetMethodTriggered = true;
@@ -134,7 +134,7 @@ public abstract class StaplerAbstractTest {
     //================================= utility methods =================================
 
     protected static void replyOk() {
-        StaplerResponse resp = Stapler.getCurrentResponse();
+        StaplerResponse2 resp = Stapler.getCurrentResponse2();
         try {
             resp.getWriter().write("ok");
             resp.flushBuffer();

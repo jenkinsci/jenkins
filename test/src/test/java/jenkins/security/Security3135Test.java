@@ -14,8 +14,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 public class Security3135Test {
     public static final String ACTION_URL = "security3135";
@@ -72,7 +72,7 @@ public class Security3135Test {
             return requestMade;
         }
 
-        public void doValidate(StaplerRequest request, StaplerResponse response) {
+        public void doValidate(StaplerRequest2 request, StaplerResponse2 response) {
             requestMade = true;
         }
     }

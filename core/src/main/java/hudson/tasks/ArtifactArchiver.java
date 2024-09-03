@@ -63,7 +63,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Copies the artifacts into an archive directory.
@@ -367,7 +367,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
 
         @Override
-        public ArtifactArchiver newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public ArtifactArchiver newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             return req.bindJSON(ArtifactArchiver.class, formData);
         }
 

@@ -108,6 +108,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  *
@@ -573,7 +574,7 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User user = User.getById("john", true);
         try (ACLContext as = ACL.as(user)) {
-            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doDoDelete(null, null));
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doDoDelete((StaplerRequest2) null, null));
         }
         auth.add(Jenkins.READ, user.getId());
         auth.add(Item.READ, user.getId());

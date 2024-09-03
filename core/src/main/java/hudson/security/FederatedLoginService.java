@@ -30,13 +30,13 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.User;
 import hudson.model.UserProperty;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.Serializable;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -245,7 +245,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
         }
 
         @Override
-        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
             SecurityRealm sr = Jenkins.get().getSecurityRealm();
             if (sr.allowsSignup()) {
                 try {

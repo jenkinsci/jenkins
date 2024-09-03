@@ -41,7 +41,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 
 @Issue("SECURITY-400")
@@ -224,30 +224,30 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
             return "do-action";
         }
 
-        public static String DO_ACTION_SIGNATURE = "method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ActionWithWhitelist doAction org.kohsuke.stapler.StaplerRequest";
+        public static String DO_ACTION_SIGNATURE = "method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ActionWithWhitelist doAction org.kohsuke.stapler.StaplerRequest2";
 
-        public void doAction(StaplerRequest request) {
+        public void doAction(StaplerRequest2 request) {
             replyOk();
         }
 
-        public static String DO_ACTION_STAPLER_ROUTABLE_SIGNATURE = "method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ActionWithWhitelist doActionWithStaplerDispatchable org.kohsuke.stapler.StaplerRequest";
+        public static String DO_ACTION_STAPLER_ROUTABLE_SIGNATURE = "method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ActionWithWhitelist doActionWithStaplerDispatchable org.kohsuke.stapler.StaplerRequest2";
 
         @StaplerDispatchable
-        public void doActionWithStaplerDispatchable(StaplerRequest request) {
+        public void doActionWithStaplerDispatchable(StaplerRequest2 request) {
             replyOk();
         }
 
-        public static String DO_ACTION_STAPLER_NONROUTABLE_SIGNATURE = "method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ActionWithWhitelist doActionWithStaplerNotDispatchable org.kohsuke.stapler.StaplerRequest";
+        public static String DO_ACTION_STAPLER_NONROUTABLE_SIGNATURE = "method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ActionWithWhitelist doActionWithStaplerNotDispatchable org.kohsuke.stapler.StaplerRequest2";
 
         @StaplerNotDispatchable
-        public void doActionWithStaplerNotDispatchable(StaplerRequest request) {
+        public void doActionWithStaplerNotDispatchable(StaplerRequest2 request) {
             replyOk();
         }
 
-        public static String DO_ACTION_STAPLER_WEBMETHOD_SIGNATURE = "method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ActionWithWhitelist doActionWithWebMethod org.kohsuke.stapler.StaplerRequest";
+        public static String DO_ACTION_STAPLER_WEBMETHOD_SIGNATURE = "method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ActionWithWhitelist doActionWithWebMethod org.kohsuke.stapler.StaplerRequest2";
 
         @WebMethod(name = "actionWithWebMethod")
-        public void doActionWithWebMethod(StaplerRequest request) {
+        public void doActionWithWebMethod(StaplerRequest2 request) {
             replyOk();
         }
     }

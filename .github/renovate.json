@@ -92,17 +92,6 @@
       ]
     },
     {
-      "description": "Starting with 6.x, Spring requires Java 17 at a minimum.",
-      "matchManagers": [
-        "maven"
-      ],
-      "allowedVersions": "<6.0.0",
-      "matchPackageNames": [
-        "org.springframework:spring-framework-bom",
-        "org.springframework.security:spring-security-bom"
-      ]
-    },
-    {
       "description": "Starting with 7.x, Guice switches from javax.* to jakarta.* bindings. See https://github.com/google/guice/wiki/Guice700",
       "matchManagers": [
         "maven"
