@@ -35,7 +35,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
-import jakarta.servlet.ServletException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -44,10 +43,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -65,8 +65,8 @@ import org.springframework.security.access.AccessDeniedException;
 public abstract class FormFieldValidator {
     public static final Permission CHECK = Jenkins.ADMINISTER;
 
-    protected final StaplerRequest2 request;
-    protected final StaplerResponse2 response;
+    protected final StaplerRequest request;
+    protected final StaplerResponse response;
     /**
      * Permission to check, or null if this check doesn't require any permission.
      */
@@ -84,17 +84,17 @@ public abstract class FormFieldValidator {
      *      for security reason, so that unauthenticated user cannot obtain sensitive
      *      information or run a process that may have side-effect.
      */
-    protected FormFieldValidator(StaplerRequest2 request, StaplerResponse2 response, boolean adminOnly) {
+    protected FormFieldValidator(StaplerRequest request, StaplerResponse response, boolean adminOnly) {
         this(request, response, adminOnly ? Jenkins.get() : null, adminOnly ? CHECK : null);
     }
 
     /**
      * @deprecated
-     *      Use {@link #FormFieldValidator(Permission)} and remove {@link StaplerRequest2} and {@link StaplerResponse2}
+     *      Use {@link #FormFieldValidator(Permission)} and remove {@link StaplerRequest} and {@link StaplerResponse}
      *      from your "doCheck..." method parameter
      */
     @Deprecated
-    protected FormFieldValidator(StaplerRequest2 request, StaplerResponse2 response, Permission permission) {
+    protected FormFieldValidator(StaplerRequest request, StaplerResponse response, Permission permission) {
         this(request, response, Jenkins.get(), permission);
     }
 
@@ -103,16 +103,16 @@ public abstract class FormFieldValidator {
      *      Permission needed to perform this validation, or null if no permission is necessary.
      */
     protected FormFieldValidator(Permission permission) {
-        this(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2(), permission);
+        this(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), permission);
     }
 
     /**
      * @deprecated
-     *      Use {@link #FormFieldValidator(AccessControlled,Permission)} and remove {@link StaplerRequest2} and {@link StaplerResponse2}
+     *      Use {@link #FormFieldValidator(AccessControlled,Permission)} and remove {@link StaplerRequest} and {@link StaplerResponse}
      *      from your "doCheck..." method parameter
      */
     @Deprecated
-    protected FormFieldValidator(StaplerRequest2 request, StaplerResponse2 response, AccessControlled subject, Permission permission) {
+    protected FormFieldValidator(StaplerRequest request, StaplerResponse response, AccessControlled subject, Permission permission) {
         this.request = request;
         this.response = response;
         this.subject = subject;
@@ -120,7 +120,7 @@ public abstract class FormFieldValidator {
     }
 
     protected FormFieldValidator(AccessControlled subject, Permission permission) {
-        this(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2(), subject, permission);
+        this(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), subject, permission);
     }
 
     /**
@@ -249,7 +249,7 @@ public abstract class FormFieldValidator {
     @Deprecated
     public abstract static class URLCheck extends FormFieldValidator {
 
-        protected URLCheck(StaplerRequest2 request, StaplerResponse2 response) {
+        protected URLCheck(StaplerRequest request, StaplerResponse response) {
             // can be used to check the existence of any file in file system
             // or other HTTP URLs inside firewall, so limit this to the admin.
             super(request, response, true);
@@ -320,7 +320,7 @@ public abstract class FormFieldValidator {
      * @since 1.192
      */
     public static class HudsonURL extends URLCheck {
-        public HudsonURL(StaplerRequest2 request, StaplerResponse2 response) {
+        public HudsonURL(StaplerRequest request, StaplerResponse response) {
             super(request, response);
         }
 
@@ -366,11 +366,11 @@ public abstract class FormFieldValidator {
     public static class WorkspaceFileMask extends FormFieldValidator {
         private final boolean errorIfNotExist;
 
-        public WorkspaceFileMask(StaplerRequest2 request, StaplerResponse2 response) {
+        public WorkspaceFileMask(StaplerRequest request, StaplerResponse response) {
             this(request, response, true);
         }
 
-        public WorkspaceFileMask(StaplerRequest2 request, StaplerResponse2 response, boolean errorIfNotExist) {
+        public WorkspaceFileMask(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist) {
             // Require CONFIGURE permission on the job
             super(request, response, request.findAncestorObject(AbstractProject.class), Item.CONFIGURE);
             this.errorIfNotExist = errorIfNotExist;
@@ -419,11 +419,11 @@ public abstract class FormFieldValidator {
      */
     @Deprecated
     public static class WorkspaceDirectory extends WorkspaceFilePath {
-        public WorkspaceDirectory(StaplerRequest2 request, StaplerResponse2 response, boolean errorIfNotExist) {
+        public WorkspaceDirectory(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist) {
             super(request, response, errorIfNotExist, false);
         }
 
-        public WorkspaceDirectory(StaplerRequest2 request, StaplerResponse2 response) {
+        public WorkspaceDirectory(StaplerRequest request, StaplerResponse response) {
             this(request, response, true);
         }
     }
@@ -439,7 +439,7 @@ public abstract class FormFieldValidator {
         private final boolean errorIfNotExist;
         private final boolean expectingFile;
 
-        public WorkspaceFilePath(StaplerRequest2 request, StaplerResponse2 response, boolean errorIfNotExist, boolean expectingFile) {
+        public WorkspaceFilePath(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist, boolean expectingFile) {
             // Require CONFIGURE permission on this job
             super(request, response, request.findAncestorObject(AbstractProject.class), Item.CONFIGURE);
             this.errorIfNotExist = errorIfNotExist;
@@ -522,7 +522,7 @@ public abstract class FormFieldValidator {
     @Deprecated
     public static class Executable extends FormFieldValidator {
 
-        public Executable(StaplerRequest2 request, StaplerResponse2 response) {
+        public Executable(StaplerRequest request, StaplerResponse response) {
             // Require admin permission
             super(request, response, true);
         }
@@ -599,7 +599,7 @@ public abstract class FormFieldValidator {
         private final boolean allowEmpty;
         private final String errorMessage;
 
-        public Base64(StaplerRequest2 request, StaplerResponse2 response, boolean allowWhitespace, boolean allowEmpty, String errorMessage) {
+        public Base64(StaplerRequest request, StaplerResponse response, boolean allowWhitespace, boolean allowEmpty, String errorMessage) {
             super(request, response, false);
             this.allowWhitespace = allowWhitespace;
             this.allowEmpty = allowEmpty;
