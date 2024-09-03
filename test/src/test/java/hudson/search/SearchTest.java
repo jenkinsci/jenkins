@@ -29,6 +29,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 import hudson.model.User;
@@ -36,6 +37,7 @@ import hudson.model.View;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.util.RunList;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
@@ -56,6 +58,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.RunLoadCounter;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -73,6 +76,30 @@ public class SearchTest {
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage resultPage = wc.search("no-such-thing");
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, resultPage.getWebResponse().getStatusCode());
+    }
+
+    @Test
+    public void testSearchWithMultipleBuildName() throws Exception {
+        // Create a project
+        FreeStyleProject p = j.createFreeStyleProject("Project1");
+
+        // Build the project 1000 times
+        for (int i = 0; i < 1000; i++) {
+            j.buildAndAssertSuccess(p);
+        }
+
+        // Set build names to "build1000", "build999", "build998", etc.
+        RunList<FreeStyleBuild> buildLists = p.getBuilds();
+        for (FreeStyleBuild build : buildLists) {
+            build.setDisplayName("build" + build.number);
+        }
+
+        RunLoadCounter.prepare(p);
+
+        RunLoadCounter.assertMaxLoads(p, 21, () -> suggest(p.getSearchIndex(), "build"));
+        RunLoadCounter.assertMaxLoads(p, 21, () -> suggest(p.getSearchIndex(), "build9"));
+        RunLoadCounter.assertMaxLoads(p, 21, () -> suggest(p.getSearchIndex(), "build3"));
+        RunLoadCounter.assertMaxLoads(p, 21, () -> suggest(p.getSearchIndex(), "build13"));
     }
 
     /**
