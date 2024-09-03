@@ -6,6 +6,7 @@
 
 package hudson.security.csrf;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
@@ -15,8 +16,10 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.util.MultipartFormDataParser;
 import io.jenkins.servlet.ServletRequestWrapper;
+import io.jenkins.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -164,7 +167,15 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      */
     @Deprecated
     public boolean validateCrumb(javax.servlet.ServletRequest request, MultipartFormDataParser parser) {
-        return validateCrumb(request != null ? ServletRequestWrapper.toJakartaServletRequest(request) : null, parser);
+        return validateCrumb(request != null ? wrap(request) : null, parser);
+    }
+
+    private static ServletRequest wrap(@NonNull javax.servlet.ServletRequest request) {
+        if (request instanceof javax.servlet.http.HttpServletRequest httpRequest) {
+            return HttpServletRequestWrapper.toJakartaHttpServletRequest(httpRequest);
+        } else {
+            return ServletRequestWrapper.toJakartaServletRequest(request);
+        }
     }
 
     /**
@@ -175,7 +186,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
     public /* abstract */ boolean validateCrumb(ServletRequest request, String salt, String crumb) {
         return Util.ifOverridden(
                 () -> validateCrumb(
-                        request != null ? ServletRequestWrapper.fromJakartaServletRequest(request) : null,
+                        request != null ? wrap(request) : null,
                         salt,
                         crumb),
                 CrumbIssuer.class,
@@ -184,6 +195,14 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
                 javax.servlet.ServletRequest.class,
                 String.class,
                 String.class);
+    }
+
+    private static javax.servlet.ServletRequest wrap(@NonNull ServletRequest request) {
+        if (request instanceof HttpServletRequest httpRequest) {
+            return HttpServletRequestWrapper.fromJakartaHttpServletRequest(httpRequest);
+        } else {
+            return ServletRequestWrapper.fromJakartaServletRequest(request);
+        }
     }
 
     /**
