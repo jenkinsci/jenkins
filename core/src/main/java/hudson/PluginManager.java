@@ -241,6 +241,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 return klass.getConstructor(Jenkins.class).newInstance(jenkins);
             }
         },
+        SC_FILE2 {
+            @Override
+            @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
+                                            @NonNull Jenkins jenkins) throws ReflectiveOperationException {
+                return klass.getConstructor(ServletContext.class, File.class).newInstance(jenkins.getServletContext(), jenkins.getRootDir());
+            }
+        },
         /**
          * @deprecated use {@link #SC_FILE2}
          */
@@ -250,13 +257,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
                                             @NonNull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(javax.servlet.ServletContext.class, File.class).newInstance(jenkins.servletContext, jenkins.getRootDir());
-            }
-        },
-        SC_FILE2 {
-            @Override
-            @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
-                                            @NonNull Jenkins jenkins) throws ReflectiveOperationException {
-                return klass.getConstructor(ServletContext.class, File.class).newInstance(jenkins.getServletContext(), jenkins.getRootDir());
             }
         },
         FILE {
