@@ -114,7 +114,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
     protected /* abstract */ String issueCrumb(ServletRequest request, String salt) {
         return Util.ifOverridden(
                 () -> issueCrumb(
-                        request != null ? ServletRequestWrapper.fromJakartaServletRequest(request) : null, salt),
+                        request != null ? wrap(request) : null, salt),
                 CrumbIssuer.class,
                 getClass(),
                 "issueCrumb",
@@ -128,7 +128,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
     @Deprecated
     protected String issueCrumb(javax.servlet.ServletRequest request, String salt) {
         return Util.ifOverridden(
-                () -> issueCrumb(request != null ? ServletRequestWrapper.toJakartaServletRequest(request) : null, salt),
+                () -> issueCrumb(request != null ? wrap(request) : null, salt),
                 CrumbIssuer.class,
                 getClass(),
                 "issueCrumb",
