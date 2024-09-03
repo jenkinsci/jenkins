@@ -42,15 +42,21 @@ public abstract class BasicHeaderAuthenticator implements ExtensionPoint {
      */
     @CheckForNull
     public Authentication authenticate2(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws IOException, ServletException {
-        try {
-            if (Util.isOverridden(BasicHeaderAuthenticator.class, getClass(), "authenticate2", javax.servlet.http.HttpServletRequest.class, javax.servlet.http.HttpServletResponse.class, String.class, String.class)) {
+        if (Util.isOverridden(BasicHeaderAuthenticator.class, getClass(), "authenticate2", javax.servlet.http.HttpServletRequest.class, javax.servlet.http.HttpServletResponse.class, String.class, String.class)) {
+            try {
                 return authenticate2(HttpServletRequestWrapper.fromJakartaHttpServletRequest(req), HttpServletResponseWrapper.fromJakartaHttpServletResponse(rsp), username, password);
-            } else {
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else if (Util.isOverridden(BasicHeaderAuthenticator.class, getClass(), "authenticate", javax.servlet.http.HttpServletRequest.class, javax.servlet.http.HttpServletResponse.class, String.class, String.class)) {
+            try {
                 org.acegisecurity.Authentication a = authenticate(HttpServletRequestWrapper.fromJakartaHttpServletRequest(req), HttpServletResponseWrapper.fromJakartaHttpServletResponse(rsp), username, password);
                 return a != null ? a.toSpring() : null;
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
             }
-        } catch (javax.servlet.ServletException e) {
-            throw ServletExceptionWrapper.toJakartaServletException(e);
+        } else {
+            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the " + BasicHeaderAuthenticator.class.getSimpleName() + ".authenticate2 methods");
         }
     }
 
@@ -61,7 +67,13 @@ public abstract class BasicHeaderAuthenticator implements ExtensionPoint {
     @CheckForNull
     @Deprecated
     public Authentication authenticate2(javax.servlet.http.HttpServletRequest req, javax.servlet.http.HttpServletResponse rsp, String username, String password) throws IOException, javax.servlet.ServletException {
-        if (Util.isOverridden(BasicHeaderAuthenticator.class, getClass(), "authenticate", javax.servlet.http.HttpServletRequest.class, javax.servlet.http.HttpServletResponse.class, String.class, String.class)) {
+        if (Util.isOverridden(BasicHeaderAuthenticator.class, getClass(), "authenticate2", HttpServletRequest.class, HttpServletResponse.class, String.class, String.class)) {
+            try {
+                return authenticate2(HttpServletRequestWrapper.toJakartaHttpServletRequest(req), HttpServletResponseWrapper.toJakartaHttpServletResponse(rsp), username, password);
+            } catch (ServletException e) {
+                throw ServletExceptionWrapper.fromJakartaServletException(e);
+            }
+        } else if (Util.isOverridden(BasicHeaderAuthenticator.class, getClass(), "authenticate", javax.servlet.http.HttpServletRequest.class, javax.servlet.http.HttpServletResponse.class, String.class, String.class)) {
             org.acegisecurity.Authentication a = authenticate(req, rsp, username, password);
             return a != null ? a.toSpring() : null;
         } else {
