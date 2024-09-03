@@ -218,8 +218,17 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
 
         Queue.Item item = Jenkins.get().getQueue().schedule2(asJob(), delay.getTimeInSeconds(), getBuildCause(asJob(), req)).getItem();
         if (item != null) {
-            // TODO JENKINS-66105 use SC_SEE_OTHER if !ScheduleResult.created
-            rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
+            if (req.getHeader("User-Agent") != null && req.getHeader("User-Agent").contains("Mozilla/5.0")) {  // Using a web browser
+                String path = req.getPathInfo();
+                if (path.charAt(path.length() - 1) == '/') {
+                    path = path.substring(0, path.length() - 1);
+                }
+                path = path.substring(0, path.lastIndexOf('/'));
+                rsp.sendRedirect(req.getContextPath() + path); // Redirect to the job page
+            } else {
+                // TODO JENKINS-66105 use SC_SEE_OTHER if !ScheduleResult.created
+                rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
+            }
         } else {
             rsp.sendRedirect(".");
         }
