@@ -436,7 +436,15 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
          * @see ParameterizedJobMixIn#doBuildWithParameters
          */
         default void doBuildWithParameters(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-            getParameterizedJobMixIn().doBuildWithParameters(req, rsp, delay);
+            if (Util.isOverridden(ParameterizedJob.class, getClass(), "doBuildWithParameters", StaplerRequest.class, StaplerResponse.class, TimeDuration.class)) {
+                try {
+                    doBuildWithParameters(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp), delay);
+                } catch (javax.servlet.ServletException e) {
+                    throw ServletExceptionWrapper.toJakartaServletException(e);
+                }
+            } else {
+                getParameterizedJobMixIn().doBuildWithParameters(req, rsp, delay);
+            }
         }
 
         /**
