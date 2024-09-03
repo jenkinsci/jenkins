@@ -67,7 +67,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -478,7 +478,7 @@ public class ApiTokenProperty extends UserProperty {
          */
         @Deprecated
         @RequirePOST
-        public HttpResponse doChangeToken(@AncestorInPath User u, StaplerResponse2 rsp) throws IOException {
+        public HttpResponse doChangeToken(@AncestorInPath User u, StaplerResponse rsp) throws IOException {
             // you are the user or you have ADMINISTER permission
             u.checkPermission(Jenkins.ADMINISTER);
 
