@@ -871,7 +871,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
     }
 
     /**
-     * use {@link #configure(StaplerRequest2, JSONObject)}
+     * @deprecated use {@link #configure(StaplerRequest2, JSONObject)}
      */
     @Deprecated
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
