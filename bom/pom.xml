@@ -39,8 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
-    <!-- TODO JENKINS-73258 https://github.com/jenkinsci/stapler/pull/482 -->
-    <stapler.version>1903.vc3c8b_63dda_41</stapler.version>
+    <stapler.version>1903.v994a_db_314d58</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -296,7 +295,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.hudson</groupId>
         <artifactId>commons-jelly-tags-define</artifactId>
-        <version>1.1-jenkins-20240510</version>
+        <version>1.1-jenkins-20240903</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
