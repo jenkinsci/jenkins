@@ -207,7 +207,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      *      Use {@link #rebuild(StaplerRequest2, JSONObject, List)} instead.
      */
     @Deprecated
-    public void rebuild(StaplerRequest2 req, JSONObject json, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException, IOException {
+    public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException, IOException {
         rebuild(req, json, descriptors);
     }
 
