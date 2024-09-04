@@ -50,8 +50,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * {@link ParameterValue} for {@link FileParameterDefinition}.
@@ -235,9 +235,9 @@ public class FileParameterValue extends ParameterValue {
     }
 
     /**
-     * Serve this file parameter in response to a {@link StaplerRequest}.
+     * Serve this file parameter in response to a {@link StaplerRequest2}.
      */
-    public DirectoryBrowserSupport doDynamic(StaplerRequest request, StaplerResponse response) {
+    public DirectoryBrowserSupport doDynamic(StaplerRequest2 request, StaplerResponse2 response) {
         AbstractBuild build = (AbstractBuild) request.findAncestor(AbstractBuild.class).getObject();
         File fileParameter = getFileParameterFolderUnderBuild(build);
         return new DirectoryBrowserSupport(build, new FilePath(fileParameter), Messages.FileParameterValue_IndexTitle(), "folder.png", false);
