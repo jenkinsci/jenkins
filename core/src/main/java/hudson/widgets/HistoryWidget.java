@@ -33,13 +33,13 @@ import hudson.model.ModelObject;
 import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.util.AlternativeUiTextProvider;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.servlet.ServletException;
 import jenkins.util.SystemProperties;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageFilter;
@@ -49,8 +49,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Displays the history of records (normally {@link Run}s) on the side panel.
@@ -103,7 +103,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
      *      The parent model object that owns this widget.
      */
     public HistoryWidget(O owner, Iterable<T> baseList, Adapter<? super T> adapter) {
-        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
         this.adapter = adapter;
         this.baseList = baseList;
         this.baseUrl = Functions.getNearestAncestorUrl(currentRequest, owner);
@@ -234,7 +234,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
      *      The build 'number' to fetch. This is string because various variants
      *      uses non-numbers as the build key.
      */
-    public void doAjax(StaplerRequest req, StaplerResponse rsp,
+    public void doAjax(StaplerRequest2 req, StaplerResponse2 rsp,
           @Header("n") String n) throws IOException, ServletException {
 
         rsp.setContentType("text/html;charset=UTF-8");
@@ -298,7 +298,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
         String getNextKey(String key);
     }
 
-    private Long getPagingParam(@CheckForNull StaplerRequest currentRequest, @CheckForNull String name) {
+    private Long getPagingParam(@CheckForNull StaplerRequest2 currentRequest, @CheckForNull String name) {
         if (currentRequest == null || name == null) {
             return null;
         }

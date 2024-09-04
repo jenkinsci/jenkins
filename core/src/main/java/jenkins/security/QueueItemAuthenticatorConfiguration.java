@@ -11,7 +11,7 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Show the {@link QueueItemAuthenticator} configurations on the system config page.
@@ -47,7 +47,7 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration imp
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         try {
             authenticators.rebuildHetero(req, json, QueueItemAuthenticatorDescriptor.all(), "authenticators");
             return true;
