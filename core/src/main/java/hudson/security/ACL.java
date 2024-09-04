@@ -237,7 +237,7 @@ public abstract class ACL {
         }
         if (!hasCreatePermission2(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
-                    Item.CREATE.group.title + "/" + Item.CREATE.name + Item.CREATE + "/" + d.getDisplayName()));
+                    Item.CREATE.group.title + "/" + Item.CREATE.name + "/" + d.getDisplayName()));
         }
     }
     /**
@@ -290,7 +290,7 @@ public abstract class ACL {
         }
         if (!hasCreatePermission2(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
-                    View.CREATE.group.title + "/" + View.CREATE.name + View.CREATE + "/" + d.getDisplayName()));
+                    View.CREATE.group.title + "/" + View.CREATE.name + "/" + d.getDisplayName()));
         }
     }
 
