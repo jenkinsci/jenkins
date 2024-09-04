@@ -63,12 +63,6 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.glassfish.tyrus.bundles</groupId>
-      <artifactId>tyrus-standalone-client-jdk</artifactId>
-      <version>2.2.0</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
       <optional>true</optional>
@@ -140,10 +134,6 @@
                 <relocation>
                   <pattern>com</pattern>
                   <shadedPattern>io.jenkins.cli.shaded.com</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>jakarta</pattern>
-                  <shadedPattern>io.jenkins.cli.shaded.jakarta</shadedPattern>
                 </relocation>
               </relocations>
               <transformers>

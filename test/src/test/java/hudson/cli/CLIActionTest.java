@@ -43,7 +43,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -136,7 +135,7 @@ public class CLIActionTest {
         assertEquals(code, proc.join());
     }
 
-    @Ignore("TODO flaky test") @Test public void authenticationFailed() throws Exception {
+    @Test public void authenticationFailed() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
         var jar = tmp.newFile("jenkins-cli.jar");
@@ -145,7 +144,7 @@ public class CLIActionTest {
         var exitStatus = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), "-auth", "user:bogustoken", "who-am-i"
         ).stdout(baos).start().join();
-        assertThat(baos.toString(), allOf(containsString("status code 401"), containsString("Server: Jetty")));
+        assertThat(baos.toString(), allOf(containsString("status code 401"), containsString("erver: Jetty")));
         assertThat(exitStatus, is(15));
     }
 
