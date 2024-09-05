@@ -129,9 +129,11 @@
       font-weight: 450;
       flex-grow: 1;
       padding: 0.45rem 0 0;
+      word-break: break-word;
 
       .app-builds-container__item__time {
         color: var(--text-color-secondary);
+        word-break: normal;
       }
     }
 
@@ -168,6 +170,7 @@
     padding-left: 2.25rem;
     margin-top: -2px;
     grid-column: 1 / span 2;
+    word-break: break-word;
 
     &::before {
       content: "";
