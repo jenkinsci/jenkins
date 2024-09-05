@@ -23,7 +23,7 @@
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
-    "@babel/cli": "7.24.8",
+    "@babel/cli": "7.25.6",
     "@babel/core": "7.25.2",
     "@babel/preset-env": "7.25.4",
     "@eslint/js": "9.9.1",
@@ -37,7 +37,7 @@
     "globals": "15.9.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.9.1",
-    "postcss": "8.4.41",
+    "postcss": "8.4.43",
     "postcss-loader": "8.1.1",
     "postcss-preset-env": "10.0.2",
     "postcss-scss": "4.0.9",
@@ -45,7 +45,7 @@
     "sass": "1.77.8",
     "sass-loader": "16.0.1",
     "style-loader": "4.0.0",
-    "stylelint": "16.8.2",
+    "stylelint": "16.9.0",
     "stylelint-checkstyle-reporter": "1.0.0",
     "stylelint-config-standard": "36.0.1",
     "webpack": "5.94.0",
@@ -57,7 +57,7 @@
     "hotkeys-js": "3.12.2",
     "jquery": "3.7.1",
     "lodash": "4.17.21",
-    "sortablejs": "1.15.2",
+    "sortablejs": "1.15.3",
     "tippy.js": "6.3.7",
     "window-handle": "1.0.1"
   },

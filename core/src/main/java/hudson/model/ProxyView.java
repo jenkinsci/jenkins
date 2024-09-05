@@ -29,9 +29,10 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.util.FormValidation;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.Collection;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -39,7 +40,8 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -98,7 +100,32 @@ public class ProxyView extends View implements StaplerFallback {
     }
 
     @Override
-    protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
+    protected void submit(StaplerRequest2 req) throws IOException, ServletException, FormException {
+        if (Util.isOverridden(ProxyView.class, getClass(), "submit", StaplerRequest.class)) {
+            try {
+                submit(StaplerRequest.fromStaplerRequest2(req));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            submitImpl(req);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #submit(StaplerRequest2)}
+     */
+    @Deprecated
+    @Override
+    protected void submit(StaplerRequest req) throws IOException, javax.servlet.ServletException, FormException {
+        try {
+            submitImpl(StaplerRequest.toStaplerRequest2(req));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private void submitImpl(StaplerRequest2 req) throws ServletException, FormException {
         String proxiedViewName = req.getSubmittedForm().getString("proxiedViewName");
         if (Jenkins.get().getView(proxiedViewName) == null) {
             throw new FormException("Not an existing global view", "proxiedViewName");
@@ -108,7 +135,7 @@ public class ProxyView extends View implements StaplerFallback {
 
     @RequirePOST
     @Override
-    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public Item doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         return getProxiedView().doCreateItem(req, rsp);
     }
 
@@ -139,7 +166,7 @@ public class ProxyView extends View implements StaplerFallback {
         @Override
         public boolean isInstantiable() {
             // doesn't make sense to add a ProxyView to the global views
-            return !(Stapler.getCurrentRequest().findAncestorObject(ViewGroup.class) instanceof Jenkins);
+            return !(Stapler.getCurrentRequest2().findAncestorObject(ViewGroup.class) instanceof Jenkins);
         }
 
     }

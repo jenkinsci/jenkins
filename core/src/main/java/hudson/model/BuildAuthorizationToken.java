@@ -27,11 +27,13 @@ package hudson.model;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.Util;
 import hudson.security.ACL;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import javax.servlet.http.HttpServletResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -51,7 +53,10 @@ public final class BuildAuthorizationToken {
         this.token = token;
     }
 
-    public static BuildAuthorizationToken create(StaplerRequest req) {
+    /**
+     * @since TODO
+     */
+    public static BuildAuthorizationToken create(StaplerRequest2 req) {
         if (req.getParameter("pseudoRemoteTrigger") != null) {
             String token = Util.fixEmpty(req.getParameter("authToken"));
             if (token != null)
@@ -61,11 +66,22 @@ public final class BuildAuthorizationToken {
         return null;
     }
 
-    @Deprecated public static void checkPermission(AbstractProject<?, ?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
-        checkPermission((Job<?, ?>) project, token, req, rsp);
+    /**
+     * @deprecated use {@link #create(StaplerRequest2)}
+     */
+    @Deprecated
+    public static BuildAuthorizationToken create(StaplerRequest req) {
+        return create(StaplerRequest.toStaplerRequest2(req));
     }
 
-    public static void checkPermission(Job<?, ?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+    @Deprecated public static void checkPermission(AbstractProject<?, ?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+        checkPermission((Job<?, ?>) project, token, StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    /**
+     * @since TODO
+     */
+    public static void checkPermission(Job<?, ?> project, BuildAuthorizationToken token, StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (token != null && token.token != null) {
             //check the provided token
             String providedToken = req.getParameter("token");
@@ -84,6 +100,14 @@ public final class BuildAuthorizationToken {
         rsp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         rsp.addHeader("Allow", "POST");
         throw HttpResponses.forwardToView(project, "requirePOST.jelly");
+    }
+
+    /**
+     * @deprecated use {@link #checkPermission(Job, BuildAuthorizationToken, StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    public static void checkPermission(Job<?, ?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+        checkPermission(project, token, StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
     }
 
     public String getToken() {
