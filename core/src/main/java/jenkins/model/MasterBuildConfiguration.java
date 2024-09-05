@@ -37,7 +37,7 @@ import org.kohsuke.stapler.StaplerRequest2;
  * @author Kohsuke Kawaguchi
  */
 @Extension(ordinal = 500) @Symbol({"builtInNode", "masterBuild"})
-public class MasterBuildConfiguration extends GlobalConfiguration {
+public class MasterBuildConfiguration {
     public int getNumExecutors() {
         return Jenkins.get().getNumExecutors();
     }
@@ -46,7 +46,6 @@ public class MasterBuildConfiguration extends GlobalConfiguration {
         return Jenkins.get().getLabelString();
     }
 
-    @Override
     public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         Jenkins j = Jenkins.get();
         try {
