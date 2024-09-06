@@ -36,7 +36,7 @@
       ],
       "enabled": false,
       "matchPackageNames": [
-        "org.eclipse.jetty:jetty-maven-plugin",
+        "org.eclipse.jetty.ee9:jetty-ee9-maven-plugin",
         "org.jenkins-ci:winstone"
       ]
     },
