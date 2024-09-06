@@ -574,7 +574,7 @@ THE SOFTWARE.
             </configuration>
           </execution>
           <execution>
-            <!-- see jetty-maven-plugin config and WebAppMain -->
+            <!-- see jetty-ee9-maven-plugin config and WebAppMain -->
             <id>support-log-formatter</id>
             <goals>
               <goal>copy</goal>
