@@ -100,8 +100,8 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.w3c.dom.Text;
 
 /**
@@ -488,7 +488,7 @@ public class ViewTest {
         view.save();
         j.jenkins.doReload();
         //wait until all configuration are reloaded
-        if (j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading) {
+        if (j.jenkins.getServletContext().getAttribute("app") instanceof HudsonIsLoading) {
             Thread.sleep(500);
         }
         assertTrue("View does not contains job free after load.", j.jenkins.getView(view.getDisplayName()).contains(j.jenkins.getItem(job.getName())));
@@ -1081,11 +1081,11 @@ public class ViewTest {
         }
 
         @Override
-        protected void submit(StaplerRequest req) {
+        protected void submit(StaplerRequest2 req) {
         }
 
         @Override
-        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) {
+        public Item doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) {
             return null;
         }
     }

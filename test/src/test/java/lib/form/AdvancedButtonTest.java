@@ -16,7 +16,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  *
@@ -54,7 +54,7 @@ public class AdvancedButtonTest {
             return "self";
         }
 
-        public FormValidation doSubmitNestedOptionalBlock(StaplerRequest req) throws Exception {
+        public FormValidation doSubmitNestedOptionalBlock(StaplerRequest2 req) throws Exception {
             JSONObject f = req.getSubmittedForm();
             assertEquals("avalue", f.getString("a"));
             assertEquals("bvalue", f.getString("b"));

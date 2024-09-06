@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Tests the 'rowvg-start' and 'rowvg-end' CSS attributes and their effects.
@@ -162,7 +162,7 @@ public class RowVisibilityGroupTest {
         public Drink drink;
         private Beer beer;
 
-        public void doSubmitTest2(StaplerRequest req) throws Exception {
+        public void doSubmitTest2(StaplerRequest2 req) throws Exception {
             JSONObject json = req.getSubmittedForm();
             System.out.println(json);
             beer = (Beer) req.bindJSON(Drink.class, json.getJSONObject("drink"));

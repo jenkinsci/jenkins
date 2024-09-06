@@ -41,6 +41,7 @@ import hudson.triggers.SafeTimerTask;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -52,7 +53,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
@@ -61,8 +61,8 @@ import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -112,7 +112,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     @Override
-    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         ContextMenu m = new ContextMenu();
         for (Computer c : get_all()) {
             m.add(c);
@@ -206,12 +206,12 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return "/computers/";
     }
 
-    public Computer getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+    public Computer getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
         return Jenkins.get().getComputer(token);
     }
 
     @RequirePOST
-    public void do_launchAll(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void do_launchAll(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         for (Computer c : get_all()) {
@@ -227,7 +227,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * TODO: ajax on the client side to wait until the update completion might be nice.
      */
     @RequirePOST
-    public void doUpdateNow(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doUpdateNow(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.MANAGE);
 
         for (NodeMonitor nodeMonitor : NodeMonitor.getAll()) {
@@ -244,7 +244,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * First check point in creating a new agent.
      */
     @RequirePOST
-    public synchronized void doCreateItem(StaplerRequest req, StaplerResponse rsp,
+    public synchronized void doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp,
                                            @QueryParameter String name, @QueryParameter String mode,
                                            @QueryParameter String from) throws IOException, ServletException {
         final Jenkins app = Jenkins.get();
@@ -290,7 +290,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * Really creates a new agent.
      */
     @POST
-    public synchronized void doDoCreateItem(StaplerRequest req, StaplerResponse rsp,
+    public synchronized void doDoCreateItem(StaplerRequest2 req, StaplerResponse2 rsp,
                                            @QueryParameter String name,
                                            @QueryParameter String type) throws IOException, ServletException, FormException {
         final Jenkins app = Jenkins.get();
@@ -348,7 +348,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * Accepts submission from the configuration page.
      */
     @POST
-    public synchronized HttpResponse doConfigSubmit(StaplerRequest req) throws IOException, ServletException, FormException {
+    public synchronized HttpResponse doConfigSubmit(StaplerRequest2 req) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
             Jenkins.get().checkPermission(Jenkins.MANAGE);

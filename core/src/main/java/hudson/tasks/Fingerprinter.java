@@ -76,7 +76,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -351,7 +351,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
 
         @Override
-        public Publisher newInstance(StaplerRequest req, JSONObject formData) {
+        public Publisher newInstance(StaplerRequest2 req, JSONObject formData) {
             return req.bindJSON(Fingerprinter.class, formData);
         }
 

@@ -52,7 +52,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
-      <version>4.0.4</version>
+      <version>5.0.0</version>
     </dependency>
   </dependencies>
 
