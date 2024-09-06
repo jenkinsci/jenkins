@@ -26,11 +26,15 @@ fi
 mkdir -p target/ath-reports
 chmod a+rwx target/ath-reports
 
+# obtain the groupId to grant to access the docker socket to run tests needing docker
+dockergid=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ubuntu:noble stat -c %g /var/run/docker.sock)
+
 exec docker run --rm \
 	--env JDK \
 	--env ATH_VERSION \
 	--env BROWSER \
 	--shm-size 2g `# avoid selenium.WebDriverException exceptions like 'Failed to decode response from marionette' and webdriver closed` \
+	--group-add ${dockergid} \
 	--volume "$(pwd)"/war/target/jenkins.war:/jenkins.war:ro \
 	--volume /var/run/docker.sock:/var/run/docker.sock:rw \
 	--volume "$(pwd)"/target/ath-reports:/reports:rw \
