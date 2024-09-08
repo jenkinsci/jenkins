@@ -52,8 +52,7 @@ THE SOFTWARE.
   <modules>
     <module>bom</module>
     <module>websocket/spi</module>
-    <module>websocket/jetty10</module>
-    <module>websocket/jetty12-ee8</module>
+    <module>websocket/jetty12-ee9</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -74,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.475</revision>
+    <revision>2.476</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-08-27T13:51:01Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-09-04T12:22:06Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -97,8 +96,8 @@ THE SOFTWARE.
     <antlr.version>4.13.2</antlr.version>
     <bridge-method-injector.version>1.29</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
-    <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>7.0</winstone.version>
+    <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
+    <winstone.version>8.1</winstone.version>
   </properties>
 
   <!--

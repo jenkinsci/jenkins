@@ -164,7 +164,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
                 DefaultScriptInvoker dsi = new DefaultScriptInvoker();
                 StringWriter sw = new StringWriter();
                 XMLOutput xml = dsi.createXMLOutput(sw, true);
-                dsi.invokeScript(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), s, this, xml);
+                dsi.invokeScript(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2(), s, this, xml);
                 return sw.toString();
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, null, e);

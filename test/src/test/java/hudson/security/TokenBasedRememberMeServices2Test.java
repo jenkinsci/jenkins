@@ -299,7 +299,7 @@ public class TokenBasedRememberMeServices2Test {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getCookieManager().addCookie(cookie);
         // trigger remember me
-        String sessionSeed = wc.executeOnServer(() -> Stapler.getCurrentRequest().getSession(false).getAttribute(UserSeedProperty.USER_SESSION_SEED).toString());
+        String sessionSeed = wc.executeOnServer(() -> Stapler.getCurrentRequest2().getSession(false).getAttribute(UserSeedProperty.USER_SESSION_SEED).toString());
         realm.verifyInvocations(1);
         String userSeed = alice.getProperty(UserSeedProperty.class).getSeed();
 
