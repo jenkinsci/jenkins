@@ -43,16 +43,14 @@ THE SOFTWARE.
         </head>
         <body>
             <div class="simple-page" role="main">
-                <div class="modal signup">
-                    <div class="signupIntroDefault">
-                        <div class="logo" />
-                        <h1 class="loading">
-                            <l:spinner text="${%Please wait while Jenkins is restarting}" />
-                        </h1>
-                        <p>
-                            ${%blurb}
-                        </p>
-                    </div>
+                <div class="app-jenkins-booting">
+                    <div class="logo" />
+                    <h1 class="loading">
+                        <l:spinner text="${%Please wait while Jenkins is restarting}" />
+                    </h1>
+                    <p>
+                        ${%blurb}
+                    </p>
                 </div>
             </div>
             <script src="${resURL}/scripts/loading.js" type="text/javascript" />

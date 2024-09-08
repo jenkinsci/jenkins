@@ -43,18 +43,16 @@ THE SOFTWARE.
         </head>
         <body>
             <div class="simple-page" role="main">
-                <div class="modal signup">
-                    <div class="signupIntroDefault">
-                        <div class="logo">
-                          <img src="${imagesURL}/svgs/logo.svg" alt="Jenkins logo" />
-                        </div>
-                        <h1 class="loading">
-                            <l:spinner text="${%Please wait while Jenkins is getting ready to work}" />
-                        </h1>
-                        <p class="restarting">
-                            ${%Your browser will reload automatically when Jenkins is ready}
-                        </p>
+                <div class="app-jenkins-booting">
+                    <div class="logo">
+                      <img src="${imagesURL}/svgs/logo.svg" alt="Jenkins logo" />
                     </div>
+                    <h1 class="loading">
+                        <l:spinner text="${%Please wait while Jenkins is getting ready to work}" />
+                    </h1>
+                    <p class="restarting">
+                        ${%Your browser will reload automatically when Jenkins is ready}
+                    </p>
                 </div>
             </div>
             <script src="${resURL}/scripts/loading.js" type="text/javascript" />

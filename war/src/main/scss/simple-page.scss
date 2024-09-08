@@ -109,7 +109,7 @@
   color: var(--danger-color, #c4000a);
 }
 
-@keyframes dotheroar {
+@keyframes fade-in-jenkins-booting {
   from {
     scale: 97.5%;
     opacity: 0;
@@ -117,11 +117,13 @@
   }
 }
 
-.signupIntroDefault {
+.app-jenkins-booting {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  animation: dotheroar 0.4s both 0.2s;
+  animation: fade-in-jenkins-booting 0.4s both 0.2s;
+  // Optical compensation to visually center content
+  margin-top: -2rem;
 
   * {
     font-size: 1rem;
