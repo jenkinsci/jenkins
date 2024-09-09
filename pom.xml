@@ -139,7 +139,6 @@ THE SOFTWARE.
           <artifactId>maven-compiler-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
-            <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
             <compilerArgs>
               <!--
