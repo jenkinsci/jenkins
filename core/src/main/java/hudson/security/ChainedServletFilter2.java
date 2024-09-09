@@ -24,41 +24,39 @@
 
 package hudson.security;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Servlet {@link Filter} that chains multiple {@link Filter}s.
  *
  * @author Kohsuke Kawaguchi
- * @deprecated use {@link ChainedServletFilter2}
  */
-@Deprecated
-public class ChainedServletFilter implements Filter {
+public class ChainedServletFilter2 implements Filter {
     // array is assumed to be immutable once set
     protected volatile Filter[] filters;
 
-    public ChainedServletFilter() {
+    public ChainedServletFilter2() {
         filters = new Filter[0];
     }
 
-    public ChainedServletFilter(Filter... filters) {
+    public ChainedServletFilter2(Filter... filters) {
         this(Arrays.asList(filters));
     }
 
-    public ChainedServletFilter(Collection<? extends Filter> filters) {
+    public ChainedServletFilter2(Collection<? extends Filter> filters) {
         setFilters(filters);
     }
 
@@ -70,7 +68,7 @@ public class ChainedServletFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         if (LOGGER.isLoggable(Level.FINEST))
             for (Filter f : filters)
-                LOGGER.finest("ChainedServletFilter contains: " + f);
+                LOGGER.finest("ChainedServletFilter2 contains: " + f);
 
         for (Filter f : filters)
             f.init(filterConfig);
@@ -87,7 +85,7 @@ public class ChainedServletFilter implements Filter {
         new FilterChain() {
             private int position = 0;
             // capture the array for thread-safety
-            private final Filter[] filters = ChainedServletFilter.this.filters;
+            private final Filter[] filters = ChainedServletFilter2.this.filters;
 
             @Override
             public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
@@ -120,5 +118,5 @@ public class ChainedServletFilter implements Filter {
             f.destroy();
     }
 
-    private static final Logger LOGGER = Logger.getLogger(ChainedServletFilter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ChainedServletFilter2.class.getName());
 }
