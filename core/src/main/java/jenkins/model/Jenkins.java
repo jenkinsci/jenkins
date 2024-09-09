@@ -5372,8 +5372,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * job that the user is configuring though to prevent a validation warning
      * if the user sets the displayName to what it currently is.
      */
-    boolean isDisplayNameUnique(String displayName, String currentJobName) {
-        Collection<TopLevelItem> itemCollection = items.values();
+    boolean isDisplayNameUnique(ItemGroup<?> itemGroup, String displayName, String currentJobName) {
+
+        Collection<TopLevelItem> itemCollection = (Collection<TopLevelItem>) itemGroup.getItems(t -> t instanceof TopLevelItem);
 
         // if there are a lot of projects, we'll have to store their
         // display names in a HashSet or something for a quick check
@@ -5397,8 +5398,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param name The name to test
      * @param currentJobName The name of the job that the user is configuring
      */
-    boolean isNameUnique(String name, String currentJobName) {
-        Item item = getItem(name);
+    boolean isNameUnique(ItemGroup<?> itemGroup, String name, String currentJobName) {
+        Item item = itemGroup.getItem(name);
 
         if (null == item) {
             // the candidate name didn't return any items so the name is unique
@@ -5420,17 +5421,45 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * existing display names or project names
      * @param displayName The display name to test
      * @param jobName The name of the job the user is configuring
+     *
+     * @deprecated use {@link TopLevelItemDescriptor#doCheckDisplayNameOrNull(TopLevelItem, String)}
      */
+    @Deprecated
     public FormValidation doCheckDisplayName(@QueryParameter String displayName,
             @QueryParameter String jobName) {
         displayName = displayName.trim();
 
         LOGGER.fine(() -> "Current job name is " + jobName);
 
-        if (!isNameUnique(displayName, jobName)) {
+        if (!isNameUnique(this, displayName, jobName)) {
             return FormValidation.warning(Messages.Jenkins_CheckDisplayName_NameNotUniqueWarning(displayName));
         }
-        else if (!isDisplayNameUnique(displayName, jobName)) {
+        else if (!isDisplayNameUnique(this, displayName, jobName)) {
+            return FormValidation.warning(Messages.Jenkins_CheckDisplayName_DisplayNameNotUniqueWarning(displayName));
+        }
+        else {
+            return FormValidation.ok();
+        }
+    }
+
+    /**
+     * Checks to see if the candidate displayName collides with any
+     * existing display names or project names in the items parent group
+     * @param displayName The display name to test
+     * @param item The item to check for duplicates
+     */
+    @Restricted(NoExternalUse.class)
+    public FormValidation checkDisplayName(String displayName,
+                                           TopLevelItem item) {
+        displayName = displayName.trim();
+        String jobName = item.getName();
+
+        LOGGER.fine(() -> "Current job name is " + jobName);
+
+        if (!isNameUnique(item.getParent(), displayName, jobName)) {
+            return FormValidation.warning(Messages.Jenkins_CheckDisplayName_NameNotUniqueWarning(displayName));
+        }
+        else if (!isDisplayNameUnique(item.getParent(), displayName, jobName)) {
             return FormValidation.warning(Messages.Jenkins_CheckDisplayName_DisplayNameNotUniqueWarning(displayName));
         }
         else {
