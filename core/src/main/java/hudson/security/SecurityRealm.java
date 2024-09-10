@@ -678,7 +678,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         }
         filters.add(new RememberMeAuthenticationFilter(sc.manager2, sc.rememberMe2));
         filters.addAll(commonFilters());
-        return new ChainedServletFilter(filters);
+        return new ChainedServletFilter2(filters);
     }
 
     protected final List<Filter> commonFilters() {
@@ -781,7 +781,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
          */
         @Override
         public Filter createFilter(FilterConfig filterConfig) {
-            return new ChainedServletFilter();
+            return new ChainedServletFilter2();
         }
 
         /**
