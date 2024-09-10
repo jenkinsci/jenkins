@@ -10,22 +10,26 @@ permissions:
   pull-requests: write
 
 jobs:
-  run_script:
+  since_updater:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'jenkinsci' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Run update-since-todo.py
         run: |
           body=$(./update-since-todo.py)
-          body="${body//'%'/'%25'}"
-          body="${body//$'\n'/'%0A'}"
-          body="${body//$'\r'/'%0D'}" 
-          echo "PROGRESS=$body" >> $GITHUB_OUTPUT
+
+          {
+            echo 'PROGRESS<<EOF'
+            echo "${body}"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
         id: run_script
         shell: bash
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@8867c4aba1b742c39f8d0ba35429c2dfa4b6cb20 # v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Fill in since annotations
@@ -33,4 +37,5 @@ jobs:
           body: ${{ steps.run_script.outputs.PROGRESS }}
           base: master
           labels: skip-changelog
+          branch: actions/update-since-todo
           delete-branch: true
