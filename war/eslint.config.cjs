@@ -16,10 +16,10 @@ module.exports = [
       "**/jsbundles/",
 
       // External scripts
-      "war/.pnp.cjs",
-      "war/.pnp.loader.mjs",
-      "war/src/main/js/plugin-setup-wizard/bootstrap-detached.js",
-      "war/src/main/webapp/scripts/yui/*",
+      ".pnp.cjs",
+      ".pnp.loader.mjs",
+      "src/main/js/plugin-setup-wizard/bootstrap-detached.js",
+      "src/main/webapp/scripts/yui/*",
     ],
   },
   {
@@ -91,9 +91,9 @@ module.exports = [
   {
     files: [
       "eslint.config.cjs",
-      "war/postcss.config.js",
-      "war/webpack.config.js",
-      "war/.stylelintrc.js",
+      "postcss.config.js",
+      "webpack.config.js",
+      ".stylelintrc.js",
     ],
     languageOptions: {
       globals: {
