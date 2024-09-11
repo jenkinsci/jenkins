@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.476</revision>
+    <revision>2.477</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-09-04T12:22:06Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-09-10T14:09:56Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -139,7 +139,6 @@ THE SOFTWARE.
           <artifactId>maven-compiler-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
-            <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
             <compilerArgs>
               <!--
@@ -174,7 +173,7 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <artifactId>maven-jarsigner-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.1.0</version>
           <configuration>
             <!--
               during the development, debug profile will cause

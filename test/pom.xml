@@ -218,7 +218,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.942.vb_43318a_156b_2</version>
+      <version>6.951.v5f91d88d76b_b_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -230,7 +230,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1296.vb_f538b_c88630</version>
+      <version>1300.v03d9d8a_cf1fb_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -406,14 +406,6 @@ THE SOFTWARE.
         <!-- Version specified in grandparent POM -->
         <configuration>
           <skip>true</skip>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <!-- Version specified in grandparent POM -->
-        <configuration>
-          <fork>true</fork>
         </configuration>
       </plugin>
     </plugins>
