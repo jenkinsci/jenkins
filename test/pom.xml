@@ -408,14 +408,6 @@ THE SOFTWARE.
           <skip>true</skip>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <!-- Version specified in grandparent POM -->
-        <configuration>
-          <fork>true</fork>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
 
