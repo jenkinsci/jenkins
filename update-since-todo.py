@@ -3,6 +3,7 @@
 import argparse
 import fileinput
 import io
+import os
 import shutil
 import subprocess
 
@@ -100,6 +101,10 @@ def analyze_files(commits_and_tags, dry_run=False):
         "*.jelly",
         "*.js",
     ]
+
+    runningInCI = os.environ.get("CI", "false") == "true"
+    if runningInCI:
+        print("<details><summary>Detailed output</summary>\n\n")
     with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
         for line in io.TextIOWrapper(proc.stdout):
             parts = line.rstrip().split(":", 2)
@@ -108,6 +113,8 @@ def analyze_files(commits_and_tags, dry_run=False):
         if retcode:
             raise subprocess.CalledProcessError(retcode, cmd)
     print()
+    if runningInCI:
+        print("</details>\n")
 
 
 def display_results(commits_and_tags):
