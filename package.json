@@ -10,16 +10,16 @@
   },
   "private": true,
   "scripts": {
-    "dev": "webpack --config webpack.config.js",
-    "prod": "webpack --config webpack.config.js --mode=production",
+    "dev": "webpack --config war/webpack.config.js",
+    "prod": "webpack --config war/webpack.config.js --mode=production",
     "build": "yarn prod",
     "start": "yarn dev --watch",
-    "lint:js": "eslint ../ && prettier --check ../",
-    "lint:js-ci": "eslint ../ -f checkstyle -o target/eslint-warnings.xml && prettier --check ../",
-    "lint:css": "stylelint src/main/scss",
-    "lint:css-ci": "stylelint src/main/scss --custom-formatter stylelint-checkstyle-reporter -o target/stylelint-warnings.xml",
+    "lint:js": "eslint . && prettier --check .",
+    "lint:js-ci": "eslint . -f checkstyle -o target/eslint-warnings.xml && prettier --check .",
+    "lint:css": "stylelint war/src/main/scss",
+    "lint:css-ci": "stylelint war/src/main/scss --custom-formatter stylelint-checkstyle-reporter -o target/stylelint-warnings.xml",
     "lint:ci": "yarn lint:js-ci && yarn lint:css-ci",
-    "lint:fix": "eslint --fix ../ && prettier --write ../ && stylelint src/main/scss --fix",
+    "lint:fix": "eslint --fix . && prettier --write . && stylelint war/src/main/scss --fix",
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
