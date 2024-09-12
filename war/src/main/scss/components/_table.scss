@@ -13,6 +13,7 @@
   background-clip: padding-box;
   margin-bottom: var(--section-padding);
 
+  // The '::before' pseudo-element is causing overflow issues in Firefox, so disable it for that browser
   @supports (not (-moz-appearance: none)) {
     &::before {
       content: "";
