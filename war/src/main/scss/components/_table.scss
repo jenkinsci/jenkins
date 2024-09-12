@@ -4,7 +4,7 @@
   --table-padding: 0.55rem;
 
   position: relative;
-  width: 99%;
+  width: 100%;
   background: var(--table-background);
   border-radius: calc(var(--table-border-radius) + 4px);
   border: 4px solid var(--table-background);
@@ -13,13 +13,15 @@
   background-clip: padding-box;
   margin-bottom: var(--section-padding);
 
-  &::before {
-    content: "";
-    position: absolute;
-    inset: -4px -4px -2px;
-    border: var(--card-border-width) solid var(--table-border-color);
-    border-radius: inherit;
-    pointer-events: none;
+  @supports (not (-moz-appearance: none)) {
+    &::before {
+      content: "";
+      position: absolute;
+      inset: -4px -4px -2px;
+      border: var(--card-border-width) solid var(--table-border-color);
+      border-radius: inherit;
+      pointer-events: none;
+    }
   }
 
   * {
