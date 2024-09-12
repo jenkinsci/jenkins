@@ -31,10 +31,18 @@ THE SOFTWARE.
     <st:attribute name="icon" use="required">
       Sets the icon for the notice. Supports Jenkins Symbols and regular images.
     </st:attribute>
+    <st:attribute name="description">
+      Optional description for the notice. HTML is supported.
+    </st:attribute>
   </st:documentation>
 
   <div class="jenkins-notice">
     <l:icon src="${attrs.icon}" />
     <div>${attrs.text}</div>
+    <j:if test="${attrs.description != null}">
+      <div class="jenkins-notice__description">
+        <j:out value="${attrs.description}" />
+      </div>
+    </j:if>
   </div>
 </j:jelly>
