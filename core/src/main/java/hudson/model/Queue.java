@@ -109,6 +109,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import jenkins.console.WithConsoleUrl;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.model.queue.CompositeCauseOfBlockage;
@@ -2088,7 +2089,7 @@ public class Queue extends ResourceController implements Saveable {
      * used to render the HTML that indicates this executable is executing.
      */
     @StaplerAccessibleType
-    public interface Executable extends Runnable {
+    public interface Executable extends Runnable, WithConsoleUrl {
         /**
          * Task from which this executable was created.
          *
@@ -2129,6 +2130,16 @@ public class Queue extends ResourceController implements Saveable {
          */
         default long getEstimatedDuration() {
             return Executables.getParentOf(this).getEstimatedDuration();
+        }
+
+        /**
+         * Handles cases such as {@code PlaceholderExecutable} for Pipeline node steps.
+         * @return by default, that of {@link #getParentExecutable} if defined
+         */
+        @Override
+        default String getConsoleUrl() {
+            Executable parent = getParentExecutable();
+            return parent != null ? parent.getConsoleUrl() : null;
         }
 
         /**
