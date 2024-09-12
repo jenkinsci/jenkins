@@ -27,12 +27,12 @@ package hudson.model;
 import hudson.console.AnnotatedLargeText;
 import hudson.security.ACL;
 import hudson.security.Permission;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.framework.io.LargeText;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -113,7 +113,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
     /**
      * Handles incremental log output.
      */
-    public void doProgressiveLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doProgressiveLog(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         AnnotatedLargeText text = obtainLog();
         if (text != null) {
             text.doProgressText(req, rsp);
@@ -125,7 +125,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
     /**
      * Handles incremental log output.
      */
-    public void doProgressiveHtml(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doProgressiveHtml(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         AnnotatedLargeText text = obtainLog();
         if (text != null) {
             text.doProgressiveHtml(req, rsp);
@@ -138,7 +138,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
      * Clears the error status.
      */
     @RequirePOST
-    public synchronized void doClearError(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doClearError(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         getACL().checkPermission(getPermission());
 
         if (workerThread != null && !workerThread.isRunning())

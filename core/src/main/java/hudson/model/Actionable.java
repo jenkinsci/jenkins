@@ -37,8 +37,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -338,7 +341,26 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         return null;
     }
 
+    /**
+     * @since TODO
+     */
+    public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
+        if (Util.isOverridden(Actionable.class, getClass(), "getDynamic", String.class, StaplerRequest.class, StaplerResponse.class)) {
+            return getDynamic(token, StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+        } else {
+            return getDynamicImpl(token, req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #getDynamic(String, StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        return getDynamicImpl(token, StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    private Object getDynamicImpl(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
         for (Action a : getAllActions()) {
             if (a == null)
                 continue;   // be defensive
@@ -351,7 +373,29 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         return null;
     }
 
-    @Override public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    /**
+     * @since TODO
+     */
+    @Override
+    public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
+        if (Util.isOverridden(Actionable.class, getClass(), "doContextMenu", StaplerRequest.class, StaplerResponse.class)) {
+            return doContextMenu(StaplerRequest.fromStaplerRequest2(request), StaplerResponse.fromStaplerResponse2(response));
+        } else {
+            return doContextMenuImpl(request, response);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doContextMenu(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    @Override
+    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        return doContextMenuImpl(StaplerRequest.toStaplerRequest2(request), StaplerResponse.toStaplerResponse2(response));
+    }
+
+    private ContextMenu doContextMenuImpl(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         return new ContextMenu().from(this, request, response);
     }
 

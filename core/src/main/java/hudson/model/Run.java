@@ -68,6 +68,9 @@ import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -106,8 +109,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.ArtifactManager;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.ArtifactManagerFactory;
@@ -119,6 +120,7 @@ import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
@@ -132,7 +134,9 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -1043,7 +1047,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         // RUN may be accessed using permalinks, as "/lastSuccessful" or other, so try to retrieve this base URL
         // looking for "this" in the current request ancestors
         // @see also {@link AbstractItem#getUrl}
-        StaplerRequest req = Stapler.getCurrentRequest();
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
         if (req != null) {
             String seed = Functions.getNearestAncestorUrl(req, this);
             if (seed != null) {
@@ -2157,7 +2161,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return new String(byteArray, getCharset());
     }
 
-    public void doBuildStatus(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doBuildStatus(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         rsp.sendRedirect2(req.getContextPath() + "/images/48x48/" + getBuildStatusUrl());
     }
 
@@ -2260,7 +2264,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the build number in the body.
      */
-    public void doBuildNumber(StaplerResponse rsp) throws IOException {
+    public void doBuildNumber(StaplerResponse2 rsp) throws IOException {
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("US-ASCII");
         rsp.setStatus(HttpServletResponse.SC_OK);
@@ -2270,7 +2274,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the build time stamp in the body.
      */
-    public void doBuildTimestamp(StaplerRequest req, StaplerResponse rsp, @QueryParameter String format) throws IOException {
+    public void doBuildTimestamp(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String format) throws IOException {
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("US-ASCII");
         rsp.setStatus(HttpServletResponse.SC_OK);
@@ -2282,8 +2286,27 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Sends out the raw console output.
+     *
+     * @since TODO
      */
+    public void doConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        if (Util.isOverridden(Run.class, getClass(), "doConsoleText", StaplerRequest.class, StaplerResponse.class)) {
+            doConsoleText(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+        } else {
+            doConsoleTextImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doConsoleText(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        doConsoleTextImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    private void doConsoleTextImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
         try (InputStream input = getLogInputStream();
              OutputStream os = rsp.getOutputStream();
@@ -2299,7 +2322,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Deprecated
     public void doProgressiveLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        getLogText().doProgressText(req, rsp);
+        getLogText().doProgressText(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
     }
 
     /**
@@ -2320,7 +2343,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @RequirePOST
-    public void doToggleLogKeep(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doToggleLogKeep(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         keepLog(!keepLog);
         rsp.forwardToPreviousPage(req);
     }
@@ -2341,9 +2364,37 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Deletes the build when the button is pressed.
+     *
+     * @since TODO
      */
     @RequirePOST
-    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(Run.class, getClass(), "doDoDelete", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                doDoDelete(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+            return;
+        } else {
+            doDoDeleteImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doDoDelete(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doDoDeleteImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private void doDoDeleteImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         checkPermission(DELETE);
 
         // We should not simply delete the build if it has been explicitly
@@ -2376,7 +2427,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Accepts the new description.
      */
     @RequirePOST
-    public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doSubmitDescription(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         setDescription(req.getParameter("description"));
         rsp.sendRedirect(".");  // go to the top page
     }
@@ -2507,7 +2558,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @POST
-    public @NonNull HttpResponse doConfigSubmit(StaplerRequest req) throws IOException, ServletException, FormException {
+    public @NonNull HttpResponse doConfigSubmit(StaplerRequest2 req) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
         try (BulkChange bc = new BulkChange(this)) {
             JSONObject json = req.getSubmittedForm();
@@ -2626,8 +2677,26 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Override
+    public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
+        if (Util.isOverridden(Run.class, getClass(), "getDynamic", String.class, StaplerRequest.class, StaplerResponse.class)) {
+            return getDynamic(token, StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+        } else {
+            Object returnedResult = super.getDynamic(token, req, rsp);
+            return getDynamicImpl(token, returnedResult);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #getDynamic(String, StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         Object returnedResult = super.getDynamic(token, req, rsp);
+        return getDynamicImpl(token, returnedResult);
+    }
+
+    private Object getDynamicImpl(String token, Object returnedResult) {
         if (returnedResult == null) {
             //check transient actions too
             for (Action action : getTransientActions()) {
@@ -2669,7 +2738,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
 
     public static class RedirectUp {
-        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
             // Compromise to handle both browsers (auto-redirect) and programmatic access
             // (want accurate 404 response).. send 404 with javascript to redirect browsers.
             rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);

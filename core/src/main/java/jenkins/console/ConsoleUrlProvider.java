@@ -119,9 +119,9 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
             url = run.getUrl() + "console";
         }
         if (url.startsWith("/")) {
-            return Stapler.getCurrentRequest().getContextPath() + url;
+            return Stapler.getCurrentRequest2().getContextPath() + url;
         } else {
-            return Stapler.getCurrentRequest().getContextPath() + '/' + url;
+            return Stapler.getCurrentRequest2().getContextPath() + '/' + url;
         }
     }
 
