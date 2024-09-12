@@ -90,6 +90,7 @@ import java.util.logging.Logger;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderProperty;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import jenkins.model.HistoricalBuild;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
@@ -636,9 +637,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         throw new IllegalStateException("HistoryWidget is now created via WidgetFactory implementation");
     }
 
-    public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<>() {
+    public static final HistoryWidget.Adapter<HistoricalBuild> HISTORY_ADAPTER = new Adapter<>() {
         @Override
-        public int compare(Run record, String key) {
+        public int compare(HistoricalBuild record, String key) {
             try {
                 int k = Integer.parseInt(key);
                 return record.getNumber() - k;
@@ -648,12 +649,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         @Override
-        public String getKey(Run record) {
+        public String getKey(HistoricalBuild record) {
             return String.valueOf(record.getNumber());
         }
 
         @Override
-        public boolean isBuilding(Run record) {
+        public boolean isBuilding(HistoricalBuild record) {
             return record.isBuilding();
         }
 
