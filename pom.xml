@@ -427,6 +427,9 @@ THE SOFTWARE.
         <property>
           <name>env.CI</name>
         </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
       </activation>
       <build>
         <plugins>
@@ -456,6 +459,9 @@ THE SOFTWARE.
         <property>
           <name>!env.CI</name>
         </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
       </activation>
       <build>
         <plugins>
