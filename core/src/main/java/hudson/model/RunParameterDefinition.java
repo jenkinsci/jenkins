@@ -38,7 +38,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 
 public class RunParameterDefinition extends SimpleParameterDefinition {
@@ -155,7 +155,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         }
 
         @Override
-        public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public ParameterDefinition newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             return req.bindJSON(RunParameterDefinition.class, formData);
         }
 
@@ -202,7 +202,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
-    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+    public ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
         RunParameterValue value = req.bindJSON(RunParameterValue.class, jo);
         value.setDescription(getDescription());
         return value;

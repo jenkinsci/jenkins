@@ -3510,7 +3510,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     private static void checkPermissionForValidate() {
-        AccessControlled subject = Stapler.getCurrentRequest().findAncestorObject(AbstractProject.class);
+        AccessControlled subject = Stapler.getCurrentRequest2().findAncestorObject(AbstractProject.class);
         if (subject == null)
             Jenkins.get().checkPermission(Jenkins.MANAGE);
         else

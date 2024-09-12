@@ -67,7 +67,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.FIPS140;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -138,7 +138,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         JSONObject o = new JSONObject();
         o.put("stat", 1);
         o.put("install", j.getLegacyInstanceId());
-        o.put("servletContainer", j.servletContext.getServerInfo());
+        o.put("servletContainer", j.getServletContext().getServerInfo());
         o.put("version", Jenkins.VERSION);
 
         List<JSONObject> nodes = new ArrayList<>();
@@ -212,7 +212,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         try {
             // for backward compatibility reasons, this configuration is stored in Jenkins
             if (DISABLED) {

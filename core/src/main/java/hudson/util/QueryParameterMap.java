@@ -24,6 +24,7 @@
 
 package hudson.util;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Parses the query string of the URL into a key/value pair.
@@ -67,6 +67,14 @@ public class QueryParameterMap {
     }
 
     public QueryParameterMap(HttpServletRequest req) {
+        this(req.getQueryString());
+    }
+
+    /**
+     * @deprecated use {@link #QueryParameterMap(HttpServletRequest)}
+     */
+    @Deprecated
+    public QueryParameterMap(javax.servlet.http.HttpServletRequest req) {
         this(req.getQueryString());
     }
 
