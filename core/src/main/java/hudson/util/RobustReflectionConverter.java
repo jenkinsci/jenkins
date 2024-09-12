@@ -451,6 +451,10 @@ public class RobustReflectionConverter implements Converter {
 
     protected Object unmarshalField(final UnmarshallingContext context, final Object result, Class type, Field field) {
         Converter converter = mapper.getLocalConverter(field.getDeclaringClass(), field.getName());
+        // TODO: Is there a better way to make something like this work? Does it break any custom converters?
+        if (converter == null && new RobustCollectionConverter(mapper, reflectionProvider).canConvert(type)) {
+            converter = new RobustCollectionConverter(mapper, reflectionProvider, field.getGenericType());
+        }
         return context.convertAnother(result, type, converter);
     }
 

@@ -34,11 +34,14 @@ import com.thoughtworks.xstream.core.ClassLoaderReference;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.security.InputManipulationException;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Logger;
 import jenkins.util.xstream.CriticalXStreamException;
+import org.jvnet.tiger_types.Types;
 
 /**
  * {@link CollectionConverter} that ignores {@link XStreamException}.
@@ -52,14 +55,33 @@ import jenkins.util.xstream.CriticalXStreamException;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RobustCollectionConverter extends CollectionConverter {
     private final SerializableConverter sc;
+    /**
+     * When available, this field holds the declared type of the collection being (de)serialized.
+     * This is used during deserialization to ensure that elements have the expected type.
+     */
+    // TODO: We only support one level of parameterization, i.e. the elements of a List<List<Integer>>
+    // will be treated as List<Object>, and so the inner list could have invalid non-Integer elements. It is unclear if
+    // we can do better without significant changes.
+    private final @CheckForNull Class<?> elementType;
 
     public RobustCollectionConverter(XStream xs) {
-        this(xs.getMapper(), xs.getReflectionProvider());
+        this(xs.getMapper(), xs.getReflectionProvider(), null);
     }
 
     public RobustCollectionConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
+        this(mapper, reflectionProvider, null);
+    }
+
+    public RobustCollectionConverter(Mapper mapper, ReflectionProvider reflectionProvider, Type collectionType) {
         super(mapper);
         sc = new SerializableConverter(mapper, reflectionProvider, new ClassLoaderReference(null));
+        if (collectionType != null && Collection.class.isAssignableFrom(Types.erasure(collectionType))) {
+            var baseType = Types.getBaseClass(collectionType, Collection.class);
+            var typeArg = Types.getTypeArgument(baseType, 0, Object.class);
+            this.elementType = Types.erasure(typeArg);
+        } else {
+            this.elementType = null;
+        }
     }
 
     @Override
@@ -85,9 +107,17 @@ public class RobustCollectionConverter extends CollectionConverter {
             reader.moveDown();
             try {
                 Object item = readBareItem(reader, context, collection);
-                long nanoNow = System.nanoTime();
-                collection.add(item);
-                XStream2SecurityUtils.checkForCollectionDoSAttack(context, nanoNow);
+                try {
+                    if (elementType != null) {
+                        // When possible, disallow invalid elements.
+                        elementType.cast(item);
+                    }
+                    long nanoNow = System.nanoTime();
+                    collection.add(item);
+                    XStream2SecurityUtils.checkForCollectionDoSAttack(context, nanoNow);
+                } catch (ClassCastException e) {
+                    RobustReflectionConverter.addErrorInContext(context, e);
+                }
             } catch (CriticalXStreamException e) {
                 throw e;
             } catch (InputManipulationException e) {

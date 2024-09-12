@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import jenkins.util.xstream.CriticalXStreamException;
 import org.junit.Test;
@@ -172,5 +173,54 @@ public class RobustCollectionConverterTest {
             s2 = t2;
         }
         return set;
+    }
+
+    @Test
+    public void checkElementTypes() {
+        var expected = new Numbers(1, 2, 3);
+        var xmlContent =
+                """
+                <hudson.util.RobustCollectionConverterTest_-Numbers>
+                  <numbers>
+                    <int>1</int>
+                    <int>2</int>
+                    <string>oops!</string>
+                    <int>3</int>
+                  </numbers>
+                </hudson.util.RobustCollectionConverterTest_-Numbers>
+                """;
+        var actual = (Numbers) new XStream2().fromXML(xmlContent);
+        assertEquals(expected, actual);
+    }
+
+    public static class Numbers {
+        private final List<Integer> numbers;
+
+        public Numbers(Integer... numbers) {
+            this.numbers = new ArrayList(Arrays.asList(numbers));
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 37 * hash + Objects.hashCode(this.numbers);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            } else if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            final Numbers other = (Numbers) obj;
+            return Objects.equals(this.numbers, other.numbers);
+        }
+
+        @Override
+        public String toString() {
+            return "Numbers[" + numbers + "]";
+        }
     }
 }
