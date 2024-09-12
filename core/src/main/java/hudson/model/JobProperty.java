@@ -186,7 +186,7 @@ public abstract class JobProperty<J extends Job<?, ?>> implements Reconfigurable
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     @Override
     public JobProperty<?> reconfigure(StaplerRequest2 req, JSONObject form) throws FormException {

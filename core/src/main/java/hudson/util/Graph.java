@@ -152,7 +152,7 @@ public abstract class Graph {
     /**
      * Renders a graph.
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doPng(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (Util.isOverridden(Graph.class, getClass(), "doPng", StaplerRequest.class, StaplerResponse.class)) {
@@ -225,7 +225,7 @@ public abstract class Graph {
     /**
      * Renders a clickable map.
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doMap(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (Util.isOverridden(Graph.class, getClass(), "doMap", StaplerRequest.class, StaplerResponse.class)) {
