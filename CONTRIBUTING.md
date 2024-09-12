@@ -68,7 +68,7 @@ On one terminal, start a development server that will not process frontend asset
 MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run -Dskip.yarn
 ```
 
-On another terminal and start a [webpack](https://webpack.js.org/) dev server:
+Open another terminal and start a [webpack](https://webpack.js.org/) dev server:
 
 ```sh
 yarn start
@@ -102,13 +102,13 @@ To automatically fix backend issues, run:
 mvn spotless:apply
 ```
 
-To view frontend issues run:
+To view frontend issues, run:
 
 ```sh
 yarn lint
 ```
 
-To fix frontend issues run:
+To fix frontend issues, run:
 
 ```sh
 yarn lint:fix
