@@ -412,23 +412,14 @@ div.listview-jobs {
   flex-direction: column;
   gap: 0.3rem;
 
-  .notnested {
+  .nested, .notnested {
     display: flex;
-
-    & + .nested {
-      margin-top: 0.3rem;
-    }
   }
 
   .nested {
-    display: flex;
     border-left: 2px solid color-mix(in srgb, var(--input-border), transparent);
     margin-left: 10px;
     padding-left: 22px;
-
-    & + .notnested {
-      margin-top: 0.3rem;
-    }
 
     & + .nested {
       margin-top: -0.3rem;
