@@ -35,7 +35,7 @@ THE SOFTWARE.
     <f:entry>
       <div class="listview-jobs">
         <j:forEach var="job" items="${h.getAllTopLevelItems(it.ownerItemGroup)}">
-          <j:set var="spanClass" value=""/>
+          <j:set var="spanClass" value="notnested"/>
           <j:set var="spanStyle" value=""/>
           <j:if test="${job.parent!=it.ownerItemGroup}">
             <j:set var="spanClass" value="nested"/>
