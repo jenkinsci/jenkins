@@ -214,7 +214,7 @@ public abstract class ComputerListener implements ExtensionPoint {
     /**
      * Indicates that the computer has become idle.
      *
-     * @since TODO
+     * @since 2.476
      */
     public void onIdle(Computer c) {}
 
