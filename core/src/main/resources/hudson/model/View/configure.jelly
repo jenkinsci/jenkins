@@ -28,8 +28,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%Edit View}" permission="${it.CONFIGURE}" type="one-column">
-    <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${title}" />
+
     <l:main-panel>
       <l:app-bar title="${title}" />
 
