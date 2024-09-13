@@ -55,16 +55,19 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
 import org.apache.commons.io.FilenameUtils;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.io.Content;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.util.Callback;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -115,19 +118,21 @@ public class UpdateSiteTest {
         server = new Server();
         ServerConnector connector = new ServerConnector(server);
         server.addConnector(connector);
-        server.setHandler(new AbstractHandler() {
+        server.setHandler(new Handler.Abstract() {
             @Override
-            public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
+            public boolean handle(Request request, Response response, Callback callback) throws IOException {
+                String target = request.getHttpURI().getPath();
                 if (target.startsWith(RELATIVE_BASE)) {
                     target = target.substring(RELATIVE_BASE.length());
                 }
                 String responseBody = getResource(target);
                 if (responseBody != null) {
-                    baseRequest.setHandled(true);
-                    response.setContentType("text/plain; charset=utf-8");
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getOutputStream().write(responseBody.getBytes(StandardCharsets.UTF_8));
+                    response.getHeaders().add(HttpHeader.CONTENT_TYPE, "text/plain; charset=utf-8");
+                    response.setStatus(HttpStatus.OK_200);
+                    Content.Sink.write(response, true, responseBody, callback);
+                    return true;
                 }
+                return false;
             }
         });
         server.start();

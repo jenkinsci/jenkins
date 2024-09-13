@@ -25,9 +25,9 @@
 package hudson;
 
 import hudson.model.UpdateCenter;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.concurrent.Future;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -54,7 +54,7 @@ public class PluginTest {
         r.createWebClient().assertFails("plugin/matrix-auth/images/%2e%2e%2fWEB-INF/licenses.xml", HttpServletResponse.SC_BAD_REQUEST);
         r.createWebClient().assertFails("plugin/matrix-auth/images/%2e.%2fWEB-INF/licenses.xml", HttpServletResponse.SC_BAD_REQUEST);
         r.createWebClient().assertFails("plugin/matrix-auth/images/..%2f..%2f..%2f" + r.jenkins.getRootDir().getName() + "%2fsecrets%2fmaster.key", HttpServletResponse.SC_BAD_REQUEST);
-        r.createWebClient().assertFails("plugin/matrix-auth/" + r.jenkins.getRootDir() + "/secrets/master.key", /* ./ prepended anyway */ HttpServletResponse.SC_NOT_FOUND);
+        r.createWebClient().assertFails("plugin/matrix-auth/" + r.jenkins.getRootDir() + "/secrets/master.key", /* ./ prepended anyway */ Functions.isWindows() ? HttpServletResponse.SC_BAD_REQUEST : HttpServletResponse.SC_NOT_FOUND);
         // SECURITY-155:
         r.createWebClient().assertFails("plugin/matrix-auth/WEB-INF/licenses.xml", HttpServletResponse.SC_BAD_REQUEST);
         r.createWebClient().assertFails("plugin/matrix-auth/META-INF/MANIFEST.MF", HttpServletResponse.SC_BAD_REQUEST);

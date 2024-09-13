@@ -47,6 +47,7 @@ module.exports = [
         findFormParent: "readonly",
         fireEvent: "readonly",
         Form: "readonly",
+        FormChecker: "readonly",
         getElementOverflowParams: "readonly",
         hoverNotification: "readonly",
         iota: "writeable",

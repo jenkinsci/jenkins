@@ -26,11 +26,26 @@ const updateBuildsRefreshInterval = 5000;
  */
 function load(options = {}) {
   /** @type {QueryParameters} */
+  cancelRefreshTimeout();
   const params = Object.assign({}, options, { search: pageSearchInput.value });
+  const paginationOrFirst =
+    buildHistoryPage.dataset.pageHasUp === "false" ||
+    "older-than" in params ||
+    "newer-than" in params;
 
-  // Avoid fetching if the page isn't active
+  // Avoid fetching if the page isn't visible
   if (document.hidden) {
     return;
+  }
+
+  createRefreshTimeout();
+
+  // When we're not on the first page and this is not a load due to pagination
+  // we need to set the correct value for older-than so we fetch the same set of runs
+  if (!paginationOrFirst) {
+    params["older-than"] = (
+      BigInt(buildHistoryPage.dataset.pageEntryNewest) + 1n
+    ).toString();
   }
 
   fetch(ajaxUrl + toQueryString(params)).then((rsp) => {
@@ -92,15 +107,9 @@ function updateCardControls(parameters) {
     !parameters.pageHasDown,
   );
 
-  // We only want the list to refresh if the user is on the first page of results
-  if (!parameters.pageHasUp) {
-    createRefreshTimeout();
-  } else {
-    cancelRefreshTimeout();
-  }
-
   buildHistoryPage.dataset.pageEntryNewest = parameters.pageEntryNewest;
   buildHistoryPage.dataset.pageEntryOldest = parameters.pageEntryOldest;
+  buildHistoryPage.dataset.pageHasUp = parameters.pageHasUp;
 }
 
 paginationPrevious.addEventListener("click", () => {
@@ -108,7 +117,6 @@ paginationPrevious.addEventListener("click", () => {
 });
 
 paginationNext.addEventListener("click", () => {
-  cancelRefreshTimeout();
   load({ "older-than": buildHistoryPage.dataset.pageEntryOldest });
 });
 
@@ -139,4 +147,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   load();
+
+  window.addEventListener("focus", function () {
+    load();
+  });
 });

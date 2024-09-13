@@ -46,13 +46,15 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <mina-sshd-api.version>2.13.1-117.v2f1a_b_66ff91d</mina-sshd-api.version>
-    <node.version>20.16.0</node.version>
+    <mina-sshd-api.version>2.13.2-125.v200281b_61d59</mina-sshd-api.version>
+    <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
+    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
+    <node.version>20.17.0</node.version>
     <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
     <yarn.version>1.22.19</yarn.version>
     <!-- maven-antrun-plugin will download this Yarn version. -->
-    <yarn-berry.version>4.2.2</yarn-berry.version>
-    <yarn-berry.sha256sum>1aa43a5304405be7a7cb9cb5de7b97de9c4e8ddd3273e4dad00d6ae3eb39f0ef</yarn-berry.sha256sum>
+    <yarn-berry.version>4.4.1</yarn-berry.version>
+    <yarn-berry.sha256sum>920b4530755296dc2ce8b4351f057d4a26429524fcb2789d277560d94837c27e</yarn-berry.sha256sum>
   </properties>
 
   <dependencyManagement>
@@ -85,7 +87,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>websocket-jetty10</artifactId>
+      <artifactId>websocket-jetty12-ee9</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -154,11 +156,22 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
-                    <exclude>org.jenkins-ci.main:websocket-jetty10</exclude>
+                    <exclude>org.jenkins-ci.main:websocket-jetty12-ee9</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
+                    <exclude>org.jvnet.hudson:commons-jelly-tags-define</exclude>
+                    <exclude>org.jvnet.winp:winp</exclude>
                     <exclude>org.kohsuke.stapler:stapler</exclude>
                     <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
                     <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
+                    <exclude>org.springframework.security:spring-security-core</exclude>
+                    <exclude>org.springframework.security:spring-security-crypto</exclude>
+                    <exclude>org.springframework.security:spring-security-web</exclude>
+                    <exclude>org.springframework:spring-aop</exclude>
+                    <exclude>org.springframework:spring-beans</exclude>
+                    <exclude>org.springframework:spring-context</exclude>
+                    <exclude>org.springframework:spring-core</exclude>
+                    <exclude>org.springframework:spring-expression</exclude>
+                    <exclude>org.springframework:spring-web</exclude>
                   </excludes>
                 </enforceBytecodeVersion>
               </rules>
@@ -291,21 +304,21 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1341.va_2819b_414686</version>
+                  <version>1361.v913100720139</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1280.v310a_78b_9a_1e0</version>
+                  <version>1300.v03d9d8a_cf1fb_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1322.v857eeeea_9902</version>
+                  <version>1336.vee415d95c521</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -326,7 +339,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>checks-api</artifactId>
-                  <version>2.2.0</version>
+                  <version>2.2.1</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -349,7 +362,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>5.5.0-1</version>
+                  <version>5.5.1-1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -363,7 +376,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>snakeyaml-api</artifactId>
-                  <version>2.2-111.vc6598e30cc65</version>
+                  <version>2.3-123.v13484c65210a_</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -387,7 +400,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api and echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>font-awesome-api</artifactId>
-                  <version>6.5.2-1</version>
+                  <version>6.6.0-2</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -423,14 +436,14 @@ THE SOFTWARE.
                   <!-- detached after 2.86 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>107.v773860566e2e</version>
+                  <version>115.vd8b_301cc15d0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.112 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jdk-tool</artifactId>
-                  <version>73.vddf737284550</version>
+                  <version>80.v8a_dee33ed6f0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -493,14 +506,14 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api, checks-api, commons-text-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-lang3-api</artifactId>
-                  <version>3.14.0-76.vda_5591261cfe</version>
+                  <version>3.17.0-84.vb_b_938040b_078</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of bootstrap5-api, checks-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-text-api</artifactId>
-                  <version>1.12.0-119.v73ef73f2345d</version>
+                  <version>1.12.0-129.v99a_50df237f7</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -561,7 +574,7 @@ THE SOFTWARE.
             </configuration>
           </execution>
           <execution>
-            <!-- see jetty-maven-plugin config and WebAppMain -->
+            <!-- see jetty-ee9-maven-plugin config and WebAppMain -->
             <id>support-log-formatter</id>
             <goals>
               <goal>copy</goal>
@@ -627,14 +640,14 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-maven-plugin</artifactId>
-        <version>10.0.20</version>
+        <groupId>org.eclipse.jetty.ee9</groupId>
+        <artifactId>jetty-ee9-maven-plugin</artifactId>
+        <version>12.0.13</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
-          <reload>manual</reload>
+          <scan>0</scan>
           <httpConnector>
             <host>${host}</host>
             <port>${port}</port>
@@ -642,7 +655,9 @@ THE SOFTWARE.
           <loginServices>
             <loginService implementation="org.eclipse.jetty.security.HashLoginService">
               <name>default</name>
-              <config>${basedir}/src/realm.properties</config>
+              <config implementation="org.eclipse.jetty.maven.MavenResource">
+                <resourceAsString>${basedir}/src/realm.properties</resourceAsString>
+              </config>
             </loginService>
           </loginServices>
           <systemProperties>
@@ -663,6 +678,12 @@ THE SOFTWARE.
             <!-- stat collection pointless -->
             <hudson.model.UsageStatistics.disabled>true</hudson.model.UsageStatistics.disabled>
             <hudson.Main.development>true</hudson.Main.development>
+            <!--
+              Prevent org.apache.xalan.processor.TransformerFactoryImpl from being loaded from the Maven classpath,
+              instead preferring com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl as is used in
+              production contexts.
+            -->
+            <javax.xml.transform.TransformerFactory>com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl</javax.xml.transform.TransformerFactory>
           </systemProperties>
           <webApp>
             <!-- Allows resources to be reloaded, and enable nicer console logging. -->

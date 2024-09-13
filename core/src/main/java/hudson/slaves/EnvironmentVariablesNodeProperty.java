@@ -98,7 +98,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
         public String getHelpPage() {
             // yes, I know this is a hack.
-            ComputerSet object = Stapler.getCurrentRequest().findAncestorObject(ComputerSet.class);
+            ComputerSet object = Stapler.getCurrentRequest2().findAncestorObject(ComputerSet.class);
             if (object != null) {
                 // we're on a node configuration page, show show that help page
                 return "/help/system-config/nodeEnvironmentVariables.html";
