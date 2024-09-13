@@ -202,8 +202,8 @@ public class JenkinsTest {
         p.setDisplayName("displayName");
 
         Jenkins jenkins = Jenkins.get();
-        assertTrue(jenkins.isDisplayNameUnique("displayName1", curJobName));
-        assertTrue(jenkins.isDisplayNameUnique(jobName, curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, "displayName1", curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, jobName, curJobName));
     }
 
     @Test
@@ -219,7 +219,7 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        assertFalse(jenkins.isDisplayNameUnique(displayName, curJobName));
+        assertFalse(jenkins.isDisplayNameUnique(jenkins, displayName, curJobName));
     }
 
     @Test
@@ -232,7 +232,7 @@ public class JenkinsTest {
 
         Jenkins jenkins = Jenkins.get();
         // should be true as we don't test against the current job
-        assertTrue(jenkins.isDisplayNameUnique(displayName, curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, displayName, curJobName));
     }
 
     @Test
@@ -243,7 +243,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(jobName);
 
         Jenkins jenkins = Jenkins.get();
-        assertTrue(jenkins.isNameUnique("jobName1", curJobName));
+        assertTrue(jenkins.isNameUnique(jenkins, "jobName1", curJobName));
     }
 
     @Test
@@ -254,7 +254,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(jobName);
 
         Jenkins jenkins = Jenkins.get();
-        assertFalse(jenkins.isNameUnique(jobName, curJobName));
+        assertFalse(jenkins.isNameUnique(jenkins, jobName, curJobName));
     }
 
     @Test
@@ -266,7 +266,7 @@ public class JenkinsTest {
 
         Jenkins jenkins = Jenkins.get();
         // true because we don't test against the current job
-        assertTrue(jenkins.isNameUnique(curJobName, curJobName));
+        assertTrue(jenkins.isNameUnique(jenkins, curJobName, curJobName));
     }
 
     @Test
@@ -280,7 +280,7 @@ public class JenkinsTest {
         p.setDisplayName("displayName");
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName("1displayName", curJobName);
+        FormValidation v = jenkins.checkDisplayName("1displayName", curProject);
         assertEquals(FormValidation.ok(), v);
     }
 
@@ -296,7 +296,7 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName(displayName, curJobName);
+        FormValidation v = jenkins.checkDisplayName(displayName, curProject);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
@@ -312,7 +312,7 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName(jobName, curJobName);
+        FormValidation v = jenkins.checkDisplayName(jobName, curProject);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 

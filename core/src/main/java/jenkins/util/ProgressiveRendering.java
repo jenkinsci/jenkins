@@ -26,6 +26,7 @@ package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractItem;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -39,7 +40,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSON;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.Ancestor;
@@ -103,7 +103,7 @@ public abstract class ProgressiveRendering {
      * For internal use.
      */
     @JavaScriptMethod public final void start() {
-        Ancestor ancestor = Stapler.getCurrentRequest().findAncestor(BoundObjectTable.class);
+        Ancestor ancestor = Stapler.getCurrentRequest2().findAncestor(BoundObjectTable.class);
         if (ancestor == null) {
             throw new IllegalStateException("no BoundObjectTable");
         }
@@ -159,7 +159,7 @@ public abstract class ProgressiveRendering {
      */
     @java.lang.SuppressWarnings({"rawtypes", "unchecked"}) // public RequestImpl ctor requires List<AncestorImpl> yet AncestorImpl is not public! API design flaw
     private static RequestImpl createMockRequest() {
-        RequestImpl currentRequest = (RequestImpl) Stapler.getCurrentRequest();
+        RequestImpl currentRequest = (RequestImpl) Stapler.getCurrentRequest2();
         HttpServletRequest original = (HttpServletRequest) currentRequest.getRequest();
         final Map<String, Object> getters = new HashMap<>();
         for (Method method : HttpServletRequest.class.getMethods()) {
@@ -205,7 +205,7 @@ public abstract class ProgressiveRendering {
     /**
      * Actually do the work.
      * <p>The security context will be that in effect when the web request was made.
-     * {@link Stapler#getCurrentRequest} will also be similar to that in effect when the web request was made;
+     * {@link Stapler#getCurrentRequest2} will also be similar to that in effect when the web request was made;
      * at least, {@link Ancestor}s and basic request properties (URI, locale, and so on) will be available.
      * @throws Exception whenever you like; the progress bar will indicate that an error occurred but details go to the log only
      */

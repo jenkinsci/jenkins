@@ -76,6 +76,8 @@ import hudson.triggers.SafeTimerTask;
 import hudson.util.ConsistentHash;
 import hudson.util.Futures;
 import hudson.util.XStream2;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -107,8 +109,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+import jenkins.console.WithConsoleUrl;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.model.queue.CompositeCauseOfBlockage;
@@ -130,7 +131,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -2088,7 +2089,7 @@ public class Queue extends ResourceController implements Saveable {
      * used to render the HTML that indicates this executable is executing.
      */
     @StaplerAccessibleType
-    public interface Executable extends Runnable {
+    public interface Executable extends Runnable, WithConsoleUrl {
         /**
          * Task from which this executable was created.
          *
@@ -2129,6 +2130,16 @@ public class Queue extends ResourceController implements Saveable {
          */
         default long getEstimatedDuration() {
             return Executables.getParentOf(this).getEstimatedDuration();
+        }
+
+        /**
+         * Handles cases such as {@code PlaceholderExecutable} for Pipeline node steps.
+         * @return by default, that of {@link #getParentExecutable} if defined
+         */
+        @Override
+        default String getConsoleUrl() {
+            Executable parent = getParentExecutable();
+            return parent != null ? parent.getConsoleUrl() : null;
         }
 
         /**
@@ -2415,7 +2426,7 @@ public class Queue extends ResourceController implements Saveable {
             }
         }
 
-        public HttpResponse doIndex(StaplerRequest req) {
+        public HttpResponse doIndex(StaplerRequest2 req) {
             return HttpResponses.text("Queue item exists. For details check, for example, " + req.getRequestURI() + "api/json?tree=cancelled,executable[url]");
         }
 
