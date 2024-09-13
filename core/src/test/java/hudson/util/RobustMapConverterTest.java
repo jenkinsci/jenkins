@@ -25,6 +25,7 @@
 package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
@@ -141,5 +142,49 @@ public class RobustMapConverterTest {
             m2 = t2;
         }
         return map;
+    }
+
+    @Test
+    public void robustAgainstInvalidEntry() {
+        XStream2 xstream2 = new XStream2();
+        String xml =
+            """
+            <hudson.util.RobustMapConverterTest_-Data>
+              <map>
+                <string>key1</string>
+                <entry>
+                  <string>key2</string>
+                  <string>value2</string>
+                </entry>
+              </map>
+            </hudson.util.RobustMapConverterTest_-Data>
+            """;
+        Data data = (Data) xstream2.fromXML(xml);
+        assertThat(data.map, equalTo(Map.of("key2", "value2")));
+    }
+
+    @Test
+    public void robustAgainstInvalidEntryWithNoValue() {
+        XStream2 xstream2 = new XStream2();
+        String xml =
+            """
+            <hudson.util.RobustMapConverterTest_-Data>
+              <map>
+                <entry>
+                  <string>key1</string>
+                </entry>
+                <entry>
+                  <string>key2</string>
+                  <string>value2</string>
+                </entry>
+              </map>
+            </hudson.util.RobustMapConverterTest_-Data>
+            """;
+        Data data = (Data) xstream2.fromXML(xml);
+        assertThat(data.map, equalTo(Map.of("key2", "value2")));
+    }
+
+    private static final class Data {
+        Map<String, String> map;
     }
 }
