@@ -53,7 +53,7 @@ THE SOFTWARE.
         <!-- view property configurations -->
         <f:descriptorList descriptors="${it.getVisiblePropertyDescriptors()}" instances="${it.properties}" />
 
-        <f:section title="${%Widgets}" description="Control what the view's widgets display">
+        <f:section title="${%Widgets}" description="Customize the widgets that show in this view">
           <f:entry field="filterQueue">
             <f:checkbox title="${%Filter build queue}"
                         description="If checked, only jobs in this view will be shown in the queue" />
