@@ -81,7 +81,7 @@ public class Hudson extends Jenkins {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public Hudson(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
         this(root, context, null);
@@ -96,7 +96,7 @@ public class Hudson extends Jenkins {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public Hudson(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
         super(root, context, pluginManager);

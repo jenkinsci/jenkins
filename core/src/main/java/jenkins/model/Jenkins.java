@@ -759,7 +759,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private final transient ServletContext jakartaServletContext;
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public ServletContext getServletContext() {
         return this.jakartaServletContext;
@@ -4435,7 +4435,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Logs out the user.
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doLogout(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         String user = getAuthentication2().getName();
@@ -4933,7 +4933,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static void _doScript(StaplerRequest2 req, StaplerResponse2 rsp, RequestDispatcher view, VirtualChannel channel, ACL acl) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous
