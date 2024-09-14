@@ -21,5 +21,9 @@
   &__description {
     color: var(--text-color-secondary);
     margin-top: -0.375rem;
+
+    &:empty {
+      display: none;
+    }
   }
 }

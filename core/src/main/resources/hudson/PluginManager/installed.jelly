@@ -71,7 +71,7 @@ THE SOFTWARE.
 
       <j:choose>
         <j:when test="${noPlugins}">
-          <l:notice icon="symbol-plugins" text="${%No plugins installed}" />
+          <l:notice icon="symbol-plugins" title="${%No plugins installed}" />
         </j:when>
         <j:otherwise>
           <table id="plugins" class="jenkins-table sortable">

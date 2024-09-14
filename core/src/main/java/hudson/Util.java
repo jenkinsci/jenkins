@@ -1852,7 +1852,7 @@ public class Util {
      * Find the specific ancestor, or throw an exception.
      * Useful for an ancestor we know is inside the URL to ease readability
      *
-     * @since TODO
+     * @since 2.475
      */
     @Restricted(NoExternalUse.class)
     public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest2 request, @NonNull Class<T> clazz) {

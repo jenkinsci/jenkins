@@ -24,7 +24,9 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-    <l:notice text="${%description_1}"
-              description="${it.hasPermission(it.CONFIGURE) ? '%description_2' : null}"
-              icon="symbol-weather-icon-health-00to19" />
+    <l:notice title="${%description_1}" icon="symbol-weather-icon-health-00to19">
+        <j:if test="${it.hasPermission(it.CONFIGURE)}">
+            ${%description_2}
+        </j:if>
+    </l:notice>
 </j:jelly>
