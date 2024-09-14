@@ -63,7 +63,7 @@ public class FormApply {
     /**
      * Is this submission from the "apply" button?
      *
-     * @since TODO
+     * @since 2.475
      */
     public static boolean isApply(StaplerRequest2 req) {
         return Boolean.parseBoolean(req.getParameter("core:apply"));

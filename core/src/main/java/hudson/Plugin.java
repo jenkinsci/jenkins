@@ -224,7 +224,7 @@ public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
      * <p>
      * If you are using this method, you'll likely be interested in
      * using {@link #save()} and {@link #load()}.
-     * @since TODO
+     * @since 2.475
      */
     public void configure(StaplerRequest2 req, JSONObject formData) throws IOException, ServletException, FormException {
         try {
@@ -250,7 +250,7 @@ public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
     /**
      * This method serves static resources in the plugin under {@code hudson/plugin/SHORTNAME}.
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         if (Util.isOverridden(Plugin.class, getClass(), "doDynamic", StaplerRequest.class, StaplerResponse.class)) {
