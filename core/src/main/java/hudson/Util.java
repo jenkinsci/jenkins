@@ -1526,7 +1526,7 @@ public class Util {
      */
     public static boolean isOverridden(@NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
         if (base == derived) {
-            // If base and derived are the same time, the method is not overridden by definition
+            // If base and derived are the same type, the method is not overridden by definition
             return false;
         }
         // If derived is not a subclass or implementor of base, it can't override any method
