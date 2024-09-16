@@ -379,7 +379,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private final PluginStrategy strategy;
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     protected PluginManager(ServletContext context, File rootDir) {
         this.context = context;

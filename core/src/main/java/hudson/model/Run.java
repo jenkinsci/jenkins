@@ -2209,7 +2209,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Sends out the raw console output.
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (Util.isOverridden(Run.class, getClass(), "doConsoleText", StaplerRequest.class, StaplerResponse.class)) {
@@ -2287,7 +2287,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Deletes the build when the button is pressed.
      *
-     * @since TODO
+     * @since 2.475
      */
     @RequirePOST
     public void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {

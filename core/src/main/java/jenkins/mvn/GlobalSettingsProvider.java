@@ -29,7 +29,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
     public abstract FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener);
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static GlobalSettingsProvider parseSettingsProvider(StaplerRequest2 req) throws Descriptor.FormException, ServletException {
         JSONObject settings = req.getSubmittedForm().getJSONObject("globalSettings");
