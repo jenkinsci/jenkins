@@ -1874,11 +1874,11 @@ public class Functions {
 
     /**
      * Counts the number of rows needed for textarea to fit the content.
-     * Minimum 4 rows.
+     * Minimum 5 rows.
      */
     public static int determineRows(String s) {
-        if (s == null)     return 4;
-        return Math.max(4, LINE_END.split(s).length);
+        if (s == null)     return 5;
+        return Math.max(5, LINE_END.split(s).length);
     }
 
     /**
