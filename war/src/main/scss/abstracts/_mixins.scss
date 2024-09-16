@@ -73,7 +73,7 @@
   }
 
   &::before {
-    background-color: transparent;
+    background-color: var(--item-background);
   }
 
   &::after {

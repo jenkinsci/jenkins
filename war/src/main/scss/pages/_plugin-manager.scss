@@ -1,11 +1,9 @@
 #plugins {
   .app-plugin-manager__categories {
-    margin: 0.5rem 0;
-
-    a {
-      margin: 0 1.25rem 0 0 !important;
-      font-size: 0.75rem;
-    }
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.5rem -1rem;
   }
 
   tr.already-upgraded {
