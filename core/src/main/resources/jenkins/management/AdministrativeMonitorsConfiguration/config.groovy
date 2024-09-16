@@ -34,7 +34,7 @@ f.section(title: _("Administrative monitors configuration")) {
         f.entry(title: _("Enabled administrative monitors"), description: _("blurb")) {
             for (AdministrativeMonitor am : new ArrayList<>(AdministrativeMonitor.all())
                     .sort({ o1, o2 -> o1.getDisplayName() <=> o2.getDisplayName() })) {
-                div(style: "margin-bottom: 5px") {
+                div(style: "margin-bottom: 0.625rem") {
                     div(class: "jenkins-checkbox-help-wrapper") {
                         f.checkbox(name: "administrativeMonitor",
                                 title: am.displayName,
