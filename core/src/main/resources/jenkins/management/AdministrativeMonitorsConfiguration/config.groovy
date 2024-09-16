@@ -31,20 +31,19 @@ st = namespace("jelly:stapler")
 
 f.section(title: _("Administrative monitors configuration")) {
     f.advanced(title: _("Administrative monitors")) {
-        f.entry(title: _("Enabled administrative monitors")) {
-            p(class: "jenkins-form-description", _("blurb"))
+        f.entry(title: _("Enabled administrative monitors"), description: _("blurb")) {
             for (AdministrativeMonitor am : new ArrayList<>(AdministrativeMonitor.all())
                     .sort({ o1, o2 -> o1.getDisplayName() <=> o2.getDisplayName() })) {
-                div(class: "jenkins-checkbox-help-wrapper") {
-                    f.checkbox(name: "administrativeMonitor",
-                            title: am.displayName,
-                            checked: am.enabled,
-                            json: am.id)
-                    if (am.isSecurity()) {
-                        span(style: 'margin-left: 0.5rem', class: 'am-badge', _("Security"))
+                div(style: "margin-bottom: 5px") {
+                    div(class: "jenkins-checkbox-help-wrapper") {
+                        f.checkbox(name: "administrativeMonitor",
+                                title: am.displayName,
+                                checked: am.enabled,
+                                json: am.id)
+                        if (am.isSecurity()) {
+                            span(style: 'margin-left: 0.5rem', class: 'am-badge', _("Security"))
+                        }
                     }
-                }
-                div(class: "tr") {
                     div(class: "jenkins-checkbox__description") {
                         st.include(it: am, page: "description", optional: true)
                     }
