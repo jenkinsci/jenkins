@@ -12,19 +12,6 @@
   padding: 0 0.4rem;
   background: color-mix(in sRGB, var(--text-color-secondary) 12.5%, transparent);
 
-  &[href] {
-    @include mixins.item;
-
-    --item-background: color-mix(in sRGB, currentColor 5%, transparent);
-    --item-background--hover: color-mix(in sRGB, currentColor 10%, transparent);
-    --item-background--active: color-mix(in sRGB, currentColor 15%, transparent);
-    --item-box-shadow--focus: var(--item-background);
-
-    text-decoration: none;
-    background: transparent;
-    border-radius: 100px;
-  }
-
   &[class*="color"] {
     background: color-mix(in sRGB, var(--color) 85%, transparent);
     color: var(--white) !important;
