@@ -230,7 +230,7 @@ THE SOFTWARE.
             </table>
           </j:when>
           <j:otherwise>
-            <l:notice icon="symbol-up-to-date" text="${%No updates available}" />
+            <l:notice icon="symbol-up-to-date" title="${%No updates available}" />
           </j:otherwise>
         </j:choose>
         <d:invokeBody/>

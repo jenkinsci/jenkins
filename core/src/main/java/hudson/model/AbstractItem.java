@@ -649,7 +649,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     /**
      * Accepts the new description.
      *
-     * @since TODO
+     * @since 2.475
      */
     @RequirePOST
     public synchronized void doSubmitDescription(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
@@ -690,7 +690,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      * since it predates {@code <l:confirmationLink>}. {@code /delete} goes to a Jelly page
      * which should now be unused by core but is left in case plugins are still using it.
      *
-     * @since TODO
+     * @since 2.475
      */
     @RequirePOST
     public void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, InterruptedException {
@@ -736,7 +736,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     @Override
     public void delete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
@@ -830,7 +830,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     /**
      * Accepts {@code config.xml} submission, as well as serve it.
      *
-     * @since TODO
+     * @since 2.475
      */
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest2 req, StaplerResponse2 rsp)

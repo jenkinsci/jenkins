@@ -13,13 +13,16 @@
   background-clip: padding-box;
   margin-bottom: var(--section-padding);
 
-  &::before {
-    content: "";
-    position: absolute;
-    inset: -4px -4px -2px;
-    border: var(--card-border-width) solid var(--table-border-color);
-    border-radius: inherit;
-    pointer-events: none;
+  // The '::before' pseudo-element is causing overflow issues in Firefox, so disable it for that browser
+  @supports (not (-moz-appearance: none)) {
+    &::before {
+      content: "";
+      position: absolute;
+      inset: -4px -4px -2px;
+      border: var(--card-border-width) solid var(--table-border-color);
+      border-radius: inherit;
+      pointer-events: none;
+    }
   }
 
   * {

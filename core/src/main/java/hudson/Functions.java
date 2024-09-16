@@ -379,7 +379,7 @@ public class Functions {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static RunUrl decompose(StaplerRequest2 req) {
         List<Ancestor> ancestors = req.getAncestors();
@@ -610,7 +610,7 @@ public class Functions {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static Cookie getCookie(HttpServletRequest req, String name) {
         Cookie[] cookies = req.getCookies();
@@ -633,7 +633,7 @@ public class Functions {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static String getCookie(HttpServletRequest req, String name, String defaultValue) {
         Cookie c = getCookie(req, name);
@@ -753,7 +753,7 @@ public class Functions {
      * This is used to determine the "current" URL assigned to the given object,
      * so that one can compute relative URLs from it.
      *
-     * @since TODO
+     * @since 2.475
      */
     public static String getNearestAncestorUrl(StaplerRequest2 req, Object it) {
         List list = req.getAncestors();
@@ -981,7 +981,7 @@ public class Functions {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static void adminCheck(StaplerRequest2 req, StaplerResponse2 rsp, Object required, Permission permission) throws IOException, ServletException {
         // this is legacy --- all views should be eventually converted to
@@ -1013,7 +1013,7 @@ public class Functions {
     /**
      * Infers the hudson installation URL from the given request.
      *
-     * @since TODO
+     * @since 2.475
      */
     public static String inferHudsonURL(StaplerRequest2 req) {
         String rootUrl = Jenkins.get().getRootUrl();
@@ -2132,7 +2132,7 @@ public class Functions {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static String getCrumb(StaplerRequest2 req) {
         Jenkins h = Jenkins.getInstanceOrNull();
@@ -2328,7 +2328,7 @@ public class Functions {
     /**
      * Called from renderOnDemand.jelly to generate the parameters for the proxy object generation.
      *
-     * @since TODO
+     * @since 2.475
      */
     @Restricted(NoExternalUse.class)
     public static StaplerRequest2.RenderOnDemandParameters createRenderOnDemandProxyParameters(JellyContext context, String attributesToCapture) {
