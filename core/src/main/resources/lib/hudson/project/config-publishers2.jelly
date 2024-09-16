@@ -28,7 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <f:section title="${%Post-build Actions}" icon="symbol-post-build"
-             description="Define what happens after a build completes, like sending notifications, archiving artifacts, or triggering other jobs">
+             description="${%description}">
     <f:hetero-list name="publisher" hasHeader="true"
                    descriptors="${h.getPublisherDescriptors(it)}"
                    items="${it.publishersList}"

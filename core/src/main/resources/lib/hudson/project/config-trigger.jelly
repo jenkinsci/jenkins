@@ -36,7 +36,7 @@ THE SOFTWARE.
                     instances="${it.triggers}"
                     icon="symbol-trigger"
                     field="triggers"
-                    description="Set up automated actions that start your build based on specific events, like code changes or scheduled times">
+                    description="${%description}">
     <d:invokeBody />
     <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
     <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />

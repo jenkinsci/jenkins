@@ -33,6 +33,6 @@ THE SOFTWARE.
                       descriptors="${wrappers}"
                       instances="${it.buildWrappers}"
                       icon="symbol-environment"
-                      description="Configure settings and variables that define the context in which your build runs, like credentials, paths, and global parameters" />
+                      description="${%description}" />
   </j:if>
 </j:jelly>
