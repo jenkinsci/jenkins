@@ -26,6 +26,7 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.userproperty.UserPropertyCategory;
 import java.util.Optional;
 import org.jenkinsci.Symbol;
@@ -124,6 +125,17 @@ public abstract class UserPropertyDescriptor extends Descriptor<UserProperty> {
      */
     @Deprecated
     protected @CheckForNull String getUserPropertyCategoryAsString() {
+        return null;
+    }
+
+    /**
+     * Optional description for the configurable object
+     * Displays as plain text
+     *
+     * @since TODO
+     */
+    @Nullable
+    public String getDescription() {
         return null;
     }
 }
