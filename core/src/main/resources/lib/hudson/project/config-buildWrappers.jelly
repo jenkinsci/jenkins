@@ -30,9 +30,9 @@ THE SOFTWARE.
   <j:set var="wrappers" value="${h.getBuildWrapperDescriptors(it)}" />
   <j:if test="${!empty(wrappers)}">
     <f:descriptorList title="${%Environment}"
+                      description="${%description}"
                       descriptors="${wrappers}"
                       instances="${it.buildWrappers}"
-                      icon="symbol-environment"
-                      description="${%description}" />
+                      icon="symbol-environment" />
   </j:if>
 </j:jelly>

@@ -27,8 +27,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
-  <f:section title="${%Build Steps}" icon="symbol-build-steps"
-             description="${%description}">
+  <f:section title="${%Build Steps}"
+             description="${%description}"
+             icon="symbol-build-steps">
     <f:hetero-list name="builder" hasHeader="true"
                    descriptors="${h.getBuilderDescriptors(it)}"
                    items="${it.builders}"
