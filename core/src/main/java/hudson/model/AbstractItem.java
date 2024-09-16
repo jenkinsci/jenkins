@@ -25,7 +25,7 @@
 
 package hudson.model;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -47,6 +47,8 @@ import hudson.util.AtomicFileWriter;
 import hudson.util.FormValidation;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -59,7 +61,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.servlet.ServletException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
@@ -70,6 +71,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.model.queue.ItemDeletion;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
 import org.apache.tools.ant.Project;
@@ -87,7 +89,9 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -530,7 +534,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     @Override
     public final String getUrl() {
         // try to stick to the current view if possible
-        StaplerRequest req = Stapler.getCurrentRequest();
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
         String shortUrl = getShortUrl();
         String uri = req == null ? null : req.getRequestURI();
         if (req != null) {
@@ -644,9 +648,36 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
 
     /**
      * Accepts the new description.
+     *
+     * @since 2.475
      */
     @RequirePOST
-    public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doSubmitDescription(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(AbstractItem.class, getClass(), "doSubmitDescription", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                doSubmitDescription(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            doSubmitDescriptionImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doSubmitDescription(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doSubmitDescriptionImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private void doSubmitDescriptionImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
         setDescription(req.getParameter("description"));
@@ -658,9 +689,32 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      * Note on the funny name: for reasons of historical compatibility, this URL is {@code /doDelete}
      * since it predates {@code <l:confirmationLink>}. {@code /delete} goes to a Jelly page
      * which should now be unused by core but is left in case plugins are still using it.
+     *
+     * @since 2.475
      */
     @RequirePOST
-    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+    public void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, InterruptedException {
+        if (Util.isOverridden(AbstractItem.class, getClass(), "doDoDelete", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                doDoDelete(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            doDoDeleteImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doDoDelete(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException, InterruptedException {
+        doDoDeleteImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    private void doDoDeleteImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, InterruptedException {
         delete();
         if (req == null || rsp == null) { // CLI
             return;
@@ -681,8 +735,28 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         rsp.sendRedirect2(req.getContextPath() + '/' + url);
     }
 
+    /**
+     * @since 2.475
+     */
     @Override
-    public void delete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void delete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        deleteImpl(rsp);
+    }
+
+    /**
+     * @deprecated use {@link #delete(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @Override
+    public void delete(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            deleteImpl(StaplerResponse.toStaplerResponse2(rsp));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private void deleteImpl(StaplerResponse2 rsp) throws IOException, ServletException {
         try {
             delete();
             rsp.setStatus(204);
@@ -755,9 +829,30 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
 
     /**
      * Accepts {@code config.xml} submission, as well as serve it.
+     *
+     * @since 2.475
      */
     @WebMethod(name = "config.xml")
+    public void doConfigDotXml(StaplerRequest2 req, StaplerResponse2 rsp)
+            throws IOException {
+        if (Util.isOverridden(AbstractItem.class, getClass(), "doConfigDotXml", StaplerRequest.class, StaplerResponse.class)) {
+            doConfigDotXml(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+        } else {
+            doConfigDotXmlImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doConfigDotXml(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
+            throws IOException {
+        doConfigDotXmlImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    private void doConfigDotXmlImpl(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException {
         if (req.getMethod().equals("GET")) {
             // read

@@ -10,14 +10,14 @@ node/
 .yarnrc.yml
 
 # libraries / external deps / generated files
-src/main/js/plugin-setup-wizard/bootstrap-detached.js
-src/main/webapp/scripts/yui
-src/main/webapp/jsbundles/
-src/main/scss/_bootstrap.scss
+war/src/main/js/plugin-setup-wizard/bootstrap-detached.js
+war/src/main/webapp/scripts/yui
+war/src/main/webapp/jsbundles/
+war/src/main/scss/_bootstrap.scss
 
 # test files that we don't need formatted
-../test/src/test/resources
-../test/jmh-report.json
+test/src/test/resources
+test/jmh-report.json
 
 # doesn't work, see https://github.com/prettier/prettier/issues/5340
 *.hbs
@@ -25,4 +25,4 @@ src/main/scss/_bootstrap.scss
 .yarn
 
 # Incorrectly flagging forwarding slashes in regex
-../.github/renovate.json
+.github/renovate.json

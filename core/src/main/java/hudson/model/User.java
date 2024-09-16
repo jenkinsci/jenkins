@@ -47,6 +47,8 @@ import hudson.security.UserMayOrMayNotExistException2;
 import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,8 +66,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
@@ -79,8 +79,8 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -485,7 +485,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Accepts the new description.
      */
     @RequirePOST
-    public void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doSubmitDescription(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
 
         description = req.getParameter("description");
@@ -882,7 +882,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Deletes this user from Hudson.
      */
     @RequirePOST
-    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
         if (idStrategy().equals(id, Jenkins.getAuthentication2().getName())) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");
@@ -894,15 +894,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         rsp.sendRedirect2("../..");
     }
 
-    public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssAll(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds().newBuilds());
     }
 
-    public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssFailed(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().regressionOnly());
     }
 
-    public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssLatest(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<>();
         for (Job<?, ?> p : Jenkins.get().allItems(Job.class)) {
             for (Run<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
@@ -1010,7 +1010,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     @Override
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         return new ContextMenu().from(this, request, response);
     }
 

@@ -62,8 +62,8 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
      * Get a URL relative to the context path of Jenkins which should be used to link to the console for the specified build.
      * <p>Should only be used in the context of serving an HTTP request.
      * @param run the build
-     * @return the URL for the console for the specified build, relative to the context of Jenkins, or {@code null}
-     * if this implementation does not want to server a special console view for this build.
+     * @return the URL for the console for the specified build, relative to the context of Jenkins (should not start with {@code /}), or {@code null}
+     * if this implementation does not want to serve a special console view for this build.
      */
     @CheckForNull String getConsoleUrl(Run<?, ?> run);
 
@@ -80,6 +80,14 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
      * @return the URL for the console for the specified build, relative to the web server root
      */
     static @NonNull String getRedirectUrl(Run<?, ?> run) {
+        return Stapler.getCurrentRequest().getContextPath() + '/' + run.getConsoleUrl();
+    }
+
+    /**
+     * Looks up the {@link #getConsoleUrl} value from the first provider to offer one.
+     * @since 2.476
+     */
+    static @NonNull String consoleUrlOf(Run<?, ?> run) {
         final List<ConsoleUrlProvider> providers = new ArrayList<>();
         User currentUser = User.current();
         if (currentUser != null) {
@@ -104,6 +112,8 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
                 if (tempUrl != null) {
                     if (new URI(tempUrl).isAbsolute()) {
                         LOGGER.warning(() -> "Ignoring absolute console URL " + tempUrl + " for " + run + " from " + provider.getClass());
+                    } else if (tempUrl.startsWith("/")) {
+                        LOGGER.warning(() -> "Ignoring URL " + tempUrl + " starting with / for " + run + " from " + provider.getClass());
                     } else {
                         // Found a valid non-null URL.
                         url = tempUrl;
@@ -118,11 +128,7 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
             // Reachable if DefaultConsoleUrlProvider is not one of the configured providers, including if no providers are configured at all.
             url = run.getUrl() + "console";
         }
-        if (url.startsWith("/")) {
-            return Stapler.getCurrentRequest().getContextPath() + url;
-        } else {
-            return Stapler.getCurrentRequest().getContextPath() + '/' + url;
-        }
+        return url;
     }
 
     /**

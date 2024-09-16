@@ -8,6 +8,8 @@ import static org.junit.Assert.assertNull;
 import hudson.WebAppMain;
 import hudson.model.Hudson;
 import hudson.model.listeners.ItemListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -16,8 +18,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
 import jenkins.model.Jenkins;
 import org.junit.After;
 import org.junit.Rule;
@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.NoListenerConfiguration;
+import org.jvnet.hudson.test.NoListenerConfiguration2;
 import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.WebApp;
@@ -66,13 +66,13 @@ public class BootFailureTest {
             // Without this gymnastic, the jenkins-test-harness adds a NoListenerConfiguration
             // that prevents us to inject our own custom WebAppMain
             // With this approach we can make the server calls the regular contextInitialized
-            ServletContext ws = createWebServer((context, server) -> {
-                NoListenerConfiguration noListenerConfiguration = context.getBean(NoListenerConfiguration.class);
+            ServletContext ws = createWebServer2((context, server) -> {
+                NoListenerConfiguration2 noListenerConfiguration = context.getBean(NoListenerConfiguration2.class);
                 // future-proof
                 assertNotNull(noListenerConfiguration);
                 if (noListenerConfiguration != null) {
                     context.removeBean(noListenerConfiguration);
-                    context.addBean(new NoListenerConfiguration(context) {
+                    context.addBean(new NoListenerConfiguration2(context) {
                         @Override
                         protected void doStart() {
                             // default behavior of noListenerConfiguration

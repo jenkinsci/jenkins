@@ -125,6 +125,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -1850,14 +1851,25 @@ public class Util {
     /**
      * Find the specific ancestor, or throw an exception.
      * Useful for an ancestor we know is inside the URL to ease readability
+     *
+     * @since 2.475
      */
     @Restricted(NoExternalUse.class)
-    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest request, @NonNull Class<T> clazz) {
+    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest2 request, @NonNull Class<T> clazz) {
         T t = request.findAncestorObject(clazz);
         if (t == null) {
             throw new IllegalArgumentException("No ancestor of type " + clazz.getName() + " in the request");
         }
         return t;
+    }
+
+    /**
+     * @deprecated use {@link #getNearestAncestorOfTypeOrThrow(StaplerRequest2, Class)}
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest request, @NonNull Class<T> clazz) {
+        return getNearestAncestorOfTypeOrThrow(StaplerRequest.toStaplerRequest2(request), clazz);
     }
 
     @Restricted(NoExternalUse.class)
