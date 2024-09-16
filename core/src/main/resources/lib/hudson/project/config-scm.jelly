@@ -25,8 +25,9 @@ THE SOFTWARE.
 <!-- SCM config pane -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:section title="${%Source Code Management}" icon="symbol-source-code-management"
-             description="${%description}">
+  <f:section title="${%Source Code Management}"
+             description="${%description}"
+             icon="symbol-source-code-management">
     <!-- Could use f:descriptorRadioList were it not for scm/scmd compatibility code; pending JENKINS-20959 would not help with performance -->
     <j:forEach var="descriptor" items="${h.getSCMDescriptors(instance)}" varStatus="loop">
       <j:set var="scmd" value="${descriptor}" /><!-- backward compatibility with <1.238 -->

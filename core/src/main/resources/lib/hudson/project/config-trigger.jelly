@@ -32,11 +32,10 @@ THE SOFTWARE.
     <j:arg value="${it}" type="hudson.model.Item" />
   </j:invokeStatic>
   <f:descriptorList title="${%Triggers}"
+                    description="${%description}"
                     descriptors="${triggers}"
                     instances="${it.triggers}"
-                    icon="symbol-trigger"
-                    field="triggers"
-                    description="${%description}">
+                    icon="symbol-trigger">
     <d:invokeBody />
     <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
     <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />
