@@ -2584,8 +2584,8 @@ public class Functions {
      */
     @Restricted(NoExternalUse.class)
     public static String translateModifierKeysForUsersPlatform(String keyboardShortcut) {
-        StaplerRequest2 currentRequest = Stapler.getCurrentRequest();
-        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse2());
         String userAgent = currentRequest.getHeader("User-Agent");
 
         List<String> platformsThatUseCommand = List.of("MAC", "IPHONE", "IPAD");
