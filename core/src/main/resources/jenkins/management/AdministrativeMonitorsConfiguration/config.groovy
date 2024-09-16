@@ -29,9 +29,9 @@ import hudson.model.AdministrativeMonitor
 f = namespace(lib.FormTagLib)
 st = namespace("jelly:stapler")
 
-f.section(title: _("Administrative monitors configuration")) {
+f.section(title: _("Administrative monitors"), description: _("blurb")) {
     f.advanced(title: _("Administrative monitors")) {
-        f.entry(title: _("Enabled administrative monitors"), description: _("blurb")) {
+        f.entry(title: _("Enabled administrative monitors")) {
             for (AdministrativeMonitor am : new ArrayList<>(AdministrativeMonitor.all())
                     .sort({ o1, o2 -> o1.getDisplayName() <=> o2.getDisplayName() })) {
                 div(style: "margin-bottom: 0.625rem") {
@@ -41,7 +41,7 @@ f.section(title: _("Administrative monitors configuration")) {
                                 checked: am.enabled,
                                 json: am.id)
                         if (am.isSecurity()) {
-                            span(style: 'margin-left: 0.5rem', class: 'am-badge', _("Security"))
+                            span(style: 'margin-left: 0.5rem', class: 'jenkins-badge', _("Security"))
                         }
                     }
                     div(class: "jenkins-checkbox__description") {
