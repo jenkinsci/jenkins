@@ -3,7 +3,11 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin: 0.5rem -1rem;
+    margin: 0.5rem -0.55rem;
+
+    .jenkins-badge {
+      margin: 0 !important;
+    }
   }
 
   tr.already-upgraded {
