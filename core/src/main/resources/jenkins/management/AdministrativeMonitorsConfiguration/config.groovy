@@ -31,7 +31,7 @@ st = namespace("jelly:stapler")
 
 f.section(title: _("Administrative monitors"), description: _("blurb")) {
     f.advanced(title: _("Administrative monitors")) {
-        f.entry(title: _("Enabled administrative monitors")) {
+        f.entry() {
             for (AdministrativeMonitor am : new ArrayList<>(AdministrativeMonitor.all())
                     .sort({ o1, o2 -> o1.getDisplayName() <=> o2.getDisplayName() })) {
                 div(style: "margin-bottom: 0.625rem") {
