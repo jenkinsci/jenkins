@@ -2584,7 +2584,7 @@ public class Functions {
      */
     @Restricted(NoExternalUse.class)
     public static String translateModifierKeysForUsersPlatform(String keyboardShortcut) {
-        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest();
         currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         String userAgent = currentRequest.getHeader("User-Agent");
 
