@@ -1,12 +1,10 @@
 #plugins {
   .app-plugin-manager__categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin: 0.5rem -0.55rem;
+    margin: 0.5rem 0;
 
-    .jenkins-badge {
-      margin: 0 !important;
+    a {
+      margin: 0 1.25rem 0 0 !important;
+      font-size: 0.75rem;
     }
   }
 
