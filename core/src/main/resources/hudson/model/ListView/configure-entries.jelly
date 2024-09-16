@@ -62,7 +62,7 @@ THE SOFTWARE.
     </f:section>
   </j:if>
 
-  <f:section title="${%Columns}" description="Customize what columns this view shows">
+  <f:section title="${%Columns}" description="Select the columns this view shows">
     <f:repeatableHeteroProperty field="columns" hasHeader="true" addCaption="${%Add column}"/>
   </f:section>
 </j:jelly>
