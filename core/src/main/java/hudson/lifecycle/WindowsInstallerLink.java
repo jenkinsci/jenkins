@@ -226,7 +226,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                         new File(installationDir, "jenkins.exe"), "start", task, installationDir);
                                 task.getLogger().println(r == 0 ? "Successfully started" : "start service failed. Exit code=" + r);
                             } catch (IOException | InterruptedException e) {
-                                e.printStackTrace();
+                                LOGGER.log(Level.WARNING, null, e);
                             }
                         }
 
@@ -241,7 +241,7 @@ public class WindowsInstallerLink extends ManagementLink {
                     Jenkins.get().cleanUp();
                     System.exit(0);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, null, e);
                 }
             }
         }.start();

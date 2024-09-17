@@ -236,14 +236,23 @@ public abstract class ViewJob<JobT extends ViewJob<JobT, RunT>, RunT extends Run
         @Override
         public void run() {
             while (!terminating()) {
+                String jobName = null;
                 try {
-                    getNext()._reload();
+                    var next = getNext();
+                    jobName = next.getFullName();
+                    next._reload();
+                    jobName = null;
                 } catch (InterruptedException e) {
                     // treat this as a death signal
                     return;
-                } catch (Throwable t) {
+                } catch (Exception e) {
                     // otherwise ignore any error
-                    t.printStackTrace();
+                    if (jobName != null) {
+                        var finalJobName = jobName;
+                        LOGGER.log(Level.FINEST, e, () -> "Failed to reload job " + finalJobName);
+                    } else {
+                        LOGGER.log(Level.FINEST, e, () -> "Failed to obtain next job in the reload queue");
+                    }
                 }
             }
         }
