@@ -249,9 +249,9 @@ public abstract class ViewJob<JobT extends ViewJob<JobT, RunT>, RunT extends Run
                     // otherwise ignore any error
                     if (jobName != null) {
                         var finalJobName = jobName;
-                        LOGGER.log(Level.FINEST, e, () -> "Failed to reload job " + finalJobName);
+                        LOGGER.log(Level.WARNING, e, () -> "Failed to reload job " + finalJobName);
                     } else {
-                        LOGGER.log(Level.FINEST, e, () -> "Failed to obtain next job in the reload queue");
+                        LOGGER.log(Level.WARNING, e, () -> "Failed to obtain next job in the reload queue");
                     }
                 }
             }

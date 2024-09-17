@@ -434,7 +434,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
                             Util.deleteRecursive(oldRoot);
                         } catch (IOException e) {
                             // but ignore the error, since we expect that
-                            LOGGER.log(Level.FINEST, "Ignoring IOException while deleting", e);
+                            LOGGER.log(Level.WARNING, "Ignoring IOException while deleting", e);
                         }
                     }
 
