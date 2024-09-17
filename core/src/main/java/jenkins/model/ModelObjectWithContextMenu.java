@@ -299,6 +299,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return from(self, request, response, "sidepanel");
         }
 
+        public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response) throws JellyException, IOException {
+            return from(self, StaplerRequest.toStaplerRequest2(request), StaplerResponse.toStaplerResponse2(response), "sidepanel");
+        }
+
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest2 request, StaplerResponse2 response, String view) throws JellyException, IOException {
             WebApp webApp = WebApp.getCurrent();
             final Script s = webApp.getMetaClass(self).getTearOff(JellyClassTearOff.class).findScript(view);
