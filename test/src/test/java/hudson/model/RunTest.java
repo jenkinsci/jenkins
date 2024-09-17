@@ -32,8 +32,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.XmlFile;
+import hudson.model.listeners.ItemListener;
+import hudson.model.listeners.SaveableListener;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Builder;
@@ -112,6 +116,17 @@ public class RunTest  {
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         b.delete();
         assertTrue(Mgr.deleted.get());
+        assertTrue(ExtensionList.lookupSingleton(SaveableListenerImpl.class).deleted);
+    }
+
+    @TestExtension("deleteArtifactsCustom")
+    public static class SaveableListenerImpl extends SaveableListener {
+        boolean deleted;
+
+        @Override
+        public void onDeleted(Saveable o, XmlFile file) {
+            deleted = true;
+        }
     }
 
     @Issue("SECURITY-1902")

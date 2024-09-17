@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import hudson.ExtensionList;
 import hudson.XmlFile;
@@ -61,7 +62,7 @@ public class AbstractItemTest {
         // reload away
         p.doReload();
 
-        assertFalse(SaveableListener.class.getSimpleName() + " should not have been called", testSaveableListener.wasCalled());
+        assertFalse(SaveableListener.class.getSimpleName() + " should not have been called", testSaveableListener.isChangeCalled());
 
 
         assertEquals("Good Evening", p.getDescription());
@@ -70,6 +71,9 @@ public class AbstractItemTest {
 
         assertNotEquals(b, b2); // should be different object
         assertEquals(b.getDescription(), b2.getDescription()); // but should have the same properties
+
+        p.delete();
+        assertTrue(SaveableListener.class.getSimpleName() + " should have been called", testSaveableListener.isDeleteCalled());
     }
 
     @Test
@@ -158,21 +162,29 @@ public class AbstractItemTest {
     public static class TestSaveableListener extends SaveableListener {
         private Saveable saveable;
 
-        private boolean called;
+        private boolean changeCalled;
+        private boolean deleteCalled;
 
         private void setSaveable(Saveable saveable) {
             this.saveable = saveable;
         }
 
-        public boolean wasCalled() {
-            return called;
+        public boolean isChangeCalled() {
+            return changeCalled;
+        }
+
+        public boolean isDeleteCalled() {
+            return deleteCalled;
         }
 
         @Override
         public void onChange(Saveable o, XmlFile file) {
-            if (o == saveable) {
-                this.called = true;
-            }
+            this.changeCalled |= o == saveable;
+        }
+
+        @Override
+        public void onDeleted(Saveable o, XmlFile file) {
+            this.deleteCalled |= o == saveable;
         }
     }
 }
