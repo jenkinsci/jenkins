@@ -36,7 +36,6 @@ import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.XmlFile;
-import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildTrigger;
