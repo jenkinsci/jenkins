@@ -25,6 +25,7 @@
 package jenkins.model.queue;
 
 import hudson.model.Item;
+import hudson.model.ModelObject;
 import hudson.security.AccessControlled;
 
 /**
@@ -32,7 +33,7 @@ import hudson.security.AccessControlled;
  *
  * @since TODO
  */
-public interface ITask {
+public interface ITask extends ModelObject {
     /**
      * @return {@code true} if the current user can cancel the current task.
      *
@@ -40,8 +41,8 @@ public interface ITask {
      * {@code hasPermission(Item.CANCEL)}
      */
     default boolean hasAbortPermission() {
-        if (this instanceof AccessControlled) {
-            return ((AccessControlled) this).hasPermission(Item.CANCEL);
+        if (this instanceof AccessControlled ac) {
+            return ac.hasPermission(Item.CANCEL);
         }
         return true;
     }
@@ -51,22 +52,19 @@ public interface ITask {
      */
     @SuppressWarnings("unused") // jelly
     default boolean hasReadPermission() {
-        if (this instanceof AccessControlled) {
-            return ((AccessControlled) this).hasPermission(Item.READ);
+        if (this instanceof AccessControlled ac) {
+            return ac.hasPermission(Item.READ);
         }
         return true;
     }
 
     /**
-     * @return the display name of the task.
-     */
-    String getDisplayName();
-
-    /**
      * @return the full display name of the task.
+     * <p>
+     * Defaults to the same as {@link #getDisplayName()}.
      */
     default String getFullDisplayName() {
-        return null;
+        return getDisplayName();
     }
 
     /**

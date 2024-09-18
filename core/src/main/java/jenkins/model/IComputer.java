@@ -25,7 +25,6 @@
 package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.security.ACL;
@@ -100,7 +99,7 @@ public interface IComputer extends AccessControlled {
      * @return
      *      empty string if the system was put offline without given a cause.
      */
-    @Nullable
+    @NonNull
     String getOfflineCauseReason();
 
     /**
@@ -129,9 +128,11 @@ public interface IComputer extends AccessControlled {
      * show up followed by a size specifier given by {@link Icon#toNormalizedIconSizeClass(String)}
      * The conversion of class tag to src tag is registered through {@link IconSet#addIcon(Icon)}
      *
-     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
+     * @see #getIcon()
      */
-    String getIconClassName();
+    default String getIconClassName() {
+        return getIcon();
+    }
 
     /**
      * Returns the number of {@link IExecutor}s that are doing some work right now.

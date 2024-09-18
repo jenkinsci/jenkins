@@ -63,6 +63,9 @@ import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import jenkins.util.Timer;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -129,7 +132,9 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     /**
      * Allows plugins to override the displayed list of computers.
+     *
      */
+    @Restricted(Beta.class)
     public interface ComputerSource extends ExtensionPoint {
         Collection<? extends IComputer> get();
     }
@@ -527,6 +532,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     @Extension(ordinal = -1)
+    @Restricted(DoNotUse.class)
     public static class ComputerSourceImpl implements ComputerSource {
         @Override
         public Collection<? extends IComputer> get() {
