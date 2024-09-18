@@ -40,11 +40,6 @@ import jenkins.model.queue.ITask;
  *
  * A {@link Queue.Task} consists of a number of {@link SubTask}.
  *
- * <p>
- * Plugins are encouraged to extend from {@link AbstractSubTask}
- * instead of implementing this interface directly, to maintain
- * compatibility with future changes to this interface.
- *
  * @since 1.377
  */
 public interface SubTask extends ResourceActivity, ITask {
