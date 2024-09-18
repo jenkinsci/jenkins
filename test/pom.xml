@@ -134,7 +134,7 @@ THE SOFTWARE.
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>920.v59f71ce16f04</version>
+        <version>926.v9f4f9b_b_98c19</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -178,7 +178,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2270.v87a_0ea_b_54da_0</version>
+      <version>2272.v5db_817b_a_6f0d</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -224,7 +224,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1371.vfee6b_095f0a_3</version>
+      <version>1378.v81ef4269d764</version>
       <scope>test</scope>
     </dependency>
     <dependency>
