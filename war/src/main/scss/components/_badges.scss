@@ -8,7 +8,11 @@
   min-height: 20px;
   min-width: 20px;
   padding: 0 0.4rem;
-  background: color-mix(in sRGB, var(--text-color-secondary) 12.5%, transparent);
+  background: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 12.5%,
+    transparent
+  );
 
   &[class*="color"] {
     background: color-mix(in sRGB, var(--color) 85%, transparent);
