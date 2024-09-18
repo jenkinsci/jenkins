@@ -32,6 +32,8 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.thoughtworks.xstream.security.InputManipulationException;
+import hudson.model.Saveable;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,13 +42,26 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import jenkins.util.xstream.CriticalXStreamException;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
 public class RobustCollectionConverterTest {
+    private final boolean originalRecordFailures = RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS;
+
+    @Before
+    public void before() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
+    }
+
+    @After
+    public void after() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = originalRecordFailures;
+    }
+
     @Test
     public void workingByDefaultWithSimplePayload() {
         XStream2 xstream2 = new XStream2();
@@ -177,50 +192,32 @@ public class RobustCollectionConverterTest {
 
     @Test
     public void checkElementTypes() {
-        var expected = new Numbers(1, 2, 3);
+        var expected = new Data(1, 2, 3);
         var xmlContent =
                 """
-                <hudson.util.RobustCollectionConverterTest_-Numbers>
+                <hudson.util.RobustCollectionConverterTest_-Data>
                   <numbers>
                     <int>1</int>
                     <int>2</int>
                     <string>oops!</string>
                     <int>3</int>
                   </numbers>
-                </hudson.util.RobustCollectionConverterTest_-Numbers>
+                </hudson.util.RobustCollectionConverterTest_-Data>
                 """;
-        var actual = (Numbers) new XStream2().fromXML(xmlContent);
-        assertEquals(expected, actual);
+        var actual = (Data) new XStream2().fromXML(xmlContent);
+        assertEquals(expected.numbers, actual.numbers);
     }
 
-    public static class Numbers {
+    public static class Data implements Saveable {
         private final List<Integer> numbers;
 
-        public Numbers(Integer... numbers) {
+        public Data(Integer... numbers) {
             this.numbers = new ArrayList(Arrays.asList(numbers));
         }
 
         @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 37 * hash + Objects.hashCode(this.numbers);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            } else if (obj == null || getClass() != obj.getClass()) {
-                return false;
-            }
-            final Numbers other = (Numbers) obj;
-            return Objects.equals(this.numbers, other.numbers);
-        }
-
-        @Override
-        public String toString() {
-            return "Numbers[" + numbers + "]";
+        public void save() throws IOException {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
         }
     }
 }

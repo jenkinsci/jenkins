@@ -103,15 +103,17 @@ final class RobustMapConverter extends MapConverter {
         }
         reader.moveDown();
         try {
+            var object = readBareItem(reader, context, map);
             try {
-                var object = readBareItem(reader, context, map);
                 if (expectedType != null) {
                     // When possible, disallow invalid keys and values.
                     expectedType.cast(object);
                 }
                 return object;
             } catch (ClassCastException e) {
-                RobustReflectionConverter.addErrorInContext(context, e);
+                var exception = new ConversionException("Invalid type for map entry key/value", e);
+                reader.appendErrors(exception);
+                RobustReflectionConverter.addErrorInContext(context, exception);
                 return ERROR;
             }
         } catch (CriticalXStreamException x) {

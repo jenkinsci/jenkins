@@ -32,13 +32,29 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.thoughtworks.xstream.security.InputManipulationException;
+import hudson.model.Saveable;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import jenkins.util.xstream.CriticalXStreamException;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
 public class RobustMapConverterTest {
+    private final boolean originalRecordFailures = RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS;
+
+    @Before
+    public void before() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
+    }
+
+    @After
+    public void after() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = originalRecordFailures;
+    }
+
     /**
      * As RobustMapConverter is the replacer of the default MapConverter
      * We had to patch it in order to not be impacted by CVE-2021-43859
@@ -146,6 +162,7 @@ public class RobustMapConverterTest {
 
     @Test
     public void robustAgainstInvalidEntry() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
         XStream2 xstream2 = new XStream2();
         String xml =
             """
@@ -184,7 +201,56 @@ public class RobustMapConverterTest {
         assertThat(data.map, equalTo(Map.of("key2", "value2")));
     }
 
-    private static final class Data {
+    @Test
+    public void robustAgainstInvalidKeyType() {
+        XStream2 xstream2 = new XStream2();
+        String xml =
+            """
+            <hudson.util.RobustMapConverterTest_-Data>
+              <map>
+                <entry>
+                  <int>1</int> <!-- bad type -->
+                  <string>value1</string>
+                </entry>
+                <entry>
+                  <string>key2</string>
+                  <string>value2</string>
+                </entry>
+              </map>
+            </hudson.util.RobustMapConverterTest_-Data>
+            """;
+        Data data = (Data) xstream2.fromXML(xml);
+        assertThat(data.map, equalTo(Map.of("key2", "value2")));
+    }
+
+    @Test
+    public void robustAgainstInvalidValueType() {
+        XStream2 xstream2 = new XStream2();
+        String xml =
+            """
+            <hudson.util.RobustMapConverterTest_-Data>
+              <map>
+                <entry>
+                  <string>key1</string>
+                  <string>value1</string>
+                </entry>
+                <entry>
+                  <string>key2</string>
+                  <int>2</int> <!-- bad type -->
+                </entry>
+              </map>
+            </hudson.util.RobustMapConverterTest_-Data>
+            """;
+        Data data = (Data) xstream2.fromXML(xml);
+        assertThat(data.map, equalTo(Map.of("key1", "value1")));
+    }
+
+    private static class Data implements Saveable {
         Map<String, String> map;
+
+        @Override
+        public void save() throws IOException {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+        }
     }
 }

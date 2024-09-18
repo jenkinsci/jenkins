@@ -26,6 +26,7 @@ package hudson.util;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
@@ -116,7 +117,9 @@ public class RobustCollectionConverter extends CollectionConverter {
                     collection.add(item);
                     XStream2SecurityUtils.checkForCollectionDoSAttack(context, nanoNow);
                 } catch (ClassCastException e) {
-                    RobustReflectionConverter.addErrorInContext(context, e);
+                    var exception = new ConversionException("Invalid type for collection element", e);
+                    reader.appendErrors(exception);
+                    RobustReflectionConverter.addErrorInContext(context, exception);
                 }
             } catch (CriticalXStreamException e) {
                 throw e;
