@@ -262,7 +262,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         /**
-         * Adds a {@link IComputer} instnace.
+         * Adds a {@link IComputer} instance.
          * @param c the computer to add to the menu
          * @return this
          * @since TODO
