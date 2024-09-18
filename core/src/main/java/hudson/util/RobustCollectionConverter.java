@@ -56,8 +56,8 @@ import org.jvnet.tiger_types.Types;
 public class RobustCollectionConverter extends CollectionConverter {
     private final SerializableConverter sc;
     /**
-     * When available, this field holds the declared type of the collection being (de)serialized.
-     * This is used during deserialization to ensure that elements have the expected type.
+     * When available, this field holds the declared type of the collection being deserialized.
+     * This is used to ensure that deserialized elements have the expected type.
      */
     // TODO: We only support one level of parameterization, i.e. the elements of a List<List<Integer>>
     // will be treated as List<Object>, and so the inner list could have invalid non-Integer elements. It is unclear if

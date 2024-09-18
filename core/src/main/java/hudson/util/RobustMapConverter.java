@@ -30,9 +30,12 @@ import com.thoughtworks.xstream.converters.collections.MapConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.security.InputManipulationException;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.logging.Logger;
 import jenkins.util.xstream.CriticalXStreamException;
+import org.jvnet.tiger_types.Types;
 
 /**
  * Loads a {@link Map} while tolerating read errors on its keys and values.
@@ -41,13 +44,40 @@ import jenkins.util.xstream.CriticalXStreamException;
 final class RobustMapConverter extends MapConverter {
     private static final Object ERROR = new Object();
 
+    /**
+     * When available, this field holds the declared type of the keys of the map being deserialized.
+     * This is used to ensure that deserialized keys have the expected type.
+     */
+    // See note above RobustCollectionConverter.elementType for limitations regarding non-concrete parameterized types.
+    private final @CheckForNull Class<?> keyType;
+
+    /**
+     * When available, this field holds the declared type of the values of the map being deserialized.
+     * This is used to ensure that deserialized values have the expected type.
+     */
+    private final @CheckForNull Class<?> valueType;
+
     RobustMapConverter(Mapper mapper) {
+        this(mapper, null);
+    }
+
+    RobustMapConverter(Mapper mapper, Type mapType) {
         super(mapper);
+        if (mapType != null && Map.class.isAssignableFrom(Types.erasure(mapType))) {
+            var baseType = Types.getBaseClass(mapType, Map.class);
+            var keyTypeArg = Types.getTypeArgument(baseType, 0, Object.class);
+            this.keyType = Types.erasure(keyTypeArg);
+            var valueTypeArg = Types.getTypeArgument(baseType, 1, Object.class);
+            this.valueType = Types.erasure(valueTypeArg);
+        } else {
+            this.keyType = null;
+            this.valueType = null;
+        }
     }
 
     @Override protected void putCurrentEntryIntoMap(HierarchicalStreamReader reader, UnmarshallingContext context, Map map, Map target) {
-        Object key = read(reader, context, map);
-        Object value = read(reader, context, map);
+        Object key = read(reader, context, map, keyType);
+        Object value = read(reader, context, map, valueType);
         if (key != ERROR && value != ERROR) {
             try {
                 long nanoNow = System.nanoTime();
@@ -63,10 +93,20 @@ final class RobustMapConverter extends MapConverter {
         }
     }
 
-    private Object read(HierarchicalStreamReader reader, UnmarshallingContext context, Map map) {
+    private Object read(HierarchicalStreamReader reader, UnmarshallingContext context, Map map, @CheckForNull Class<?> expectedType) {
         reader.moveDown();
         try {
-            return readBareItem(reader, context, map);
+            try {
+                var object = readBareItem(reader, context, map);
+                if (expectedType != null) {
+                    // When possible, disallow invalid keys and values.
+                    expectedType.cast(object);
+                }
+                return object;
+            } catch (ClassCastException e) {
+                RobustReflectionConverter.addErrorInContext(context, e);
+                return ERROR;
+            }
         } catch (CriticalXStreamException x) {
             throw x;
         } catch (XStreamException | LinkageError x) {
