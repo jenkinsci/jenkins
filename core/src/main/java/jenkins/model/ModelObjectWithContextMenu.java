@@ -254,6 +254,18 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * Adds a computer
          *
          * @since 1.513
+         * @deprecated use {@link #add(IComputer)} instead.
+         */
+        @Deprecated(since = "TODO")
+        public ContextMenu add(Computer c) {
+            return add((IComputer) c);
+        }
+
+        /**
+         * Adds a {@link IComputer} instnace.
+         * @param c the computer to add to the menu
+         * @return this
+         * @since TODO
          */
         public ContextMenu add(IComputer c) {
             return add(new MenuItem()
