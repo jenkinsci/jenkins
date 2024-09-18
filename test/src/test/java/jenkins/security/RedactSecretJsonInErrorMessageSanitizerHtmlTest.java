@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
+import hudson.ExtensionList;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.RootAction;
@@ -38,12 +39,16 @@ import hudson.util.Secret;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Level;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.htmlunit.Page;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTextArea;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -221,6 +226,81 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
                 containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE),
                 not(containsString(secret))
         ));
+    }
+
+    @Test
+    @Issue("SECURITY-3451")
+    public void secretTextAreaSubmissionRedaction() throws Exception {
+        final TestSecretTextarea action = ExtensionList.lookupSingleton(TestSecretTextarea.class);
+
+        logging.record("", Level.WARNING).capture(100);
+
+        final String secretValue = "s3cr3t";
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
+
+            HtmlPage page = wc.goTo("test");
+
+            final HtmlForm form = page.getFormByName("config");
+            final HtmlElement button = form.getElementsByTagName("button").stream().filter(b -> HtmlElementUtil.hasClassName(b, "secret-update-btn")).findFirst().orElseThrow();
+            HtmlElementUtil.click(button);
+
+            ((HtmlTextArea) form.getElementsByTagName("textarea").stream().filter(field -> HtmlElementUtil.hasClassName(field, "secretTextarea-redact")).findFirst().orElseThrow()).setText(secretValue);
+
+            Page formSubmitPage = j.submit(form);
+            assertThat(formSubmitPage.getWebResponse().getContentAsString(), allOf(
+                    containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE),
+                    not(containsString(secretValue))
+            ));
+        }
+
+        // check the system log also
+        Throwable thrown = logging.getRecords().stream().filter(r -> r.getMessage().contains("Error while serving")).findAny().get().getThrown();
+        // the exception from RequestImpl
+        assertThat(thrown.getCause().getMessage(), allOf(
+                containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE),
+                not(containsString(secretValue))
+        ));
+
+        StringWriter buffer = new StringWriter();
+        thrown.printStackTrace(new PrintWriter(buffer));
+        String fullStack = buffer.getBuffer().toString();
+        assertThat(fullStack, allOf(
+                containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE),
+                not(containsString(secretValue))
+        ));
+    }
+
+    public static class SecretTextareaDescribable {
+        @DataBoundConstructor
+        public SecretTextareaDescribable(Secret secret) {
+            throw new IllegalArgumentException("there is something wrong with the secret");
+        }
+    }
+
+    @TestExtension("secretTextAreaSubmissionRedaction")
+    public static class TestSecretTextarea implements RootAction {
+
+        public JSONObject lastJsonReceived;
+
+        public void doSubmitTest(StaplerRequest req) throws ServletException {
+            req.bindJSON(SecretTextareaDescribable.class, req.getSubmittedForm());
+        }
+
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public String getUrlName() {
+            return "test";
+        }
     }
 
     public static class TestDescribable implements Describable<TestDescribable> {
