@@ -285,8 +285,17 @@ public abstract class ItemGroupMixIn {
                 }
             });
 
-            success = acl.getACL().hasCreatePermission2(Jenkins.getAuthentication2(), parent, result.getDescriptor())
-                && result.getDescriptor().isApplicableIn(parent);
+            boolean hasCreatePermission = acl.getACL().hasCreatePermission2(Jenkins.getAuthentication2(), parent, result.getDescriptor());
+            boolean applicableIn = result.getDescriptor().isApplicableIn(parent);
+
+            success = hasCreatePermission && applicableIn;
+
+            if (!hasCreatePermission) {
+                throw new AccessDeniedException(Jenkins.getAuthentication2().getName() + " does not have required permissions to create " + result.getDescriptor().clazz.getName());
+            }
+            if (!applicableIn) {
+                throw new AccessDeniedException(result.getDescriptor().clazz.getName() + " is not applicable in " + parent.getFullName());
+            }
 
             add(result);
 
