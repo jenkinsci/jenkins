@@ -558,6 +558,7 @@ public class Executor extends Thread implements ModelObject, IExecutor {
     }
 
     @CheckForNull
+    @Override
     public WorkUnit getCurrentWorkUnit() {
         lock.readLock().lock();
         try {
@@ -597,6 +598,7 @@ public class Executor extends Thread implements ModelObject, IExecutor {
     }
 
     @Exported
+    @Override
     public int getNumber() {
         return number;
     }
