@@ -69,6 +69,8 @@ public interface ITask extends ModelObject {
 
     /**
      * @return the URL where to reach specifically this task, relative to Jenkins URL.
+     * <p>
+     * Can be {@code null} if the task can't be reached directly. Otherwise, it must end with '/'.
      */
     default String getUrl() {
         return null;
