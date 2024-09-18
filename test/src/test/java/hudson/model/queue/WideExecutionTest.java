@@ -91,6 +91,11 @@ public class WideExecutionTest {
                 public String getDisplayName() {
                     return "Company of " + p.getDisplayName();
                 }
+
+                @Override
+                public String getUrl() {
+                    return p.getUrl() + "company/";
+                }
             });
         }
     }
