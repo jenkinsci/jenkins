@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.security.ACL;
@@ -87,14 +88,14 @@ public interface IComputer extends AccessControlled {
      * @return {@code true} if this computer has a defined offline cause, @{code false} otherwise.
      */
     default boolean hasOfflineCause() {
-        return getOfflineCauseReason() != null;
+        return Util.fixEmpty(getOfflineCauseReason()) != null;
     }
 
     /**
      * If the computer was offline (either temporarily or not),
      * this method will return the cause as a string (without user info).
      * <p>
-     * {@code hasOfflineCause() == true} implies this must be non-null.
+     * {@code hasOfflineCause() == true} implies this must be nonempty.
      *
      * @return
      *      empty string if the system was put offline without given a cause.
