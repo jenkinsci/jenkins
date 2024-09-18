@@ -79,6 +79,7 @@ import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.springframework.security.core.Authentication;
@@ -561,7 +562,24 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     @Override
+    public Node reconfigure(@NonNull final StaplerRequest2 req, JSONObject form) throws FormException {
+        if (Util.isOverridden(Node.class, getClass(), "reconfigure", StaplerRequest.class, JSONObject.class)) {
+            return reconfigure(StaplerRequest.fromStaplerRequest2(req), form);
+        } else {
+            return reconfigureImpl(req, form);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #reconfigure(StaplerRequest2, JSONObject)}
+     */
+    @Deprecated
+    @Override
     public Node reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws FormException {
+        return reconfigureImpl(StaplerRequest.toStaplerRequest2(req), form);
+    }
+
+    private Node reconfigureImpl(@NonNull final StaplerRequest2 req, JSONObject form) throws FormException {
         if (form == null)     return null;
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");

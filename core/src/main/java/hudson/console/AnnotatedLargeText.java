@@ -30,6 +30,7 @@ import static java.lang.Math.abs;
 
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Util;
 import hudson.remoting.ObjectInputStreamEx;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -50,10 +51,13 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import jenkins.model.Jenkins;
 import jenkins.security.CryptoConfidentialKey;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 import org.kohsuke.stapler.framework.io.LargeText;
 
@@ -90,14 +94,44 @@ public class AnnotatedLargeText<T> extends LargeText {
         this.context = context;
     }
 
+    /**
+     * @since 2.475
+     */
+    public void doProgressiveHtml(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        if (Util.isOverridden(AnnotatedLargeText.class, getClass(), "doProgressiveHtml", StaplerRequest.class, StaplerResponse.class)) {
+            doProgressiveHtml(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+        } else {
+            doProgressiveHtmlImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doProgressiveHtml(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
     public void doProgressiveHtml(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        doProgressiveHtmlImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    private void doProgressiveHtmlImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         req.setAttribute("html", true);
         doProgressText(req, rsp);
     }
 
     /**
      * Aliasing what I think was a wrong name in {@link LargeText}
+     *
+     * @since 2.475
      */
+    public void doProgressiveText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        doProgressText(req, rsp);
+    }
+
+    /**
+     * @deprecated use {@link #doProgressiveText(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
     public void doProgressiveText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         doProgressText(req, rsp);
     }
@@ -107,16 +141,35 @@ public class AnnotatedLargeText<T> extends LargeText {
      * and use this request attribute to differentiate.
      */
     private boolean isHtml() {
-        StaplerRequest req = Stapler.getCurrentRequest();
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
         return req != null && req.getAttribute("html") != null;
     }
 
+    /**
+     * @since 2.475
+     */
     @Override
+    protected void setContentType(StaplerResponse2 rsp) {
+        if (Util.isOverridden(AnnotatedLargeText.class, getClass(), "setContentType", StaplerResponse.class)) {
+            setContentType(StaplerResponse.fromStaplerResponse2(rsp));
+        } else {
+            setContentTypeImpl(rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #setContentType(StaplerResponse2)}
+     */
+    @Deprecated
     protected void setContentType(StaplerResponse rsp) {
+        setContentTypeImpl(StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    private void setContentTypeImpl(StaplerResponse2 rsp) {
         rsp.setContentType(isHtml() ? "text/html;charset=UTF-8" : "text/plain;charset=UTF-8");
     }
 
-    private ConsoleAnnotator<T> createAnnotator(StaplerRequest req) throws IOException {
+    private ConsoleAnnotator<T> createAnnotator(StaplerRequest2 req) throws IOException {
         try {
             String base64 = req != null ? req.getHeader("X-ConsoleAnnotator") : null;
             if (base64 != null) {
@@ -176,7 +229,7 @@ public class AnnotatedLargeText<T> extends LargeText {
     @CheckReturnValue
     public long writeHtmlTo(long start, Writer w) throws IOException {
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
-                w, createAnnotator(Stapler.getCurrentRequest()), context, charset);
+                w, createAnnotator(Stapler.getCurrentRequest2()), context, charset);
         long r = super.writeLogTo(start, caw);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -185,7 +238,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
         oos.writeObject(caw.getConsoleAnnotator());
         oos.close();
-        StaplerResponse rsp = Stapler.getCurrentResponse();
+        StaplerResponse2 rsp = Stapler.getCurrentResponse2();
         if (rsp != null)
             rsp.setHeader("X-ConsoleAnnotator", Base64.getEncoder().encodeToString(baos.toByteArray()));
         return r;

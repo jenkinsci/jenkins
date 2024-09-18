@@ -32,6 +32,7 @@ import hudson.cli.client.Messages;
 import jakarta.websocket.ClientEndpointConfig;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.HandshakeResponse;
 import jakarta.websocket.Session;
 import java.io.DataInputStream;
 import java.io.File;
@@ -64,6 +65,7 @@ import javax.net.ssl.TrustManager;
 import org.glassfish.tyrus.client.ClientManager;
 import org.glassfish.tyrus.client.ClientProperties;
 import org.glassfish.tyrus.client.SslEngineConfigurator;
+import org.glassfish.tyrus.client.exception.DeploymentHandshakeException;
 import org.glassfish.tyrus.container.jdk.client.JdkClientContainer;
 
 /**
@@ -340,13 +342,19 @@ public class CLI {
         }
 
         class Authenticator extends ClientEndpointConfig.Configurator {
+            HandshakeResponse hr;
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
                 if (factory.authorization != null) {
                     headers.put("Authorization", List.of(factory.authorization));
                 }
             }
+            @Override
+            public void afterResponse(HandshakeResponse hr) {
+                this.hr = hr;
+            }
         }
+        var authenticator = new Authenticator();
 
         ClientManager client = ClientManager.createClient(JdkClientContainer.class.getName()); // ~ ContainerProvider.getWebSocketContainer()
         client.getProperties().put(ClientProperties.REDIRECT_ENABLED, true); // https://tyrus-project.github.io/documentation/1.13.1/index/tyrus-proprietary-config.html#d0e1775
@@ -357,7 +365,21 @@ public class CLI {
             sslEngineConfigurator.setHostnameVerifier((s, sslSession) -> true);
             client.getProperties().put(ClientProperties.SSL_ENGINE_CONFIGURATOR, sslEngineConfigurator);
         }
-        Session session = client.connectToServer(new CLIEndpoint(), ClientEndpointConfig.Builder.create().configurator(new Authenticator()).build(), URI.create(url.replaceFirst("^http", "ws") + "cli/ws"));
+        Session session;
+        try {
+            session = client.connectToServer(new CLIEndpoint(), ClientEndpointConfig.Builder.create().configurator(authenticator).build(), URI.create(url.replaceFirst("^http", "ws") + "cli/ws"));
+        } catch (DeploymentHandshakeException x) {
+            System.err.println("CLI handshake failed with status code " + x.getHttpStatusCode());
+            if (authenticator.hr != null) {
+                for (var entry : authenticator.hr.getHeaders().entrySet()) {
+                    // org.glassfish.tyrus.core.Utils.parseHeaderValue improperly splits values like Date at commas, so undo that:
+                    System.err.println(entry.getKey() + ": " + String.join(", ", entry.getValue()));
+                }
+                // UpgradeResponse.getReasonPhrase is useless since Jetty generates it from the code,
+                // and the body is not accessible at all.
+            }
+            return 15; // compare CLICommand.main
+        }
         PlainCLIProtocol.Output out = new PlainCLIProtocol.Output() {
             @Override
             public void send(byte[] data) throws IOException {

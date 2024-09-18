@@ -36,7 +36,7 @@
       ],
       "enabled": false,
       "matchPackageNames": [
-        "org.eclipse.jetty:jetty-maven-plugin",
+        "org.eclipse.jetty.ee9:jetty-ee9-maven-plugin",
         "org.jenkins-ci:winstone"
       ]
     },
@@ -89,17 +89,6 @@
       "enabled": false,
       "matchPackageNames": [
         "org.jfree:jfreechart"
-      ]
-    },
-    {
-      "description": "Starting with 6.x, Spring requires Java 17 at a minimum.",
-      "matchManagers": [
-        "maven"
-      ],
-      "allowedVersions": "<6.0.0",
-      "matchPackageNames": [
-        "org.springframework:spring-framework-bom",
-        "org.springframework.security:spring-security-bom"
       ]
     },
     {

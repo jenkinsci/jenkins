@@ -25,6 +25,7 @@
 package hudson.util;
 
 import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.MapConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
@@ -94,6 +95,12 @@ final class RobustMapConverter extends MapConverter {
     }
 
     private Object read(HierarchicalStreamReader reader, UnmarshallingContext context, Map map, @CheckForNull Class<?> expectedType) {
+        if (!reader.hasMoreChildren()) {
+            var exception = new ConversionException("Invalid map entry");
+            reader.appendErrors(exception);
+            RobustReflectionConverter.addErrorInContext(context, exception);
+            return ERROR;
+        }
         reader.moveDown();
         try {
             try {
