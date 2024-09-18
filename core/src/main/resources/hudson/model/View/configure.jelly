@@ -56,11 +56,11 @@ THE SOFTWARE.
         <f:section title="${%Widgets}" description="${%widgets.description}">
           <f:entry field="filterQueue">
             <f:checkbox title="${%Filter build queue}"
-                        description="If checked, only jobs in this view will be shown in the queue" />
+                        description="${%widgets.filterqueue.description}" />
           </f:entry>
           <f:entry field="filterExecutors">
             <f:checkbox title="${%Filter build executors}"
-                        description="If checked, only those build executors will be shown that could execute the jobs in this view" />
+                        description="${%widgets.filterexecutors.description}" />
           </f:entry>
         </f:section>
 
