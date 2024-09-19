@@ -953,10 +953,6 @@ public class ProjectTest {
         }
 
 
-        @Override
-        public String getUrl() {
-            return "sometask/";
-        }
     }
 
     public class ActionImpl extends InvisibleAction{

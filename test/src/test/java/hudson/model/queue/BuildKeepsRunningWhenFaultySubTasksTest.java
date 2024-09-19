@@ -137,11 +137,6 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
                 public String getDisplayName() {
                     return "Subtask of " + p.getDisplayName();
                 }
-
-                @Override
-                public String getUrl() {
-                    return p.getUrl() + "subtask/";
-                }
             });
         }
     }

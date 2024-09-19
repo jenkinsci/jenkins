@@ -111,4 +111,13 @@ public interface SubTask extends ResourceActivity, ITask {
     default Object getSameNodeConstraint() {
         return null;
     }
+
+    /**
+     * A subtask may not be reachable by its own URL. In that case, this method should return null.
+     * @return the URL where to reach specifically this subtask, relative to Jenkins URL. If non-null, must end with '/'.
+     */
+    @Override
+    default String getUrl() {
+        return null;
+    }
 }
