@@ -45,7 +45,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * A {@link Run}-like object as it might be displayed by {@link BuildHistoryWidget}.
  *
- * @since TODO
+ * @since 2.477
  */
 @Restricted(Beta.class)
 public interface HistoricalBuild extends ModelObject {
