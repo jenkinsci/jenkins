@@ -2468,22 +2468,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // only for debugging purpose
             return "classLoader " +  getClass().getName();
         }
-
-        // TODO Remove this once we require post 2024-07 remoting minimum version and deleted ClassLoaderProxy#fetchJar(URL)
-        @SuppressFBWarnings(
-                value = "DMI_COLLECTION_OF_URLS",
-                justification = "All URLs point to local files, so no DNS lookup.")
-        @Restricted(NoExternalUse.class)
-        public boolean isPluginJar(URL jarUrl) {
-            for (PluginWrapper plugin : activePlugins) {
-                if (plugin.classLoader instanceof URLClassLoader) {
-                    if (Set.of(((URLClassLoader) plugin.classLoader).getURLs()).contains(jarUrl)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
     }
 
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
