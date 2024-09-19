@@ -53,7 +53,7 @@ MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/ja
 ### Running the Yarn frontend build
 
 > [!TIP]
-> If you already have Node.Js installed, you do not need to change your path, just run `corepack enable` and Yarn will be setup for you.
+> If you already have Node.js installed, you do not need to change your path. Just run `corepack enable` and Yarn will be setup for you.
 
 To run the Yarn frontend build, after [building the WAR file](#building-the-war-file), add the downloaded versions of Node and Yarn to your path:
 
