@@ -28,8 +28,9 @@ Behaviour.specify(
   0,
   function (e) {
     var secretUpdateBtn = e.querySelector(".hidden-password-update-btn");
-    if (secretUpdateBtn === null)
+    if (secretUpdateBtn === null) {
       return;
+    }
 
     secretUpdateBtn.onclick = function () {
       e.querySelector(".hidden-password-field").setAttribute(

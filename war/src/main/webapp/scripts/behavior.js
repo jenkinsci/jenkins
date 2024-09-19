@@ -101,8 +101,9 @@ var Behaviour = (function () {
      *      this semantics is preserved.
      */
     applySubtree: function (startNode, includeSelf) {
-      if (!Array.isArray(startNode))
+      if (!Array.isArray(startNode)) {
         startNode = [startNode];
+      }
       storage.forEach(function (registration) {
         if (registration.id == "_deprecated") {
           Behaviour.list.forEach(function (sheet) {
