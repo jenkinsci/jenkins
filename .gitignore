@@ -79,3 +79,6 @@ node_modules/
 
 # Generated JavaScript Bundles
 jsbundles
+
+# jenkins generated npm lock files at build time, however that should not be checked in ever
+package-lock.json

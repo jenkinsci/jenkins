@@ -52,6 +52,8 @@ MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/ja
 
 ### Running the Yarn frontend build
 
+**NOTE** If you are already use a system that has yarn installed globally, you do not need to change your path.
+
 To run the Yarn frontend build, after [building the WAR file](#building-the-war-file), add the downloaded versions of Node and Yarn to your path:
 
 ```sh
