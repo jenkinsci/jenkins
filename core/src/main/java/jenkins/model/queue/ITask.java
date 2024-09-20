@@ -25,7 +25,6 @@
 package jenkins.model.queue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.model.ModelObject;
 import hudson.security.AccessControlled;
