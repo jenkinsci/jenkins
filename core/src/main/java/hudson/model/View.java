@@ -949,9 +949,28 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Accepts {@code config.xml} submission, as well as serve it.
+     *
+     * @since 2.475
      */
     @WebMethod(name = "config.xml")
     public HttpResponse doConfigDotXml(StaplerRequest2 req) throws IOException {
+        if (Util.isOverridden(View.class, getClass(), "doConfigDotXml", StaplerRequest.class)) {
+            return doConfigDotXml(StaplerRequest.fromStaplerRequest2(req));
+        } else {
+            return doConfigDotXmlImpl(req);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doConfigDotXml(StaplerRequest2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public HttpResponse doConfigDotXml(StaplerRequest req) throws IOException {
+        return doConfigDotXmlImpl(StaplerRequest.toStaplerRequest2(req));
+    }
+
+    private HttpResponse doConfigDotXmlImpl(StaplerRequest2 req) throws IOException {
         if (req.getMethod().equals("GET")) {
             // read
             checkPermission(READ);
