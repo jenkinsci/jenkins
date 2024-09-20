@@ -80,5 +80,5 @@ node_modules/
 # Generated JavaScript Bundles
 jsbundles
 
-# jenkins generated npm lock files at build time, however that should not be checked in ever
+# In case someone accidentally runs npm install instead of yarn install
 package-lock.json
