@@ -24,6 +24,7 @@
 
 package jenkins.model.queue;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.model.ModelObject;
@@ -69,7 +70,8 @@ public interface ITask extends ModelObject {
     }
 
     /**
-     * @return the URL where to reach specifically this task, relative to Jenkins URL. Must end with '/'.
+     * @return the URL where to reach specifically this task, relative to Jenkins URL. If non-null, must end with '/'.
      */
+    @CheckForNull
     String getUrl();
 }
