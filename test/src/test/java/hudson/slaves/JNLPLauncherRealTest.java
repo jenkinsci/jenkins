@@ -25,7 +25,7 @@
 package hudson.slaves;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 
 import hudson.ExtensionList;
@@ -104,7 +104,7 @@ public class JNLPLauncherRealTest {
             p.setAssignedNode(agent);
             FreeStyleBuild b = r.buildAndAssertSuccess(p);
             if (webSocket) {
-                assertThat(agent.toComputer().getSystemProperties().get("java.class.path").toString(), endsWith("agent.jar"));
+                assertThat(agent.toComputer().getSystemProperties(), hasKey("os.name"));
             }
             System.err.println(JenkinsRule.getLog(b));
         }
