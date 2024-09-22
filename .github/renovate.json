@@ -128,7 +128,7 @@
     {
       "customType": "regex",
       "fileMatch": [
-        "war/pom.xml"
+        "pom.xml"
       ],
       "matchStrings": [
         "<node.version>(?<currentValue>.*?)</node.version>"
