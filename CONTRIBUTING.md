@@ -53,7 +53,7 @@ MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/ja
 ### Running the Yarn frontend build
 
 > [!TIP]
-> If you already have Node.js 20.x LTS installed, you do not need to change your path. Start using Yarn by enabling [Corepack](https://yarnpkg.com/corepack) with `corepack enable`, if it isn't already; this will add the `yarn` binary to your path.
+> If you already have Node.js installed, you do not need to change your path. Start using Yarn by enabling [Corepack](https://yarnpkg.com/corepack) with `corepack enable`, if it isn't already; this will add the `yarn` binary to your path.
 
 To run the Yarn frontend build, after [building the WAR file](#building-the-war-file), add the downloaded versions of Node and Yarn to your path:
 
