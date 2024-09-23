@@ -79,3 +79,6 @@ node_modules/
 
 # Generated JavaScript Bundles
 jsbundles
+
+# In case someone accidentally runs npm install instead of yarn install
+package-lock.json

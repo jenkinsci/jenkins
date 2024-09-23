@@ -5641,7 +5641,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (is != null)
                 props.load(is);
         } catch (IOException e) {
-            e.printStackTrace(); // if the version properties is missing, that's OK.
+            LOGGER.log(Level.WARNING, e, () -> "Failed to load jenkins-version.properties");
         }
         String ver = props.getProperty("version");
         if (ver == null)   ver = UNCOMPUTED_VERSION;

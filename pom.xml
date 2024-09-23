@@ -422,70 +422,6 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
-      <id>yarn-ci-lint</id>
-      <activation>
-        <property>
-          <name>env.CI</name>
-        </property>
-        <file>
-          <exists>package.json</exists>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.github.eirslett</groupId>
-            <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.0</version>
-            <executions>
-              <execution>
-                <id>yarn lint:ci</id>
-                <goals>
-                  <goal>yarn</goal>
-                </goals>
-                <configuration>
-                  <arguments>lint:ci</arguments>
-                  <skip>${yarn.lint.skip}</skip>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>yarn-lint</id>
-      <activation>
-        <property>
-          <name>!env.CI</name>
-        </property>
-        <file>
-          <exists>package.json</exists>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.github.eirslett</groupId>
-            <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.0</version>
-            <executions>
-              <execution>
-                <id>yarn lint</id>
-                <goals>
-                  <goal>yarn</goal>
-                </goals>
-                <configuration>
-                  <arguments>lint</arguments>
-                  <skip>${yarn.lint.skip}</skip>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <id>yarn-execution</id>
       <activation>
         <file>
@@ -524,9 +460,8 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.0</version>
+            <version>1.15.1</version>
             <executions>
-
               <execution>
                 <id>install node and yarn</id>
                 <goals>
@@ -540,7 +475,6 @@ THE SOFTWARE.
                   <!-- tried to create a mirror for yarnDownloadRoot but it did not work -->
                 </configuration>
               </execution>
-
               <execution>
                 <id>yarn install</id>
                 <goals>
@@ -548,7 +482,6 @@ THE SOFTWARE.
                 </goals>
                 <phase>initialize</phase>
               </execution>
-
               <execution>
                 <id>yarn build</id>
                 <goals>
@@ -559,14 +492,69 @@ THE SOFTWARE.
                   <arguments>build</arguments>
                 </configuration>
               </execution>
-
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>yarn-ci-lint</id>
+      <activation>
+        <property>
+          <name>env.CI</name>
+        </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.1</version>
+            <executions>
+              <execution>
+                <id>yarn lint:ci</id>
+                <goals>
+                  <goal>yarn</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>lint:ci</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>yarn-lint</id>
+      <activation>
+        <property>
+          <name>!env.CI</name>
+        </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.1</version>
+            <executions>
               <execution>
                 <id>yarn lint</id>
                 <goals>
                   <goal>yarn</goal>
                 </goals>
+                <phase>test</phase>
                 <configuration>
-                  <arguments>lint:ci</arguments>
+                  <arguments>lint</arguments>
                   <skip>${yarn.lint.skip}</skip>
                 </configuration>
               </execution>
