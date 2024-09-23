@@ -132,7 +132,7 @@ public abstract class UserPropertyDescriptor extends Descriptor<UserProperty> {
      * Optional description for the configurable object
      * Displays as plain text
      *
-     * @since TODO
+     * @since 2.477
      */
     @Nullable
     public String getDescription() {
