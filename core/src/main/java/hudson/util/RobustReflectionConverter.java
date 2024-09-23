@@ -48,6 +48,7 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Saveable;
 import hudson.security.ACL;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,6 +66,7 @@ import jenkins.util.SystemProperties;
 import jenkins.util.xstream.CriticalXStreamException;
 import net.jcip.annotations.GuardedBy;
 import org.acegisecurity.Authentication;
+import org.jvnet.tiger_types.Types;
 
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
@@ -324,7 +326,8 @@ public class RobustReflectionConverter implements Converter {
             }
         }
 
-        Map implicitCollectionsForCurrentObject = null;
+        Map<String, Collection> implicitCollectionsForCurrentObject = new HashMap<>();
+        Map<String, Class<?>> implicitCollectionElementTypesForCurrentObject = new HashMap<>();
         while (reader.hasMoreChildren()) {
             reader.moveDown();
 
@@ -365,7 +368,7 @@ public class RobustReflectionConverter implements Converter {
                         reflectionProvider.writeField(result, fieldName, value, classDefiningField);
                         seenFields.add(classDefiningField, fieldName);
                     } else {
-                        implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
+                        writeValueToImplicitCollection(reader, context, value, implicitCollectionsForCurrentObject, implicitCollectionElementTypesForCurrentObject, result, fieldName);
                     }
                 }
             } catch (CriticalXStreamException e) {
@@ -461,15 +464,13 @@ public class RobustReflectionConverter implements Converter {
         return context.convertAnother(result, type, converter);
     }
 
-    private Map writeValueToImplicitCollection(UnmarshallingContext context, Object value, Map implicitCollections, Object result, String itemFieldName) {
+    private void writeValueToImplicitCollection(HierarchicalStreamReader reader, UnmarshallingContext context, Object value, Map<String, Collection> implicitCollections, Map<String, Class<?>> implicitCollectionElementTypes, Object result, String itemFieldName) {
         String fieldName = mapper.getFieldNameForItemTypeAndName(context.getRequiredType(), value.getClass(), itemFieldName);
         if (fieldName != null) {
-            if (implicitCollections == null) {
-                implicitCollections = new HashMap(); // lazy instantiation
-            }
-            Collection collection = (Collection) implicitCollections.get(fieldName);
+            Collection collection = implicitCollections.get(fieldName);
             if (collection == null) {
-                Class fieldType = mapper.defaultImplementationOf(reflectionProvider.getFieldType(result, fieldName, null));
+                Field field = reflectionProvider.getField(result.getClass(), fieldName);
+                Class<?> fieldType = mapper.defaultImplementationOf(field.getType());
                 if (!Collection.class.isAssignableFrom(fieldType)) {
                     throw new ObjectAccessException("Field " + fieldName + " of " + result.getClass().getName() +
                             " is configured for an implicit Collection, but field is of type " + fieldType.getName());
@@ -480,10 +481,23 @@ public class RobustReflectionConverter implements Converter {
                 collection = (Collection) pureJavaReflectionProvider.newInstance(fieldType);
                 reflectionProvider.writeField(result, fieldName, collection, null);
                 implicitCollections.put(fieldName, collection);
+                Type fieldGenericType = field.getGenericType();
+                Type elementGenericType = Types.getTypeArgument(Types.getBaseClass(fieldGenericType, Collection.class), 0, Object.class);
+                Class<?> elementType = Types.erasure(elementGenericType);
+                implicitCollectionElementTypes.put(fieldName, elementType);
+            }
+            Class<?> elementType = implicitCollectionElementTypes.getOrDefault(fieldName, Object.class);
+            try {
+                elementType.cast(value);
+            } catch (ClassCastException e) {
+                var exception = new ConversionException("Invalid element type for implicit collection for field: " + fieldName, e);
+                reader.appendErrors(exception);
+                throw exception;
             }
             collection.add(value);
+        } else {
+            // TODO: Should we warn in this case? The value will be ignored.
         }
-        return implicitCollections;
     }
 
     private Class determineWhichClassDefinesField(HierarchicalStreamReader reader) {

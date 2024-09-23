@@ -190,6 +190,7 @@ public class RobustCollectionConverterTest {
         return set;
     }
 
+    @Issue("JENKINS-63343")
     @Test
     public void checkElementTypes() {
         var expected = new Data(1, 2, 3);

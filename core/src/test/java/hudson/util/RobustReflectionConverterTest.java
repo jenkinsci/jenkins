@@ -41,6 +41,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.security.InputManipulationException;
+import hudson.model.Saveable;
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -52,16 +54,30 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.xstream.CriticalXStreamException;
 import org.hamcrest.Matchers;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
+import static org.hamcrest.Matchers.equalTo;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class RobustReflectionConverterTest {
+    private final boolean originalRecordFailures = RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS;
 
     static {
         Logger.getLogger(RobustReflectionConverter.class.getName()).setLevel(Level.OFF);
+    }
+
+    @Before
+    public void before() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
+    }
+
+    @After
+    public void after() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = originalRecordFailures;
     }
 
     @Test
@@ -132,8 +148,32 @@ public class RobustReflectionConverterTest {
                 "</hold>", xs.toXML(h));
     }
 
-    public static class Hold {
+    @Issue("JENKINS-63343")
+    @Test
+    public void robustAgainstImplicitCollectionElementsWithBadTypes() {
+        XStream2 xs = new XStream2();
+        xs.alias("hold", Hold.class);
+        // Note that the fix only matters for `addImplicitCollection` overloads like the following where the element type is not provided.
+        xs.addImplicitCollection(Hold.class, "items");
+        Hold h = (Hold) xs.fromXML(
+                """
+                <hold>
+                  <int>123</int>
+                  <string>abc</string>
+                  <int>456</int>
+                <string>def</string>
+                </hold>
+                """);
+        assertThat(h.items, equalTo(List.of("abc", "def")));
+    }
+
+    public static class Hold implements Saveable {
         List<String> items;
+
+        @Override
+        public void save() throws IOException {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+        }
     }
 
     @Retention(RetentionPolicy.RUNTIME) @interface Owner {

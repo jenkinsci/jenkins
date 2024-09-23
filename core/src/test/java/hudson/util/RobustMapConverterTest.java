@@ -201,6 +201,7 @@ public class RobustMapConverterTest {
         assertThat(data.map, equalTo(Map.of("key2", "value2")));
     }
 
+    @Issue("JENKINS-63343")
     @Test
     public void robustAgainstInvalidKeyType() {
         XStream2 xstream2 = new XStream2();
@@ -223,6 +224,7 @@ public class RobustMapConverterTest {
         assertThat(data.map, equalTo(Map.of("key2", "value2")));
     }
 
+    @Issue("JENKINS-63343")
     @Test
     public void robustAgainstInvalidValueType() {
         XStream2 xstream2 = new XStream2();
