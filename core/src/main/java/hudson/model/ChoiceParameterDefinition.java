@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jenkins.model.EnvironmentVariableParameterNameFormValidation;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -202,7 +203,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Extension @Symbol({"choice", "choiceParam"})
-    public static class DescriptorImpl extends ParameterDescriptor {
+    public static class DescriptorImpl extends ParameterDescriptor implements EnvironmentVariableParameterNameFormValidation {
         @NonNull
         @Override
         public String getDisplayName() {

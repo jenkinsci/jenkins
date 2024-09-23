@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.util.Secret;
 import java.util.Objects;
+import jenkins.model.EnvironmentVariableParameterNameFormValidation;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -137,7 +138,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Extension @Symbol("password")
-    public static final class ParameterDescriptorImpl extends ParameterDescriptor {
+    public static final class ParameterDescriptorImpl extends ParameterDescriptor implements EnvironmentVariableParameterNameFormValidation {
         @NonNull
         @Override
         public String getDisplayName() {
