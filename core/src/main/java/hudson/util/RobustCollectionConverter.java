@@ -36,6 +36,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.security.InputManipulationException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.diagnosis.OldDataMonitor;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
