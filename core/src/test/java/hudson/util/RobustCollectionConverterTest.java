@@ -193,7 +193,6 @@ public class RobustCollectionConverterTest {
     @Issue("JENKINS-63343")
     @Test
     public void checkElementTypes() {
-        var expected = new Data(1, 2, 3);
         var xmlContent =
                 """
                 <hudson.util.RobustCollectionConverterTest_-Data>
@@ -206,15 +205,37 @@ public class RobustCollectionConverterTest {
                 </hudson.util.RobustCollectionConverterTest_-Data>
                 """;
         var actual = (Data) new XStream2().fromXML(xmlContent);
-        assertEquals(expected.numbers, actual.numbers);
+        assertEquals(List.of(1, 2, 3), actual.numbers);
+    }
+
+    @Test
+    public void rawtypes() {
+        var xmlContent =
+                """
+                <hudson.util.RobustCollectionConverterTest_-DataRaw>
+                  <values>
+                    <int>1</int>
+                    <int>2</int>
+                    <string>oops!</string>
+                    <int>3</int>
+                  </values>
+                </hudson.util.RobustCollectionConverterTest_-DataRaw>
+                """;
+        var actual = (DataRaw) new XStream2().fromXML(xmlContent);
+        assertEquals(List.of(1, 2, "oops!", 3), actual.values);
     }
 
     public static class Data implements Saveable {
-        private final List<Integer> numbers;
+        private List<Integer> numbers;
 
-        public Data(Integer... numbers) {
-            this.numbers = new ArrayList(Arrays.asList(numbers));
+        @Override
+        public void save() throws IOException {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
         }
+    }
+
+    public static class DataRaw implements Saveable {
+        private List values;
 
         @Override
         public void save() throws IOException {

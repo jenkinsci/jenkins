@@ -247,8 +247,39 @@ public class RobustMapConverterTest {
         assertThat(data.map, equalTo(Map.of("key1", "value1")));
     }
 
+    @Test
+    public void rawtypes() {
+        XStream2 xstream2 = new XStream2();
+        String xml =
+            """
+            <hudson.util.RobustMapConverterTest_-DataRaw>
+              <map>
+                <entry>
+                  <string>key1</string>
+                  <string>value1</string>
+                </entry>
+                <entry>
+                  <string>key2</string>
+                  <int>2</int>
+                </entry>
+              </map>
+            </hudson.util.RobustMapConverterTest_-DataRaw>
+            """;
+        var data = (DataRaw) xstream2.fromXML(xml);
+        assertThat(data.map, equalTo(Map.of("key1", "value1", "key2", 2)));
+    }
+
     private static class Data implements Saveable {
         Map<String, String> map;
+
+        @Override
+        public void save() throws IOException {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+        }
+    }
+
+    private static class DataRaw implements Saveable {
+        Map map;
 
         @Override
         public void save() throws IOException {

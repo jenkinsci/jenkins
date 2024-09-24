@@ -161,7 +161,7 @@ public class RobustReflectionConverterTest {
                   <int>123</int>
                   <string>abc</string>
                   <int>456</int>
-                <string>def</string>
+                  <string>def</string>
                 </hold>
                 """);
         assertThat(h.items, equalTo(List.of("abc", "def")));
@@ -169,6 +169,32 @@ public class RobustReflectionConverterTest {
 
     public static class Hold implements Saveable {
         List<String> items;
+
+        @Override
+        public void save() throws IOException {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+        }
+    }
+
+    @Test
+    public void implicitCollectionRawtypes() {
+        XStream2 xs = new XStream2();
+        xs.alias("hold", HoldRaw.class);
+        xs.addImplicitCollection(HoldRaw.class, "items");
+        var h = (HoldRaw) xs.fromXML(
+                """
+                <hold>
+                  <int>123</int>
+                  <string>abc</string>
+                  <int>456</int>
+                  <string>def</string>
+                </hold>
+                """);
+        assertThat(h.items, equalTo(List.of(123, "abc", 456, "def")));
+    }
+
+    public static class HoldRaw implements Saveable {
+        List items;
 
         @Override
         public void save() throws IOException {
