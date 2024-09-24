@@ -32,6 +32,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.security.InputManipulationException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.diagnosis.OldDataMonitor;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -47,14 +48,11 @@ final class RobustMapConverter extends MapConverter {
 
     /**
      * When available, this field holds the declared type of the keys of the map being deserialized.
-     * This is used to ensure that deserialized keys have the expected type.
      */
-    // See note above RobustCollectionConverter.elementType for limitations regarding non-concrete parameterized types.
     private final @CheckForNull Class<?> keyType;
 
     /**
      * When available, this field holds the declared type of the values of the map being deserialized.
-     * This is used to ensure that deserialized values have the expected type.
      */
     private final @CheckForNull Class<?> valueType;
 
@@ -62,6 +60,13 @@ final class RobustMapConverter extends MapConverter {
         this(mapper, null);
     }
 
+    /**
+     * Creates a converter that will validate the types of map entry keys and values during deserialization.
+     * <p>Map entries whose key or value has an invalid type will be omitted from deserialized maps and may result in an {@link OldDataMonitor} warning.
+     * <p>This type checking currently uses the erasure of the type argument, so for example, the value type for a {@code Map<String, Optional<Integer>>} is just a raw {@code Optional}, so non-integer values inside of the optional would still deserialize successfully and the resulting map entry would be included in the map.
+     *
+     * @see RobustReflectionConverter#unmarshalField
+     */
     RobustMapConverter(Mapper mapper, Type mapType) {
         super(mapper);
         if (mapType != null && Map.class.isAssignableFrom(Types.erasure(mapType))) {

@@ -58,11 +58,7 @@ public class RobustCollectionConverter extends CollectionConverter {
     private final SerializableConverter sc;
     /**
      * When available, this field holds the declared type of the collection being deserialized.
-     * This is used to ensure that deserialized elements have the expected type.
      */
-    // TODO: We only support one level of parameterization, i.e. the elements of a List<List<Integer>>
-    // will be treated as List<Object>, and so the inner list could have invalid non-Integer elements. It is unclear if
-    // we can do better without significant changes.
     private final @CheckForNull Class<?> elementType;
 
     public RobustCollectionConverter(XStream xs) {
@@ -73,6 +69,13 @@ public class RobustCollectionConverter extends CollectionConverter {
         this(mapper, reflectionProvider, null);
     }
 
+    /**
+     * Creates a converter that will validate the types of collection elements during deserialization.
+     * <p>Elements with invalid types will be omitted from deserialized collections and may result in an {@link OldDataMonitor} warning.
+     * <p>This type checking currently uses the erasure of the type argument, so for example, the element type for a {@code List<Optional<Integer>>} is just a raw {@code Optional}, so non-integer values inside of the optional would still deserialize successfully and the resulting optional would be included in the list.
+     *
+     * @see RobustReflectionConverter#unmarshalField
+     */
     public RobustCollectionConverter(Mapper mapper, ReflectionProvider reflectionProvider, Type collectionType) {
         super(mapper);
         sc = new SerializableConverter(mapper, reflectionProvider, new ClassLoaderReference(null));
