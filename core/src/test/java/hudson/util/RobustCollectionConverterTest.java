@@ -200,12 +200,13 @@ public class RobustCollectionConverterTest {
                     <int>1</int>
                     <int>2</int>
                     <string>oops!</string>
+                    <null/>
                     <int>3</int>
                   </numbers>
                 </hudson.util.RobustCollectionConverterTest_-Data>
                 """;
         var actual = (Data) new XStream2().fromXML(xmlContent);
-        assertEquals(List.of(1, 2, 3), actual.numbers);
+        assertEquals(List.of(1, 2, null, 3), actual.numbers);
     }
 
     @Test

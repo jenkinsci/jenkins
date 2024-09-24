@@ -57,6 +57,7 @@ import jenkins.util.xstream.CriticalXStreamException;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -144,6 +145,20 @@ public class RobustReflectionConverterTest {
         assertThat(h.items, Matchers.containsInAnyOrder("a", "b"));
         assertEquals("<hold>\n" +
                 "  <item>a</item>\n" +
+                "  <item>b</item>\n" +
+                "</hold>", xs.toXML(h));
+    }
+
+    @Ignore("Throws an NPE in writeValueToImplicitCollection. Issue has existed since RobustReflectionConverter was created.")
+    @Test
+    public void implicitCollectionsAllowNullElements() {
+        XStream2 xs = new XStream2();
+        xs.alias("hold", Hold.class);
+        xs.addImplicitCollection(Hold.class, "items", "item", String.class);
+        Hold h = (Hold) xs.fromXML("<hold><null/><item>b</item></hold>");
+        assertThat(h.items, Matchers.containsInAnyOrder(null, "b"));
+        assertEquals("<hold>\n" +
+                "  <null/>\n" +
                 "  <item>b</item>\n" +
                 "</hold>", xs.toXML(h));
     }

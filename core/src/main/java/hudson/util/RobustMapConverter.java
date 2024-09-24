@@ -62,8 +62,11 @@ final class RobustMapConverter extends MapConverter {
 
     /**
      * Creates a converter that will validate the types of map entry keys and values during deserialization.
-     * <p>Map entries whose key or value has an invalid type will be omitted from deserialized maps and may result in an {@link OldDataMonitor} warning.
-     * <p>This type checking currently uses the erasure of the type argument, so for example, the value type for a {@code Map<String, Optional<Integer>>} is just a raw {@code Optional}, so non-integer values inside of the optional would still deserialize successfully and the resulting map entry would be included in the map.
+     * <p>Map entries whose key or value has an invalid type will be omitted from deserialized maps and may result in
+     * an {@link OldDataMonitor} warning.
+     * <p>This type checking currently uses the erasure of the type argument, so for example, the value type for a
+     * {@code Map<String, Optional<Integer>>} is just a raw {@code Optional}, so non-integer values inside of the
+     * optional would still deserialize successfully and the resulting map entry would be included in the map.
      *
      * @see RobustReflectionConverter#unmarshalField
      */
@@ -109,18 +112,17 @@ final class RobustMapConverter extends MapConverter {
         reader.moveDown();
         try {
             var object = readBareItem(reader, context, map);
-            try {
-                if (expectedType != null) {
-                    // When possible, disallow invalid keys and values.
-                    expectedType.cast(object);
-                }
-                return object;
-            } catch (ClassCastException e) {
-                var exception = new ConversionException("Invalid type for map entry key/value", e);
+            if (expectedType != null && object != null && !expectedType.isInstance(object)) {
+                var exception = new ConversionException("Invalid type for map entry key/value");
+                // c.f. TreeUnmarshaller.addInformationTo
+                exception.add("required-type", expectedType.getName());
+                exception.add("class", object.getClass().getName());
+                exception.add("converter-type", getClass().getName());
                 reader.appendErrors(exception);
                 RobustReflectionConverter.addErrorInContext(context, exception);
                 return ERROR;
             }
+            return object;
         } catch (CriticalXStreamException x) {
             throw x;
         } catch (XStreamException | LinkageError x) {

@@ -71,8 +71,11 @@ public class RobustCollectionConverter extends CollectionConverter {
 
     /**
      * Creates a converter that will validate the types of collection elements during deserialization.
-     * <p>Elements with invalid types will be omitted from deserialized collections and may result in an {@link OldDataMonitor} warning.
-     * <p>This type checking currently uses the erasure of the type argument, so for example, the element type for a {@code List<Optional<Integer>>} is just a raw {@code Optional}, so non-integer values inside of the optional would still deserialize successfully and the resulting optional would be included in the list.
+     * <p>Elements with invalid types will be omitted from deserialized collections and may result in an
+     * {@link OldDataMonitor} warning.
+     * <p>This type checking currently uses the erasure of the type argument, so for example, the element type for a
+     * {@code List<Optional<Integer>>} is just a raw {@code Optional}, so non-integer values inside of the optional
+     * would still deserialize successfully and the resulting optional would be included in the list.
      *
      * @see RobustReflectionConverter#unmarshalField
      */
@@ -111,18 +114,18 @@ public class RobustCollectionConverter extends CollectionConverter {
             reader.moveDown();
             try {
                 Object item = readBareItem(reader, context, collection);
-                try {
-                    if (elementType != null) {
-                        // When possible, disallow invalid elements.
-                        elementType.cast(item);
-                    }
+                if (elementType != null && item != null && !elementType.isInstance(item)) {
+                    var exception = new ConversionException("Invalid type for collection element");
+                    // c.f. TreeUnmarshaller.addInformationTo
+                    exception.add("required-type", elementType.getName());
+                    exception.add("class", item.getClass().getName());
+                    exception.add("converter-type", getClass().getName());
+                    reader.appendErrors(exception);
+                    RobustReflectionConverter.addErrorInContext(context, exception);
+                } else {
                     long nanoNow = System.nanoTime();
                     collection.add(item);
                     XStream2SecurityUtils.checkForCollectionDoSAttack(context, nanoNow);
-                } catch (ClassCastException e) {
-                    var exception = new ConversionException("Invalid type for collection element", e);
-                    reader.appendErrors(exception);
-                    RobustReflectionConverter.addErrorInContext(context, exception);
                 }
             } catch (CriticalXStreamException e) {
                 throw e;

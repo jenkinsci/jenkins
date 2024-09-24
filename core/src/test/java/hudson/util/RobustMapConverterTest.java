@@ -217,11 +217,18 @@ public class RobustMapConverterTest {
                   <string>key2</string>
                   <string>value2</string>
                 </entry>
+                <entry>
+                  <null/>
+                  <string>value3</string>
+                </entry>
               </map>
             </hudson.util.RobustMapConverterTest_-Data>
             """;
         Data data = (Data) xstream2.fromXML(xml);
-        assertThat(data.map, equalTo(Map.of("key2", "value2")));
+        var map = new HashMap<>();
+        map.put("key2", "value2");
+        map.put(null, "value3");
+        assertThat(data.map, equalTo(map));
     }
 
     @Issue("JENKINS-63343")
@@ -240,11 +247,18 @@ public class RobustMapConverterTest {
                   <string>key2</string>
                   <int>2</int> <!-- bad type -->
                 </entry>
+                <entry>
+                  <string>key3</string>
+                  <null/>
+                </entry>
               </map>
             </hudson.util.RobustMapConverterTest_-Data>
             """;
         Data data = (Data) xstream2.fromXML(xml);
-        assertThat(data.map, equalTo(Map.of("key1", "value1")));
+        var map = new HashMap<>();
+        map.put("key1", "value1");
+        map.put("key3", null);
+        assertThat(data.map, equalTo(map));
     }
 
     @Test

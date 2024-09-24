@@ -487,10 +487,12 @@ public class RobustReflectionConverter implements Converter {
                 implicitCollectionElementTypes.put(fieldName, elementType);
             }
             Class<?> elementType = implicitCollectionElementTypes.getOrDefault(fieldName, Object.class);
-            try {
-                elementType.cast(value);
-            } catch (ClassCastException e) {
-                var exception = new ConversionException("Invalid element type for implicit collection for field: " + fieldName, e);
+            if (!elementType.isInstance(value)) {
+                var exception = new ConversionException("Invalid element type for implicit collection for field: " + fieldName);
+                // c.f. TreeUnmarshaller.addInformationTo
+                exception.add("required-type", elementType.getName());
+                exception.add("class", value.getClass().getName());
+                exception.add("converter-type", getClass().getName());
                 reader.appendErrors(exception);
                 throw exception;
             }
