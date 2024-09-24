@@ -206,7 +206,7 @@ public class RobustCollectionConverterTest {
                 </hudson.util.RobustCollectionConverterTest_-Data>
                 """;
         var actual = (Data) new XStream2().fromXML(xmlContent);
-        assertEquals(List.of(1, 2, null, 3), actual.numbers);
+        assertEquals(Arrays.asList(1, 2, null, 3), actual.numbers);
     }
 
     @Test
