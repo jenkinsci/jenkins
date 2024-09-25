@@ -50,6 +50,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,11 +124,11 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     /**
-     * @return All {@link IComputer} instances managed by this set.
+     * @return All {@link IComputer} instances managed by this set, sorted by name.
      */
     @Exported(name = "computer", inline = true)
     public Collection<? extends IComputer> getComputers() {
-        return ExtensionList.lookupFirst(ComputerSource.class).get();
+        return ExtensionList.lookupFirst(ComputerSource.class).get().stream().sorted(Comparator.comparing(IComputer::getName)).toList();
     }
 
     /**
