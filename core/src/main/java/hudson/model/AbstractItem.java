@@ -59,8 +59,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
@@ -70,6 +68,7 @@ import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.model.queue.ItemDeletion;
+import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
@@ -870,11 +869,11 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         rsp.sendError(SC_BAD_REQUEST);
     }
 
-    static final Pattern SECRET_PATTERN = Pattern.compile(">(" + Secret.ENCRYPTED_VALUE_PATTERN + ")<");
     /**
      * Writes {@code config.xml} to the specified output stream.
      * The user must have at least {@link #EXTENDED_READ}.
-     * If he lacks {@link #CONFIGURE}, then any {@link Secret}s detected will be masked out.
+     * If he lacks {@link #CONFIGURE}, then any {@link Secret}s or other sensitive information detected will be masked out.
+     * @see jenkins.security.ExtendedReadRedaction
      */
 
     @Restricted(NoExternalUse.class)
@@ -886,15 +885,13 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         } else {
             String encoding = configFile.sniffEncoding();
             String xml = Files.readString(Util.fileToPath(configFile.getFile()), Charset.forName(encoding));
-            Matcher matcher = SECRET_PATTERN.matcher(xml);
-            StringBuilder cleanXml = new StringBuilder();
-            while (matcher.find()) {
-                if (Secret.decrypt(matcher.group(1)) != null) {
-                    matcher.appendReplacement(cleanXml, ">********<");
-                }
+
+            for (ExtendedReadRedaction redaction : ExtendedReadRedaction.all()) {
+                LOGGER.log(Level.FINE, () -> "Applying redaction " + redaction.getClass().getName());
+                xml = redaction.apply(xml);
             }
-            matcher.appendTail(cleanXml);
-            org.apache.commons.io.IOUtils.write(cleanXml.toString(), os, encoding);
+
+            org.apache.commons.io.IOUtils.write(xml, os, encoding);
         }
     }
 
