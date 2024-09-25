@@ -114,7 +114,7 @@ public class TextFile {
     public @NonNull String head(int numChars) throws IOException {
         char[] buf = new char[numChars];
         int read = 0;
-        try (Reader r = new FileReader(file)) {
+        try (Reader r = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
             while (read < numChars) {
                 int d = r.read(buf, read, buf.length - read);
                 if (d < 0)
