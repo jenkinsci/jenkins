@@ -34,6 +34,7 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.springframework.security.core.Authentication;
 
 public class AbstractItemTest {
 
@@ -46,12 +47,21 @@ public class AbstractItemTest {
     @Test
     public void reload() throws Exception {
         Jenkins jenkins = j.jenkins;
-        FreeStyleProject p = jenkins.createProject(FreeStyleProject.class, "foo");
-        p.setDescription("Hello World");
+        jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
+        mas.grant(Item.CONFIGURE).everywhere().to("alice", "bob");
+        mas.grant(Item.READ).everywhere().to("alice");
 
-        FreeStyleBuild b = j.buildAndAssertSuccess(p);
-        b.setDescription("This is my build");
+        FreeStyleProject p;
+        FreeStyleBuild b;
+        var alice = User.getById("alice", true);
+        try (ACLContext ignored = ACL.as(alice)) {
+            p = jenkins.createProject(FreeStyleProject.class, "foo");
+            p.setDescription("Hello World");
 
+            b = j.buildAndAssertSuccess(p);
+            b.setDescription("This is my build");
+        }
         // update on disk representation
         Path path = p.getConfigFile().getFile().toPath();
         Files.writeString(path, Files.readString(path, StandardCharsets.UTF_8).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
@@ -63,8 +73,6 @@ public class AbstractItemTest {
         p.doReload();
 
         assertFalse(SaveableListener.class.getSimpleName() + " should not have been called", testSaveableListener.isChangeCalled());
-
-
         assertEquals("Good Evening", p.getDescription());
 
         FreeStyleBuild b2 = p.getBuildByNumber(1);
@@ -72,8 +80,17 @@ public class AbstractItemTest {
         assertNotEquals(b, b2); // should be different object
         assertEquals(b.getDescription(), b2.getDescription()); // but should have the same properties
 
-        p.delete();
+        try (var ignored = ACL.as(alice)) {
+            p.setDescription("This is Alice's project");
+        }
+        assertTrue(SaveableListener.class.getSimpleName() + " should have been called", testSaveableListener.isChangeCalled());
+        assertThat(testSaveableListener.getChangeUser(), equalTo(alice.impersonate2()));
+
+        try (var ignored = ACL.as(alice)) {
+            p.delete();
+        }
         assertTrue(SaveableListener.class.getSimpleName() + " should have been called", testSaveableListener.isDeleteCalled());
+        assertThat(testSaveableListener.getDeleteUser(), equalTo(alice.impersonate2()));
     }
 
     @Test
@@ -163,7 +180,10 @@ public class AbstractItemTest {
         private Saveable saveable;
 
         private boolean changeCalled;
+        private Authentication changeUser;
+
         private boolean deleteCalled;
+        private Authentication deleteUser;
 
         private void setSaveable(Saveable saveable) {
             this.saveable = saveable;
@@ -173,18 +193,32 @@ public class AbstractItemTest {
             return changeCalled;
         }
 
+        public Authentication getChangeUser() {
+            return changeUser;
+        }
+
         public boolean isDeleteCalled() {
             return deleteCalled;
         }
 
+        public Authentication getDeleteUser() {
+            return deleteUser;
+        }
+
         @Override
         public void onChange(Saveable o, XmlFile file) {
-            this.changeCalled |= o == saveable;
+            if (o == saveable) {
+                changeCalled = true;
+                changeUser = Jenkins.getAuthentication2();
+            }
         }
 
         @Override
         public void onDeleted(Saveable o, XmlFile file) {
-            this.deleteCalled |= o == saveable;
+            if (o == saveable) {
+                deleteCalled = true;
+                deleteUser = Jenkins.getAuthentication2();
+            }
         }
     }
 }
