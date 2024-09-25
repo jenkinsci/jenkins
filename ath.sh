@@ -6,7 +6,7 @@ set -o xtrace
 cd "$(dirname "$0")"
 
 # https://github.com/jenkinsci/acceptance-test-harness/releases
-export ATH_VERSION=5957.v7c0e2f7ca_63e
+export ATH_VERSION=5997.v2a_1a_696620a_0
 
 if [[ $# -eq 0 ]]; then
 	export JDK=17
@@ -26,11 +26,15 @@ fi
 mkdir -p target/ath-reports
 chmod a+rwx target/ath-reports
 
+# obtain the groupId to grant to access the docker socket to run tests needing docker
+dockergid=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ubuntu:noble stat -c %g /var/run/docker.sock)
+
 exec docker run --rm \
 	--env JDK \
 	--env ATH_VERSION \
 	--env BROWSER \
 	--shm-size 2g `# avoid selenium.WebDriverException exceptions like 'Failed to decode response from marionette' and webdriver closed` \
+	--group-add ${dockergid} \
 	--volume "$(pwd)"/war/target/jenkins.war:/jenkins.war:ro \
 	--volume /var/run/docker.sock:/var/run/docker.sock:rw \
 	--volume "$(pwd)"/target/ath-reports:/reports:rw \

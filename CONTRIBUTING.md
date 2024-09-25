@@ -52,16 +52,18 @@ MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/ja
 
 ### Running the Yarn frontend build
 
+> [!TIP]
+> If you already have Node.js installed, you do not need to change your path. Start using `yarn` by enabling [Corepack](https://yarnpkg.com/corepack) with `corepack enable`, if it isn't already; this will add the `yarn` binary to your PATH.
+
 To run the Yarn frontend build, after [building the WAR file](#building-the-war-file), add the downloaded versions of Node and Yarn to your path:
 
 ```sh
-export PATH=$PWD/war/node:$PWD/war/node/yarn/dist/bin:$PATH
+export PATH=$PWD/node:$PWD/node/yarn/dist/bin:$PATH
 ```
 
 Then you can run Yarn with e.g.
 
 ```sh
-cd war
 yarn
 ```
 
@@ -75,10 +77,9 @@ On one terminal, start a development server that will not process frontend asset
 MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run -Dskip.yarn
 ```
 
-On another terminal, move to the `war` folder and start a [webpack](https://webpack.js.org/) dev server, after [adding Node and Yarn to your path](#running-the-yarn-frontend-build):
+Open another terminal and start a [webpack](https://webpack.js.org/) dev server, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build):
 
 ```sh
-cd war
 yarn start
 ```
 
@@ -110,17 +111,15 @@ To automatically fix backend issues, run:
 mvn spotless:apply
 ```
 
-To view frontend issues, after [adding Node and Yarn to your path](#running-the-yarn-frontend-build), run:
+To view frontend issues, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build), run:
 
 ```sh
-cd war
 yarn lint
 ```
 
-To fix frontend issues, after [adding Node and Yarn to your path](#running-the-yarn-frontend-build), run:
+To fix frontend issues, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build), run:
 
 ```sh
-cd war
 yarn lint:fix
 ```
 

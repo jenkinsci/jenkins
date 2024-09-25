@@ -36,7 +36,7 @@
       ],
       "enabled": false,
       "matchPackageNames": [
-        "org.eclipse.jetty:jetty-maven-plugin",
+        "org.eclipse.jetty.ee9:jetty-ee9-maven-plugin",
         "org.jenkins-ci:winstone"
       ]
     },
@@ -128,7 +128,7 @@
     {
       "customType": "regex",
       "fileMatch": [
-        "war/pom.xml"
+        "pom.xml"
       ],
       "matchStrings": [
         "<node.version>(?<currentValue>.*?)</node.version>"

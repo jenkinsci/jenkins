@@ -95,7 +95,7 @@ public class AnnotatedLargeText<T> extends LargeText {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public void doProgressiveHtml(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (Util.isOverridden(AnnotatedLargeText.class, getClass(), "doProgressiveHtml", StaplerRequest.class, StaplerResponse.class)) {
@@ -122,7 +122,7 @@ public class AnnotatedLargeText<T> extends LargeText {
     /**
      * Aliasing what I think was a wrong name in {@link LargeText}
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doProgressiveText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         doProgressText(req, rsp);
@@ -146,7 +146,7 @@ public class AnnotatedLargeText<T> extends LargeText {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     @Override
     protected void setContentType(StaplerResponse2 rsp) {

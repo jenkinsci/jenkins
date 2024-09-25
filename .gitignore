@@ -55,7 +55,30 @@ jenkins_*.changes
 *.pkg
 *.zip
 push-build.sh
-war/node_modules/
-war/yarn-error.log
+node_modules/
+yarn-error.log
 .java-version
 .checkstyle
+
+/rebel.xml
+junit.xml
+
+# Yarn
+# https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+.pnp.*
+.yarn/*
+.yarnrc.yml
+!.yarn/patches
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+
+# Node
+node/
+node_modules/
+
+# Generated JavaScript Bundles
+jsbundles
+
+# In case someone accidentally runs npm install instead of yarn install
+package-lock.json
