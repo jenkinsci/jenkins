@@ -727,6 +727,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}.
      */
     @Exported
+    @Override
     public String getIconClassName() {
         return IComputer.super.getIconClassName();
     }
