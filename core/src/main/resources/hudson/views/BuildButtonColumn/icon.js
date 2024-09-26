@@ -5,6 +5,7 @@ Behaviour.specify(
   function (e) {
     var url = e.getAttribute("data-url");
     var message = e.getAttribute("data-notification");
+    var failure = e.getAttribute("data-failure");
     var id = e.getAttribute("data-id");
     var icon = document.getElementById(id);
 
@@ -12,8 +13,13 @@ Behaviour.specify(
       fetch(url, {
         method: "post",
         headers: crumb.wrap({}),
-      });
-      hoverNotification(message, this, -100);
+      }).then((rsp) => {
+        if (rsp.ok) {
+          hoverNotification(message, this, -100);
+        } else {
+          notificationBar.show(failure, notificationBar.ERROR)
+        }
+      });;
       return false;
     };
   },

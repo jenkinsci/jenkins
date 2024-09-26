@@ -4,12 +4,18 @@
   function foo(el, ev) {
     let parameterized = el.dataset.parameterized;
     let success = el.dataset.buildSuccess;
+    let failure = el.dataset.buildFailure;
     if (parameterized === "false") {
       fetch(el.href, {
         method: "post",
         headers: crumb.wrap({}),
+      }).then((rsp) => {
+        if (rsp.ok) {
+          hoverNotification(success, ev.target.parentNode);
+        } else {
+          notificationBar.show(failure, notificationBar.ERROR)
+        }
       });
-      hoverNotification(success, ev.target.parentNode);
       ev.preventDefault();
     }
   }
