@@ -266,7 +266,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
                     // comparison with executor.getCurrentExecutable() == executable currently should always be
                     // true as we no longer recycle Executors, but safer to future-proof in case we ever
                     // revisit recycling.
-                    if (!entry.getKey().isAlive()
+                    if (!entry.getKey().isActive()
                             || entry.getValue() != entry.getKey().getCurrentExecutable()) {
                         iterator.remove();
                     }
