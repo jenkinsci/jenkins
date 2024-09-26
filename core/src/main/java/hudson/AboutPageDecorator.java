@@ -22,41 +22,36 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model;
+package hudson;
 
 import java.util.List;
 
-import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import jenkins.model.Jenkins;
 
 /**
  * Participates in the rendering of the about page
  *
  * <p>
- * This class provides a few hooks to augment the HTML of the login page.
+ * This class provides a few hooks to augment the HTML of the about page.
  *
- * NEXT needs FIX
  * <dl>
- *  <dt>simple-branding.jelly</dt>
+ *  <dt>about-branding.jelly</dt>
  *  <dd>
- *    This view contributes to the branding section, usually located on the left side of the login/register pages.
+ *    This view contributes to the branding section.
  *  </dd>
- *  <dt>simple-footer.jelly</dt>
+ *  <dt>about-involved.jelly</dt>
  *  <dd>
- *    This view contributes to the footer section, located below the login/register form.
+ *    This view contributes the get involved box/icon.
  *  </dd>
- *  <dt>simple-head.jelly</dt>
+ *  <dt>about-static.jelly</dt>
  *  <dd>
- *    This view contributes to the head section.
- *  </dd>
- *  <dt>simple-header.jelly</dt>
- *  <dd>
- *    This view contributes to the header section just above the login/register form.
+ *    This view contributes to the static listing of dependencies.
  *  </dd>
  * </dl>
  *
- * @since 2.128
+ * @since 2.478
  */
 public class AboutPageDecorator extends Descriptor<AboutPageDecorator> implements ExtensionPoint, Describable<AboutPageDecorator> {
 
@@ -82,7 +77,6 @@ public class AboutPageDecorator extends Descriptor<AboutPageDecorator> implement
 
     /**
      * Returns all about page decorators.
-     * @since 2.156
      */
     public static List<AboutPageDecorator> all() {
         return Jenkins.get().getDescriptorList(AboutPageDecorator.class);

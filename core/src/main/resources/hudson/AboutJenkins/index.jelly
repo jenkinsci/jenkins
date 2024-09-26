@@ -24,31 +24,24 @@ THE SOFTWARE.
 
 <!-- About Jenkins page -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:st="jelly:stapler">
+
+  <j:set var="aboutDecorator" value="${h.aboutPageDecorator}"/>
   <l:layout type="one-column" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%about(app.VERSION)}">
     <l:header>
       <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
     </l:header>
     
     <l:main-panel>
-      <div class="app-about-branding">
-        <div class="app-about-branding__aurora"></div>
-        <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}" />
-      </div>
-
+      <st:include it="${it.getAboutPageDecorator}" page="about-branding.jelly" />
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content">
-          <h1 class="app-about-heading">Jenkins</h1>
+          <h1 class="app-about-heading">${%jenkins.name}</h1>
           <p class="app-about-version">
             ${%Version} ${app.VERSION}
           </p>
         </div>
-        <div class="jenkins-app-bar__controls">
-          <a href="https://www.jenkins.io/participate/" class="jenkins-button" target="_blank">
-            <l:icon src="symbol-heart" />
-            ${%Get involved}
-          </a>
-        </div>
+       <st:include it="${it.getAboutPageDecorator}" page="about-involved.jelly" />
       </div>
 
       <p class="app-about-paragraph">${%blurb}</p>
@@ -79,32 +72,7 @@ THE SOFTWARE.
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>
-                <a class="jenkins-table__link" href="https://github.com/jenkins-contrib-themes/jenkins-core-theme">
-                  Jenkins Contrib Themes
-                </a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://github.com/afonsof">Afonso Franca</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://opensource.org/licenses/MIT">MIT License</a>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <a class="jenkins-table__link" href="https://ionic.io/ionicons">Ionicons</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://github.com/ionic-team">Ionic</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://github.com/ionic-team/ionicons/blob/master/LICENSE">MIT
-                  License
-                </a>
-              </td>
-            </tr>
+            <st:include it="${it.getAboutPageDecorator}" page="about-static.jelly" />
           </tbody>
         </table>
       </div>
