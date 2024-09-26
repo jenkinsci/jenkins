@@ -270,8 +270,6 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
                             || entry.getValue() != entry.getKey().getCurrentExecutable()) {
                         iterator.remove();
                     }
-                    // I don't know why, but we have to keep interrupting
-                    entry.getKey().interrupt(Result.ABORTED);
                 }
                 Thread.sleep(50L);
             }
