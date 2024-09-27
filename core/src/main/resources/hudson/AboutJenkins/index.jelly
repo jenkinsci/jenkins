@@ -36,7 +36,7 @@ THE SOFTWARE.
       <st:include page="about-branding.jelly" />
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content">
-          <h1 class="app-about-heading">${%jenkins.name}</h1>
+          <h1 class="app-about-heading">Jenkins</h1>
           <p class="app-about-version">
             ${%Version} ${app.VERSION}
           </p>
