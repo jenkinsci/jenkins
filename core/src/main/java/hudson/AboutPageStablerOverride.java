@@ -24,11 +24,8 @@
 
 package hudson;
 
-import java.util.List;
 
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Participates in the rendering of the about page
@@ -53,42 +50,13 @@ import jenkins.model.Jenkins;
  *
  * @since 2.478
  */
-public class AboutPageDecorator extends Descriptor<AboutPageDecorator> implements ExtensionPoint, Describable<AboutPageDecorator> {
-
-    protected AboutPageDecorator()  {
-        super(self());
-    }
-
-    @Override
-    public final Descriptor<AboutPageDecorator> getDescriptor() {
-        return this;
-    }
-    /**
-     * Obtains the URL of this object, excluding the context path.
-     *
-     * <p>
-     * Every {@link AboutPageDecorator} is bound to URL via {@link Jenkins#getDescriptor()}.
-     * This method returns such an URL.
-     */
-
-    public final String getUrl() {
-        return "descriptor/" + clazz.getName();
-    }
+public abstract class AboutPageStablerOverride implements ExtensionPoint {
 
     /**
-     * Returns all about page decorators.
+     * Return all implementations of this extension point
+     * @return All implementations of this extension point
      */
-    public static List<AboutPageDecorator> all() {
-        return Jenkins.get().getDescriptorList(AboutPageDecorator.class);
+    public static @NonNull ExtensionList<AboutPageStablerOverride> all() {
+        return ExtensionList.lookup(AboutPageStablerOverride.class);
     }
-
-    /**
-     * The first found AboutDecorator, there can only be one.
-     * @return the first found {@link AboutPageDecorator}
-     */
-    public static AboutPageDecorator first() {
-        List<AboutPageDecorator> decorators = all();
-        return decorators.isEmpty() ? null : decorators.get(0);
-    }
-
 }

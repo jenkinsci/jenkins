@@ -33,7 +33,7 @@ THE SOFTWARE.
     </l:header>
     
     <l:main-panel>
-      <st:include it="${it.getAboutPageDecorator}" page="about-branding.jelly" />
+      <st:include page="about-branding.jelly" />
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content">
           <h1 class="app-about-heading">${%jenkins.name}</h1>
@@ -41,7 +41,7 @@ THE SOFTWARE.
             ${%Version} ${app.VERSION}
           </p>
         </div>
-       <st:include it="${it.getAboutPageDecorator}" page="about-involved.jelly" />
+       <st:include page="about-involved.jelly" />
       </div>
 
       <p class="app-about-paragraph">${%blurb}</p>
@@ -72,7 +72,7 @@ THE SOFTWARE.
             </tr>
           </thead>
           <tbody>
-            <st:include it="${it.getAboutPageDecorator}" page="about-static.jelly" />
+            <st:include page="about-static.jelly" />
           </tbody>
         </table>
       </div>
