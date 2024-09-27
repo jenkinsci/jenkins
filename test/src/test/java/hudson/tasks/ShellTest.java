@@ -52,22 +52,19 @@ public class ShellTest {
         Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         // TODO: define a FakeLauncher implementation with easymock so that this kind of assertions can be simplified.
-        PretendSlave s = rule.createPretendSlave(new FakeLauncher() {
-            @Override
-            public Proc onLaunch(ProcStarter p) {
-                // test the command line argument.
-                List<String> cmds = p.cmds();
-                rule.assertStringContains("/bin/sh", cmds.get(0));
-                rule.assertStringContains("-xe", cmds.get(1));
-                assertTrue(new File(cmds.get(2)).exists());
+        PretendSlave s = rule.createPretendSlave(p -> {
+            // test the command line argument.
+            List<String> cmds = p.cmds();
+            rule.assertStringContains("/bin/sh", cmds.get(0));
+            rule.assertStringContains("-xe", cmds.get(1));
+            assertTrue(new File(cmds.get(2)).exists());
 
-                // fake the execution
-                PrintStream ps = new PrintStream(p.stdout());
-                ps.println("Hudson was here");
-                ps.close();
+            // fake the execution
+            PrintStream ps = new PrintStream(p.stdout());
+            ps.println("Hudson was here");
+            ps.close();
 
-                return new FinishedProc(0);
-            }
+            return new FakeLauncher.FinishedProc(0);
         });
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(new Shell("echo abc"));

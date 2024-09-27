@@ -22,8 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!-- Deprecated since 1.345: use <t:iconSize><t:rssBar/></t:iconSize> -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
+  <st:documentation> <![CDATA[
+    Deprecated since 1.345: use <t:iconSize><t:rssBar/></t:iconSize>
+    ]]>
+  </st:documentation>
   <t:iconSize><t:rssBar/></t:iconSize>
 </j:jelly>

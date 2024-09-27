@@ -1,6 +1,8 @@
 package hudson.model;
 
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -89,7 +91,7 @@ public class JobQueueTest {
                 j.jenkins.getQueue().maintain();
                 Thread.sleep(10);
             }
-            assertTrue(j.jenkins.getQueue().getItem(project) instanceof BlockedItem); //check is it is blocked
+            assertThat(j.jenkins.getQueue().getItem(project), instanceOf(BlockedItem.class)); //check is it is blocked
         }
         else {
             fail("The maximum attempts for checking if the job is in POST_PRODUCTION State have reached");
@@ -104,7 +106,7 @@ public class JobQueueTest {
         //Verify the build is removed from Queue since now it is in Completed state
         //it should be scheduled for run
             j.jenkins.getQueue().maintain();
-            assertFalse(j.jenkins.getQueue().getItem(project) instanceof BlockedItem);
+            assertThat(j.jenkins.getQueue().getItem(project), not(instanceOf(BlockedItem.class)));
         }
         else {
             fail("The maximum attempts for checking if the job is in COMPLETED State have reached");

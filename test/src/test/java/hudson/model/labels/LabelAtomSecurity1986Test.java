@@ -31,10 +31,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.XmlFile;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

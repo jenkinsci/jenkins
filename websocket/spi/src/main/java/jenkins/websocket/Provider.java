@@ -24,11 +24,11 @@
 
 package jenkins.websocket;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Defines a way for Jenkins core to serve WebSocket connections.
@@ -47,7 +47,9 @@ interface Provider {
 
     interface Listener {
 
-        void onWebSocketConnect();
+        void onWebSocketConnect(Object providerSession);
+
+        Object getProviderSession();
 
         void onWebSocketClose(int statusCode, String reason);
 
@@ -67,7 +69,7 @@ interface Provider {
 
         Future<Void> sendText(String text) throws IOException;
 
-        void sendPing(ByteBuffer applicationData) throws IOException;
+        Future<Void> sendPing(ByteBuffer applicationData) throws IOException;
 
         void close() throws IOException;
 

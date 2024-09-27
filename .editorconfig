@@ -1,6 +1,6 @@
 root = true
 
-[*.{jelly, js, less, css, hbs}]
+[*.{js, scss, css, hbs, svg}]
 indent_style = space
 indent_size = 2
 trim_trailing_whitespace = true

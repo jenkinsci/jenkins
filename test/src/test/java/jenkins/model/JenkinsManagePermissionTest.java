@@ -11,9 +11,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginWrapper;
 import hudson.cli.CLICommandInvoker;
 import hudson.cli.DisablePluginCommand;
@@ -29,6 +26,9 @@ import java.net.HttpURLConnection;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -154,8 +154,8 @@ public class JenkinsManagePermissionTest {
         String shell = getShell();
         View view = j.jenkins.getPrimaryView();
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
-        form.getInputByName("_.numExecutors").setValueAttribute("" + (currentNumberExecutors + 1));
-        form.getInputByName("_.shell").setValueAttribute("/fakeShell");
+        form.getInputByName("_.numExecutors").setValue("" + (currentNumberExecutors + 1));
+        form.getInputByName("_.shell").setValue("/fakeShell");
         form.getSelectByName("primaryView").setSelectedAttribute("testView", true);
 
         // WHEN a user with only Jenkins.MANAGE permission try to save those changes

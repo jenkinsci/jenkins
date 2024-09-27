@@ -1,9 +1,12 @@
 package jenkins.telemetry;
 
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -12,21 +15,21 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
@@ -36,8 +39,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 public class TelemetryTest {
     @Rule
@@ -62,14 +65,21 @@ public class TelemetryTest {
         j.jenkins.setNoUsageStatistics(false); // tests usually don't submit this, but we need this
         assertEquals("no requests received", 0, counter);
         ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
-        do {
-            Thread.sleep(250);
-        } while (counter == 0); // this might end up being flaky due to 1 to many active telemetry trials
-        assertThat(logger.getMessages(), hasItem("Telemetry submission received response '200 OK' for: test-data"));
-        assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'future' as it is configured to start later"));
-        assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'past' as it is configured to end in the past"));
-        assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'empty' as it has no data"));
-        assertThat(types, hasItem("test-data"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Telemetry submission received response 200 for: test-data"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Skipping telemetry for 'future' as it is configured to start later"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Skipping telemetry for 'past' as it is configured to end in the past"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Skipping telemetry for 'empty' as it has no data"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> types, hasItem("test-data"));
         assertThat(types, not(hasItem("future")));
         assertThat(types, not(hasItem("past")));
         assertThat(correlators.size(), is(counter));
@@ -85,13 +95,60 @@ public class TelemetryTest {
         correlator.setCorrelationId(correlationId);
 
         ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
-        do {
-            Thread.sleep(250);
-        } while (counter == 0); // this might end up being flaky due to 1 to many active telemetry trials
-
-        assertThat(types, hasItem("test-data"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> types, hasItem("test-data"));
         //90ecf3ce1cd5ba1e5ad3cde7ad08a941e884f2e4d9bd463361715abab8efedc5
         assertThat(correlators, hasItem(DigestUtils.sha256Hex(correlationId + "test-data")));
+    }
+
+    @Test
+    public void testNonSubmissionOnError() throws Exception {
+        assertEquals("no requests received", 0, counter);
+        ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Failed to build telemetry content for: 'throwing'"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(2, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Skipping telemetry for 'throwing' as it has no data"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> types, is(not(empty())));
+        assertThat(types, not(contains("throwing")));
+    }
+
+    @TestExtension("testNonSubmissionOnError")
+    public static class ExceptionThrowingTelemetry extends Telemetry {
+
+        @NonNull
+        @Override
+        public String getDisplayName() {
+            return "throwing";
+        }
+
+        @NonNull
+        @Override
+        public String getId() {
+            return "throwing";
+        }
+
+        @NonNull
+        @Override
+        public LocalDate getStart() {
+            return LocalDate.MIN;
+        }
+
+        @NonNull
+        @Override
+        public LocalDate getEnd() {
+            return LocalDate.MAX;
+        }
+
+        @Override
+        public JSONObject createContent() {
+            throw new RuntimeException("something went wrong");
+        }
     }
 
     @TestExtension
@@ -145,7 +202,7 @@ public class TelemetryTest {
         @NonNull
         @Override
         public LocalDate getStart() {
-            return LocalDate.now().plus(1, ChronoUnit.DAYS);
+            return LocalDate.now().plusDays(1);
         }
 
         @NonNull
@@ -185,7 +242,7 @@ public class TelemetryTest {
         @NonNull
         @Override
         public LocalDate getEnd() {
-            return LocalDate.now().minus(1, ChronoUnit.DAYS);
+            return LocalDate.now().minusDays(1);
         }
 
         @NonNull
@@ -247,7 +304,7 @@ public class TelemetryTest {
 
     @TestExtension
     public static class TelemetryReceiver implements UnprotectedRootAction {
-        public void doEvents(StaplerRequest request, StaplerResponse response) throws IOException {
+        public void doEvents(StaplerRequest2 request, StaplerResponse2 response) throws IOException {
             StringWriter sw = new StringWriter();
             IOUtils.copy(request.getInputStream(), sw, StandardCharsets.UTF_8);
             JSONObject json = JSONObject.fromObject(sw.toString());

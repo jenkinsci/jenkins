@@ -6,12 +6,12 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.AbstractBuild.AbstractBuildExecution;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import java.io.IOException;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -51,6 +51,16 @@ public class SCMCheckoutStrategyTest {
         assertSame(before.getClass(), after.getClass());
 
         assertTrue(pageHasUI(p));
+    }
+
+    @Test
+    public void configWithoutSCMCheckoutStrategy() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScmCheckoutStrategy(null);
+        j.configRoundtrip((Item) p);
+        SCMCheckoutStrategy after = p.getScmCheckoutStrategy();
+        assertEquals(DefaultSCMCheckoutStrategyImpl.class, after.getClass());
+        assertFalse(pageHasUI(p));
     }
 
     private boolean pageHasUI(FreeStyleProject p) throws IOException, SAXException {

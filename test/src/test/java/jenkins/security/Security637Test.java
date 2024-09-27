@@ -24,10 +24,10 @@
 
 package jenkins.security;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeNoException;
@@ -40,9 +40,9 @@ import hudson.model.FreeStyleProject;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.slaves.DumbSlave;
-import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.util.Collections;
@@ -64,10 +64,7 @@ public class Security637Test {
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_handler_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
-                EnvVars envVars = new VersionNumber(System.getProperty("java.specification.version")).isOlderThan(new VersionNumber("9"))
-                        ? null
-                        : new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED");
-                DumbSlave slave = j.createOnlineSlave(null, envVars);
+                DumbSlave slave = j.createOnlineSlave(null, new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED"));
                 String unsafeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("https://www.google.com/")));
                 assertThat(unsafeHandlerClassName, containsString("SafeURLStreamHandler"));
 
@@ -99,8 +96,8 @@ public class Security637Test {
         sessions.then(j -> {
                 // due to the DNS resolution they are equal
                 assertEquals(
-                        new URL("https://jenkins.io"),
-                        new URL("https://www.jenkins.io")
+                        new URI("https://jenkins.io").toURL(),
+                        new URI("https://www.jenkins.io").toURL()
                 );
         });
     }
@@ -131,7 +128,7 @@ public class Security637Test {
 
         @Override
         public URL call() throws Exception {
-            return new URL(url);
+            return new URI(url).toURL();
         }
     }
 
@@ -152,8 +149,8 @@ public class Security637Test {
 
                 // due to the DNS resolution they are equal
                 assertEquals(
-                        new URL("https://jenkins.io"),
-                        new URL("https://www.jenkins.io")
+                        new URI("https://jenkins.io").toURL(),
+                        new URI("https://www.jenkins.io").toURL()
                 );
         });
     }
@@ -179,7 +176,7 @@ public class Security637Test {
                 FreeStyleProject project = j.createFreeStyleProject("project-with-url");
                 URLJobProperty URLJobProperty = new URLJobProperty(
                         // url to be wrapped
-                        new URL("https://www.google.com/"),
+                        new URI("https://www.google.com/").toURL(),
                         // safe url, not required to be wrapped
                         new URL("https", null, -1, "", null)
                 );

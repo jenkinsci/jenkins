@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.Launcher;
 import hudson.model.Descriptor.PropertyType;
 import hudson.tasks.BuildStepDescriptor;
@@ -41,6 +40,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,7 +49,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class DescriptorTest {
@@ -115,7 +115,7 @@ public class DescriptorTest {
             return id;
         }
 
-        @Override public Builder newInstance(StaplerRequest req, JSONObject formData) {
+        @Override public Builder newInstance(StaplerRequest2 req, JSONObject formData) {
             return new BuilderImpl(id);
         }
 
@@ -213,7 +213,7 @@ public class DescriptorTest {
             return id;
         }
 
-        @Override public D3 newInstance(StaplerRequest req, JSONObject formData) {
+        @Override public D3 newInstance(StaplerRequest2 req, JSONObject formData) {
             return new D3(id);
         }
     }
@@ -241,11 +241,9 @@ public class DescriptorTest {
         NullPointerException cause = new NullPointerException();
         final Descriptor.FormException fe = new Descriptor.FormException("My Message", cause, "fake");
         FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () ->
-            rule.executeOnServer(new Callable<Void>() {
-                @Override public Void call() throws Exception {
-                    fe.generateResponse(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), Jenkins.get());
-                    return null;
-                }
+            rule.executeOnServer((Callable<Void>) () -> {
+                fe.generateResponse(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2(), Jenkins.get());
+                return null;
             }));
         String response = ex.getResponse().getContentAsString();
         assertThat(response, containsString(fe.getMessage()));

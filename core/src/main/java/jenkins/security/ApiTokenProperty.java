@@ -33,6 +33,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.security.ACL;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
@@ -57,7 +58,6 @@ import jenkins.util.SystemProperties;
 import net.jcip.annotations.Immutable;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -66,7 +66,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -175,6 +175,7 @@ public class ApiTokenProperty extends UserProperty {
 
     @NonNull
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Used to prevent use of pre-2013 API tokens, then returning the API token value")
     /*package*/ String getApiTokenInsecure() {
         if (apiToken == null) {
             return Messages.ApiTokenProperty_NoLegacyToken();
@@ -190,7 +191,7 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     public boolean matchesPassword(String token) {
-        if (StringUtils.isBlank(token)) {
+        if (token == null || token.isBlank()) {
             return false;
         }
 
@@ -273,7 +274,7 @@ public class ApiTokenProperty extends UserProperty {
      * Allow user to rename tokens
      */
     @Override
-    public UserProperty reconfigure(StaplerRequest req, @CheckForNull JSONObject form) throws FormException {
+    public UserProperty reconfigure(StaplerRequest2 req, @CheckForNull JSONObject form) throws FormException {
         if (form == null) {
             return this;
         }
@@ -511,7 +512,7 @@ public class ApiTokenProperty extends UserProperty {
             }
 
             final String tokenName;
-            if (StringUtils.isBlank(newTokenName)) {
+            if (newTokenName == null || newTokenName.isBlank()) {
                 tokenName = Messages.Token_Created_on(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             } else {
                 tokenName = newTokenName;
@@ -547,7 +548,7 @@ public class ApiTokenProperty extends UserProperty {
             }
 
             final String tokenName;
-            if (StringUtils.isBlank(newTokenName)) {
+            if (newTokenName == null || newTokenName.isBlank()) {
                 tokenName = String.format("Token created on %s", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             } else {
                 tokenName = newTokenName;
@@ -574,10 +575,10 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can rename token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(newName)) {
+            if (newName == null || newName.isBlank()) {
                 return HttpResponses.errorJSON("The name cannot be empty");
             }
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
@@ -605,7 +606,7 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can revoke token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
@@ -643,7 +644,7 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can revoke token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
@@ -656,6 +657,11 @@ public class ApiTokenProperty extends UserProperty {
             p.revokeAllTokensExceptOne(tokenUuid);
 
             return HttpResponses.ok();
+        }
+
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Security.class);
         }
     }
 

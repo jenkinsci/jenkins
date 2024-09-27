@@ -24,13 +24,16 @@
 
 package hudson.util;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 import org.junit.Test;
 
@@ -115,5 +118,25 @@ public class FormValidationTest {
     public void formValidationException() {
         FormValidation fv = FormValidation.error(new Exception("<html"), "Message<html");
         assertThat(fv.renderHtml(), not(containsString("<html")));
+    }
+
+    @Test
+    public void testUrlCheck() throws IOException {
+        FormValidation.URLCheck urlCheck = new FormValidation.URLCheck() {
+            @Override
+            protected FormValidation check() throws IOException {
+                String uri = "https://www.jenkins.io/";
+                try {
+                    if (findText(open(URI.create(uri)), "Jenkins")) {
+                        return FormValidation.ok();
+                    } else {
+                        return FormValidation.error("This is a valid URI but it does not look like Jenkins");
+                    }
+                } catch (IOException e) {
+                    return handleIOException(uri, e);
+                }
+            }
+        };
+        assertThat(urlCheck.check(), is(FormValidation.ok()));
     }
 }

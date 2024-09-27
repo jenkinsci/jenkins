@@ -26,41 +26,37 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
-
-      <!-- temporarily offline switch -->
-      <div style="float:right">
+      <l:app-bar title="${it.caption}">
+        <t:editDescriptionButton permission="${it.CONFIGURE}"/>
+        <j:if test="${it.manualLaunchAllowed}">
+          <st:include from="${it.launcher}" page="app-bar-controls.jelly" optional="true"/>
+        </j:if>
+        <!-- temporarily offline switch -->
         <j:choose>
           <j:when test="${it.temporarilyOffline}">
             <l:hasPermission permission="${it.CONNECT}">
               <form method="post" action="toggleOffline">
                 <f:submit value="${%submit.temporarilyOffline}"  />
               </form>
-              <br/>
               <form method="post" action="setOfflineCause">
-              <f:submit value="${%submit.updateOfflineCause}"  />
+              <f:submit primary="false" value="${%submit.updateOfflineCause}"  />
               </form>
             </l:hasPermission>
           </j:when>
           <j:otherwise>
             <l:hasPermission permission="${it.DISCONNECT}">
               <form method="post" action="markOffline">
-                <f:submit value="${%submit.not.temporarilyOffline}"  />
+                <f:submit primary="false" value="${%submit.not.temporarilyOffline}"  />
               </form>
             </l:hasPermission>
           </j:otherwise>
         </j:choose>
-      </div>
+        <t:help href="https://www.jenkins.io/doc/book/using/using-agents/" />
+      </l:app-bar>
 
-      <h1>
-        <span class="icon-lg">
-          <l:icon src="${it.iconClassName}" />
-        </span>
-        ${it.caption}
-        <j:if test="${!empty(it.node.nodeDescription)}">
-          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
-        </j:if>
-      </h1>
+      <st:include page="index-top.jelly" it="${it}" />
 
       <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
         <st:include it="${it.offlineCause}" page="cause.jelly" />
@@ -74,8 +70,20 @@ THE SOFTWARE.
         <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
       </j:if>
 
-        <j:if test="${it.node.assignedLabels.size() gt 1}">
-        <div>
+      <f:advanced title="${%Monitoring Data}">
+        <table class="jenkins-table jenkins-table--small jenkins-table--auto-width">
+          <j:forEach var="m" items="${it.monitoringData}">
+            <tr>
+              <td>${m.key.columnCaption}</td>
+              <j:set var="data" value="${m.value}"/>
+              <st:include page="column.jelly" from="${m.key}" />
+            </tr>
+          </j:forEach>
+        </table>
+      </f:advanced>
+
+      <j:if test="${it.node.assignedLabels.size() gt 1}">
+        <div class="jenkins-!-margin-bottom-3">
           <h2>${%Labels}</h2>
           <j:forEach var="entry" items="${it.node.labelCloud}">
             <!-- Skip the label for this node -->

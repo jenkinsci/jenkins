@@ -26,7 +26,7 @@ package jenkins.triggers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -42,9 +42,7 @@ import hudson.model.User;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildTriggerTest;
 import hudson.triggers.Trigger;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
@@ -115,40 +113,44 @@ public class ReverseBuildTriggerTest {
         assertNotNull(JenkinsRule.getLog(b), downstream.getLastBuild());
         assertEquals(1, downstream.getLastBuild().number);
         // A QIA is configured but does not specify any authentication for downstream, so upstream should not trigger it:
-        Map<String, org.acegisecurity.Authentication> qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("admin").impersonate());
-        qiaConfig.put(downstreamName, Jenkins.ANONYMOUS);
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .add(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("admin").impersonate2())
+                        .authenticate(downstreamName, Jenkins.ANONYMOUS2));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogContains(downstreamName, b);
         r.assertLogContains(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f("anonymous", upstreamName, downstreamName), b);
         r.waitUntilNoActivity();
         assertEquals(1, downstream.getLastBuild().number);
         // Auth for upstream is defined but cannot see downstream, so no message is printed about it:
-        qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("bob").impersonate());
-        qiaConfig.put(downstreamName, Jenkins.ANONYMOUS);
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .replace(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("bob").impersonate2())
+                        .authenticate(downstreamName, Jenkins.ANONYMOUS2));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogNotContains(downstreamName, b);
         r.waitUntilNoActivity();
         assertEquals(1, downstream.getLastBuild().number);
         // Alice can see upstream, so downstream gets built, but the upstream build cannot see downstream:
         auth.grant(Item.READ).onItems(upstream).to("alice", "bob");
-        qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("bob").impersonate());
-        qiaConfig.put(downstreamName, User.get("alice").impersonate());
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .replace(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("bob").impersonate2())
+                        .authenticate(downstreamName, User.get("alice").impersonate2()));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogNotContains(downstreamName, b);
         r.waitUntilNoActivity();
         assertEquals(2, downstream.getLastBuild().number);
         assertEquals(new Cause.UpstreamCause((Run) b), downstream.getLastBuild().getCause(Cause.UpstreamCause.class));
         // Now if upstream build is permitted to report on downstream:
-        qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("admin").impersonate());
-        qiaConfig.put(downstreamName, User.get("alice").impersonate());
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .replace(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("admin").impersonate2())
+                        .authenticate(downstreamName, User.get("alice").impersonate2()));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogContains(downstreamName, b);
         r.waitUntilNoActivity();
@@ -164,10 +166,11 @@ public class ReverseBuildTriggerTest {
                 .grant(Item.DISCOVER).onItems(upstream).to("alice");
         r.jenkins.setAuthorizationStrategy(auth);
         auth.grant(Item.READ).onItems(downstream).to("alice");
-        qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("bob").impersonate());
-        qiaConfig.put(downstreamName, User.get("alice").impersonate());
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .replace(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("bob").impersonate2())
+                        .authenticate(downstreamName, User.get("alice").impersonate2()));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogNotContains(downstreamName, b);
         r.waitUntilNoActivity();
@@ -177,10 +180,11 @@ public class ReverseBuildTriggerTest {
         // so no message is printed about it, and no Exception neither (JENKINS-42707)
         auth.grant(Item.READ).onItems(upstream).to("bob");
         auth.grant(Item.DISCOVER).onItems(upstream).to("anonymous");
-        qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("bob").impersonate());
-        qiaConfig.put(downstreamName, Jenkins.ANONYMOUS);
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .replace(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("bob").impersonate2())
+                        .authenticate(downstreamName, Jenkins.ANONYMOUS2));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogNotContains(downstreamName, b);
         r.assertLogNotContains("Please login to access job " + upstreamName, b);

@@ -25,9 +25,9 @@
 package hudson;
 
 import hudson.model.UpdateCenter;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.concurrent.Future;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -41,8 +41,8 @@ public class PluginTest {
 
     @Issue({"SECURITY-131", "SECURITY-155", "SECURITY-705"})
     @Test public void doDynamic() throws Exception {
-        r.createWebClient().goTo("plugin/matrix-auth/images/select-all.svg", "image/svg+xml");
-        r.createWebClient().goTo("plugin/matrix-auth/images/../images/select-all.svg", "image/svg+xml"); // collapsed somewhere before it winds up in restOfPath
+        r.createWebClient().goTo("plugin/cloudbees-folder/images/svgs/folder.svg", "image/svg+xml");
+        r.createWebClient().goTo("plugin/cloudbees-folder/images/../images/svgs/folder.svg", "image/svg+xml"); // collapsed somewhere before it winds up in restOfPath
         /* TODO https://github.com/apache/httpcomponents-client/commit/8c04c6ae5e5ba1432e40684428338ce68431766b#r32873542
         r.createWebClient().assertFails("plugin/matrix-auth/images/%2E%2E/images/user-disabled.png", HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // IAE from TokenList.<init>
         r.createWebClient().assertFails("plugin/matrix-auth/images/%252E%252E/images/user-disabled.png", HttpServletResponse.SC_BAD_REQUEST); // SECURITY-131
@@ -54,7 +54,7 @@ public class PluginTest {
         r.createWebClient().assertFails("plugin/matrix-auth/images/%2e%2e%2fWEB-INF/licenses.xml", HttpServletResponse.SC_BAD_REQUEST);
         r.createWebClient().assertFails("plugin/matrix-auth/images/%2e.%2fWEB-INF/licenses.xml", HttpServletResponse.SC_BAD_REQUEST);
         r.createWebClient().assertFails("plugin/matrix-auth/images/..%2f..%2f..%2f" + r.jenkins.getRootDir().getName() + "%2fsecrets%2fmaster.key", HttpServletResponse.SC_BAD_REQUEST);
-        r.createWebClient().assertFails("plugin/matrix-auth/" + r.jenkins.getRootDir() + "/secrets/master.key", /* ./ prepended anyway */ HttpServletResponse.SC_NOT_FOUND);
+        r.createWebClient().assertFails("plugin/matrix-auth/" + r.jenkins.getRootDir() + "/secrets/master.key", /* ./ prepended anyway */ Functions.isWindows() ? HttpServletResponse.SC_BAD_REQUEST : HttpServletResponse.SC_NOT_FOUND);
         // SECURITY-155:
         r.createWebClient().assertFails("plugin/matrix-auth/WEB-INF/licenses.xml", HttpServletResponse.SC_BAD_REQUEST);
         r.createWebClient().assertFails("plugin/matrix-auth/META-INF/MANIFEST.MF", HttpServletResponse.SC_BAD_REQUEST);

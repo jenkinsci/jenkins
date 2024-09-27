@@ -1,0 +1,37 @@
+<div>
+  Du kan använda jokertecken som "modul/dist/**/*.zip". Se
+  <a href="https://ant.apache.org/manual/Types/fileset.html">
+    include-attributet för Ant-filuppsättningar
+  </a>
+  för det exakta formatet -- förutom att
+  <code>","</code>
+  (
+  <em>komma</em>
+  ) är den enda avgränsaren som stöds. Baskatalogen är
+  <a href="ws/">arbetsytan</a>
+  . Du kan bara arkivera filer som finns i din arbetsyta.
+</div>
+
+<br />
+<div>
+  <p>Här är några exempel på hur pipelines kan användas:</p>
+  <ul>
+    <li>
+      Hur man arkiverar flera artefakter från en specifik mapp:
+
+      <pre><code>archiveArtifacts artifacts: 'target/*.jar'</code></pre>
+    </li>
+    <br />
+
+    <li>
+      Hur man arkiverar flera artefakter med olika mönster:
+      <pre><code>archiveArtifacts artifacts: 'target/*.jar, target/*.war'</code></pre>
+    </li>
+    <br />
+    <li>
+      Hur man arkiverar flera kapslade artefakter:
+      <pre><code>archiveArtifacts artifacts: '**/*.jar'</code></pre>
+    </li>
+    <br />
+  </ul>
+</div>

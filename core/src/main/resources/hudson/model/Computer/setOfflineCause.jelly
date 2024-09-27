@@ -26,6 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%title(it.displayName)}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Update offline reason}" />
     <l:main-panel>
       <l:hasPermission permission="${it.DISCONNECT}">
         <h2>${%title(it.displayName)}</h2>

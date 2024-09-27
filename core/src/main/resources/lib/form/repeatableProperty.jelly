@@ -30,11 +30,13 @@ THE SOFTWARE.
 
     Unless that nested config.jelly already adds a delete button (deprecated), you should normally put the following inside this tag:
 
+      	{noformat}
       	<f:block>
           <div align="right">
             <f:repeatableDeleteButton />
           </div>
         </f:block>
+        {noformat}
 
     Due to a bug in Stapler data binding the model elements are only set if they consist of one or more values.
     If all values have been removed in the user interface (i.e. the associated form is empty), then the setter is not
@@ -66,9 +68,10 @@ THE SOFTWARE.
       At least provide this number of copies initially.
       minimum="1" is useful to make sure there's always at least one entry for the user to fill in.
     </st:attribute>
-    <st:attribute name="header">
+    <st:attribute name="header"> <![CDATA[
       For each item, add this header.
-      This also activates drag&amp;drop (where the header is a grip).
+      This also activates drag&drop (where the header is a grip).
+       ]]>
     </st:attribute>
   </st:documentation>
 

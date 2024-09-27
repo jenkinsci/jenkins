@@ -41,7 +41,9 @@ import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.labels.LabelAtom;
 import hudson.tasks.Shell;
+import java.io.IOException;
 import jenkins.model.Jenkins;
+import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -150,6 +152,11 @@ public class DeleteBuildsCommandTest {
         assertThat(result.stdout(), containsString("Deleted 1 builds"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(0));
         assertThat(project.isBuilding(), equalTo(false));
+        try {
+            project.delete();
+        } catch (IOException | InterruptedException x) {
+            throw new AssumptionViolatedException("Could not delete test project (race condition?)", x);
+        }
     }
 
     @Test public void deleteBuildsShouldSuccessEvenTheBuildIsStuckInTheQueue() throws Exception {

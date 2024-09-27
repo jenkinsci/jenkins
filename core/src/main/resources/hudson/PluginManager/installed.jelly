@@ -27,72 +27,65 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:s="/lib/form">
-  <l:layout title="${%Installed Plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+  <l:layout title="${%Installed plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-    <l:app-bar title="${%Plugin Manager}" />
-
     <st:include page="sidepanel.jelly"/>
+    <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
     <l:main-panel>
-      <st:adjunct includes="hudson.PluginManager._table"/>
+      <j:set var="noPlugins"
+             value="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}" />
 
-      <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
-        <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
-      </j:if>
-
-      <div class="plugins i18n"
-           data-cannot-enable="${%This plugin cannot be enabled}"
-           data-cannot-disable="${%This plugin cannot be disabled}"
-           data-cannot-uninstall="${%This plugin cannot be uninstalled}"
-           data-disabled-dependencies="${%It has one or more unsatisfied dependencies}"
-           data-enabled-dependents="${%It has one or more enabled dependents}"
-           data-installed-dependents="${%It has one or more installed dependents}"
-           data-detached-disable="${%detached-disable}"
-           data-detached-uninstall="${%detached-uninstall}"
-           data-detached-possible-dependents="${%detached-possible-dependents}"
-      />
-
-      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
-
-      <div class="jenkins-form-item jenkins-search">
-        <input
-          class="jenkins-search__input"
-          type="search"
-          id="filter-box"
-          value="${request.getParameter('filter')}"
-          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
-        <div class="jenkins-search__icon">
-          <l:icon src="symbol-search"/>
+      <div class="jenkins-app-bar jenkins-app-bar--sticky">
+        <div class="jenkins-app-bar__content">
+          <l:search-bar clazz="jenkins-search--app-bar"
+                        placeholder="${%Search installed plugins}"
+                        id="filter-box"
+                        autofocus="true"
+                        value="${request.getParameter('filter')}"
+                        enabled="${!noPlugins}" />
         </div>
       </div>
 
-      <table id="plugins" class="jenkins-table sortable">
-        <j:choose>
-          <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
+      <st:adjunct includes="hudson.PluginManager._table"/>
+
+      <span style="display:none" id="is-restart-required-for-completion"
+            data-is-restart-required="${app.updateCenter.isRestartRequiredForCompletion()}" />
+
+      <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
+        <div class="jenkins-alert jenkins-alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
+      </j:if>
+
+      <template id="i18n"
+                data-cannot-enable="${%This plugin cannot be enabled}"
+                data-cannot-disable="${%This plugin cannot be disabled}"
+                data-cannot-uninstall="${%This plugin cannot be uninstalled}"
+                data-disabled-dependencies="${%It has one or more unsatisfied dependencies}"
+                data-enabled-dependents="${%It has one or more enabled dependents}"
+                data-installed-dependents="${%It has one or more installed dependents}"
+                data-detached-disable="${%detached-disable}"
+                data-detached-uninstall="${%detached-uninstall}"
+                data-detached-possible-dependents="${%detached-possible-dependents}"
+                data-uninstall-description="${%uninstall-description}" />
+
+      <j:choose>
+        <j:when test="${noPlugins}">
+          <l:notice icon="symbol-plugins" title="${%No plugins installed}" />
+        </j:when>
+        <j:otherwise>
+          <table id="plugins" class="jenkins-table sortable">
             <thead>
-              <tr>
-                <th>${%Installed plugins}</th>
-              </tr>
+            <tr>
+              <th initialSortDir="down">${%Name}</th>
+              <th class="jenkins-table__cell--tight">${%Enabled}</th>
+              <l:isAdmin>
+                <th data-sort-disable="true"/>
+              </l:isAdmin>
+            </tr>
             </thead>
             <tbody>
-              <tr>
-                <td align="center">${%No plugins installed.}</td>
-              </tr>
-            </tbody>
-          </j:when>
-          <j:otherwise>
-            <thead>
-              <tr>
-                <th initialSortDir="down">${%Name}</th>
-                <th class="jenkins-table__cell--tight">${%Enabled}</th>
-                <l:isAdmin>
-                  <th data-sort-disable="true"/>
-                </l:isAdmin>
-              </tr>
-            </thead>
-            <tbody>
-              <j:forEach var="p" items="${app.pluginManager.plugins}">
+              <j:forEach var="p" items="${app.pluginManager.pluginsSortedByTitle}">
                 <tr
                   class="plugin ${p.hasMandatoryDependents()?'has-dependents':''} ${(p.hasMandatoryDependents() and !p.enabled)?'has-dependents-but-disabled':''} ${p.isDeleted()?'deleted':''} ${p.hasImpliedDependents() and p.enabled ? 'possibly-has-implied-dependents' : ''}"
                   data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
@@ -106,6 +99,13 @@ THE SOFTWARE.
                         </span>
                       </a>
                     </div>
+                    <j:if test="${p.hasMandatoryDependencies()}">
+                      <div class="dependency-list">
+                        <j:forEach var="dependency" items="${p.mandatoryDependencies}">
+                          <span data-plugin-id="${dependency.shortName}" />
+                        </j:forEach>
+                      </div>
+                    </j:if>
                     <div class="jenkins-!-margin-top-1">
                       <j:set var="indexPage" value="${p.indexPage.toString()}"/>
                       <j:set var="excerpt"
@@ -137,7 +137,7 @@ THE SOFTWARE.
                       </div>
                     </j:if>
                     <j:if test="${!p.getActiveWarnings().isEmpty()}">
-                      <div class="alert alert-danger">${%securityWarning}
+                      <div class="jenkins-alert jenkins-alert-danger">${%securityWarning}
                         <ul>
                           <j:forEach var="warning" items="${p.getActiveWarnings()}">
                             <li>
@@ -150,13 +150,13 @@ THE SOFTWARE.
                       </div>
                     </j:if>
                     <j:if test="${p.isDeprecated()}">
-                      <div class="alert alert-warning">
+                      <div class="jenkins-alert jenkins-alert-warning">
                         <!-- figure out a way how to present deprecations by multiple update sites instead of just the first one -->
                         ${%deprecationWarning(p.getDeprecations().get(0).url)}
                       </div>
                     </j:if>
                     <j:if test="${it.hasAdoptThisPluginLabel(p)}">
-                      <div class="alert alert-warning jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
+                      <div class="jenkins-alert jenkins-alert-warning jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
                         ${%adoptThisPlugin}
                       </div>
                     </j:if>
@@ -165,7 +165,8 @@ THE SOFTWARE.
                   <td class="jenkins-table__cell--tight enable" data="${state}">
                     <div class="jenkins-table__cell__button-wrapper">
                       <span class="jenkins-toggle-switch">
-                        <input type="checkbox" checked="${state}" onclick="flip(event)"
+                        <input type="checkbox" checked="${state}"
+                               class="plugin-manager-toggle-switch"
                                url="plugin/${p.shortName}"
                                disabled="${readOnlyMode ? 'true' : null}"
                                original="${p.active?'true':'false'}"/>
@@ -176,64 +177,65 @@ THE SOFTWARE.
                   <l:isAdmin>
                     <td class="jenkins-table__cell--tight">
                       <div class="jenkins-table__cell__button-wrapper">
-                        <j:if test="${p.downgradable}">
-                          <form class="jenkins-buttons-row" method="post"
-                                action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
-                            <button class="jenkins-table__button jenkins-!-color-orange" tooltip="${%downgradeTo(p.backupVersion)}">
-                              <l:icon src="symbol-downgrade-circle"/>
-                              <span class="jenkins-!-margin-left-1"
-                                    style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50px;">
-                                ${p.backupVersion}
-                              </span>
-                            </button>
-                          </form>
-                        </j:if>
-                      </div>
-                    </td>
-                    <td class="jenkins-table__cell--tight uninstall">
-                      <div class="jenkins-table__cell__button-wrapper">
-                        <j:choose>
-                          <j:when test="${p.isDeleted()}">
-                            <p>${%Uninstallation pending}</p>
-                          </j:when>
-                          <j:otherwise>
-                            <j:if test="${p.hasMandatoryDependents() or p.hasImpliedDependents()}">
-                              <div class="dependent-list">
-                                <j:forEach var="dependent" items="${p.mandatoryDependents}">
-                                  <span data-plugin-id="${dependent}"></span>
-                                </j:forEach>
-                                <j:set var="impliedDependents" value="${p.impliedDependents}"/>
-                                <j:choose>
-                                  <j:when test="${impliedDependents.size() lt 15}">
-                                    <j:forEach var="dependent" items="${impliedDependents}">
-                                      <span data-plugin-id="${dependent}"></span>
-                                    </j:forEach>
-                                  </j:when>
-                                  <j:otherwise>
-                                    <p>
-                                      ${%detached-many-dependents(impliedDependents.size())}
-                                    </p>
-                                  </j:otherwise>
-                                </j:choose>
-                              </div>
-                            </j:if>
-                            <j:if test="${p.hasMandatoryDependencies()}">
-                              <div class="dependency-list">
-                                <j:forEach var="dependency" items="${p.mandatoryDependencies}">
-                                  <span data-plugin-id="${dependency.shortName}"></span>
-                                </j:forEach>
-                              </div>
-                            </j:if>
-                            <form class="jenkins-buttons-row" method="post" action="plugin/${p.shortName}/uninstall">
-                              <button class="jenkins-table__button jenkins-!-destructive-color uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
-                                <l:icon src="symbol-close-circle"/>
+                          <j:if test="${p.downgradable}">
+                            <form method="post"
+                                  class="jenkins-buttons-row"
+                                  action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
+                              <button class="jenkins-button jenkins-button--tertiary jenkins-!-color-orange"
+                                      style="padding: 0.5rem"
+                                      tooltip="${%downgradeTo(p.backupVersion)}">
+                                <l:icon src="symbol-downgrade-circle"/>
+                                <span
+                                    style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">
+                                  ${p.backupVersion}
+                                </span>
                               </button>
                             </form>
-                          </j:otherwise>
-                        </j:choose>
+                          </j:if>
                       </div>
                     </td>
                   </l:isAdmin>
+                  <td class="jenkins-table__cell--tight uninstall ${readOnlyMode and !p.isDeleted() ? 'jenkins-hidden' : ''}">
+                    <div class="jenkins-table__cell__button-wrapper">
+                      <j:choose>
+                        <j:when test="${p.isDeleted()}">
+                          <p>${%Uninstallation pending}</p>
+                        </j:when>
+                        <j:otherwise>
+                          <j:if test="${p.hasMandatoryDependents() or p.hasImpliedDependents()}">
+                            <div class="dependent-list">
+                              <j:forEach var="dependent" items="${p.mandatoryDependents}">
+                                <span data-plugin-id="${dependent}" />
+                              </j:forEach>
+                              <j:set var="impliedDependents" value="${p.impliedDependents}"/>
+                              <j:choose>
+                                <j:when test="${impliedDependents.size() lt 15}">
+                                  <j:forEach var="dependent" items="${impliedDependents}">
+                                    <span data-plugin-id="${dependent}" />
+                                  </j:forEach>
+                                </j:when>
+                                <j:otherwise>
+                                  <p>
+                                    ${%detached-many-dependents(impliedDependents.size())}
+                                  </p>
+                                </j:otherwise>
+                              </j:choose>
+                            </div>
+                          </j:if>
+                          <l:isAdmin>
+                            <button data-action="uninstall"
+                                    type="button"
+                                    class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
+                                    tooltip="${%Uninstall} ${p.updateInfo.displayName ?: p.displayName}"
+                                    data-href="plugin/${p.shortName}/doUninstall"
+                                    data-message="${%uninstall-title(p.updateInfo.displayName ?: p.displayName)}">
+                              <l:icon src="symbol-close-circle"/>
+                            </button>
+                          </l:isAdmin>
+                        </j:otherwise>
+                      </j:choose>
+                    </div>
+                  </td>
                 </tr>
               </j:forEach>
               <!-- failed ones -->
@@ -253,7 +255,7 @@ THE SOFTWARE.
                         ${p.name}
                       </div>
                     </j:if>
-                    <div class="alert alert-danger jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
+                    <div class="jenkins-alert jenkins-alert-danger jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
                       <pre>${p.cause.message}</pre>
                     </div>
                   </td>
@@ -270,9 +272,9 @@ THE SOFTWARE.
                 </tr>
               </j:forEach>
             </tbody>
-          </j:otherwise>
-        </j:choose>
-      </table>
+          </table>
+        </j:otherwise>
+      </j:choose>
 
       <div class="warning" id="needRestart" style="display:none; margin: 1em; height: 1em">
         <form method="post" action="${rootURL}/safeRestart">
@@ -283,37 +285,7 @@ THE SOFTWARE.
         </form>
       </div>
 
-
-      <script>
-        <!-- function to toggle the enable/disable state -->
-        function flip(o) {
-          btn = Event.element(o);
-
-          <!-- trigger -->
-          new Ajax.Request(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
-            method: "POST",
-            onFailure : function(req,o) {
-                $('needRestart').innerHTML = req.responseText;
-            }
-          });
-
-          updateMsg();
-        }
-
-        function updateMsg() {
-          <!-- is anything changed since its original state? -->
-          var e = $A(Form.getInputs('plugins', 'checkbox')).find(function(e) {
-            return String(e.checked)!=e.getAttribute('original');
-          });
-
-          <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
-            e = true;
-          </j:if>
-          $('needRestart').style.display = (e!=null?"block":"none");
-        }
-
-        updateMsg(); // set the initial state
-      </script>
+      <st:adjunct includes="hudson.PluginManager._installed"/>
     </l:main-panel>
   </l:layout>
 </j:jelly>

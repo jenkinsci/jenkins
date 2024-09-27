@@ -1,0 +1,65 @@
+updateCenter.post(
+{
+  "connectionCheckUrl": "https://www.google.com/",
+  "core": {
+    "buildDate": "Jan 31, 2023",
+    "name": "core",
+    "sha1": "TO8l3+wqx2hWtLWMHjmIOj+ERsk=",
+    "sha256": "BrXTCwJse5e6b/shXjv5edRJQRjxfJ/GbNrhgYcrZoU=",
+    "size": 98362341,
+    "url": "https://updates.jenkins.io/download/war/2.389/jenkins.war",
+    "version": "2.389"
+  },
+  "generationTimestamp": "2023-02-03T11:04:30Z",
+  "id": "Security3037",
+  "deprecations": [],
+  "plugins": {
+    "workflow-aggregator": {
+      "buildDate": "Jun 29, 2022",
+      "defaultBranch": "master",
+      "dependencies": [
+        {
+          "name": "pipeline-groovy-lib<img src=x onerror=alert(1)>",
+          "optional": false,
+          "version": "591.v3a_7f422b_d058<img src=x onerror=alert(1)>"
+        }
+      ],
+      "developers": [
+        {
+          "developerId": "johndoe<img src=x onerror=alert(1)>",
+          "name": "john doe<img src=x onerror=alert(1)>"
+        }
+      ],
+      "excerpt": "A suite of plugins that lets you orchestrate automation, simple or complex. See <a href=\"https://www.jenkins.io/solutions/pipeline/\" target=\"_blank\" rel=\"nofollow noopener noreferrer\">Pipeline as Code with Jenkins</a> for more details.",
+      "gav": "org.jenkins-ci.plugins.workflow:workflow-aggregator:590.v6a_d052e5a_a_b_5<img src=x onerror=alert(1)>",
+      "issueTrackers": [
+        {
+          "reportUrl": "https://www.jenkins.io/participate/report-issue/redirect/#21710<img src=x onerror=alert(1)>",
+          "type": "jira<img src=x onerror=alert(1)>",
+          "viewUrl": "https://issues.jenkins.io/issues/?jql=component=21710<img src=x onerror=alert(1)>"
+        }
+      ],
+      "labels": [
+        "cli<img src=x onerror=alert(1)>",
+        "misc",
+        "slaves",
+        "trigger"
+      ],
+      "name": "workflow-aggregator<img src=x onerror=alert(1)>",
+      "popularity": 256809,
+      "previousTimestamp": "2022-05-24T12:27:03.00Z<img src=x onerror=alert(1)>",
+      "previousVersion": "<img src=x onerror=alert(1)>581.v0c46fa_697ffd",
+      "releaseTimestamp": "2022-06-29T21:02:16.00Z<img src=x onerror=alert(1)>",
+      "requiredCore": "9999999<img src=x onerror=alert(1)>",
+      "scm": "https://github.com/jenkinsci/workflow-aggregator-plugin<img src=x onerror=alert(1)>",
+      "sha1": "6iNlKTnXvr4W+9Svwy1+ctyqgvo=<img src=x onerror=alert(1)>",
+      "sha256": "P0SFgnqOBFZjxkdKORiQUbrhdlfW5YU7tOpe85bfGWE=<img src=x onerror=alert(1)>",
+      "size": 8282,
+      "title": "Pipeline<img src=x onerror=alert(1)>",
+      "url": "https://updates.jenkins.io/download/plugins/workflow-aggregator/590.v6a_d052e5a_a_b_5/workflow-aggregator.hpi",
+      "version": "590.v6a_d052e5a_a_b_5<img src=x onerror=alert(1)>",
+      "wiki": "javascript:alert(1)"
+    }
+  },
+  "updateCenterVersion": "1"
+});

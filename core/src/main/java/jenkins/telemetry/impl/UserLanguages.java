@@ -26,25 +26,18 @@ package jenkins.telemetry.impl;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.init.InitMilestone;
-import hudson.init.Initializer;
-import hudson.util.PluginServletFilter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
 import jenkins.telemetry.Telemetry;
+import jenkins.util.HttpServletFilter;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -82,7 +75,7 @@ public class UserLanguages extends Telemetry {
 
     @Override
     public JSONObject createContent() {
-        if (requestsByLanguage.size() == 0) {
+        if (requestsByLanguage.isEmpty()) {
             return null;
         }
         Map<String, AtomicLong> currentRequests = new TreeMap<>(requestsByLanguage);
@@ -95,30 +88,13 @@ public class UserLanguages extends Telemetry {
         return payload;
     }
 
-    @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)
-    public static void setUpFilter() {
-        Filter filter = new AcceptLanguageFilter();
-        if (!PluginServletFilter.hasFilter(filter)) {
-            try {
-                PluginServletFilter.addFilter(filter);
-            } catch (ServletException ex) {
-                LOGGER.log(Level.WARNING, "Failed to set up languages servlet filter", ex);
-            }
-        }
-    }
-
-    public static final class AcceptLanguageFilter implements Filter {
+    @Extension
+    public static final class AcceptLanguageFilter implements HttpServletFilter {
 
         @Override
-        public void init(FilterConfig filterConfig) {
-
-        }
-
-        @Override
-        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-            if (request instanceof HttpServletRequest && !Telemetry.isDisabled()) {
-                HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-                String language = httpServletRequest.getHeader("Accept-Language");
+        public boolean handle(HttpServletRequest req, HttpServletResponse rsp) throws IOException, ServletException {
+            if (!Telemetry.isDisabled()) {
+                String language = req.getHeader("Accept-Language");
                 if (language != null) {
                     if (!requestsByLanguage.containsKey(language)) {
                         requestsByLanguage.put(language, new AtomicLong(0));
@@ -126,23 +102,8 @@ public class UserLanguages extends Telemetry {
                     requestsByLanguage.get(language).incrementAndGet();
                 }
             }
-            chain.doFilter(request, response);
+            return false;
         }
 
-        @Override
-        public void destroy() {
-
-        }
-
-        @Override
-        public boolean equals(Object obj) { // support PluginServletFilter#hasFilter
-            return obj != null && obj.getClass() == AcceptLanguageFilter.class;
-        }
-
-        // findbugs
-        @Override
-        public int hashCode() {
-            return 42;
-        }
     }
 }

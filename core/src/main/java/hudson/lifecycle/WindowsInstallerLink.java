@@ -35,6 +35,8 @@ import hudson.model.ManagementLink;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.DotNet;
+import jakarta.servlet.ServletException;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -42,18 +44,16 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Move;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -116,7 +116,7 @@ public class WindowsInstallerLink extends ManagementLink {
      * Performs installation.
      */
     @RequirePOST
-    public void doDoInstall(StaplerRequest req, StaplerResponse rsp, @QueryParameter("dir") String _dir) throws IOException, ServletException {
+    public void doDoInstall(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter("dir") String _dir) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if (installationDir != null) {
@@ -168,7 +168,7 @@ public class WindowsInstallerLink extends ManagementLink {
     /**
      * Copies a single resource into the target folder, by the given name, and handle errors gracefully.
      */
-    private void copy(StaplerRequest req, StaplerResponse rsp, File dir, URL src, String name) throws ServletException, IOException {
+    private void copy(StaplerRequest2 req, StaplerResponse2 rsp, File dir, URL src, String name) throws ServletException, IOException {
         try {
             FileUtils.copyURLToFile(src, new File(dir, name));
         } catch (IOException e) {
@@ -179,7 +179,7 @@ public class WindowsInstallerLink extends ManagementLink {
     }
 
     @RequirePOST
-    public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRestart(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if (installationDir == null) {
@@ -226,7 +226,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                         new File(installationDir, "jenkins.exe"), "start", task, installationDir);
                                 task.getLogger().println(r == 0 ? "Successfully started" : "start service failed. Exit code=" + r);
                             } catch (IOException | InterruptedException e) {
-                                e.printStackTrace();
+                                LOGGER.log(Level.WARNING, null, e);
                             }
                         }
 
@@ -241,7 +241,7 @@ public class WindowsInstallerLink extends ManagementLink {
                     Jenkins.get().cleanUp();
                     System.exit(0);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, null, e);
                 }
             }
         }.start();
@@ -250,11 +250,11 @@ public class WindowsInstallerLink extends ManagementLink {
     /**
      * Displays the error in a page.
      */
-    protected final void sendError(Exception e, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
+    protected final void sendError(Exception e, StaplerRequest2 req, StaplerResponse2 rsp) throws ServletException, IOException {
         sendError(e.getMessage(), req, rsp);
     }
 
-    protected final void sendError(String message, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
+    protected final void sendError(String message, StaplerRequest2 req, StaplerResponse2 rsp) throws ServletException, IOException {
         req.setAttribute("message", message);
         req.setAttribute("pre", true);
         rsp.forward(Jenkins.get(), "error", req);

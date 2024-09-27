@@ -341,7 +341,7 @@ public class QuotedStringTokenizer
     {
         if (s == null)
             return null;
-        if (s.length() == 0)
+        if (s.isEmpty())
             return "\"\"";
 
 
@@ -371,7 +371,7 @@ public class QuotedStringTokenizer
     {
         if (s == null)
             return null;
-        if (s.length() == 0)
+        if (s.isEmpty())
             return "\"\"";
 
         StringBuffer b = new StringBuffer(s.length() + 8);

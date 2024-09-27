@@ -25,43 +25,87 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:choose>
-    <j:when test="${!it.launcher.webSocket and app.slaveAgentPort == -1}">
-      <div class="error">
-        ${%slaveAgentPort.disabled}
-        <l:isAdmin><a href="${rootURL}/configureSecurity">${%configure.link.text}</a>.</l:isAdmin>
-      </div>
-    </j:when>
     <j:when test="${it.offline and !it.temporarilyOffline}">
+      <j:set var="jenkinsURL" value="${h.inferHudsonURL(request)}"/>
+      <j:set var="copy_agent_jar_unix" value="curl -sO ${jenkinsURL}jnlpJars/agent.jar" />
+      <j:set var="copy_agent_jar_windows" value="curl.exe -sO ${jenkinsURL}jnlpJars/agent.jar" />
+      <j:set var="copy_java_cmd_unix" value="java -jar agent.jar -url ${jenkinsURL} ${it.launcher.getRemotingOptionsUnix(it)}${it.launcher.getWorkDirOptions(it)}" />
+      <j:set var="copy_java_cmd_windows" value="java -jar agent.jar -url ${jenkinsURL} ${it.launcher.getRemotingOptionsWindows(it)}${it.launcher.getWorkDirOptions(it)}" />
       <j:if test="${h.hasPermission(it, it.CONNECT)}">
-          <j:set var="jenkinsURL" value="${h.inferHudsonURL(request)}"/>
-          <j:choose>
-            <j:when test="${it.ACL.hasPermission(app.ANONYMOUS, it.CONNECT)}">
-                <p>
-                  ${%Run from agent command line:}
-                </p>
-                <pre>curl -sO ${jenkinsURL}jnlpJars/agent.jar
-java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp ${it.launcher.getWorkDirOptions(it)}</pre>
-            </j:when>
-            <j:otherwise>
-                <p>
-                  ${%Run from agent command line:}
-                </p>
+                <j:set var="copy_java_cmd_secret_unix" value="java -jar agent.jar -url ${jenkinsURL} -secret ${it.jnlpMac} ${it.launcher.getRemotingOptionsUnix(it)}${it.launcher.getWorkDirOptions(it)}" />
+                <j:set var="copy_java_cmd_secret_windows" value="java -jar agent.jar -url ${jenkinsURL} -secret ${it.jnlpMac} ${it.launcher.getRemotingOptionsWindows(it)}${it.launcher.getWorkDirOptions(it)}" />
+                <h3>
+                  ${%slaveAgent.cli.run} (Unix)
+                  <l:copyButton text="${copy_agent_jar_unix};${copy_java_cmd_secret_unix}"/>
+                </h3>
                 <!-- TODO conceal secret w/ JS if possible -->
-                <pre>curl -sO ${jenkinsURL}jnlpJars/agent.jar
-java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret ${it.jnlpMac} ${it.launcher.getWorkDirOptions(it)}</pre>
-                <p>
-                  ${%Or run from agent command line, with the secret stored in a file:}
-                </p>
-                <pre>echo ${it.jnlpMac} > secret-file
-curl -sO ${jenkinsURL}jnlpJars/agent.jar
-java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret @secret-file ${it.launcher.getWorkDirOptions(it)}</pre>
-            </j:otherwise>
-          </j:choose>
+<pre>
+${copy_agent_jar_unix}
+${copy_java_cmd_secret_unix}
+</pre>
+
+                <h3>
+                  ${%slaveAgent.cli.run} (Windows)
+                  <l:copyButton text="${copy_agent_jar_windows} &amp; ${copy_java_cmd_secret_windows}"/>
+                </h3>
+                <!-- TODO conceal secret w/ JS if possible -->
+<pre>
+${copy_agent_jar_windows}
+${copy_java_cmd_secret_windows}
+</pre>
+
+                <j:set var="copy_secret_to_file" value="echo ${it.jnlpMac} &gt; secret-file" />
+                <j:set var="copy_java_cmd_secret2_unix" value="java -jar agent.jar -url ${jenkinsURL} -secret @secret-file ${it.launcher.getRemotingOptionsUnix(it)}${it.launcher.getWorkDirOptions(it)}" />
+                <j:set var="copy_java_cmd_secret2_windows" value="java -jar agent.jar -url ${jenkinsURL} -secret @secret-file ${it.launcher.getRemotingOptionsWindows(it)}${it.launcher.getWorkDirOptions(it)}" />
+                <h3>
+                  ${%slaveAgent.cli.run.secret} (Unix)
+                  <l:copyButton text="${copy_secret_to_file};${copy_agent_jar_unix};${copy_java_cmd_secret2_unix}"/>
+                </h3>
+<pre>
+${copy_secret_to_file}
+${copy_agent_jar_unix}
+${copy_java_cmd_secret2_unix}
+</pre>
+
+                <h3>
+                  ${%slaveAgent.cli.run.secret} (Windows)
+                  <l:copyButton text="${copy_secret_to_file} &amp; ${copy_agent_jar_windows} &amp; ${copy_java_cmd_secret2_windows}"/>
+                </h3>
+<pre>
+${copy_secret_to_file}
+${copy_agent_jar_windows}
+${copy_java_cmd_secret2_windows}
+</pre>
+          <j:if test="${!it.launcher.configured}">
+              <p>
+                  ${%commonOptions}
+              </p>
+          </j:if>
+          <j:if test="${!it.launcher.descriptor.tcpSupported}">
+              <p>
+                  ${%tcp-port-disabled}
+                  <l:isAdmin><a href="${rootURL}/manage/configureSecurity/">${%configure.link.text}</a>.</l:isAdmin>
+              </p>
+          </j:if>
+          <j:if test="${!it.launcher.descriptor.instanceIdentityInstalled}">
+              <p>
+                  ${%instance-identity-missing}
+                  <l:isAdmin><a href="${rootURL}/manage/pluginManager/available">${%install-instance-identity}</a>.</l:isAdmin>
+              </p>
+          </j:if>
+          <j:if test="${!it.launcher.descriptor.webSocketSupported}">
+              <p>
+                  ${%web-socket-unsupported}
+              </p>
+          </j:if>
+          <p>
+            ${%powerShell.cli.curl}
+          </p>
       </j:if>
     </j:when>
     <j:otherwise>
       <p>
-        ${%Agent is connected.}
+        ${%slaveAgent.connected}
       </p>
     </j:otherwise>
   </j:choose>

@@ -3,6 +3,7 @@
 import argparse
 import fileinput
 import io
+import os
 import shutil
 import subprocess
 
@@ -18,7 +19,7 @@ def update_file(file, lineno, old, new):
     :param old: The old substring.
     :param new: The new substring.
     """
-    print("\tUpdating file in place")
+    print("* Updating file in place")
     with fileinput.FileInput(file, inplace=True) as f:
         for line in f:
             if f.lineno() == lineno and old in line:
@@ -44,27 +45,42 @@ def analyze_file(file, lineno, commits_and_tags, dry_run=False):
         .split("\n", 1)[0]
         .split(" ", 1)[0]
     )
-    print(f"\tfirst sha: {line_sha}")
+    print(f"* first sha: {line_sha}")
     first_tag = subprocess.check_output(
         [GIT, "tag", "--sort=creatordate", "--contains", line_sha, "jenkins-*"],
         text=True,
     ).split("\n", 1)[0]
     if first_tag:
-        print(f"\tfirst tag was {first_tag}")
+        print(f"* first tag was {first_tag}")
         commits_and_tags[line_sha] = first_tag
         if not dry_run:
+            since_version = first_tag.replace("jenkins-", "")
             update_file(
                 file,
                 int(lineno),
                 "@since TODO",
-                "@since " + first_tag.replace("jenkins-", ""),
+                f"@since {since_version}",
             )
+            update_file(
+                file,
+                int(lineno),
+                '@Deprecated(since = "TODO")',
+                f'@Deprecated(since = "{since_version}")',
+            )
+            update_file(
+                file,
+                int(lineno),
+                '@RestrictedSince("TODO")',
+                f'@RestrictedSince("{since_version}")',
+            )
+
     else:
         print(
-            "\tNot updating file, no tag found. "
+            "* Not updating file, no tag found. "
             "Normal if the associated PR/commit is not merged and released yet; "
             "otherwise make sure to fetch tags from jenkinsci/jenkins"
         )
+    print() # Add a newline for markdown rendering
 
 
 def analyze_files(commits_and_tags, dry_run=False):
@@ -78,12 +94,17 @@ def analyze_files(commits_and_tags, dry_run=False):
         GIT,
         "grep",
         "--line-number",
-        "@since TODO",
+        "-E",
+        '@since TODO|@Deprecated\\(since = "TODO"\\)|@RestrictedSince\\("TODO"\\)',
         "--",
         "*.java",
         "*.jelly",
         "*.js",
     ]
+
+    is_ci = "CI" in os.environ
+    if is_ci:
+        print("<details><summary>Detailed output</summary>\n\n")
     with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
         for line in io.TextIOWrapper(proc.stdout):
             parts = line.rstrip().split(":", 2)
@@ -92,6 +113,8 @@ def analyze_files(commits_and_tags, dry_run=False):
         if retcode:
             raise subprocess.CalledProcessError(retcode, cmd)
     print()
+    if is_ci:
+        print("</details>\n")
 
 
 def display_results(commits_and_tags):
@@ -111,12 +134,14 @@ def display_results(commits_and_tags):
 
 def main():
     """
-    Update '@since TODO' entries with actual Jenkins release versions.
+    Update '@since TODO', '@Deprecated(since = "TODO")', and '@RestrictedSince("TODO")' entries
+    with actual Jenkins release versions.
 
     This script is a developer tool, to be used by maintainers.
     """
     parser = argparse.ArgumentParser(
-        description="Update '@since TODO' entries with actual Jenkins release versions."
+        description="Update '@since TODO', '@Deprecated(since = \"TODO\")', and '@RestrictedSince(\"TODO\")' entries "
+                    "with actual Jenkins release versions. "
     )
     parser.add_argument("-n", "--dry-run", help="Dry run", action="store_true")
     args = parser.parse_args()

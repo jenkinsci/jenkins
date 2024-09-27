@@ -40,7 +40,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Configuration for update site-provided warnings.
@@ -76,7 +76,7 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration impleme
 
     @CheckForNull
     public PluginWrapper getPlugin(@NonNull UpdateSite.Warning warning) {
-        if (warning.type != UpdateSite.Warning.Type.PLUGIN) {
+        if (warning.type != UpdateSite.WarningType.PLUGIN) {
             return null;
         }
         return Jenkins.get().getPluginManager().getPlugin(warning.component);
@@ -111,7 +111,7 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration impleme
 
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         HashSet<String> newIgnoredWarnings = new HashSet<>();
         for (Object key : json.keySet()) {
             String warningKey = key.toString();

@@ -22,13 +22,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.86</version>
+    <version>1.123</version>
     <relativePath />
   </parent>
 
@@ -52,8 +52,7 @@ THE SOFTWARE.
   <modules>
     <module>bom</module>
     <module>websocket/spi</module>
-    <module>websocket/jetty9</module>
-    <module>websocket/jetty10</module>
+    <module>websocket/jetty12-ee9</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -70,12 +69,13 @@ THE SOFTWARE.
 
   <issueManagement>
     <system>jira</system>
-    <url>https://issues.jenkins.io/browse/JENKINS/component/15593</url>
+    <url>https://issues.jenkins.io/issues/?jql=component=15593</url>
   </issueManagement>
 
   <properties>
-    <revision>2.366</revision>
+    <revision>2.479</revision>
     <changelist>-SNAPSHOT</changelist>
+    <project.build.outputTimestamp>2024-09-24T13:48:23Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,52 +87,24 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3046.v38db_38a_b_7a_86</remoting.version>
-    <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.minimum.supported.version>4.2.1</remoting.minimum.supported.version>
+    <remoting.version>3261.v9c670a_4748a_9</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
-    <spotbugs.excludeFilterFile>${maven.multiModuleProjectDirectory}/src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
-    <access-modifier.version>1.27</access-modifier.version>
-    <bridge-method-injector.version>1.23</bridge-method-injector.version>
-    <mockito.version>4.7.0</mockito.version>
-    <spotless.version>2.24.1</spotless.version>
+    <access-modifier.version>1.33</access-modifier.version>
+    <antlr.version>4.13.2</antlr.version>
+    <bridge-method-injector.version>1.29</bridge-method-injector.version>
+    <spotless.check.skip>false</spotless.check.skip>
+    <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
+    <winstone.version>8.1</winstone.version>
+    <node.version>20.17.0</node.version>
+    <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
+    <yarn.version>1.22.19</yarn.version>
+    <!-- maven-antrun-plugin will download this Yarn version. -->
+    <yarn-berry.version>4.5.0</yarn-berry.version>
+    <yarn-berry.sha256sum>cc00dce5de4f68d11450519a0f69eadf2a1cbe5cc0d8e740bfac817a31d76874</yarn-berry.sha256sum>
   </properties>
-
-  <dependencyManagement>
-    <!-- any dependencies that can be used by plugins must be defined in the bom and not here -->
-    <dependencies>
-      <dependency>
-        <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
-        <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty, and ends up causing issues with some IDEs -->
-        <groupId>javax.servlet</groupId>
-        <!-- the old artifactID for the servlet API -->
-        <artifactId>servlet-api</artifactId>
-        <version>[0]</version>
-        <!--
-          "[0]" is a range that must be exactly 0
-          this is different to "0" which is hint to use version 0.
-          therefore unless anyone else uses ranges (they should not) this version will always win
-          We have deployed a version 0 to jenkins repo which has an empty jar
-          This prevents conflicts between the old Servet API and the new Servlet API as the groupIDs have changed
-          see https://github.com/jenkinsci/jenkins/pull/3033/files#r141325857 for a fuller description
-        -->
-        <scope>provided</scope>
-        <optional>true</optional>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
-  <dependencies>
-    <dependency>
-      <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
-      <groupId>javax.servlet</groupId>
-      <!-- the old artifactID for the servlet API -->
-      <artifactId>servlet-api</artifactId>
-    </dependency>
-  </dependencies>
 
   <!--
     Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -170,20 +142,9 @@ THE SOFTWARE.
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
-            <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
             <compilerArgs>
               <!--
@@ -196,32 +157,12 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-gpg-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-install-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
             <quiet>true</quiet>
             <splitindex>true</splitindex>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jar-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-war-plugin</artifactId>
-          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -233,19 +174,12 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
-            <!-- SUREFIRE-1226 workaround -->
-            <trimStackTrace>false</trimStackTrace>
             <runOrder>alphabetical</runOrder>
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
           <artifactId>maven-jarsigner-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.1.0</version>
           <configuration>
             <!--
               during the development, debug profile will cause
@@ -259,43 +193,13 @@ THE SOFTWARE.
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <!--
-            Both test harness and core uses stapler as an extension,
-            and apparently without having extension preloaded at the parent, the main artifact of the 'test' module
-            ends up installed with 'stapler-jar' extension (which normally is an indication that the ArtifactTypeHandler
-            defined in this extension is not getting picked up.)
-
-            To avoid this problem, I'm defining an extension here. Not sure if the nested <dependencies> is necessary.
-            It's also possible that I misdiagnosed the problem and the root cause is something entirely different.
-
-            To test if you can remove this work around, do a rebuild from main and see if the test harness
-            is installed with the right extension into the local repository.
-          -->
-          <groupId>org.kohsuke.stapler</groupId>
-          <artifactId>maven-stapler-plugin</artifactId>
-          <!-- version specified in parent pom -->
-          <extensions>true</extensions>
-          <dependencies>
-            <dependency>
-              <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
-              <artifactId>maven-jellydoc-plugin</artifactId>
-              <version>1.9</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-        <plugin>
           <groupId>org.kohsuke</groupId>
           <artifactId>access-modifier-checker</artifactId>
           <version>${access-modifier.version}</version>
         </plugin>
         <plugin>
-          <groupId>com.cloudbees</groupId>
-          <artifactId>maven-license-plugin</artifactId>
+          <groupId>io.jenkins.tools.maven</groupId>
+          <artifactId>license-maven-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <executions>
             <execution>
@@ -329,24 +233,9 @@ THE SOFTWARE.
           <version>${bridge-method-injector.version}</version>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>antlr-maven-plugin</artifactId>
-          <version>2.2</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-pmd-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.jvnet.updatecenter2</groupId>
-          <artifactId>maven-makepkgs-plugin</artifactId>
-          <version>0.6.2</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-enforcer-plugin</artifactId>
-          <!-- Version specified in parent POM -->
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr4-maven-plugin</artifactId>
+          <version>${antlr.version}</version>
         </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
@@ -397,7 +286,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.3.2</version>
+              <version>10.18.1</version>
             </dependency>
           </dependencies>
           <executions>
@@ -411,55 +300,37 @@ THE SOFTWARE.
           </executions>
         </plugin>
         <plugin>
-          <groupId>com.diffplug.spotless</groupId>
-          <artifactId>spotless-maven-plugin</artifactId>
-          <version>${spotless.version}</version>
-          <configuration>
-            <java>
-              <endWithNewline />
-              <importOrder />
-              <indent>
-                <spaces>true</spaces>
-              </indent>
-              <removeUnusedImports />
-              <trimTrailingWhitespace />
-            </java>
-            <pom>
-              <sortPom>
-                <encoding>${project.build.sourceEncoding}</encoding>
-                <lineSeparator>\n</lineSeparator>
-                <expandEmptyElements>false</expandEmptyElements>
-                <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
-                <sortDependencies>scope,groupId,artifactId</sortDependencies>
-                <sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
-              </sortPom>
-            </pom>
-          </configuration>
-          <executions>
-            <execution>
-              <!-- Runs in verify phase by default -->
-              <goals>
-                <!-- Can be disabled using -Dspotless.check.skip -->
-                <goal>check</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.8</version>
+          <version>0.8.12</version>
         </plugin>
       </plugins>
     </pluginManagement>
 
     <plugins>
       <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <!-- Version specified in parent POM -->
+        <configuration>
+          <antlr4>
+            <antlr4Formatter />
+          </antlr4>
+          <java combine.self="override">
+            <endWithNewline />
+            <importOrder />
+            <indent>
+              <spaces>true</spaces>
+            </indent>
+            <removeUnusedImports />
+            <trimTrailingWhitespace />
+          </java>
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-release-plugin</artifactId>
         <!-- Version specified in parent POM -->
         <configuration>
-          <!-- enable release profile during the release, create IPS package, and sign bits. -->
-          <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
           <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
@@ -498,10 +369,8 @@ THE SOFTWARE.
             <configuration>
               <rules>
                 <bannedDependencies>
-                  <excludes>
+                  <excludes combine.children="append">
                     <exclude>org.sonatype.sisu:sisu-guice</exclude>
-                    <exclude>log4j:log4j:*:jar:compile</exclude>
-                    <exclude>log4j:log4j:*:jar:runtime</exclude>
                     <exclude>commons-logging:commons-logging:*:jar:compile</exclude>
                     <exclude>commons-logging:commons-logging:*:jar:runtime</exclude>
                   </excludes>
@@ -511,35 +380,10 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <!-- Version specified in parent POM -->
-      </plugin>
-      <plugin>
-        <groupId>com.diffplug.spotless</groupId>
-        <artifactId>spotless-maven-plugin</artifactId>
-        <version>${spotless.version}</version>
-      </plugin>
     </plugins>
   </build>
 
   <profiles>
-    <profile>
-      <id>metrics</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-maven-plugin</artifactId>
-            <!-- Version specified in parent POM -->
-            <configuration>
-              <threshold>High</threshold>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <profile>
       <id>debug</id>
       <activation>
@@ -555,25 +399,6 @@ THE SOFTWARE.
       <id>release</id>
       <build>
         <plugins>
-          <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <!-- Version specified in parent POM -->
-            <inherited>false</inherited>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>single</goal>
-                </goals>
-                <phase>package</phase>
-                <configuration>
-                  <finalName>jenkins-${project.version}</finalName>
-                  <descriptors>
-                    <descriptor>assembly-src.xml</descriptor>
-                  </descriptors>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
           <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
             <!-- Version specified in parent POM -->
@@ -597,31 +422,175 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
-      <id>m2e</id>
+      <id>yarn-execution</id>
       <activation>
-        <property>
-          <name>m2e.version</name>
-        </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
       </activation>
-      <properties>
-        <m2BuildDirectory>target</m2BuildDirectory>
-      </properties>
       <build>
-        <directory>${m2BuildDirectory}</directory>
         <plugins>
           <plugin>
-            <groupId>org.maven.ide.eclipse</groupId>
-            <artifactId>lifecycle-mapping</artifactId>
-            <version>0.12.0</version>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>download-yarn</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <target>
+                    <property name="yarn.dest" value="${project.basedir}/.yarn/releases/yarn-${yarn-berry.version}.cjs" />
+                    <dirname file="${yarn.dest}" property="yarn.dest.dir" />
+                    <mkdir dir="${yarn.dest.dir}" />
+                    <get dest="${yarn.dest}" src="https://repo.yarnpkg.com/${yarn-berry.version}/packages/yarnpkg-cli/bin/yarn.js" usetimestamp="true" />
+                    <checksum algorithm="SHA-256" file="${yarn.dest}" property="${yarn-berry.sha256sum}" verifyProperty="yarn.checksum.matches" />
+                    <condition property="yarn.checksum.matches.fail">
+                      <equals arg1="${yarn.checksum.matches}" arg2="false" />
+                    </condition>
+                    <fail if="yarn.checksum.matches.fail">Checksum error</fail>
+                    <echo file="${project.basedir}/.yarnrc.yml">yarnPath: ${yarn.dest}</echo>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.1</version>
+            <executions>
+              <execution>
+                <id>install node and yarn</id>
+                <goals>
+                  <goal>install-node-and-yarn</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <nodeVersion>v${node.version}</nodeVersion>
+                  <yarnVersion>v${yarn.version}</yarnVersion>
+                  <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-dist/</nodeDownloadRoot>
+                  <!-- tried to create a mirror for yarnDownloadRoot but it did not work -->
+                </configuration>
+              </execution>
+              <execution>
+                <id>yarn install</id>
+                <goals>
+                  <goal>yarn</goal>
+                </goals>
+                <phase>initialize</phase>
+              </execution>
+              <execution>
+                <id>yarn build</id>
+                <goals>
+                  <goal>yarn</goal>
+                </goals>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <arguments>build</arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>yarn-ci-lint</id>
+      <activation>
+        <property>
+          <name>env.CI</name>
+        </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.1</version>
+            <executions>
+              <execution>
+                <id>yarn lint:ci</id>
+                <goals>
+                  <goal>yarn</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>lint:ci</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>yarn-lint</id>
+      <activation>
+        <property>
+          <name>!env.CI</name>
+        </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.1</version>
+            <executions>
+              <execution>
+                <id>yarn lint</id>
+                <goals>
+                  <goal>yarn</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>lint</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>clean-node</id>
+      <activation>
+        <property>
+          <name>cleanNode</name>
+        </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
             <configuration>
-              <mappingId>customizable</mappingId>
-              <configurators>
-                <configurator id="org.maven.ide.eclipse.jdt.javaConfigurator" />
-                <configurator id="org.maven.ide.eclipse.plexus.annotations.plexusConfigurator" />
-              </configurators>
-              <mojoExecutions>
-                <mojoExecution>org.apache.maven.plugins:maven-resources-plugin::</mojoExecution>
-              </mojoExecutions>
+              <filesets>
+                <fileset>
+                  <directory>node</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>node_modules</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+              </filesets>
             </configuration>
           </plugin>
         </plugins>

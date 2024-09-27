@@ -32,27 +32,30 @@ THE SOFTWARE.
       If the current user doesn't have this permission, the description
       is not editable.
     </st:attribute>
+    <st:attribute name="description">
+      Optional value of the description. If not specified, will use '${it.description}'.
+    </st:attribute>
+    <st:attribute name="submissionUrl">
+      Optional submission URL. If not specified, will use 'submitDescription'.
+    </st:attribute>
+    <st:attribute name="hideButton">
+      Hide the add/edit description button. Set to true when the button is provided via the app bar.
+      See 'editDescriptionButton'
+    </st:attribute>
   </st:documentation>
 
-  <div id="description">
+  <j:set var="actualDescription" value="${description}" defaultValue="${it.description}"/>
+  <j:set var="hideDescriptionButton" value="${hideButton}" defaultValue="false"/>
+
+  <div id="description" class="jenkins-!-margin-bottom-${hideButton?'3':'0'}">
     <div>
-      <j:out value="${it.description!=null ? app.markupFormatter.translate(it.description) : ''}" />
+      <j:out value="${actualDescription!=null ? app.markupFormatter.translate(actualDescription) : ''}" />
     </div>
 
-    <l:hasPermission permission="${permission}">
+    <j:if test="${!hideDescriptionButton}">
       <div class="jenkins-buttons-row jenkins-buttons-row--invert">
-        <a class="jenkins-button jenkins-button--tertiary" id="description-link" href="editDescription" onclick="return replaceDescription();">
-          <l:icon src="symbol-edit" />
-          <j:choose>
-            <j:when test="${empty(it.description)}">
-              ${%add description}
-            </j:when>
-            <j:otherwise>
-              ${%edit description}
-            </j:otherwise>
-          </j:choose>
-        </a>
+        <t:editDescriptionButton permission="${permission}" description="${actualDescription}" submissionUrl="${submissionUrl}"/>
       </div>
-    </l:hasPermission>
+    </j:if>
   </div>
 </j:jelly>

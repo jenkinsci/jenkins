@@ -31,7 +31,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <div id="bottom-sticker">
-    <div class="bottom-sticker-inner">
+    <div class="bottom-sticker-inner jenkins-buttons-row jenkins-buttons-row--equal-width">
       <d:invokeBody />
     </div>
   </div>

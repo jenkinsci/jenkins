@@ -2,8 +2,8 @@ package jenkins.security;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.Page;
 import java.net.URL;
+import org.htmlunit.Page;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

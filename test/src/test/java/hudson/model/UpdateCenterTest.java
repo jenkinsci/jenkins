@@ -31,6 +31,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeNoException;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateFactory;
@@ -58,7 +59,7 @@ public class UpdateCenterTest {
     }
 
     private void doData(String location) throws Exception {
-        URL url = new URL(location);
+        URL url = new URI(location).toURL();
         String jsonp = DownloadService.loadJSON(url);
         JSONObject json = JSONObject.fromObject(jsonp);
 

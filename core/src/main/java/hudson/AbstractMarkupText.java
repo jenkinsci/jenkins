@@ -83,7 +83,7 @@ public abstract class AbstractMarkupText {
      * @since 1.349
      */
     public void addHyperlink(int startPos, int endPos, String url) {
-        addMarkup(startPos, endPos, "<a href='" + url + "'>", "</a>");
+        addMarkup(startPos, endPos, "<a href='" + Functions.htmlAttributeEscape(url) + "'>", "</a>");
     }
 
     /**
@@ -93,7 +93,7 @@ public abstract class AbstractMarkupText {
      * @since 1.395
      */
     public void addHyperlinkLowKey(int startPos, int endPos, String url) {
-        addMarkup(startPos, endPos, "<a class='lowkey' href='" + url + "'>", "</a>");
+        addMarkup(startPos, endPos, "<a class='lowkey' href='" + Functions.htmlAttributeEscape(url) + "'>", "</a>");
     }
 
     /**

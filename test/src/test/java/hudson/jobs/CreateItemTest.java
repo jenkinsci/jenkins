@@ -29,17 +29,18 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.Failure;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.listeners.ItemListener;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.text.MessageFormat;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,9 +72,9 @@ public class CreateItemTest {
         rule.createFreeStyleProject(sourceJobName);
 
         String newJobName = "newJob";
-        URL apiURL = new URL(MessageFormat.format(
+        URL apiURL = new URI(MessageFormat.format(
                     "{0}createItem?mode=copy&from={1}&name={2}",
-                    rule.getURL().toString(), sourceJobName, newJobName));
+                    rule.getURL().toString(), sourceJobName, newJobName)).toURL();
 
         WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
         deleteContentTypeHeader(request);
@@ -95,9 +96,9 @@ public class CreateItemTest {
         rule.createFreeStyleProject(sourceJobName);
 
         String newJobName = "newJob";
-        URL apiURL = new URL(MessageFormat.format(
+        URL apiURL = new URI(MessageFormat.format(
                     "{0}createItem?mode=copy&from={1}&name={2}",
-                    rule.getURL().toString(), sourceJobName, newJobName));
+                    rule.getURL().toString(), sourceJobName, newJobName)).toURL();
 
         WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
         deleteContentTypeHeader(request);
@@ -124,10 +125,10 @@ public class CreateItemTest {
 
         JenkinsRule.WebClient wc = rule.createWebClient();
 
-        wc.getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p2&from=../d1/p"), HttpMethod.POST));
+        wc.getPage(new WebRequest(new URI(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p2&from=../d1/p").toURL(), HttpMethod.POST));
         assertNotNull(d2.getItem("p2"));
 
-        wc.getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p3&from=/d1/p"), HttpMethod.POST));
+        wc.getPage(new WebRequest(new URI(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p3&from=/d1/p").toURL(), HttpMethod.POST));
         assertNotNull(d2.getItem("p3"));
     }
 

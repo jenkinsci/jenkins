@@ -80,12 +80,7 @@ public class SecurityContextExecutorServiceTest {
     @Test
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testRunnableAgainstAllContexts() throws Exception {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                runnableThreadContext = SecurityContextHolder.getContext();
-            }
-        };
+        Runnable r = () -> runnableThreadContext = SecurityContextHolder.getContext();
         SecurityContextHolder.setContext(systemContext);
         Future systemResult = wrappedService.submit(r);
         // Assert the runnable completed successfully
@@ -111,12 +106,7 @@ public class SecurityContextExecutorServiceTest {
     @Test
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testCallableAgainstAllContexts() throws Exception {
-        Callable<SecurityContext> c = new Callable<>() {
-            @Override
-            public SecurityContext call() {
-                return SecurityContextHolder.getContext();
-            }
-        };
+        Callable<SecurityContext> c = SecurityContextHolder::getContext;
         SecurityContextHolder.setContext(systemContext);
         Future<SecurityContext> result = wrappedService.submit(c);
         // Assert the context inside the callable thread was set to ACL.SYSTEM2
@@ -137,12 +127,7 @@ public class SecurityContextExecutorServiceTest {
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testCallableCollectionAgainstAllContexts() throws Exception {
         Collection<Callable<SecurityContext>> callables = new ArrayList<>();
-        Callable<SecurityContext> c = new Callable<>() {
-            @Override
-            public SecurityContext call() {
-                return SecurityContextHolder.getContext();
-            }
-        };
+        Callable<SecurityContext> c = SecurityContextHolder::getContext;
         callables.add(c);
         callables.add(c);
         callables.add(c);
@@ -173,12 +158,9 @@ public class SecurityContextExecutorServiceTest {
     @Test
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testFailedRunnableResetsContext() {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                SecurityContextHolder.setContext(nullContext);
-                throw new RuntimeException("Simulate a failure");
-            }
+        Runnable r = () -> {
+            SecurityContextHolder.setContext(nullContext);
+            throw new RuntimeException("Simulate a failure");
         };
 
         SecurityContextHolder.setContext(systemContext);

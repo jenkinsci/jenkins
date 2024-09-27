@@ -13,21 +13,20 @@
                 <div class="modal-header">
                   <h4 class="modal-title">${%authenticate-security-token.getting.started}</h4>
                 </div>
-                <div class="modal-body">
-                  <i class="water-mark icon-service"></i>
+                <div class="modal-body setup-wizard-heading">
                   <div class="jumbotron welcome-panel offline">
                     <h1>${%authenticate-security-token.unlock.jenkins}</h1>
                     <p>${%jenkins.install.findSecurityTokenMessage(it.initialAdminPasswordFile)}</p>
                     <p>${%authenticate-security-token.copy.password}</p>
                     <j:if test="${error}">
-                        <div class="alert alert-danger">
+                        <div class="jenkins-alert jenkins-alert-danger">
                           <strong>${%authenticate-security-token.error}</strong> ${%authenticate-security-token.password.incorrect}
                         </div>
                     </j:if>
                     <div class="form-group ${error ? 'has-error' : ''}">
                       <label class="control-label" for="security-token">${%authenticate-security-token.password.administrator}</label>
                       <input name="j_username" value="${app.setupWizard.initialSetupAdminUserName}" type="hidden"/>
-                      <input id="security-token" class="form-control" type="password" name="j_password"/>
+                      <input id="security-token" class="jenkins-input ${error ? 'danger' : ''}" type="password" name="j_password"/>
                     </div>
                   </div>
                 </div>

@@ -9,25 +9,23 @@
         <div class="user-seed-panel" name="OK">
             <j:choose>
                 <j:when test="${descriptor.isCurrentUser(it)}">
-                    <span class="yui-button">
-                        <button type="button" name="reset-seed"
-                                onclick="return resetSeed(this)"
-                                data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
-                                data-confirm="${%resetSeed.confirmation}"
-                                data-redirect-url="${request.contextPath}/">
-                            ${%resetSeed.button}
-                        </button>
-                    </span>
+                    <button class="jenkins-button jenkins-!-destructive-color" type="button" name="reset-seed"
+                            id="user-seed-property-reset-seed"
+                            data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
+                            data-confirm="${%resetSeed.confirmation}"
+                            data-redirect-url="${request.contextPath}/"
+                            data-confirm-title="${%resetSeed.confirmationTitle}">
+                        ${%resetSeed.button}
+                    </button>
                 </j:when>
                 <j:otherwise>
-                    <span class="yui-button">
-                        <button type="button" name="reset-seed"
-                                onclick="return resetSeed(this)"
-                                data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
-                                data-confirm="${%resetSeed.confirmation}">
-                            ${%resetSeed.button}
-                        </button>
-                    </span>
+                    <button class="jenkins-button jenkins-!-destructive-color" type="button" name="reset-seed"
+                            id="user-seed-property-reset-seed"
+                            data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
+                            data-confirm="${%resetSeed.confirmation}"
+                            data-confirm-title="${%resetSeed.confirmationTitle}">
+                        ${%resetSeed.button}
+                    </button>
                 </j:otherwise>
             </j:choose>
             <div class="display-after-reset">${%resetSeed.result}</div>

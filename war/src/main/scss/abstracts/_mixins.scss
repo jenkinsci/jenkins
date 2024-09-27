@@ -1,0 +1,115 @@
+@mixin link {
+  text-decoration: var(--link-text-decoration);
+  font-weight: var(--link-font-weight);
+  text-underline-offset: 2px;
+  text-decoration-thickness: 2px;
+
+  &:link {
+    color: var(--link-color);
+  }
+
+  &:visited {
+    color: var(--link-visited-color);
+  }
+
+  &:hover,
+  &:focus {
+    color: var(--link-color--hover);
+    text-decoration: var(--link-text-decoration--hover);
+  }
+
+  &:active {
+    color: var(--link-color--active);
+    text-decoration: var(--link-text-decoration--active);
+  }
+
+  @media (prefers-contrast: more) {
+    text-decoration: underline;
+
+    &:hover {
+      text-decoration-thickness: 3px;
+    }
+  }
+}
+
+@mixin link-dark {
+  text-decoration: var(--link-dark-text-decoration);
+  font-weight: var(--link-dark-font-weight);
+
+  &:link {
+    color: var(--link-dark-color);
+  }
+
+  &:visited {
+    color: var(--link-dark-visited-color);
+  }
+
+  &:hover,
+  &:focus {
+    color: var(--link-dark-color--hover);
+    text-decoration: var(--link-dark-text-decoration--hover);
+  }
+
+  &:active {
+    color: var(--link-dark-color--active);
+    text-decoration: var(--link-dark-text-decoration--active);
+  }
+}
+
+@mixin item {
+  position: relative;
+  z-index: 0;
+  border-radius: 0.66rem;
+
+  &::before,
+  &::after {
+    position: absolute;
+    content: "";
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    transition: var(--standard-transition);
+    pointer-events: none;
+  }
+
+  &::before {
+    background-color: transparent;
+  }
+
+  &::after {
+    box-shadow: 0 0 0 0.66rem transparent;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &:not(:disabled) {
+    &:hover,
+    &:focus-visible {
+      &::before {
+        background-color: var(--item-background--hover);
+      }
+    }
+
+    &:active {
+      outline: none !important;
+      z-index: 1;
+
+      &::before {
+        background-color: var(--item-background--active);
+      }
+
+      &::after {
+        box-shadow: 0 0 0 0.33rem var(--item-box-shadow--focus);
+      }
+    }
+
+    &:focus-visible {
+      &::after {
+        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        opacity: 1 !important;
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@
     Outputs a help icon
 
     The help link is rendered as an SVG with an (?) icon.
-    
+
     @since 2.234
     <st:attribute name="iconSize">
       Icon size, available are: small, medium, large, xlarge
@@ -19,7 +19,7 @@
   <j:if test="${attrs.iconSize != null}">
     <j:set var="iconSize" value="icon-${iconSize}"/>
   </j:if>
-  <l:svgIcon tooltip="${tooltip}"
+  <l:icon tooltip="${tooltip}"
              class="${class} ${iconSize}"
-             href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_24px" />
+             src="symbol-help-circle" />
 </j:jelly>

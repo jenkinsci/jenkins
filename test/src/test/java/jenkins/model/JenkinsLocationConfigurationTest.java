@@ -8,12 +8,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import java.io.IOException;
@@ -22,6 +16,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlElementUtil;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlFormUtil;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -58,7 +58,7 @@ public class JenkinsLocationConfigurationTest {
     public void localhostWarning() throws Exception {
         HtmlPage p = j.createWebClient().goTo("configure");
         HtmlInput url = p.getFormByName("config").getInputByName("_.url");
-        url.setValueAttribute("http://localhost:1234/");
+        url.setValue("http://localhost:1234/");
         assertThat(p.getDocumentElement().getTextContent(), containsString("instead of localhost"));
     }
 
@@ -190,7 +190,7 @@ public class JenkinsLocationConfigurationTest {
         HtmlPage configurePage = j.createWebClient().goTo("configure");
         HtmlForm configForm = configurePage.getFormByName("config");
         HtmlInput url = configForm.getInputByName("_.url");
-        url.setValueAttribute(desiredRootUrl);
+        url.setValue(desiredRootUrl);
         HtmlFormUtil.submit(configForm);
     }
 }

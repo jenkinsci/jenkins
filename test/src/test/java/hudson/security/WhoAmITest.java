@@ -30,17 +30,17 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.User;
+import jakarta.servlet.http.HttpSession;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
-import javax.servlet.http.HttpSession;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -73,7 +73,7 @@ public class WhoAmITest {
         String content = whoAmIPage.getWebResponse().getContentAsString();
 
         String sessionId = wc.executeOnServer(() -> {
-            HttpSession session = Stapler.getCurrentRequest().getSession(false);
+            HttpSession session = Stapler.getCurrentRequest2().getSession(false);
             return session != null ? session.getId() : null;
         });
 
@@ -114,7 +114,7 @@ public class WhoAmITest {
         String content = whoAmIPage.getWebResponse().getContentAsString();
 
         String sessionId = wc.executeOnServer(() -> {
-            HttpSession session = Stapler.getCurrentRequest().getSession(false);
+            HttpSession session = Stapler.getCurrentRequest2().getSession(false);
             return session != null ? session.getId() : null;
         });
 

@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-    <div class="alert alert-warning">
+    <div class="jenkins-alert jenkins-alert-warning">
         ${%warningMessage(rootURL, it.url)}
     </div>
 </j:jelly>

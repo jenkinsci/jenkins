@@ -40,13 +40,15 @@ function applyFilter(searchQuery) {
       clearOldResults();
       var rows = pluginManagerAvailable({
         plugins: plugins.filter(
-          (plugin) => selectedPlugins.indexOf(plugin.name) === -1
+          (plugin) => selectedPlugins.indexOf(plugin.name) === -1,
         ),
         admin,
       });
 
       tbody.insertAdjacentHTML("beforeend", rows);
-    }
+
+      updateInstallButtonState();
+    },
   );
 }
 
@@ -63,11 +65,44 @@ document.addEventListener("DOMContentLoaded", function () {
     filterInput.parentElement.classList.add("jenkins-search--loading");
   });
 
-  filterInput.focus();
-
   applyFilter(filterInput.value);
 
   setTimeout(function () {
     layoutUpdateCallback.call();
   }, 350);
+
+  // Show update center error if element exists
+  const updateCenterError = document.querySelector("#update-center-error");
+  if (updateCenterError) {
+    notificationBar.show(
+      updateCenterError.content.textContent,
+      notificationBar.ERROR,
+    );
+  }
 });
+
+function updateInstallButtonState() {
+  // Enable/disable the 'Install' button depending on if any plugins are checked
+  const anyCheckboxesSelected = () => {
+    return (
+      document.querySelectorAll("input[type='checkbox']:checked").length > 0
+    );
+  };
+  const installButton = document.querySelector("#button-install");
+  const installAfterRestartButton = document.querySelector(
+    "#button-install-after-restart",
+  );
+  if (!anyCheckboxesSelected()) {
+    installButton.disabled = true;
+    installAfterRestartButton.disabled = true;
+  }
+  const checkboxes = document.querySelectorAll("input[type='checkbox']");
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener("click", () => {
+      setTimeout(() => {
+        installButton.disabled = !anyCheckboxesSelected();
+        installAfterRestartButton.disabled = !anyCheckboxesSelected();
+      });
+    });
+  });
+}

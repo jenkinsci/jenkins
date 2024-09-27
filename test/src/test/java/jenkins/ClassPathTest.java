@@ -26,9 +26,7 @@ package jenkins;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,7 +44,7 @@ public class ClassPathTest {
     @Rule
     public ErrorCollector errors = new ErrorCollector();
 
-    private static final Set<String> KNOWN_VIOLATIONS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    private static final Set<String> KNOWN_VIOLATIONS = Set.of(
             // TODO duplicated in [jline-2.14.6.jar, jansi-1.11.jar]
             "org/fusesource/hawtjni/runtime/Callback.class",
             "org/fusesource/hawtjni/runtime/JNIEnv.class",
@@ -75,12 +73,7 @@ public class ClassPathTest {
             "org/fusesource/jansi/internal/Kernel32$SMALL_RECT.class",
             "org/fusesource/jansi/internal/Kernel32.class",
             "org/fusesource/jansi/internal/WindowsSupport.class",
-            "org/fusesource/jansi/WindowsAnsiOutputStream.class",
-            // TODO duplicated in [kxml2-2.3.0.jar, xpp3-1.1.4c.jar]
-            "org/xmlpull/v1/XmlPullParser.class",
-            "org/xmlpull/v1/XmlPullParserException.class",
-            "org/xmlpull/v1/XmlPullParserFactory.class",
-            "org/xmlpull/v1/XmlSerializer.class")));
+            "org/fusesource/jansi/WindowsAnsiOutputStream.class");
 
     @Issue("JENKINS-46754")
     @Test

@@ -39,7 +39,7 @@ public class NodesLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "symbol-cloud";
+        return "symbol-computer";
     }
 
     @Override

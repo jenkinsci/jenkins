@@ -26,7 +26,6 @@ package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.User;
 import java.io.ObjectStreamException;
@@ -112,7 +111,7 @@ public abstract class OfflineCause {
         }
 
         @Override public String toString() {
-            return Messages.OfflineCause_connection_was_broken_(Functions.printThrowable(cause));
+            return Messages.OfflineCause_connection_was_broken_simple();
         }
     }
 

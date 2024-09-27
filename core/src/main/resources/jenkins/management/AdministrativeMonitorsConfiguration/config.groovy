@@ -46,7 +46,7 @@ f.section(title: _("Administrative monitors configuration")) {
                 }
                 div(class: "tr") {
                     div(class: "jenkins-checkbox__description") {
-                        st.include(from: am, page: "description", optional: true)
+                        st.include(it: am, page: "description", optional: true)
                     }
                 }
             }

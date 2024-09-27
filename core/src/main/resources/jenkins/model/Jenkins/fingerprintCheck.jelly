@@ -29,6 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${%Check File Fingerprint}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Check File Fingerprint}" />
     <l:main-panel>
       <h1>
         ${%Check File Fingerprint}
@@ -39,8 +40,8 @@ THE SOFTWARE.
           ${%description} (<a href="${%fingerprint.link}">${%more details}</a>)
           </div>
         </f:block>
-        <f:entry title="${%File to check}">
-          <input type="file" name="name" class="jenkins-input" />
+        <f:entry title="${%File to check}" field="name">
+          <f:file />
         </f:entry>
         <f:block>
           <f:submit value="${%Check}" />

@@ -25,27 +25,33 @@ THE SOFTWARE.
 <!-- About Jenkins page -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%about(app.VERSION)}">
-    <l:side-panel>
-      <style>
-        #side-panel {
-          padding: 0 !important;
-          border-right: none;
-        }
-      </style>
-
+  <l:layout type="one-column" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%about(app.VERSION)}">
+    <l:header>
+      <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
+    </l:header>
+    
+    <l:main-panel>
       <div class="app-about-branding">
-        <div class="app-about-branding__logo">
-          <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}"/>
-          <h1>Jenkins <span class="jenkins-visually-hidden">${%Version}</span>
-            <span>${app.VERSION}</span>
-          </h1>
+        <div class="app-about-branding__aurora"></div>
+        <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}" />
+      </div>
+
+      <div class="jenkins-app-bar">
+        <div class="jenkins-app-bar__content">
+          <h1 class="app-about-heading">Jenkins</h1>
+          <p class="app-about-version">
+            ${%Version} ${app.VERSION}
+          </p>
+        </div>
+        <div class="jenkins-app-bar__controls">
+          <a href="https://www.jenkins.io/participate/" class="jenkins-button" target="_blank">
+            <l:icon src="symbol-heart" />
+            ${%Get involved}
+          </a>
         </div>
       </div>
-    </l:side-panel>
 
-    <l:main-panel>
-      <l:js src="jsbundles/section-to-tabs.js" />
+      <p class="app-about-paragraph">${%blurb}</p>
 
       <div class="jenkins-tab-pane">
         <h2 class="jenkins-tab-pane__title">${%maven.dependencies}</h2>
@@ -73,34 +79,6 @@ THE SOFTWARE.
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>
-                <a class="jenkins-table__link" href="https://fontawesome.com">Font Awesome</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://twitter.com/davegandy">Dave Gandy</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://scripts.sil.org/OFL">SIL OFL 1.1 License</a>
-                and
-                <a class="jenkins-table__link" href="https://opensource.org/licenses/MIT">MIT License</a>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <a class="jenkins-table__link" href="https://www.google.com/fonts/specimen/Roboto">Google Fonts:
-                  Roboto
-                </a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://twitter.com/cr64">Christian Robertson</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache
-                  License, version 2.0
-                </a>
-              </td>
-            </tr>
             <tr>
               <td>
                 <a class="jenkins-table__link" href="https://github.com/jenkins-contrib-themes/jenkins-core-theme">

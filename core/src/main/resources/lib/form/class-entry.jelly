@@ -22,10 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Invisible &lt;f:entry> type for embedding a descriptor's $class field.
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    Invisible <f:entry> type for embedding a descriptor's $class field.
 
     Most of the time a Descriptor has an unique class name that we can use to instantiate the right Describable
     class, so we use the '$class' to represent that to clarify the intent.
@@ -35,6 +34,7 @@ THE SOFTWARE.
     readers we do not put non-unique '$class'.
 
     See Descriptor.newInstancesFromHeteroList for how the reader side is handled.
+    ]]>
 
     <st:attribute name="clazz">
       The describable class that we are instantiating via structured form submission.

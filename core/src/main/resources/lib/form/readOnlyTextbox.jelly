@@ -31,15 +31,17 @@ THE SOFTWARE.
     <st:attribute name="field">
       Used for databinding. TBD.
     </st:attribute>
-    <st:attribute name="name">
-      This becomes @name of the &lt;input> tag.
+    <st:attribute name="name"> <![CDATA[
+      This becomes @name of the <input> tag.
       If @field is specified, this value is inferred from it.
+    ]]>
     </st:attribute>
-    <st:attribute name="value">
-      The initial value of the field. This becomes the @value of the &lt;input> tag.
+    <st:attribute name="value"> <![CDATA[
+      The initial value of the field. This becomes the @value of the <input> tag.
       If @field is specified, the current property from the "instance" object
       will be set as the initial value automatically,
       which is the recommended approach.
+    ]]>
     </st:attribute>
     <st:attribute name="default">
       The default value of the text box, in case both @value is and 'instance[field]' is null.

@@ -24,18 +24,18 @@
 
 package lib.layout;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -66,9 +66,7 @@ public class SvgIconTest  {
 
         String pristineTooltip = "Special tooltip with double quotes \", simple quotes ', and html characters <>&.";
 
-        // Escaped twice, once per new h.xmlEscape then once per Jelly.
-        // But as the tooltip lib interprets HTML, it's fine, the tooltip displays the original values without interpreting them
-        String expectedTooltip = "Special tooltip with double quotes &quot;, simple quotes ', and html characters &amp;lt;&amp;gt;&amp;amp;.";
+        String expectedTooltip = "Special tooltip with double quotes &quot;, simple quotes ', and html characters &lt;&gt;&amp;.";
         testRootAction.tooltipContent = pristineTooltip;
 
         HtmlPage p = j.createWebClient().goTo(testRootAction.getUrlName());
@@ -106,9 +104,9 @@ public class SvgIconTest  {
         String jsControlString = (String) jsControlResult;
         assertThat("The title attribute is not populated", jsControlString, containsString(validationPart));
 
-        page.executeJavaScript("document.querySelector('#test-panel svg').dispatchEvent(new Event('mouseover'));");
+        page.executeJavaScript("document.querySelector('#test-panel svg')._tippy.show()");
         wc.waitForBackgroundJavaScript(1000);
-        ScriptResult result = page.executeJavaScript("document.querySelector('#tt').innerHTML;");
+        ScriptResult result = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();
         assertThat(jsResult, instanceOf(String.class));
         String jsResultString = (String) jsResult;

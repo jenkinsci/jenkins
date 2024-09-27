@@ -25,8 +25,8 @@
 
 package hudson.model;
 
-import static javax.servlet.http.HttpServletResponse.SC_CREATED;
-import static javax.servlet.http.HttpServletResponse.SC_SEE_OTHER;
+import static jakarta.servlet.http.HttpServletResponse.SC_CREATED;
+import static jakarta.servlet.http.HttpServletResponse.SC_SEE_OTHER;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -34,6 +34,9 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.queue.ScheduleResult;
+import hudson.util.AlternativeUiTextProvider;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -42,7 +45,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.OptionalJobProperty;
 import jenkins.model.ParameterizedJobMixIn;
@@ -55,7 +57,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -72,6 +76,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         implements Action {
 
+    public static final AlternativeUiTextProvider.Message<Job> BUILD_BUTTON_TEXT = new AlternativeUiTextProvider.Message<>();
+
     private final List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
@@ -85,6 +91,11 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
 
     private Object readResolve() {
         return parameterDefinitions == null ? new ParametersDefinitionProperty() : this;
+    }
+
+
+    public final String getBuildButtonText() {
+        return AlternativeUiTextProvider.get(BUILD_BUTTON_TEXT, owner, Messages.ParametersDefinitionProperty_BuildButtonText());
     }
 
     @Deprecated
@@ -125,19 +136,23 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         return (AbstractProject<?, ?>) owner;
     }
 
-    /** @deprecated use {@link #_doBuild(StaplerRequest, StaplerResponse, TimeDuration)} */
+    /** @deprecated use {@link #_doBuild(StaplerRequest2, StaplerResponse2, TimeDuration)} */
     @Deprecated
-    public void _doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        _doBuild(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
+    public void _doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            _doBuild(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), TimeDuration.fromString(req.getParameter("delay")));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
     }
 
     /**
      * Interprets the form submission and schedules a build for a parameterized job.
      *
      * <p>
-     * This method is supposed to be invoked from {@link ParameterizedJobMixIn#doBuild(StaplerRequest, StaplerResponse, TimeDuration)}.
+     * This method is supposed to be invoked from {@link ParameterizedJobMixIn#doBuild(StaplerRequest2, StaplerResponse2, TimeDuration)}.
      */
-    public void _doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
+    public void _doBuild(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
         if (delay == null)
             delay = new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
@@ -145,20 +160,23 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         List<ParameterValue> values = new ArrayList<>();
 
         JSONObject formData = req.getSubmittedForm();
-        JSONArray a = JSONArray.fromObject(formData.get("parameter"));
+        Object parameter = formData.get("parameter");
+        if (parameter != null) {
+            JSONArray a = JSONArray.fromObject(parameter);
 
-        for (Object o : a) {
-            JSONObject jo = (JSONObject) o;
-            String name = jo.getString("name");
+            for (Object o : a) {
+                JSONObject jo = (JSONObject) o;
+                String name = jo.getString("name");
 
-            ParameterDefinition d = getParameterDefinition(name);
-            if (d == null)
-                throw new IllegalArgumentException("No such parameter definition: " + name);
-            ParameterValue parameterValue = d.createValue(req, jo);
-            if (parameterValue != null) {
-                values.add(parameterValue);
-            } else {
-                throw new IllegalArgumentException("Cannot retrieve the parameter value: " + name);
+                ParameterDefinition d = getParameterDefinition(name);
+                if (d == null)
+                    throw new IllegalArgumentException("No such parameter definition: " + name);
+                ParameterValue parameterValue = d.createValue(req, jo);
+                if (parameterValue != null) {
+                    values.add(parameterValue);
+                } else {
+                    throw new IllegalArgumentException("Cannot retrieve the parameter value: " + name);
+                }
             }
         }
 
@@ -174,13 +192,17 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             rsp.sendRedirect(".");
     }
 
-    /** @deprecated use {@link #buildWithParameters(StaplerRequest, StaplerResponse, TimeDuration)} */
+    /** @deprecated use {@link #buildWithParameters(StaplerRequest2, StaplerResponse2, TimeDuration)} */
     @Deprecated
-    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        buildWithParameters(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
+    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            buildWithParameters(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), TimeDuration.fromString(req.getParameter("delay")));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
     }
 
-    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, @CheckForNull TimeDuration delay) throws IOException, ServletException {
+    public void buildWithParameters(StaplerRequest2 req, StaplerResponse2 rsp, @CheckForNull TimeDuration delay) throws IOException, ServletException {
         List<ParameterValue> values = new ArrayList<>();
         for (ParameterDefinition d : parameterDefinitions) {
             ParameterValue value = d.createValue(req);
@@ -221,7 +243,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     @Symbol("parameters")
     public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
         @Override
-        public ParametersDefinitionProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public ParametersDefinitionProperty newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             ParametersDefinitionProperty prop = (ParametersDefinitionProperty) super.newInstance(req, formData);
             if (prop != null && prop.parameterDefinitions.isEmpty()) {
                 return null;

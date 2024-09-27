@@ -23,10 +23,10 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Displays the build queue as &lt;l:pane>
-
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    Displays the build queue as <l:pane>
+    ]]>
     <st:attribute name="items" use="required">
       Queue items to be displayed. Normally you should specify ${app.queue.items},
       but for example you can specify a sublist after some filtering to narrow down
@@ -74,14 +74,16 @@ THE SOFTWARE.
               <j:set var="stuck" value="${item.isStuck()}"/>
               <j:choose>
                 <j:when test="${h.hasPermission(item.task,item.task.READ)}">
-                  <a href="${rootURL}/${item.task.url}" class="model-link inside tl-tr" tooltip="${h.escape(item.causesDescription)}${h.escape(item.why)}${h.escape(item.params)}&lt;br&gt;${%WaitingFor(item.inQueueForString)}">
-                    <l:breakable value="${item.task.fullDisplayName}"/>
+                  <a href="${rootURL}/${item.task.url}" class="model-link inside tl-tr"
+                     tooltip="${item.causesDescription} ${item.why} ${item.params} \n ${%WaitingFor(item.inQueueForString)}"
+                     data-tooltip-append-to-parent="true">
+                    <l:breakable value="${item.displayName}"/>
                   </a>
                   <!-- TODO include estimated number as in BuildHistoryWidget/entries.jelly if possible -->
                 <j:if test="${stuck}">
                   <td class="pane" width="16" align="center" valign="middle">
                     <a href="https://www.jenkins.io/redirect/troubleshooting/executor-starvation">
-                      <l:icon class="icon-hourglass icon-sm"/>
+                      <l:icon src="symbol-hourglass" class="icon-sm"/>
                     </a>
                   </td>
                 </j:if>
@@ -93,7 +95,7 @@ THE SOFTWARE.
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <j:if test="${item.hasCancelPermission()}">
-                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" confirm="${%confirm(item.task.fullDisplayName)}" alt="${%cancel this build}"/>
+                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" confirm="${%confirm(item.displayName)}" alt="${%Cancel this build}"/>
               </j:if>
              </td>
           </tr>
@@ -103,7 +105,7 @@ THE SOFTWARE.
   </l:pane>
   <!-- schedule updates only for the full page reload -->
   <j:if test="${ajax==null and h.hasPermission(app.READ)}">
-    <div class="widget-refresh-reference" data-id="buildQueue" data-url="${rootURL}/${h.hasView(it,'ajaxBuildQueue')?it.url:''}ajaxBuildQueue"/>
+    <div class="widget-refresh-reference" data-id="buildQueue" data-url="${rootURL}/${it.url}ajax"/>
     <st:adjunct includes="lib.hudson.widget-refresh"/>
   </j:if>
 </j:jelly>

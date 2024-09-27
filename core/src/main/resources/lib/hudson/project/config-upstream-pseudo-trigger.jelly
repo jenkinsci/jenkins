@@ -22,8 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Deprecated; empty. See ReverseBuildTrigger.
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core"/>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <st:documentation>
+        Deprecated; empty. See ReverseBuildTrigger.
+    </st:documentation>
+</j:jelly>

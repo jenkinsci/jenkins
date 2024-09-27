@@ -26,8 +26,8 @@ package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
 
 import hudson.cli.CLICommandInvoker.Result;

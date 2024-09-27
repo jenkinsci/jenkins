@@ -34,18 +34,18 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.User;
-import java.net.URL;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.htmlunit.ElementNotFoundException;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -256,7 +256,7 @@ public class UserSeedPropertyTest {
         User alice = User.getById(ALICE, false);
         assertNotNull(alice);
 
-        HtmlPage htmlPage = wc.goTo(alice.getUrl() + "/configure");
+        HtmlPage htmlPage = wc.goTo(alice.getUrl() + "/security/");
         htmlPage.getDocumentElement().getOneHtmlElementByAttribute("div", "class", "user-seed-panel");
     }
 
@@ -280,7 +280,7 @@ public class UserSeedPropertyTest {
             User alice = User.getById(ALICE, false);
             assertNotNull(alice);
 
-            HtmlPage htmlPage = wc.goTo(alice.getUrl() + "/configure");
+            HtmlPage htmlPage = wc.goTo(alice.getUrl() + "/security/");
             assertThrows("Seed section should not be displayed", ElementNotFoundException.class, () -> htmlPage.getDocumentElement().getOneHtmlElementByAttribute("div", "class", "user-seed-panel"));
         }
         finally {
@@ -300,7 +300,7 @@ public class UserSeedPropertyTest {
 
     private void requestRenewSeedForUser(User user) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
-        WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + user.getUrl() + "/descriptorByName/" + UserSeedProperty.class.getName() + "/renewSessionSeed/"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(j.jenkins.getRootUrl() + user.getUrl() + "/descriptorByName/" + UserSeedProperty.class.getName() + "/renewSessionSeed/").toURL(), HttpMethod.POST);
         wc.getPage(request);
     }
 }

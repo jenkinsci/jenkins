@@ -1,27 +1,21 @@
 package hudson;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.is;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.DownloadService;
 import hudson.model.RootAction;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSiteTest;
 import hudson.util.HttpResponses;
 import hudson.util.Retrier;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,8 +23,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.xml.sax.SAXException;
 
 public class PluginManagerCheckUpdateCenterTest {
@@ -108,16 +102,6 @@ public class PluginManagerCheckUpdateCenterTest {
         }
     }
 
-    private HtmlAnchor getCheckNow(HtmlPage page) {
-        List<HtmlElement> elements = page.getElementById("bottom-sticker")
-                .getElementsByTagName("a")
-                .stream()
-                .filter(link -> link.getAttribute("href").equals("checkUpdatesServer"))
-                .collect(Collectors.toList());
-        assertEquals(1, elements.size());
-        return (HtmlAnchor) elements.get(0);
-    }
-
     /**
      * Check the update site.
      * @param urlUpdateSite If null, use the default update site, otherwise, use this update site.
@@ -140,7 +124,7 @@ public class PluginManagerCheckUpdateCenterTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("pluginManager");
-        Page pageAfterClick = HtmlElementUtil.click(getCheckNow(p));
+        Page pageAfterClick = PluginManagerUtil.getCheckForUpdatesButton(p).click();
         String page = pageAfterClick.getWebResponse().getContentAsString();
 
         // Check what is shown in the web page
@@ -168,7 +152,7 @@ public class PluginManagerCheckUpdateCenterTest {
             return "updateSite502";
         }
 
-        public HttpResponse doGetJson(StaplerRequest request) {
+        public HttpResponse doGetJson(StaplerRequest2 request) {
             return HttpResponses.error(502, "Gateway error");
         }
     }
@@ -191,7 +175,7 @@ public class PluginManagerCheckUpdateCenterTest {
             return "updateSiteWrongJson";
         }
 
-        public void doGetJson(StaplerRequest request, StaplerResponse response) throws IOException {
+        public void doGetJson(StaplerRequest2 request, StaplerResponse2 response) throws IOException {
             response.setContentType("text/json");
             response.setStatus(200);
             response.getWriter().append("{wrongjson}");
@@ -217,10 +201,10 @@ public class PluginManagerCheckUpdateCenterTest {
         }
 
         // The url has to end in update-center.json. See: UpdateSite#getMetadataUrlForDownloadable
-        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("text/json");
             staplerResponse.setStatus(200);
-            staplerResponse.serveFile(staplerRequest,  UpdateSiteTest.class.getResource("update-center.json"));
+            staplerResponse.serveFile(staplerRequest,  UpdateSiteTest.extract("update-center.json"));
         }
     }
 

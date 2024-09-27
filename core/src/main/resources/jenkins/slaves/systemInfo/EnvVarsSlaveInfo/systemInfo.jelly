@@ -29,5 +29,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <t:propertyTable items="${it.envVarsFull}" />
+  <t:propertyTable items="${it.envVarsFull}" sensitive="true" />
 </j:jelly>

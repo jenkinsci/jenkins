@@ -34,15 +34,18 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Queue;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.RunMap;
 import hudson.model.listeners.ItemListener;
 import hudson.model.queue.SubTask;
-import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,8 +65,8 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
 
     private static final Logger LOGGER = Logger.getLogger(LazyBuildMixIn.class.getName());
 
-    @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
-    private @NonNull RunMap<RunT> builds = new RunMap<>();
+    // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
+    private @NonNull RunMap<RunT> builds = new RunMap<>(asJob());
 
     /**
      * Initializes this mixin.
@@ -138,7 +141,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     }
 
     private RunMap<RunT> createBuildRunMap() {
-        RunMap<RunT> r = new RunMap<>(asJob().getBuildDir(), new RunMap.Constructor<RunT>() {
+        RunMap<RunT> r = new RunMap<>(asJob(), new RunMap.Constructor<RunT>() {
             @Override
             public RunT create(File dir) throws IOException {
                 return loadBuild(dir);
@@ -181,15 +184,21 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     public final synchronized RunT newBuild() throws IOException {
         try {
             RunT lastBuild = getBuildClass().getConstructor(asJob().getClass()).newInstance(asJob());
+            var rootDir = lastBuild.getRootDir().toPath();
+            if (Files.isDirectory(rootDir)) {
+               LOGGER.warning(() -> "JENKINS-23152: " + rootDir + " already existed; will not overwrite with " + lastBuild + " but will create a fresh build #" + asJob().getNextBuildNumber());
+               return newBuild();
+            }
             builds.put(lastBuild);
             lastBuild.getPreviousBuild(); // JENKINS-20662: create connection to previous build
             return lastBuild;
         } catch (InvocationTargetException e) {
             LOGGER.log(Level.WARNING, String.format("A new build could not be created in job %s", asJob().getFullName()), e);
             throw handleInvocationTargetException(e);
-        } catch (ReflectiveOperationException | IllegalStateException e) {
-            LOGGER.log(Level.WARNING, String.format("A new build could not be created in job %s", asJob().getFullName()), e);
-            throw new LinkageError(e.getMessage(), e);
+        } catch (ReflectiveOperationException e) {
+            throw new LinkageError("A new build could not be created in " + asJob().getFullName() + ": " + e, e);
+        } catch (IllegalStateException e) {
+            throw new IOException("A new build could not be created in " + asJob().getFullName() + ": " + e, e);
         }
     }
 
@@ -259,10 +268,39 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     }
 
     /**
-     * Suitable for {@link Job#createHistoryWidget}.
+     * Suitable for {@link Job#getEstimatedDurationCandidates}.
+     * @since 2.407
      */
+    public List<RunT> getEstimatedDurationCandidates() {
+        var loadedBuilds = builds.getLoadedBuilds().values(); // reverse chronological order
+        List<RunT> candidates = new ArrayList<>(3);
+        for (Result threshold : List.of(Result.UNSTABLE, Result.FAILURE)) {
+            for (RunT build : loadedBuilds) {
+                if (candidates.contains(build)) {
+                    continue;
+                }
+                if (!build.isBuilding()) {
+                    Result result = build.getResult();
+                    if (result != null && result.isBetterOrEqualTo(threshold)) {
+                        candidates.add(build);
+                        if (candidates.size() == 3) {
+                            LOGGER.fine(() -> "Candidates: " + candidates);
+                            return candidates;
+                        }
+                    }
+                }
+            }
+        }
+        LOGGER.fine(() -> "Candidates: " + candidates);
+        return candidates;
+    }
+
+    /**
+     * @deprecated Remove any code calling this method, history widget is now created via {@link jenkins.widgets.WidgetFactory} implementation.
+     */
+    @Deprecated(forRemoval = true, since = "2.459")
     public final HistoryWidget createHistoryWidget() {
-        return new BuildHistoryWidget(asJob(), builds, Job.HISTORY_ADAPTER);
+        throw new IllegalStateException("HistoryWidget is now created via WidgetFactory implementation");
     }
 
     /**

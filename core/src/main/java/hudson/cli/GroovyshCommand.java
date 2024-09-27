@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import hudson.Extension;
+import hudson.model.User;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +40,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import jenkins.model.Jenkins;
+import jenkins.util.ScriptListener;
 import jline.TerminalFactory;
 import jline.UnsupportedTerminal;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -54,6 +56,9 @@ import org.kohsuke.args4j.Argument;
  */
 @Extension
 public class GroovyshCommand extends CLICommand {
+
+    private final String scriptListenerCorrelationId = String.valueOf(System.identityHashCode(this));
+
     @Override
     public String getShortDescription() {
         return Messages.GroovyshCommand_ShortDescription();
@@ -72,12 +77,14 @@ public class GroovyshCommand extends CLICommand {
 
         StringBuilder commandLine = new StringBuilder();
         for (String arg : args) {
-            if (commandLine.length() > 0) {
+            if (!commandLine.isEmpty()) {
                 commandLine.append(" ");
             }
             commandLine.append(arg);
         }
 
+        // TODO Add binding
+        ScriptListener.fireScriptExecution(null, null, GroovyshCommand.class, null, scriptListenerCorrelationId, User.current());
         Groovysh shell = createShell(stdin, stdout, stderr);
         return shell.run(commandLine.toString());
     }
@@ -96,11 +103,14 @@ public class GroovyshCommand extends CLICommand {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(stdout, charset), true));
+
+        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(new ScriptListener.ListenerOutputStream(stdout, charset, GroovyshCommand.class, null, scriptListenerCorrelationId, User.current()), charset), true));
         binding.setProperty("hudson", Jenkins.get()); // backward compatibility
         binding.setProperty("jenkins", Jenkins.get());
 
-        IO io = new IO(new BufferedInputStream(stdin), stdout, stderr);
+        IO io = new IO(new BufferedInputStream(stdin),
+                new ScriptListener.ListenerOutputStream(stdout, charset, GroovyshCommand.class, null, scriptListenerCorrelationId, User.current()),
+                new ScriptListener.ListenerOutputStream(stderr, charset, GroovyshCommand.class, null, scriptListenerCorrelationId, User.current()));
 
         final ClassLoader cl = Jenkins.get().pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
@@ -119,9 +129,23 @@ public class GroovyshCommand extends CLICommand {
                 return null;
             }
         };
-        Groovysh shell = new Groovysh(cl, binding, io, registrar);
+        Groovysh shell = new LoggingGroovySh(cl, binding, io, registrar);
         shell.getImports().add("hudson.model.*");
         return shell;
     }
 
+    private class LoggingGroovySh extends Groovysh {
+        private final Binding binding;
+
+        LoggingGroovySh(ClassLoader cl, Binding binding, IO io, Closure registrar) {
+            super(cl, binding, io, registrar);
+            this.binding = binding;
+        }
+
+        @Override
+        protected void maybeRecordInput(String line) {
+            ScriptListener.fireScriptExecution(line, binding, GroovyshCommand.class, null, scriptListenerCorrelationId, User.current());
+            super.maybeRecordInput(line);
+        }
+    }
 }

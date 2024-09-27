@@ -46,7 +46,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.ReaderWrapper;
-import com.thoughtworks.xstream.io.xml.KXml2Driver;
+import com.thoughtworks.xstream.io.xml.StandardStaxDriver;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
@@ -74,6 +74,7 @@ import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
@@ -81,6 +82,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.xstream.SafeURLConverter;
@@ -123,7 +126,45 @@ public class XStream2 extends XStream {
      * @return a new instance of the HierarchicalStreamDriver we want to use
      */
     public static HierarchicalStreamDriver getDefaultDriver() {
-        return new KXml2Driver();
+        return new StaxDriver();
+    }
+
+    private static class StaxDriver extends StandardStaxDriver {
+        /*
+         * The below two methods are copied from com.thoughtworks.xstream.io.xml.AbstractXppDriver to preserve
+         * compatibility.
+         */
+
+        @Override
+        public HierarchicalStreamWriter createWriter(Writer out) {
+            return new PrettyPrintWriter(out, PrettyPrintWriter.XML_1_1, getNameCoder());
+        }
+
+        @Override
+        public HierarchicalStreamWriter createWriter(OutputStream out) {
+            /*
+             * While it is tempting to use StandardCharsets.UTF_8 here, this would break
+             * hudson.util.XStream2EncodingTest#toXMLUnspecifiedEncoding.
+             */
+            return createWriter(new OutputStreamWriter(out, Charset.defaultCharset()));
+        }
+
+        /*
+         * The below two methods are copied from com.thoughtworks.xstream.io.xml.StaxDriver for Java 17 compatibility.
+         */
+
+        @Override
+        protected XMLInputFactory createInputFactory() {
+            final XMLInputFactory instance = XMLInputFactory.newInstance();
+            instance.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
+            instance.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+            return instance;
+        }
+
+        @Override
+        protected XMLOutputFactory createOutputFactory() {
+            return XMLOutputFactory.newInstance();
+        }
     }
 
     public XStream2() {
@@ -428,6 +469,12 @@ public class XStream2 extends XStream {
      */
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
+        private static final ClassValue<Class<? extends ConverterMatcher>> classCache = new ClassValue<>() {
+            @Override
+            protected Class<? extends ConverterMatcher> computeValue(Class<?> type) {
+                return computeConverterClass(type);
+            }
+        };
         private final ConcurrentHashMap<Class<?>, Converter> cache =
                 new ConcurrentHashMap<>();
 
@@ -440,17 +487,36 @@ public class XStream2 extends XStream {
             if (t == null) {
                 return null;
             }
+            Converter result = cache.computeIfAbsent(t, unused -> computeConverter(t));
+            // ConcurrentHashMap does not allow null, so use this object to represent null
+            return result == this ? null : result;
+        }
 
-            Converter result = cache.get(t);
-            if (result != null)
-                // ConcurrentHashMap does not allow null, so use this object to represent null
-                return result == this ? null : result;
+        @CheckForNull
+        private static Class<? extends ConverterMatcher> computeConverterClass(@NonNull Class<?> t) {
             try {
                 final ClassLoader classLoader = t.getClassLoader();
                 if (classLoader == null) {
                     return null;
                 }
-                Class<?> cl = classLoader.loadClass(t.getName() + "$ConverterImpl");
+                String name = t.getName() + "$ConverterImpl";
+                if (classLoader.getResource(name.replace('.', '/') + ".class") == null) {
+                    return null;
+                }
+                return classLoader.loadClass(name).asSubclass(ConverterMatcher.class);
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+        }
+
+        @CheckForNull
+        private Converter computeConverter(@NonNull Class<?> t) {
+            Class<? extends ConverterMatcher> cl = classCache.get(t);
+            if (cl == null) {
+                // See above.. this object in cache represents null
+                return this;
+            }
+            try {
                 Constructor<?> c = cl.getConstructors()[0];
 
                 Class<?>[] p = c.getParameterTypes();
@@ -465,14 +531,9 @@ public class XStream2 extends XStream {
 
                 }
                 ConverterMatcher cm = (ConverterMatcher) c.newInstance(args);
-                result = cm instanceof SingleValueConverter
+                return cm instanceof SingleValueConverter
                         ? new SingleValueConverterWrapper((SingleValueConverter) cm)
                         : (Converter) cm;
-                cache.put(t, result);
-                return result;
-            } catch (ClassNotFoundException e) {
-                cache.put(t, this);  // See above.. this object in cache represents null
-                return null;
             } catch (IllegalAccessException e) {
                 IllegalAccessError x = new IllegalAccessError();
                 x.initCause(e);

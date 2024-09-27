@@ -17,42 +17,6 @@ jenkins.baseUrl = function () {
   return u;
 };
 
-// awful hack to get around JSONifying things with Prototype taking over wrong. ugh. Prototype is the worst.
-jenkins.stringify = function (o) {
-  if (Array.prototype.toJSON) {
-    // Prototype f's this up something bad
-    var protoJSON = {
-      a: Array.prototype.toJSON,
-      o: Object.prototype.toJSON,
-      h: Hash.prototype.toJSON,
-      s: String.prototype.toJSON,
-    };
-    try {
-      delete Array.prototype.toJSON;
-      delete Object.prototype.toJSON;
-      delete Hash.prototype.toJSON;
-      delete String.prototype.toJSON;
-
-      return JSON.stringify(o);
-    } finally {
-      if (protoJSON.a) {
-        Array.prototype.toJSON = protoJSON.a;
-      }
-      if (protoJSON.o) {
-        Object.prototype.toJSON = protoJSON.o;
-      }
-      if (protoJSON.h) {
-        Hash.prototype.toJSON = protoJSON.h;
-      }
-      if (protoJSON.s) {
-        String.prototype.toJSON = protoJSON.s;
-      }
-    }
-  } else {
-    return JSON.stringify(o);
-  }
-};
-
 /**
  * redirect
  */
@@ -82,7 +46,7 @@ jenkins.get = function (url, success, options) {
 };
 
 /**
- * Jenkins AJAX POST callback, formats data as a JSON object post (note: works around prototype.js ugliness using stringify() above)
+ * Jenkins AJAX POST callback, formats data as a JSON object post
  * If last parameter is an object, will be extended to jQuery options (e.g. pass { error: function() ... } to handle errors)
  */
 jenkins.post = function (url, data, success, options) {
@@ -110,7 +74,7 @@ jenkins.post = function (url, data, success, options) {
       formBody = $.extend({}, formBody);
       formBody[crumb.fieldName] = crumb.value;
     }
-    formBody = jenkins.stringify(formBody);
+    formBody = JSON.stringify(formBody);
   }
 
   var args = {
@@ -214,7 +178,7 @@ jenkins.testConnectivity = function (siteId, handler) {
             handler.call({ isError: true, errorMessage: errorThrown });
           }
         },
-      }
+      },
     );
   };
   testConnectivity();
@@ -288,8 +252,8 @@ jenkins.staplerPost = function (url, $form, success, options) {
         contentType: "application/x-www-form-urlencoded",
         crumb: crumb,
       },
-      options
-    )
+      options,
+    ),
   );
 };
 

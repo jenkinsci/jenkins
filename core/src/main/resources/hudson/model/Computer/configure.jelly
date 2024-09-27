@@ -31,6 +31,7 @@ THE SOFTWARE.
   <l:layout permission="${it.EXTENDED_READ}" title="${%title(it.displayName)}">
     <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
     <st:include page="sidepanel.jelly"/>
+    <l:breadcrumb title="${%Configure}" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config" class="jenkins-form">
         <j:set var="instance" value="${it.node}" />

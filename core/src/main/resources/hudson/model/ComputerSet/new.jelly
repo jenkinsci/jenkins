@@ -32,11 +32,12 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
-  <l:layout title="${%New node}" permission="${createPermission}">
+  <l:layout title="${%New node}" permission="${createPermission}" type="one-column">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%New node}" />
     <l:main-panel>
       <j:invokeStatic var="slaves" className="hudson.slaves.NodeDescriptor" method="allInstantiable" />
-      <n:form title="${%New node}" nameTitle="${%Node name}" copyTitle="${%Copy Existing Node}" copyNames="${it._slaveNames}"
+      <n:form title="${%New node}" nameTitle="${%Node name}" copyTitle="${%Copy Existing Node}" showCopyOption="${!empty(it._slaveNames)}"
               descriptors="${slaves}" checkUrl="checkName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>

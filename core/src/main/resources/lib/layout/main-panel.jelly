@@ -23,20 +23,43 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
     Generates the body as the main content part of a Jenkins page.
   </st:documentation>
 
   <j:if test="${mode=='main-panel'}">
     <j:if test="${app.isQuietingDown()}">
-      <div id='shutdown-msg'>${%Jenkins is going to shut down}
-        <j:if test="${app.getQuietDownReason() != null}">
-          <br/> ${%Shut down reason}: ${app.getQuietDownReason()}
-        </j:if>
-      </div>
+      <j:choose>
+        <j:when test="${app.isPreparingSafeRestart()}">
+          <div id='safe-restart-msg'>
+            <j:choose>
+              <j:when test="${!app.getQuietDownReason().trim().isEmpty()}">
+                ${app.getQuietDownReason()}
+              </j:when>
+              <j:otherwise>
+                ${%saferestart}
+              </j:otherwise>
+            </j:choose>
+          </div>
+        </j:when>
+        <j:otherwise>
+          <div id='shutdown-msg'>
+            <j:choose>
+              <j:when test="${app.getQuietDownReason() != null}">
+                ${app.getQuietDownReason()}
+              </j:when>
+              <j:otherwise>
+                ${%shutdown}
+              </j:otherwise>
+            </j:choose>
+          </div>
+        </j:otherwise>
+      </j:choose>
     </j:if>
-    <a name="skip2content" />
+    <a id="skip2content" />
+    <x:comment>&#10;start of main content ⇒&#10;</x:comment>
     <d:invokeBody />
+    <x:comment>&#10;⇐ end of main content&#10;</x:comment>
   </j:if>
 </j:jelly>

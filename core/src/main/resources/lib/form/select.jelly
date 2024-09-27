@@ -24,13 +24,13 @@ THE SOFTWARE.
 
 <!-- Tomcat doesn't like us using the attribute called 'class' -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Glorified &lt;select> control that supports the data binding and AJAX updates.
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    Glorified <select> control that supports the data binding and AJAX updates.
     Your descriptor should have the 'doFillXyzItems' method, which returns a ListBoxModel
     representation of the items in your drop-down list box, and your instance field should
     hold the current value.
-
+    ]]>
     <st:attribute name="clazz">
       Additional CSS classes that the control gets.
     </st:attribute>
@@ -63,7 +63,7 @@ THE SOFTWARE.
 
   ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
-  <div class="jenkins-select">
+  <div class="jenkins-select" data-readonly="${readOnlyMode}">
     <m:select xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
               class="jenkins-select__input ${attrs.checkUrl!=null?'validated':''} select ${attrs.clazz}"
               name="${attrs.name ?: '_.'+attrs.field}"

@@ -30,15 +30,14 @@ import hudson.model.AbstractProject;
 import hudson.model.Executor;
 import hudson.model.Label;
 import hudson.model.Node;
-import hudson.model.Queue.Executable;
-import hudson.model.Queue.Task;
+import hudson.model.Queue;
 import hudson.model.ResourceActivity;
 import java.io.IOException;
 
 /**
- * A component of {@link Task} that represents a computation carried out by a single {@link Executor}.
+ * A component of {@link Queue.Task} that represents a computation carried out by a single {@link Executor}.
  *
- * A {@link Task} consists of a number of {@link SubTask}.
+ * A {@link Queue.Task} consists of a number of {@link SubTask}.
  *
  * <p>
  * Plugins are encouraged to extend from {@link AbstractSubTask}
@@ -63,7 +62,9 @@ public interface SubTask extends ResourceActivity {
      * and this task prefers to run on the same node, return that.
      * Otherwise null.
      * @return by default, null
+     * @deprecated Unused.
      */
+    @Deprecated
     default Node getLastBuiltOn() {
         return null;
     }
@@ -79,23 +80,34 @@ public interface SubTask extends ResourceActivity {
     }
 
     /**
-     * Creates {@link Executable}, which performs the actual execution of the task.
-     * @return {@link Executable} to be launched or null if the executable cannot be
+     * Creates an object which performs the actual execution of the task.
+     * @return executable to be launched or null if the executable cannot be
      * created (e.g. {@link AbstractProject} is disabled)
-     * @exception IOException {@link Executable} cannot be created
+     * @exception IOException executable cannot be created
      */
-    @CheckForNull Executable createExecutable() throws IOException;
+    @CheckForNull Queue.Executable createExecutable() throws IOException;
 
     /**
-     * Gets the {@link Task} that this subtask belongs to.
+     * Gets the task that this subtask belongs to.
      * @return by default, {@code this}
+     * @see #getOwnerExecutable
      */
-    default @NonNull Task getOwnerTask() {
-        return (Task) this;
+    default @NonNull Queue.Task getOwnerTask() {
+        return (Queue.Task) this;
     }
 
     /**
-     * If a subset of {@link SubTask}s of a {@link Task} needs to be collocated with other {@link SubTask}s,
+     * If this task is associated with an executable of {@link #getOwnerTask}, finds that.
+     * @return by default, {@code null}
+     * @see hudson.model.Queue.Executable#getParentExecutable
+     * @since 2.389
+     */
+    default @CheckForNull Queue.Executable getOwnerExecutable() {
+        return null;
+    }
+
+    /**
+     * If a subset of {@link SubTask}s of a {@link Queue.Task} needs to be collocated with other {@link SubTask}s,
      * those {@link SubTask}s should return the equal object here. If null, the execution unit isn't under a
      * colocation constraint.
      * @return by default, null

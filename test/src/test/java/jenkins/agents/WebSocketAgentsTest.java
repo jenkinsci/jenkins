@@ -28,29 +28,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import hudson.Functions;
-import hudson.Proc;
 import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
 import hudson.remoting.Engine;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.SlaveToMasterCallable;
-import org.apache.commons.io.FileUtils;
-import org.apache.tools.ant.util.JavaEnvUtils;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.BuildWatcher;
+import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
@@ -67,14 +60,14 @@ public class WebSocketAgentsTest {
     public JenkinsRule r = new JenkinsRule();
 
     @Rule
+    public InboundAgentRule inboundAgents = new InboundAgentRule();
+
+    @Rule
     public LoggerRule logging = new LoggerRule().
         record(Slave.class, Level.FINE).
         record(SlaveComputer.class, Level.FINEST).
         record(WebSocketAgents.class, Level.FINEST).
         record(Engine.class, Level.FINEST);
-
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
 
     /**
      * Verify basic functionality of an agent in {@code -webSocket} mode.
@@ -83,24 +76,10 @@ public class WebSocketAgentsTest {
      * Related to {@link hudson.slaves.JNLPLauncherTest} (also see closer to {@link hudson.bugs.JnlpAccessWithSecuredHudsonTest}).
      * @see hudson.remoting.Launcher
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     public void smokes() throws Exception {
-        AtomicReference<Proc> proc = new AtomicReference<>();
+        Slave s = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().secret().webSocket().build());
         try {
-            JNLPLauncher launcher = new JNLPLauncher(true);
-            launcher.setWebSocket(true);
-            DumbSlave s = new DumbSlave("remote", tmp.newFolder("agent").getAbsolutePath(), launcher);
-            r.jenkins.addNode(s);
-            String secret = ((SlaveComputer) s.toComputer()).getJnlpMac();
-            File slaveJar = tmp.newFile();
-            FileUtils.copyURLToFile(new Slave.JnlpJar("agent.jar").getURL(), slaveJar);
-            proc.set(r.createLocalLauncher().launch().cmds(
-                JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(),
-                "-jnlpUrl", r.getURL() + "computer/remote/jenkins-agent.jnlp",
-                "-secret", secret
-            ).stdout(System.out).start());
-            r.waitOnline(s);
             assertEquals("response", s.getChannel().call(new DummyTask()));
             assertNotNull(s.getChannel().call(new FatTask()));
             FreeStyleProject p = r.createFreeStyleProject();
@@ -109,13 +88,7 @@ public class WebSocketAgentsTest {
             r.buildAndAssertSuccess(p);
             s.toComputer().getLogText().writeLogTo(0, System.out);
         } finally {
-            if (proc.get() != null) {
-                proc.get().kill();
-                while (r.jenkins.getComputer("remote").isOnline()) {
-                    LOGGER.info("waiting for computer to go offline");
-                    Thread.sleep(250);
-                }
-            }
+            inboundAgents.stop(r, s.getNodeName());
         }
     }
 

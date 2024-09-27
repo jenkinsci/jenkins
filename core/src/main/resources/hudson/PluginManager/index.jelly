@@ -22,16 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Update Center main page
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <local:table page="updates" list="${app.updateCenter.updates}" xmlns:local="/hudson/PluginManager">
-    <div style="margin-top:1em">
-      <j:if test="${!empty(app.updateCenter.jobs)}">
-        <br/> ${%UpdatePageLegend(rootURL+'/updateCenter/')}
-      </j:if>
-    </div>
-  </local:table>
+<j:jelly xmlns:j="jelly:core" xmlns:local="/hudson/PluginManager">
+  <local:updates>
+    <j:if test="${!empty(app.updateCenter.jobs)}">
+      <div>
+        ${%UpdatePageLegend(rootURL+'/updateCenter/')}
+      </div>
+    </j:if>
+  </local:updates>
 </j:jelly>

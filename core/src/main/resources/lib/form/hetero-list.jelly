@@ -23,15 +23,15 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
-  <st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:local="local">
+  <st:documentation> <![CDATA[
     Outer most tag for creating a heterogeneous list, where the user can choose arbitrary number of
     arbitrary items from the given list of descriptors, and configure them independently.
 
-    The submission can be data-bound into List&lt;T&gt; where T is the common base type for the describable instances.
+    The submission can be data-bound into List<T> where T is the common base type for the describable instances.
 
-    For databinding use, please use &lt;f:repeatableHeteroProperty /&gt;
-
+    For databinding use, please use <f:repeatableHeteroProperty />
+    ]]>
     <st:attribute name="name" use="required">
       form name that receives an array for all the items in the heterogeneous list.
     </st:attribute>
@@ -50,9 +50,10 @@ THE SOFTWARE.
     <st:attribute name="targetType">
       the type for which descriptors will be configured. Defaults to ${it.class} (optional)
     </st:attribute>
-    <st:attribute name="hasHeader">
+    <st:attribute name="hasHeader"> <![CDATA[
       For each item, add a caption from descriptor.getDisplayName().
-      This also activates drag&amp;drop (where the header is a grip), and help text support.
+      This also activates drag&drop (where the header is a grip), and help text support.
+        ]]>
     </st:attribute>
     <st:attribute name="oneEach">
       If true, only allow up to one instance per descriptor.
@@ -106,8 +107,6 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
-  <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
-
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
   <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
     <!-- display existing items -->
@@ -155,7 +154,8 @@ THE SOFTWARE.
 
     <j:if test="${!readOnlyMode}">
       <div>
-        <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
+        <button type="button" class="jenkins-button hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}">${attrs.addCaption?:'%Add'}<l:icon src="symbol-chevron-down"/>
+        </button>
       </div>
     </j:if>
   </div>

@@ -24,24 +24,27 @@ THE SOFTWARE.
 
 <!-- Tomcat doesn't like us using the attribute called 'class' -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
     Editable drop-down combo box that supports the data binding and AJAX updates.
     Your descriptor should have the 'doFillXyzItems' method, which returns a ComboBoxModel
     representation of the items in your combo box, and your instance field should
     hold the current value.
 
-    For a read only input set &lt;j:set var="readOnlyMode" value="true"/&gt; inside your entry tag
+    For a read only input set <j:set var="readOnlyMode" value="true"/> inside your entry tag
     See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
-    <st:attribute name="name">
-      This becomes @name of the &lt;input> tag.
+    ]]>
+    <st:attribute name="name"> <![CDATA[
+      This becomes @name of the <input> tag.
       If @field is specified, this value is inferred from it.
+    ]]>
     </st:attribute>
-    <st:attribute name="value">
-      The initial value of the field. This becomes the @value of the &lt;input> tag.
+    <st:attribute name="value"> <![CDATA[
+      The initial value of the field. This becomes the @value of the <input> tag.
       If @field is specified, the current property from the "instance" object
       will be set as the initial value automatically,
       which is the recommended approach.
+    ]]>
     </st:attribute>
     <st:attribute name="default">
       The default value of the combo box, in case both @value and 'instance[field]' are null.

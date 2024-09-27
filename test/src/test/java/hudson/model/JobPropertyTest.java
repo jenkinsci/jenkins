@@ -28,12 +28,12 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
-import com.gargoylesoftware.htmlunit.WebAssert;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.matrix.MatrixProject;
 import hudson.model.Descriptor.FormException;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
+import org.htmlunit.WebAssert;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -41,7 +41,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class JobPropertyTest {
 
@@ -124,7 +124,7 @@ public class JobPropertyTest {
         @TestExtension("configRoundtrip")
         public static class DescriptorImpl extends JobPropertyDescriptor {
             @Override
-            public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            public JobProperty<?> newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
                 JobPropertyWithConfigImpl prop = (JobPropertyWithConfigImpl) super.newInstance(req, formData);
                 return prop.name.isEmpty() ? null : prop;
             }
@@ -147,7 +147,7 @@ public class JobPropertyTest {
         InvisibleImpl() {}
 
         @Override
-        public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) {
+        public JobProperty<?> reconfigure(StaplerRequest2 req, JSONObject form) {
             return this;
         }
 

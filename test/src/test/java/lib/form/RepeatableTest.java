@@ -29,13 +29,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
-import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJob;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -50,13 +43,19 @@ import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.htmlunit.ElementNotFoundException;
+import org.htmlunit.WebClientUtil;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSelect;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author Alan.Harder@sun.com
@@ -74,22 +73,23 @@ public class RepeatableTest {
 
     // ========================================================================
 
-    private void doTestSimple(HtmlForm f) throws Exception {
-        f.getInputByValue("").setValueAttribute("value one");
-        getHtmlButton(f, "Add", false).click();
-        f.getInputByValue("").setValueAttribute("value two");
-        getHtmlButton(f, "Add", false).click();
-        f.getInputByValue("").setValueAttribute("value three");
+    private void doTestSimple(HtmlForm f, JenkinsRule.WebClient wc) throws Exception {
+        f.getInputByValue("").setValue("value one");
+        clickButton(wc, f, "Add", false);
+        f.getInputByValue("").setValue("value two");
+        clickButton(wc, f, "Add", false);
+        f.getInputByValue("").setValue("value three");
         f.getInputsByName("bool").get(2).click();
         j.submit(f);
     }
 
     @Test
     public void testSimple() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testSimple");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
-        getHtmlButton(f, "Add", true).click();
-        doTestSimple(f);
+        clickButton(wc, f, "Add", true);
+        doTestSimple(f, wc);
 
         assertEqualsJsonArray("[{\"bool\":false,\"txt\":\"value one\"},"
             + "{\"bool\":false,\"txt\":\"value two\"},{\"bool\":true,\"txt\":\"value three\"}]",
@@ -101,15 +101,14 @@ public class RepeatableTest {
      */
     @Test
     public void testSimpleCheckNumberOfButtons() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testSimpleWithDeleteButton");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testSimpleWithDeleteButton");
         HtmlForm f = p.getFormByName("config");
         String buttonCaption = "Add";
         assertEquals(1, getButtonsList(f, buttonCaption).size());
-        getHtmlButton(f, buttonCaption, true).click(); // click Add button
-        waitForJavaScript(p);
+        clickButton(wc, f, buttonCaption, true); // click Add button
         assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that second Add button is not present
-        getHtmlButton(f, "Delete", true).click(); // click Delete button
-        waitForJavaScript(p);
+        clickButton(wc, f, "Delete", true); // click Delete button
         assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that only one Add button is in form
     }
 
@@ -118,15 +117,14 @@ public class RepeatableTest {
      */
     @Test
     public void testSimpleCheckNumberOfButtonsEnabledTopButton() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testSimpleWithDeleteButtonTopButton");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testSimpleWithDeleteButtonTopButton");
         HtmlForm f = p.getFormByName("config");
         String buttonCaption = "Add";
         assertEquals(1, getButtonsList(f, buttonCaption).size());
-        getHtmlButton(f, buttonCaption, true).click(); // click Add button
-        waitForJavaScript(p);
+        clickButton(wc, f, buttonCaption, true); // click Add button
         assertEquals(2, getButtonsList(f, buttonCaption).size()); // check that second Add button was added into form
-        getHtmlButton(f, "Delete", true).click(); // click Delete button
-        waitForJavaScript(p);
+        clickButton(wc, f, "Delete", true); // click Delete button
         assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that only one Add button is in form
     }
 
@@ -153,10 +151,11 @@ public class RepeatableTest {
     @Test
     public void testSimple_ExistingData() throws Exception {
         addData();
-        HtmlPage p = j.createWebClient().goTo("self/testSimple");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
-        getHtmlButton(f, "Add", false).click();
-        doTestSimple(f);
+        clickButton(wc, f, "Add", false);
+        doTestSimple(f, wc);
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"existing one\"},"
             + "{\"bool\":false,\"txt\":\"existing two\"},{\"bool\":true,\"txt\":\"value one\"},"
             + "{\"bool\":false,\"txt\":\"value two\"},{\"bool\":false,\"txt\":\"value three\"}]",
@@ -166,11 +165,12 @@ public class RepeatableTest {
     @Test
     public void testMinimum() throws Exception {
         rootAction.minimum = 3;
-        HtmlPage p = j.createWebClient().goTo("self/testSimple");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
-        f.getInputByValue("").setValueAttribute("value one");
-        f.getInputByValue("").setValueAttribute("value two");
-        f.getInputByValue("").setValueAttribute("value three");
+        f.getInputByValue("").setValue("value one");
+        f.getInputByValue("").setValue("value two");
+        f.getInputByValue("").setValue("value three");
         assertThrows(ElementNotFoundException.class, () -> f.getInputByValue(""));
         f.getInputsByName("bool").get(2).click();
         j.submit(f);
@@ -183,9 +183,10 @@ public class RepeatableTest {
     public void testMinimum_ExistingData() throws Exception {
         addData();
         rootAction.minimum = 3;
-        HtmlPage p = j.createWebClient().goTo("self/testSimple");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
-        f.getInputByValue("").setValueAttribute("new one");
+        f.getInputByValue("").setValue("new one");
         assertThrows(ElementNotFoundException.class, () -> f.getInputByValue(""));
         f.getInputsByName("bool").get(1).click();
         j.submit(f);
@@ -198,31 +199,36 @@ public class RepeatableTest {
     public void testNoData() throws Exception {
         rootAction.list = null;
         rootAction.defaults = null;
-        gotoAndSubmitConfig("defaultForField");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        gotoAndSubmitConfig("defaultForField", wc);
         assertNull(rootAction.formData.get("list"));
 
-        gotoAndSubmitConfig("defaultForItems");
+        gotoAndSubmitConfig("defaultForItems", wc);
         assertNull(rootAction.formData.get("list"));
     }
 
     @Test
     public void testItemsWithDefaults() throws Exception {
-        assertWithDefaults("defaultForItems");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        assertWithDefaults("defaultForItems", wc);
     }
 
     @Test
     public void testItemsDefaultsIgnoredIfFieldHasData() throws Exception {
-        assertDefaultsIgnoredIfHaveData("defaultForItems");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        assertDefaultsIgnoredIfHaveData("defaultForItems", wc);
     }
 
     @Test
     public void testFieldWithDefaults() throws Exception {
-        assertWithDefaults("defaultForField");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        assertWithDefaults("defaultForField", wc);
     }
 
     @Test
     public void testFieldDefaultsIgnoredIfFieldHasData() throws Exception {
-        assertDefaultsIgnoredIfHaveData("defaultForField");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        assertDefaultsIgnoredIfHaveData("defaultForField", wc);
     }
 
     private void addDefaults() {
@@ -231,26 +237,26 @@ public class RepeatableTest {
         rootAction.defaults.add(new Foo("default two", false));
     }
 
-    private void assertWithDefaults(final String viewName) throws Exception {
+    private void assertWithDefaults(final String viewName, final JenkinsRule.WebClient wc) throws Exception {
         rootAction.list = null;
         addDefaults();
-        gotoAndSubmitConfig(viewName);
+        gotoAndSubmitConfig(viewName, wc);
         assertNotNull(rootAction.formData.get("list"));
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"default one\"},{\"bool\":false,\"txt\":\"default two\"}]",
                 rootAction.formData.get("list"));
     }
 
-    private void assertDefaultsIgnoredIfHaveData(final String viewName) throws Exception {
+    private void assertDefaultsIgnoredIfHaveData(final String viewName, final JenkinsRule.WebClient wc) throws Exception {
         addData();
         addDefaults();
-        gotoAndSubmitConfig(viewName);
+        gotoAndSubmitConfig(viewName, wc);
         assertNotNull(rootAction.formData.get("list"));
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"existing one\"},{\"bool\":false,\"txt\":\"existing two\"}]",
                 rootAction.formData.get("list"));
     }
 
-    private void gotoAndSubmitConfig(final String viewName) throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/" + viewName);
+    private void gotoAndSubmitConfig(final String viewName, final JenkinsRule.WebClient wc) throws Exception {
+        HtmlPage p = wc.goTo("self/" + viewName);
         HtmlForm f = p.getFormByName("config");
         j.submit(f);
     }
@@ -261,13 +267,14 @@ public class RepeatableTest {
     // then converts back to original names when submitting form.
     @Test
     public void testRadio() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testRadio");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testRadio");
         HtmlForm f = p.getFormByName("config");
-        getHtmlButton(f, "Add", true).click();
-        f.getInputByValue("").setValueAttribute("txt one");
+        clickButton(wc, f, "Add", true);
+        f.getInputByValue("").setValue("txt one");
         f.getElementsByAttribute("INPUT", "type", "radio").get(1).click();
-        getHtmlButton(f, "Add", false).click();
-        f.getInputByValue("").setValueAttribute("txt two");
+        clickButton(wc, f, "Add", false);
+        f.getInputByValue("").setValue("txt two");
         f.getElementsByAttribute("INPUT", "type", "radio").get(3).click();
         j.submit(f);
         assertEqualsJsonArray("[{\"radio\":\"two\",\"txt\":\"txt one\"},"
@@ -289,10 +296,11 @@ public class RepeatableTest {
         rootAction.list.add(new FooRadio("1", "one"));
         rootAction.list.add(new FooRadio("2", "two"));
         rootAction.list.add(new FooRadio("three", "one"));
-        HtmlPage p = j.createWebClient().goTo("self/testRadio");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testRadio");
         HtmlForm f = p.getFormByName("config");
-        getHtmlButton(f, "Add", false).click();
-        f.getInputByValue("").setValueAttribute("txt 4");
+        clickButton(wc, f, "Add", false);
+        f.getInputByValue("").setValue("txt 4");
         f.getElementsByAttribute("INPUT", "type", "radio").get(7).click();
         j.submit(f);
         assertEqualsJsonArray("[{\"radio\":\"one\",\"txt\":\"1\"},{\"radio\":\"two\",\"txt\":\"2\"},"
@@ -304,17 +312,18 @@ public class RepeatableTest {
     // then converts back to original names when submitting form.
     @Test
     public void testRadioBlock() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testRadioBlock");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testRadioBlock");
         HtmlForm f = p.getFormByName("config");
-        getHtmlButton(f, "Add", true).click();
-        f.getInputByValue("").setValueAttribute("txt one");
-        f.getInputByValue("").setValueAttribute("avalue do not send");
+        clickButton(wc, f, "Add", true);
+        f.getInputByValue("").setValue("txt one");
+        f.getInputByValue("").setValue("avalue do not send");
         f.getElementsByAttribute("INPUT", "type", "radio").get(1).click();
-        f.getInputByValue("").setValueAttribute("bvalue");
-        getHtmlButton(f, "Add", false).click();
-        f.getInputByValue("").setValueAttribute("txt two");
+        f.getInputByValue("").setValue("bvalue");
+        clickButton(wc, f, "Add", false);
+        f.getInputByValue("").setValue("txt two");
         f.getElementsByAttribute("INPUT", "type", "radio").get(2).click();
-        f.getInputByValue("").setValueAttribute("avalue two");
+        f.getInputByValue("").setValue("avalue two");
         j.submit(f);
         assertEqualsJsonArray("[{\"radio\":{\"b\":\"bvalue\",\"value\":\"two\"},\"txt\":\"txt one\"},"
                      + "{\"radio\":{\"a\":\"avalue two\",\"value\":\"one\"},\"txt\":\"txt two\"}]",
@@ -380,18 +389,17 @@ public class RepeatableTest {
 
     @Test
     public void testDropdownList() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testDropdownList");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testDropdownList");
         HtmlForm f = p.getFormByName("config");
-        getHtmlButton(f, "Add", true).click();
-        waitForJavaScript(p);
-        f.getInputByValue("").setValueAttribute("17"); // seeds
-        f.getInputByValue("").setValueAttribute("pie"); // word
-        getHtmlButton(f, "Add", false).click();
-        waitForJavaScript(p);
+        clickButton(wc, f, "Add", true);
+        f.getInputByValue("").setValue("17"); // seeds
+        f.getInputByValue("").setValue("pie"); // word
+        clickButton(wc, f, "Add", false);
         // select banana in 2nd select element:
         ((HtmlSelect) f.getElementsByTagName("select").get(1)).getOption(1).click();
         f.getInputsByName("yellow").get(1).click(); // checkbox
-        f.getInputsByValue("").get(1).setValueAttribute("split"); // word
+        f.getInputsByValue("").get(1).setValue("split"); // word
         String xml = f.asXml();
         rootAction.bindClass = Fruity.class;
         j.submit(f);
@@ -424,20 +432,22 @@ public class RepeatableTest {
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
     @Test
     public void testNested() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNested");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testNested");
         HtmlForm f = p.getFormByName("config");
         try {
-            clickButton(p, f, "Add", true);
-            f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p, f, "Add Foo", true);
-            f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p, f, "Add Foo", false);
-            f.getInputByValue("").setValueAttribute("txt two");
+            clickButton(wc, f, "Add", true);
+            f.getInputByValue("").setValue("title one");
+            clickButton(wc, f, "Add Foo", true);
+            f.getInputByValue("").setValue("txt one");
+            clickButton(wc, f, "Add Foo", false);
+            f.getInputByValue("").setValue("txt two");
             f.getInputsByName("bool").get(1).click();
-            clickButton(p, f, "Add", false);
-            f.getInputByValue("").setValueAttribute("title two");
+            clickButton(wc, f, "Add", false);
+            f.getInputByValue("").setValue("title two");
             f.getElementsByTagName("button").get(1).click(); // 2nd "Add Foo" button
-            f.getInputByValue("").setValueAttribute("txt 2.1");
+            WebClientUtil.waitForJSExec(wc);
+            f.getInputByValue("").setValue("txt 2.1");
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
@@ -451,20 +461,22 @@ public class RepeatableTest {
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
     @Test
     public void testNestedEnabledTopButton() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNestedTopButton");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testNestedTopButton");
         HtmlForm f = p.getFormByName("config");
         try {
-            clickButton(p, f, "Add", true);
-            f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p, f, "Add Foo", true);
-            f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p, f, "Add Foo", false);
-            f.getInputByValue("").setValueAttribute("txt two");
+            clickButton(wc, f, "Add", true);
+            f.getInputByValue("").setValue("title one");
+            clickButton(wc, f, "Add Foo", true);
+            f.getInputByValue("").setValue("txt one");
+            clickButton(wc, f, "Add Foo", false);
+            f.getInputByValue("").setValue("txt two");
             f.getInputsByName("bool").get(1).click();
-            clickButton(p, f, "Add", false);
-            f.getInputByValue("").setValueAttribute("title two");
+            clickButton(wc, f, "Add", false);
+            f.getInputByValue("").setValue("title two");
             f.getElementsByTagName("button").get(3).click(); // 2nd "Add Foo" button
-            f.getInputByValue("").setValueAttribute("txt 2.1");
+            WebClientUtil.waitForJSExec(wc);
+            f.getInputByValue("").setValue("txt 2.1");
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
@@ -478,20 +490,22 @@ public class RepeatableTest {
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
     @Test
     public void testNestedEnabledTopButtonInner() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNestedTopButtonInner");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testNestedTopButtonInner");
         HtmlForm f = p.getFormByName("config");
         try {
-            clickButton(p, f, "Add", true);
-            f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p, f, "Add Foo", true);
-            f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p, f, "Add Foo", false);
-            f.getInputByValue("").setValueAttribute("txt two");
+            clickButton(wc, f, "Add", true);
+            f.getInputByValue("").setValue("title one");
+            clickButton(wc, f, "Add Foo", true);
+            f.getInputByValue("").setValue("txt one");
+            clickButton(wc, f, "Add Foo", false);
+            f.getInputByValue("").setValue("txt two");
             f.getInputsByName("bool").get(1).click();
-            clickButton(p, f, "Add", false);
-            f.getInputByValue("").setValueAttribute("title two");
+            clickButton(wc, f, "Add", false);
+            f.getInputByValue("").setValue("title two");
             f.getElementsByTagName("button").get(2).click(); // 2nd "Add Foo" button
-            f.getInputByValue("").setValueAttribute("txt 2.1");
+            WebClientUtil.waitForJSExec(wc);
+            f.getInputByValue("").setValue("txt 2.1");
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
@@ -505,20 +519,22 @@ public class RepeatableTest {
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
     @Test
     public void testNestedEnabledTopButtonOuter() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNestedTopButtonOuter");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testNestedTopButtonOuter");
         HtmlForm f = p.getFormByName("config");
         try {
-            clickButton(p, f, "Add", true);
-            f.getInputByValue("").setValueAttribute("title one");
-            clickButton(p, f, "Add Foo", true);
-            f.getInputByValue("").setValueAttribute("txt one");
-            clickButton(p, f, "Add Foo", false);
-            f.getInputByValue("").setValueAttribute("txt two");
+            clickButton(wc, f, "Add", true);
+            f.getInputByValue("").setValue("title one");
+            clickButton(wc, f, "Add Foo", true);
+            f.getInputByValue("").setValue("txt one");
+            clickButton(wc, f, "Add Foo", false);
+            f.getInputByValue("").setValue("txt two");
             f.getInputsByName("bool").get(1).click();
-            clickButton(p, f, "Add", false);
-            f.getInputByValue("").setValueAttribute("title two");
+            clickButton(wc, f, "Add", false);
+            f.getInputByValue("").setValue("title two");
             f.getElementsByTagName("button").get(2).click(); // 2nd "Add Foo" button
-            f.getInputByValue("").setValueAttribute("txt 2.1");
+            WebClientUtil.waitForJSExec(wc);
+            f.getInputByValue("").setValue("txt 2.1");
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
@@ -529,28 +545,29 @@ public class RepeatableTest {
                      + "FooList:title two:[foo:txt 2.1:false]]", rootAction.bindResult.toString());
     }
 
-    private void clickButton(HtmlPage p, HtmlForm f, String caption, boolean isTopButton) throws IOException {
+    private static void clickButton(JenkinsRule.WebClient wc, HtmlForm f, String caption, boolean isTopButton) throws IOException {
         getHtmlButton(f, caption, isTopButton).click();
-        waitForJavaScript(p);
+        WebClientUtil.waitForJSExec(wc);
     }
 
     @Test
     public void testNestedRadio() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNestedRadio");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testNestedRadio");
         HtmlForm f = p.getFormByName("config");
         try {
-            clickButton(p, f, "Add", true);
+            clickButton(wc, f, "Add", true);
             f.getElementsByAttribute("input", "type", "radio").get(1).click(); // outer=two
-            clickButton(p, f, "Add Moo", true);
+            clickButton(wc, f, "Add Moo", true);
             f.getElementsByAttribute("input", "type", "radio").get(2).click(); // inner=inone
-            clickButton(p, f, "Add", false);
+            clickButton(wc, f, "Add", false);
             f.getElementsByAttribute("input", "type", "radio").get(4).click(); // outer=one
             Thread.sleep(500);
             f.getElementsByTagName("button").get(1).click(); // 2nd "Add Moo" button
-            waitForJavaScript(p);
+            WebClientUtil.waitForJSExec(wc);
             f.getElementsByAttribute("input", "type", "radio").get(7).click(); // inner=intwo
             f.getElementsByTagName("button").get(1).click();
-            waitForJavaScript(p);
+            WebClientUtil.waitForJSExec(wc);
             f.getElementsByAttribute("input", "type", "radio").get(8).click(); // inner=inone
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
@@ -564,21 +581,22 @@ public class RepeatableTest {
 
     @Test
     public void testNestedRadioEnabledTopButton() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNestedRadioTopButton");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage p = wc.goTo("self/testNestedRadioTopButton");
         HtmlForm f = p.getFormByName("config");
         try {
-            clickButton(p, f, "Add", true);
+            clickButton(wc, f, "Add", true);
             f.getElementsByAttribute("input", "type", "radio").get(1).click(); // outer=two
-            clickButton(p, f, "Add Moo", true);
+            clickButton(wc, f, "Add Moo", true);
             f.getElementsByAttribute("input", "type", "radio").get(2).click(); // inner=inone
-            clickButton(p, f, "Add", false);
+            clickButton(wc, f, "Add", false);
             f.getElementsByAttribute("input", "type", "radio").get(4).click(); // outer=one
             Thread.sleep(500);
             f.getElementsByTagName("button").get(3).click(); // 2nd "Add Moo" button
-            waitForJavaScript(p);
+            WebClientUtil.waitForJSExec(wc);
             f.getElementsByAttribute("input", "type", "radio").get(7).click(); // inner=intwo
             f.getElementsByTagName("button").get(4).click();
-            waitForJavaScript(p);
+            WebClientUtil.waitForJSExec(wc);
             f.getElementsByAttribute("input", "type", "radio").get(8).click(); // inner=inone
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
@@ -595,19 +613,6 @@ public class RepeatableTest {
     }
 
     /**
-     * YUI internally partially relies on setTimeout/setInterval when we add a new chunk of HTML
-     * to the page. So wait for the completion of it.
-     *
-     * <p>
-     * To see where such asynchronous activity is happening, set a breakpoint to
-     * {@link JavaScriptJobManagerImpl#addJob(JavaScriptJob, Page)} and look at the call stack.
-     * Also see {@link #jsDebugger} at that time to see the JavaScript callstack.
-     */
-    private void waitForJavaScript(HtmlPage p) {
-        p.getEnclosingWindow().getJobManager().waitForJobsStartingBefore(500);
-    }
-
-    /**
      * Get one of HTML button from a form
      *
      * @param form form element
@@ -618,7 +623,7 @@ public class RepeatableTest {
      * if there is only one button, it will be returned
      * @return HTMLButton - one of Add buttons
      */
-    private HtmlButton getHtmlButton(HtmlForm form, String buttonCaption, boolean isTopButton) {
+    private static HtmlButton getHtmlButton(HtmlForm form, String buttonCaption, boolean isTopButton) {
         List<?> buttons = getButtonsList(form, buttonCaption);
         if (buttons.size() == 1) {
             return (HtmlButton) buttons.get(0);
@@ -632,9 +637,9 @@ public class RepeatableTest {
      * @param buttonCaption button caption you are looking for
      * @return list of buttons
      */
-    private List<?> getButtonsList(HtmlForm form, String buttonCaption) {
+    private static List<?> getButtonsList(HtmlForm form, String buttonCaption) {
         return form.getByXPath(
-                String.format("//button[text() = '%s'] | //button[@title = '%s']", buttonCaption, buttonCaption
+                String.format("//button[text() = '%s'] | //button[@tooltip = '%s']", buttonCaption, buttonCaption, buttonCaption
                 )
         );
     }
@@ -653,7 +658,7 @@ public class RepeatableTest {
             return Jenkins.get().getDescriptorList(Fruit.class);
         }
 
-        public void doSubmitTest(StaplerRequest req) throws Exception {
+        public void doSubmitTest(StaplerRequest2 req) throws Exception {
             formData = req.getSubmittedForm();
             if (bindClass != null) {
                 bindResult = req.bindJSONToList(bindClass, formData.get("items"));

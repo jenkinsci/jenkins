@@ -32,6 +32,7 @@ import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.Kernel32;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -43,7 +44,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * {@link Lifecycle} for Hudson installed as Windows service.

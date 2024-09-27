@@ -15,8 +15,6 @@
 *.json          text
 *.jelly         text
 *.jellytag      text
-# JENKINS-68887: postcss-less fails to properly parse .less files with Windows line breaks
-*.less          text eol=lf
 *.properties    text
 *.rb            text
 *.sh            text

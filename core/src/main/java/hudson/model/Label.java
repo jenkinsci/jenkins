@@ -26,7 +26,6 @@ package hudson.model;
 
 import static hudson.Util.fixNull;
 
-import antlr.ANTLRException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -56,7 +55,6 @@ import hudson.slaves.NodeProvisioner;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -68,10 +66,13 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.util.antlr.JenkinsANTLRErrorListener;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -453,7 +454,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public abstract <V, P> V accept(LabelVisitor<V, P> visitor, P param);
 
     /**
-     * Lists up all the atoms contained in in this label.
+     * Lists all the atoms contained in this label.
      *
      * @since 1.420
      */
@@ -547,7 +548,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     @Override
-    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         ContextMenu menu = new ContextMenu();
         for (Node node : getNodes()) {
             menu.add(node);
@@ -590,11 +591,17 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public static Set<LabelAtom> parse(@CheckForNull String labels) {
         final Set<LabelAtom> r = new TreeSet<>();
         labels = fixNull(labels);
-        if (labels.length() > 0) {
-            final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
-            while (tokenizer.hasMoreTokens())
-                r.add(Jenkins.get().getLabelAtom(tokenizer.nextToken()));
+        if (!labels.isEmpty()) {
+            Jenkins j = Jenkins.get();
+            LabelAtom labelAtom = j.tryGetLabelAtom(labels);
+            if (labelAtom == null) {
+                final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
+                while (tokenizer.hasMoreTokens())
+                    r.add(j.getLabelAtom(tokenizer.nextToken()));
+            } else {
+                r.add(labelAtom);
             }
+        }
         return r;
     }
 
@@ -610,10 +617,18 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Parses the expression into a label expression tree.
      *
      * TODO: replace this with a real parser later
+     *
+     * @param labelExpression the label expression to be parsed
+     * @throws IllegalArgumentException if the label expression cannot be parsed
      */
-    public static Label parseExpression(@NonNull String labelExpression) throws ANTLRException {
-        LabelExpressionLexer lexer = new LabelExpressionLexer(new StringReader(labelExpression));
-        return new LabelExpressionParser(lexer).expr();
+    public static Label parseExpression(@NonNull String labelExpression) {
+        LabelExpressionLexer lexer = new LabelExpressionLexer(CharStreams.fromString(labelExpression));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(new JenkinsANTLRErrorListener());
+        LabelExpressionParser parser = new LabelExpressionParser(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(new JenkinsANTLRErrorListener());
+        return parser.expr().l;
     }
 
     /**

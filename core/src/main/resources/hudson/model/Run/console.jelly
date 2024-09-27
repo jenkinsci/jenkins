@@ -28,11 +28,28 @@ THE SOFTWARE.
   Displays the console output
 -->
 <?jelly escape-by-default='true'?>
-<st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout title="${it.fullDisplayName} Console">
     <st:include page="sidepanel.jelly" />
+
+    <l:breadcrumb title="${%Console Output}" />
+
     <l:main-panel>
-      <t:buildCaption>${%Console Output}</t:buildCaption>
+      <j:set var="controls">
+        <a class="jenkins-button" href="consoleText" download="${it.displayName}.txt">
+          <l:icon src="symbol-download" />
+          ${%Download}
+        </a>
+        <l:copyButton ref="out" label="${%Copy}" />
+        <a class="jenkins-button" href="consoleText">
+          ${%View as plain text}
+        </a>
+      </j:set>
+
+      <t:buildCaption controls="${controls}">
+        ${%Console Output}
+      </t:buildCaption>
+
       <j:set var="threshold" value="${h.getSystemProperty('hudson.consoleTailKB')?:'150'}" />
       <!-- Show at most last 150KB (can override with system property) unless consoleFull is set -->
       <j:set var="offset" value="${empty(consoleFull) ? it.logText.length()-threshold*1024 : 0}" />
@@ -59,7 +76,7 @@ THE SOFTWARE.
         </j:when>
         <!-- output is completed now. -->
         <j:otherwise>
-          <pre class="console-output">
+          <pre class="console-output" id="out">
             <st:getOutput var="output" />
             <j:whitespace>${it.writeLogTo(offset,output)}</j:whitespace>
           </pre>
@@ -67,4 +84,4 @@ THE SOFTWARE.
       </j:choose>
     </l:main-panel>
   </l:layout>
-</st:compress>
+</j:jelly>

@@ -24,8 +24,8 @@
 
 package jenkins.model;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
@@ -52,17 +52,17 @@ public class GlobalSCMRetryCountConfigurationTest {
                     GlobalConfiguration.all().getDynamic("jenkins.model.GlobalSCMRetryCountConfiguration");
 
             json.element("scmCheckoutRetryCount", 5);
-            gc.configure(Stapler.getCurrentRequest(), json);
+            gc.configure(Stapler.getCurrentRequest2(), json);
             assertThat("Wrong value, it should be equal to 5",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(5));
 
             json.element("scmCheckoutRetryCount", 3);
-            gc.configure(Stapler.getCurrentRequest(), json);
+            gc.configure(Stapler.getCurrentRequest2(), json);
             assertThat("Wrong value, it should be equal to 3",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(3));
 
             JSONObject emptyJson = new JSONObject();
-            gc.configure(Stapler.getCurrentRequest(), emptyJson);
+            gc.configure(Stapler.getCurrentRequest2(), emptyJson);
         } catch (Descriptor.FormException e) {
             assertThat("Scm Retry count value changed! This shouldn't happen.",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(3));

@@ -24,16 +24,17 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <l:layout permission="${app.ADMINISTER}" title="${%Users}">
-    <st:include page="sidepanel.jelly" />
+  <l:layout permission="${app.ADMINISTER}" title="${%Users}" type="one-column">
     <l:main-panel>
-      <div class="jenkins-app-bar">
-        <div class="jenkins-app-bar__content">
-          <h1>
-            ${%Users}
-          </h1>
-        </div>
-      </div>
+      <l:app-bar title="${%Users}" subtitle="${it.allUsers.size()}">
+        <l:isAdmin>
+          <a href="addUser" class="jenkins-button jenkins-button--primary">
+            <l:icon src="symbol-add" />
+            ${%Create User}
+          </a>
+        </l:isAdmin>
+      </l:app-bar>
+
       <p class="jenkins-description">${%blurb}</p>
 
       <table class="jenkins-table sortable" id="people">
@@ -62,7 +63,7 @@ THE SOFTWARE.
               </td>
               <td>
                 <div class="jenkins-table__cell__button-wrapper">
-                  <a href="${user.url}/configure" class="jenkins-table__button">
+                  <a href="${user.url}/" class="jenkins-button jenkins-button--tertiary">
                     <l:icon src="symbol-settings" />
                   </a>
                 </div>
@@ -70,9 +71,10 @@ THE SOFTWARE.
               <td>
                 <j:if test="${user.canDelete()}">
                   <div class="jenkins-table__cell__button-wrapper">
-                    <a href="${user.url}/delete" class="jenkins-table__button jenkins-!-destructive-color">
+                    <l:confirmationLink href="${user.url}/doDelete" class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
+                                        post="true" message="${%delete.user(user.displayName)}">
                       <l:icon src="symbol-trash" />
-                    </a>
+                    </l:confirmationLink>
                   </div>
                 </j:if>
               </td>

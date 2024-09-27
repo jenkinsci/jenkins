@@ -23,126 +23,127 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:x="jelly:xml" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler">
   <l:view xmlns:l="/lib/layout" contentType="text/html;charset=UTF-8">
-  <!-- deactivate all caching -->
-  <st:setHeader name="Expires" value="0" />
-  <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
-  <!-- needed for cli -->
-  <j:if test="${request.servletPath=='/' || request.servletPath==''}">
-    ${h.advertiseHeaders(response)}
-    <j:forEach var="pd" items="${h.pageDecorators}">
-      <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
-    </j:forEach>
-  </j:if>
-  <!--
-    needed to generate a session if non exists,
-    without it we would add ";jsessionid=" to the url which will result in a 404
-  -->
-  <j:set var="_" value="${request.getSession()}"/>
-  <!-- get default/common page variable -->
-  ${h.initPageVariables(context)}
-  <x:doctype name="html" />
-  <!-- needed for the redirect after login -->
-  <j:set var="from" value="${error ? request.session.getAttribute('from') : request.getParameter('from')}"/>
-  <!-- in case of error we want to surround the form elements with an error hint -->
-  <j:set var="inputClass" value="${error ? 'danger' : 'normal'}"/>
-  <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
-  <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
-  <!-- real deal starting here -->
-  <html lang="${request.getLocale().toLanguageTag()}">
-    <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
-      <title>${%signIn} [Jenkins]</title>
-      <!-- we do not want bots on this page -->
-      <meta name="ROBOTS" content="NOFOLLOW" />
-      <!-- mobile friendly layout -->
-      <meta name="viewport" content="width=device-width, initial-scale=1"/>
-      <!-- css styling, will fallback to default implementation -->
-      <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
-    </head>
-    <body>
-      <j:choose>
-        <j:when test="${it.setupWizard.isUsingSecurityToken()}">
-          <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
-        </j:when>
-        <j:otherwise>
-          <div class="simple-page" role="main">
-            <div class="modal login">
-              <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true"/>
-              <!-- login form -->
-              <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post">
-                <j:if test="${it.securityRealm.allowsSignup()}">
-                  <p class="signupTag simple-page--description">
-                    ${%signUp}
-                  </p>
-                </j:if>
-                <j:if test="${error}">
-                  <div class="alert alert-danger">
-                    ${%Invalid username or password}
-                  </div>
-                </j:if>
-                <div class="jenkins-form-item jenkins-form-item--tight">
-                  <input
-                    aria-label="${%Username}"
-                    class="jenkins-input ${inputClass}"
-                    type="text"
-                    name="j_username"
-                    id="j_username"
-                    autocorrect="off"
-                    autocomplete="off"
-                    autocapitalize="off"
-                    autofocus="autofocus"
-                    placeholder="${%Username}"
-                  />
-                </div>
-                <div class="jenkins-form-item jenkins-form-item--tight">
-                  <input
-                    aria-label="${%Password}"
-                    class="jenkins-input ${inputClass}"
-                    type="password"
-                    name="j_password"
-                    placeholder="${%Password}"
-                  />
-                </div>
+    <!-- deactivate all caching -->
+    <st:setHeader name="Expires" value="0" />
+    <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
+    <!-- needed for cli -->
+    <j:if test="${request.servletPath=='/' || request.servletPath==''}">
+      ${h.advertiseHeaders(response)}
+      <j:forEach var="pd" items="${h.pageDecorators}">
+        <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
+      </j:forEach>
+    </j:if>
+    <!--
+      needed to generate a session if non exists,
+      without it we would add ";jsessionid=" to the url which will result in a 404
+    -->
+    <j:set var="_" value="${request.getSession()}"/>
+    <!-- get default/common page variable -->
+    ${h.initPageVariables(context)}
+    <x:doctype name="html" />
+    <!-- needed for the redirect after login -->
+    <j:set var="from" value="${error ? request.session.getAttribute('from') : request.getParameter('from')}"/>
+    <!-- in case of error we want to surround the form elements with an error hint -->
+    <j:set var="inputClass" value="${error ? 'jenkins-input--error' : ''}"/>
+    <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
+    <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
 
-                <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
-                  <!-- remember me service only available for Spring Security -->
-                  <div class="jenkins-checkbox jenkins-form-item jenkins-form-item--tight jenkins-!-margin-bottom-3">
-                    <input
-                      type="checkbox"
-                      id="remember_me"
-                      name="remember_me"
+    <!-- real deal starting here -->
+    <html lang="${request.getLocale().toLanguageTag()}">
+      <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
+        <title>${%signIn} [Jenkins]</title>
+        <!-- we do not want bots on this page -->
+        <meta name="ROBOTS" content="NOFOLLOW" />
+        <!-- mobile friendly layout -->
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <!-- css styling, will fallback to default implementation -->
+        <st:include it="${simpleDecorator}" page="simple-head.jelly" />
+      </head>
+      <body class="app-sign-in-register">
+        <j:choose>
+          <j:when test="${it.setupWizard.isUsingSecurityToken()}">
+            <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
+          </j:when>
+          <j:otherwise>
+            <st:include it="${simpleDecorator}" page="simple-branding.jelly" />
+            <main id="main-panel" class="app-sign-in-register__content">
+              <div class="app-sign-in-register__content-inner">
+                <h1>${%Sign in to Jenkins}</h1>
+
+                <st:include it="${simpleDecorator}" page="simple-header.jelly" />
+
+                <form name="login" action="${it.securityRealm.authenticationGatewayUrl}"
+                    method="post">
+                  <j:if test="${error}">
+                    <div class="app-sign-in-register__error">
+                      ${%Invalid username or password}
+                    </div>
+                  </j:if>
+                  <div>
+                    <label class="app-sign-in-register__form-label" for="j_username">${%Username}
+                    </label>
+                    <input class="jenkins-input ${inputClass}"
+                         type="text"
+                         name="j_username"
+                         id="j_username"
+                         autocorrect="off"
+                         autocomplete="off"
+                         autocapitalize="off"
+                         autofocus="autofocus"
                     />
-                    <label for="remember_me">${%Keep me signed in}</label>
                   </div>
-                </j:if>
-                <input type="hidden" name="from" value="${from}" />
-                <div class="submit">
+                  <div>
+                    <label class="app-sign-in-register__form-label" for="j_password">
+                      ${%Password}
+                    </label>
+                    <input id="j_password"
+                         class="jenkins-input ${inputClass}"
+                         type="password"
+                         name="j_password"
+                    />
+                  </div>
+
+                  <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
+                    <!-- remember me service only available for Spring Security -->
+                    <div class="jenkins-checkbox">
+                      <input type="checkbox"
+                           id="remember_me"
+                           name="remember_me"
+                      />
+                      <label for="remember_me">${%Keep me signed in}</label>
+                    </div>
+                  </j:if>
+                  <input type="hidden" name="from" value="${from}"/>
                   <button type="submit"
-                         name="Submit"
-                         class="jenkins-button jenkins-button--primary">
+                      name="Submit"
+                      class="jenkins-button jenkins-button--primary">
                     ${%signIn}
                   </button>
-                </div>
-              </form>
+                  <j:if test="${it.securityRealm.allowsSignup()}">
+                    <div class="app-sign-in-register__switcher">
+                      <a href="signup">${%or register}</a>
+                    </div>
+                  </j:if>
+                </form>
 
-              <j:forEach var="fls" items="${it.getFederatedLoginServices()}">
-                <div>
-                  <st:include page="loginFragment.jelly" it="${fls}"/>
-                </div>
-              </j:forEach>
-
-              <div class="footer">
-                <j:forEach var="decorator" items="${simpleDecorators}">
-                  <st:include it="${decorator}" page="simple-footer.jelly" optional="true"/>
+                <j:forEach var="fls" items="${it.getFederatedLoginServices()}">
+                  <div>
+                    <st:include page="loginFragment.jelly" it="${fls}"/>
+                  </div>
                 </j:forEach>
-              </div>
 
-            </div>
-          </div>
-        </j:otherwise>
-      </j:choose>
-    </body>
-  </html>
+                <div class="footer">
+                  <j:forEach var="decorator" items="${simpleDecorators}">
+                    <st:include it="${decorator}" page="simple-footer.jelly" optional="true"/>
+                  </j:forEach>
+                </div>
+              </div>
+            </main>
+          </j:otherwise>
+        </j:choose>
+      </body>
+    </html>
   </l:view>
 </j:jelly>

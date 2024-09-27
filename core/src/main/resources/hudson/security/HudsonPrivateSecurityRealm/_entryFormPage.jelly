@@ -29,9 +29,10 @@ THE SOFTWARE.
     <st:attribute name="host" use="required" type="hudson.security.HudsonPrivateSecurityRealm">
       Corresponds to the "it" of Jelly, meaning the context where the page is loaded.
     </st:attribute>
-    <st:attribute name="title" use="required">
+    <st:attribute name="title" use="required"> <![CDATA[
       Title of the HTML page. 
-      Rendered into &lt;title> tag, in the page content inside a &lt;h1> and as the label of the submit button.
+      Rendered into <title> tag, in the page content inside a <h1> and as the label of the submit button.
+      ]]>
     </st:attribute>
     <st:attribute name="action" use="required">
       The method to call from within the HudsonPrivateSecurityRealm.
@@ -43,15 +44,14 @@ THE SOFTWARE.
       The wrapper for the data provided by the user and the error message(s) if any. Is null on first form display.
     </st:attribute>
   </st:documentation>
-  <l:layout title="${title}">
-    <st:adjunct includes="hudson.security.HudsonPrivateSecurityRealm._entryFormPage.resources" />
-    <l:hasPermission permission="${app.READ}" it="${host}">
-      <st:include page="sidepanel.jelly" it="${host}" />
-    </l:hasPermission>
+  <l:layout title="${title}" type="one-column">
+    <l:breadcrumb title="${title}"/>
     <l:main-panel>
-      <form action="${rootURL}/securityRealm/${action}" method="post">
+      <form action="${rootURL}/securityRealm/${action}" method="post" class="jenkins-form jenkins-form-item--small jenkins-!-margin-auto">
         <local:_entryForm title="${title}" action="${action}" captcha="${captcha}" it="${host}" data="${data}" />
-        <f:submit value="${title}" />
+        <f:bottomButtonBar>
+          <f:submit value="${title}" />
+        </f:bottomButtonBar>
       </form>
     </l:main-panel>
   </l:layout>

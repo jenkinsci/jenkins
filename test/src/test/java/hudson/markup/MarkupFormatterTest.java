@@ -29,16 +29,16 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.AuthorizationStrategy.Unsecured;
 import hudson.security.HudsonPrivateSecurityRealm;
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URL;
+import java.net.URI;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -104,7 +104,7 @@ public class MarkupFormatterTest {
     @Issue("SECURITY-2153")
     public void security2153SetsCSP() throws Exception {
         final JenkinsRule.WebClient wc = j.createWebClient();
-        final Page htmlPage = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.jenkins.getRootUrl() + "/markupFormatter/previewDescription?text=lolwut"), HttpMethod.POST)));
+        final Page htmlPage = wc.getPage(wc.addCrumb(new WebRequest(new URI(j.jenkins.getRootUrl() + "/markupFormatter/previewDescription?text=lolwut").toURL(), HttpMethod.POST)));
         final WebResponse response = htmlPage.getWebResponse();
         assertEquals(200, response.getStatusCode());
         assertThat(response.getContentAsString(), containsString("lolwut"));

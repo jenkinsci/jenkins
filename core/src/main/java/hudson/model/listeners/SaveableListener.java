@@ -80,8 +80,6 @@ public abstract class SaveableListener implements ExtensionPoint {
         for (SaveableListener l : all()) {
             try {
                 l.onChange(o, file);
-            } catch (ThreadDeath t) {
-                throw t;
             } catch (Throwable t) {
                 Logger.getLogger(SaveableListener.class.getName()).log(Level.WARNING, null, t);
             }

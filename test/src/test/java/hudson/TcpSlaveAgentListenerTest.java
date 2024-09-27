@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.TextPage;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import jenkins.model.Jenkins;
+import org.htmlunit.Page;
+import org.htmlunit.TextPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -40,12 +40,12 @@ public class TcpSlaveAgentListenerTest {
         int p = r.jenkins.getTcpSlaveAgentListener().getPort();
         WebClient wc = r.createWebClient();
 
-        TextPage text = wc.getPage(new URL("http://localhost:" + p + "/"));
+        TextPage text = wc.getPage(new URI("http://localhost:" + p + "/").toURL());
         String c = text.getContent();
         assertThat(c, containsString(Jenkins.VERSION));
 
         wc.setThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.getPage(new URL("http://localhost:" + p + "/xxx"));
+        Page page = wc.getPage(new URI("http://localhost:" + p + "/xxx").toURL());
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, page.getWebResponse().getStatusCode());
     }
 }

@@ -76,7 +76,7 @@ public class JavaUtils {
      * @see System#getProperty(String)
      */
     public static String getCurrentRuntimeJavaVersion() {
-        // TODO: leverage Runtime.version() once on Java 9+
-        return System.getProperty("java.specification.version");
+        Runtime.Version runtimeVersion = Runtime.version();
+        return String.valueOf(runtimeVersion.version().get(0));
     }
 }

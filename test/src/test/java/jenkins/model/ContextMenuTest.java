@@ -55,11 +55,7 @@ public class ContextMenuTest {
     @Issue("JENKINS-19173")
     @Test public void contextMenuVisibility() throws Exception {
         final FreeStyleProject p = j.createFreeStyleProject("p");
-        Callable<ContextMenu> doContextMenu = new Callable<>() {
-            @Override public ContextMenu call() throws Exception {
-                return p.doContextMenu(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
-            }
-        };
+        Callable<ContextMenu> doContextMenu = () -> p.doContextMenu(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
         ActionFactory f = j.jenkins.getExtensionList(TransientProjectActionFactory.class).get(ActionFactory.class);
         f.visible = true;
         ContextMenu menu = j.executeOnServer(doContextMenu);

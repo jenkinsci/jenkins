@@ -26,32 +26,51 @@ THE SOFTWARE.
   List of available new plugins
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%Available Plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
-    <j:set var="page" value="available"/>
-
-    <l:app-bar title="${%Plugin Manager}" />
-
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
+  <l:layout title="${%Available plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
     <st:include page="sidepanel.jelly"/>
+    <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
     <l:main-panel>
+      <div class="jenkins-app-bar jenkins-app-bar--sticky">
+        <div class="jenkins-app-bar__content">
+          <l:search-bar clazz="jenkins-search--app-bar"
+                        placeholder="${%Search available plugins}"
+                        id="filter-box"
+                        autofocus="true"
+                        value="${request.getParameter('filter')}" />
+        </div>
+        <div class="jenkins-app-bar__controls">
+          <l:isAdmin>
+            <div class="jenkins-split-button">
+              <button id="button-install" form="form" type="submit" name="dynamicLoad" class="jenkins-button jenkins-button--primary">
+                <div class="jenkins-dropdown__item__icon">
+                  <l:icon src="symbol-download" />
+                </div>
+                ${%Install}
+              </button>
+              <l:overflowButton id="button-install-after-restart"
+                                icon="symbol-chevron-down"
+                                tooltip="${null}"
+                                clazz="jenkins-button--primary">
+                <dd:custom>
+                  <button form="form" type="submit" class="jenkins-dropdown__item">
+                    <div class="jenkins-dropdown__item__icon">
+                      <l:icon src="symbol-download" />
+                    </div>
+                    ${%Install after restart}
+                  </button>
+                </dd:custom>
+              </l:overflowButton>
+            </div>
+          </l:isAdmin>
+          <st:include page="check.jelly"/>
+        </div>
+      </div>
+
       <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript"/>
 
-      <form method="post" action="install">
-        <local:tabBar page="${page}" xmlns:local="/hudson/PluginManager"/>
-
-        <div class="jenkins-form-item jenkins-search">
-          <input
-            class="jenkins-search__input"
-            type="search"
-            id="filter-box"
-            value="${request.getParameter('filter')}"
-            placeholder="${%Search}"/>
-          <div class="jenkins-search__icon">
-            <l:icon src="symbol-search"/>
-          </div>
-        </div>
-
+      <form id="form" method="post" action="install">
         <table id="plugins" class="jenkins-table sortable"
                data-hasAdmin="${h.hasPermission(app.ADMINISTER)}">
           <thead>
@@ -63,26 +82,11 @@ THE SOFTWARE.
               </l:isAdmin>
               <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
-              <j:if test="${isUpdates}">
-                <th>${%Installed}</th>
-              </j:if>
             </tr>
           </thead>
           <tbody/>
         </table>
-
-        <div id="bottom-sticker">
-          <div class="bottom-sticker-inner">
-            <l:isAdmin>
-              <f:submit value="${%Install without restart}" name="dynamicLoad"/>
-              <span style="margin-left:2em;"></span>
-              <f:submit value="${%Download now and install after restart}"/>
-            </l:isAdmin>
-            <st:include page="check.jelly"/>
-          </div>
-        </div>
       </form>
-
     </l:main-panel>
   </l:layout>
 

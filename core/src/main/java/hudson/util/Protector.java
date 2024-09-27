@@ -35,7 +35,6 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -62,8 +61,10 @@ public class Protector {
             Cipher cipher = Secret.getCipher(ALGORITHM_MODE);
             cipher.init(Cipher.ENCRYPT_MODE, KEY, new IvParameterSpec(iv));
             final byte[] encrypted = cipher.doFinal((secret + MAGIC).getBytes(StandardCharsets.UTF_8));
-            final byte[] value = ArrayUtils.addAll(iv, encrypted);
-            return new String(Base64.getEncoder().encode(value), StandardCharsets.UTF_8);
+            byte[] result = new byte[iv.length + encrypted.length];
+            System.arraycopy(iv, 0, result, 0, iv.length);
+            System.arraycopy(encrypted, 0, result, iv.length, encrypted.length);
+            return new String(Base64.getEncoder().encode(result), StandardCharsets.UTF_8);
         } catch (GeneralSecurityException e) {
             throw new Error(e); // impossible
         }

@@ -25,17 +25,17 @@
 package jenkins.widgets;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.model.Queue;
 import hudson.model.Run;
+import jenkins.model.HistoricalBuild;
+import jenkins.model.queue.QueueItem;
 
 /**
  * Represents an entry used by the {@link HistoryPageFilter}.
  *
  * <p>
- * Wraps {@link Queue.Item} and {@link Run} instances from the build queue, normalizing
+ * Wraps {@link QueueItem} and {@link HistoricalBuild} instances from the build queue, normalizing
  * access to the info required for pagination.
- *
- *
+ * @param <T> typically {@link HistoricalBuild} or {@link QueueItem}
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class HistoryPageEntry<T> {
@@ -55,10 +55,9 @@ public class HistoryPageEntry<T> {
     }
 
     protected static long getEntryId(@NonNull Object entry) {
-        if (entry instanceof Queue.Item) {
-            return ((Queue.Item) entry).getId();
-        } else if (entry instanceof Run) {
-            Run run = (Run) entry;
+        if (entry instanceof QueueItem) {
+            return ((QueueItem) entry).getId();
+        } else if (entry instanceof HistoricalBuild run) {
             return Long.MIN_VALUE + run.getNumber();
         } else if (entry instanceof Number) {
             // Used for testing purposes because of JENKINS-30899 and JENKINS-30909

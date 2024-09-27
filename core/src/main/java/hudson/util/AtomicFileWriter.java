@@ -26,10 +26,13 @@ package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Functions;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.ref.Cleaner;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -55,8 +58,14 @@ public class AtomicFileWriter extends Writer {
 
     private static final Logger LOGGER = Logger.getLogger(AtomicFileWriter.class.getName());
 
+    private static final Cleaner CLEANER = Cleaner.create(
+            new NamingThreadFactory(new DaemonThreadFactory(), AtomicFileWriter.class.getName() + ".cleaner"));
+
     private static /* final */ boolean DISABLE_FORCED_FLUSH = SystemProperties.getBoolean(
             AtomicFileWriter.class.getName() + ".DISABLE_FORCED_FLUSH");
+
+    private static /* final */ boolean REQUIRES_DIR_FSYNC = SystemProperties.getBoolean(
+            AtomicFileWriter.class.getName() + ".REQUIRES_DIR_FSYNC", !Functions.isWindows());
 
     static {
         if (DISABLE_FORCED_FLUSH) {
@@ -64,7 +73,7 @@ public class AtomicFileWriter extends Writer {
         }
     }
 
-    private final Writer core;
+    private final FileChannelWriter core;
     private final Path tmpPath;
     private final Path destPath;
 
@@ -151,6 +160,8 @@ public class AtomicFileWriter extends Writer {
         }
 
         core = new FileChannelWriter(tmpPath, charset, integrityOnFlush, integrityOnClose, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+
+        CLEANER.register(this, new CleanupChecker(core, tmpPath, destPath));
     }
 
     @Override
@@ -185,7 +196,12 @@ public class AtomicFileWriter extends Writer {
      * the {@link #commit()} is called, to simplify coding.
      */
     public void abort() throws IOException {
-        closeAndDeleteTempFile();
+        // One way or another, the temporary file should be deleted.
+        try {
+            close();
+        } finally {
+            Files.deleteIfExists(tmpPath);
+        }
     }
 
     public void commit() throws IOException {
@@ -223,23 +239,46 @@ public class AtomicFileWriter extends Writer {
                 throw replaceFailed;
             }
         }
-    }
 
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            closeAndDeleteTempFile();
-        } finally {
-            super.finalize();
+        /*
+         * From fsync(2) on Linux:
+         *
+         *     Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also
+         *     reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.
+         */
+        if (!DISABLE_FORCED_FLUSH && REQUIRES_DIR_FSYNC) {
+            try (FileChannel parentChannel = FileChannel.open(destPath.getParent())) {
+                parentChannel.force(true);
+            }
         }
     }
 
-    private void closeAndDeleteTempFile() throws IOException {
-        // one way or the other, temporary file should be deleted.
-        try {
-            close();
-        } finally {
-            Files.deleteIfExists(tmpPath);
+    private static final class CleanupChecker implements Runnable {
+        private final FileChannelWriter core;
+        private final Path tmpPath;
+        private final Path destPath;
+
+        CleanupChecker(final FileChannelWriter core, final Path tmpPath, final Path destPath) {
+            this.core = core;
+            this.tmpPath = tmpPath;
+            this.destPath = destPath;
+        }
+
+        @Override
+        public void run() {
+            if (core.isOpen()) {
+                LOGGER.log(Level.WARNING, "AtomicFileWriter for " + destPath + " was not closed before being released");
+                try {
+                    core.close();
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to close " + tmpPath + " for destination file " + destPath, e);
+                }
+            }
+            try {
+                Files.deleteIfExists(tmpPath);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to delete temporary file " + tmpPath + " for destination file " + destPath, e);
+            }
         }
     }
 

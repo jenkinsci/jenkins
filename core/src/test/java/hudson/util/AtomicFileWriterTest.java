@@ -1,9 +1,9 @@
 package hudson.util;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -72,6 +73,11 @@ public class AtomicFileWriterTest {
         afw = new AtomicFileWriter(af.toPath(), Charset.defaultCharset());
     }
 
+    @After
+    public void tearDown() throws IOException {
+        afw.abort();
+    }
+
     @Test
     public void symlinkToDirectory() throws Exception {
         assumeFalse(Functions.isWindows());
@@ -83,7 +89,7 @@ public class AtomicFileWriterTest {
 
         final Path childFileInSymlinkToDir = Paths.get(zeSymlink.toString(), "childFileInSymlinkToDir");
 
-        new AtomicFileWriter(childFileInSymlinkToDir, StandardCharsets.UTF_8);
+        new AtomicFileWriter(childFileInSymlinkToDir, StandardCharsets.UTF_8).abort();
     }
 
     @Test

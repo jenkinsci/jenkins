@@ -27,10 +27,10 @@ THE SOFTWARE.
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
         <j:set var="escapeEntryTitleAndDescription" value="false"/>
-        <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
+        <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}" field="file">
 		<div name="parameter">
 			<input type="hidden" name="name" value="${it.name}" />
-			<input name="file" type="file" jsonAware="true" />
+			<f:file jsonAware="true" />
 		</div>
 	</f:entry>
 </j:jelly>

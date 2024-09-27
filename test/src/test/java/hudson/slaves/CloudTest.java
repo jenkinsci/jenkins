@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Action;
 import hudson.model.Computer;
@@ -22,13 +21,14 @@ import java.util.Collections;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
 import org.acegisecurity.acls.sid.Sid;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 
 public class CloudTest {
 
@@ -78,6 +78,13 @@ public class CloudTest {
         assertThat(out, containsString("doIndex called")); // doIndex
     }
 
+    @Test
+    public void cloudNameIsEncodedInGetUrl() {
+        ACloud aCloud = new ACloud("../../gibberish", "0");
+
+        assertEquals("Cloud name is encoded in Cloud#getUrl", "cloud/..%2F..%2Fgibberish/", aCloud.getUrl());
+    }
+
     public static final class ACloud extends AbstractCloudImpl {
 
         protected ACloud(String name, String instanceCapStr) {
@@ -120,7 +127,7 @@ public class CloudTest {
             return "task";
         }
 
-        public void doIndex(StaplerResponse rsp) throws IOException {
+        public void doIndex(StaplerResponse2 rsp) throws IOException {
             rsp.getOutputStream().println("doIndex called");
         }
     }

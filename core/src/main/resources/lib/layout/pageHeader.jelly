@@ -5,23 +5,23 @@
         This tag is used by l:layout and not expected to be used by anyone else,
         but it's written as separate tag for better readability of code.
 
-        <st:attribute name="title" required="true">
+        <st:attribute name="title" use="required">
             Page title and title attribute for the logo
         </st:attribute>
 
-        <st:attribute name="logoAlt" required="true">
+        <st:attribute name="logoAlt" use="required">
             Alt text for the logo
         </st:attribute>
 
-        <st:attribute name="searchPlaceholder" required="true">
+        <st:attribute name="searchPlaceholder" use="required">
             Placeholder text for the search input
         </st:attribute>
 
-        <st:attribute name="searchHelpUrl" required="true">
+        <st:attribute name="searchHelpUrl" use="required">
             Link value for the help icon on the search box
         </st:attribute>
 
-        <st:attribute name="logout" required="true">
+        <st:attribute name="logout" use="required">
             Text for the logout link
         </st:attribute>
     </st:documentation>

@@ -26,10 +26,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
   <st:documentation>
     Controls checkbox selections in tables
+    <st:attribute name="class" use="required">
+      Used for the queryselector to find the checkboxes that should change state when clicking
+      one of the available buttons.
+    </st:attribute>
   </st:documentation>
 
   <div class="jenkins-table__checkbox-container">
-    <button type="button" class="jenkins-table__checkbox">
+    <button type="button" class="jenkins-table__checkbox" data-checkbox-class="${attrs.class}">
       <l:icon src="symbol-check" class="jenkins-table__checkbox__all-symbol" />
       <l:icon src="symbol-indeterminate" class="jenkins-table__checkbox__indeterminate-symbol" />
     </button>
@@ -39,20 +43,20 @@ THE SOFTWARE.
     </j:set>
 
     <j:if test="${contents.length() != 0}">
-      <button type="button" class="jenkins-button jenkins-button--transparent jenkins-table__checkbox-options">
+      <button type="button" class="jenkins-button jenkins-button--tertiary jenkins-table__checkbox-options">
         <l:icon src="symbol-chevron-down" />
       </button>
 
       <div class="jenkins-table__checkbox-dropdown">
         <span>${%Select}</span>
-        <button type="button" data-select="all" class="jenkins-button jenkins-button--transparent">
+        <button type="button" data-select="all" class="jenkins-button jenkins-button--tertiary">
           <div class="jenkins-table__checkbox-dropdown__icon">
             <l:icon src="symbol-check" />
           </div>
           ${%All}
         </button>
         <j:out value="${contents}" />
-        <button type="button" data-select="none" class="jenkins-button jenkins-button--transparent">
+        <button type="button" data-select="none" class="jenkins-button jenkins-button--tertiary">
           <div class="jenkins-table__checkbox-dropdown__icon">
             <l:icon src="symbol-close" />
           </div>
@@ -61,6 +65,4 @@ THE SOFTWARE.
       </div>
     </j:if>
   </div>
-
-  <l:js src="jsbundles/components/row-selection-controller.js" />
 </j:jelly>

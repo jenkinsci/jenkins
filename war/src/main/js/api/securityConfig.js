@@ -21,7 +21,7 @@ function saveFirstUser($form, success, error) {
     },
     {
       error: error,
-    }
+    },
   );
 }
 
@@ -38,7 +38,7 @@ function saveConfigureInstance($form, success, error) {
     },
     {
       error: error,
-    }
+    },
   );
 }
 

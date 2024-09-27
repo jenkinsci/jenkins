@@ -43,7 +43,9 @@ import javax.servlet.http.HttpServletResponse;
  * Servlet {@link Filter} that chains multiple {@link Filter}s.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated use {@link ChainedServletFilter2}
  */
+@Deprecated
 public class ChainedServletFilter implements Filter {
     // array is assumed to be immutable once set
     protected volatile Filter[] filters;
@@ -74,7 +76,7 @@ public class ChainedServletFilter implements Filter {
             f.init(filterConfig);
     }
 
-    private static final Pattern UNINTERESTING_URIS = Pattern.compile("/(images|jsbundles|css|scripts|adjuncts)/|/favicon[.]ico|/ajax");
+    private static final Pattern UNINTERESTING_URIS = Pattern.compile("/(images|jsbundles|css|scripts|adjuncts)/|/favicon[.](ico|svg)|/ajax");
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, final FilterChain chain) throws IOException, ServletException {

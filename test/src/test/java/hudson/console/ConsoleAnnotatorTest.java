@@ -6,12 +6,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.TextPage;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.MarkupText;
@@ -35,6 +29,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
+import org.htmlunit.Page;
+import org.htmlunit.TextPage;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -76,7 +76,7 @@ public class ConsoleAnnotatorTest {
         // make sure raw console output doesn't include the garbage
         TextPage raw = (TextPage) r.createWebClient().goTo(b.getUrl() + "consoleText", "text/plain");
         System.out.println(raw.getContent());
-        String nl = System.getProperty("line.separator");
+        String nl = System.lineSeparator();
         assertTrue(raw.getContent().contains(nl + "---" + nl + "ooo" + nl + "ooo" + nl));
 
         // there should be two 'ooo's
@@ -96,7 +96,7 @@ public class ConsoleAnnotatorTest {
     }
 
     public static class DemoAnnotator extends ConsoleAnnotator<FreeStyleBuild> {
-        private static final String ANNOTATE_TEXT = "ooo" + System.getProperty("line.separator");
+        private static final String ANNOTATE_TEXT = "ooo" + System.lineSeparator();
 
         @Override
         public ConsoleAnnotator<FreeStyleBuild> annotate(FreeStyleBuild build, MarkupText text) {

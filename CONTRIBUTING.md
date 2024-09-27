@@ -9,13 +9,11 @@ This page provides information about contributing code to the Jenkins core codeb
 1. Fork the repository on GitHub
 2. Clone the forked repository to your machine
 3. Install the necessary development tools. In order to develop Jenkins, you need the following:
-   - Java Development Kit (JDK) 11 or 17.
+   - Java Development Kit (JDK) 17 or 21.
      In the Jenkins project we usually use [Eclipse Temurin](https://adoptium.net/) or [OpenJDK](https://openjdk.java.net/), but you can use other JDKs as well.
    - Apache Maven 3.8.1 or above. You can [download Maven here](https://maven.apache.org/download.cgi).
      In the Jenkins project we usually use the most recent Maven release.
    - Any IDE which supports importing Maven projects.
-   - Install [NodeJS 16.x](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
-     - Frontend tasks are run using [yarn](https://yarnpkg.com/). Run `npm install -g yarn` to install it.
 4. Set up your development environment as described in [Preparing for Plugin Development](https://www.jenkins.io/doc/developer/tutorial/prepare/)
 
 If you want to contribute to Jenkins, or just learn about the project,
@@ -27,6 +25,8 @@ You can find them by using this query (check the link) for [newbie friendly issu
 
 The Jenkins core build flow is built around Maven.
 You can read a description of the [building and debugging process here](https://www.jenkins.io/doc/developer/building/).
+
+### Building the WAR file
 
 If you want simply to build the `jenkins.war` file as fast as possible without tests, run:
 
@@ -40,13 +40,32 @@ If you want to debug the WAR file without using Maven plugins,
 You can run the executable with [Remote Debug Flags](https://stackoverflow.com/questions/975271/remote-debugging-a-java-application)
 and then attach IDE Debugger to it.
 
-To launch a development instance, after the above command, run:
+### Launching a development instance
+
+To launch a development instance, after [building the WAR file](#building-the-war-file), run:
 
 ```sh
-mvn -pl war jetty:run
+MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run
 ```
 
 (Beware that `maven-plugin` builds will not work in this mode, due to class loading conflicts.)
+
+### Running the Yarn frontend build
+
+> [!TIP]
+> If you already have Node.js installed, you do not need to change your path. Start using `yarn` by enabling [Corepack](https://yarnpkg.com/corepack) with `corepack enable`, if it isn't already; this will add the `yarn` binary to your PATH.
+
+To run the Yarn frontend build, after [building the WAR file](#building-the-war-file), add the downloaded versions of Node and Yarn to your path:
+
+```sh
+export PATH=$PWD/node:$PWD/node/yarn/dist/bin:$PATH
+```
+
+Then you can run Yarn with e.g.
+
+```sh
+yarn
+```
 
 ### Building frontend assets
 
@@ -55,13 +74,13 @@ To work on the `war` module frontend assets, two processes are needed at the sam
 On one terminal, start a development server that will not process frontend assets:
 
 ```sh
-mvn -pl war jetty:run -Dskip.yarn
+MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run -Dskip.yarn
 ```
 
-On another terminal, move to the war folder and start a [webpack](https://webpack.js.org/) dev server:
+Open another terminal and start a [webpack](https://webpack.js.org/) dev server, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build):
 
 ```sh
-cd war; yarn start
+yarn start
 ```
 
 ### Gitpod
@@ -73,6 +92,36 @@ You can use IntelliJ IDEA (preferred) or VS Code (alternate) in the browser.
 
 If you prefer using IntelliJ IDEA, you can setup Gitpod integration with JetBrains Gateway using the instructions on [gitpod.io](https://www.gitpod.io/docs/ides-and-editors/intellij),
 which will open the workspace in IntelliJ IDEA using JetBrains Gateway.
+
+### Linting
+
+For linting we use a number of tools:
+
+- [checkstyle](https://checkstyle.sourceforge.io/)
+- [eslint](https://eslint.org/)
+- [prettier](https://prettier.io/)
+- [spotless](https://github.com/diffplug/spotless)
+- [stylelint](https://stylelint.io/)
+
+These are all configured to run as part of the Maven build, although they will be skipped if you are building with the `quick-build` profile.
+
+To automatically fix backend issues, run:
+
+```sh
+mvn spotless:apply
+```
+
+To view frontend issues, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build), run:
+
+```sh
+yarn lint
+```
+
+To fix frontend issues, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build), run:
+
+```sh
+yarn lint:fix
+```
 
 ## Testing changes
 
@@ -91,14 +140,6 @@ There are 3 profiles for tests:
 In addition to the included tests, you can also find extra integration and UI
 tests in the [Acceptance Test Harness (ATH)](https://github.com/jenkinsci/acceptance-test-harness) repository.
 If you propose complex UI changes, you should create new ATH tests for them.
-
-### JavaScript unit tests
-
-In case there's only need to run the JS tests:
-
-```sh
-cd war; yarn test
-```
 
 ## Proposing Changes
 
@@ -185,6 +226,11 @@ Pending the merge and release of this patch, IntelliJ IDEA users should work aro
 2. Under "Pass to JUnit process [the] following `maven-surefire-plugin` and `maven-failsafe-plugin` settings", uncheck `argLine`.
 
 Failure to work around the problem as described above will result in a `could not open '{jenkins.addOpens}'` failure when running tests in IntelliJ IDEA.
+
+### Code formatting for frontend files
+
+Install the [Prettier plugin](https://www.jetbrains.com/help/idea/prettier.html).
+Follow the instructions on the above JetBrains page to configure it how you wish. 'On code reformatting' is a good option.
 
 ## Copyright
 

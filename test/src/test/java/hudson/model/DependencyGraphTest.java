@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.MailMessageIdAction;
 import java.util.Arrays;
@@ -128,9 +129,8 @@ public class DependencyGraphTest {
     public void testItemReadPermission() {
         // Rebuild dependency graph as anonymous user:
         j.jenkins.rebuildDependencyGraph();
-        try {
-            // Switch to full access to check results:
-            ACL.impersonate2(ACL.SYSTEM2);
+        // Switch to full access to check results:
+        try (ACLContext ignored = ACL.as2(ACL.SYSTEM2)) {
             // @LocalData for this test has jobs w/o anonymous Item.READ
             AbstractProject up = (AbstractProject) j.jenkins.getItem("hiddenUpstream");
             assertNotNull("hiddenUpstream project not found", up);

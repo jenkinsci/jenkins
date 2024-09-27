@@ -36,11 +36,13 @@ THE SOFTWARE.
         <f:textarea name="parameter.description" value="${instance.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription" />
     </f:entry>
     <f:entry name="filter" title="${%Filter}" help="/help/parameter/run-filter.html">
-        <select name="filter">
+      <div class="jenkins-select">
+        <select class="jenkins-select__input" name="filter">
             <f:option selected="${instance.filter=='ALL'}" value="ALL">${%All Builds}</f:option>
             <f:option selected="${instance.filter=='COMPLETED'}" value="COMPLETED">${%Completed Builds Only}</f:option>
             <f:option selected="${instance.filter=='SUCCESSFUL'}" value="SUCCESSFUL">${%Successful Builds Only}</f:option>
             <f:option selected="${instance.filter=='STABLE'}" value="STABLE">${%Stable Builds Only}</f:option>
         </select>
+      </div>
     </f:entry>
 </j:jelly>

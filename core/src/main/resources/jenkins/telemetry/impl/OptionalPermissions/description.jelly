@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    Some permissions in Jenkins core and plugins are disabled by default and must be activated by setting a system property or installing a special plugin.
+    This trial collects which of these permissions are enabled and disabled, as well as the list of installed plugins.
+    This data will be used to understand whether these permissions are activated frequently enough to justify their maintenance cost, and to see if any of the permissions are popular enough to consider enabling them by default.
+</j:jelly>

@@ -33,12 +33,11 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.util.FormValidation;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.servlet.ServletException;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -66,9 +65,27 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
      *            the name given from the UI
      * @throws Failure
      *             if the user has to be informed about an illegal name, forces the user to change the name before submitting. The message of the failure will be presented to the user.
+     * @deprecated Use {@link #checkName(String, String)}
      */
+    @Deprecated
     public void checkName(String name) throws Failure {
         // no op
+    }
+
+    /**
+     * Called when creating a new job.
+     *
+     * @param parentName
+     *            the full name of the parent ItemGroup
+     * @param name
+     *            the name given from the UI
+     * @throws Failure
+     *             if the user has to be informed about an illegal name, forces the user to change the name before submitting. The message of the failure will be presented to the user.
+     *
+     * @since 2.367
+     */
+    public void checkName(String parentName, String name) throws Failure {
+        checkName(name);
     }
 
     /**
@@ -154,7 +171,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
 
         @Override
         public void checkName(String name) {
-            if (StringUtils.isNotBlank(namePattern) && StringUtils.isNotBlank(name)) {
+            if ((namePattern != null && !namePattern.isBlank()) && (name != null && !name.isBlank())) {
                 if (!Pattern.matches(namePattern, name)) {
                     throw new Failure(description == null || description.isEmpty() ?
                         Messages.Hudson_JobNameConventionNotApplyed(name, namePattern) :

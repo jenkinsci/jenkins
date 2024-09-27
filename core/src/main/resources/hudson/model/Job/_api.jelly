@@ -45,23 +45,24 @@ THE SOFTWARE.
 
   <h2>Perform a build</h2>
   <p>
-    To programmatically schedule a new build, post to <a href="../build">this URL</a>. 
+    To programmatically schedule a new build, post to <a href="../build?delay=0sec">this URL</a>.
     If the build has parameters, post to <a href="../buildWithParameters">this URL</a> and provide the parameters as form data.
     Either way, the successful queueing will result in 201 status code with <code>Location</code> HTTP header
-    pointing the URL of the item in the queue. By polling the <code>api/xml</code> sub-URL of the queue item,
+    pointing the URL of the item in the queue. By polling the <code>api/json</code> sub-URL of the queue item,
     you can track the status of the queued task. Generally, the task will go through some state transitions,
-    then eventually it becomes either cancelled (look for the "cancelled" boolean property), or gets executed
-    (look for the "executable" property that typically points to the <code>AbstractBuild</code> object.)
+    then eventually it becomes either cancelled (look for the <code>cancelled</code> boolean property), or gets executed
+    (look for the <code>executable</code> field that typically points to the <code>Run</code> object.)
   </p>
   <p>
     To programmatically schedule SCM polling, post to <a href="../polling">this URL</a>.
   </p>
   <p>
-    If security is enabled, the recommended method is to provide the username/password of an
+    Unless the configured security realm is <em>None</em>, the recommended method is to provide the username and API token of an
     account with build permission in the request.  Tools such as <code>curl</code> and <code>wget</code>
     have parameters to specify these credentials.  Another alternative (but deprecated) is to
     configure the 'Trigger builds remotely' section in the job configuration.  Then building
-    or polling can be triggered by including a parameter called <i>token</i> in the request.
+    or polling can be triggered by including a parameter called <code>token</code> in the request.
+    (The <code>build-token-root</code> plugin may be needed in general.)
   </p>
 
 </j:jelly>

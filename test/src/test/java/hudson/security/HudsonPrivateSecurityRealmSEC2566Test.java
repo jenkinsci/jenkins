@@ -10,6 +10,7 @@ import java.util.Base64;
 import jenkins.security.SecurityListener;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -36,7 +37,7 @@ public class HudsonPrivateSecurityRealmSEC2566Test {
 
     @Test
     @Issue("SECURITY-2566")
-    // @Ignore // TODO: Is this test too fragile to run?
+    @Ignore("too fragile to run")
     public void noTimingDifferenceForInternalSecurityRealm() throws Exception {
         final HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(realm);

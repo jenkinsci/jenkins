@@ -29,16 +29,17 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.cli.CLICommand;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Objects;
-import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
-import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * {@link ParameterDefinition} for doing file upload.
@@ -64,7 +65,7 @@ public class FileParameterDefinition extends ParameterDefinition {
     }
 
     @Override
-    public FileParameterValue createValue(StaplerRequest req, JSONObject jo) {
+    public FileParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
         FileParameterValue p = req.bindJSON(FileParameterValue.class, jo);
         p.setLocation(getName());
         p.setDescription(getDescription());
@@ -86,10 +87,10 @@ public class FileParameterDefinition extends ParameterDefinition {
     }
 
     @Override
-    public ParameterValue createValue(StaplerRequest req) {
+    public ParameterValue createValue(StaplerRequest2 req) {
         FileItem src;
         try {
-            src = req.getFileItem(getName());
+            src = req.getFileItem2(getName());
         } catch (ServletException | IOException e) {
             // Not sure what to do here. We might want to raise this
             // but that would involve changing the throws for this call
@@ -118,7 +119,7 @@ public class FileParameterDefinition extends ParameterDefinition {
     @Override
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
         // capture the file to the server
-        File local = File.createTempFile("jenkins", "parameter");
+        File local = Files.createTempFile("jenkins", "parameter").toFile();
         String name;
         if (value.isEmpty()) {
             FileUtils.copyInputStreamToFile(command.stdin, local);

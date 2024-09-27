@@ -1,16 +1,16 @@
 package lib.form;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -33,7 +33,7 @@ public class DropdownListTest {
             return "self";
         }
 
-        public FormValidation doSubmitTest1(StaplerRequest req) throws Exception {
+        public FormValidation doSubmitTest1(StaplerRequest2 req) throws Exception {
             JSONObject f = req.getSubmittedForm();
             System.out.println(f);
             return FormValidation.ok();

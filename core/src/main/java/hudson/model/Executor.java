@@ -32,7 +32,6 @@ import static java.util.logging.Level.WARNING;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
@@ -60,7 +59,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.servlet.ServletException;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
@@ -90,12 +88,6 @@ import org.springframework.security.core.Authentication;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-@SuppressFBWarnings(
-        value = {
-            "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION",
-            "THROWS_METHOD_THROWS_CLAUSE_THROWABLE"
-        },
-        justification = "TODO needs triage")
 public class Executor extends Thread implements ModelObject {
     protected final @NonNull Computer owner;
     private final Queue queue;
@@ -331,17 +323,19 @@ public class Executor extends Thread implements ModelObject {
 
     @Override
     public void run() {
-        if (!owner.isOnline()) {
-            resetWorkUnit("went off-line before the task's worker thread started");
-            owner.removeExecutor(this);
-            queue.scheduleMaintenance();
-            return;
-        }
-        if (owner.getNode() == null) {
-            resetWorkUnit("was removed before the task's worker thread started");
-            owner.removeExecutor(this);
-            queue.scheduleMaintenance();
-            return;
+        if (!(owner instanceof Jenkins.MasterComputer)) {
+            if (!owner.isOnline()) {
+                resetWorkUnit("went off-line before the task's worker thread started");
+                owner.removeExecutor(this);
+                queue.scheduleMaintenance();
+                return;
+            }
+            if (owner.getNode() == null) {
+                resetWorkUnit("was removed before the task's worker thread started");
+                owner.removeExecutor(this);
+                queue.scheduleMaintenance();
+                return;
+            }
         }
         final WorkUnit workUnit;
         lock.writeLock().lock();
@@ -359,13 +353,15 @@ public class Executor extends Thread implements ModelObject {
             task = Queue.withLock(new Callable<>() {
                 @Override
                 public SubTask call() throws Exception {
-                    if (!owner.isOnline()) {
-                        resetWorkUnit("went off-line before the task's worker thread was ready to execute");
-                        return null;
-                    }
-                    if (owner.getNode() == null) {
-                        resetWorkUnit("was removed before the task's worker thread was ready to execute");
-                        return null;
+                    if (!(owner instanceof Jenkins.MasterComputer)) {
+                        if (!owner.isOnline()) {
+                            resetWorkUnit("went off-line before the task's worker thread was ready to execute");
+                            return null;
+                        }
+                        if (owner.getNode() == null) {
+                            resetWorkUnit("was removed before the task's worker thread was ready to execute");
+                            return null;
+                        }
                     }
                     // after this point we cannot unwind the assignment of the work unit, if the owner
                     // is removed or goes off-line then the build will just have to fail.
@@ -855,7 +851,7 @@ public class Executor extends Thread implements ModelObject {
      */
     @RequirePOST
     @Deprecated
-    public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         doStop().generateResponse(req, rsp, this);
     }
 
