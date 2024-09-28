@@ -299,7 +299,7 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1361.v913100720139</version>
+                  <version>1362.v67dc1f0e1b_b_3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -320,7 +320,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, echarts-api, font-awesome-api, and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>plugin-util-api</artifactId>
-                  <version>4.1.0</version>
+                  <version>5.1.0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -342,7 +342,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>920.v59f71ce16f04</version>
+                  <version>926.v9f4f9b_b_98c19</version>
                   <type>hpi</type>
                 </artifactItem>
 
