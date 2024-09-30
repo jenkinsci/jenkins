@@ -1551,6 +1551,9 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      if we fail to delete.
      */
     public void delete() throws IOException {
+        if (isBuilding() || isLogUpdated()) {
+            throw new IOException("Unable to delete " + this + " because it is still running");
+        }
         synchronized (this) {
             // Avoid concurrent delete. See https://issues.jenkins.io/browse/JENKINS-61687
             if (isPendingDelete) {
