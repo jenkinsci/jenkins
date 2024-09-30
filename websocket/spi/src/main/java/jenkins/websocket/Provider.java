@@ -45,6 +45,7 @@ interface Provider {
      */
     Handler handle(HttpServletRequest req, HttpServletResponse rsp, Listener listener) throws Exception;
 
+    // interface listener
     interface Listener {
 
         void onWebSocketConnect(Object providerSession);
@@ -61,6 +62,7 @@ interface Provider {
 
     }
 
+    // interface handler
     interface Handler {
 
         Future<Void> sendBinary(ByteBuffer data) throws IOException;
