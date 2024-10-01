@@ -19,7 +19,7 @@ Behaviour.specify(
         } else {
           notificationBar.show(failure, notificationBar.ERROR)
         }
-      });;
+      });
       return false;
     };
   },
