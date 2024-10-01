@@ -105,11 +105,19 @@ function mapChildrenItemsToDropdownItems(items) {
             fetch(item.url, {
               method: "post",
               headers: crumb.wrap({}),
+            }).then((rsp) => {
+              if (rsp.ok) {
+                notificationBar.show(
+                  item.displayName + ": Done.",
+                  notificationBar.SUCCESS,
+                );
+              } else {
+                notificationBar.show(
+                  item.displayName + ": Failed.",
+                  notificationBar.ERROR,
+                );
+              }
             });
-            notificationBar.show(
-              item.displayName + ": Done.",
-              notificationBar.SUCCESS,
-            );
           }
         }
       },

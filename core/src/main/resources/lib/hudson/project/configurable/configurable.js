@@ -11,9 +11,9 @@
         headers: crumb.wrap({}),
       }).then((rsp) => {
         if (rsp.ok) {
-          notificationBar.show(success,notificationBar.SUCCESS);
+          notificationBar.show(success, notificationBar.SUCCESS);
         } else {
-          notificationBar.show(failure, notificationBar.ERROR)
+          notificationBar.show(failure, notificationBar.ERROR);
         }
       });
       ev.preventDefault();

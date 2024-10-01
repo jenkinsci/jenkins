@@ -15,9 +15,9 @@ Behaviour.specify(
         headers: crumb.wrap({}),
       }).then((rsp) => {
         if (rsp.ok) {
-          notificationBar.show(message,notificationBar.SUCCESS);
+          notificationBar.show(message, notificationBar.SUCCESS);
         } else {
-          notificationBar.show(failure, notificationBar.ERROR)
+          notificationBar.show(failure, notificationBar.ERROR);
         }
       });
       return false;

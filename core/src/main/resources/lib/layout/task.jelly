@@ -186,6 +186,7 @@ THE SOFTWARE.
                      href="${href}"
                      class="task-link task-link-no-confirm ${isCurrent ? 'task-link--active' : ''}"
                      data-task-success="${%Done.}"
+                     data-task-failure="${%Failed.}"
                      data-task-post="${attrs.post}"
                      ATTRIBUTES="${attrs}"
                      EXCEPT="badge confirmationMessage contextMenu destructive enabled href icon permission permissions post requiresConfirmation title">
