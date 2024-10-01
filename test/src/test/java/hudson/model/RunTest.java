@@ -116,6 +116,7 @@ public class RunTest  {
         assertTrue(Mgr.deleted.get());
     }
 
+    @Issue("JENKINS-73835")
     @Test public void buildsMayNotBeDeletedWhileRunning() throws Exception {
         var p = j.createFreeStyleProject();
         p.getBuildersList().add(new SleepBuilder(999999));
