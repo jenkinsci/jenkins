@@ -15,7 +15,7 @@ Behaviour.specify(
         headers: crumb.wrap({}),
       }).then((rsp) => {
         if (rsp.ok) {
-          hoverNotification(message, this, -100);
+          notificationBar.show(message,notificationBar.SUCCESS);
         } else {
           notificationBar.show(failure, notificationBar.ERROR)
         }

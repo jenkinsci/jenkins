@@ -11,7 +11,7 @@
         headers: crumb.wrap({}),
       }).then((rsp) => {
         if (rsp.ok) {
-          hoverNotification(success, ev.target.parentNode);
+          notificationBar.show(success,notificationBar.SUCCESS);
         } else {
           notificationBar.show(failure, notificationBar.ERROR)
         }
