@@ -118,7 +118,7 @@ public class RunTest  {
 
     @Test public void buildsMayNotBeDeletedWhileRunning() throws Exception {
         var p = j.createFreeStyleProject();
-        p.getBuildersList().add(new SleepBuilder(999));
+        p.getBuildersList().add(new SleepBuilder(999999));
         var b = p.scheduleBuild2(0).waitForStart();
         var ex = assertThrows(IOException.class, () -> b.delete());
         assertThat(ex.getMessage(), containsString("Unable to delete " + b + " because it is still running"));

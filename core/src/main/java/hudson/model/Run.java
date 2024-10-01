@@ -1551,7 +1551,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      if we fail to delete.
      */
     public void delete() throws IOException {
-        if (isBuilding() || isLogUpdated()) {
+        if (isLogUpdated()) {
             throw new IOException("Unable to delete " + this + " because it is still running");
         }
         synchronized (this) {
@@ -1885,12 +1885,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE, "Failed to save build record", e);
                 }
-            }
-
-            try {
-                getParent().logRotate();
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Failed to rotate log", e);
             }
         } finally {
             onEndBuilding();
