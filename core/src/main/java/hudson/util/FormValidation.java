@@ -40,6 +40,7 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.tasks.Builder;
 import hudson.util.ReflectionUtils.Parameter;
+import jakarta.servlet.ServletException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -58,21 +59,20 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Represents the result of the form field validation.
  *
  * <p>
  * Use one of the factory methods to create an instance, then return it from your {@code doCheckXyz}
- * method. (Via {@link HttpResponse}, the returned object will render the result into {@link StaplerResponse}.)
+ * method. (Via {@link HttpResponse}, the returned object will render the result into {@link StaplerResponse2}.)
  * This way of designing form field validation allows you to reuse {@code doCheckXyz()} methods
  * programmatically as well (by using {@link #kind}.
  *
@@ -274,7 +274,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         return new FormValidation(kind, message) {
             @Override
             public String renderHtml() {
-                StaplerRequest req = Stapler.getCurrentRequest();
+                StaplerRequest2 req = Stapler.getCurrentRequest2();
                 if (req == null) { // being called from some other context
                     return message;
                 }
@@ -551,7 +551,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          * @param url
          *      Pass in the URL that was connected. Used for error diagnosis.
          */
-        protected FormValidation handleIOException(String url, IOException e) throws IOException, ServletException {
+        protected FormValidation handleIOException(String url, IOException e) throws IOException {
             // any invalid URL comes here
             if (e.getMessage().equals(url))
                 // Sun JRE (and probably others too) often return just the URL in the error.
@@ -580,7 +580,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          * Implement the actual form validation logic, by using other convenience methods defined in this class.
          * If you are not using any of those, you don't need to extend from this class.
          */
-        protected abstract FormValidation check() throws IOException, ServletException;
+        protected abstract FormValidation check() throws IOException;
     }
 
 
@@ -600,7 +600,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
     }
 
     @Override
-    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+    public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
         respond(rsp, renderHtml());
     }
 
@@ -609,7 +609,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
     /**
      * Sends out an arbitrary HTML fragment as the output.
      */
-    protected void respond(StaplerResponse rsp, String html) throws IOException, ServletException {
+    protected void respond(StaplerResponse2 rsp, String html) throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");
         if (APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
             for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {

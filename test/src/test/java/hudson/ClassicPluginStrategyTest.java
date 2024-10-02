@@ -71,7 +71,7 @@ public class ClassicPluginStrategyTest {
             }
         };
         setPluginManager(pluginManager);
-        return new Hudson(home, createWebServer(), pluginManager);
+        return new Hudson(home, createWebServer2(), pluginManager);
      }
     };
 

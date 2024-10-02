@@ -16,8 +16,8 @@ module.exports = [
       "**/jsbundles/",
 
       // External scripts
-      "war/.pnp.cjs",
-      "war/.pnp.loader.mjs",
+      ".pnp.cjs",
+      ".pnp.loader.mjs",
       "war/src/main/js/plugin-setup-wizard/bootstrap-detached.js",
       "war/src/main/webapp/scripts/yui/*",
     ],
@@ -47,6 +47,7 @@ module.exports = [
         findFormParent: "readonly",
         fireEvent: "readonly",
         Form: "readonly",
+        FormChecker: "readonly",
         getElementOverflowParams: "readonly",
         hoverNotification: "readonly",
         iota: "writeable",
@@ -92,7 +93,7 @@ module.exports = [
       "eslint.config.cjs",
       "war/postcss.config.js",
       "war/webpack.config.js",
-      "war/.stylelintrc.js",
+      ".stylelintrc.js",
     ],
     languageOptions: {
       globals: {

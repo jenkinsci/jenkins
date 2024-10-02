@@ -903,57 +903,79 @@ function escapeHTML(html) {
 }
 
 /**
- * Wraps a <button> into YUI button.
+ * Replaces a <input> with a <button class="jenkins-button">
  *
  * @param e
  *      button element
  * @param onclick
  *      onclick handler
  * @return
- *      YUI Button widget.
+ *      wrapper with some functions (formerly a YUI widget).
+ * @deprecated use <button class="jenkins-button"> and attach event listeners with standard javascript
  */
 function makeButton(e, onclick) {
-  var h = e.onclick;
-  var clsName = e.className;
-  var n = e.name;
+  console.warn(
+    "Deprecated call to makeButton - use <button class='jenkins-button'> instead and standard javascript to attach listeners.",
+  );
+  const h = e.onclick;
+  const n = e.name;
 
-  var attributes = {};
-  // YUI Button class interprets value attribute of <input> as HTML
-  // similar to how the child nodes of a <button> are treated as HTML.
-  // in standard HTML, we wouldn't expect the former case, yet here we are!
-  if (e.tagName === "INPUT") {
-    attributes.label = escapeHTML(e.value);
+  const button = document.createElement("button");
+  if (e.id) {
+    button.id = e.id;
   }
-  var btn = new YAHOO.widget.Button(e, attributes);
   if (onclick != null) {
-    btn.addListener("click", onclick);
+    button.addEventListener("click", onclick);
   }
   if (h != null) {
-    btn.addListener("click", h);
-  }
-  var be = btn.get("element");
-  var classesSeparatedByWhitespace = clsName.split(" ");
-  for (let i = 0; i < classesSeparatedByWhitespace.length; i++) {
-    var singleClass = classesSeparatedByWhitespace[i];
-    if (singleClass) {
-      be.classList.add(singleClass);
-    }
+    button.addEventListener("click", h);
   }
   if (n) {
     // copy the name
-    be.setAttribute("name", n);
+    button.setAttribute("name", n);
   }
-
-  // keep the data-* attributes from the source
-  var length = e.attributes.length;
+  if (e.type === "submit" || e.type === "button") {
+    button.type = e.type;
+  }
+  const length = e.attributes.length;
   for (let i = 0; i < length; i++) {
-    var attribute = e.attributes[i];
-    var attributeName = attribute.name;
+    const attribute = e.attributes[i];
+    const attributeName = attribute.name;
     if (attributeName.startsWith("data-")) {
-      btn._button.setAttribute(attributeName, attribute.value);
+      button.setAttribute(attributeName, attribute.value);
     }
   }
-  return btn;
+  button.innerText = e.value;
+  button.classList.add("jenkins-button");
+  const classNames = e.classList;
+  if (classNames.contains("primary") || classNames.contains("submit-button")) {
+    button.classList.add("jenkins-button--primary");
+  }
+  classNames.remove("primary");
+  classNames.remove("submit-button");
+  classNames.remove("yui-button");
+  for (let i = 0; i < classNames.length; i++) {
+    button.classList.add(classNames.item(i));
+  }
+
+  function Button(button) {
+    this.button = button;
+  }
+  Button.prototype.set = function (attributeName, value) {
+    if (attributeName === "disabled") {
+      if (value) {
+        this.button.disabled = "disabled";
+      } else {
+        this.button.removeAttribute("disabled");
+      }
+    }
+  };
+  Button.prototype.getForm = function () {
+    return this.button.closest("form");
+  };
+  e.parentNode.insertBefore(button, e);
+  e.remove();
+  return new Button(button);
 }
 
 /*
@@ -1307,49 +1329,6 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
       registerRegexpValidator(e, /^[1-9]\d*$/, "Not a positive integer");
-    },
-  );
-
-  Behaviour.specify(
-    "INPUT.auto-complete",
-    "input-auto-complete",
-    ++p,
-    function (e) {
-      // form field with auto-completion support
-      // insert the auto-completion container
-      var div = document.createElement("DIV");
-      e.parentNode.insertBefore(div, e.nextElementSibling);
-      e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
-
-      var ds = new YAHOO.util.XHRDataSource(e.getAttribute("autoCompleteUrl"));
-      ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
-      ds.responseSchema = {
-        resultsList: "suggestions",
-        fields: ["name"],
-      };
-
-      // Instantiate the AutoComplete
-      var ac = new YAHOO.widget.AutoComplete(e, div, ds);
-      ac.generateRequest = function (query) {
-        return "?value=" + query;
-      };
-      ac.autoHighlight = false;
-      ac.prehighlightClassName = "yui-ac-prehighlight";
-      ac.animSpeed = 0;
-      ac.formatResult = ac.formatEscapedResult;
-      ac.useShadow = true;
-      ac.autoSnapContainer = true;
-      ac.delimChar = e.getAttribute("autoCompleteDelimChar");
-      ac.doBeforeExpandContainer = function (textbox, container) {
-        // adjust the width every time we show it
-        container.style.width = textbox.clientWidth + "px";
-        var Dom = YAHOO.util.Dom;
-        Dom.setXY(container, [
-          Dom.getX(textbox),
-          Dom.getY(textbox) + textbox.offsetHeight,
-        ]);
-        return true;
-      };
     },
   );
 
@@ -2550,6 +2529,9 @@ function buildFormTree(form) {
           p = findParent(e);
           addProperty(p, e.name, e.value);
           if (e.classList.contains("complex-password-field")) {
+            addProperty(p, "$redact", shortenName(e.name));
+          }
+          if (e.classList.contains("secretTextarea-redact")) {
             addProperty(p, "$redact", shortenName(e.name));
           }
           break;

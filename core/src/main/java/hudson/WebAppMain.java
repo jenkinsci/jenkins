@@ -45,6 +45,12 @@ import hudson.util.InsufficientPermissionDetected;
 import hudson.util.NoHomeDir;
 import hudson.util.NoTempDir;
 import hudson.util.RingBufferLogHandler;
+import io.jenkins.servlet.ServletContextEventWrapper;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.SessionTrackingMode;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -65,11 +71,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletResponse;
-import javax.servlet.SessionTrackingMode;
 import jenkins.model.Jenkins;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
@@ -320,8 +321,19 @@ public class WebAppMain implements ServletContextListener {
         }
     }
 
+    /**
+     * @since 2.475
+     */
     public static void installExpressionFactory(ServletContextEvent event) {
         JellyFacet.setExpressionFactory(event, new ExpressionFactory2());
+    }
+
+    /**
+     * @deprecated use {@link #installExpressionFactory(ServletContextEvent)}
+     */
+    @Deprecated
+    public static void installExpressionFactory(javax.servlet.ServletContextEvent event) {
+        installExpressionFactory(ServletContextEventWrapper.toJakartaServletContextEvent(event));
     }
 
     /**

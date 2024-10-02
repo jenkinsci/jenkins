@@ -59,16 +59,13 @@
   }
 
   .default-icon {
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    height: 48px;
-    width: 48px;
+    height: 40px;
+    width: 40px;
     border-radius: 50%;
     text-align: center;
-    line-height: 48px;
+    line-height: 36px;
     font-weight: bold;
-    font-size: 175%;
+    font-size: 125%;
     color: #ffffff;
     text-shadow: rgba(0, 0, 0, 0.25) 0 -1px 1px;
     opacity: 0.75;

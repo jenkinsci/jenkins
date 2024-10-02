@@ -101,7 +101,7 @@ public class ItemListener implements ExtensionPoint {
      * @param item the item being deleted
      * @throws Failure to veto the operation.
      * @throws InterruptedException If a blocking condition was interrupted, also vetoing the operation.
-     * @since TODO
+     * @since 2.470
      */
     public void onCheckDelete(Item item) throws Failure, InterruptedException {
     }

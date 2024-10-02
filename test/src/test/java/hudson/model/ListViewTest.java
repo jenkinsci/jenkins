@@ -46,6 +46,8 @@ import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -58,8 +60,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.AlertHandler;
@@ -75,8 +75,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.core.Authentication;
 import org.xml.sax.SAXException;
 
@@ -258,8 +258,8 @@ public class ListViewTest {
     @Test public void addJobUsingAPI() throws Exception {
         ListView v = new ListView("view", j.jenkins);
         j.jenkins.addView(v);
-        StaplerRequest req = mock(StaplerRequest.class);
-        StaplerResponse rsp = mock(StaplerResponse.class);
+        StaplerRequest2 req = mock(StaplerRequest2.class);
+        StaplerResponse2 rsp = mock(StaplerResponse2.class);
 
         String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), testName.getMethodName())), StandardCharsets.UTF_8);
 
