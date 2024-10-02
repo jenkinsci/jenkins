@@ -149,6 +149,7 @@ THE SOFTWARE.
                   <maxJdkVersion>11</maxJdkVersion>
                   <excludes>
                     <exclude>com.infradna.tool:bridge-method-annotation</exclude>
+                    <exclude>org.jenkins-ci:annotation-indexer:jar</exclude>
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
