@@ -35,6 +35,7 @@ THE SOFTWARE.
       </l:header>
     </l:isAdmin>
     <l:main-panel>
+      <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
       <j:choose>
         <j:when test="${it.cloudAvailable and it.hasClouds()}">
           <l:app-bar title="${%Clouds}">
@@ -78,11 +79,7 @@ THE SOFTWARE.
                 </j:forEach>
               </tbody>
             </table>
-            <l:isAdmin>
-              <f:bottomButtonBar>
-                <f:submit id="saveButton" value="${%Save}" clazz="jenkins-hidden" />
-              </f:bottomButtonBar>
-            </l:isAdmin>
+            <f:saveApplyBar/>
           </f:form>
           <st:adjunct includes="lib.form.confirm" />
         </j:when>

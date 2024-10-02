@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2023, CloudBees Inc.
+Copyright (c) 2024, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,17 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout permission="${app.SYSTEM_READ}" title="${%title(it.name)}">
-    <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
-    <st:include page="sidepanel.jelly"/>
-    <l:breadcrumb title="${%Configure}"/>
-    <l:main-panel>
-      <h1>${%title(it.name)}</h1>
-      <f:form method="post" action="configSubmit" name="config" class="jenkins-form">
-        <j:set var="instance" value="${it}"/>
-        <j:set var="descriptor" value="${instance.descriptor}"/>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Creates the bottom bar for the "Save" and "Apply" buttons.
+    In read only mode (&lt;j:set var="readOnlyMode" value="true"/&gt;) the buttons are not displayed.
+  </st:documentation>
 
-        <!-- main body of the configuration -->
-        <st:include it="${instance}" page="config.jelly" optional="true"/>
-
-        <f:saveApplyBar/>
-      </f:form>
-    </l:main-panel>
-  </l:layout>
+  <j:if test="${!readOnlyMode}">
+    <f:bottomButtonBar>
+      <f:submit value="${%Save}" />
+      <f:apply/>
+    </f:bottomButtonBar>
+    <st:adjunct includes="lib.form.confirm" />
+  </j:if>
 </j:jelly>

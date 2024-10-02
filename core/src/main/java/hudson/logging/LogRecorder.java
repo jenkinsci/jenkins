@@ -463,7 +463,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
 
         save();
         if (oldFile != null) oldFile.delete();
-        rsp.sendRedirect2(redirect);
+        FormApply.success(redirect).generateResponse(req, rsp, null);
     }
 
     @RequirePOST
