@@ -44,6 +44,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
+import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
