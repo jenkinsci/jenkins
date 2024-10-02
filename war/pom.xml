@@ -159,6 +159,7 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci:memory-monitor</exclude>
                     <exclude>org.jenkins-ci:symbol-annotation</exclude>
                     <exclude>org.jenkins-ci:task-reactor</exclude>
+                    <exclude>org.jenkins-ci:version-number</exclude>
                     <exclude>org.jvnet.hudson:commons-jelly-tags-define</exclude>
                     <exclude>org.jvnet.winp:winp</exclude>
                     <exclude>org.kohsuke:access-modifier-annotation</exclude>
