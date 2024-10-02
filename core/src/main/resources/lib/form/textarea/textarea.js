@@ -14,13 +14,13 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
     if (match) {
       console.log(
         "Parsing simple legacy codemirror-config value using fallback: " +
-          config
+          config,
       );
       config = { mode: match[1] };
     } else {
       console.log(
         "Failed to parse codemirror-config '{" + config + "}' as JSON",
-        ex
+        ex,
       );
       config = {};
     }
