@@ -814,6 +814,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
                 ItemDeletion.deregister(this);
             }
         }
+        SaveableListener.fireOnDeleted(this, getConfigFile());
         getParent().onDeleted(AbstractItem.this);
         Jenkins.get().rebuildDependencyGraphAsync();
     }

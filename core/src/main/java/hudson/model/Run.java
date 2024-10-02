@@ -1570,6 +1570,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             ));
             //Still firing the delete listeners; just no need to clean up rootDir
             RunListener.fireDeleted(this);
+            SaveableListener.fireOnDeleted(this, getDataFile());
             synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
                 removeRunFromParent();
             }
@@ -1578,6 +1579,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         //The root dir exists and is a directory that needs to be purged
         RunListener.fireDeleted(this);
+        SaveableListener.fireOnDeleted(this, getDataFile());
 
         if (artifactManager != null) {
             deleteArtifacts();
