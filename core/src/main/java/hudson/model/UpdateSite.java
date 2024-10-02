@@ -538,14 +538,17 @@ public class UpdateSite {
 
     /**
      * Is this the legacy default update center site?
-     * @deprecated
-     *      Will be removed, currently returns always false.
-     * @since 2.343
+     * @since 1.357
      */
-    @Deprecated
     @Restricted(NoExternalUse.class)
     public boolean isLegacyDefault() {
-        return false;
+        return isJenkinsCI();
+    }
+
+    private boolean isJenkinsCI() {
+        return url != null
+                && UpdateCenter.PREDEFINED_UPDATE_SITE_ID.equals(id)
+                && url.startsWith("http://updates.jenkins-ci.org/");
     }
 
     /**
