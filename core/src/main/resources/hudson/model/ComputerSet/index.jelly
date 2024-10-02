@@ -33,7 +33,6 @@ THE SOFTWARE.
   <l:main-panel>
     <l:app-bar title="${%Nodes}">
       <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
-      <j:getStatic var="extendedReadPermission" className="hudson.model.Computer" field="EXTENDED_READ"/>
       <j:if test="${h.hasPermission(createPermission)}">
         <a class="jenkins-button jenkins-button--primary" href="new">
           <l:icon src="symbol-add" />
@@ -73,7 +72,7 @@ THE SOFTWARE.
         </tr>
       </thead>
       <tbody>
-
+      <j:getStatic var="extendedReadPermission" className="hudson.model.Computer" field="EXTENDED_READ"/>
       <j:forEach var="c" items="${it._all}">
         <tr id="node_${c.name}">
           <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
