@@ -10,7 +10,7 @@ import hudson.ExtensionPoint;
  *
  * @see <a href="https://issues.jenkins.io/browse/SECURITY-266">SECURITY-266</a>
  * @see <a href="https://www.jenkins.io/security/advisory/2016-05-11/">Jenkins Security Advisory 2016-05-11</a>
- * @since TODO
+ * @since 2.479
  */
 public interface ExtendedReadRedaction extends ExtensionPoint {
     /**
