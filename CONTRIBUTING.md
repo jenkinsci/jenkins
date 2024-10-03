@@ -11,7 +11,7 @@ This page provides information about contributing code to the Jenkins core codeb
 3. Install the necessary development tools. In order to develop Jenkins, you need the following:
    - Java Development Kit (JDK) 17 or 21.
      In the Jenkins project we usually use [Eclipse Temurin](https://adoptium.net/) or [OpenJDK](https://openjdk.java.net/), but you can use other JDKs as well.
-   - Apache Maven 3.8.1 or above. You can [download Maven here](https://maven.apache.org/download.cgi).
+   - Apache Maven 3.9.6 or above. You can [download Maven here](https://maven.apache.org/download.cgi).
      In the Jenkins project we usually use the most recent Maven release.
    - Any IDE which supports importing Maven projects.
 4. Set up your development environment as described in [Preparing for Plugin Development](https://www.jenkins.io/doc/developer/tutorial/prepare/)
