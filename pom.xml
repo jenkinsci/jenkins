@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.122</version>
+    <version>1.123</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.478</revision>
+    <revision>2.480</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-09-17T13:51:35Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-09-27T11:17:44Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -92,18 +92,13 @@ THE SOFTWARE.
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
-    <access-modifier.version>1.33</access-modifier.version>
+    <access-modifier.version>1.34</access-modifier.version>
     <antlr.version>4.13.2</antlr.version>
-    <bridge-method-injector.version>1.29</bridge-method-injector.version>
+    <bridge-method-injector.version>1.30</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>8.1</winstone.version>
     <node.version>20.17.0</node.version>
-    <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
-    <yarn.version>1.22.19</yarn.version>
-    <!-- maven-antrun-plugin will download this Yarn version. -->
-    <yarn-berry.version>4.5.0</yarn-berry.version>
-    <yarn-berry.sha256sum>cc00dce5de4f68d11450519a0f69eadf2a1cbe5cc0d8e740bfac817a31d76874</yarn-berry.sha256sum>
   </properties>
 
   <!--
@@ -286,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.18.1</version>
+              <version>10.18.2</version>
             </dependency>
           </dependencies>
           <executions>
@@ -422,6 +417,81 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
+      <id>yarn-execution</id>
+      <activation>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.1</version>
+            <executions>
+              <execution>
+                <id>install node and corepack</id>
+                <goals>
+                  <goal>install-node-and-corepack</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <nodeVersion>v${node.version}</nodeVersion>
+                  <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-dist/</nodeDownloadRoot>
+                </configuration>
+              </execution>
+              <execution>
+                <id>yarn install</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <arguments>yarn install</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>yarn build</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <arguments>yarn build</arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>.yarn</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>node</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>node_modules</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>war/src/main/webapp/jsbundles</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+              </filesets>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
       <id>yarn-ci-lint</id>
       <activation>
         <property>
@@ -436,15 +506,16 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.0</version>
+            <version>1.15.1</version>
             <executions>
               <execution>
                 <id>yarn lint:ci</id>
                 <goals>
-                  <goal>yarn</goal>
+                  <goal>corepack</goal>
                 </goals>
+                <phase>test</phase>
                 <configuration>
-                  <arguments>lint:ci</arguments>
+                  <arguments>yarn lint:ci</arguments>
                   <skip>${yarn.lint.skip}</skip>
                 </configuration>
               </execution>
@@ -468,142 +539,20 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.0</version>
+            <version>1.15.1</version>
             <executions>
               <execution>
                 <id>yarn lint</id>
                 <goals>
-                  <goal>yarn</goal>
+                  <goal>corepack</goal>
                 </goals>
+                <phase>test</phase>
                 <configuration>
-                  <arguments>lint</arguments>
+                  <arguments>yarn lint</arguments>
                   <skip>${yarn.lint.skip}</skip>
                 </configuration>
               </execution>
             </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>yarn-execution</id>
-      <activation>
-        <file>
-          <exists>package.json</exists>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>download-yarn</id>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <phase>initialize</phase>
-                <configuration>
-                  <target>
-                    <property name="yarn.dest" value="${project.basedir}/.yarn/releases/yarn-${yarn-berry.version}.cjs" />
-                    <dirname file="${yarn.dest}" property="yarn.dest.dir" />
-                    <mkdir dir="${yarn.dest.dir}" />
-                    <get dest="${yarn.dest}" src="https://repo.yarnpkg.com/${yarn-berry.version}/packages/yarnpkg-cli/bin/yarn.js" usetimestamp="true" />
-                    <checksum algorithm="SHA-256" file="${yarn.dest}" property="${yarn-berry.sha256sum}" verifyProperty="yarn.checksum.matches" />
-                    <condition property="yarn.checksum.matches.fail">
-                      <equals arg1="${yarn.checksum.matches}" arg2="false" />
-                    </condition>
-                    <fail if="yarn.checksum.matches.fail">Checksum error</fail>
-                    <echo file="${project.basedir}/.yarnrc.yml">yarnPath: ${yarn.dest}</echo>
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>com.github.eirslett</groupId>
-            <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.0</version>
-            <executions>
-
-              <execution>
-                <id>install node and yarn</id>
-                <goals>
-                  <goal>install-node-and-yarn</goal>
-                </goals>
-                <phase>initialize</phase>
-                <configuration>
-                  <nodeVersion>v${node.version}</nodeVersion>
-                  <yarnVersion>v${yarn.version}</yarnVersion>
-                  <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-dist/</nodeDownloadRoot>
-                  <!-- tried to create a mirror for yarnDownloadRoot but it did not work -->
-                </configuration>
-              </execution>
-
-              <execution>
-                <id>yarn install</id>
-                <goals>
-                  <goal>yarn</goal>
-                </goals>
-                <phase>initialize</phase>
-              </execution>
-
-              <execution>
-                <id>yarn build</id>
-                <goals>
-                  <goal>yarn</goal>
-                </goals>
-                <phase>generate-sources</phase>
-                <configuration>
-                  <arguments>build</arguments>
-                </configuration>
-              </execution>
-
-              <execution>
-                <id>yarn lint</id>
-                <goals>
-                  <goal>yarn</goal>
-                </goals>
-                <configuration>
-                  <arguments>lint:ci</arguments>
-                  <skip>${yarn.lint.skip}</skip>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <id>clean-node</id>
-      <activation>
-        <property>
-          <name>cleanNode</name>
-        </property>
-        <file>
-          <exists>package.json</exists>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-clean-plugin</artifactId>
-            <!-- Version specified in grandparent POM -->
-            <configuration>
-              <filesets>
-                <fileset>
-                  <directory>node</directory>
-                  <followSymlinks>false</followSymlinks>
-                </fileset>
-                <fileset>
-                  <directory>node_modules</directory>
-                  <followSymlinks>false</followSymlinks>
-                </fileset>
-              </filesets>
-            </configuration>
           </plugin>
         </plugins>
       </build>

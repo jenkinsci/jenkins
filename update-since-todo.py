@@ -102,8 +102,8 @@ def analyze_files(commits_and_tags, dry_run=False):
         "*.js",
     ]
 
-    runningInCI = os.environ.get("CI", "false") == "true"
-    if runningInCI:
+    is_ci = "CI" in os.environ
+    if is_ci:
         print("<details><summary>Detailed output</summary>\n\n")
     with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
         for line in io.TextIOWrapper(proc.stdout):
@@ -113,7 +113,7 @@ def analyze_files(commits_and_tags, dry_run=False):
         if retcode:
             raise subprocess.CalledProcessError(retcode, cmd)
     print()
-    if runningInCI:
+    if is_ci:
         print("</details>\n")
 
 

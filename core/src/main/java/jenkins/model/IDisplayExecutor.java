@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright 2024 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,29 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.tasks.Shell
-f=namespace(lib.FormTagLib)
 
-f.entry(title:_("Command"),description:_("description",rootURL)) {
-    f.textarea(name: "command", value: instance?.command, class: "fixed-width", 'codemirror-mode': 'shell', 'codemirror-config': '"mode": "text/x-sh"')
-}
+package jenkins.model;
 
-f.advanced() {
-    f.entry(title:_("Exit code to set build unstable"), field: "unstableReturn") {
-        f.number(clazz:"positive-number", value: instance?.unstableReturn, min:1, max:255, step:1)
-    }
+import edu.umd.cs.findbugs.annotations.NonNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
-    if (instance?.configuredLocalRules || descriptor.applicableLocalRules) {
-        f.entry(title: _("filterRules")) {
-            f.hetero_list(
-                    name: "configuredLocalRules",
-                    hasHeader: true,
-                    oneEach: true,
-                    disableDragAndDrop: true,
-                    descriptors: descriptor.applicableLocalRules,
-                    items: instance?.configuredLocalRules,
-                    addCaption: _("addFilterRule")
-            )
-        }
-    }
+/**
+ * A snapshot of the executor information for display purpose.
+ *
+ * @since TODO
+ */
+@Restricted(Beta.class)
+public interface IDisplayExecutor {
+    /**
+     * @return The UI label for this executor.
+     */
+    @NonNull
+    String getDisplayName();
+
+    /**
+     * @return the URL where to reach specifically this executor, relative to Jenkins URL.
+     */
+    @NonNull
+    String getUrl();
+
+    /**
+     * @return the executor this display information is for.
+     */
+    @NonNull
+    IExecutor getExecutor();
 }

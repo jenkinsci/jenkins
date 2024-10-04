@@ -129,9 +129,12 @@
       font-weight: 450;
       flex-grow: 1;
       padding: 0.45rem 0 0;
+      word-break: normal;
+      overflow-wrap: anywhere;
 
       .app-builds-container__item__time {
         color: var(--text-color-secondary);
+        white-space: nowrap;
       }
     }
 
@@ -168,6 +171,8 @@
     padding-left: 2.25rem;
     margin-top: -2px;
     grid-column: 1 / span 2;
+    word-break: normal;
+    overflow-wrap: anywhere;
 
     &::before {
       content: "";
