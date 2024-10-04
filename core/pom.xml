@@ -49,6 +49,13 @@ THE SOFTWARE.
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice-bom</artifactId>
+        <version>6.0.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>jenkins-bom</artifactId>
         <version>${project.version}</version>
