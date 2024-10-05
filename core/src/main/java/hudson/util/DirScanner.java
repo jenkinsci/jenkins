@@ -8,8 +8,10 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.OpenOption;
+import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -146,6 +148,25 @@ public abstract class DirScanner implements Serializable {
                     File file = new File(dir, f);
                     scanSingle(file, f, visitor);
                 }
+                List<String> emptyDirs = new ArrayList<>();
+                Path rootDir = dir.toPath();
+
+                Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        Path relativePath = rootDir.relativize(dir);
+                        if (!relativePath.toString().isEmpty()) {
+                            emptyDirs.add(relativePath.toString());
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+
+                for (String emptyDir : emptyDirs) {
+                    File file = new File(dir, emptyDir);
+                    scanSingle(file, emptyDir, visitor);
+                }
+
             }
         }
 
