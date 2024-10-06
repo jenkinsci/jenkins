@@ -36,9 +36,18 @@ import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.tools.tar.TarEntry;
+import org.apache.tools.tar.TarInputStream;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -139,6 +148,31 @@ public class TarArchiverTest {
 
         runnable1.doFinish();
         t1.join();
+    }
+
+    @Ignore("Empty Directory Test")
+    @Issue("JENKINS-73837")
+    @Test
+    public void emptyDirectory() throws Exception {
+        Path tar = tmp.newFile("test.tar").toPath();
+        Path root = tmp.newFolder().toPath();
+        Files.createDirectory(root.resolve("a"));
+        Files.createDirectory(root.resolve("b"));
+
+        Files.writeString(root.resolve("a/file.txt"), "empty_dir_test");
+
+        try (OutputStream outputStream = Files.newOutputStream(tar)) {
+            new FilePath(root.toFile()).tar(outputStream, "**");
+        }
+
+        Set<String> names = new HashSet<>();
+        try (TarInputStream tarInputStream = new TarInputStream(Files.newInputStream(tar), StandardCharsets.UTF_8.name())) {
+            TarEntry tarEntry;
+            while ((tarEntry = tarInputStream.getNextEntry()) != null) {
+                names.add(tarEntry.getName());
+            }
+        }
+        assertEquals(Set.of("a/", "b/", "a/file.txt"), names);
     }
 
     private static class GrowingFileRunnable implements Runnable {

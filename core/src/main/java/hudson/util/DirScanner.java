@@ -9,6 +9,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.OpenOption;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.tools.ant.BuildException;
@@ -145,6 +146,12 @@ public abstract class DirScanner implements Serializable {
                 for (String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
                     scanSingle(file, f, visitor);
+                }
+                for (String d : ds.getIncludedDirectories()) {
+                    if (!d.isEmpty()) {
+                        File file = new File(dir, d);
+                        scanSingle(file, d, visitor);
+                    }
                 }
             }
         }
