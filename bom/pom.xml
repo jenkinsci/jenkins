@@ -356,7 +356,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.7</version>
+        <version>9.7.1</version>
       </dependency>
       <dependency>
         <groupId>org.samba.jcifs</groupId>
