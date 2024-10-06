@@ -9,7 +9,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.OpenOption;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.tools.ant.BuildException;

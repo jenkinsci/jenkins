@@ -36,7 +36,6 @@ import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -44,10 +43,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarInputStream;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -150,7 +147,6 @@ public class TarArchiverTest {
         t1.join();
     }
 
-    @Ignore("Empty Directory Test")
     @Issue("JENKINS-73837")
     @Test
     public void emptyDirectory() throws Exception {
