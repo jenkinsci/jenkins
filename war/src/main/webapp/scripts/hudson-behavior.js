@@ -35,6 +35,7 @@ if (window.isRunAsTest) {
 }
 
 // create a new object whose prototype is the given object
+// eslint-disable-next-line no-unused-vars
 function object(o) {
   function F() {}
   F.prototype = o;
@@ -107,7 +108,10 @@ var crumb = {
   value: null,
 
   init: function (crumbField, crumbValue) {
-    if (crumbField == "") return; // layout.jelly passes in "" whereas it means null.
+    if (crumbField == "") {
+      // layout.jelly passes in "" whereas it means null.
+      return;
+    }
     this.fieldName = crumbField;
     this.value = crumbValue;
   },
@@ -117,10 +121,12 @@ var crumb = {
    */
   wrap: function (headers) {
     if (this.fieldName != null) {
-      if (headers instanceof Array)
+      if (headers instanceof Array) {
         // TODO prototype.js only seems to interpret object
         headers.push(this.fieldName, this.value);
-      else headers[this.fieldName] = this.value;
+      } else {
+        headers[this.fieldName] = this.value;
+      }
     }
     // TODO return value unused
     return headers;
@@ -130,7 +136,10 @@ var crumb = {
    * Puts a hidden input field to the form so that the form submission will have the crumb value
    */
   appendToForm: function (form) {
-    if (this.fieldName == null) return; // noop
+    if (this.fieldName == null) {
+      // noop
+      return;
+    }
     var div = document.createElement("div");
     div.classList.add("jenkins-!-display-contents");
     div.innerHTML =
@@ -152,7 +161,7 @@ var crumb = {
 
 (function initializeCrumb() {
   var extensionsAvailable = document.head.getAttribute(
-    "data-extensions-available"
+    "data-extensions-available",
   );
   if (extensionsAvailable === "true") {
     var crumbHeaderName = document.head.getAttribute("data-crumb-header");
@@ -167,8 +176,8 @@ var crumb = {
 var isRunAsTest = undefined;
 // Be careful, this variable does not include the absolute root URL as in Java part of Jenkins,
 // but the contextPath only, like /jenkins
-var rootURL = "not-defined-yet";
-var resURL = "not-defined-yet";
+var rootURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
+var resURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
 
 (function initializeUnitTestAndURLs() {
   var dataUnitTest = document.head.getAttribute("data-unit-test");
@@ -225,37 +234,72 @@ var FormChecker = {
    *      HTML element whose innerHTML will be overwritten when the check is completed.
    */
   delayedCheck: function (url, method, target) {
-    if (url == null || method == null || target == null) return; // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
+    if (url == null || method == null || target == null) {
+      // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
+      return;
+    }
     this.queue.push({ url: url, method: method, target: target });
     this.schedule();
   },
 
   sendRequest: function (url, params) {
-    if (params.method != "get") {
+    const method = params.method.toLowerCase();
+    if (method !== "get") {
       var idx = url.indexOf("?");
       params.parameters = url.substring(idx + 1);
       url = url.substring(0, idx);
     }
-    new Ajax.Request(url, params);
+
+    fetch(url, {
+      method: params.method,
+      headers: crumb.wrap({
+        "Content-Type": "application/x-www-form-urlencoded",
+      }),
+      body: method !== "get" ? params.parameters : null,
+    }).then((response) => {
+      params.onComplete(response);
+    });
   },
 
   schedule: function () {
-    if (this.inProgress >= this.maxParallel) return;
-    if (this.queue.length == 0) return;
+    if (this.inProgress >= this.maxParallel) {
+      return;
+    }
+    if (this.queue.length === 0) {
+      return;
+    }
 
     var next = this.queue.shift();
     this.sendRequest(next.url, {
       method: next.method,
       onComplete: function (x) {
-        updateValidationArea(next.target, x.responseText);
-        FormChecker.inProgress--;
-        FormChecker.schedule();
-        layoutUpdateCallback.call();
+        x.text().then((responseText) => {
+          updateValidationArea(next.target, responseText);
+          FormChecker.inProgress--;
+          FormChecker.schedule();
+          layoutUpdateCallback.call();
+        });
       },
     });
     this.inProgress++;
   },
 };
+
+/**
+ * Converts a JavaScript object to a URL form encoded string.
+ */
+function objectToUrlFormEncoded(parameters) {
+  // https://stackoverflow.com/a/37562814/4951015
+  // Code could be simplified if support for HTMLUnit is dropped
+  // body: new URLSearchParams(parameters) is enough then, but it doesn't work in HTMLUnit currently
+  let formBody = [];
+  for (const property in parameters) {
+    const encodedKey = encodeURIComponent(property);
+    const encodedValue = encodeURIComponent(parameters[property]);
+    formBody.push(encodedKey + "=" + encodedValue);
+  }
+  return formBody.join("&");
+}
 
 /**
  * Detects if http2 protocol is enabled.
@@ -308,7 +352,9 @@ function findNearBy(e, name) {
   var p = findFormItem(e, name, function (e, filter) {
     return filter(e) ? e : null;
   });
-  if (p != null && prefixes.length == 0) return p;
+  if (p != null && prefixes.length == 0) {
+    return p;
+  }
 
   var owner = findFormParent(e, null, true);
 
@@ -316,15 +362,21 @@ function findNearBy(e, name) {
     // keep finding elements until we find the good match
     while (true) {
       e = iterator(e, name);
-      if (e == null) return null;
+      if (e == null) {
+        return null;
+      }
 
       // make sure this candidate element 'e' is in the right point in the hierarchy
       var p = e;
       for (var i = 0; i < prefixes.length; i++) {
         p = findFormParent(p, null, true);
-        if (p.getAttribute("name") != prefixes[i]) return null;
+        if (p.getAttribute("name") != prefixes[i]) {
+          return null;
+        }
       }
-      if (findFormParent(p, null, true) == owner) return e;
+      if (findFormParent(p, null, true) == owner) {
+        return e;
+      }
     }
   }
 
@@ -332,10 +384,14 @@ function findNearBy(e, name) {
 }
 
 function controlValue(e) {
-  if (e == null) return null;
+  if (e == null) {
+    return null;
+  }
   // compute the form validation value to be sent to the server
   var type = e.getAttribute("type");
-  if (type != null && type.toLowerCase() == "checkbox") return e.checked;
+  if (type != null && type.toLowerCase() == "checkbox") {
+    return e.checked;
+  }
   return e.value;
 }
 
@@ -353,15 +409,21 @@ function qs(owner) {
     params: "",
 
     append: function (s) {
-      if (this.params.length == 0) this.params += "?";
-      else this.params += "&";
+      if (this.params.length == 0) {
+        this.params += "?";
+      } else {
+        this.params += "&";
+      }
       this.params += s;
       return this;
     },
 
     nearBy: function (name) {
       var e = findNearBy(owner, name);
-      if (e == null) return this; // skip
+      if (e == null) {
+        // skip
+        return this;
+      }
       return this.append(Path.tail(name) + "=" + toValue(e));
     },
 
@@ -375,19 +437,22 @@ function qs(owner) {
   };
 }
 
-// find the nearest ancestor node that has the given tag name
+// @deprecated Use standard javascript method `e.closest(tagName)` instead
+// eslint-disable-next-line no-unused-vars
 function findAncestor(e, tagName) {
-  do {
-    e = e.parentNode;
-  } while (e != null && e.tagName != tagName);
-  return e;
+  console.warn(
+    "Deprecated call to findAncestor - use standard javascript method `e.closest(tagName)` instead",
+  );
+  return e.closest(tagName);
 }
 
+// @deprecated Use standard javascript method `e.closest(className)` instead
+// eslint-disable-next-line no-unused-vars
 function findAncestorClass(e, cssClass) {
-  do {
-    e = e.parentNode;
-  } while (e != null && !Element.hasClassName(e, cssClass));
-  return e;
+  console.warn(
+    "Deprecated call to findAncestorClass - use standard javascript method `e.closest(className)` instead",
+  );
+  return e.closest("." + cssClass);
 }
 
 function isTR(tr, nodeClass) {
@@ -403,7 +468,9 @@ function findFollowingTR(node, className, nodeClass) {
   var tr = node;
   while (!isTR(tr, nodeClass)) {
     tr = tr.parentNode;
-    if (!(tr instanceof Element)) return null;
+    if (!(tr instanceof Element)) {
+      return null;
+    }
   }
 
   // then next TR that matches the CSS
@@ -416,13 +483,14 @@ function findFollowingTR(node, className, nodeClass) {
       if (
         queryChildren.length > 0 &&
         (isTR(queryChildren[0]) ||
-          Element.hasClassName(queryChildren[0], className))
-      )
+          queryChildren[0].classList.contains(className))
+      ) {
         return queryChildren[0];
+      }
     }
 
-    tr = $(tr).next();
-  } while (tr != null && (!isTR(tr) || !Element.hasClassName(tr, className)));
+    tr = tr.nextElementSibling;
+  } while (tr != null && (!isTR(tr) || !tr.classList.contains(className)));
 
   return tr;
 }
@@ -440,7 +508,9 @@ function findInFollowingTR(input, className) {
 function find(src, filter, traversalF) {
   while (src != null) {
     src = traversalF(src);
-    if (src != null && filter(src)) return src;
+    if (src != null && filter(src)) {
+      return src;
+    }
   }
   return null;
 }
@@ -452,8 +522,12 @@ function find(src, filter, traversalF) {
 function findPrevious(src, filter) {
   return find(src, filter, function (e) {
     var p = e.previousSibling;
-    if (p == null) return e.parentNode;
-    while (p.lastElementChild != null) p = p.lastElementChild;
+    if (p == null) {
+      return e.parentNode;
+    }
+    while (p.lastElementChild != null) {
+      p = p.lastElementChild;
+    }
     return p;
   });
 }
@@ -461,8 +535,12 @@ function findPrevious(src, filter) {
 function findNext(src, filter) {
   return find(src, filter, function (e) {
     var n = e.nextSibling;
-    if (n == null) return e.parentNode;
-    while (n.firstElementChild != null) n = n.firstElementChild;
+    if (n == null) {
+      return e.parentNode;
+    }
+    while (n.firstElementChild != null) {
+      n = n.firstElementChild;
+    }
     return n;
   });
 }
@@ -472,9 +550,10 @@ function findFormItem(src, name, directionF) {
   return directionF(src, function (e) {
     if (e.tagName == "INPUT" && e.type == "radio" && e.checked == true) {
       var r = 0;
-      while (e.name.substring(r, r + 8) == "removeme")
+      while (e.name.substring(r, r + 8) == "removeme") {
         //radio buttons have must be unique in repeatable blocks so name is prefixed
         r = e.name.indexOf("_", r + 8) + 1;
+      }
       return name == e.name.substring(r);
     }
     return (
@@ -501,6 +580,7 @@ function findNextFormItem(src, name) {
 /**
  * Parse HTML into DOM.
  */
+// eslint-disable-next-line no-unused-vars
 function parseHtml(html) {
   var c = document.createElement("div");
   c.innerHTML = html;
@@ -509,13 +589,10 @@ function parseHtml(html) {
 
 /**
  * Evaluates the script in global context.
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#direct_and_indirect_eval
  */
 function geval(script) {
-  // execScript chokes on "" but eval doesn't, so we need to reject it first.
-  if (script == null || script == "") return;
-  // see http://perfectionkills.com/global-eval-what-are-the-options/
-  // note that execScript cannot return value
-  (this.execScript || eval)(script);
+  (0, eval)(script);
 }
 
 /**
@@ -526,17 +603,15 @@ function geval(script) {
  * @param {String} event
  *      like 'change', 'blur', etc.
  */
+// eslint-disable-next-line no-unused-vars
 function fireEvent(element, event) {
-  if (document.createEvent) {
-    // dispatch for firefox + others
-    var evt = document.createEvent("HTMLEvents");
-    evt.initEvent(event, true, true); // event type,bubbling,cancelable
-    return !element.dispatchEvent(evt);
-  } else {
-    // dispatch for IE
-    var evt = document.createEventObject();
-    return element.fireEvent("on" + event, evt);
-  }
+  return !element.dispatchEvent(
+    new CustomEvent(event, {
+      bubbles: true,
+      cancelable: true,
+      detail: element,
+    }),
+  );
 }
 
 // Behavior rules
@@ -559,17 +634,7 @@ function updateValidationArea(validationArea, content) {
     // Only change content if different, causes an unnecessary animation otherwise
     if (validationArea.innerHTML !== content) {
       validationArea.innerHTML = content;
-      validationArea.style.height =
-        validationArea.children[0].offsetHeight + "px";
-
-      // Only include the notice in the validation-error-area, move all other elements out
-      if (validationArea.children.length > 1) {
-        Array.from(validationArea.children)
-          .slice(1)
-          .forEach((element) => {
-            validationArea.after(element);
-          });
-      }
+      validationArea.style.height = "auto";
 
       Behaviour.applySubtree(validationArea);
       // For errors with additional details, apply the subtree to the expandable details pane
@@ -588,7 +653,7 @@ function registerValidator(e) {
   if (!tr) {
     console.warn(
       "Couldn't find the expected validation element (.validation-error-area) for element",
-      e.closest(".jenkins-form-item")
+      e.closest(".jenkins-form-item"),
     );
     return;
   }
@@ -604,41 +669,38 @@ function registerValidator(e) {
       try {
         return eval(url); // need access to 'this', so no 'geval'
       } catch (e) {
-        if (window.console != null)
-          console.warn(
-            "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e
-          );
-        if (window.YUI != null)
-          YUI.log(
-            "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
-            "warn"
-          );
+        console.warn(
+          "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
+        );
         return url; // return plain url as fallback
       }
     } else {
       var q = qs(this).addThis();
-      if (depends.length > 0)
-        depends.split(" ").each(
+      if (depends.length > 0) {
+        depends.split(" ").forEach(
           TryEach(function (n) {
             q.nearBy(n);
-          })
+          }),
         );
+      }
       return url + q.toString();
     }
   };
+
   var method = e.getAttribute("checkMethod") || "post";
 
   var url = e.targetUrl();
   try {
     FormChecker.delayedCheck(url, method, e.targetElement);
+    // eslint-disable-next-line no-unused-vars
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
     // don't let this kill off the entire JavaScript
-    YAHOO.log(
+    console.warn(
       "Failed to register validation method: " +
         e.getAttribute("checkUrl") +
         " : " +
-        e
+        e,
     );
     return;
   }
@@ -647,13 +709,15 @@ function registerValidator(e) {
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
       method: method,
-      onComplete: function ({ status, responseText }) {
+      onComplete: function (response) {
         // TODO Add i18n support
-        const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
-        updateValidationArea(
-          validationArea,
-          status === 200 ? responseText : errorMessage
-        );
+        response.text().then((responseText) => {
+          const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+          updateValidationArea(
+            validationArea,
+            response.status === 200 ? responseText : errorMessage,
+          );
+        });
       },
     });
   };
@@ -663,25 +727,21 @@ function registerValidator(e) {
       checker.call(this);
       oldOnchange.call(this);
     };
-  } else e.onchange = checker;
+  } else {
+    e.onchange = checker;
+  }
 
   var v = e.getAttribute("checkDependsOn");
   if (v) {
-    v.split(" ").each(
+    v.split(" ").forEach(
       TryEach(function (name) {
         var c = findNearBy(e, name);
         if (c == null) {
-          if (window.console != null)
-            console.warn("Unable to find nearby " + name);
-          if (window.YUI != null)
-            YUI.log(
-              "Unable to find a nearby control of the name " + name,
-              "warn"
-            );
+          console.warn("Unable to find nearby " + name);
           return;
         }
-        $(c).observe("change", checker.bind(e));
-      })
+        c.addEventListener("change", checker.bind(e));
+      }),
     );
   }
 
@@ -695,14 +755,16 @@ function registerRegexpValidator(e, regexp, message) {
   if (!tr) {
     console.warn(
       "Couldn't find the expected parent element (.setting-main) for element",
-      e.closest(".jenkins-form-item")
+      e.closest(".jenkins-form-item"),
     );
     return;
   }
   // find the validation-error-area
   e.targetElement = tr;
   var checkMessage = e.getAttribute("checkMessage");
-  if (checkMessage) message = checkMessage;
+  if (checkMessage) {
+    message = checkMessage;
+  }
   var oldOnchange = e.onchange;
   e.onchange = function () {
     var set = oldOnchange != null ? oldOnchange.call(this) : false;
@@ -713,7 +775,7 @@ function registerRegexpValidator(e, regexp, message) {
     } else {
       updateValidationArea(
         this.targetElement,
-        `<div class="error">${message}</div>`
+        `<div class="error">${message}</div>`,
       );
       set = true;
     }
@@ -734,14 +796,17 @@ function registerMinMaxValidator(e) {
   if (!tr) {
     console.warn(
       "Couldn't find the expected parent element (.setting-main) for element",
-      e.closest(".jenkins-form-item")
+      e.closest(".jenkins-form-item"),
     );
     return;
   }
   // find the validation-error-area
   e.targetElement = tr;
   var checkMessage = e.getAttribute("checkMessage");
-  if (checkMessage) message = checkMessage;
+  if (checkMessage) {
+    // eslint-disable-next-line no-undef
+    message = checkMessage;
+  }
   var oldOnchange = e.onchange;
   e.onchange = function () {
     var set = oldOnchange != null ? oldOnchange.call(this) : false;
@@ -767,7 +832,7 @@ function registerMinMaxValidator(e) {
             // The value is out of range
             updateValidationArea(
               this.targetElement,
-              `<div class="error">This value should be between ${min} and ${max}</div>`
+              `<div class="error">This value should be between ${min} and ${max}</div>`,
             );
             set = true;
           } else {
@@ -786,7 +851,7 @@ function registerMinMaxValidator(e) {
         if (parseInt(min) > parseInt(this.value)) {
           updateValidationArea(
             this.targetElement,
-            `<div class="error">This value should be larger than ${min}</div>`
+            `<div class="error">This value should be larger than ${min}</div>`,
           );
           set = true;
         } else {
@@ -804,7 +869,7 @@ function registerMinMaxValidator(e) {
         if (parseInt(max) < parseInt(this.value)) {
           updateValidationArea(
             this.targetElement,
-            `<div class="error">This value should be less than ${max}</div>`
+            `<div class="error">This value should be less than ${max}</div>`,
           );
           set = true;
         } else {
@@ -830,53 +895,87 @@ function preventInputEe(event) {
   }
 }
 
+function escapeHTML(html) {
+  return html
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 /**
- * Wraps a <button> into YUI button.
+ * Replaces a <input> with a <button class="jenkins-button">
  *
  * @param e
  *      button element
  * @param onclick
  *      onclick handler
  * @return
- *      YUI Button widget.
+ *      wrapper with some functions (formerly a YUI widget).
+ * @deprecated use <button class="jenkins-button"> and attach event listeners with standard javascript
  */
 function makeButton(e, onclick) {
-  var h = e.onclick;
-  var clsName = e.className;
-  var n = e.name;
+  console.warn(
+    "Deprecated call to makeButton - use <button class='jenkins-button'> instead and standard javascript to attach listeners.",
+  );
+  const h = e.onclick;
+  const n = e.name;
 
-  var attributes = {};
-  // YUI Button class interprets value attribute of <input> as HTML
-  // similar to how the child nodes of a <button> are treated as HTML.
-  // in standard HTML, we wouldn't expect the former case, yet here we are!
-  if (e.tagName === "INPUT") {
-    attributes.label = e.value.escapeHTML();
+  const button = document.createElement("button");
+  if (e.id) {
+    button.id = e.id;
   }
-  var btn = new YAHOO.widget.Button(e, attributes);
-  if (onclick != null) btn.addListener("click", onclick);
-  if (h != null) btn.addListener("click", h);
-  var be = btn.get("element");
-  var classesSeparatedByWhitespace = clsName.split(" ");
-  for (var i = 0; i < classesSeparatedByWhitespace.length; i++) {
-    var singleClass = classesSeparatedByWhitespace[i];
-    if (singleClass) {
-      be.classList.add(singleClass);
-    }
+  if (onclick != null) {
+    button.addEventListener("click", onclick);
   }
-  if (n)
+  if (h != null) {
+    button.addEventListener("click", h);
+  }
+  if (n) {
     // copy the name
-    be.setAttribute("name", n);
-
-  // keep the data-* attributes from the source
-  var length = e.attributes.length;
-  for (var i = 0; i < length; i++) {
-    var attribute = e.attributes[i];
-    var attributeName = attribute.name;
+    button.setAttribute("name", n);
+  }
+  if (e.type === "submit" || e.type === "button") {
+    button.type = e.type;
+  }
+  const length = e.attributes.length;
+  for (let i = 0; i < length; i++) {
+    const attribute = e.attributes[i];
+    const attributeName = attribute.name;
     if (attributeName.startsWith("data-")) {
-      btn._button.setAttribute(attributeName, attribute.value);
+      button.setAttribute(attributeName, attribute.value);
     }
   }
-  return btn;
+  button.innerText = e.value;
+  button.classList.add("jenkins-button");
+  const classNames = e.classList;
+  if (classNames.contains("primary") || classNames.contains("submit-button")) {
+    button.classList.add("jenkins-button--primary");
+  }
+  classNames.remove("primary");
+  classNames.remove("submit-button");
+  classNames.remove("yui-button");
+  for (let i = 0; i < classNames.length; i++) {
+    button.classList.add(classNames.item(i));
+  }
+
+  function Button(button) {
+    this.button = button;
+  }
+  Button.prototype.set = function (attributeName, value) {
+    if (attributeName === "disabled") {
+      if (value) {
+        this.button.disabled = "disabled";
+      } else {
+        this.button.removeAttribute("disabled");
+      }
+    }
+  };
+  Button.prototype.getForm = function () {
+    return this.button.closest("form");
+  };
+  e.parentNode.insertBefore(button, e);
+  e.remove();
+  return new Button(button);
 }
 
 /*
@@ -884,9 +983,7 @@ function makeButton(e, onclick) {
     the behavior re-executes when the removed master copy gets reinserted later.
  */
 function isInsideRemovable(e) {
-  return Element.ancestors(e).find(function (f) {
-    return f.hasClassName("to-be-removed");
-  });
+  return !!e.closest(".to-be-removed");
 }
 
 /**
@@ -898,8 +995,16 @@ function isInsideRemovable(e) {
  *      if specified, skip the application of behaviour rule.
  */
 function renderOnDemand(e, callback, noBehaviour) {
-  if (!e || !Element.hasClassName(e, "render-on-demand")) return;
-  var proxy = eval(e.getAttribute("proxy"));
+  if (!e || !e.classList.contains("render-on-demand")) {
+    return;
+  }
+
+  let proxyMethod = e.getAttribute("data-proxy-method");
+  let proxyUrl = e.getAttribute("data-proxy-url");
+  let proxyCrumb = e.getAttribute("data-proxy-crumb");
+  let proxyUrlNames = e.getAttribute("data-proxy-url-names").split(",");
+
+  var proxy = window[proxyMethod](proxyUrl, proxyCrumb, proxyUrlNames);
   proxy.render(function (t) {
     var contextTagName = e.parentNode.tagName;
     var c;
@@ -916,13 +1021,17 @@ function renderOnDemand(e, callback, noBehaviour) {
     while (c.firstElementChild != null) {
       var n = c.firstElementChild;
       e.parentNode.insertBefore(n, e);
-      if (n.nodeType == 1 && !noBehaviour) elements.push(n);
+      if (n.nodeType == 1 && !noBehaviour) {
+        elements.push(n);
+      }
     }
-    Element.remove(e);
+    e.remove();
 
     evalInnerHtmlScripts(t.responseText, function () {
       Behaviour.applySubtree(elements, true);
-      if (callback) callback(t);
+      if (callback) {
+        callback(t);
+      }
     });
   });
 }
@@ -969,19 +1078,13 @@ function sequencer(fs) {
 
 function progressBarOnClick() {
   var href = this.getAttribute("href");
-  if (href != null) window.location = href;
-}
-
-function expandButton(e) {
-  var link = e.target;
-  while (!Element.hasClassName(link, "advancedLink")) link = link.parentNode;
-  link.style.display = "none";
-  $(link).next().style.display = "block";
-  layoutUpdateCallback.call();
+  if (href != null) {
+    window.location = href;
+  }
 }
 
 function labelAttachPreviousOnClick() {
-  var e = $(this).previous();
+  var e = this.previousElementSibling;
   while (e != null) {
     if (e.classList.contains("jenkins-radio")) {
       e = e.querySelector("input");
@@ -990,7 +1093,7 @@ function labelAttachPreviousOnClick() {
       e.click();
       break;
     }
-    e = e.previous();
+    e = e.previousElementSibling;
   }
 }
 
@@ -999,42 +1102,44 @@ function helpButtonOnClick() {
     findFollowingTR(this, "help-area", "help-sibling") ||
     findFollowingTR(this, "help-area", "setting-help") ||
     findFollowingTR(this, "help-area");
-  var div = $(tr).down();
-  if (!div.hasClassName("help")) div = div.next().down();
+  var div = tr.firstElementChild;
+  if (!div.classList.contains("help")) {
+    div = div.nextElementSibling.firstElementChild;
+  }
 
   if (div.style.display != "block") {
     div.style.display = "block";
     // make it visible
-    new Ajax.Request(this.getAttribute("helpURL"), {
-      method: "get",
-      onSuccess: function (x) {
-        // Which plugin is this from?
-        var from = x.getResponseHeader("X-Plugin-From");
-        div.innerHTML =
-          x.responseText +
-          (from ? "<div class='from-plugin'>" + from + "</div>" : "");
 
-        // Ensure links open in new window unless explicitly specified otherwise
-        var links = div.getElementsByTagName("a");
-        for (var i = 0; i < links.length; i++) {
-          var link = links[i];
-          if (link.hasAttribute("href")) {
-            // ignore document anchors
-            if (!link.hasAttribute("target")) {
-              link.setAttribute("target", "_blank");
-            }
-            if (!link.hasAttribute("rel")) {
-              link.setAttribute("rel", "noopener noreferrer");
+    fetch(this.getAttribute("helpURL")).then((rsp) => {
+      rsp.text().then((responseText) => {
+        if (rsp.ok) {
+          var from = rsp.headers.get("X-Plugin-From");
+          // Which plugin is this from?
+          div.innerHTML =
+            responseText +
+            (from ? "<div class='from-plugin'>" + from + "</div>" : "");
+
+          // Ensure links open in new window unless explicitly specified otherwise
+          var links = div.getElementsByTagName("a");
+          for (var i = 0; i < links.length; i++) {
+            var link = links[i];
+            if (link.hasAttribute("href")) {
+              // ignore document anchors
+              if (!link.hasAttribute("target")) {
+                link.setAttribute("target", "_blank");
+              }
+              if (!link.hasAttribute("rel")) {
+                link.setAttribute("rel", "noopener noreferrer");
+              }
             }
           }
+        } else {
+          div.innerHTML =
+            "<b>ERROR</b>: Failed to load help file: " + rsp.statusText;
         }
         layoutUpdateCallback.call();
-      },
-      onFailure: function (x) {
-        div.innerHTML =
-          "<b>ERROR</b>: Failed to load help file: " + x.statusText;
-        layoutUpdateCallback.call();
-      },
+      });
     });
   } else {
     div.style.display = "none";
@@ -1044,36 +1149,35 @@ function helpButtonOnClick() {
   return false;
 }
 
-function isGeckoCommandKey() {
-  return Prototype.Browser.Gecko && event.keyCode == 224;
-}
-function isOperaCommandKey() {
-  return Prototype.Browser.Opera && event.keyCode == 17;
-}
-function isWebKitCommandKey() {
-  return (
-    Prototype.Browser.WebKit && (event.keyCode == 91 || event.keyCode == 93)
-  );
-}
-function isCommandKey() {
-  return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
+function isCommandKey(event) {
+  return event.key === "Meta";
 }
 function isReturnKeyDown() {
-  return event.type == "keydown" && event.keyCode == Event.KEY_RETURN;
+  return event.type == "keydown" && event.key === "Enter";
 }
 function getParentForm(element) {
-  if (element == null) throw "not found a parent form";
-  if (element instanceof HTMLFormElement) return element;
+  if (element == null) {
+    throw "not found a parent form";
+  }
+  if (element instanceof HTMLFormElement) {
+    return element;
+  }
 
   return getParentForm(element.parentNode);
 }
 
 // figure out the corresponding end marker
 function findEnd(e) {
-  for (var depth = 0; ; e = $(e).next()) {
-    if (Element.hasClassName(e, "rowvg-start")) depth++;
-    if (Element.hasClassName(e, "rowvg-end")) depth--;
-    if (depth == 0) return e;
+  for (var depth = 0; ; e = e.nextElementSibling) {
+    if (e.classList.contains("rowvg-start")) {
+      depth++;
+    }
+    if (e.classList.contains("rowvg-end")) {
+      depth--;
+    }
+    if (depth == 0) {
+      return e;
+    }
   }
 }
 
@@ -1089,7 +1193,7 @@ function makeInnerVisible(b) {
 
 function updateVisibility() {
   var display = this.outerVisible && this.innerVisible;
-  for (var e = this.start; e != this.end; e = $(e).next()) {
+  for (var e = this.start; e != this.end; e = e.nextElementSibling) {
     if (e.rowVisibilityGroup && e != this.start) {
       e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
       e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
@@ -1109,13 +1213,22 @@ function updateVisibility() {
 
 function rowvgStartEachRow(recursive, f) {
   if (recursive) {
-    for (var e = this.start; e != this.end; e = $(e).next()) f(e);
+    for (var e = this.start; e != this.end; e = e.nextElementSibling) {
+      f(e);
+    }
   } else {
     throw "not implemented yet";
   }
 }
 
 (function () {
+  // This moves all link elements to the head
+  // fixes JENKINS-72196 when a link is inside a div of a repeatable and the
+  // div is deleted then the styling is lost for divs afterwards.
+  Behaviour.specify("body link", "move-css-to-head", -9999, function (link) {
+    document.head.appendChild(link);
+  });
+
   var p = 20;
   Behaviour.specify("TABLE.sortable", "table-sortable", ++p, function (e) {
     // sortable table
@@ -1123,22 +1236,13 @@ function rowvgStartEachRow(recursive, f) {
   });
 
   Behaviour.specify(
-    "TABLE.progress-bar",
+    "TABLE.progress-bar, div.app-progress-bar",
     "table-progress-bar",
     ++p,
     function (e) {
       // progressBar.jelly
       e.onclick = progressBarOnClick;
-    }
-  );
-
-  Behaviour.specify(
-    "INPUT.expand-button",
-    "input-expand-button",
-    ++p,
-    function (e) {
-      makeButton(e, expandButton);
-    }
+    },
   );
 
   // <label> that doesn't use ID, so that it can be copied in <repeatable>
@@ -1148,7 +1252,7 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       e.onclick = labelAttachPreviousOnClick;
-    }
+    },
   );
 
   // form fields that are validated via AJAX call to the server
@@ -1157,19 +1261,19 @@ function rowvgStartEachRow(recursive, f) {
     "INPUT.validated",
     "input-validated",
     ++p,
-    registerValidator
+    registerValidator,
   );
   Behaviour.specify(
     "SELECT.validated",
     "select-validated",
     ++p,
-    registerValidator
+    registerValidator,
   );
   Behaviour.specify(
     "TEXTAREA.validated",
     "textarea-validated",
     ++p,
-    registerValidator
+    registerValidator,
   );
 
   // validate required form values
@@ -1181,7 +1285,7 @@ function rowvgStartEachRow(recursive, f) {
   Behaviour.specify("INPUT.number", "input-number", ++p, function (e) {
     e.addEventListener("keypress", preventInputEe);
     registerMinMaxValidator(e);
-    registerRegexpValidator(e, /^((\-?\d+)|)$/, "Not an integer");
+    registerRegexpValidator(e, /^((-?\d+)|)$/, "Not an integer");
   });
 
   Behaviour.specify(
@@ -1191,8 +1295,8 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
-      registerRegexpValidator(e, /^\-?(\d+)$/, "Not an integer");
-    }
+      registerRegexpValidator(e, /^-?(\d+)$/, "Not an integer");
+    },
   );
 
   Behaviour.specify(
@@ -1203,7 +1307,7 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
       registerRegexpValidator(e, /^\d+$/, "Not a non-negative integer");
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1214,7 +1318,7 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
       registerRegexpValidator(e, /^(\d*[1-9]\d*|)$/, "Not a positive integer");
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1225,50 +1329,7 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
       registerRegexpValidator(e, /^[1-9]\d*$/, "Not a positive integer");
-    }
-  );
-
-  Behaviour.specify(
-    "INPUT.auto-complete",
-    "input-auto-complete",
-    ++p,
-    function (e) {
-      // form field with auto-completion support
-      // insert the auto-completion container
-      var div = document.createElement("DIV");
-      e.parentNode.insertBefore(div, $(e).next() || null);
-      e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
-
-      var ds = new YAHOO.util.XHRDataSource(e.getAttribute("autoCompleteUrl"));
-      ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
-      ds.responseSchema = {
-        resultsList: "suggestions",
-        fields: ["name"],
-      };
-
-      // Instantiate the AutoComplete
-      var ac = new YAHOO.widget.AutoComplete(e, div, ds);
-      ac.generateRequest = function (query) {
-        return "?value=" + query;
-      };
-      ac.autoHighlight = false;
-      ac.prehighlightClassName = "yui-ac-prehighlight";
-      ac.animSpeed = 0;
-      ac.formatResult = ac.formatEscapedResult;
-      ac.useShadow = true;
-      ac.autoSnapContainer = true;
-      ac.delimChar = e.getAttribute("autoCompleteDelimChar");
-      ac.doBeforeExpandContainer = function (textbox, container) {
-        // adjust the width every time we show it
-        container.style.width = textbox.clientWidth + "px";
-        var Dom = YAHOO.util.Dom;
-        Dom.setXY(container, [
-          Dom.getX(textbox),
-          Dom.getY(textbox) + textbox.offsetHeight,
-        ]);
-        return true;
-      };
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1278,15 +1339,13 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       e.onclick = helpButtonOnClick;
       e.tabIndex = 9999; // make help link unnavigable from keyboard
-      e.parentNode.parentNode.addClassName("has-help");
-    }
+    },
   );
 
   // legacy class name
   Behaviour.specify("A.help-button", "a-help-button", ++p, function (e) {
     e.onclick = helpButtonOnClick;
     e.tabIndex = 9999; // make help link unnavigable from keyboard
-    e.parentNode.parentNode.addClassName("has-help");
   });
 
   // Script Console : settings and shortcut key
@@ -1294,13 +1353,12 @@ function rowvgStartEachRow(recursive, f) {
     (function () {
       var cmdKeyDown = false;
       var mode = e.getAttribute("script-mode") || "text/x-groovy";
-      var readOnly = eval(e.getAttribute("script-readOnly")) || false;
 
+      // eslint-disable-next-line no-unused-vars
       var w = CodeMirror.fromTextArea(e, {
         mode: mode,
         lineNumbers: true,
         matchBrackets: true,
-        readOnly: readOnly,
         onKeyEvent: function (editor, event) {
           function saveAndSubmit() {
             editor.save();
@@ -1310,10 +1368,10 @@ function rowvgStartEachRow(recursive, f) {
 
           // Mac (Command + Enter)
           if (navigator.userAgent.indexOf("Mac") > -1) {
-            if (event.type == "keydown" && isCommandKey()) {
+            if (event.type == "keydown" && isCommandKey(event)) {
               cmdKeyDown = true;
             }
-            if (event.type == "keyup" && isCommandKey()) {
+            if (event.type == "keyup" && isCommandKey(event)) {
               cmdKeyDown = false;
             }
             if (cmdKeyDown && isReturnKeyDown()) {
@@ -1336,16 +1394,17 @@ function rowvgStartEachRow(recursive, f) {
   // deferred client-side clickable map.
   // this is useful where the generation of <map> element is time consuming
   Behaviour.specify("IMG[lazymap]", "img-lazymap-", ++p, function (e) {
-    new Ajax.Request(e.getAttribute("lazymap"), {
-      method: "get",
-      onSuccess: function (x) {
-        var div = document.createElement("div");
-        document.body.appendChild(div);
-        div.innerHTML = x.responseText;
-        var id = "map" + iota++;
-        div.firstElementChild.setAttribute("name", id);
-        e.setAttribute("usemap", "#" + id);
-      },
+    fetch(e.getAttribute("lazymap")).then((rsp) => {
+      if (rsp.ok) {
+        rsp.text().then((responseText) => {
+          var div = document.createElement("div");
+          document.body.appendChild(div);
+          div.innerHTML = responseText;
+          var id = "map" + iota++;
+          div.firstElementChild.setAttribute("name", id);
+          e.setAttribute("usemap", "#" + id);
+        });
+      }
     });
   });
 
@@ -1356,7 +1415,7 @@ function rowvgStartEachRow(recursive, f) {
     const resizer = document.createElement("div");
     resizer.className = "jenkins-codemirror-resizer";
 
-    let start_x;
+    let start_x; // eslint-disable-line no-unused-vars
     let start_y;
     let start_h;
 
@@ -1367,7 +1426,7 @@ function rowvgStartEachRow(recursive, f) {
     function on_drag(e) {
       codemirror.CodeMirror.setSize(
         null,
-        Math.max(MIN_HEIGHT, start_h + e.y - start_y) + "px"
+        Math.max(MIN_HEIGHT, start_h + e.y - start_y) + "px",
       );
     }
 
@@ -1391,7 +1450,9 @@ function rowvgStartEachRow(recursive, f) {
   // structured form submission
   Behaviour.specify("FORM", "form", ++p, function (form) {
     crumb.appendToForm(form);
-    if (Element.hasClassName(form, "no-json")) return;
+    if (form.classList.contains("no-json")) {
+      return;
+    }
     // add the hidden 'json' input field, which receives the form structure in JSON
     var div = document.createElement("div");
     div.classList.add("jenkins-!-display-contents");
@@ -1418,7 +1479,7 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       makeButton(e);
-    }
+    },
   );
 
   Behaviour.specify("INPUT.yui-button", "input-yui-button", ++p, function (e) {
@@ -1436,7 +1497,7 @@ function rowvgStartEachRow(recursive, f) {
 
       // Set start.ref to checkbox in preparation of row-set-end processing
       e.setAttribute("ref", (checkbox.id = "cb" + iota++));
-    }
+    },
   );
 
   // see RowVisibilityGroupTest
@@ -1484,7 +1545,7 @@ function rowvgStartEachRow(recursive, f) {
          */
         eachRow: rowvgStartEachRow,
       };
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1495,7 +1556,7 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("click", function () {
         updateOptionalBlock(e);
       });
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1505,13 +1566,18 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       // see rowSet.jelly and optionalBlock.jelly
       // figure out the corresponding start block
-      e = $(e);
       var end = e;
 
-      for (var depth = 0; ; e = e.previous()) {
-        if (e.hasClassName("row-set-end")) depth++;
-        if (e.hasClassName("row-set-start")) depth--;
-        if (depth == 0) break;
+      for (var depth = 0; ; e = e.previousElementSibling) {
+        if (e.classList.contains("row-set-end")) {
+          depth++;
+        }
+        if (e.classList.contains("row-set-start")) {
+          depth--;
+        }
+        if (depth == 0) {
+          break;
+        }
       }
       var start = e;
 
@@ -1519,10 +1585,12 @@ function rowvgStartEachRow(recursive, f) {
       // if we don't find it, turn the start node into the governing node (thus the end result is that you
       // created an intermediate JSON object that's always on.)
       var ref = start.getAttribute("ref");
-      if (ref == null) start.id = ref = "rowSetStart" + iota++;
+      if (ref == null) {
+        start.id = ref = "rowSetStart" + iota++;
+      }
 
       applyNameRef(start, end, ref);
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1537,7 +1605,7 @@ function rowvgStartEachRow(recursive, f) {
       // Get the `input` from the checkbox container
       var checkbox = e.querySelector("input[type='checkbox']");
       updateOptionalBlock(checkbox);
-    }
+    },
   );
 
   // image that shows [+] or [-], with hover effect.
@@ -1562,13 +1630,18 @@ function rowvgStartEachRow(recursive, f) {
       var s = e.getAttribute("state");
       if (s == "plus") {
         e.setAttribute("state", "minus");
-        if (e.onexpanded) e.onexpanded();
+        if (e.onexpanded) {
+          e.onexpanded();
+        }
       } else {
         e.setAttribute("state", "plus");
-        if (e.oncollapsed) e.oncollapsed();
+        if (e.oncollapsed) {
+          e.oncollapsed();
+        }
       }
       changeTo(e, "-hover.png");
-      YAHOO.util.Event.stopEvent(event);
+      event.stopPropagation();
+      event.preventDefault();
       return false;
     };
     e = null; // memory leak prevention
@@ -1577,10 +1650,10 @@ function rowvgStartEachRow(recursive, f) {
   // editableComboBox.jelly
   Behaviour.specify("INPUT.combobox", "input-combobox", ++p, function (c) {
     // Next element after <input class="combobox"/> should be <div class="combobox-values">
-    var vdiv = $(c).next();
-    if (vdiv.hasClassName("combobox-values")) {
+    var vdiv = c.nextElementSibling;
+    if (vdiv.classList.contains("combobox-values")) {
       createComboBox(c, function () {
-        return vdiv.childElements().collect(function (value) {
+        return Array.from(vdiv.children).map(function (value) {
           return value.getAttribute("value");
         });
       });
@@ -1593,18 +1666,20 @@ function rowvgStartEachRow(recursive, f) {
     "select-dropdownlist",
     ++p,
     function (e) {
-      if (isInsideRemovable(e)) return;
+      if (isInsideRemovable(e)) {
+        return;
+      }
 
       var subForms = [];
-      var start = findInFollowingTR(e, "dropdownList-container"),
-        end;
+      var start = findInFollowingTR(e, "dropdownList-container");
 
       do {
         start = start.firstElementChild;
       } while (start && !isTR(start));
 
-      if (start && !Element.hasClassName(start, "dropdownList-start"))
+      if (start && !start.classList.contains("dropdownList-start")) {
         start = findFollowingTR(start, "dropdownList-start");
+      }
       while (start != null) {
         subForms.push(start);
         start = findFollowingTR(start, "dropdownList-start");
@@ -1614,9 +1689,11 @@ function rowvgStartEachRow(recursive, f) {
       function updateDropDownList() {
         for (var i = 0; i < subForms.length; i++) {
           var show = e.selectedIndex == i;
-          var f = $(subForms[i]);
+          var f = subForms[i];
 
-          if (show) renderOnDemand(f.next());
+          if (show) {
+            renderOnDemand(f.nextElementSibling);
+          }
           f.rowVisibilityGroup.makeInnerVisible(show);
 
           // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
@@ -1629,7 +1706,7 @@ function rowvgStartEachRow(recursive, f) {
                 }
               : function (e) {
                   e.setAttribute("field-disabled", "true");
-                }
+                },
           );
         }
       }
@@ -1637,13 +1714,13 @@ function rowvgStartEachRow(recursive, f) {
       e.onchange = updateDropDownList;
 
       updateDropDownList();
-    }
+    },
   );
 
   Behaviour.specify("A.showDetails", "a-showdetails", ++p, function (e) {
     e.onclick = function () {
       this.style.display = "none";
-      $(this).next().style.display = "block";
+      this.nextElementSibling.style.display = "block";
       layoutUpdateCallback.call();
       return false;
     };
@@ -1656,39 +1733,8 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       e.classList.add("behavior-loading--hidden");
-    }
+    },
   );
-
-  Behaviour.specify(
-    ".button-with-dropdown",
-    "-button-with-dropdown",
-    ++p,
-    function (e) {
-      new YAHOO.widget.Button(e, { type: "menu", menu: $(e).next() });
-    }
-  );
-
-  Behaviour.specify(".track-mouse", "-track-mouse", ++p, function (element) {
-    var DOM = YAHOO.util.Dom;
-
-    $(element).observe("mouseenter", function () {
-      element.addClassName("mouseover");
-
-      var mousemoveTracker = function (event) {
-        var elementRegion = DOM.getRegion(element);
-        if (
-          event.x < elementRegion.left ||
-          event.x > elementRegion.right ||
-          event.y < elementRegion.top ||
-          event.y > elementRegion.bottom
-        ) {
-          element.removeClassName("mouseover");
-          Element.stopObserving(document, "mousemove", mousemoveTracker);
-        }
-      };
-      Element.observe(document, "mousemove", mousemoveTracker);
-    });
-  });
 
   window.addEventListener("load", function () {
     // Add a class to the bottom bar when it's stuck to the bottom of the screen
@@ -1698,9 +1744,9 @@ function rowvgStartEachRow(recursive, f) {
         ([e]) =>
           e.target.classList.toggle(
             "bottom-sticker-inner--stuck",
-            e.intersectionRatio < 1
+            e.intersectionRatio < 1,
           ),
-        { threshold: [1] }
+        { threshold: [1] },
       );
 
       observer.observe(el);
@@ -1726,7 +1772,9 @@ function rowvgStartEachRow(recursive, f) {
     function (label) {
       var labelParent = label.parentElement.parentElement;
 
-      if (!labelParent.classList.contains("setting-main")) return;
+      if (!labelParent.classList.contains("setting-main")) {
+        return;
+      }
 
       function findSettingName(formGroup) {
         for (var i = 0; i < formGroup.childNodes.length; i++) {
@@ -1734,13 +1782,16 @@ function rowvgStartEachRow(recursive, f) {
           if (
             child.classList.contains("jenkins-form-label") ||
             child.classList.contains("setting-name")
-          )
+          ) {
             return child;
+          }
         }
       }
 
       var settingName = findSettingName(labelParent.parentNode);
-      if (settingName == undefined) return;
+      if (settingName == undefined) {
+        return;
+      }
       var jenkinsHelpButton = settingName.querySelector(".jenkins-help-button");
       var helpLink =
         jenkinsHelpButton !== null
@@ -1761,27 +1812,7 @@ function rowvgStartEachRow(recursive, f) {
       var spanTag = document.createElement("span");
       spanTag.innerHTML = labelText;
       label.appendChild(spanTag);
-    }
-  );
-
-  // stop button JS cannot be done as adjunct, as it can be inside an Ajax response
-  Behaviour.specify(
-    ".stop-button-link",
-    "stop-button-link",
-    0,
-    function (link) {
-      let question = link.getAttribute("data-confirm");
-      let url = link.getAttribute("href");
-      link.addEventListener("click", function (e) {
-        e.preventDefault();
-        if (question !== null) {
-          if (!confirm(question)) {
-            return;
-          }
-        }
-        new Ajax.Request(url);
-      });
-    }
+    },
   );
 })();
 
@@ -1792,7 +1823,9 @@ Behaviour.register(hudsonRules);
 var Path = {
   tail: function (p) {
     var idx = p.lastIndexOf("/");
-    if (idx < 0) return p;
+    if (idx < 0) {
+      return p;
+    }
     return p.substring(idx + 1);
   },
 };
@@ -1800,36 +1833,31 @@ var Path = {
 /**
  * Install change handlers based on the 'fillDependsOn' attribute.
  */
+// eslint-disable-next-line no-unused-vars
 function refillOnChange(e, onChange) {
   var deps = [];
 
   function h() {
     var params = {};
-    deps.each(
+    deps.forEach(
       TryEach(function (d) {
         params[d.name] = controlValue(d.control);
-      })
+      }),
     );
     onChange(params);
   }
   var v = e.getAttribute("fillDependsOn");
   if (v != null) {
-    v.split(" ").each(
+    v.split(" ").forEach(
       TryEach(function (name) {
         var c = findNearBy(e, name);
         if (c == null) {
-          if (window.console != null)
-            console.warn("Unable to find nearby " + name);
-          if (window.YUI != null)
-            YUI.log(
-              "Unable to find a nearby control of the name " + name,
-              "warn"
-            );
+          console.warn("Unable to find nearby " + name);
           return;
         }
-        $(c).observe("change", h);
+        c.addEventListener("change", h);
         deps.push({ name: Path.tail(name), control: c });
-      })
+      }),
     );
   }
   h(); // initial fill
@@ -1841,28 +1869,38 @@ function xor(a, b) {
 }
 
 // used by editableDescription.jelly to replace the description field with a form
+// eslint-disable-next-line no-unused-vars
 function replaceDescription(initialDescription, submissionUrl) {
   var d = document.getElementById("description");
-  $(d).down().next().innerHTML = "<div class='jenkins-spinner'></div>";
-  let parameters = {};
-  if (initialDescription !== undefined && submissionUrl !== undefined) {
-    parameters = {
-      description: initialDescription,
-      submissionUrl: submissionUrl,
-    };
+  let button = d.firstElementChild.nextElementSibling;
+  if (button !== null) {
+    d.firstElementChild.nextElementSibling.innerHTML =
+      "<div class='jenkins-spinner'></div>";
   }
-  new Ajax.Request("./descriptionForm", {
-    parameters: parameters,
-    onComplete: function (x) {
-      d.innerHTML = x.responseText;
-      evalInnerHtmlScripts(x.responseText, function () {
+  let parameters = {};
+  if (initialDescription !== null && initialDescription !== "") {
+    parameters["description"] = initialDescription;
+  }
+  if (submissionUrl !== null && submissionUrl !== "") {
+    parameters["submissionUrl"] = submissionUrl;
+  }
+  fetch("./descriptionForm", {
+    method: "post",
+    headers: crumb.wrap({
+      "Content-Type": "application/x-www-form-urlencoded",
+    }),
+    body: objectToUrlFormEncoded(parameters),
+  }).then((rsp) => {
+    rsp.text().then((responseText) => {
+      d.innerHTML = responseText;
+      evalInnerHtmlScripts(responseText, function () {
         Behaviour.applySubtree(d);
         d.getElementsByTagName("TEXTAREA")[0].focus();
       });
       layoutUpdateCallback.call();
-    },
+      return false;
+    });
   });
-  return false;
 }
 
 /**
@@ -1870,19 +1908,22 @@ function replaceDescription(initialDescription, submissionUrl) {
  * and attached under the element identified by the specified id.
  */
 function applyNameRef(s, e, id) {
-  $(id).groupingNode = true;
+  document.getElementById(id).groupingNode = true;
   // s contains the node itself
   applyNameRefHelper(s, e, id);
 }
 
 function applyNameRefHelper(s, e, id) {
-  if (s === null) return;
-  for (var x = $(s).next(); x != e; x = x.next()) {
+  if (s === null) {
+    return;
+  }
+  for (var x = s.nextElementSibling; x != e; x = x.nextElementSibling) {
     // to handle nested <f:rowSet> correctly, don't overwrite the existing value
     if (x.getAttribute("nameRef") == null) {
       x.setAttribute("nameRef", id);
-      if (x.hasClassName("tr"))
+      if (x.classList.contains("tr")) {
         applyNameRefHelper(x.firstElementChild, null, id);
+      }
     }
   }
 }
@@ -1891,14 +1932,18 @@ function applyNameRefHelper(s, e, id) {
 //   @param c     checkbox element
 function updateOptionalBlock(c) {
   // find the start TR
-  var s = $(c);
-  while (!s.hasClassName("optional-block-start")) s = s.up();
+  var s = c;
+  while (!s.classList.contains("optional-block-start")) {
+    s = s.parentNode;
+  }
 
   // find the beginning of the rowvg
   var vg = s;
-  while (!vg.hasClassName("rowvg-start")) vg = vg.next();
+  while (!vg.classList.contains("rowvg-start")) {
+    vg = vg.nextElementSibling;
+  }
 
-  var checked = xor(c.checked, Element.hasClassName(c, "negative"));
+  var checked = xor(c.checked, c.classList.contains("negative"));
 
   vg.rowVisibilityGroup.makeInnerVisible(checked);
 
@@ -1906,10 +1951,9 @@ function updateOptionalBlock(c) {
     // Hack to hide tool home when "Install automatically" is checked.
     var homeField = findPreviousFormItem(c, "home");
     if (homeField != null && homeField.value == "") {
-      var tr =
-        findAncestor(homeField, "TR") || findAncestorClass(homeField, "tr");
-      if (tr != null) {
-        tr.style.display = c.checked ? "none" : "";
+      const formItem = homeField.closest(".jenkins-form-item");
+      if (formItem != null) {
+        formItem.style.display = c.checked ? "none" : "";
         layoutUpdateCallback.call();
       }
     }
@@ -1920,6 +1964,7 @@ function updateOptionalBlock(c) {
 // Auto-scroll support for progressive log output.
 //   See http://radio.javaranch.com/pascarello/2006/08/17/1155837038219.html
 //
+// eslint-disable-next-line no-unused-vars
 function AutoScroller(scrollContainer) {
   // get the height of the viewport.
   // See http://www.howtocreate.co.uk/tutorials/javascript/browserwindow
@@ -1949,17 +1994,20 @@ function AutoScroller(scrollContainer) {
     scrollContainer: scrollContainer,
 
     getCurrentHeight: function () {
-      var scrollDiv = $(this.scrollContainer);
+      var scrollDiv = this.scrollContainer;
 
-      if (scrollDiv.scrollHeight > 0) return scrollDiv.scrollHeight;
-      else if (scrollDiv.offsetHeight > 0) return scrollDiv.offsetHeight;
+      if (scrollDiv.scrollHeight > 0) {
+        return scrollDiv.scrollHeight;
+      } else if (scrollDiv.offsetHeight > 0) {
+        return scrollDiv.offsetHeight;
+      }
 
       return null; // huh?
     },
 
     // return true if we are in the "stick to bottom" mode
     isSticking: function () {
-      var scrollDiv = $(this.scrollContainer);
+      var scrollDiv = this.scrollContainer;
       var currentHeight = this.getCurrentHeight();
 
       // when used with the BODY tag, the height needs to be the viewport height, instead of
@@ -1968,7 +2016,7 @@ function AutoScroller(scrollContainer) {
       var height = getViewportHeight();
       var scrollPos = Math.max(
         scrollDiv.scrollTop,
-        document.documentElement.scrollTop
+        document.documentElement.scrollTop,
       );
       var diff = currentHeight - scrollPos - height;
       // window.alert("currentHeight=" + currentHeight + ",scrollTop=" + scrollDiv.scrollTop + ",height=" + height);
@@ -1977,75 +2025,67 @@ function AutoScroller(scrollContainer) {
     },
 
     scrollToBottom: function () {
-      var scrollDiv = $(this.scrollContainer);
+      var scrollDiv = this.scrollContainer;
       var currentHeight = this.getCurrentHeight();
-      if (document.documentElement)
+      if (document.documentElement) {
         document.documentElement.scrollTop = currentHeight;
+      }
       scrollDiv.scrollTop = currentHeight;
     },
   };
 }
 
-// used in expandableTextbox.jelly to change a input field into a text area
-function expandTextArea(button, id) {
-  button.style.display = "none";
-  var field = button.parentNode.previousSibling.children[0];
-  var value = field.value.replace(/ +/g, "\n");
-
-  var n = button;
-  while (!n.classList.contains("expanding-input") && n.tagName != "TABLE") {
-    n = n.parentNode;
-  }
-
-  var parent = n.parentNode;
-  parent.innerHTML = "<textarea rows=8 class='jenkins-input'></textarea>";
-  var textArea = parent.childNodes[0];
-  textArea.name = field.name;
-  textArea.value = value;
-
-  layoutUpdateCallback.call();
-}
-
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
+// eslint-disable-next-line no-unused-vars
 function refreshPart(id, url) {
   var intervalID = null;
   var f = function () {
     if (isPageVisible()) {
-      new Ajax.Request(url, {
-        onSuccess: function (rsp) {
-          var hist = $(id);
-          if (hist == null) {
-            console.log("There's no element that has ID of " + id);
-            if (intervalID !== null) window.clearInterval(intervalID);
-            return;
-          }
-          if (!rsp.responseText) {
-            console.log(
-              "Failed to retrieve response for ID " +
-                id +
-                ", perhaps Jenkins is unavailable"
-            );
-            return;
-          }
-          var p = hist.up();
+      fetch(url, {
+        headers: crumb.wrap({}),
+        method: "post",
+      }).then((rsp) => {
+        if (rsp.ok) {
+          rsp.text().then((responseText) => {
+            var hist = document.getElementById(id);
+            if (hist == null) {
+              console.log("There's no element that has ID of " + id);
+              if (intervalID !== null) {
+                window.clearInterval(intervalID);
+              }
+              return;
+            }
+            if (!responseText) {
+              console.log(
+                "Failed to retrieve response for ID " +
+                  id +
+                  ", perhaps Jenkins is unavailable",
+              );
+              return;
+            }
+            var p = hist.parentNode;
 
-          var div = document.createElement("div");
-          div.innerHTML = rsp.responseText;
+            var div = document.createElement("div");
+            div.innerHTML = responseText;
 
-          var node = $(div).firstDescendant();
-          p.replaceChild(node, hist);
+            var node = div.firstElementChild;
+            p.replaceChild(node, hist);
 
-          Behaviour.applySubtree(node);
-          layoutUpdateCallback.call();
-        },
+            Behaviour.applySubtree(node);
+            layoutUpdateCallback.call();
+          });
+        }
       });
     }
   };
   // if run as test, just do it once and do it now to make sure it's working,
   // but don't repeat.
-  if (isRunAsTest) f();
-  else intervalID = window.setInterval(f, 5000);
+  if (isRunAsTest) {
+    f();
+  } else {
+    intervalID = window.setInterval(f, 5000);
+  }
 }
 
 /*
@@ -2053,6 +2093,7 @@ function refreshPart(id, url) {
     Taken from http://www.cresc.co.jp/tech/java/URLencoding/JavaScript_URLEncoding.htm
     @deprecated Use standard javascript method "encodeURIComponent" instead
 */
+// eslint-disable-next-line no-unused-vars
 function encode(str) {
   var s, u;
   var s0 = ""; // encoded str
@@ -2108,26 +2149,45 @@ function encode(str) {
 // when there are multiple form elements of the same name,
 // this method returns the input field of the given name that pairs up
 // with the specified 'base' input element.
-Form.findMatchingInput = function (base, name) {
+// eslint-disable-next-line no-unused-vars
+function findMatchingFormInput(base, name) {
   // find the FORM element that owns us
-  var f = base;
-  while (f.tagName != "FORM") f = f.parentNode;
+  var f = base.closest("form");
 
-  var bases = Form.getInputs(f, null, base.name);
-  var targets = Form.getInputs(f, null, name);
+  var bases = f.querySelectorAll(
+    'input[name="' +
+      base.name +
+      '"], textarea[name="' +
+      base.name +
+      '"], select[name="' +
+      base.name +
+      '"]',
+  );
+  var targets = f.querySelectorAll(
+    'input[name="' +
+      name +
+      '"], textarea[name="' +
+      name +
+      '"], select[name="' +
+      name +
+      '"]',
+  );
 
   for (var i = 0; i < bases.length; i++) {
-    if (bases[i] == base) return targets[i];
+    if (bases[i] == base) {
+      return targets[i];
+    }
   }
 
   return null; // not found
-};
+}
 
+// eslint-disable-next-line no-unused-vars
 function toQueryString(params) {
   var query = "";
   if (params) {
     for (var paramName in params) {
-      if (params.hasOwnProperty(paramName)) {
+      if (Object.prototype.hasOwnProperty.call(params, paramName)) {
         if (query === "") {
           query = "?";
         } else {
@@ -2140,41 +2200,16 @@ function toQueryString(params) {
   return query;
 }
 
-function getElementOverflowParams(element) {
-  // First we force it to wrap so we can get those dimension.
-  // Then we force it to "nowrap", so we can get those dimension.
-  // We can then compare the two sets, which will indicate if
-  // wrapping is potentially happening, or not.
-
-  // Force it to wrap.
-  element.classList.add("force-wrap");
-  var wrappedClientWidth = element.clientWidth;
-  var wrappedClientHeight = element.clientHeight;
-  element.classList.remove("force-wrap");
-
-  // Force it to nowrap. Return the comparisons.
-  element.classList.add("force-nowrap");
-  var nowrapClientHeight = element.clientHeight;
-  try {
-    var overflowParams = {
-      element: element,
-      clientWidth: wrappedClientWidth,
-      scrollWidth: element.scrollWidth,
-      isOverflowed: wrappedClientHeight > nowrapClientHeight,
-    };
-    return overflowParams;
-  } finally {
-    element.classList.remove("force-nowrap");
-  }
-}
-
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'
 function getStyle(e, a) {
-  if (document.defaultView && document.defaultView.getComputedStyle)
+  if (document.defaultView && document.defaultView.getComputedStyle) {
     return document.defaultView
       .getComputedStyle(e, null)
       .getPropertyValue(a.replace(/([A-Z])/g, "-$1"));
-  if (e.currentStyle) return e.currentStyle[a];
+  }
+  if (e.currentStyle) {
+    return e.currentStyle[a];
+  }
   return null;
 }
 
@@ -2184,17 +2219,19 @@ function getStyle(e, a) {
  * @param {HTMLElement} e
  *      The element to bring into the viewport.
  */
+// eslint-disable-next-line no-unused-vars
 function ensureVisible(e) {
-  var viewport = YAHOO.util.Dom.getClientRegion();
-  var pos = YAHOO.util.Dom.getRegion(e);
-
-  var Y = viewport.top;
-  var H = viewport.height;
+  const scrollTop = document.documentElement.scrollTop;
+  let Y = scrollTop;
+  let H = window.innerHeight;
+  let c = 0;
 
   function handleStickers(name, f) {
-    var e = $(name);
-    if (e) f(e);
-    document.getElementsBySelector("." + name).each(TryEach(f));
+    const e = document.getElementById(name);
+    if (e) {
+      f(e);
+    }
+    document.getElementsBySelector("." + name).forEach(TryEach(f));
   }
 
   // if there are any stickers around, subtract them from the viewport
@@ -2202,6 +2239,7 @@ function ensureVisible(e) {
     t = t.clientHeight;
     Y += t;
     H -= t;
+    c += t;
   });
 
   handleStickers("bottom-sticker", function (b) {
@@ -2209,19 +2247,20 @@ function ensureVisible(e) {
     H -= b;
   });
 
-  var y = pos.top;
-  var h = pos.height;
+  const box = e.getBoundingClientRect();
+  const y = Math.round(box.top + scrollTop);
+  const h = e.offsetHeight;
+  const d = y + h - (Y + H);
 
-  var d = y + h - (Y + H);
-  if (d > 0) {
-    document.body.scrollTop += d;
-  } else {
-    var d = Y - y;
-    if (d > 0) document.body.scrollTop -= d;
+  if (h > H) {
+    document.documentElement.scrollTop = y - c;
+  } else if (d > 0) {
+    document.documentElement.scrollTop += d;
   }
 }
 
 // set up logic behind the search box
+// eslint-disable-next-line no-unused-vars
 function createSearchBox(searchURL) {
   var ds = new YAHOO.util.XHRDataSource(searchURL + "suggest");
   ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
@@ -2232,16 +2271,16 @@ function createSearchBox(searchURL) {
   var ac = new YAHOO.widget.AutoComplete(
     "search-box",
     "search-box-completion",
-    ds
+    ds,
   );
   ac.typeAhead = false;
   ac.autoHighlight = false;
   ac.formatResult = ac.formatEscapedResult;
   ac.maxResultsDisplayed = 25;
 
-  var box = $("search-box");
-  var sizer = $("search-box-sizer");
-  var comp = $("search-box-completion");
+  var box = document.getElementById("search-box");
+  var sizer = document.getElementById("search-box-sizer");
+  var comp = document.getElementById("search-box-completion");
 
   Behaviour.addLoadEvent(function () {
     // copy font style of box to sizer
@@ -2254,7 +2293,7 @@ function createSearchBox(searchURL) {
 
   // update positions and sizes of the components relevant to search
   function updatePos() {
-    sizer.innerHTML = box.value.escapeHTML();
+    sizer.innerHTML = escapeHTML(box.value);
     var cssWidth,
       offsetWidth = sizer.offsetWidth;
     if (offsetWidth > 0) {
@@ -2288,27 +2327,36 @@ function createSearchBox(searchURL) {
 function findFormParent(e, form, isStatic) {
   isStatic = isStatic || false;
 
-  if (form == null)
+  if (form == null) {
     // caller can pass in null to have this method compute the owning form
-    form = findAncestor(e, "FORM");
+    form = e.closest("FORM");
+  }
 
   while (e != form) {
     // this is used to create a group where no single containing parent node exists,
     // like <optionalBlock>
     var nameRef = e.getAttribute("nameRef");
-    if (nameRef != null) e = $(nameRef);
-    else e = e.parentNode;
+    if (nameRef != null) {
+      e = document.getElementById(nameRef);
+    } else {
+      e = e.parentNode;
+    }
 
-    if (!isStatic && e.getAttribute("field-disabled") != null) return null; // this field shouldn't contribute to the final result
+    if (!isStatic && e.getAttribute("field-disabled") != null) {
+      // this field shouldn't contribute to the final result
+      return null;
+    }
 
     var name = e.getAttribute("name");
     if (name != null && name.length > 0) {
       if (
         e.tagName == "INPUT" &&
         !isStatic &&
-        !xor(e.checked, Element.hasClassName(e, "negative"))
-      )
-        return null; // field is not active
+        !xor(e.checked, e.classList.contains("negative"))
+      ) {
+        // field is not active
+        return null;
+      }
 
       return e;
     }
@@ -2320,11 +2368,15 @@ function findFormParent(e, form, isStatic) {
 // compute the form field name from the control name
 function shortenName(name) {
   // [abc.def.ghi] -> abc.def.ghi
-  if (name.startsWith("[")) return name.substring(1, name.length - 1);
+  if (name.startsWith("[")) {
+    return name.substring(1, name.length - 1);
+  }
 
   // abc.def.ghi -> ghi
   var idx = name.lastIndexOf(".");
-  if (idx >= 0) name = name.substring(idx + 1);
+  if (idx >= 0) {
+    name = name.substring(idx + 1);
+  }
   return name;
 }
 
@@ -2341,23 +2393,26 @@ function buildFormTree(form) {
     var doms = []; // DOMs that we added 'formDom' for.
     doms.push(form);
 
-    function addProperty(parent, name, value) {
+    let addProperty = function (parent, name, value) {
       name = shortenName(name);
       if (parent[name] != null) {
-        if (parent[name].push == null)
+        if (parent[name].push == null) {
           // is this array?
           parent[name] = [parent[name]];
+        }
         parent[name].push(value);
       } else {
         parent[name] = value;
       }
-    }
+    };
 
     // find the grouping parent node, which will have @name.
     // then return the corresponding object in the map
-    function findParent(e) {
+    let findParent = function (e) {
       var p = findFormParent(e, form);
-      if (p == null) return {};
+      if (p == null) {
+        return {};
+      }
 
       var m = p.formDom;
       if (m == null) {
@@ -2367,7 +2422,7 @@ function buildFormTree(form) {
         addProperty(findParent(p), p.getAttribute("name"), m);
       }
       return m;
-    }
+    };
 
     var jsonElement = null;
 
@@ -2377,12 +2432,16 @@ function buildFormTree(form) {
         jsonElement = e;
         continue;
       }
-      if (e.tagName == "FIELDSET") continue;
+      if (e.tagName == "FIELDSET") {
+        continue;
+      }
       if (e.tagName == "SELECT" && e.multiple) {
         var values = [];
         for (var o = 0; o < e.options.length; o++) {
           var opt = e.options.item(o);
-          if (opt.selected) values.push(opt.value);
+          if (opt.selected) {
+            values.push(opt.value);
+          }
         }
         addProperty(findParent(e), e.name, values);
         continue;
@@ -2391,26 +2450,32 @@ function buildFormTree(form) {
       var p;
       var r;
       var type = e.getAttribute("type");
-      if (type == null) type = "";
+      if (type == null) {
+        type = "";
+      }
       switch (type.toLowerCase()) {
         case "button":
         case "submit":
           break;
         case "checkbox":
           p = findParent(e);
-          var checked = xor(e.checked, Element.hasClassName(e, "negative"));
+          var checked = xor(e.checked, e.classList.contains("negative"));
           if (!e.groupingNode) {
-            v = e.getAttribute("json");
+            let v = e.getAttribute("json");
             if (v) {
               // if the special attribute is present, we'll either set the value or not. useful for an array of checkboxes
               // we can't use @value because IE6 sets the value to be "on" if it's left unspecified.
-              if (checked) addProperty(p, e.name, v);
+              if (checked) {
+                addProperty(p, e.name, v);
+              }
             } else {
               // otherwise it'll bind to boolean
               addProperty(p, e.name, checked);
             }
           } else {
-            if (checked) addProperty(p, e.name, (e.formDom = {}));
+            if (checked) {
+              addProperty(p, e.name, (e.formDom = {}));
+            }
           }
           break;
         case "file":
@@ -2436,16 +2501,19 @@ function buildFormTree(form) {
           crumb.appendToForm(form);
           break;
         case "radio":
-          if (!e.checked) break;
+          if (!e.checked) {
+            break;
+          }
           r = 0;
-          while (e.name.substring(r, r + 8) == "removeme")
+          while (e.name.substring(r, r + 8) == "removeme") {
             r = e.name.indexOf("_", r + 8) + 1;
+          }
           p = findParent(e);
           if (e.groupingNode) {
             addProperty(
               p,
               e.name.substring(r),
-              (e.formDom = { value: e.value })
+              (e.formDom = { value: e.value }),
             );
           } else {
             addProperty(p, e.name.substring(r), e.value);
@@ -2460,17 +2528,22 @@ function buildFormTree(form) {
         default:
           p = findParent(e);
           addProperty(p, e.name, e.value);
-          if (e.hasClassName("complex-password-field")) {
+          if (e.classList.contains("complex-password-field")) {
+            addProperty(p, "$redact", shortenName(e.name));
+          }
+          if (e.classList.contains("secretTextarea-redact")) {
             addProperty(p, "$redact", shortenName(e.name));
           }
           break;
       }
     }
 
-    jsonElement.value = Object.toJSON(form.formDom);
+    jsonElement.value = JSON.stringify(form.formDom);
 
     // clean up
-    for (i = 0; i < doms.length; i++) doms[i].formDom = null;
+    for (i = 0; i < doms.length; i++) {
+      doms[i].formDom = null;
+    }
 
     return true;
   } catch (e) {
@@ -2484,7 +2557,7 @@ window.addEventListener("load", function () {
   document.querySelectorAll(".jenkins-form-item").forEach(function (element) {
     if (
       element.querySelector(
-        ".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox'], div > .jenkins-checkbox"
+        ".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox'], div > .jenkins-checkbox",
       ) != null
     ) {
       element.classList.add("jenkins-form-item--tight");
@@ -2537,10 +2610,10 @@ function loadScript(href, callback) {
 }
 
 // logic behind <f:validateButton />
-function safeValidateButton(yuiButton) {
-  var button = yuiButton._button;
+// eslint-disable-next-line no-unused-vars
+function safeValidateButton(button) {
   var descriptorUrl = button.getAttribute(
-    "data-validate-button-descriptor-url"
+    "data-validate-button-descriptor-url",
   );
   var method = button.getAttribute("data-validate-button-method");
   var checkUrl = descriptorUrl + "/" + method;
@@ -2548,42 +2621,53 @@ function safeValidateButton(yuiButton) {
   // optional, by default = empty string
   var paramList = button.getAttribute("data-validate-button-with") || "";
 
-  validateButton(checkUrl, paramList, yuiButton);
+  validateButton(checkUrl, paramList, button);
 }
 
 // this method should not be called directly, only get called by safeValidateButton
 // kept "public" for legacy compatibility
 function validateButton(checkUrl, paramList, button) {
-  button = button._button;
-
   var parameters = {};
 
-  paramList.split(",").each(function (name) {
+  paramList.split(",").forEach(function (name) {
     var p = findPreviousFormItem(button, name);
     if (p != null) {
-      if (p.type == "checkbox") parameters[name] = p.checked;
-      else parameters[name] = p.value;
+      if (p.type === "checkbox") {
+        parameters[name] = p.checked;
+      } else if (p.type === "radio") {
+        while (p && !p.checked) {
+          p = findPreviousFormItem(p, name);
+        }
+        parameters[name] = p.value;
+      } else {
+        parameters[name] = p.value;
+      }
     }
   });
 
-  var spinner = button.up("DIV").children[0];
-  var target = spinner.next().next();
+  var spinner = button.closest("DIV").children[0];
+  var target = spinner.nextElementSibling.nextElementSibling;
   spinner.style.display = "block";
 
-  new Ajax.Request(checkUrl, {
-    parameters: parameters,
-    onComplete: function (rsp) {
+  fetch(checkUrl, {
+    method: "post",
+    body: objectToUrlFormEncoded(parameters),
+    headers: crumb.wrap({
+      "Content-Type": "application/x-www-form-urlencoded",
+    }),
+  }).then((rsp) => {
+    rsp.text().then((responseText) => {
       spinner.style.display = "none";
       target.innerHTML = `<div class="validation-error-area" />`;
-      updateValidationArea(target.children[0], rsp.responseText);
+      updateValidationArea(target.children[0], responseText);
       layoutUpdateCallback.call();
-      var s = rsp.getResponseHeader("script");
+      var s = rsp.headers.get("script");
       try {
         geval(s);
       } catch (e) {
         window.alert("failed to evaluate " + s + "\n" + e.message);
       }
-    },
+    });
   });
 }
 
@@ -2596,9 +2680,12 @@ function validateButton(checkUrl, paramList, button) {
 function createComboBox(idOrField, valueFunction) {
   var candidates = valueFunction();
   var creator = function () {
-    if (typeof idOrField == "string")
+    if (typeof idOrField == "string") {
       idOrField = document.getElementById(idOrField);
-    if (!idOrField) return;
+    }
+    if (!idOrField) {
+      return;
+    }
     new ComboBox(idOrField, function (value /*, comboBox*/) {
       var items = new Array();
       if (value.length > 0) {
@@ -2607,7 +2694,10 @@ function createComboBox(idOrField, valueFunction) {
         for (var i = 0; i < candidates.length; i++) {
           if (candidates[i].toLowerCase().indexOf(value) >= 0) {
             items.push(candidates[i]);
-            if (items.length > 20) break; // 20 items in the list should be enough
+            if (items.length > 20) {
+              // 20 items in the list should be enough
+              break;
+            }
           }
         }
       }
@@ -2615,15 +2705,12 @@ function createComboBox(idOrField, valueFunction) {
     });
   };
   // If an ID given, create when page has loaded (backward compatibility); otherwise now.
-  if (typeof idOrField == "string") Behaviour.addLoadEvent(creator);
-  else creator();
+  if (typeof idOrField == "string") {
+    Behaviour.addLoadEvent(creator);
+  } else {
+    creator();
+  }
 }
-
-// Exception in code during the AJAX processing should be reported,
-// so that our users can find them more easily.
-Ajax.Request.prototype.dispatchException = function (e) {
-  throw e;
-};
 
 // event callback when layouts/visibility are updated and elements might have moved around
 var layoutUpdateCallback = {
@@ -2632,7 +2719,8 @@ var layoutUpdateCallback = {
     this.callbacks.push(f);
   },
   call: function () {
-    for (var i = 0, length = this.callbacks.length; i < length; i++)
+    for (var i = 0, length = this.callbacks.length; i < length; i++) {
       this.callbacks[i]();
+    }
   },
 };

@@ -26,7 +26,6 @@ package lib.layout;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.InvisibleAction;
@@ -36,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import jenkins.model.experimentalflags.BooleanUserExperimentalFlag;
 import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

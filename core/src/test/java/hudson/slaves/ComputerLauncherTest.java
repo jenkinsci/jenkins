@@ -30,10 +30,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.charset.Charset;
-import org.apache.commons.io.output.NullOutputStream;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -78,7 +78,7 @@ public class ComputerLauncherTest {
             IOException.class,
             () ->
                 ComputerLauncher.checkJavaVersion(
-                    new PrintStream(NullOutputStream.NULL_OUTPUT_STREAM),
+                    new PrintStream(OutputStream.nullOutputStream()),
                     "-",
                     new BufferedReader(
                         new StringReader(
@@ -92,7 +92,7 @@ public class ComputerLauncherTest {
             IOException.class,
             () ->
                 ComputerLauncher.checkJavaVersion(
-                    new PrintStream(NullOutputStream.NULL_OUTPUT_STREAM),
+                    new PrintStream(OutputStream.nullOutputStream()),
                     "-",
                     new BufferedReader(
                         new StringReader(

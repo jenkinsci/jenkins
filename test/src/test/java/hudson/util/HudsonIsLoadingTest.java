@@ -1,12 +1,12 @@
 package hudson.util;
 
-import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
+import static jakarta.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import org.hamcrest.CoreMatchers;
+import org.htmlunit.Page;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -19,7 +19,7 @@ public class HudsonIsLoadingTest {
     @Test
     @Issue("JENKINS-55062")
     public void withPrefix() throws Exception {
-        j.jenkins.servletContext.setAttribute("app", new HudsonIsLoading());
+        j.jenkins.getServletContext().setAttribute("app", new HudsonIsLoading());
         JenkinsRule.WebClient wc = j.createWebClient()
                 // this is a failure page already
                 .withThrowExceptionOnFailingStatusCode(false)
@@ -35,8 +35,8 @@ public class HudsonIsLoadingTest {
         assertTrue(p.isHtmlPage());
         assertEquals(SC_SERVICE_UNAVAILABLE, p.getWebResponse().getStatusCode());
         String body = p.getWebResponse().getContentAsString();
-        assertThat(body, CoreMatchers.containsString("data-resurl=\""));
-        assertThat(body, CoreMatchers.containsString("data-rooturl=\""));
-        assertThat(body, CoreMatchers.containsString("resURL=\""));
+        assertThat(body, containsString("data-resurl=\""));
+        assertThat(body, containsString("data-rooturl=\""));
+        assertThat(body, containsString("resURL=\""));
     }
 }

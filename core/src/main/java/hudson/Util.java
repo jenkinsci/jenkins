@@ -32,16 +32,18 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.TaskListener;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -55,7 +57,9 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.FileAlreadyExistsException;
@@ -64,6 +68,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -79,6 +84,8 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -104,13 +111,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import jenkins.model.Jenkins;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.PathRemover;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -119,6 +125,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -247,15 +254,22 @@ public class Util {
         // contain unmappable and/or malformed byte sequences. We need to make
         // sure that in such cases, no CharacterCodingException is thrown.
         //
-        // One approach that cannot be used is to call Files.newBufferedReader()
-        // because there is a difference in how an InputStreamReader constructed
-        // from a Charset and the reader returned by Files.newBufferedReader()
-        // handle malformed and unmappable byte sequences for the specified
-        // encoding; the latter is more picky and will throw an exception.
+        // One approach that cannot be used is Files.newBufferedReader, which
+        // creates its CharsetDecoder with the default behavior of reporting
+        // malformed input and unmappable character errors. The implementation
+        // of InputStreamReader(InputStream, Charset) has the desired behavior
+        // of replacing malformed input and unmappable character errors, but
+        // this implementation is not specified in the API contract. Therefore,
+        // we explicitly use a decoder with the desired behavior.
         // See: https://issues.jenkins.io/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
-        try {
-            return FileUtils.readFileToString(logfile, charset);
-        } catch (FileNotFoundException e) {
+        CharsetDecoder decoder = charset.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPLACE)
+                .onUnmappableCharacter(CodingErrorAction.REPLACE);
+        try (InputStream is = Files.newInputStream(Util.fileToPath(logfile));
+                Reader isr = new InputStreamReader(is, decoder);
+                Reader br = new BufferedReader(isr)) {
+            return IOUtils.toString(br);
+        } catch (NoSuchFileException e) {
             return "";
         } catch (Exception e) {
             throw new IOException("Failed to fully read " + logfile, e);
@@ -627,10 +641,11 @@ public class Util {
     public static String getDigestOf(@NonNull InputStream source) throws IOException {
         try (source) {
             MessageDigest md5 = getMd5();
-            DigestInputStream in = new DigestInputStream(source, md5);
-            // Note: IOUtils.copy() buffers the input internally, so there is no
-            // need to use a BufferedInputStream.
-            IOUtils.copy(in, NullOutputStream.NULL_OUTPUT_STREAM);
+            try (InputStream in = new DigestInputStream(source, md5); OutputStream out = OutputStream.nullOutputStream()) {
+                // Note: IOUtils.copy() buffers the input internally, so there is no
+                // need to use a BufferedInputStream.
+                IOUtils.copy(in, out);
+            }
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
             throw new IOException("MD5 not installed", e);    // impossible
@@ -1110,7 +1125,7 @@ public class Util {
      */
     @CheckForNull
     public static String fixEmpty(@CheckForNull String s) {
-        if (s == null || s.length() == 0)    return null;
+        if (s == null || s.isEmpty())    return null;
         return s;
     }
 
@@ -1487,7 +1502,7 @@ public class Util {
      */
     @CheckForNull
     public static Number tryParseNumber(@CheckForNull String numberStr, @CheckForNull Number defaultNumber) {
-        if (numberStr == null || numberStr.length() == 0) {
+        if (numberStr == null || numberStr.isEmpty()) {
             return defaultNumber;
         }
         try {
@@ -1836,9 +1851,11 @@ public class Util {
     /**
      * Find the specific ancestor, or throw an exception.
      * Useful for an ancestor we know is inside the URL to ease readability
+     *
+     * @since 2.475
      */
     @Restricted(NoExternalUse.class)
-    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest request, @NonNull Class<T> clazz) {
+    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest2 request, @NonNull Class<T> clazz) {
         T t = request.findAncestorObject(clazz);
         if (t == null) {
             throw new IllegalArgumentException("No ancestor of type " + clazz.getName() + " in the request");
@@ -1846,9 +1863,43 @@ public class Util {
         return t;
     }
 
+    /**
+     * @deprecated use {@link #getNearestAncestorOfTypeOrThrow(StaplerRequest2, Class)}
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest request, @NonNull Class<T> clazz) {
+        return getNearestAncestorOfTypeOrThrow(StaplerRequest.toStaplerRequest2(request), clazz);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void printRedirect(String contextPath, String redirectUrl, String message, PrintWriter out) {
+        out.printf(
+                "<html><head>" +
+                "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
+                "<script id='redirect' data-redirect-url='%1$s' src='" +
+                contextPath + Jenkins.RESOURCE_PATH +
+                "/scripts/redirect.js'></script>" +
+                "</head>" +
+                "<body style='background-color:white; color:white;'>%n" +
+                "%2$s%n" +
+                "<!--%n", Functions.htmlAttributeEscape(redirectUrl), message);
+    }
+
+    /**
+     * @deprecated use {@link #XS_DATETIME_FORMATTER2}
+     */
+    @Deprecated
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", new SimpleTimeZone(0, "GMT"));
 
+    public static final DateTimeFormatter XS_DATETIME_FORMATTER2 =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
+
     // Note: RFC822 dates must not be localized!
+    /**
+     * @deprecated use {@link DateTimeFormatter#RFC_1123_DATE_TIME}
+     */
+    @Deprecated
     public static final FastDateFormat RFC822_DATETIME_FORMATTER
             = FastDateFormat.getInstance("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 
@@ -1916,5 +1967,30 @@ public class Util {
 
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
+    }
+
+    /**
+     * Returns SHA-256 Digest of input bytes
+     */
+    @Restricted(NoExternalUse.class)
+    public static byte[] getSHA256DigestOf(@NonNull byte[] input) {
+        try {
+                MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+                messageDigest.update(input);
+                return messageDigest.digest();
+        } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
+            throw new IllegalStateException("SHA-256 could not be instantiated, but is required to" +
+                    " be implemented by the language specification", noSuchAlgorithmException);
+        }
+    }
+
+    /**
+     * Returns Hex string of SHA-256 Digest of passed input
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getHexOfSHA256DigestOf(byte[] input) throws IOException {
+        //get hex string of sha 256 of payload
+        byte[] payloadDigest = Util.getSHA256DigestOf(input);
+        return (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
     }
 }

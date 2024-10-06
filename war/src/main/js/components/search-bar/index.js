@@ -12,11 +12,11 @@ function init() {
     .forEach((searchBar) => {
       const searchWrapper = searchBar.parentElement.parentElement;
       const searchResultsContainer = createElementFromHtml(
-        `<div class="jenkins-search__results-container"></div>`
+        `<div class="jenkins-search__results-container"></div>`,
       );
       searchWrapper.appendChild(searchResultsContainer);
       const searchResults = createElementFromHtml(
-        `<div class="jenkins-search__results"></div>`
+        `<div class="jenkins-search__results"></div>`,
       );
       searchResultsContainer.appendChild(searchResults);
 
@@ -37,16 +37,16 @@ function init() {
               createElementFromHtml(
                 `<a class="${index === 0 ? SELECTED_CLASS : ""}" href="${
                   item.url
-                }"><div>${item.icon}</div>${xmlEscape(item.label)}</a>`
-              )
+                }"><div>${item.icon}</div>${xmlEscape(item.label)}</a>`,
+              ),
             );
           });
 
           if (results.length === 0 && container === searchResults) {
             container.appendChild(
               createElementFromHtml(
-                `<p class="jenkins-search__results__no-results-label">No results</p>`
-              )
+                `<p class="jenkins-search__results__no-results-label">No results</p>`,
+              ),
             );
           }
         }
@@ -64,13 +64,13 @@ function init() {
 
       function showResultsContainer() {
         searchResultsContainer.classList.add(
-          "jenkins-search__results-container--visible"
+          "jenkins-search__results-container--visible",
         );
       }
 
       function hideResultsContainer() {
         searchResultsContainer.classList.remove(
-          "jenkins-search__results-container--visible"
+          "jenkins-search__results-container--visible",
         );
         searchResultsContainer.style.height = "1px";
       }
@@ -84,7 +84,7 @@ function init() {
       makeKeyboardNavigable(
         searchResultsContainer,
         () => searchResults.querySelectorAll("a"),
-        SELECTED_CLASS
+        SELECTED_CLASS,
       );
 
       // Workaround: Firefox doesn't update the dropdown height correctly so

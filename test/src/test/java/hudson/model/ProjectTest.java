@@ -25,9 +25,9 @@
 package hudson.model;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -35,12 +35,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
@@ -79,7 +73,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -98,6 +92,12 @@ import jenkins.model.Jenkins;
 import jenkins.model.WorkspaceWriter;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.event.Event;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -108,6 +108,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  *
@@ -271,7 +272,7 @@ public class ProjectTest {
         ((HtmlElement) form.querySelectorAll(".advancedButton").get(0)).click();
         // required due to the new default behavior of click
         form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), false, false, false, true);
-        form.getInputByName("scmCheckoutRetryCount").setValueAttribute("7");
+        form.getInputByName("scmCheckoutRetryCount").setValue("7");
         j.submit(form);
         assertEquals("Scm retry count was set.", 7, p.getScmCheckoutRetryCount());
     }
@@ -402,6 +403,7 @@ public class ProjectTest {
         QueueTaskFuture<FreeStyleBuild> b3 = waitForStart(p);
         assertThat("Build can not start because build of upstream project has not finished.", downstream.getCauseOfBlockage(), instanceOf(BecauseOfUpstreamBuildInProgress.class));
         b3.get();
+        assertTrue(j.jenkins.getQueue().cancel(downstream));
     }
 
     private static final Logger LOGGER = Logger.getLogger(ProjectTest.class.getName());
@@ -572,7 +574,7 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User user = User.getById("john", true);
         try (ACLContext as = ACL.as(user)) {
-            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doDoDelete(null, null));
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doDoDelete((StaplerRequest2) null, null));
         }
         auth.add(Jenkins.READ, user.getId());
         auth.add(Item.READ, user.getId());
@@ -617,7 +619,7 @@ public class ProjectTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.withBasicCredentials(user.getId(), "password");
-        WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace").toURL(), HttpMethod.POST);
         HtmlPage p = wc.getPage(request);
         assertEquals(200, p.getWebResponse().getStatusCode());
 
@@ -643,15 +645,13 @@ public class ProjectTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.withBasicCredentials(user.getId(), "password");
-        HtmlPage p = wc.goTo(project.getUrl());
 
-        List<HtmlForm> forms = p.getForms();
-        for (HtmlForm form : forms) {
-            if ("disable".equals(form.getAttribute("action"))) {
-                j.submit(form);
-            }
-        }
-       assertTrue("Project should be disabled.", project.isDisabled());
+        HtmlPage p = wc.getPage(project, "configure");
+        HtmlForm form = p.getFormByName("config");
+        form.getInputByName("enable").click();
+        j.submit(form);
+
+        assertTrue("Project should be disabled.", project.isDisabled());
     }
 
     @Test
@@ -713,6 +713,7 @@ public class ProjectTest {
         Thread.sleep(1000);
         //Assert that the job IS submitted to Queue.
         assertEquals(1, j.jenkins.getQueue().getItems().length);
+        assertTrue(j.jenkins.getQueue().cancel(proj));
     }
 
     /**
@@ -785,6 +786,7 @@ public class ProjectTest {
         Thread.sleep(1000);
         //The job should be in queue
         assertEquals(1, j.jenkins.getQueue().getItems().length);
+        assertTrue(j.jenkins.getQueue().cancel(proj));
     }
 
     @Issue("JENKINS-22750")
@@ -806,7 +808,8 @@ public class ProjectTest {
         t.new Runner().run();
 
 
-        assertFalse(j.jenkins.getQueue().isEmpty());
+        assertEquals(1, j.jenkins.getQueue().getItems().length);
+        assertTrue(j.jenkins.getQueue().cancel(proj));
     }
 
     public static class TransientAction extends InvisibleAction{

@@ -1,0 +1,17 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    This trial collects basic information about security settings:
+    <ul>
+        <li>The type of the currently configured security realm, e.g., <code>hudson.security.HudsonPrivateSecurityRealm</code></li>
+        <li>The type of the currently configured authorization strategy, e.g., <code>hudson.security.ProjectMatrixAuthorizationStrategy</code></li>
+        <li>The type of the currently configured crumb issuer, e.g., <code>hudson.security.csrf.DefaultCrumbIssuer</code></li>
+        <li>The type of the currently configured markup formatter, e.g., <code>hudson.markup.RawHtmlMarkupFormatter</code></li>
+        <li>Whether the TCP port for inbound agents is enabled (fixed or random) or disabled</li>
+        <li>Whether the API token option labeled <em>Generate a legacy API token for each newly created user (Not recommended)</em> is enabled or disabled</li>
+        <li>Whether the API token option labeled <em>Allow users to manually create a legacy API token (Not recommended)</em> is enabled or disabled</li>
+        <li>Whether the API token option labeled <em>Enable API Token usage statistics</em> is enabled or disabled</li>
+    </ul>
+
+    Additionally this trial collects the list of installed plugins, their version, and the version of Jenkins.
+    This data will be used to understand the popularity of the various implementations for each of these features.
+</j:jelly>

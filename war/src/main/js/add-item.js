@@ -32,7 +32,7 @@ $.when(getItems()).done(function (data) {
       if (desc.indexOf('&lt;a href="') === -1) {
         return desc;
       }
-      // eslint-disable-next-line
+      // eslint-disable-next-line no-useless-escape
       var newDesc = desc.replace(/\&lt;/g, "<").replace(/\&gt;/g, ">");
       return newDesc;
     }
@@ -59,8 +59,8 @@ $.when(getItems()).done(function (data) {
         $(messageId, context).text("» " + message);
       }
       cleanValidationMessages(context);
-      hideInputHelp(context);
       $(messageId).removeClass("input-message-disabled");
+      enableSubmit(false);
     }
 
     function cleanValidationMessages(context) {
@@ -69,38 +69,8 @@ $.when(getItems()).done(function (data) {
         .addClass("input-message-disabled");
     }
 
-    function hideInputHelp(context) {
-      $(".input-help", context).addClass("input-message-disabled");
-    }
-
-    function showInputHelp(context) {
-      $(".input-help", context).removeClass("input-message-disabled");
-    }
-
-    // About Scroll-linked effect: https://developer.mozilla.org/en-US/docs/Mozilla/Performance/Scroll-linked_effects
-    function doSticky() {
-      var decorator = $("form .footer .btn-decorator");
-      var pos = decorator.offset();
-      var vpH = $(window).height();
-      if (pos.top >= vpH) {
-        decorator.css({ position: "fixed" });
-      }
-
-      $(window).scroll(function () {
-        var footer = $("form .footer");
-        var ref1 = decorator.offset().top + decorator.outerHeight();
-        var ref2 = footer.offset().top + footer.outerHeight();
-        var vpH = $(window).height();
-        if (ref2 > vpH + $(window).scrollTop()) {
-          decorator.css({ position: "fixed" });
-        } else if (ref2 - 1 <= ref1) {
-          decorator.css({ position: "absolute" });
-        }
-      });
-    }
-
     function enableSubmit(status) {
-      var btn = $("form .footer .btn-decorator button[type=submit]");
+      var btn = $(".bottom-sticker-inner button[type=submit]");
       if (status === true) {
         if (btn.hasClass("disabled")) {
           btn.removeClass("disabled");
@@ -173,7 +143,12 @@ $.when(getItems()).done(function (data) {
       item.setAttribute("role", "radio");
       item.setAttribute("aria-checked", "false");
 
-      var label = item.appendChild(document.createElement("label"));
+      var iconDiv = drawIcon(elem);
+      item.appendChild(iconDiv);
+      var labelContainer = document.createElement("div");
+      item.appendChild(labelContainer);
+
+      var label = labelContainer.appendChild(document.createElement("label"));
 
       var radio = label.appendChild(document.createElement("input"));
       radio.type = "radio";
@@ -185,12 +160,9 @@ $.when(getItems()).done(function (data) {
 
       displayName.appendChild(document.createTextNode(elem.displayName));
 
-      var desc = item.appendChild(document.createElement("div"));
+      var desc = labelContainer.appendChild(document.createElement("div"));
       desc.className = "desc";
       desc.innerHTML = checkForLink(elem.description);
-
-      var iconDiv = drawIcon(elem);
-      item.appendChild(iconDiv);
 
       function select(e) {
         e.preventDefault();
@@ -224,11 +196,13 @@ $.when(getItems()).done(function (data) {
 
     function drawIcon(elem) {
       var iconDiv = document.createElement("div");
-      if (elem.iconClassName && elem.iconQualifiedUrl) {
+      if (elem.iconXml) {
+        iconDiv.className = "icon";
+        iconDiv.innerHTML = elem.iconXml;
+      } else if (elem.iconClassName && elem.iconQualifiedUrl) {
         iconDiv.className = "icon";
 
         var img1 = document.createElement("img");
-        img1.className = elem.iconClassName + " icon-xlg";
         img1.src = elem.iconQualifiedUrl;
         iconDiv.appendChild(img1);
 
@@ -300,11 +274,10 @@ $.when(getItems()).done(function (data) {
             activateValidationMessage(
               "#itemname-invalid",
               ".add-item-name",
-              message
+              message,
             );
           } else {
             cleanValidationMessages(".add-item-name");
-            showInputHelp(".add-item-name");
             setFieldValidationStatus("name", true);
             if (getFormValidationStatus()) {
               enableSubmit(true);
@@ -334,7 +307,15 @@ $.when(getItems()).done(function (data) {
         if (!getFieldValidationStatus("name")) {
           activateValidationMessage("#itemname-required", ".add-item-name");
           setTimeout(function () {
-            $('input[name="name"][type="text"]', "#createItem").focus();
+            var parentName = $('input[name="from"]', "#createItem").val();
+            $.get("job/" + parentName + "/api/json?tree=name").done(
+              function (data) {
+                if (data.name === parentName) {
+                  //if "name" is invalid, but "from" is a valid job, then switch focus to "name"
+                  $('input[name="name"][type="text"]', "#createItem").focus();
+                }
+              },
+            );
           }, 400);
         } else {
           if (getFormValidationStatus()) {
@@ -365,8 +346,5 @@ $.when(getItems()).done(function (data) {
 
     // Disable the submit button
     enableSubmit(false);
-
-    // Do sticky the form buttons
-    doSticky();
   });
 });

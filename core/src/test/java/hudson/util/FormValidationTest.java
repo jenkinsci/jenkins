@@ -24,10 +24,10 @@
 
 package hudson.util;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -35,7 +35,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
-import javax.servlet.ServletException;
 import org.junit.Test;
 
 /**
@@ -122,10 +121,10 @@ public class FormValidationTest {
     }
 
     @Test
-    public void testUrlCheck() throws IOException, ServletException {
+    public void testUrlCheck() throws IOException {
         FormValidation.URLCheck urlCheck = new FormValidation.URLCheck() {
             @Override
-            protected FormValidation check() throws ServletException, IOException {
+            protected FormValidation check() throws IOException {
                 String uri = "https://www.jenkins.io/";
                 try {
                     if (findText(open(URI.create(uri)), "Jenkins")) {

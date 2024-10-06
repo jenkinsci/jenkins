@@ -44,17 +44,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.Functions;
@@ -89,12 +78,12 @@ import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.OneShotEvent;
-import hudson.util.XStream2;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -112,21 +101,20 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.logging.Level;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.logging.Logger;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
+import jenkins.model.queue.QueueIdStrategy;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.acls.sid.PrincipalSid;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -179,6 +167,9 @@ public class QueueTest {
 
         // did it bind back to the same object?
         assertSame(q.getItems()[0].task, testProject);
+
+        // Clear the queue
+        assertTrue(q.cancel(testProject));
     }
 
     /**
@@ -196,7 +187,10 @@ public class QueueTest {
 
         // The current counter should be the id from the item brought back
         // from the persisted queue.xml.
-        assertEquals(3, Queue.WaitingItem.getCurrentCounterValue());
+        assertEquals(3, QueueIdStrategy.DefaultStrategy.getCurrentCounterValue());
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("test", FreeStyleProject.class)));
     }
 
     /**
@@ -206,7 +200,7 @@ public class QueueTest {
         Queue q = r.jenkins.getQueue();
 
         resetQueueState();
-        assertEquals(0, Queue.WaitingItem.getCurrentCounterValue());
+        assertEquals(0, QueueIdStrategy.DefaultStrategy.getCurrentCounterValue());
 
         // prevent execution to push stuff into the queue
         r.jenkins.setNumExecutors(0);
@@ -227,7 +221,7 @@ public class QueueTest {
         assertEquals(0, q.getItems().length);
 
         // The counter state should be maintained.
-        assertEquals(1, Queue.WaitingItem.getCurrentCounterValue());
+        assertEquals(1, QueueIdStrategy.DefaultStrategy.getCurrentCounterValue());
     }
 
     /**
@@ -284,60 +278,6 @@ public class QueueTest {
         assertTrue(q.cancel(items[0]));
         seq.done();
         r.assertBuildStatusSuccess(r.waitForCompletion(b1));
-    }
-
-    public static final class FileItemPersistenceTestServlet extends HttpServlet {
-        private static final long serialVersionUID = 1L;
-
-        @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-            resp.setContentType("text/html");
-            resp.getWriter().println(
-                    "<html><body><form action='/' method=post name=main enctype='multipart/form-data'>" +
-                    "<input type=file name=test><input type=submit>" +
-                    "</form></body></html>"
-            );
-        }
-
-        @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
-            try {
-                ServletFileUpload f = new ServletFileUpload(new DiskFileItemFactory());
-                List<?> v = f.parseRequest(req);
-                assertEquals(1, v.size());
-                XStream2 xs = new XStream2();
-                System.out.println(xs.toXML(v.get(0)));
-            } catch (FileUploadException e) {
-                throw new ServletException(e);
-            }
-        }
-    }
-
-    @Test public void fileItemPersistence() throws Exception {
-        // TODO: write a synchronous connector?
-        byte[] testData = new byte[1024];
-        for (int i = 0; i < testData.length; i++)  testData[i] = (byte) i;
-
-
-        Server server = new Server();
-        ServerConnector connector = new ServerConnector(server);
-        server.addConnector(connector);
-
-        ServletHandler handler = new ServletHandler();
-        handler.addServletWithMapping(new ServletHolder(new FileItemPersistenceTestServlet()), "/");
-        server.setHandler(handler);
-
-        server.start();
-
-        try {
-            JenkinsRule.WebClient wc = r.createWebClient();
-            @SuppressWarnings("deprecation")
-            HtmlPage p = (HtmlPage) wc.getPage("http://localhost:" + connector.getLocalPort() + '/');
-            HtmlForm f = p.getFormByName("main");
-            HtmlFileInput input = f.getInputByName("test");
-            input.setData(testData);
-            HtmlFormUtil.submit(f);
-        } finally {
-            server.stop();
-        }
     }
 
     @Issue("JENKINS-33467")
@@ -433,7 +373,7 @@ public class QueueTest {
 
     @Issue("JENKINS-10944")
     @Test public void flyweightTasksBlockedByShutdown() throws Exception {
-        r.jenkins.doQuietDown(true, 0, null);
+        r.jenkins.doQuietDown(true, 0, null, false);
         AtomicInteger cnt = new AtomicInteger();
         TestFlyweightTask task = new TestFlyweightTask(cnt, null);
         assertTrue(Queue.isBlockedByShutdown(task));
@@ -505,6 +445,9 @@ public class QueueTest {
         assertNotNull(queueItem);
         String tagName = queueItem.getDocumentElement().getTagName();
         assertTrue(tagName.equals("blockedItem") || tagName.equals("buildableItem"));
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(p));
     }
 
     @Issue("JENKINS-28926")
@@ -809,19 +752,18 @@ public class QueueTest {
      */
     @Test public void accessControl() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(p.getFullName(), alice)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator().authenticate(p.getFullName(), alice));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
-                assertEquals(alice2, Jenkins.getAuthentication2());
+                assertEquals(alice, Jenkins.getAuthentication2());
                 return true;
             }
         });
         r.buildAndAssertSuccess(p);
     }
 
-    private static Authentication alice2 = new UsernamePasswordAuthenticationToken("alice", "alice", Collections.emptySet());
-    private static org.acegisecurity.Authentication alice = org.acegisecurity.Authentication.fromSpring(alice2);
+    private static Authentication alice = new UsernamePasswordAuthenticationToken("alice", "alice", Collections.emptySet());
 
 
     /**
@@ -836,11 +778,11 @@ public class QueueTest {
         DumbSlave s2 = r.createSlave();
 
         FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(p.getFullName(), alice)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator().authenticate(p.getFullName(), alice));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
-                assertEquals(alice2, Jenkins.getAuthentication2());
+                assertEquals(alice, Jenkins.getAuthentication2());
                 return true;
             }
         });
@@ -873,7 +815,7 @@ public class QueueTest {
             if (node.getNodeName().equals(blocked)) {
                 // ACL that allow anyone to do anything except Alice can't build.
                 SparseACL acl = new SparseACL(null);
-                acl.add(new PrincipalSid(alice2), Computer.BUILD, false);
+                acl.add(new PrincipalSid(alice), Computer.BUILD, false);
                 acl.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
                 return acl;
             }
@@ -882,8 +824,8 @@ public class QueueTest {
     }
 
     @Test public void pendingsConsistenceAfterErrorDuringMaintain() throws IOException, InterruptedException {
-        FreeStyleProject project1 = r.createFreeStyleProject();
-        FreeStyleProject project2 = r.createFreeStyleProject();
+        FreeStyleProject project1 = r.createFreeStyleProject("project1");
+        FreeStyleProject project2 = r.createFreeStyleProject("project2");
         TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class) {
          @Override
             public FreeStyleProject newInstance(ItemGroup parent, String name) {
@@ -916,18 +858,27 @@ public class QueueTest {
              if (e.isIdle()) {
                  assertTrue("Node went to idle before project had" + project2.getDisplayName() + " been started", v.isDone());
              }
+             Thread.sleep(1000);
+        }
+        if (project2.getLastBuild() == null) {
+            Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
+            while (!e.isIdle()) { //executor should take project2 from queue
                 Thread.sleep(1000);
+            }
+            //project2 should not be in pendings
+            List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
+            for (Queue.BuildableItem item : items) {
+                assertNotEquals("Project " + project2.getDisplayName() + " stuck in pendings", item.task.getName(), project2.getName());
+            }
         }
-        if (project2.getLastBuild() != null)
-            return;
-        Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
-        while (!e.isIdle()) { //executor should take project2 from queue
-            Thread.sleep(1000);
-        }
-        //project2 should not be in pendings
-        List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
-        for (Queue.BuildableItem item : items) {
-            assertNotEquals("Project " + project2.getDisplayName() + " stuck in pendings", item.task.getName(), project2.getName());
+        for (var p : r.jenkins.allItems(FreeStyleProject.class)) {
+            for (var b : p.getBuilds()) {
+                r.waitForCompletion(b);
+                b.delete();
+                Logger.getLogger(QueueTest.class.getName()).info(() -> "Waited for " + b);
+            }
+            p.delete();
+            Logger.getLogger(QueueTest.class.getName()).info(() -> "Cleaned up " + p);
         }
     }
 
@@ -953,10 +904,9 @@ public class QueueTest {
     }
 
     @Test public void waitForStartAndCancelBeforeStart() throws Exception {
-        final OneShotEvent ev = new OneShotEvent();
         FreeStyleProject p = r.createFreeStyleProject();
 
-        QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(10);
+        QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(30);
         final Queue.Item item = Queue.getInstance().getItem(p);
         assertNotNull(item);
 
@@ -1069,6 +1019,9 @@ public class QueueTest {
         r.createWebClient().withBasicApiToken(bob).goToXml(url); // OK, 200
         r.createWebClient().withBasicApiToken(james).assertFails(url, HttpURLConnection.HTTP_FORBIDDEN); // only DISCOVER → AccessDeniedException
         r.createWebClient().withBasicApiToken(alice).assertFails(url, HttpURLConnection.HTTP_NOT_FOUND); // not even DISCOVER
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(project));
     }
 
     //we force the project not to be executed so that it stays in the queue
@@ -1112,6 +1065,19 @@ public class QueueTest {
         Queue.Item[] items = q.getItems();
         assertEquals(Arrays.asList(items).toString(), 11, items.length);
         assertEquals("Loading the queue should not generate saves", 0, QueueSaveSniffer.count);
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("a", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("b", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("c", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("d", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("e", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("f", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("g", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("h", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("i", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("j", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("k", FreeStyleProject.class)));
     }
 
     @TestExtension("load_queue_xml")
@@ -1165,7 +1131,7 @@ public class QueueTest {
         Queue.Item currentOne = items[0];
         assertFalse(currentOne.getFuture().isCancelled());
 
-        WebRequest request = new WebRequest(new URL(r.getURL() + urlProvider.apply(currentOne)), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(r.getURL() + urlProvider.apply(currentOne)).toURL(), HttpMethod.POST);
 
         { // user without right cannot cancel
             JenkinsRule.WebClient wc = r.createWebClient()
@@ -1251,6 +1217,9 @@ public class QueueTest {
 
         String tooltip = buildAndExtractTooltipAttribute();
         assertThat(tooltip, containsString(expectedLabel.substring(1, expectedLabel.length() - 1)));
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(p));
     }
 
     @Test
@@ -1264,6 +1233,9 @@ public class QueueTest {
         String tooltip = buildAndExtractTooltipAttribute();
         assertThat(tooltip, not(containsString("<img")));
         assertThat(tooltip, containsString("&lt;"));
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(p));
     }
 
     private String buildAndExtractTooltipAttribute() throws Exception {

@@ -38,32 +38,24 @@ THE SOFTWARE.
     <st:attribute name="submissionUrl">
       Optional submission URL. If not specified, will use 'submitDescription'.
     </st:attribute>
+    <st:attribute name="hideButton">
+      Hide the add/edit description button. Set to true when the button is provided via the app bar.
+      See 'editDescriptionButton'
+    </st:attribute>
   </st:documentation>
 
   <j:set var="actualDescription" value="${description}" defaultValue="${it.description}"/>
+  <j:set var="hideDescriptionButton" value="${hideButton}" defaultValue="false"/>
 
-  <div id="description" class="jenkins-!-margin-bottom-0">
+  <div id="description" class="jenkins-!-margin-bottom-${hideButton?'3':'0'}">
     <div>
       <j:out value="${actualDescription!=null ? app.markupFormatter.translate(actualDescription) : ''}" />
     </div>
 
-    <l:hasPermission permission="${permission}">
+    <j:if test="${!hideDescriptionButton}">
       <div class="jenkins-buttons-row jenkins-buttons-row--invert">
-        <st:adjunct includes="lib.hudson.editable-description"/>
-        <a class="jenkins-button jenkins-button--tertiary" id="description-link" href="editDescription" data-description="${actualDescription}" data-url="${submissionUrl}">
-          <span class="leading-icon">
-            <l:icon src="symbol-edit" />
-          </span>
-          <j:choose>
-            <j:when test="${empty(actualDescription)}">
-              ${%add description}
-            </j:when>
-            <j:otherwise>
-              ${%edit description}
-            </j:otherwise>
-          </j:choose>
-        </a>
+        <t:editDescriptionButton permission="${permission}" description="${actualDescription}" submissionUrl="${submissionUrl}"/>
       </div>
-    </l:hasPermission>
+    </j:if>
   </div>
 </j:jelly>

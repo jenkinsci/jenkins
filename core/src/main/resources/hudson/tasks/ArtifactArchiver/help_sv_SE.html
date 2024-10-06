@@ -1,0 +1,36 @@
+<div>
+  Arkiverar byggartefakterna (t.ex. zip- eller jar-filer för distribution) så
+  att de kan laddas ned senare. Arkiverade filer kommer att vara tillgängliga
+  från Jenkins webbsida.
+  <br />
+  Vanligtvis behåller Jenkins artefakter för ett bygge så länge som själva
+  byggloggen behålls, men om du inte behöver gamla artefakter och hellre vill
+  spara diskutrymme kan du göra det.
+</div>
+<br />
+<div>
+  Observera att Maven-jobbtypen automatiskt arkiverar alla producerade
+  Maven-artefakter. Alla artefakter som konfigurerats här kommer att arkiveras
+  ovanpå det. Automatisk arkivering av artefakter kan inaktiveras under de
+  avancerade Maven-alternativen.
+</div>
+
+<br />
+
+<div>
+  <a
+    href="https://www.jenkins.io/redirect/pipeline-snippet-generator"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    Pipeline Snippet Generator
+  </a>
+  genererar detta exempel när alla argument är "true" (vissa argument är "true"
+  som standard):
+  <pre><code>archiveArtifacts artifacts: '**/*.txt',
+                   allowEmptyArchive: true,
+                   fingerprint: true,
+                   onlyIfSuccessful: true
+
+</code></pre>
+</div>

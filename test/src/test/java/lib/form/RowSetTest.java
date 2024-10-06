@@ -2,16 +2,16 @@ package lib.form;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.security.csrf.CrumbIssuer;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -28,9 +28,10 @@ public class RowSetTest {
 
     @TestExtension
     public static class Subject extends InvisibleAction implements RootAction {
-        public void doSubmitTest1(StaplerRequest req) throws Exception {
+        public void doSubmitTest1(StaplerRequest2 req) throws Exception {
             JSONObject json = req.getSubmittedForm();
             json.remove(CrumbIssuer.DEFAULT_CRUMB_NAME);
+            json.remove("Submit");
             System.out.println(json);
 
             JSONObject expected = JSONObject.fromObject(

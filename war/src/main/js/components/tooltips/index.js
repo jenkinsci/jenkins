@@ -5,7 +5,6 @@ const TOOLTIP_BASE = {
   arrow: false,
   theme: "tooltip",
   animation: "tooltip",
-  appendTo: document.body,
 };
 
 /**
@@ -15,20 +14,26 @@ const TOOLTIP_BASE = {
  * @param {HTMLElement} element - Registers the tooltips for the given element
  */
 function registerTooltip(element) {
-  if (element._tippy) {
+  if (element._tippy && element._tippy.props.theme === "tooltip") {
     element._tippy.destroy();
   }
 
+  const tooltip = element.getAttribute("tooltip");
+  const htmlTooltip = element.getAttribute("data-html-tooltip");
+  let appendTo = document.body;
+  if (element.hasAttribute("data-tooltip-append-to-parent")) {
+    appendTo = "parent";
+  }
   if (
-    element.hasAttribute("tooltip") &&
-    !element.hasAttribute("data-html-tooltip")
+    tooltip !== null &&
+    tooltip.trim().length > 0 &&
+    (htmlTooltip === null || htmlTooltip.trim().length == 0)
   ) {
     tippy(
       element,
       Object.assign(
         {
-          content: (element) =>
-            element.getAttribute("tooltip").replace(/<br[ /]?\/?>|\\n/g, "\n"),
+          content: () => tooltip.replace(/<br[ /]?\/?>|\\n/g, "\n"),
           onCreate(instance) {
             instance.reference.setAttribute("title", instance.props.content);
           },
@@ -38,27 +43,29 @@ function registerTooltip(element) {
           onHidden(instance) {
             instance.reference.setAttribute("title", instance.props.content);
           },
+          appendTo: appendTo,
         },
-        TOOLTIP_BASE
-      )
+        TOOLTIP_BASE,
+      ),
     );
   }
 
-  if (element.hasAttribute("data-html-tooltip")) {
+  if (htmlTooltip !== null && htmlTooltip.trim().length > 0) {
     tippy(
       element,
       Object.assign(
         {
-          content: (element) => element.getAttribute("data-html-tooltip"),
+          content: () => htmlTooltip,
           allowHTML: true,
           onCreate(instance) {
             instance.props.interactive =
               instance.reference.getAttribute("data-tooltip-interactive") ===
               "true";
           },
+          appendTo: appendTo,
         },
-        TOOLTIP_BASE
-      )
+        TOOLTIP_BASE,
+      ),
     );
   }
 }
@@ -82,8 +89,8 @@ function hoverNotification(text, element) {
           }, 3000);
         },
       },
-      TOOLTIP_BASE
-    )
+      TOOLTIP_BASE,
+    ),
   );
   tooltip.show();
 }
@@ -95,7 +102,7 @@ function init() {
     1000,
     (element) => {
       registerTooltip(element);
-    }
+    },
   );
 
   window.hoverNotification = hoverNotification;

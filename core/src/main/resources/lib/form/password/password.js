@@ -35,10 +35,21 @@ Behaviour.specify(
     secretUpdateBtn.onclick = function () {
       e.querySelector(".hidden-password-field").setAttribute(
         "type",
-        "password"
+        "password",
       );
       e.querySelector(".hidden-password-placeholder").remove();
       secretUpdateBtn.remove();
     };
-  }
+  },
+);
+
+Behaviour.specify(
+  "input[type='text'].complex-password-field",
+  "empty-password-text-input",
+  0,
+  function (element) {
+    element.addEventListener("input", function () {
+      element.setAttribute("type", "password");
+    });
+  },
 );

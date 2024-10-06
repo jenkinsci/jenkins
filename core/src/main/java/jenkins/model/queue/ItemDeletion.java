@@ -28,24 +28,41 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.model.AbstractItem;
 import hudson.model.Action;
+import hudson.model.Computer;
+import hudson.model.Executor;
+import hudson.model.Failure;
 import hudson.model.Item;
+import hudson.model.Messages;
 import hudson.model.Queue;
+import hudson.model.Result;
+import hudson.model.queue.Executables;
+import hudson.model.queue.SubTask;
 import hudson.model.queue.Tasks;
+import hudson.model.queue.WorkUnit;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import net.jcip.annotations.GuardedBy;
 
 /**
  * A {@link Queue.QueueDecisionHandler} that blocks items being deleted from entering the queue.
- *
+ * @see AbstractItem#delete()
  * @since 2.55
  */
 @Extension
 public class ItemDeletion extends Queue.QueueDecisionHandler {
+
+    private static final Logger LOGGER = Logger.getLogger(ItemDeletion.class.getName());
 
     /**
      * Lock to guard the {@link #registrations} set.
@@ -176,4 +193,94 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
         }
         return true;
     }
+
+    /**
+     * Cancels any builds in progress of this item (if a job) or descendants (if a folder).
+     * Also cancels any associated queue items.
+     * @param initiatingItem an item being deleted
+     * @since 2.470
+     */
+    public static void cancelBuildsInProgress(@NonNull Item initiatingItem) throws Failure, InterruptedException {
+        Queue queue = Queue.getInstance();
+        if (initiatingItem instanceof Queue.Task) {
+            // clear any items in the queue so they do not get picked up
+            queue.cancel((Queue.Task) initiatingItem);
+        }
+        // now cancel any child items - this happens after ItemDeletion registration, so we can use a snapshot
+        for (Queue.Item i : queue.getItems()) {
+            Item item = Tasks.getItemOf(i.task);
+            while (item != null) {
+                if (item == initiatingItem) {
+                    if (!queue.cancel(i)) {
+                        LOGGER.warning(() -> "failed to cancel " + i);
+                    }
+                    break;
+                }
+                if (item.getParent() instanceof Item) {
+                    item = (Item) item.getParent();
+                } else {
+                    break;
+                }
+            }
+        }
+        // interrupt any builds in progress (and this should be a recursive test so that folders do not pay
+        // the 15 second delay for every child item). This happens after queue cancellation, so will be
+        // a complete set of builds in flight
+        Map<Executor, Queue.Executable> buildsInProgress = new LinkedHashMap<>();
+        for (Computer c : Jenkins.get().getComputers()) {
+            for (Executor e : c.getAllExecutors()) {
+                final WorkUnit workUnit = e.getCurrentWorkUnit();
+                final Queue.Executable executable = workUnit != null ? workUnit.getExecutable() : null;
+                final SubTask subtask = executable != null ? Executables.getParentOf(executable) : null;
+                if (subtask != null) {
+                    Item item = Tasks.getItemOf(subtask);
+                    while (item != null) {
+                        if (item == initiatingItem) {
+                            buildsInProgress.put(e, e.getCurrentExecutable());
+                            e.interrupt(Result.ABORTED);
+                            break;
+                        }
+                        if (item.getParent() instanceof Item) {
+                            item = (Item) item.getParent();
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (!buildsInProgress.isEmpty()) {
+            // give them 15 seconds or so to respond to the interrupt
+            long expiration = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
+            // comparison with executor.getCurrentExecutable() == computation currently should always be true
+            // as we no longer recycle Executors, but safer to future-proof in case we ever revisit recycling
+            while (!buildsInProgress.isEmpty() && expiration - System.nanoTime() > 0L) {
+                // we know that ItemDeletion will prevent any new builds in the queue
+                // ItemDeletion happens-before Queue.cancel so we know that the Queue will stay clear
+                // Queue.cancel happens-before collecting the buildsInProgress list
+                // thus buildsInProgress contains the complete set we need to interrupt and wait for
+                for (Iterator<Map.Entry<Executor, Queue.Executable>> iterator =
+                     buildsInProgress.entrySet().iterator();
+                     iterator.hasNext(); ) {
+                    Map.Entry<Executor, Queue.Executable> entry = iterator.next();
+                    // comparison with executor.getCurrentExecutable() == executable currently should always be
+                    // true as we no longer recycle Executors, but safer to future-proof in case we ever
+                    // revisit recycling.
+                    if (!entry.getKey().isAlive()
+                            || entry.getValue() != entry.getKey().getCurrentExecutable()) {
+                        iterator.remove();
+                    }
+                    // I don't know why, but we have to keep interrupting
+                    entry.getKey().interrupt(Result.ABORTED);
+                }
+                Thread.sleep(50L);
+            }
+            if (!buildsInProgress.isEmpty()) {
+                throw new Failure(Messages.AbstractItem_FailureToStopBuilds(
+                        buildsInProgress.size(), initiatingItem.getFullDisplayName()
+                ));
+            }
+        }
+    }
+
 }

@@ -3,20 +3,20 @@ package lib.form;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class BooleanRadioTest {
 
@@ -46,7 +46,7 @@ public class BooleanRadioTest {
 
     @TestExtension
     public static final class RootActionImpl extends InvisibleAction implements RootAction {
-        public FormValidation doSubmitTest1(StaplerRequest req) throws Exception {
+        public FormValidation doSubmitTest1(StaplerRequest2 req) throws Exception {
             JSONObject f = req.getSubmittedForm();
             System.out.println(f);
             BooleanRadioTestDescribable r = req.bindJSON(BooleanRadioTestDescribable.class, f);

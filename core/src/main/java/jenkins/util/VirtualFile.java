@@ -46,6 +46,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.OpenOption;
@@ -62,7 +63,6 @@ import java.util.stream.Collectors;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
 import jenkins.security.MasterToSlaveCallable;
-import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.AbstractFileSet;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
@@ -368,7 +368,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
                    String prefix, OpenOption... openOptions) throws IOException {
         String correctPrefix;
-        if (StringUtils.isBlank(prefix)) {
+        if (prefix == null || prefix.isBlank()) {
             correctPrefix = "";
         } else {
             correctPrefix = Util.ensureEndsWith(prefix, "/");
@@ -376,7 +376,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
         Collection<String> files = list(includes, excludes, useDefaultExcludes, openOptions);
         try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
-            zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
+            zos.setEncoding(Charset.defaultCharset().displayName()); // TODO JENKINS-20663 make this overridable via query parameter
 
             for (String relativePath : files) {
                 VirtualFile virtualFile = this.child(relativePath);
@@ -1096,7 +1096,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         @Override
         @Restricted(NoExternalUse.class)
         public boolean isDescendant(String potentialChildRelativePath) throws IOException {
-            if (potentialChildRelativePath.equals("") && cacheDescendant) {
+            if (potentialChildRelativePath.isEmpty() && cacheDescendant) {
                 return true;
             }
 

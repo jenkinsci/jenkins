@@ -31,6 +31,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
@@ -112,6 +113,7 @@ public class RunRangeCommand2Test {
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
+        assertTrue(j.jenkins.getQueue().cancel(project));
     }
 
 }

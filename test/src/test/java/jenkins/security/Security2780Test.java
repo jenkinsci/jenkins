@@ -1,14 +1,14 @@
 package jenkins.security;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class Security2780Test {
         AtomicBoolean alertTriggered = new AtomicBoolean(false);
         wc.setAlertHandler((p, s) -> alertTriggered.set(true));
         HtmlPage page = wc.goTo("");
-        page.executeJavaScript("document.querySelector('a.jenkins-table__button')._tippy.show()");
+        page.executeJavaScript("document.querySelector('.jenkins-table a.jenkins-button')._tippy.show()");
         wc.waitForBackgroundJavaScript(2000L);
         ScriptResult result = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();

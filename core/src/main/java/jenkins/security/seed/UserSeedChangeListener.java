@@ -32,14 +32,11 @@ import java.util.List;
 import java.util.logging.Logger;
 import jenkins.security.SecurityListener;
 import jenkins.util.Listeners;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Listener notified when a user was requested to changed their seed
+ * @since 2.160 and 2.150.2, but restricted (unavailable to plugins) before 2.406
  */
-//TODO remove restriction on the weekly after the security fix
-@Restricted(NoExternalUse.class)
 public abstract class UserSeedChangeListener implements ExtensionPoint {
     private static final Logger LOGGER = Logger.getLogger(SecurityListener.class.getName());
 

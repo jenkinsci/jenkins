@@ -25,8 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
-    Generates an anchor element with the ability to send POST requests and/or
-    asynchronous requests. It depends the combination of post and async attributes.
+    Generates an anchor element with the ability to send POST requests.
 
     @since 1.584
     <st:attribute name="clazz">
@@ -38,12 +37,9 @@ THE SOFTWARE.
     <st:attribute name="post">
       If this must send a POST request.
     </st:attribute>
-    <st:attribute name="async">
-      If this must send an asynchronous request.
-    </st:attribute>
   </st:documentation>
 
   <st:adjunct includes="lib.form.link.link"/>
 
-  <a href="${attrs.href}" class="${attrs.post ? 'post' + (attrs.async ? '-async' : '') : (attrs.async ? 'async' : '')} ${attrs.clazz}"><d:invokeBody/></a>
+  <a href="${attrs.href}" class="${attrs.post ? 'post' : ''} ${attrs.clazz}"><d:invokeBody/></a>
 </j:jelly>

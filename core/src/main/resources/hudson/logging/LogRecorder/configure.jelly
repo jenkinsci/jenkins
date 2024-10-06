@@ -27,8 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout permission="${app.ADMINISTER}" title="${%Configure log recorder}">
-  <st:include page="sidepanel.jelly" />
+<l:layout permission="${app.ADMINISTER}" title="${%Configure log recorder}" type="one-column">
   <l:breadcrumb title="${%Configure log recorder}" />
 
   <l:main-panel>
@@ -37,7 +36,7 @@ THE SOFTWARE.
     </l:app-bar>
 
     <f:form method="post" name="config" action="configSubmit">
-      <div class="alert alert-info jenkins-form-item">
+      <div class="jenkins-alert jenkins-alert-info jenkins-form-item">
         ${%fine_warning}
       </div>
       <j:set var="instance" value="${it}" />
@@ -68,9 +67,9 @@ THE SOFTWARE.
         </f:repeatable>
       </f:entry>
 
-      <f:block>
+      <f:bottomButtonBar>
         <f:submit value="${%Save}" />
-      </f:block>
+      </f:bottomButtonBar>
     </f:form>
     <st:adjunct includes="lib.form.confirm" />
   </l:main-panel>

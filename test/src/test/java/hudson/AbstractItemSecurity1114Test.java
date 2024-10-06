@@ -2,7 +2,6 @@ package hudson;
 
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.AbstractItem;
 import hudson.model.Item;
@@ -10,6 +9,7 @@ import hudson.model.RootAction;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import jenkins.model.Jenkins;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

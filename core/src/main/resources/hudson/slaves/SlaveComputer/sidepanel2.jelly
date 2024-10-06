@@ -26,8 +26,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:task icon="icon-clipboard icon-md" href="${rootURL}/${it.url}log" title="${%Log}" permissions="${it.EXTENDED_READ_AND_CONNECT}" />
   <j:if test="${it.channel!=null}">
-    <l:task icon="icon-computer icon-md" href="${rootURL}/${it.url}systemInfo" title="${%System Information}" permissions="${it.EXTENDED_READ_AND_CONNECT}"/>
-    <l:task icon="icon-edit-delete icon-md" href="${rootURL}/${it.url}disconnect" title="${%Disconnect}" permission="${it.DISCONNECT}"/>
+    <l:task icon="symbol-information-circle icon-md" href="${rootURL}/${it.url}systemInfo" title="${%System Information}" permissions="${it.EXTENDED_READ_AND_CONNECT}"/>
+    <l:task icon="symbol-disconnect icon-md" href="${rootURL}/${it.url}disconnect" title="${%Disconnect}" permission="${it.DISCONNECT}"/>
   </j:if>
 
 </j:jelly>

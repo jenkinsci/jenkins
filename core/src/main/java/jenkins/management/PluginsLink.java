@@ -28,9 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.model.UpdateCenter;
-import hudson.model.UpdateSite.Plugin;
 import hudson.security.Permission;
-import java.util.List;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -75,46 +73,6 @@ public class PluginsLink extends ManagementLink {
     @Override
     public Badge getBadge() {
         final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
-        if (!updateCenter.isSiteDataReady()) {
-            // Do not display message during this page load, but possibly later.
-            return null;
-        }
-        List<Plugin> plugins = updateCenter.getUpdates();
-        int size = plugins.size();
-        if (size > 0) {
-            StringBuilder tooltip = new StringBuilder();
-            Badge.Severity severity = Badge.Severity.WARNING;
-            int securityFixSize = (int) plugins.stream().filter(plugin -> plugin.fixesSecurityVulnerabilities()).count();
-            int incompatibleSize = (int) plugins.stream().filter(plugin -> !plugin.isCompatibleWithInstalledVersion()).count();
-            if (size > 1) {
-                tooltip.append(Messages.PluginsLink_updatesAvailable(size));
-            } else {
-                tooltip.append(Messages.PluginsLink_updateAvailable());
-            }
-            switch (incompatibleSize) {
-                case 0:
-                    break;
-                case 1:
-                    tooltip.append("\n").append(Messages.PluginsLink_incompatibleUpdateAvailable());
-                    break;
-                default:
-                    tooltip.append("\n").append(Messages.PluginsLink_incompatibleUpdatesAvailable(incompatibleSize));
-                    break;
-            }
-            switch (securityFixSize) {
-                case 0:
-                    break;
-                case 1:
-                    tooltip.append("\n").append(Messages.PluginsLink_securityUpdateAvailable());
-                    severity = Badge.Severity.DANGER;
-                    break;
-                default:
-                    tooltip.append("\n").append(Messages.PluginsLink_securityUpdatesAvailable(securityFixSize));
-                    severity = Badge.Severity.DANGER;
-                    break;
-            }
-            return new Badge(Integer.toString(size), tooltip.toString(), severity);
-        }
-        return null;
+        return updateCenter.getBadge();
     }
 }

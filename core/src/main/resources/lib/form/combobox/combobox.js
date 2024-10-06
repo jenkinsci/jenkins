@@ -15,15 +15,22 @@ Behaviour.specify("INPUT.combobox2", "combobox", 100, function (e) {
       }
       return candidates;
     },
-    {}
+    {},
   );
 
   refillOnChange(e, function (params) {
-    new Ajax.Request(e.getAttribute("fillUrl"), {
-      parameters: params,
-      onSuccess: function (rsp) {
-        items = JSON.parse(rsp.responseText);
-      },
+    fetch(e.getAttribute("fillUrl"), {
+      headers: crumb.wrap({
+        "Content-Type": "application/x-www-form-urlencoded",
+      }),
+      method: "post",
+      body: new URLSearchParams(params),
+    }).then((rsp) => {
+      if (rsp.ok) {
+        rsp.json().then((json) => {
+          items = json;
+        });
+      }
     });
   });
 });

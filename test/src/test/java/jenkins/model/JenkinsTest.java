@@ -24,7 +24,12 @@
 
 package jenkins.model;
 
+import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -37,17 +42,14 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.TextPage;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
+import hudson.Functions;
 import hudson.XmlFile;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Computer;
 import hudson.model.Failure;
 import hudson.model.FreeStyleProject;
@@ -57,6 +59,7 @@ import hudson.model.Node;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.Saveable;
+import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
@@ -70,17 +73,41 @@ import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.VersionNumber;
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import jenkins.AgentProtocol;
+import org.apache.commons.io.FileUtils;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.TextPage;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -102,6 +129,46 @@ import org.mockito.Mockito;
 public class JenkinsTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
+
+    @Test
+    @Issue("SECURITY-3073")
+    public void verifyUploadedFingerprintFilePermission() throws Exception {
+        assumeFalse(Functions.isWindows());
+
+        HtmlPage page = j.createWebClient().goTo("fingerprintCheck");
+        // The form doesn't have a name, the page contain the search form and the one we're interested in
+        HtmlForm form = page.getForms().get(1);
+        File dir = tmp.newFolder();
+        File plugin = new File(dir, "htmlpublisher.jpi");
+        // We're using a plugin to have a file above DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD
+        FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
+        form.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        j.submit(form);
+
+        File filesRef = Files.createTempFile("tmp", ".tmp").toFile();
+        File filesTmpDir = filesRef.getParentFile();
+        filesRef.deleteOnExit();
+
+        final Set<PosixFilePermission>[] filesPermission = new Set[]{new HashSet<>()};
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> {
+                    Optional<File> lastUploadedPlugin = Arrays.stream(Objects.requireNonNull(
+                                    filesTmpDir.listFiles((file, fileName) ->
+                                            fileName.startsWith("jenkins-multipart-uploads")))).
+                            max(Comparator.comparingLong(File::lastModified));
+                    if (lastUploadedPlugin.isPresent()) {
+                        filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPlugin.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+        assertEquals(EnumSet.of(OWNER_EXECUTE, OWNER_READ, OWNER_WRITE), filesPermission[0]);
+    }
 
     @Issue("SECURITY-406")
     @Test
@@ -136,8 +203,8 @@ public class JenkinsTest {
         p.setDisplayName("displayName");
 
         Jenkins jenkins = Jenkins.get();
-        assertTrue(jenkins.isDisplayNameUnique("displayName1", curJobName));
-        assertTrue(jenkins.isDisplayNameUnique(jobName, curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, "displayName1", curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, jobName, curJobName));
     }
 
     @Test
@@ -153,7 +220,7 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        assertFalse(jenkins.isDisplayNameUnique(displayName, curJobName));
+        assertFalse(jenkins.isDisplayNameUnique(jenkins, displayName, curJobName));
     }
 
     @Test
@@ -166,7 +233,7 @@ public class JenkinsTest {
 
         Jenkins jenkins = Jenkins.get();
         // should be true as we don't test against the current job
-        assertTrue(jenkins.isDisplayNameUnique(displayName, curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, displayName, curJobName));
     }
 
     @Test
@@ -177,7 +244,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(jobName);
 
         Jenkins jenkins = Jenkins.get();
-        assertTrue(jenkins.isNameUnique("jobName1", curJobName));
+        assertTrue(jenkins.isNameUnique(jenkins, "jobName1", curJobName));
     }
 
     @Test
@@ -188,7 +255,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(jobName);
 
         Jenkins jenkins = Jenkins.get();
-        assertFalse(jenkins.isNameUnique(jobName, curJobName));
+        assertFalse(jenkins.isNameUnique(jenkins, jobName, curJobName));
     }
 
     @Test
@@ -200,7 +267,7 @@ public class JenkinsTest {
 
         Jenkins jenkins = Jenkins.get();
         // true because we don't test against the current job
-        assertTrue(jenkins.isNameUnique(curJobName, curJobName));
+        assertTrue(jenkins.isNameUnique(jenkins, curJobName, curJobName));
     }
 
     @Test
@@ -214,7 +281,7 @@ public class JenkinsTest {
         p.setDisplayName("displayName");
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName("1displayName", curJobName);
+        FormValidation v = jenkins.checkDisplayName("1displayName", curProject);
         assertEquals(FormValidation.ok(), v);
     }
 
@@ -230,7 +297,7 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName(displayName, curJobName);
+        FormValidation v = jenkins.checkDisplayName(displayName, curProject);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
@@ -246,7 +313,7 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName(jobName, curJobName);
+        FormValidation v = jenkins.checkDisplayName(jobName, curProject);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
@@ -373,7 +440,7 @@ public class JenkinsTest {
     }
 
     private Page eval(WebClient wc) throws Exception {
-        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URI(wc.getContextPath() + "eval").toURL(), HttpMethod.POST);
         req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
         return wc.getPage(req);
@@ -701,6 +768,19 @@ public class JenkinsTest {
         }
     }
 
+    @Test
+    public void getComputers() throws Exception {
+        List<Slave> agents = new ArrayList<>();
+        for (String n : List.of("zestful", "bilking", "grouchiest")) {
+            agents.add(j.createSlave(n, null, null));
+        }
+        for (Slave agent : agents) {
+            j.waitOnline(agent);
+        }
+        assertThat(Stream.of(j.jenkins.getComputers()).map(Computer::getName).toArray(String[]::new),
+            arrayContaining("", "bilking", "grouchiest", "zestful"));
+    }
+
     @Issue("JENKINS-42577")
     @Test
     public void versionIsSavedInSave() throws Exception {
@@ -818,6 +898,37 @@ public class JenkinsTest {
         @Override
         public String getUrlName() {
             return "login123";
+        }
+    }
+
+    @Test
+    public void checkInitialView() {
+        assertTrue(CheckInitialViewExtension.hasPrimaryView);
+    }
+
+    @TestExtension(value = "checkInitialView")
+    public static class CheckInitialViewExtension implements RootAction {
+        private static boolean hasPrimaryView;
+
+        @Initializer(after = InitMilestone.SYSTEM_CONFIG_LOADED, before = InitMilestone.JOB_CONFIG_ADAPTED)
+        public static void checkViews() {
+            hasPrimaryView = Jenkins.get().getPrimaryView() != null;
+        }
+
+
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public String getUrlName() {
+            return null;
         }
     }
 }

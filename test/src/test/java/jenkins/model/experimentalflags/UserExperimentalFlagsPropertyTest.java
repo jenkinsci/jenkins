@@ -26,7 +26,6 @@ package jenkins.model.experimentalflags;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.InvisibleAction;
@@ -34,6 +33,7 @@ import hudson.model.RootAction;
 import hudson.model.User;
 import java.util.HashMap;
 import java.util.Map;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

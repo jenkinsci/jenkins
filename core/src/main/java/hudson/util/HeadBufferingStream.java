@@ -24,10 +24,10 @@
 
 package hudson.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * {@link FilterInputStream} that buffers the first N bytes to a byte array on the side.

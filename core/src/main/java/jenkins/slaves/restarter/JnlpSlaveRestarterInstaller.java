@@ -13,6 +13,7 @@ import hudson.remoting.EngineListener;
 import hudson.remoting.EngineListenerAdapter;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.DumbSlave;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,17 +26,24 @@ import jenkins.security.MasterToSlaveCallable;
  * Actual agent restart logic.
  *
  * <p>
- * Use {@link ComputerListener} to install {@link EngineListener}, which in turn gets executed when
- * the agent gets disconnected.
+ *     Use {@link ComputerListener} to install {@link EngineListener} on {@link hudson.model.Computer} instances tied to {@link DumbSlave},
+ *     which in turn gets executed when the agent gets disconnected.
  *
  * @author Kohsuke Kawaguchi
  */
 @Extension
 public class JnlpSlaveRestarterInstaller extends ComputerListener implements Serializable {
+    /**
+     * To force installer to run on all agents, set this system property to true.
+     */
+    private static final boolean FORCE_INSTALL = Boolean.getBoolean(JnlpSlaveRestarterInstaller.class.getName() + ".forceInstall");
+
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
     @Override
     public void onOnline(final Computer c, final TaskListener listener) throws IOException, InterruptedException {
-        Computer.threadPoolForRemoting.submit(new Install(c, listener));
+        if (FORCE_INSTALL || c.getNode() instanceof DumbSlave) {
+            Computer.threadPoolForRemoting.submit(new Install(c, listener));
+        }
     }
 
     private static class Install implements Callable<Void> {

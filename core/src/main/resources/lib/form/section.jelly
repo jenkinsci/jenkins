@@ -27,10 +27,13 @@ THE SOFTWARE.
   <st:documentation>
     Section header in the form table.
 
-    <st:attribute name="title" use="required"> <![CDATA[
+    <st:attribute name="title"> <![CDATA[
       The section header text.
       If null is given, the entire <f:section> tag becomes no-op.
       ]]>
+    </st:attribute>
+    <st:attribute name="description" since="TODO">
+      Optional attribute to set a description for the section
     </st:attribute>
     <st:attribute name="icon">
       Optional attribute to set an icon for the section, this is only visible when using section-to-sidebar-items.js
@@ -40,10 +43,8 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <st:adjunct includes="lib.form.section_" />
-
   <f:rowSet name="${attrs.name}">
-    <div class="${attrs.title!=null ? 'jenkins-section' : ''}">
+    <section class="${attrs.title!=null ? 'jenkins-section' : ''}">
       <j:if test="${attrs.title!=null}">
         <div class="jenkins-section__title">
           <div class="jenkins-hidden">
@@ -52,7 +53,12 @@ THE SOFTWARE.
           ${attrs.title}
         </div>
       </j:if>
+      <j:if test="${attrs.description != null}">
+        <div class="jenkins-section__description">
+          ${attrs.description}
+        </div>
+      </j:if>
       <d:invokeBody />
-    </div>
+    </section>
   </f:rowSet>
 </j:jelly>

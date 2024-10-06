@@ -130,10 +130,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
      *
      * @see DescriptorExtensionList#createDescriptorList(hudson.model.Hudson, Class)
      */
-    @SuppressFBWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE", justification = "Since the publisher is not Serializable, " +
-            "no need for the Comparator")
-    public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher, Descriptor<Publisher>>
-            implements Comparator<ExtensionComponent<Descriptor<Publisher>>> {
+    public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher, Descriptor<Publisher>> {
 
         public DescriptorExtensionListImpl(Jenkins hudson) {
             super(hudson, Publisher.class);
@@ -142,10 +139,14 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements D
         @Override
         protected List<ExtensionComponent<Descriptor<Publisher>>> sort(List<ExtensionComponent<Descriptor<Publisher>>> r) {
             List<ExtensionComponent<Descriptor<Publisher>>> copy = new ArrayList<>(r);
-            copy.sort(this);
+            copy.sort(new ExtensionComponentComparator());
             return copy;
         }
+    }
 
+    @SuppressFBWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE", justification = "Since the publisher is not Serializable, " +
+            "no need for the Comparator")
+    private static final class ExtensionComponentComparator implements Comparator<ExtensionComponent<Descriptor<Publisher>>> {
         @Override
         public int compare(ExtensionComponent<Descriptor<Publisher>> lhs, ExtensionComponent<Descriptor<Publisher>> rhs) {
             int r = classify(lhs.getInstance()) - classify(rhs.getInstance());

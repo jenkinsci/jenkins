@@ -33,13 +33,16 @@ THE SOFTWARE.
     <st:attribute name="hasKeyboardShortcut">
       If false the default keyboard shortcut for the input is disabled. Defaults to true.
     </st:attribute>
+    <st:attribute name="enabled" since="2.420">
+      Defaults to true. Sets whether the search bar is enabled or not.
+    </st:attribute>
     Creates a search input
 
     @since 2.369
   </st:documentation>
 
   <div class="jenkins-search-container">
-    <div class="jenkins-search ${attrs.clazz}">
+    <div class="jenkins-search ${attrs.enabled == false ? 'jenkins-search--disabled' : ''} ${attrs.clazz}">
       <div class="jenkins-search__icon">
         <l:icon src="symbol-search" />
       </div>
@@ -52,7 +55,8 @@ THE SOFTWARE.
              autocomplete="off"
              autocorrect="off"
              autocapitalize="off"
-             spellcheck="false" />
+             spellcheck="false"
+             disabled="${attrs.enabled == false ? true : null}" />
       <j:if test="${attrs.hasKeyboardShortcut != 'false'}">
         <div class="jenkins-search__shortcut" tooltip="${%Press / on your keyboard to focus}">
           <l:icon src="symbol-search-shortcut" />

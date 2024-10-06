@@ -79,7 +79,6 @@ public class WebSocketAgentsTest {
     @Test
     public void smokes() throws Exception {
         Slave s = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().secret().webSocket().build());
-        r.waitOnline(s);
         try {
             assertEquals("response", s.getChannel().call(new DummyTask()));
             assertNotNull(s.getChannel().call(new FatTask()));

@@ -131,7 +131,7 @@ public class DisablePluginCommand extends CLICommand {
             System.arraycopy(arguments, 0, newArgs, 1, arguments.length);
 
             String f = "%" + indent + "s" + format + "%n";
-            stdout.format(f, newArgs);
+            stdout.format(f, (Object[]) newArgs);
         }
     }
 
@@ -147,7 +147,7 @@ public class DisablePluginCommand extends CLICommand {
         }
 
         printIndented(indent, Messages.DisablePluginCommand_StatusMessage(oneResult.getPlugin(), oneResult.getStatus(), oneResult.getMessage()));
-        if (oneResult.getDependentsDisableStatus().size() > 0) {
+        if (!oneResult.getDependentsDisableStatus().isEmpty()) {
             indent += INDENT_SPACE;
             for (PluginWrapper.PluginDisableResult oneDependentResult : oneResult.getDependentsDisableStatus()) {
                 printResult(oneDependentResult, indent);
@@ -182,7 +182,7 @@ public class DisablePluginCommand extends CLICommand {
             return true;
         }
 
-        if (oneResult.getDependentsDisableStatus().size() > 0) {
+        if (!oneResult.getDependentsDisableStatus().isEmpty()) {
             for (PluginWrapper.PluginDisableResult oneDependentResult : oneResult.getDependentsDisableStatus()) {
                 if (restartIfNecessary(oneDependentResult)) {
                     return true;

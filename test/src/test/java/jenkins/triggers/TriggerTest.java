@@ -1,8 +1,8 @@
 package jenkins.triggers;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;

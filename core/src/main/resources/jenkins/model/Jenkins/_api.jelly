@@ -27,6 +27,8 @@ THE SOFTWARE.
 
   <st:include page="/hudson/model/ModifiableItemGroup/_api.jelly"/>
 
+  <st:include page="/hudson/model/ModifiableViewGroup/_api.jelly"/>
+
   <h2>Build Queue</h2>
   <p>
     Build queue has <a href="../queue/api/">its own separate API</a>.

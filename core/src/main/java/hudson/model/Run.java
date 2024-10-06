@@ -33,7 +33,6 @@ import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
-import com.jcraft.jzlib.GZIPInputStream;
 import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -69,6 +68,9 @@ import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -87,6 +89,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -105,12 +108,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+import java.util.zip.GZIPInputStream;
+import jenkins.console.ConsoleUrlProvider;
+import jenkins.console.WithConsoleUrl;
 import jenkins.model.ArtifactManager;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.BuildDiscarder;
+import jenkins.model.HistoricalBuild;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.RunAction2;
@@ -118,13 +123,13 @@ import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -132,7 +137,9 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -153,22 +160,13 @@ import org.springframework.security.core.Authentication;
  */
 @ExportedBean
 public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster, StaplerProxy {
+        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster, StaplerProxy, HistoricalBuild, WithConsoleUrl {
 
     /**
      * The original {@link Queue.Item#getId()} has not yet been mapped onto the {@link Run} instance.
      * @since 1.601
      */
     public static final long QUEUE_ID_UNKNOWN = -1;
-
-    /**
-     * Target size limit for truncated {@link #description}s in the Build History Widget.
-     * This is applied to the raw, unformatted description. Especially complex formatting
-     * like hyperlinks can result in much less text being shown than this might imply.
-     * Negative values will disable truncation, {@code 0} will enforce empty strings.
-     * @since 2.223
-     */
-    private static /* non-final for Groovy */ int TRUNCATED_DESCRIPTION_LIMIT = SystemProperties.getInteger("historyWidget.descriptionLimit", 100);
 
     protected final transient @NonNull JobT project;
 
@@ -364,8 +362,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public void reload() throws IOException {
         this.state = State.COMPLETED;
-        // TODO ABORTED would perhaps make more sense than FAILURE:
-        this.result = Result.FAILURE;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
+        this.result = Result.ABORTED;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
         getDataFile().unmarshal(this); // load the rest of the data
 
         if (state == State.COMPLETED) {
@@ -458,12 +455,12 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Get the {@link Queue.Item#getId()} of the original queue item from where this Run instance
-     * originated.
-     * @return The queue item ID.
+     * {@inheritDoc}
+     *
      * @since 1.601
      */
     @Exported
+    @Override
     public long getQueueId() {
         return queueId;
     }
@@ -479,15 +476,8 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         this.queueId = queueId;
     }
 
-    /**
-     * Returns the build result.
-     *
-     * <p>
-     * When a build is {@link #isBuilding() in progress}, this method
-     * returns an intermediate result.
-     * @return The status of the build, if it has completed or some build step has set a status; may be null if the build is ongoing.
-     */
     @Exported
+    @Override
     public @CheckForNull Result getResult() {
         return result;
     }
@@ -515,6 +505,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Gets the subset of {@link #getActions()} that consists of {@link BuildBadgeAction}s.
      */
+    @Override
     public @NonNull List<BuildBadgeAction> getBadgeActions() {
         List<BuildBadgeAction> r = getActions(BuildBadgeAction.class);
         if (isKeepLog()) {
@@ -524,11 +515,8 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return r;
     }
 
-    /**
-     * Returns true if the build is not completed yet.
-     * This includes "not started yet" state.
-     */
     @Exported
+    @Override
     public boolean isBuilding() {
         return state.compareTo(State.POST_PRODUCTION) < 0;
     }
@@ -647,11 +635,11 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * When the build is scheduled.
-     *
+     * {@inheritDoc}
      * @see #getStartTimeInMillis()
      */
     @Exported
+    @Override
     public @NonNull Calendar getTimestamp() {
         GregorianCalendar c = new GregorianCalendar();
         c.setTimeInMillis(timestamp);
@@ -686,71 +674,10 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Exported
+    @Override
     @CheckForNull
     public String getDescription() {
         return description;
-    }
-
-
-    /**
-     * Returns the length-limited description.
-     * The method tries to take HTML tags within the description into account, but it is a best-effort attempt.
-     * Also, the method will likely not work properly if a non-HTML {@link hudson.markup.MarkupFormatter} is used.
-     * @return The length-limited description.
-     * @deprecated truncated description based on the {@link #TRUNCATED_DESCRIPTION_LIMIT} setting.
-     */
-    @Deprecated
-    public @CheckForNull String getTruncatedDescription() {
-        if (TRUNCATED_DESCRIPTION_LIMIT < 0) { // disabled
-            return description;
-        }
-        if (TRUNCATED_DESCRIPTION_LIMIT == 0) { // Someone wants to suppress descriptions, why not?
-            return "";
-        }
-
-        final int maxDescrLength = TRUNCATED_DESCRIPTION_LIMIT;
-        final String localDescription = description;
-        if (localDescription == null || localDescription.length() < maxDescrLength) {
-            return localDescription;
-        }
-
-        final String ending = "...";
-        final int sz = localDescription.length(), maxTruncLength = maxDescrLength - ending.length();
-
-        boolean inTag = false;
-        int displayChars = 0;
-        int lastTruncatablePoint = -1;
-
-        for (int i = 0; i < sz; i++) {
-            char ch = localDescription.charAt(i);
-            if (ch == '<') {
-                inTag = true;
-            } else if (ch == '>') {
-                inTag = false;
-                if (displayChars <= maxTruncLength) {
-                    lastTruncatablePoint = i + 1;
-                }
-            }
-            if (!inTag) {
-                displayChars++;
-                if (displayChars <= maxTruncLength && ch == ' ') {
-                    lastTruncatablePoint = i;
-                }
-            }
-        }
-
-        String truncDesc = localDescription;
-
-        // Could not find a preferred truncatable index, force a trunc at maxTruncLength
-        if (lastTruncatablePoint == -1)
-            lastTruncatablePoint = maxTruncLength;
-
-        if (displayChars >= maxDescrLength) {
-            truncDesc = truncDesc.substring(0, lastTruncatablePoint) + ending;
-        }
-
-        return truncDesc;
-
     }
 
     /**
@@ -768,12 +695,10 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Returns the timestamp formatted in xs:dateTime.
      */
     public @NonNull String getTimestampString2() {
-        return Util.XS_DATETIME_FORMATTER.format(new Date(timestamp));
+        return Util.XS_DATETIME_FORMATTER2.format(Instant.ofEpochMilli(timestamp));
     }
 
-    /**
-     * Gets the string that says how long the build took to run.
-     */
+    @Override
     public @NonNull String getDurationString() {
         if (hasntStartedYet()) {
             return Messages.Run_NotStartedYet();
@@ -792,9 +717,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return duration;
     }
 
-    /**
-     * Gets the icon color for display.
-     */
+    @Override
     public @NonNull BallColor getIconColor() {
         if (!isBuilding()) {
             // already built
@@ -829,6 +752,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Exported
+    @Override
     public String getFullDisplayName() {
         return project.getFullDisplayName() + ' ' + getDisplayName();
     }
@@ -854,6 +778,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Exported(visibility = 2)
+    @Override
     public int getNumber() {
         return number;
     }
@@ -1031,20 +956,14 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return nextBuild;
     }
 
-    /**
-     * Returns the URL of this {@link Run}, relative to the context root of Hudson.
-     *
-     * @return
-     *      String like "job/foo/32/" with trailing slash but no leading slash.
-     */
-    // I really messed this up. I'm hoping to fix this some time
-    // it shouldn't have trailing '/', and instead it should have leading '/'
+
+    @Override
     public @NonNull String getUrl() {
 
         // RUN may be accessed using permalinks, as "/lastSuccessful" or other, so try to retrieve this base URL
         // looking for "this" in the current request ancestors
         // @see also {@link AbstractItem#getUrl}
-        StaplerRequest req = Stapler.getCurrentRequest();
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
         if (req != null) {
             String seed = Functions.getNearestAncestorUrl(req, this);
             if (seed != null) {
@@ -1054,6 +973,14 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         return project.getUrl() + getNumber() + '/';
+    }
+
+    /**
+     * @see ConsoleUrlProvider#consoleUrlOf
+     */
+    @Override
+    public String getConsoleUrl() {
+        return ConsoleUrlProvider.consoleUrlOf(this);
     }
 
     /**
@@ -1092,6 +1019,12 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public @NonNull File getRootDir() {
         return new File(project.getBuildDir(), Integer.toString(number));
+    }
+
+    @Override
+    public List<ParameterValue> getParameterValues() {
+        ParametersAction a = getAction(ParametersAction.class);
+        return a != null ? a.getParameters() : List.of();
     }
 
     /**
@@ -1242,12 +1175,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Maximum number of artifacts to list before using switching to the tree view.
      */
-    public static final int LIST_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.listCutoff", "16"));
-
-    /**
-     * Maximum number of artifacts to show in tree view before just showing a link.
-     */
-    public static final int TREE_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.treeCutoff", "40"));
+    public static final int LIST_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.listCutoff", "20"));
 
     // ..and then "too many"
 
@@ -1347,7 +1275,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         private String combineLast(String[] token, int n) {
             StringBuilder buf = new StringBuilder();
             for (int i = Math.max(0, token.length - n); i < token.length; i++) {
-                if (buf.length() > 0)  buf.append('/');
+                if (!buf.isEmpty())  buf.append('/');
                 buf.append(token[i]);
             }
             return buf.toString();
@@ -1642,6 +1570,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             ));
             //Still firing the delete listeners; just no need to clean up rootDir
             RunListener.fireDeleted(this);
+            SaveableListener.fireOnDeleted(this, getDataFile());
             synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
                 removeRunFromParent();
             }
@@ -1650,6 +1579,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         //The root dir exists and is a directory that needs to be purged
         RunListener.fireDeleted(this);
+        SaveableListener.fireOnDeleted(this, getDataFile());
 
         if (artifactManager != null) {
             deleteArtifacts();
@@ -1901,8 +1831,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
                     LOGGER.log(FINE, "{0} main build action completed: {1}", new Object[] {this, result});
                     CheckPoint.MAIN_COMPLETED.report();
-                } catch (ThreadDeath t) {
-                    throw t;
                 } catch (AbortException e) { // orderly abortion.
                     result = Result.FAILURE;
                     listener.error(e.getMessage());
@@ -1924,8 +1852,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 // even if the main build fails fatally, try to run post build processing
                 job.post(Objects.requireNonNull(listener));
 
-            } catch (ThreadDeath t) {
-                throw t;
             } catch (Throwable e) {
                 handleFatalBuildProblem(listener, e);
                 result = Result.FAILURE;
@@ -2160,20 +2086,15 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     private String convertBytesToString(List<Byte> bytes) {
         Collections.reverse(bytes);
-        Byte[] byteArray = bytes.toArray(new Byte[0]);
-        return new String(ArrayUtils.toPrimitive(byteArray), getCharset());
+        byte[] byteArray = new byte[bytes.size()];
+        for (int i = 0; i < byteArray.length; i++) {
+            byteArray[i] = bytes.get(i);
+        }
+        return new String(byteArray, getCharset());
     }
 
-    public void doBuildStatus(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doBuildStatus(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         rsp.sendRedirect2(req.getContextPath() + "/images/48x48/" + getBuildStatusUrl());
-    }
-
-    public @NonNull String getBuildStatusUrl() {
-        return getIconColor().getImage();
-    }
-
-    public String getBuildStatusIconClassName() {
-        return getIconColor().getIconClassName();
     }
 
     public static class Summary {
@@ -2267,7 +2188,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the build number in the body.
      */
-    public void doBuildNumber(StaplerResponse rsp) throws IOException {
+    public void doBuildNumber(StaplerResponse2 rsp) throws IOException {
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("US-ASCII");
         rsp.setStatus(HttpServletResponse.SC_OK);
@@ -2277,7 +2198,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the build time stamp in the body.
      */
-    public void doBuildTimestamp(StaplerRequest req, StaplerResponse rsp, @QueryParameter String format) throws IOException {
+    public void doBuildTimestamp(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String format) throws IOException {
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("US-ASCII");
         rsp.setStatus(HttpServletResponse.SC_OK);
@@ -2289,11 +2210,30 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Sends out the raw console output.
+     *
+     * @since 2.475
      */
+    public void doConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        if (Util.isOverridden(Run.class, getClass(), "doConsoleText", StaplerRequest.class, StaplerResponse.class)) {
+            doConsoleText(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+        } else {
+            doConsoleTextImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doConsoleText(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        doConsoleTextImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    private void doConsoleTextImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
         try (InputStream input = getLogInputStream();
-             OutputStream os = rsp.getCompressedOutputStream(req);
+             OutputStream os = rsp.getOutputStream();
              PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(os)) {
             IOUtils.copy(input, out);
         }
@@ -2306,7 +2246,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Deprecated
     public void doProgressiveLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        getLogText().doProgressText(req, rsp);
+        getLogText().doProgressText(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
     }
 
     /**
@@ -2327,7 +2267,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @RequirePOST
-    public void doToggleLogKeep(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doToggleLogKeep(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         keepLog(!keepLog);
         rsp.forwardToPreviousPage(req);
     }
@@ -2348,9 +2288,37 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Deletes the build when the button is pressed.
+     *
+     * @since 2.475
      */
     @RequirePOST
-    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(Run.class, getClass(), "doDoDelete", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                doDoDelete(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+            return;
+        } else {
+            doDoDeleteImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doDoDelete(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doDoDeleteImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private void doDoDeleteImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         checkPermission(DELETE);
 
         // We should not simply delete the build if it has been explicitly
@@ -2383,7 +2351,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Accepts the new description.
      */
     @RequirePOST
-    public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doSubmitDescription(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         setDescription(req.getParameter("description"));
         rsp.sendRedirect(".");  // go to the top page
     }
@@ -2489,10 +2457,12 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
+            LOGGER.fine(() -> "Jenkins not running");
             return null;
         }
         Job<?, ?> job = j.getItemByFullName(jobName, Job.class);
         if (job == null) {
+            LOGGER.fine(() -> "no such job " + jobName + " when running as " + Jenkins.getAuthentication2().getName());
             return null;
         }
         return job.getBuildByNumber(number);
@@ -2512,7 +2482,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @POST
-    public @NonNull HttpResponse doConfigSubmit(StaplerRequest req) throws IOException, ServletException, FormException {
+    public @NonNull HttpResponse doConfigSubmit(StaplerRequest2 req) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
         try (BulkChange bc = new BulkChange(this)) {
             JSONObject json = req.getSubmittedForm();
@@ -2631,8 +2601,26 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Override
+    public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
+        if (Util.isOverridden(Run.class, getClass(), "getDynamic", String.class, StaplerRequest.class, StaplerResponse.class)) {
+            return getDynamic(token, StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+        } else {
+            Object returnedResult = super.getDynamic(token, req, rsp);
+            return getDynamicImpl(token, returnedResult);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #getDynamic(String, StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         Object returnedResult = super.getDynamic(token, req, rsp);
+        return getDynamicImpl(token, returnedResult);
+    }
+
+    private Object getDynamicImpl(String token, Object returnedResult) {
         if (returnedResult == null) {
             //check transient actions too
             for (Action action : getTransientActions()) {
@@ -2674,18 +2662,13 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
 
     public static class RedirectUp {
-        public void doDynamic(StaplerResponse rsp) throws IOException {
+        public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
             // Compromise to handle both browsers (auto-redirect) and programmatic access
             // (want accurate 404 response).. send 404 with javascript to redirect browsers.
             rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             rsp.setContentType("text/html;charset=UTF-8");
             PrintWriter out = rsp.getWriter();
-            out.println("<html><head>" +
-                "<meta http-equiv='refresh' content='1;url=..'/>" +
-                "<script>window.location.replace('..');</script>" +
-                "</head>" +
-                "<body style='background-color:white; color:white;'>" +
-                "Not found</body></html>");
+            Util.printRedirect(req.getContextPath(), "..", "Not found", out);
             out.flush();
         }
     }

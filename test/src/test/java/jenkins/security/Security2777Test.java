@@ -1,8 +1,8 @@
 package jenkins.security;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.model.UnprotectedRootAction;
 import java.io.IOException;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

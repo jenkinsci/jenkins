@@ -56,7 +56,6 @@ import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -315,6 +314,7 @@ public final class TcpSlaveAgentListener extends Thread {
                 if (header.startsWith("GET / ")) {
                     response = "HTTP/1.0 200 OK\r\n" +
                             "Content-Type: text/plain;charset=UTF-8\r\n" +
+                            "X-Content-Type-Options: nosniff\r\n" +
                             "\r\n" +
                             "Jenkins-Agent-Protocols: " + getAgentProtocolNames() + "\r\n" +
                             "Jenkins-Version: " + Jenkins.VERSION + "\r\n" +
@@ -330,7 +330,9 @@ public final class TcpSlaveAgentListener extends Thread {
                 s.shutdownOutput();
 
                 InputStream i = s.getInputStream();
-                IOUtils.copy(i, NullOutputStream.NULL_OUTPUT_STREAM);
+                try (OutputStream o = OutputStream.nullOutputStream()) {
+                    IOUtils.copy(i, o);
+                }
                 s.shutdownInput();
             }
         }

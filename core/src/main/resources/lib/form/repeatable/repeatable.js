@@ -18,12 +18,11 @@ var repeatableSupport = {
 
   // do the initialization
   init: function (container, master, insertionPoint) {
-    this.container = $(container);
+    this.container = container;
     this.container.tag = this;
-    master = $(master);
     this.blockHTML = master.innerHTML;
     master.parentNode.removeChild(master);
-    this.insertionPoint = $(insertionPoint);
+    this.insertionPoint = insertionPoint;
     this.name = master.getAttribute("name");
     if (this.container.getAttribute("enableTopButton") == "true") {
       this.enableTopButton = true;
@@ -43,19 +42,16 @@ var repeatableSupport = {
 
     // importNode isn't supported in IE.
     // nc = document.importNode(node,true);
-    var nc = $(document.createElement("div"));
-    nc.className = "repeated-chunk";
-    nc.setOpacity(0);
+    var nc = document.createElement("div");
+    nc.className = "repeated-chunk fade-in";
     nc.setAttribute("name", this.name);
     nc.innerHTML = this.blockHTML;
     if (!addOnTop) {
       this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
     } else if (this.enableTopButton) {
-      var children = $(this.container)
-        .childElements()
-        .findAll(function (n) {
-          return n.hasClassName("repeated-chunk");
-        });
+      var children = Array.from(this.container.children).filter(function (n) {
+        return n.classList.contains("repeated-chunk");
+      });
       this.container.insertBefore(nc, children[0]);
     }
     // Initialize drag & drop for this element
@@ -63,33 +59,23 @@ var repeatableSupport = {
       registerSortableDragDrop(nc);
     }
 
-    new YAHOO.util.Anim(
-      nc,
-      {
-        opacity: { to: 1 },
-      },
-      0.2,
-      YAHOO.util.Easing.easeIn
-    ).animate();
-
+    nc.classList.remove("fade-in");
     Behaviour.applySubtree(nc, true);
     this.update();
   },
 
   // update CSS classes associated with repeated items.
   update: function () {
-    var children = $(this.container)
-      .childElements()
-      .findAll(function (n) {
-        return n.hasClassName("repeated-chunk");
-      });
+    var children = Array.from(this.container.children).filter(function (n) {
+      return n.classList.contains("repeated-chunk");
+    });
 
     if (children.length == 0) {
-      var addButtonElements = $(this.container)
-        .childElements()
-        .findAll(function (b) {
-          return b.hasClassName("repeatable-add");
-        });
+      var addButtonElements = Array.from(this.container.children).filter(
+        function (b) {
+          return b.classList.contains("repeatable-add");
+        },
+      );
 
       if (addButtonElements.length == 2) {
         var buttonElement = addButtonElements[0];
@@ -98,20 +84,20 @@ var repeatableSupport = {
       }
     } else {
       if (children.length == 1) {
-        addButtonElements = $(this.container)
-          .childElements()
-          .findAll(function (b) {
-            return b.hasClassName("repeatable-add");
-          });
+        addButtonElements = Array.from(this.container.children).filter(
+          function (b) {
+            return b.classList.contains("repeatable-add");
+          },
+        );
 
         if (addButtonElements.length == 1 && this.enableTopButton) {
           buttonElement = addButtonElements[0];
           parentOfButton = buttonElement.parentNode;
-          var addTopButton = document.createElement("input");
+          var addTopButton = document.createElement("button");
           addTopButton.type = "button";
-          addTopButton.value =
-            buttonElement.textContent || buttonElement.innerText;
-          addTopButton.className = "repeatable-add repeatable-add-top";
+          addTopButton.innerHTML = buttonElement.innerHTML;
+          addTopButton.className =
+            "jenkins-button repeatable-add repeatable-add-top";
           parentOfButton.insertBefore(addTopButton, parentOfButton.firstChild);
           Behaviour.applySubtree(addTopButton, true);
         }
@@ -130,25 +116,28 @@ var repeatableSupport = {
 
   // called when 'delete' button is clicked
   onDelete: function (n) {
-    n = findAncestorClass(n, "repeated-chunk");
-    var a = new YAHOO.util.Anim(
-      n,
-      {
-        opacity: { to: 0 },
-        height: { to: 0 },
-      },
-      0.2,
-      YAHOO.util.Easing.easeIn
-    );
-    a.onComplete.subscribe(function () {
+    n = n.closest(".repeated-chunk");
+    n.ontransitionend = function (evt) {
+      if (evt.pseudoElement || !n.parentNode) {
+        return;
+      }
       var p = n.parentNode;
       p.removeChild(n);
       if (p.tag) {
         p.tag.update();
       }
+
       layoutUpdateCallback.call();
-    });
-    a.animate();
+    };
+    if (isRunAsTest) {
+      // transition end not triggered in tests
+      n.ontransitionend.call(n, {});
+    }
+    n.style.maxHeight = n.offsetHeight + "px";
+    n.classList.add("fade-out");
+    setTimeout(() => {
+      n.style.maxHeight = "0";
+    }, 0);
   },
 
   // called when 'add' button is clicked
@@ -156,7 +145,7 @@ var repeatableSupport = {
     var addOnTop = false;
     while (n.tag == null) {
       n = n.parentNode;
-      if (n.hasClassName("repeatable-add-top")) {
+      if (n.classList.contains("repeatable-add-top")) {
         addOnTop = true;
       }
     }
@@ -181,21 +170,26 @@ Behaviour.specify("DIV.repeated-container", "repeatable", -100, function (e) {
   }
 
   // compute the insertion point
-  var ip = $(e.lastElementChild);
-  while (!ip.hasClassName("repeatable-insertion-point")) {
-    ip = ip.previous();
+  var ip = e.lastElementChild;
+  while (!ip.classList.contains("repeatable-insertion-point")) {
+    ip = ip.previousElementSibling;
   }
   // set up the logic
   object(repeatableSupport).init(e, e.firstChild, ip);
 });
 
 // button to add a new repeatable block
-Behaviour.specify("INPUT.repeatable-add", "repeatable", 0, function (e) {
-  makeButton(e, function (e) {
-    repeatableSupport.onAdd(e.target);
-  });
-  e = null; // avoid memory leak
-});
+Behaviour.specify(
+  "INPUT.repeatable-add, BUTTON.repeatable-add",
+  "repeatable",
+  0,
+  function (button) {
+    button.addEventListener("click", ({ currentTarget: button }) => {
+      repeatableSupport.onAdd(button);
+    });
+    button = null; // avoid memory leak
+  },
+);
 
 /**
  * Converts markup for plugins that aren't using the repeatableDeleteButton tag
@@ -221,9 +215,9 @@ Behaviour.specify(
     input.parentNode.replaceChild(button, input);
     console.warn(
       "Adapted element to new markup, it should be changed to use f:repeatableDeleteButton instead in the plugin",
-      button
+      button,
     );
-  }
+  },
 );
 
 Behaviour.specify(
@@ -234,7 +228,7 @@ Behaviour.specify(
     e.addEventListener("click", function () {
       repeatableSupport.onDelete(e);
     });
-  }
+  },
 );
 
 // radio buttons in repeatable content
@@ -258,8 +252,9 @@ Behaviour.specify("DIV.repeated-chunk", "repeatable", -200, function (d) {
 
       // Uniquify the "id" of <input> and "for" of <label>
       inputs[i].id = inputs[i].name + "_" + inputs[i].id;
-      if (inputs[i].nextElementSibling.tagName === "LABEL") {
-        inputs[i].nextElementSibling.setAttribute("for", inputs[i].id);
+      var next = inputs[i].nextElementSibling;
+      if (next != null && next.tagName === "LABEL") {
+        next.setAttribute("for", inputs[i].id);
       }
     }
   }

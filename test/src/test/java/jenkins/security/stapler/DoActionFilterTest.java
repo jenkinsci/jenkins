@@ -4,25 +4,26 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.CapturedParameterNames;
@@ -35,8 +36,8 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.RequestImpl;
 import org.kohsuke.stapler.ResponseImpl;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -87,17 +88,19 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     @Test
     public void testProtectedMethodDispatch() throws Exception {
-        try {
-            wc.goTo("testAccessModifierUrl/public/value", null);
-        } catch (FailingHttpStatusCodeException e) {
-            throw new AssertionError("should have access to a public method", e);
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            try {
+                wc.goTo("testAccessModifierUrl/public/value", null);
+            } catch (FailingHttpStatusCodeException e) {
+                throw new AssertionError("should have access to a public method", e);
+            }
+            FailingHttpStatusCodeException x = assertThrows("should not have allowed protected access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/protected/value", null));
+            assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
+            x = assertThrows("should not have allowed internal access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/internal/value", null));
+            assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
+            x = assertThrows("should not have allowed private access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/private/value", null));
+            assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
         }
-        FailingHttpStatusCodeException x = assertThrows("should not have allowed protected access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/protected/value", null));
-        assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
-        x = assertThrows("should not have allowed internal access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/internal/value", null));
-        assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
-        x = assertThrows("should not have allowed private access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/private/value", null));
-        assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
     }
 
     //================================= doXxx methods =================================
@@ -108,17 +111,17 @@ public class DoActionFilterTest extends StaplerAbstractTest {
          * Method signature
          */
 
-        public static void doStaticWithRequest(StaplerRequest request) { replyOk(); }
+        public static void doStaticWithRequest(StaplerRequest2 request) { replyOk(); }
 
-        public void doWithRequest(StaplerRequest request) { replyOk(); }
+        public void doWithRequest(StaplerRequest2 request) { replyOk(); }
 
         public void doWithHttpRequest(HttpServletRequest request) { replyOk(); }
 
         // the return type is not taken into consideration if it's not a HttpResponse, it will not prevent the method
         // to be considered as a web method
-        public String doWithRequestAndReturnString(StaplerRequest request) { return "ok"; }
+        public String doWithRequestAndReturnString(StaplerRequest2 request) { return "ok"; }
 
-        public void doWithResponse(StaplerResponse response) { replyOk(); }
+        public void doWithResponse(StaplerResponse2 response) { replyOk(); }
 
         public void doWithHttpResponse(HttpServletResponse response) { replyOk(); }
 
@@ -195,14 +198,14 @@ public class DoActionFilterTest extends StaplerAbstractTest {
          * Parameter annotation
          */
 
-        public void do_CallMeBecauseOfMyUnderscore(StaplerRequest request) { replyOk(); }
+        public void do_CallMeBecauseOfMyUnderscore(StaplerRequest2 request) { replyOk(); }
 
-        public void do$CallMeBecauseOfMyDollar(StaplerRequest request) { replyOk(); }
+        public void do$CallMeBecauseOfMyDollar(StaplerRequest2 request) { replyOk(); }
     }
 
     public static class HttpResponseChild implements HttpResponse {
         @Override
-        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
             replyOk();
         }
     }
@@ -212,7 +215,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     public static class ExceptionImplementingOnlyHttpResponse extends RuntimeException implements HttpResponse {
         @Override
-        public void generateResponse(StaplerRequest staplerRequest, StaplerResponse staplerResponse, Object o) throws IOException, ServletException {
+        public void generateResponse(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse, Object o) throws IOException, ServletException {
             replyOk();
         }
     }
@@ -326,12 +329,12 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     public void testAnnotatedMethodOk_annotatedJavaScriptScriptMethod() throws Exception {
         webApp.setCrumbIssuer(new CrumbIssuer() {
             @Override
-            public String issueCrumb(StaplerRequest request) {
+            public String issueCrumb(StaplerRequest2 request) {
                 return "test";
             }
 
             @Override
-            public void validateCrumb(StaplerRequest request, String submittedCrumb) {
+            public void validateCrumb(StaplerRequest2 request, String submittedCrumb) {
                 // no exception thrown = validated
             }
         });
@@ -354,15 +357,19 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedJsonResponse/"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody(JSONObject.fromObject(Collections.emptyMap()).toString());
-        Page page = wc.getPage(settings);
-        assertEquals(200, page.getWebResponse().getStatusCode());
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            Page page = wc.getPage(settings);
+            assertEquals(200, page.getWebResponse().getStatusCode());
+        }
     }
 
     @Test
     public void testAnnotatedMethodOk_annotatedLimitedTo() {
-        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), "testNewRulesOk/annotatedLimitedTo/")));
-        assertEquals(500, e.getStatusCode());
-        assertTrue(e.getResponse().getContentAsString().contains("Needs to be in role"));
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), "testNewRulesOk/annotatedLimitedTo/")));
+            assertEquals(500, e.getStatusCode());
+            assertTrue(e.getResponse().getContentAsString().contains("Needs to be in role"));
+        }
     }
 
     @Test
@@ -448,7 +455,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     @TestExtension
     public static class TestNewRulesNotOk extends AbstractUnprotectedRootAction {
         // do not respect the do[^a-z].* format
-        public void dontCallMeBecauseOfMyDont(StaplerRequest request) { replyOk(); }
+        public void dontCallMeBecauseOfMyDont(StaplerRequest2 request) { replyOk(); }
 
         // do not seem to be an expected web method, in case a developer has such methods,
         // addition of WebMethod annotation is sufficient

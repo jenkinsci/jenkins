@@ -25,6 +25,7 @@
 package hudson.node_monitors;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Computer;
@@ -34,6 +35,7 @@ import hudson.remoting.Callable;
 import java.io.IOException;
 import java.text.ParseException;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -51,6 +53,38 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
 
     public DiskSpaceMonitor() {}
 
+    @Override
+    public long getThresholdBytes(Computer c) {
+        Node node = c.getNode();
+        if (node != null) {
+            DiskSpaceMonitorNodeProperty nodeProperty = node.getNodeProperty(DiskSpaceMonitorNodeProperty.class);
+            if (nodeProperty != null) {
+                try {
+                    return DiskSpace.parse(nodeProperty.getFreeDiskSpaceThreshold()).size;
+                } catch (ParseException e) {
+                    return getThresholdBytes();
+                }
+            }
+        }
+        return getThresholdBytes();
+    }
+
+    @Override
+    protected long getWarningThresholdBytes(Computer c) {
+        Node node = c.getNode();
+        if (node != null) {
+            DiskSpaceMonitorNodeProperty nodeProperty = node.getNodeProperty(DiskSpaceMonitorNodeProperty.class);
+            if (nodeProperty != null) {
+                try {
+                    return DiskSpace.parse(nodeProperty.getFreeDiskSpaceWarningThreshold()).size;
+                } catch (ParseException e) {
+                    return getWarningThresholdBytes();
+                }
+            }
+        }
+        return getWarningThresholdBytes();
+    }
+
     public DiskSpace getFreeSpace(Computer c) {
         return DESCRIPTOR.get(c);
     }
@@ -61,7 +95,17 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
         return Jenkins.get().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
-    public static final DiskSpaceMonitorDescriptor DESCRIPTOR = new DiskSpaceMonitorDescriptor() {
+    @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "for backward compatibility")
+    public static /*almost final*/ DiskSpaceMonitorDescriptor DESCRIPTOR;
+
+    @Extension @Symbol("diskSpace")
+    public static class DescriptorImpl extends DiskSpaceMonitorDescriptor {
+
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
+        public DescriptorImpl() {
+            DESCRIPTOR = this;
+        }
+
         @NonNull
         @Override
         public String getDisplayName() {
@@ -78,10 +122,5 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
 
             return p.asCallableWith(new GetUsableSpace());
         }
-    };
-
-    @Extension
-    public static DiskSpaceMonitorDescriptor install() {
-        return DESCRIPTOR;
     }
 }

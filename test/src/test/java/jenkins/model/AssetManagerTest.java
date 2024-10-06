@@ -27,6 +27,7 @@ package jenkins.model;
 import static org.junit.Assert.assertEquals;
 
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,7 +42,7 @@ public class AssetManagerTest {
     @Test
     @Issue("JENKINS-58736")
     public void emptyAssetDoesNotThrowError() throws Exception {
-        URL url = new URL(j.getURL() + "assets");
+        URL url = new URI(j.getURL() + "assets").toURL();
         HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, httpCon.getResponseCode());
     }

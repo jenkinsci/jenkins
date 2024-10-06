@@ -31,14 +31,12 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task contextMenu="false" href="${rootURL}/asynchPeople/" icon="symbol-people" title="${%People}"/>
       <l:task contextMenu="false" href="${rootURL}/${it.url}/" icon="symbol-person" title="${%Status}"/>
       <l:task href="${rootURL}/${it.url}/builds" icon="symbol-build-history" title="${%Builds}"/>
-      <l:task href="${rootURL}/${it.url}/configure" icon="symbol-settings" permission="${app.ADMINISTER}" title="${%Configure}"/>
       <t:actions actions="${it.propertyActions}"/>
       <t:actions actions="${it.transientActions}"/>
       <j:if test="${it.canDelete()}">
-        <l:task href="${rootURL}/${it.url}/delete" icon="icon-edit-delete icon-md" title="${%Delete}"/>
+        <l:delete urlPrefix="${rootURL}/${it.url}" title="${%Delete}" message="${%delete.user(it.displayName)}"/>
       </j:if>
     </l:tasks>
   </l:side-panel>

@@ -11,9 +11,9 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
     for (var i = 0; i < items.length; i++) {
       if (
         (filterParts.length < 1 || filter.length < 2) &&
-        items[i].hasClassName("hidden-by-default")
+        items[i].classList.contains("hidden-by-default")
       ) {
-        items[i].addClassName("jenkins-hidden");
+        items[i].classList.add("jenkins-hidden");
         continue;
       }
       var makeVisible = true;
@@ -41,7 +41,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       }
     }
     var instructions = document.getElementById(
-      "hidden-by-default-instructions"
+      "hidden-by-default-instructions",
     );
     if (instructions) {
       instructions.style.display = anyVisible ? "none" : "";
@@ -53,7 +53,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
 
   (function () {
     var instructionsTd = document.getElementById(
-      "hidden-by-default-instructions-td"
+      "hidden-by-default-instructions-td",
     );
     if (instructionsTd) {
       // only on Available tab
@@ -71,9 +71,9 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
 (function () {
   function selectAll(selector, element) {
     if (element) {
-      return $(element).select(selector);
+      return element.querySelectorAll(selector);
     } else {
-      return Element.select(undefined, selector);
+      return document.querySelectorAll(selector);
     }
   }
   function select(selector, element) {
@@ -88,17 +88,12 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
   /**
    * Wait for document onload.
    */
-  Element.observe(window, "load", function () {
+  window.addEventListener("load", function () {
     var pluginsTable = select("#plugins");
     var pluginTRs = selectAll(".plugin", pluginsTable);
 
     if (!pluginTRs) {
       return;
-    }
-
-    var pluginI18n = select(".plugins.i18n");
-    function i18n(messageId) {
-      return pluginI18n.getAttribute("data-" + messageId);
     }
 
     // Create a map of the plugin rows, making it easy to index them.
@@ -129,7 +124,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
         var pluginId = span.getAttribute("data-plugin-id");
         var pluginName = getPluginName(pluginId);
 
-        span.update(pluginName);
+        span.textContent = pluginName;
         ids.push(pluginId);
       }
       return ids;
@@ -145,7 +140,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
         // dependent plugins in this case.
         // Note: This does not cover "implied" dependencies ala detached plugins. See https://goo.gl/lQHrUh
         if (dependentIds.length === 1 && dependentIds[0] === "jenkins-core") {
-          pluginTR.addClassName("all-dependents-disabled");
+          pluginTR.classList.add("all-dependents-disabled");
           return;
         }
 
@@ -155,7 +150,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
           if (dependentId === "jenkins-core") {
             // Jenkins core is always enabled. So, make sure it's not possible to disable/uninstall
             // any plugins that it "depends" on. (we sill have bundled plugins)
-            pluginTR.removeClassName("all-dependents-disabled");
+            pluginTR.classList.remove("all-dependents-disabled");
             return;
           }
 
@@ -166,13 +161,13 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
             dependentPluginTr.jenkinsPluginMetadata.enableInput.checked
           ) {
             // One of the plugins that depend on this plugin, is marked as enabled.
-            pluginTR.removeClassName("all-dependents-disabled");
+            pluginTR.classList.remove("all-dependents-disabled");
             return;
           }
         }
       }
 
-      pluginTR.addClassName("all-dependents-disabled");
+      pluginTR.classList.add("all-dependents-disabled");
     }
 
     function markHasDisabledDependencies(pluginTR) {
@@ -187,21 +182,21 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
             !dependencyPluginTr.jenkinsPluginMetadata.enableInput.checked
           ) {
             // One of the plugins that this plugin depend on, is marked as disabled.
-            pluginTR.addClassName("has-disabled-dependency");
+            pluginTR.classList.add("has-disabled-dependency");
             return;
           }
         }
       }
 
-      pluginTR.removeClassName("has-disabled-dependency");
+      pluginTR.classList.remove("has-disabled-dependency");
     }
 
     function setEnableWidgetStates() {
       for (var i = 0; i < pluginTRs.length; i++) {
         var pluginMetadata = pluginTRs[i].jenkinsPluginMetadata;
-        if (pluginTRs[i].hasClassName("has-dependents-but-disabled")) {
+        if (pluginTRs[i].classList.contains("has-dependents-but-disabled")) {
           if (pluginMetadata.enableInput.checked) {
-            pluginTRs[i].removeClassName("has-dependents-but-disabled");
+            pluginTRs[i].classList.remove("has-dependents-but-disabled");
           }
         }
         markAllDependentsDisabled(pluginTRs[i]);
@@ -210,18 +205,13 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
     }
 
     function addDependencyInfoRow(pluginTR, infoTR) {
-      infoTR.addClassName("plugin-dependency-info");
-      pluginTR.insert({
-        after: infoTR,
-      });
+      infoTR.classList.add("plugin-dependency-info");
+      pluginTR.parentNode.insertBefore(infoTR, pluginTR.nextElementSibling);
     }
     function removeDependencyInfoRow(pluginTR) {
-      var nextRows = pluginTR.nextSiblings();
-      if (nextRows && nextRows.length > 0) {
-        var nextRow = nextRows[0];
-        if (nextRow.hasClassName("plugin-dependency-info")) {
-          nextRow.remove();
-        }
+      var nextRow = pluginTR.nextElementSibling;
+      if (nextRow && nextRow.classList.contains("plugin-dependency-info")) {
+        nextRow.remove();
       }
     }
 
@@ -230,19 +220,18 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
 
       // Remove all existing class info
       infoContainer.removeAttribute("class");
-      infoContainer.addClassName("enable-state-info");
+      infoContainer.classList.add("enable-state-info");
 
-      if (pluginTR.hasClassName("has-disabled-dependency")) {
+      if (pluginTR.classList.contains("has-disabled-dependency")) {
         var dependenciesDiv = pluginMetadata.dependenciesDiv;
         var dependencySpans = pluginMetadata.dependencies;
 
-        infoContainer.update(
+        infoContainer.innerHTML =
           '<div class="title">' +
-            i18n("cannot-enable") +
-            '</div><div class="subtitle">' +
-            i18n("disabled-dependencies") +
-            ".</div>"
-        );
+          i18n("cannot-enable") +
+          '</div><div class="subtitle">' +
+          i18n("disabled-dependencies") +
+          ".</div>";
 
         // Go through each dependency <span> element. Show the spans where the dependency is
         // disabled. Hide the others.
@@ -257,20 +246,20 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
           }
           if (enabled) {
             // It's enabled ... hide the span
-            dependencySpan.setStyle({ display: "none" });
+            dependencySpan.style.display = "none";
           } else {
             // It's disabled ... show the span
-            dependencySpan.setStyle({ display: "inline-block" });
+            dependencySpan.style.display = "inline-block";
           }
         }
 
-        dependenciesDiv.setStyle({ display: "inherit" });
+        dependenciesDiv.style.display = "inherit";
         infoContainer.appendChild(dependenciesDiv);
 
         return true;
       }
-      if (pluginTR.hasClassName("has-dependents")) {
-        if (!pluginTR.hasClassName("all-dependents-disabled")) {
+      if (pluginTR.classList.contains("has-dependents")) {
+        if (!pluginTR.classList.contains("all-dependents-disabled")) {
           var dependentIds = pluginMetadata.dependentIds;
 
           // If the only dependent is jenkins-core (it's a bundle plugin), then lets
@@ -278,30 +267,28 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
           // dependent plugins in this case.
           // Note: This does not cover "implied" dependencies ala detached plugins. See https://goo.gl/lQHrUh
           if (dependentIds.length === 1 && dependentIds[0] === "jenkins-core") {
-            pluginTR.addClassName("all-dependents-disabled");
+            pluginTR.classList.add("all-dependents-disabled");
             return false;
           }
 
-          infoContainer.update(
+          infoContainer.innerHTML =
             '<div class="title">' +
-              i18n("cannot-disable") +
-              '</div><div class="subtitle">' +
-              i18n("enabled-dependents") +
-              ".</div>"
-          );
+            i18n("cannot-disable") +
+            '</div><div class="subtitle">' +
+            i18n("enabled-dependents") +
+            ".</div>";
           infoContainer.appendChild(getDependentsDiv(pluginTR, true));
           return true;
         }
       }
 
-      if (pluginTR.hasClassName("possibly-has-implied-dependents")) {
-        infoContainer.update(
+      if (pluginTR.classList.contains("possibly-has-implied-dependents")) {
+        infoContainer.innerHTML =
           '<div class="title">' +
-            i18n("detached-disable") +
-            '</div><div class="subtitle">' +
-            i18n("detached-possible-dependents") +
-            "</div>"
-        );
+          i18n("detached-disable") +
+          '</div><div class="subtitle">' +
+          i18n("detached-possible-dependents") +
+          "</div>";
         infoContainer.appendChild(getDependentsDiv(pluginTR, true));
         return true;
       }
@@ -312,28 +299,26 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
     function populateUninstallInfo(pluginTR, infoContainer) {
       // Remove all existing class info
       infoContainer.removeAttribute("class");
-      infoContainer.addClassName("uninstall-state-info");
+      infoContainer.classList.add("uninstall-state-info");
 
-      if (pluginTR.hasClassName("has-dependents")) {
-        infoContainer.update(
+      if (pluginTR.classList.contains("has-dependents")) {
+        infoContainer.innerHTML =
           '<div class="title">' +
-            i18n("cannot-uninstall") +
-            '</div><div class="subtitle">' +
-            i18n("installed-dependents") +
-            ".</div>"
-        );
+          i18n("cannot-uninstall") +
+          '</div><div class="subtitle">' +
+          i18n("installed-dependents") +
+          ".</div>";
         infoContainer.appendChild(getDependentsDiv(pluginTR, false));
         return true;
       }
 
-      if (pluginTR.hasClassName("possibly-has-implied-dependents")) {
-        infoContainer.update(
+      if (pluginTR.classList.contains("possibly-has-implied-dependents")) {
+        infoContainer.innerHTML =
           '<div class="title">' +
-            i18n("detached-uninstall") +
-            '</div><div class="subtitle">' +
-            i18n("detached-possible-dependents") +
-            "</div>"
-        );
+          i18n("detached-uninstall") +
+          '</div><div class="subtitle">' +
+          i18n("detached-possible-dependents") +
+          "</div>";
         infoContainer.appendChild(getDependentsDiv(pluginTR, false));
         return true;
       }
@@ -353,21 +338,21 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
         var dependentId = dependentSpan.getAttribute("data-plugin-id");
 
         if (!hideDisabled || dependentId === "jenkins-core") {
-          dependentSpan.setStyle({ display: "inline-block" });
+          dependentSpan.style.display = "inline-block";
         } else {
           var depPluginTR = getPluginTR(dependentId);
           var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
           if (depPluginMetadata.enableInput.checked) {
             // It's enabled ... show the span
-            dependentSpan.setStyle({ display: "inline-block" });
+            dependentSpan.style.display = "inline-block";
           } else {
             // It's disabled ... hide the span
-            dependentSpan.setStyle({ display: "none" });
+            dependentSpan.style.display = "none";
           }
         }
       }
 
-      dependentsDiv.setStyle({ display: "inherit" });
+      dependentsDiv.style.display = "inherit";
       return dependentsDiv;
     }
 
@@ -387,19 +372,19 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       if (dependenciesDiv) {
         pluginTR.jenkinsPluginMetadata.dependencies = selectAll(
           "span",
-          dependenciesDiv
+          dependenciesDiv,
         );
         pluginTR.jenkinsPluginMetadata.dependencyIds = processSpanSet(
-          pluginTR.jenkinsPluginMetadata.dependencies
+          pluginTR.jenkinsPluginMetadata.dependencies,
         );
       }
       if (dependentsDiv) {
         pluginTR.jenkinsPluginMetadata.dependents = selectAll(
           "span",
-          dependentsDiv
+          dependentsDiv,
         );
         pluginTR.jenkinsPluginMetadata.dependentIds = processSpanSet(
-          pluginTR.jenkinsPluginMetadata.dependents
+          pluginTR.jenkinsPluginMetadata.dependents,
         );
       }
 
@@ -407,7 +392,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       if (enableInput) {
         // Toggling of the enable/disable checkbox requires a check and possible
         // change of visibility on the same checkbox on other plugins.
-        Element.observe(enableInput, "click", function () {
+        enableInput.addEventListener("click", function () {
           setEnableWidgetStates();
         });
       }
@@ -419,7 +404,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       infoTR.appendChild(infoTD);
       infoTD.appendChild(infoDiv);
       infoTD.setAttribute("colspan", "6"); // This is the cell that all info will be added to.
-      infoDiv.setStyle({ display: "inherit" });
+      infoDiv.style.display = "inherit";
 
       // We don't want the info row to appear immediately. We wait for e.g. 1 second and if the mouse
       // is still in there (hasn't left the cell) then we show. The following code is for clearing the
@@ -434,16 +419,16 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
 
       // Handle mouse in/out of the enable/disable cell (left most cell).
       if (enableTD) {
-        Element.observe(enableTD, "mouseenter", function () {
+        enableTD.addEventListener("mouseenter", function () {
           showInfoTimeout = setTimeout(function () {
             showInfoTimeout = undefined;
-            infoDiv.update("");
+            infoDiv.textContent = "";
             if (populateEnableDisableInfo(pluginTR, infoDiv)) {
               addDependencyInfoRow(pluginTR, infoTR);
             }
           }, 1000);
         });
-        Element.observe(enableTD, "mouseleave", function () {
+        enableTD.addEventListener("mouseleave", function () {
           clearShowInfoTimeout();
           removeDependencyInfoRow(pluginTR);
         });
@@ -451,16 +436,16 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
 
       // Handle mouse in/out of the uninstall cell (right most cell).
       if (uninstallTD) {
-        Element.observe(uninstallTD, "mouseenter", function () {
+        uninstallTD.addEventListener("mouseenter", function () {
           showInfoTimeout = setTimeout(function () {
             showInfoTimeout = undefined;
-            infoDiv.update("");
+            infoDiv.textContent = "";
             if (populateUninstallInfo(pluginTR, infoDiv)) {
               addDependencyInfoRow(pluginTR, infoTR);
             }
           }, 1000);
         });
-        Element.observe(uninstallTD, "mouseleave", function () {
+        uninstallTD.addEventListener("mouseleave", function () {
           clearShowInfoTimeout();
           removeDependencyInfoRow(pluginTR);
         });
@@ -475,9 +460,9 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
   });
 })();
 
-Element.observe(window, "load", function () {
+window.addEventListener("load", function () {
   const compatibleCheckbox = document.querySelector(
-    "[data-select='compatible']"
+    "[data-select='compatible']",
   );
   if (compatibleCheckbox) {
     compatibleCheckbox.addEventListener("click", () => {
@@ -491,4 +476,66 @@ Element.observe(window, "load", function () {
       window.updateTableHeaderCheckbox();
     });
   }
+
+  const uninstallButtons = document.querySelectorAll(
+    "[data-action='uninstall']",
+  );
+  uninstallButtons.forEach((uninstallButton) => {
+    uninstallButton.addEventListener("click", () => {
+      const title = uninstallButton.dataset.message;
+      const href = uninstallButton.dataset.href;
+
+      const options = {
+        message: i18n("uninstall-description"),
+        type: "destructive",
+      };
+
+      dialog.confirm(title, options).then(
+        () => {
+          var form = document.createElement("form");
+          form.setAttribute("method", "POST");
+          form.setAttribute("action", href);
+          crumb.appendToForm(form);
+          document.body.appendChild(form);
+          form.submit();
+        },
+        () => {},
+      );
+    });
+  });
+
+  const updateButton = document.querySelector("#button-update");
+  if (updateButton) {
+    // Enable/disable the 'Update' button depending on if any updates are checked
+    const anyCheckboxesSelected = () => {
+      return (
+        document.querySelectorAll(
+          "input[type='checkbox']:checked:not(:disabled)",
+        ).length > 0
+      );
+    };
+    const checkboxes = document.querySelectorAll(
+      "input[type='checkbox'], [data-select], .jenkins-table__checkbox",
+    );
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener("click", () => {
+        setTimeout(() => {
+          updateButton.disabled = !anyCheckboxesSelected();
+        });
+      });
+    });
+  }
+
+  // Show update center error if element exists
+  const updateCenterError = document.querySelector("#update-center-error");
+  if (updateCenterError) {
+    notificationBar.show(
+      updateCenterError.content.textContent,
+      notificationBar.ERROR,
+    );
+  }
 });
+
+function i18n(messageId) {
+  return document.querySelector("#i18n").getAttribute("data-" + messageId);
+}

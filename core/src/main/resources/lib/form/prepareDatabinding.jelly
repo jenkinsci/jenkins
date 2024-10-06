@@ -34,5 +34,5 @@ THE SOFTWARE.
     <!-- this looks up the ancestor <entry> set by entry.jelly -->
     <j:set target="${pattrs}" property="field" value="${entry.field}" />
   </j:if>
-  <j:expr value="${h.calcCheckUrl(pattrs,  pattrs.checkUrl,descriptor,pattrs.field)}" />
+  <j:out value="${h.calcCheckUrl(pattrs,  pattrs.checkUrl,descriptor,pattrs.field)}" />
 </j:jelly>

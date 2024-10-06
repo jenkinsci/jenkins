@@ -26,14 +26,13 @@ package hudson.model;
 
 import static hudson.model.Messages.Hudson_ViewName;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -43,18 +42,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.FormEncodingType;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlLabel;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
@@ -76,7 +63,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -86,6 +72,19 @@ import java.util.logging.LogRecord;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.FormEncodingType;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlLabel;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.html.HTMLElement;
+import org.htmlunit.javascript.host.svg.SVGElement;
+import org.htmlunit.util.NameValuePair;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.junit.Ignore;
@@ -101,8 +100,8 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.w3c.dom.Text;
 
 /**
@@ -116,6 +115,20 @@ public class ViewTest {
     @Rule public JenkinsRule j = new JenkinsRule();
     @Rule
     public LoggerRule logging = new LoggerRule();
+
+    @Test
+    public void roundTrip() throws Exception {
+        ListView view = new ListView("foo");
+        view.setDescription("Some description");
+        view.setFilterExecutors(true);
+        view.setFilterQueue(true);
+        j.jenkins.addView(view);
+        j.configRoundtrip(view);
+
+        assertEquals("Some description", view.getDescription());
+        assertTrue(view.isFilterExecutors());
+        assertTrue(view.isFilterQueue());
+    }
 
     @Issue("JENKINS-7100")
     @Test public void xHudsonHeader() throws Exception {
@@ -151,7 +164,7 @@ public class ViewTest {
 
         WebClient wc = j.createWebClient();
         HtmlForm form = wc.goTo("newView").getFormByName("createItem");
-        form.getInputByName("name").setValueAttribute("foo");
+        form.getInputByName("name").setValue("foo");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         j.submit(form);
         assertNotNull(j.jenkins.getView("foo"));
@@ -182,7 +195,7 @@ public class ViewTest {
 
         HtmlPage newViewPage = wc.goTo("user/me/my-views/newView");
         HtmlForm form = newViewPage.getFormByName("createItem");
-        form.getInputByName("name").setValueAttribute("proxy-view");
+        form.getInputByName("name").setValue("proxy-view");
         form.getInputByValue("hudson.model.ProxyView").setChecked(true);
         HtmlPage proxyViewConfigurePage = j.submit(form);
         View proxyView = user.getProperty(MyViewsProperty.class).getView("proxy-view");
@@ -194,24 +207,6 @@ public class ViewTest {
         assertThat(proxyView, instanceOf(ProxyView.class));
         assertEquals("listView", ((ProxyView) proxyView).getProxiedViewName());
         assertEquals(((ProxyView) proxyView).getProxiedView(), listView);
-    }
-
-    @Test public void deleteView() throws Exception {
-        WebClient wc = j.createWebClient();
-
-        ListView v = listView("list");
-        HtmlPage delete = wc.getPage(v, "delete");
-        j.submit(delete.getFormByName("delete"));
-        assertNull(j.jenkins.getView("list"));
-
-        User user = User.get("user", true);
-        MyViewsProperty p = user.getProperty(MyViewsProperty.class);
-        v = new ListView("list", p);
-        p.addView(v);
-        delete = wc.getPage(v, "delete");
-        j.submit(delete.getFormByName("delete"));
-        assertNull(p.getView("list"));
-
     }
 
     @Issue("JENKINS-9367")
@@ -249,7 +244,7 @@ public class ViewTest {
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlForm form = wc.goTo("newView").getFormByName("createItem");
-        form.getInputByName("name").setValueAttribute("..");
+        form.getInputByName("name").setValue("..");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
 
         HtmlPage page = j.submit(form);
@@ -263,7 +258,7 @@ public class ViewTest {
     @Test public void unicodeName() throws Exception {
         HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
         String name = "I ♥ NY";
-        form.getInputByName("name").setValueAttribute(name);
+        form.getInputByName("name").setValue(name);
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         j.submit(form);
         View view = j.jenkins.getView(name);
@@ -340,6 +335,12 @@ public class ViewTest {
         assertNotContainsItems(view1, notInView, inView2);
         assertContainsItems(view2, inView2, inBothViews);
         assertNotContainsItems(view2, notInView, inView1);
+
+        // Clear the queue
+        assertTrue(j.jenkins.getQueue().cancel(notInView));
+        assertTrue(j.jenkins.getQueue().cancel(inView1));
+        assertTrue(j.jenkins.getQueue().cancel(inView2));
+        assertTrue(j.jenkins.getQueue().cancel(inBothViews));
     }
 
     private void assertContainsItems(View view, Task... items) {
@@ -487,7 +488,7 @@ public class ViewTest {
         view.save();
         j.jenkins.doReload();
         //wait until all configuration are reloaded
-        if (j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading) {
+        if (j.jenkins.getServletContext().getAttribute("app") instanceof HudsonIsLoading) {
             Thread.sleep(500);
         }
         assertTrue("View does not contains job free after load.", j.jenkins.getView(view.getDisplayName()).contains(j.jenkins.getItem(job.getName())));
@@ -698,7 +699,7 @@ public class ViewTest {
         assertThat(e.getStatusCode(), equalTo(500));
 
         // This should have a different message, but this is the current behavior demonstrating the problem.
-        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
+        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request"));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -742,7 +743,7 @@ public class ViewTest {
         assertThat(e.getStatusCode(), equalTo(500));
 
         // This should have a different message, but this is the current behavior demonstrating the problem.
-        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
+        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request"));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -823,7 +824,7 @@ public class ViewTest {
         Object result = page.executeJavaScript("Array.from(document.querySelectorAll('.label')).filter(el => el.innerText.indexOf('" + customizableTLID.customDisplayName + "') !== -1)[0].parentElement.parentElement").getJavaScriptResult();
         assertThat(result, instanceOf(HTMLElement.class));
         HTMLElement resultElement = (HTMLElement) result;
-        assertThat(resultElement.getAttribute("onclick", null), nullValue());
+        assertThat(resultElement.getAttribute("onclick"), nullValue());
     }
 
     @Test
@@ -896,22 +897,34 @@ public class ViewTest {
 
     @Test
     public void newJob_iconClassName() throws Exception {
+
+        CustomizableTLID customizableTLID = j.jenkins.getExtensionList(TopLevelItemDescriptor.class).get(CustomizableTLID.class);
+        customizableTLID.customId = "with_Icon";
+        customizableTLID.customIconClassName = "icon-freestyle-project";
+
         JenkinsRule.WebClient wc = j.createWebClient();
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object resultClassNames = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .icon img').className").getJavaScriptResult();
-        assertThat(resultClassNames, instanceOf(String.class));
-        String resultClassNamesString = (String) resultClassNames;
-        List<String> resultClassNamesList = Arrays.asList(resultClassNamesString.split(" "));
-        assertThat(resultClassNamesList, hasItem("icon-xlg"));
-        assertThat(resultClassNamesList, hasItem("icon-freestyle-project"));
+        Object resultSrc = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .icon img').src").getJavaScriptResult();
 
-        Object resultSrc = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .icon img').src").getJavaScriptResult();
         assertThat(resultSrc, instanceOf(String.class));
         String resultSrcString = (String) resultSrc;
         assertThat(resultSrcString, containsString("48x48"));
         assertThat(resultSrcString, containsString("freestyleproject.png"));
+    }
+
+    @Test
+    public void newJob_svg() throws Exception {
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        HtmlPage page = wc.goTo("view/all/newJob");
+
+        Object result = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .icon svg')").getJavaScriptResult();
+        assertThat(result, instanceOf(SVGElement.class));
+        SVGElement svg = (SVGElement) result;
+        assertThat(svg.getClassName_js(), is("icon-xlg"));
     }
 
     @Test
@@ -1068,11 +1081,11 @@ public class ViewTest {
         }
 
         @Override
-        protected void submit(StaplerRequest req) {
+        protected void submit(StaplerRequest2 req) {
         }
 
         @Override
-        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) {
+        public Item doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) {
             return null;
         }
     }

@@ -35,6 +35,8 @@ import hudson.security.ACL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.Listeners;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Receives notifications about CRUD operations of {@link Item}.
@@ -92,6 +94,16 @@ public class ItemListener implements ExtensionPoint {
      * object.
      */
     public void onLoaded() {
+    }
+
+    /**
+     * Called before an item is deleted, providing the ability to veto the deletion operation before it starts.
+     * @param item the item being deleted
+     * @throws Failure to veto the operation.
+     * @throws InterruptedException If a blocking condition was interrupted, also vetoing the operation.
+     * @since 2.470
+     */
+    public void onCheckDelete(Item item) throws Failure, InterruptedException {
     }
 
     /**
@@ -203,6 +215,19 @@ public class ItemListener implements ExtensionPoint {
 
     public static void fireOnUpdated(final Item item) {
         Listeners.notify(ItemListener.class, false, l -> l.onUpdated(item));
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void checkBeforeDelete(Item item) throws Failure, InterruptedException {
+        for (ItemListener l : all()) {
+            try {
+                l.onCheckDelete(item);
+            } catch (Failure e) {
+                throw e;
+            } catch (RuntimeException x) {
+                LOGGER.log(Level.WARNING, "failed to send event to listener of " + l.getClass(), x);
+            }
+        }
     }
 
     /** @since 1.548 */

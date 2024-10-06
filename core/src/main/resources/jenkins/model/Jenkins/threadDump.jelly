@@ -47,7 +47,7 @@ THE SOFTWARE.
         </j:if>
         <j:if test="${e.key != null and e.key.length() > 0}">
           <h1 id="id${e.key.hashCode()}">
-            <l:icon class="symbol-computer icon-lg"/> <a class="model-link inside" href="/computer/${e.key}">${e.key}</a>
+            <l:icon class="symbol-computer icon-lg"/> <a class="model-link inside" href="${rootURL}/computer/${e.key}">${e.key}</a>
           </h1>
         </j:if>
         <j:forEach var="t" items="${e.value.entrySet()}">

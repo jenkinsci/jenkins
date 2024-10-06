@@ -27,6 +27,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.Util;
 import java.io.IOException;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
 import org.apache.commons.jelly.JellyException;
@@ -35,8 +36,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerFallback;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Adds the "Manage Jenkins" link to the top page.
@@ -69,7 +70,7 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
     }
 
     @Override
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws JellyException, IOException {
+    public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws JellyException, IOException {
         return new ContextMenu().from(this, request, response, "index");
     }
 
@@ -78,13 +79,13 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
      * menu.
      */
     @Restricted(NoExternalUse.class)
-    public void addContextMenuItem(ContextMenu menu, String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation) {
-        if (Stapler.getCurrentRequest().findAncestorObject(this.getClass()) != null || !Util.isSafeToRedirectTo(url)) {
+    public void addContextMenuItem(ContextMenu menu, String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge, String message) {
+        if (Stapler.getCurrentRequest2().findAncestorObject(this.getClass()) != null || !Util.isSafeToRedirectTo(url)) {
             // Default behavior if the URL is absolute or scheme-relative, or the current object is an ancestor (i.e. would resolve correctly)
-            menu.add(url, icon, iconXml, text, post, requiresConfirmation);
+            menu.add(url, icon, iconXml, text, post, requiresConfirmation, badge, message);
             return;
         }
         // If neither is the case, rewrite the relative URL to point to inside the /manage/ URL space
-        menu.add("manage/" + url, icon, iconXml, text, post, requiresConfirmation);
+        menu.add("manage/" + url, icon, iconXml, text, post, requiresConfirmation, badge, message);
     }
 }

@@ -30,11 +30,13 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task href="../configureClouds" icon="symbol-cloud" permission="${app.SYSTEM_READ}"
+      <l:task href="${h.getNearestAncestorUrl(request,it)}/" icon="symbol-computer"
+              title="${%Nodes}"/>
+      <l:task href="../cloud/" icon="symbol-cloud" permission="${app.SYSTEM_READ}"
               title="${app.hasPermission(app.ADMINISTER) ? '%Clouds' : '%View Clouds'}"/>
-      <l:task href="configure" icon="symbol-settings" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node Monitoring}"/>
     </l:tasks>
-    <t:queue items="${app.queue.items}" />
-    <t:executors />
+    <j:forEach var="w" items="${it.widgets}">
+      <st:include it="${w}" page="index" />
+    </j:forEach>
   </l:side-panel>
 </j:jelly>

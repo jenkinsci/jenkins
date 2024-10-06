@@ -1,9 +1,9 @@
 package hudson.cli;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -191,7 +191,7 @@ public class ListJobsCommandTest {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                Set<String> jobs = new HashSet<>(Arrays.asList(item.toString(charset).split(System.getProperty("line.separator"))));
+                Set<String> jobs = new HashSet<>(Arrays.asList(item.toString(charset).split(System.lineSeparator())));
 
                 return new HashSet<>(Arrays.asList(expected)).equals(jobs);
             }

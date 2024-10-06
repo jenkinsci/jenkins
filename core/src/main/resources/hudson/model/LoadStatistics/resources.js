@@ -29,7 +29,7 @@
       if (graphLocation) {
         const type = timespanSelect.value;
         const parentSelector = graphLocation.getAttribute(
-          "data-graph-parent-selector"
+          "data-graph-parent-selector",
         );
         const baseUrl = graphLocation.getAttribute("data-graph-base-url");
         const graphAlt = graphLocation.getAttribute("data-graph-alt");

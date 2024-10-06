@@ -27,6 +27,8 @@ package hudson.security;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Date;
@@ -34,8 +36,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import jenkins.security.ImpersonatingUserDetailsService2;
@@ -95,7 +95,7 @@ public class TokenBasedRememberMeServices2 extends AbstractRememberMeServices {
         super(Jenkins.get().getSecretKey(), new ImpersonatingUserDetailsService2(userDetailsService));
     }
 
-    protected String makeTokenSignature(long tokenExpiryTime, String username, String password) {
+    protected String makeTokenSignature(long tokenExpiryTime, String username) {
         String userSeed;
         if (UserSeedProperty.DISABLE_USER_SEED) {
             userSeed = "no-seed";
@@ -137,13 +137,10 @@ public class TokenBasedRememberMeServices2 extends AbstractRememberMeServices {
 
         // TODO is it really still necessary to reimplement all of the below, or could we simply override rememberMeRequested?
 
-        Objects.requireNonNull(successfulAuthentication.getPrincipal());
-        UserDetails.class.cast(successfulAuthentication.getPrincipal());
-
         long expiryTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(getTokenValiditySeconds());
-        String username = ((UserDetails) successfulAuthentication.getPrincipal()).getUsername();
+        String username = successfulAuthentication.getName();
 
-        String signatureValue = makeTokenSignature(expiryTime, username, ((UserDetails) successfulAuthentication.getPrincipal()).getPassword());
+        String signatureValue = makeTokenSignature(expiryTime, username);
         int tokenLifetime = calculateLoginLifetime(request, successfulAuthentication);
         setCookie(new String[] { username, Long.toString(expiryTime), signatureValue },
                 tokenLifetime, request, response);
@@ -204,8 +201,7 @@ public class TokenBasedRememberMeServices2 extends AbstractRememberMeServices {
         // only called once per HttpSession - if the token is valid, it will cause
         // SecurityContextHolder population, whilst if invalid, will cause the cookie to
         // be cancelled.
-        String expectedTokenSignature = makeTokenSignature(tokenExpiryTime, userDetails.getUsername(),
-                userDetails.getPassword());
+        String expectedTokenSignature = makeTokenSignature(tokenExpiryTime, userDetails.getUsername());
         if (!equals(expectedTokenSignature, cookieTokens[2])) {
             throw new InvalidCookieException("Cookie token[2] contained signature '" + cookieTokens[2]
                     + "' but expected '" + expectedTokenSignature + "'");

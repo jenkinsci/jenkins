@@ -1,37 +1,42 @@
-/* eslint no-undef: 0 */
-
 const path = require("path");
 const MiniCSSExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const RemoveEmptyScriptsPlugin = require("webpack-remove-empty-scripts");
-const CopyPlugin = require("copy-webpack-plugin");
 const { CleanWebpackPlugin: CleanPlugin } = require("clean-webpack-plugin");
 
 module.exports = (env, argv) => ({
   mode: "development",
   entry: {
-    "page-init": [path.join(__dirname, "src/main/js/page-init.js")],
     pluginSetupWizard: [
       path.join(__dirname, "src/main/js/pluginSetupWizard.js"),
-      path.join(__dirname, "src/main/less/pluginSetupWizard.less"),
+      path.join(__dirname, "src/main/scss/pluginSetupWizard.scss"),
     ],
     "plugin-manager-ui": [
       path.join(__dirname, "src/main/js/plugin-manager-ui.js"),
     ],
     "add-item": [
       path.join(__dirname, "src/main/js/add-item.js"),
-      path.join(__dirname, "src/main/js/add-item.less"),
+      path.join(__dirname, "src/main/js/add-item.scss"),
     ],
+    "pages/computer-set": [
+      path.join(__dirname, "src/main/js/pages/computer-set"),
+    ],
+    "pages/dashboard": [path.join(__dirname, "src/main/js/pages/dashboard")],
     "pages/manage-jenkins/system-information": [
       path.join(
         __dirname,
-        "src/main/js/pages/manage-jenkins/system-information"
+        "src/main/js/pages/manage-jenkins/system-information",
       ),
     ],
     app: [path.join(__dirname, "src/main/js/app.js")],
+    "pages/cloud-set": [
+      path.join(__dirname, "src/main/js/pages/cloud-set/index.js"),
+      path.join(__dirname, "src/main/js/pages/cloud-set/index.scss"),
+    ],
     "pages/manage-jenkins": [
       path.join(__dirname, "src/main/js/pages/manage-jenkins"),
     ],
+    "pages/register": [path.join(__dirname, "src/main/js/pages/register")],
     "keyboard-shortcuts": [
       path.join(__dirname, "src/main/js/keyboard-shortcuts.js"),
     ],
@@ -45,11 +50,11 @@ module.exports = (env, argv) => ({
     "components/row-selection-controller": [
       path.join(__dirname, "src/main/js/components/row-selection-controller"),
     ],
-    "filter-build-history": [
-      path.join(__dirname, "src/main/js/filter-build-history.js"),
+    "pages/project/builds-card": [
+      path.join(__dirname, "src/main/js/pages/project/builds-card.js"),
     ],
-    "simple-page": [path.join(__dirname, "src/main/less/simple-page.less")],
-    styles: [path.join(__dirname, "src/main/less/styles.less")],
+    "simple-page": [path.join(__dirname, "src/main/scss/simple-page.scss")],
+    styles: [path.join(__dirname, "src/main/scss/styles.scss")],
   },
   output: {
     path: path.join(__dirname, "src/main/webapp/jsbundles"),
@@ -63,17 +68,6 @@ module.exports = (env, argv) => ({
     new MiniCSSExtractPlugin({
       filename: "[name].css",
     }),
-    new CopyPlugin({
-      // Copies fonts to the src/main/webapp/css for compat purposes
-      // Some plugins or parts of the UI try to load them from these paths
-      patterns: [
-        {
-          context: "src/main/fonts",
-          from: "**/*",
-          to: path.join(__dirname, "src/main/webapp/css"),
-        },
-      ],
-    }),
     // Clean all assets within the specified output.
     // It will not clean copied fonts
     new CleanPlugin(),
@@ -81,7 +75,7 @@ module.exports = (env, argv) => ({
   module: {
     rules: [
       {
-        test: /\.(css|less)$/,
+        test: /\.(css|scss)$/,
         use: [
           "style-loader",
           {
@@ -98,7 +92,7 @@ module.exports = (env, argv) => ({
               // from the src/main/webapp/images dir
               url: {
                 filter: (url, resourcePath) => {
-                  return !resourcePath.includes("styles.less");
+                  return !resourcePath.includes("styles.scss");
                 },
               },
             },
@@ -110,7 +104,7 @@ module.exports = (env, argv) => ({
             },
           },
           {
-            loader: "less-loader",
+            loader: "sass-loader",
             options: {
               sourceMap: true,
             },

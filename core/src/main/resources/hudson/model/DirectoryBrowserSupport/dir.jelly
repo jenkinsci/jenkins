@@ -27,7 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.title} : ${path}">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
-    <l:breadcrumb title="${%Workspace}" />
+    <l:breadcrumb title="${it.title}" />
     <l:main-panel>
       <h1><l:breakable value="${it.title}"/></h1>
       <div class="dirTree">
@@ -56,7 +56,7 @@ THE SOFTWARE.
             </j:if>
            <j:if test="${showTmpDirWarning}">
              <p>
-                <img id="tmpdiralert" src="${imagesURL}/16x16/warning.png"/>
+               <img id="tmpdiralert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
                ${%Tmp directories are hidden}
              </p>
             </j:if>
@@ -130,7 +130,7 @@ THE SOFTWARE.
             </j:if>
            <j:if test="${showTmpDirWarning}">
              <p>
-                <img id="alert" src="${imagesURL}/16x16/warning.png"/>
+                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
                ${%Tmp directories are hidden}
              </p>
             </j:if>

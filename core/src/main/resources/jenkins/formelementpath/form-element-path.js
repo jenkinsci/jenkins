@@ -81,7 +81,6 @@ document.addEventListener("DOMContentLoaded", function () {
             "repeatable-add",
             "repeatable-delete",
             "hetero-list-add",
-            "expand-button",
             "advanced-button",
             "apply-button",
             "validate-button",

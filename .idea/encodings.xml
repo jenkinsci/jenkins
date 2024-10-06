@@ -29,12 +29,9 @@
     <file url="file://$PROJECT_DIR$/war/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/war/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/war/src/test/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/websocket/jetty10/src/filter/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/websocket/jetty10/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/websocket/jetty10/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/websocket/jetty9/src/filter/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/websocket/jetty9/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/websocket/jetty9/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/websocket/jetty12-ee9/src/filter/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/websocket/jetty12-ee9/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/websocket/jetty12-ee9/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/websocket/spi/src/filter/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/websocket/spi/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/websocket/spi/src/main/resources" charset="UTF-8" />

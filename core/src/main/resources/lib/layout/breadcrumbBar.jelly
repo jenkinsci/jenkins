@@ -35,8 +35,6 @@ THE SOFTWARE.
     ]]>
   </st:documentation>
 
-  <st:adjunct includes="lib.layout.breadcrumbs" />
-
   <j:set var="contents" trim="true">
     <d:invokeBody />
   </j:set>
@@ -51,7 +49,7 @@ THE SOFTWARE.
                         hasMenu="${h.isModelWithContextMenu(anc.object)}" />
           <j:choose>
             <j:when test="${h.isModelWithChildren(anc.object)}">
-              <li class="children" href="${anc.url}/">
+              <li class="children" data-href="${anc.url}/">
                 <!-- shows '>' for rendering children -->
               </li>
             </j:when>
@@ -67,6 +65,4 @@ THE SOFTWARE.
       <j:out value="${contents}" />
     </ol>
   </div>
-
-  <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
 </j:jelly>

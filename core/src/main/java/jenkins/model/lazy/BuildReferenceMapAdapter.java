@@ -3,7 +3,6 @@ package jenkins.model.lazy;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
-import java.lang.reflect.Array;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -192,25 +191,16 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer, R> {
 
         @Override
         public Object[] toArray() {
-            List<Object> list = new ArrayList<>(this);
+            List<Object> list = new ArrayList<>(size());
+            for (var e : this) {
+                list.add(e);
+            }
             return list.toArray();
         }
 
         @Override
         public <T> T[] toArray(T[] a) {
-            int size = size();
-            T[] r = a;
-            if (r.length > size)
-                r = (T[]) Array.newInstance(a.getClass().getComponentType(), size);
-
-            Iterator<R> itr = iterator();
-            int i = 0;
-
-            while (itr.hasNext()) {
-                r[i++] = (T) itr.next();
-            }
-
-            return r;
+            return new ArrayList<>(this).toArray(a);
         }
 
         @Override
@@ -309,25 +299,16 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer, R> {
 
         @Override
         public Object[] toArray() {
-            List<Object> list = new ArrayList<>(this);
+            List<Object> list = new ArrayList<>(size());
+            for (var e : this) {
+                list.add(e);
+            }
             return list.toArray();
         }
 
         @Override
         public <T> T[] toArray(T[] a) {
-            int size = size();
-            T[] r = a;
-            if (r.length > size)
-                r = (T[]) Array.newInstance(a.getClass().getComponentType(), size);
-
-            Iterator<Entry<Integer, R>> itr = iterator();
-            int i = 0;
-
-            while (itr.hasNext()) {
-                r[i++] = (T) itr.next();
-            }
-
-            return r;
+            return new ArrayList<>(this).toArray(a);
         }
 
         @Override

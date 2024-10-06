@@ -108,14 +108,13 @@ THE SOFTWARE.
   <j:if test="${attrs.previewEndpoint!=null and !readOnlyMode}">
     <div class="textarea-preview-container">
       <j:if test="${attrs.previewEndpoint == '/markupFormatter/previewDescription'}">
-        [${app.markupFormatter.descriptor.displayName}]<st:nbsp/>
+        ${app.markupFormatter.descriptor.displayName}
       </j:if>
       <a href="#" class="textarea-show-preview" previewEndpoint="${attrs.previewEndpoint}">${%Preview}</a>
-      <st:nbsp/>
       <a href="#" class="textarea-hide-preview">${%Hide preview}</a>
-      <div class="textarea-preview">
-        <!-- div for preview -->
-      </div>
+    </div>
+    <div class="textarea-preview">
+      <!-- div for preview -->
     </div>
   </j:if>
 </j:jelly>

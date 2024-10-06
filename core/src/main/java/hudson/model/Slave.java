@@ -36,6 +36,7 @@ import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.cli.CLI;
 import hudson.model.Descriptor.FormException;
+import hudson.model.labels.LabelAtom;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
@@ -50,6 +51,7 @@ import hudson.slaves.SlaveComputer;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -60,27 +62,26 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.SystemProperties;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Information about a Hudson agent node.
@@ -180,6 +181,7 @@ public abstract class Slave extends Node implements Serializable {
         this.name = name;
         this.remoteFS = remoteFS;
         this.launcher = launcher;
+        this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
     }
 
     /**
@@ -194,14 +196,14 @@ public abstract class Slave extends Node implements Serializable {
         this.numExecutors = numExecutors;
         this.mode = mode;
         this.remoteFS = Util.fixNull(remoteFS).trim();
-        this.label = Util.fixNull(labelString).trim();
+        _setLabelString(labelString);
         this.launcher = launcher;
         this.retentionStrategy = retentionStrategy;
         getAssignedLabels();    // compute labels now
 
         this.nodeProperties.replaceBy(nodeProperties);
 
-        if (name.equals(""))
+        if (name.isEmpty())
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
 
         if (this.numExecutors <= 0)
@@ -243,8 +245,7 @@ public abstract class Slave extends Node implements Serializable {
                 LOGGER.log(Level.WARNING, "could not update historical agentCommand setting to CommandLauncher", x);
             }
         }
-        // Default launcher does not use Work Directory
-        return launcher == null ? new JNLPLauncher(false) : launcher;
+        return launcher == null ? new JNLPLauncher() : launcher;
     }
 
     public void setLauncher(ComputerLauncher launcher) {
@@ -309,6 +310,10 @@ public abstract class Slave extends Node implements Serializable {
 
     @DataBoundSetter
     public void setNodeProperties(List<? extends NodeProperty<?>> properties) throws IOException {
+        if (nodeProperties == null) {
+            warnPlugin();
+            nodeProperties = new DescribableList<>(this);
+        }
         nodeProperties.replaceBy(properties);
     }
 
@@ -329,9 +334,31 @@ public abstract class Slave extends Node implements Serializable {
     @Override
     @DataBoundSetter
     public void setLabelString(String labelString) throws IOException {
-        this.label = Util.fixNull(labelString).trim();
+        _setLabelString(labelString);
         // Compute labels now.
         getAssignedLabels();
+    }
+
+    private void _setLabelString(String labelString) {
+        this.label = Util.fixNull(labelString).trim();
+        this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
+    }
+
+    @CheckForNull // should be @NonNull, but we've seen plugins overriding readResolve() without calling super.
+    private transient Set<LabelAtom> labelAtomSet;
+
+    @Override
+    protected Set<LabelAtom> getLabelAtomSet() {
+        if (labelAtomSet == null) {
+            warnPlugin();
+            this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
+        }
+        return labelAtomSet;
+    }
+
+    private void warnPlugin() {
+        LOGGER.log(Level.WARNING, () -> getClass().getName() + " or one of its superclass overrides readResolve() without calling super implementation." +
+                "Please file an issue against the plugin implementing it: " + Jenkins.get().getPluginManager().whichPlugin(getClass()));
     }
 
     @Override
@@ -366,7 +393,7 @@ public abstract class Slave extends Node implements Serializable {
             // if computer is null then channel is null and thus we were going to return null anyway
             return null;
         } else {
-            return createPath(StringUtils.defaultString(computer.getAbsoluteRemoteFs(), remoteFS));
+            return createPath(Objects.toString(computer.getAbsoluteRemoteFs(), remoteFS));
         }
     }
 
@@ -391,7 +418,7 @@ public abstract class Slave extends Node implements Serializable {
             this.fileName = fileName;
         }
 
-        public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
             URLConnection con = connect();
             // since we end up redirecting users to jnlpJars/foo.jar/, set the content disposition
             // so that browsers can download them in the right file name.
@@ -403,7 +430,7 @@ public abstract class Slave extends Node implements Serializable {
         }
 
         @Override
-        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
             doIndex(req, rsp);
         }
 
@@ -438,7 +465,7 @@ public abstract class Slave extends Node implements Serializable {
                 }
             }
 
-            URL res = Jenkins.get().servletContext.getResource("/WEB-INF/" + name);
+            URL res = Jenkins.get().getServletContext().getResource("/WEB-INF/" + name);
             if (res == null) {
                 throw new FileNotFoundException(name); // giving up
             } else {
@@ -470,7 +497,7 @@ public abstract class Slave extends Node implements Serializable {
 
         public byte[] readFully() throws IOException {
             try (InputStream in = connect().getInputStream()) {
-                return IOUtils.toByteArray(in);
+                return in.readAllBytes();
             }
         }
 
@@ -575,6 +602,7 @@ public abstract class Slave extends Node implements Serializable {
     protected Object readResolve() {
         if (nodeProperties == null)
             nodeProperties = new DescribableList<>(this);
+        _setLabelString(label);
         return this;
     }
 
@@ -594,7 +622,7 @@ public abstract class Slave extends Node implements Serializable {
         /**
          * Performs syntactical check on the remote FS for agents.
          */
-        public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException {
             if (Util.fixEmptyAndTrim(value) == null)
                 return FormValidation.error(Messages.Slave_Remote_Director_Mandatory());
 

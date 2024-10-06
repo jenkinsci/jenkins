@@ -24,18 +24,12 @@
 
 package lib.form;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLAnchorElement;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
@@ -51,7 +45,11 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import net.sourceforge.htmlunit.corejs.javascript.NativeArray;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlElementUtil;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.html.HTMLButtonElement;
 import org.jenkinsci.Symbol;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,40 +75,11 @@ public class HeteroListTest {
         HtmlPage page = wc.goTo("root");
 
         page.executeJavaScript("document.querySelector('.hetero-list-add').click();");
-        Object result = page.executeJavaScript("document.querySelector('.yuimenuitem a')").getJavaScriptResult();
-        assertThat(result, instanceOf(HTMLAnchorElement.class));
-        HTMLAnchorElement menuItem = (HTMLAnchorElement) result;
+        Object result = page.executeJavaScript("document.querySelector('.jenkins-dropdown__item')").getJavaScriptResult();
+        assertThat(result, instanceOf(HTMLButtonElement.class));
+        HTMLButtonElement menuItem = (HTMLButtonElement) result;
         String menuItemContent = menuItem.getInnerHTML();
         assertThat(menuItemContent, not(containsString("<")));
-    }
-
-    // correspond to the hardening of escapeEntryTitleAndDescription
-    @Test
-    @Issue("SECURITY-2035")
-    public void xssPrevented_usingToolInstallation_withJustDisplayName() throws Exception {
-        JenkinsRule.WebClient wc = j.createWebClient();
-
-        HtmlPage page = wc.goTo("configureTools/");
-
-        // check the displayName
-        Object resultDN = page.executeJavaScript(
-                "var settingFields = document.querySelectorAll('.jenkins-form-label');" +
-                        "var children = Array.from(settingFields).filter(b => b.textContent.indexOf('XSS:') !== -1)[0].children;" +
-                        "Array.from(children).filter(c => c.tagName === 'IMG')"
-        ).getJavaScriptResult();
-        assertThat(resultDN, instanceOf(NativeArray.class));
-        NativeArray resultDNNA = (NativeArray) resultDN;
-        assertEquals(0, resultDNNA.size());
-
-        // check the description
-        Object resultDesc = page.executeJavaScript(
-                "var settingFields = document.querySelectorAll('.jenkins-form-description');" +
-                        "var children = Array.from(settingFields).filter(b => b.textContent.indexOf('XSS:') !== -1)[0].children;" +
-                        "Array.from(children).filter(c => c.tagName === 'IMG')"
-        ).getJavaScriptResult();
-        assertThat(resultDesc, instanceOf(NativeArray.class));
-        NativeArray resultDescNA = (NativeArray) resultDesc;
-        assertEquals(0, resultDescNA.size());
     }
 
     @Test

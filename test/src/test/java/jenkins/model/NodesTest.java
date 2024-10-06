@@ -35,11 +35,15 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.XmlFile;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.Node;
+import hudson.model.Saveable;
 import hudson.model.Slave;
+import hudson.model.listeners.SaveableListener;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
@@ -48,6 +52,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class NodesTest {
 
@@ -97,6 +102,10 @@ public class NodesTest {
         assertEquals(0, l.deleted);
         assertEquals(1, l.updated);
         assertEquals(1, l.created);
+        var saveableListener = ExtensionList.lookupSingleton(SaveableListenerImpl.class);
+        assertEquals(0, saveableListener.deleted);
+        r.jenkins.removeNode(newNode);
+        assertEquals(1, saveableListener.deleted);
     }
 
     @TestExtension("addNodeShouldReplaceExistingNode")
@@ -117,6 +126,16 @@ public class NodesTest {
         @Override
         protected void onCreated(Node node) {
             created++;
+        }
+    }
+
+    @TestExtension("addNodeShouldReplaceExistingNode")
+    public static final class SaveableListenerImpl extends SaveableListener {
+        int deleted;
+
+        @Override
+        public void onDeleted(Saveable o, XmlFile file) {
+            deleted++;
         }
     }
 
@@ -204,4 +223,20 @@ public class NodesTest {
             }
         }
     }
+
+    @Test
+    @LocalData
+    public void vetoLoad() {
+        assertNull("one-node should not have been loaded because vetoed by VetoLoadingNodes", Jenkins.get().getNode("one-node"));
+    }
+
+    @TestExtension("vetoLoad")
+    public static class VetoLoadingNodes extends NodeListener {
+        @Override
+        protected boolean allowLoad(@NonNull Node node) {
+            // Don't allow loading any node.
+            return false;
+        }
+    }
+
 }

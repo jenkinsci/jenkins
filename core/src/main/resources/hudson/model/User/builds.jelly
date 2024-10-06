@@ -31,7 +31,6 @@ THE SOFTWARE.
         ${%title(it)}
       </h1>
 
-      <!-- TODO consider adding a BuildTimelineWidget (cf. Job, View, Computer) -->
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
   </l:layout>

@@ -34,10 +34,10 @@ import static org.junit.Assert.assertTrue;
 import com.google.inject.AbstractModule;
 import com.google.inject.ImplementedBy;
 import hudson.model.PageDecorator;
+import jakarta.inject.Inject;
+import jakarta.inject.Qualifier;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import javax.inject.Inject;
-import javax.inject.Qualifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -104,6 +104,31 @@ public class ExtensionFinderTest {
         public static class Foo {}
     }
 
+    /**
+     * Extensions are Guice components, so it should support injection.
+     */
+    @Test
+    public void legacyInjection() {
+        LegacyInjectingExtension i = PageDecorator.all().get(LegacyInjectingExtension.class);
+        assertNotNull(i.foo);
+        assertEquals("lion king", i.value);
+    }
+
+    @TestExtension("legacyInjection")
+    public static class LegacyInjectingExtension extends PageDecorator {
+        @javax.inject.Inject
+        Foo foo;
+
+        @javax.inject.Inject
+        @LionKing
+        String value;
+
+        public LegacyInjectingExtension() {
+            super(LegacyInjectingExtension.class);
+        }
+
+        public static class Foo {}
+    }
 
     @Retention(RetentionPolicy.RUNTIME) @Qualifier
     public @interface LionKing {}
@@ -114,7 +139,9 @@ public class ExtensionFinderTest {
         protected void configure() {
             TestEnvironment environment = TestEnvironment.get();
             // JMH benchmarks do not initialize TestEnvironment, so check for null
-            if (environment != null && ExtensionFinderTest.class.getName().equals(environment.description().getClassName()) && "injection".equals(environment.description().getMethodName())) {
+            if (environment != null
+                    && ExtensionFinderTest.class.getName().equals(environment.description().getClassName())
+                    && ("injection".equals(environment.description().getMethodName()) || "legacyInjection".equals(environment.description().getMethodName()))) {
                 bind(String.class).annotatedWith(LionKing.class).toInstance("lion king");
             }
         }

@@ -3,17 +3,17 @@ package org.kohsuke.stapler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Extension;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import jakarta.servlet.ServletException;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
-import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -74,7 +74,7 @@ public class Security1097Test {
         }
 
         /* Deliberate CSRF vulnerability */
-        public void doConfigSubmit1(StaplerRequest req) throws ServletException {
+        public void doConfigSubmit1(StaplerRequest2 req) throws ServletException {
             req.getSubmittedForm();
         }
 

@@ -26,25 +26,55 @@ THE SOFTWARE.
   Log view
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Log" permission="${app.SYSTEM_READ}">
-  <st:include page="sidepanel.jelly" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
+<l:layout title="Log" permission="${app.SYSTEM_READ}" type="one-column">
   <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
   <l:main-panel>
-    <h1>${it.displayName}</h1>
+    <j:set var="noLogs" value="${it.logRecords.isEmpty() and it.slaveLogRecords.isEmpty()}" />
+
+    <l:app-bar title="${it.displayName}">
+      <l:isAdmin>
+        <j:if test="${!noLogs}">
+          <form method="post" id='clear-logrecorder' action="clear">
+            <f:submit icon="symbol-close-circle"
+                      value="${%Clear This Log}"
+                      primary="false" />
+          </form>
+        </j:if>
+        <a class="jenkins-button" href="configure">
+          Configure
+        </a>
+      </l:isAdmin>
+      <l:overflowButton>
+        <dd:header text="${%Atom feed}" />
+        <st:include it="${it.parent}" page="feeds.jelly" />
+        <l:isAdmin>
+          <dd:separator />
+          <dd:custom>
+            <l:confirmationLink class="jenkins-dropdown__item jenkins-!-destructive-color"
+                                href="doDelete"
+                                message="${%delete.logrecorder(it.displayName)}"
+                                post="true">
+              <div class="jenkins-dropdown__item__icon">
+                <l:icon src="symbol-trash" />
+              </div>
+              ${%Delete log recorder}
+            </l:confirmationLink>
+          </dd:custom>
+        </l:isAdmin>
+      </l:overflowButton>
+    </l:app-bar>
+
+    <j:if test="${noLogs}">
+      <l:notice title="${%No logs available}" icon="symbol-journal" />
+    </j:if>
+
     <t:logRecords logRecords="${it.logRecords}"/>
     <j:forEach var="entry" items="${it.slaveLogRecords.entrySet()}">
       <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>
       <t:logRecords logRecords="${entry.value}"/>
     </j:forEach>
-
-    <l:isAdmin>
-      <form method="post" id='clear-logrecorder' action="clear">
-        <f:submit value="${%Clear This Log}" />
-      </form>
-    </l:isAdmin>
-
-    <st:include it="${it.parent}" page="feeds.jelly" />
   </l:main-panel>
 </l:layout>
 </j:jelly>

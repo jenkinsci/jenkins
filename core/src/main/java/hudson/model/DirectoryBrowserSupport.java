@@ -27,12 +27,16 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Util;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
@@ -55,8 +59,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.ResourceDomainConfiguration;
@@ -64,14 +66,15 @@ import jenkins.security.ResourceDomainRootAction;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Has convenience methods to serve file system.
@@ -91,11 +94,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     public static boolean ALLOW_TMP_DISPLAY = SystemProperties.getBoolean(DirectoryBrowserSupport.class.getName() + ".allowTmpEscape");
 
     private static final Pattern TMPDIR_PATTERN = Pattern.compile(".+@tmp/.*");
-
-    /**
-     * Escape hatch for the protection against SECURITY-2481. If enabled, the absolute paths on Windows will be allowed.
-     */
-    static final String ALLOW_ABSOLUTE_PATH_PROPERTY_NAME = DirectoryBrowserSupport.class.getName() + ".allowAbsolutePath";
 
     public final ModelObject owner;
 
@@ -163,7 +161,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     }
 
     @Override
-    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+    public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
         if (!ResourceDomainConfiguration.isResourceRequest(req) && ResourceDomainConfiguration.isResourceDomainConfigured()) {
             resourceToken = ResourceDomainRootAction.get().getToken(this, req);
         }
@@ -197,11 +195,15 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      *      from the {@code doXYZ} method and let Stapler generate a response for you.
      */
     @Deprecated
-    public void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
-        serveFile(req, rsp, root.toVirtualFile(), icon, serveDirIndex);
+    public void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, javax.servlet.ServletException, InterruptedException {
+        try {
+            serveFile(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), root.toVirtualFile(), icon, serveDirIndex);
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
     }
 
-    private void serveFile(StaplerRequest req, StaplerResponse rsp, VirtualFile root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
+    private void serveFile(StaplerRequest2 req, StaplerResponse2 rsp, VirtualFile root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
         // handle form submission
         String pattern = req.getParameter("pattern");
         if (pattern == null)
@@ -232,7 +234,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 String pathElement = pathTokens.nextToken();
                 // Treat * and ? as wildcard unless they match a literal filename
                 if ((pathElement.contains("?") || pathElement.contains("*"))
-                        && inBase && !root.child((_base.length() > 0 ? _base + "/" : "") + pathElement).exists())
+                        && inBase && !root.child((!_base.isEmpty() ? _base + "/" : "") + pathElement).exists())
                     inBase = false;
                 if (pathElement.equals("*zip*")) {
                     // the expected syntax is foo/bar/*zip*/bar.zip
@@ -247,7 +249,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 }
 
                 StringBuilder sb = inBase ? _base : _rest;
-                if (sb.length() > 0)   sb.append('/');
+                if (!sb.isEmpty())   sb.append('/');
                 sb.append(pathElement);
                 if (!inBase)
                     restSize++;
@@ -262,13 +264,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if (base.isEmpty()) {
             baseFile = root;
         } else {
-            if (!SystemProperties.getBoolean(ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, false)) {
-                boolean isAbsolute = root.run(new IsAbsolute(base));
-                if (isAbsolute) {
-                    LOGGER.info(() -> "SECURITY-2481 The path provided in the URL (" + base + ") is absolute and thus is refused.");
-                    rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    return;
-                }
+            boolean isAbsolute = root.run(new IsAbsolute(base));
+            if (isAbsolute) {
+                LOGGER.info(() -> "SECURITY-2481 The path provided in the URL (" + base + ") is absolute and thus is refused.");
+                rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
             }
             baseFile = root.child(base);
         }
@@ -281,7 +281,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             if (zip) {
                 rsp.setContentType("application/zip");
                 String includes, prefix;
-                if (StringUtils.isBlank(rest)) {
+                if (rest == null || rest.isBlank()) {
                     includes = "**";
                     // JENKINS-19947, JENKINS-61473: traditional behavior is to prepend the directory name
                     prefix = baseFile.getName();
@@ -307,7 +307,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 return;
             }
 
-            if (rest.length() == 0) {
+            if (rest.isEmpty()) {
                 // if the target page to be displayed is a directory and the path doesn't end with '/', redirect
                 StringBuffer reqUrl = req.getRequestURL();
                 if (reqUrl.charAt(reqUrl.length() - 1) != '/') {
@@ -317,7 +317,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             }
 
             List<List<Path>> glob = null;
-            boolean patternUsed = rest.length() > 0;
+            boolean patternUsed = !rest.isEmpty();
             boolean containsSymlink = false;
             boolean containsTmpDir = false;
                 if (patternUsed) {
@@ -326,9 +326,10 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             } else
             if (serveDirIndex) {
                 // serve directory index
-                glob = baseFile.run(new BuildChildPaths(root, baseFile, req.getLocale()));
-                containsSymlink = baseFile.containsSymLinkChild(getOpenOptions());
-                containsTmpDir = baseFile.containsTmpDirChild(getOpenOptions());
+                var result = baseFile.run(new BuildChildPaths(baseFile, req.getLocale(), getOpenOptions()));
+                glob = result.glob;
+                containsSymlink = result.containsSymLink;
+                containsTmpDir = result.containsTmpDir;
             }
 
             if (glob != null) {
@@ -416,7 +417,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 if (!ResourceDomainConfiguration.isResourceRequest(req)) {
                     // if we're serving this from the main domain, set CSP headers
                     String csp = SystemProperties.getString(CSP_PROPERTY_NAME, DEFAULT_CSP_VALUE);
-                    if (!csp.trim().equals("")) {
+                    if (!csp.trim().isEmpty()) {
                         // allow users to prevent sending this header by setting empty system property
                         for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
                             rsp.setHeader(header, csp);
@@ -506,9 +507,9 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
-    private String getPath(StaplerRequest req) {
+    private String getPath(StaplerRequest2 req) {
         String path = req.getRestOfPath();
-        if (path.length() == 0)
+        if (path.isEmpty())
             path = "/";
         return path;
     }
@@ -535,10 +536,10 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         return "../".repeat(times);
     }
 
-    private static void zip(StaplerResponse rsp, VirtualFile root, VirtualFile dir, String glob) throws IOException, InterruptedException {
+    private static void zip(StaplerResponse2 rsp, VirtualFile root, VirtualFile dir, String glob) throws IOException, InterruptedException {
         OutputStream outputStream = rsp.getOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
-            zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
+            zos.setEncoding(Charset.defaultCharset().displayName()); // TODO JENKINS-20663 make this overridable via query parameter
             // TODO consider using run(Callable) here
 
             if (glob.isEmpty()) {
@@ -755,19 +756,32 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
-    private static final class BuildChildPaths extends MasterToSlaveCallable<List<List<Path>>, IOException> {
-        private VirtualFile root;
+    private static final class BuildChildPathsResult implements Serializable { // TODO Java 21+ record
+        private static final long serialVersionUID = 1;
+        private final List<List<Path>> glob;
+        private final boolean containsSymLink;
+        private final boolean containsTmpDir;
+
+        BuildChildPathsResult(List<List<Path>> glob, boolean containsSymLink, boolean containsTmpDir) {
+            this.glob = glob;
+            this.containsSymLink = containsSymLink;
+            this.containsTmpDir = containsTmpDir;
+        }
+    }
+
+    private static final class BuildChildPaths extends MasterToSlaveCallable<BuildChildPathsResult, IOException> {
         private final VirtualFile cur;
         private final Locale locale;
+        private final OpenOption[] openOptions;
 
-        BuildChildPaths(VirtualFile root, VirtualFile cur, Locale locale) {
-            this.root = root;
+        BuildChildPaths(VirtualFile cur, Locale locale, OpenOption[] openOptions) {
             this.cur = cur;
             this.locale = locale;
+            this.openOptions = openOptions;
         }
 
-        @Override public List<List<Path>> call() throws IOException {
-            return buildChildPaths(cur, locale);
+        @Override public BuildChildPathsResult call() throws IOException {
+            return new BuildChildPathsResult(buildChildPaths(cur, locale), cur.containsSymLinkChild(openOptions), cur.containsTmpDirChild(openOptions));
         }
     }
     /**
@@ -877,5 +891,5 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static final Logger LOGGER = Logger.getLogger(DirectoryBrowserSupport.class.getName());
 
     @Restricted(NoExternalUse.class)
-    public static final String DEFAULT_CSP_VALUE = "sandbox; default-src 'none'; img-src 'self'; style-src 'self';";
+    public static final String DEFAULT_CSP_VALUE = "sandbox allow-same-origin; default-src 'none'; img-src 'self'; style-src 'self';";
 }

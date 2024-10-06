@@ -22,15 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-
-  ${%lastUpdated(app.updateCenter.lastUpdatedString)}
-  <f:link href="checkUpdatesServer" post="true" clazz="jenkins-button submit-button">
-    ${%Check now}
-  </f:link>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <j:if test="${app.pluginManager.lastErrorCheckUpdateCenters != null}">
-    <div class="error">
+    <template id="update-center-error">
       ${app.pluginManager.lastErrorCheckUpdateCenters}
-    </div>
+    </template>
   </j:if>
+
+  <form action="checkUpdatesServer" method="post">
+    <button id="button-refresh" class="jenkins-button" tooltip="${%lastUpdated(app.updateCenter.lastUpdatedString)}">
+      <l:icon src="symbol-refresh" alt="${%Check now}" />
+    </button>
+  </form>
 </j:jelly>

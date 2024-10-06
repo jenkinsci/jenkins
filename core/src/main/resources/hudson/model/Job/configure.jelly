@@ -36,7 +36,7 @@ THE SOFTWARE.
 
     <l:breadcrumb title="${%Configuration}" />
 
-    <l:side-panel>
+    <l:side-panel sticky="true">
       <l:app-bar title="${%Configure}" />
       <div id="tasks" />
     </l:side-panel>

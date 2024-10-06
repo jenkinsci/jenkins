@@ -7424,7 +7424,7 @@ version: 2.9.0
                 * </p>
                 * <p>
                 * For more information, see the <a href="http://developer.yahoo.com/yui/connection/#file">
-                * Connection Manager documenation on file uploads</a>.
+                * Connection Manager documentation on file uploads</a>.
                 * </p>
                 * @property callback.upload
                 * @type Function
@@ -7661,7 +7661,7 @@ version: 2.9.0
         * <code>upload</code> handler rather than the standard 
         * <code>success</code> and, or <code>failure</code> handlers.  For more 
         * information, see the <a href="http://developer.yahoo.com/yui/
-        * connection/#file">Connection Manager documenation on file uploads</a>.
+        * connection/#file">Connection Manager documentation on file uploads</a>.
         * @method doSubmit
         */
         doSubmit: function () {

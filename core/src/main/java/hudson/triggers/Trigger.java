@@ -91,6 +91,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * @see Items#currentlyUpdatingByXml
      */
     public void start(J project, boolean newInstance) {
+        LOGGER.finer(() -> "Starting " + this + " on " + project);
         this.job = project;
 
         try { // reparse the tabs with the job as the hash
@@ -206,6 +207,10 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         return this;
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + "[" + spec + "]";
+    }
 
     /**
      * Runs every minute to check {@link TimerTrigger} and schedules build.
@@ -283,7 +288,9 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
         // Process all triggers, except SCMTriggers when synchronousPolling is set
         for (TriggeredItem p : inst.allItems(TriggeredItem.class)) {
+            LOGGER.finer(() -> "considering " + p);
             for (Trigger t : p.getTriggers().values()) {
+                LOGGER.finer(() -> "found trigger " + t);
                 if (!(p instanceof AbstractProject && t instanceof SCMTrigger && scmd.synchronousPolling)) {
                     if (t != null && t.spec != null && t.tabs != null) {
                         LOGGER.log(Level.FINE, "cron checking {0} with spec ‘{1}’", new Object[]{p, t.spec.trim()});
@@ -292,6 +299,9 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                             LOGGER.log(Level.CONFIG, "cron triggered {0}", p);
                             try {
                                 long begin_time = System.currentTimeMillis();
+                                if (t.job == null) {
+                                    LOGGER.fine(() -> t + " not yet started on " + p + " but trying to run anyway");
+                                }
                                 t.run();
                                 long end_time = System.currentTimeMillis();
                                 if (end_time - begin_time > CRON_THRESHOLD * 1000) {

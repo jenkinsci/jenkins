@@ -24,25 +24,25 @@
 
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.util.Arrays;
 import java.util.TreeSet;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class ViewDescriptorTest {
 
@@ -120,7 +120,7 @@ public class ViewDescriptorTest {
 
 
         HtmlForm editViewForm = editViewPage.getFormByName("viewConfig");
-        editViewForm.getTextAreaByName("description").setText("This list view is awesome !");
+        editViewForm.getTextAreaByName("_.description").setText("This list view is awesome !");
         r.submit(editViewForm);
 
         //Check that the description is updated on view
@@ -156,7 +156,7 @@ public class ViewDescriptorTest {
         }
 
         @Override
-        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) {
+        public ViewProperty reconfigure(StaplerRequest2 req, JSONObject form) {
             return this;
         }
 

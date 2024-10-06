@@ -139,7 +139,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
     /**
      * Result object for {@link AbstractAsyncNodeMonitorDescriptor#monitorDetailed()} to facilitate extending information
      * returned in the future.
-     *
+     * <p>
      * The {@link #getMonitoringData()} provides the results of the monitoring as {@link #monitor()} does. Note the value
      * in the map can be {@code null} for several reasons:
      * <ul>
@@ -149,8 +149,8 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
      *     <li>The {@link AbstractAsyncNodeMonitorDescriptor#createCallable} has returned null.</li>
      * </ul>
      *
-     * Clients can distinguishing among these states based on the additional data attached to this object. {@link #getSkipped()}
-     * returns computers that was not monitored as they ware either offline or monitor produced {@code null} {@link Callable}.
+     * Clients can distinguish among these states based on the additional data attached to this object. {@link #getSkipped()}
+     * returns computers that were not monitored as they were either offline or monitor produced {@code null} {@link Callable}.
      */
     protected static final class Result<T> {
         private static final long serialVersionUID = -7671448355804481216L;
@@ -163,15 +163,15 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
             this.skipped = new ArrayList<>(skipped);
         }
 
-        protected @NonNull Map<Computer, T> getMonitoringData() {
+        public @NonNull Map<Computer, T> getMonitoringData() {
             return data;
         }
 
         /**
-         * Computers that ware skipped during monitoring as they either do not have a a channel (offline) or the monitor
-         * have not produced the Callable. Computers that caused monitor to throw exception are not returned here.
+         * Computers that were skipped during monitoring as they either do not have a channel (offline) or the monitor
+         * has not produced the Callable. Computers that caused monitor to throw exception are not returned here.
          */
-        protected @NonNull List<Computer> getSkipped() {
+        public @NonNull List<Computer> getSkipped() {
             return skipped;
         }
     }

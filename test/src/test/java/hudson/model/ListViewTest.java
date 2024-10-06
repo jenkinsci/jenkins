@@ -36,8 +36,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Functions;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
@@ -48,6 +46,8 @@ import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -59,10 +59,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.AlertHandler;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -71,8 +75,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.core.Authentication;
 import org.xml.sax.SAXException;
 
@@ -254,8 +258,8 @@ public class ListViewTest {
     @Test public void addJobUsingAPI() throws Exception {
         ListView v = new ListView("view", j.jenkins);
         j.jenkins.addView(v);
-        StaplerRequest req = mock(StaplerRequest.class);
-        StaplerResponse rsp = mock(StaplerResponse.class);
+        StaplerRequest2 req = mock(StaplerRequest2.class);
+        StaplerResponse2 rsp = mock(StaplerResponse2.class);
 
         String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), testName.getMethodName())), StandardCharsets.UTF_8);
 
@@ -289,6 +293,23 @@ public class ListViewTest {
         // remove a not contained job
         Failure e = assertThrows(Failure.class, () -> view.doRemoveJobFromView("job2"));
         assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
+    }
+
+    @Issue("JENKINS-71200")
+    @Test public void doApplyDoNotOverloadElements() throws Exception {
+        MockFolder folder = j.createFolder("folder");
+        FreeStyleProject job = folder.createProject(FreeStyleProject.class, "elements");
+        ListView view = new ListView("view", folder);
+        folder.addView(view);
+        view.add(job);
+
+        final AtomicBoolean alerts = new AtomicBoolean();
+        WebClient webClient = j.createWebClient();
+        webClient.setAlertHandler((AlertHandler) (page, s) -> alerts.set(true));
+        HtmlPage page = webClient.goTo(view.getUrl() + "configure");
+        HtmlForm form = page.getFormByName("viewConfig");
+        j.assertGoodStatus(j.submit(form));
+        Assert.assertFalse("No alert expected", alerts.get());
     }
 
     @Test public void getItemsNames() throws Exception {

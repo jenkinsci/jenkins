@@ -6,5 +6,5 @@ Behaviour.specify(
     var id = e.getAttribute("data-id");
     var url = e.getAttribute("data-url");
     refreshPart(id, url);
-  }
+  },
 );

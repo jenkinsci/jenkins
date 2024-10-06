@@ -5,7 +5,8 @@ import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.core.IsNull.notNullValue;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.htmlunit.html.HtmlFormUtil.submit;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -35,12 +36,17 @@ public class UserPropertyTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
+    public User configRoundtrip(User u) throws Exception {
+        submit(j.createWebClient().goTo(u.getUrl()+"/account/").getFormByName("config"));
+        return u;
+    }
+
     @Test
     @Issue("JENKINS-9062")
     public void test() throws Exception {
         User u = User.get("foo");
         u.addProperty(new UserProperty1());
-        j.configRoundtrip(u);
+        configRoundtrip(u);
         for (UserProperty p : u.getAllProperties())
             assertNotNull(p);
     }
@@ -82,7 +88,7 @@ public class UserPropertyTest {
         List<String> fileLines = Files.readAllLines(testFile.toPath(), StandardCharsets.US_ASCII);
         assertThat(fileLines, hasSize(1));
 
-        j.configRoundtrip(user);
+        configRoundtrip(user);
 
         user = User.get("nestedUserReference", false, Collections.emptyMap());
         assertThat("nested reference should exist after user configuration change", user, nestedUserSet());

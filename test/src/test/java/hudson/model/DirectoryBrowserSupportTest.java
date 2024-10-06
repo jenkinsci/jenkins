@@ -24,25 +24,21 @@
 
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.UnexpectedPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.sun.management.UnixOperatingSystemMXBean;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
@@ -54,6 +50,7 @@ import hudson.slaves.WorkspaceList;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
+import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -86,8 +83,11 @@ import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.htmlunit.Page;
+import org.htmlunit.UnexpectedPage;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -97,8 +97,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -149,8 +149,16 @@ public class DirectoryBrowserSupportTest {
         p.getBuildersList().add(new Shell("mkdir abc; touch abc/def.bin"));
         j.buildAndAssertSuccess(p);
 
-        // can we see it?
-        j.createWebClient().goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin", "application/octet-stream");
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            // normal path provided by the UI succeeds
+            wc.goTo("job/" + p.getName() + "/ws/abc/def.bin", "application/octet-stream");
+
+            // suspicious path is rejected with 400
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            HtmlPage page = wc.goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin");
+            assertEquals(400, page.getWebResponse().getStatusCode());
+            assertEquals("Error 400 Suspicious Path Character", page.getTitleText());
+        }
     }
 
     @Test
@@ -389,7 +397,7 @@ public class DirectoryBrowserSupportTest {
             return null;
         }
 
-        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws Exception {
+        public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws Exception {
             String hash = req.getRestOfPath().substring(1);
             for (byte[] file : files) {
                 if (Util.getDigestOf(new ByteArrayInputStream(file)).equals(hash)) {
@@ -421,7 +429,7 @@ public class DirectoryBrowserSupportTest {
             Map.Entry<String, String> entry = artifacts.entrySet().iterator().next();
             assertEquals("f", entry.getKey());
             try (InputStream is = workspace.child(entry.getValue()).read()) {
-                byte[] data = IOUtils.toByteArray(is);
+                byte[] data = is.readAllBytes();
                 ExtensionList.lookupSingleton(ContentAddressableStore.class).files.add(data);
                 hash = Util.getDigestOf(new ByteArrayInputStream(data));
             }
@@ -935,6 +943,8 @@ public class DirectoryBrowserSupportTest {
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
             assertThat(entryNames, contains("intermediateFolder/public2.key"));
         }
+        // Explicitly delete everything including junctions, which TemporaryDirectoryAllocator.dispose may have trouble with:
+        new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds("cmd", "/c", "rmdir", "/s", "/q", j.jenkins.getRootDir().getAbsolutePath()).start().join();
     }
 
     private List<String> getListOfEntriesInDownloadedZip(UnexpectedPage zipPage) throws Exception {
@@ -1122,37 +1132,13 @@ public class DirectoryBrowserSupportTest {
         String content = "random data provided as fixed value";
         Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
-        JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
-
-        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(404));
-    }
-
-    @Test
-    @Issue("SECURITY-2481")
-    public void windows_canViewAbsolutePath_withEscapeHatch() throws Exception {
-        Assume.assumeTrue("can only be tested this on Windows", Functions.isWindows());
-
-        String originalValue = System.getProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
-        System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, "true");
-        try {
-            Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
-            String content = "random data provided as fixed value";
-            Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
-
-            JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-            Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
-
-            MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(200));
-            MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), CoreMatchers.containsString(content));
-        } finally {
-            if (originalValue == null) {
-                System.clearProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
-            } else {
-                System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, originalValue);
-            }
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            // suspicious path is rejected with 400
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            HtmlPage page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*");
+            assertEquals(400, page.getWebResponse().getStatusCode());
+            assertEquals("Error 400 Suspicious Path Character", page.getTitleText());
         }
-
     }
 
     @Test
@@ -1369,8 +1355,8 @@ public class DirectoryBrowserSupportTest {
         JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         Page page = wc.goTo("userContent/test.txt/*view*", null);
 
-        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(200));
-        MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), CoreMatchers.containsString(content));
+        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(200));
+        MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), containsString(content));
     }
 
     public static final class SimulatedExternalArtifactManagerFactory extends ArtifactManagerFactory {
@@ -1392,7 +1378,7 @@ public class DirectoryBrowserSupportTest {
             Map.Entry<String, String> entry = artifacts.entrySet().iterator().next();
             assertEquals("f", entry.getKey());
             try (InputStream is = workspace.child(entry.getValue()).read()) {
-                byte[] data = IOUtils.toByteArray(is);
+                byte[] data = is.readAllBytes();
                 ExtensionList.lookupSingleton(ContentAddressableStore.class).files.add(data);
                 hash = Util.getDigestOf(new ByteArrayInputStream(data));
             }

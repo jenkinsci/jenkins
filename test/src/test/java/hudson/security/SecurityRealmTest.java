@@ -24,15 +24,10 @@
 
 package hudson.security;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.Cookie;
 import hudson.model.Descriptor;
 import hudson.security.captcha.CaptchaSupport;
 import java.io.OutputStream;
@@ -41,6 +36,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Random;
 import jenkins.model.Jenkins;
+import org.htmlunit.CookieManager;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.Cookie;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -152,10 +152,10 @@ public class SecurityRealmTest {
         j.jenkins.setSecurityRealm(osr);
         j.executeOnServer(() -> {
             assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS));
-            assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS2));
+            assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest2(), Jenkins.ANONYMOUS2));
             osr.special = true;
             assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS));
-            assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS2));
+            assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest2(), Jenkins.ANONYMOUS2));
             return null;
         });
     }

@@ -23,76 +23,54 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:parse var="paneTitle">
-    <j:invokeStatic var="currentThread" className="java.lang.Thread" method="currentThread"/>
-    <j:invoke var="jobClass" on="${currentThread.contextClassLoader}" method="loadClass">
-      <j:arg value="hudson.model.Job"/>
-    </j:invoke>
-
-    <div class="jenkins-pane__header--build-history">
-      <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
-        <t:buildHealth job="${it.owner}" iconSizeClass="icon-sm" link="${it.baseUrl}/lastBuild"/>
-      </j:if>
-      ${it.displayName}
-      <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
-        <a href="${it.baseUrl}/buildTimeTrend">${%trend}</a>
-      </j:if>
-    </div>
-  </j:parse>
-
-  <j:parse var="paneFooter">
-    <!--
-      RSS link
-    -->
-    <span class="build-rss-links">
-        <a class="build-rss-all-link" href="${it.baseUrl}/rssAll">
-          <span class="build-rss-all-icon">
-            <l:icon src="symbol-rss" />
-          </span>
-          Atom feed ${%for all}
-        </a>
-        <a class="build-rss-failed-link" href="${it.baseUrl}/rssFailed">
-          <span class="build-rss-failed-icon">
-            <l:icon src="symbol-rss" />
-          </span>
-          Atom feed ${%for failures}
-        </a>
-    </span>
-  </j:parse>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+  <script src="${resURL}/jsbundles/pages/project/builds-card.js" type="text/javascript" defer="true" />
 
   <j:set var="page" value="${it.historyPageFilter}" />
-  <div id="buildHistoryPage" page-ajax="${it.baseUrl}/buildHistory/ajax" page-entry-newest="${page.newestOnPage}" page-entry-oldest="${page.oldestOnPage}" page-has-up="${page.hasUpPage}" page-has-down="${page.hasDownPage}">
-    <div id="buildHistoryPageNav">
-      <div class="buildHistoryPageNav__item buildHistoryPageNav__item--page-one pageOne" title="Page 1 (Newest/Latest Builds)">
-        <div class="buildHistoryPageNav__item-page-one-top"></div>
-        <l:svgIcon href="${resURL}/images/svgs/go-up.svg#arrow" viewBox="0 0 16 16" />
+
+  <j:set var="controls">
+    <l:overflowButton icon="symbol-menu" clazz="jenkins-card__reveal">
+      <dd:item icon="symbol-rss"
+               text="Atom feed ${%for all}"
+               href="${it.baseUrl}/rssAll" />
+      <dd:item icon="symbol-rss"
+               text="Atom feed ${%for failures}"
+               href="${it.baseUrl}/rssFailed" />
+    </l:overflowButton>
+  </j:set>
+
+  <div id="buildHistoryPage" page-ajax="${it.baseUrl}/buildHistory/ajax"
+       data-page-entry-newest="${page.newestOnPage}"
+       data-page-entry-oldest="${page.oldestOnPage}"
+       data-page-has-up="${page.hasUpPage}"
+       data-page-has-down="${page.hasDownPage}">
+    <l:card id="jenkins-builds" title="Builds" controls="${controls}" expandable="${it.baseUrl}/buildTimeTrend">
+      <l:search-bar placeholder="${%find}"
+                    clazz="${page.runs.isEmpty() and page.queueItems.isEmpty() ? 'jenkins-hidden' : ''}"/>
+
+      <div class="app-builds-container">
+        <div id="no-builds" class="app-builds-container__placeholder">
+          ${%No builds}
+        </div>
+
+        <div id="jenkins-build-history" class="app-builds-container__items">
+        </div>
+
+        <div class="app-builds-container__controls jenkins-hidden" id="controls">
+          <button class="jenkins-button jenkins-button--tertiary jenkins-card__unveil" id="up">
+            <l:icon src="symbol-arrow-left" />
+            <span class="jenkins-visually-hidden">${%Newer builds}</span>
+          </button>
+          <button class="jenkins-button jenkins-button--tertiary jenkins-card__unveil" id="down">
+            <l:icon src="symbol-arrow-right" />
+            <span class="jenkins-visually-hidden">${%Older builds}</span>
+          </button>
+        </div>
       </div>
-      <div class="buildHistoryPageNav__item pageUp" title="Newer Builds">
-        <l:svgIcon href="${resURL}/images/svgs/go-up.svg#arrow" viewBox="0 0 16 16" />
-      </div>
-      <div class="buildHistoryPageNav__item pageDown" title="Older Builds">
-        <l:svgIcon href="${resURL}/images/svgs/go-down.svg#arrow" viewBox="0 0 16 16" />
-      </div>
-    </div>
 
-    <l:pane width="3" title="${h.runScript(paneTitle)}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="jenkins-pane stripped">
-      <tr class="build-search-row">
-        <td>
-          <l:search-bar placeholder="${%find}" />
-          <div id="no-builds" class="jenkins-pane__information" style="${page.runs.isEmpty() and page.queueItems.isEmpty() ? '' : 'display: none;'}">
-            ${%No builds}
-          </div>
-        </td>
-      </tr>
-
-      <st:include page="entries.jelly" it="${page}" />
-
-    </l:pane>
-
-    <!--The value for `page-next-build` is modified inside of `entries.jelly` on render, so set the attribute-->
-    <!--after that component has been rendered to get the correct value to use in `filter-build-history.js`-->
-    <div id="properties" page-next-build="${it.nextBuildNumberToFetch ?: it.owner.nextBuildNumber}"/>
+      <!--The value for `page-next-build` is modified inside of `entries.jelly` on render, so set the attribute-->
+      <!--after that component has been rendered to get the correct value to use in `builds-card.js`-->
+      <div id="properties" page-next-build="${it.nextBuildNumberToFetch ?: it.owner.nextBuildNumber}"/>
+    </l:card>
   </div>
-  <script src="${resURL}/jsbundles/filter-build-history.js" type="text/javascript"/>
 </j:jelly>

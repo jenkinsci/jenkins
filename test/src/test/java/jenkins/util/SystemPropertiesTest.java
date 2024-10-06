@@ -28,9 +28,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
-import javax.servlet.ServletContextEvent;
-import org.eclipse.jetty.server.handler.ContextHandler;
+import jakarta.servlet.ServletContextEvent;
+import org.eclipse.jetty.ee9.webapp.WebAppContext;
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
@@ -48,8 +49,14 @@ public class SystemPropertiesTest {
 
     @Before
     public void setUp() {
-        new SystemProperties.Listener().contextInitialized(new ServletContextEvent(j.jenkins.servletContext));
+        new SystemProperties.Listener().contextInitialized(new ServletContextEvent(j.jenkins.getServletContext()));
     }
+
+    @After
+    public void tearDown() {
+        System.clearProperty("foo.bar");
+    }
+
 
     @Test
     public void shouldReturnNullIfUndefined() throws Exception {
@@ -81,13 +88,22 @@ public class SystemPropertiesTest {
                 SystemProperties.getString("install-wizard-path"), equalTo("myVal2"));
     }
 
+    @Test
+    public void shouldReturnWebAppPropertyIfSystemPropertyNotSetAndDefaultIsSet() throws Exception {
+        assertThat("Property is undefined before test",
+                SystemProperties.getString("foo.bar"), equalTo(null));
+        setWebAppInitParameter("foo.bar", "myVal");
+        assertThat("Should return web app property if system property is not set and default value is set",
+                SystemProperties.getString("foo.bar", "defaultVal"), equalTo("myVal"));
+    }
+
     /**
      * Hack to set a web app initial parameter afterwards. Only works with Jetty.
      * @param property property to set
      * @param value value of the property
      */
     protected void setWebAppInitParameter(String property, String value) {
-        Assume.assumeThat(j.jenkins.servletContext, Matchers.instanceOf(ContextHandler.Context.class));
-        ((ContextHandler.Context) j.jenkins.servletContext).getContextHandler().getInitParams().put(property, value);
+        Assume.assumeThat(j.jenkins.getServletContext(), Matchers.instanceOf(WebAppContext.Context.class));
+        ((WebAppContext.Context) j.jenkins.getServletContext()).getContextHandler().getInitParams().put(property, value);
     }
 }

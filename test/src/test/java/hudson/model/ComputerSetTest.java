@@ -26,22 +26,22 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import java.net.HttpURLConnection;
-import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
+import jenkins.widgets.ExecutorsWidget;
+import jenkins.widgets.HasWidgetHelper;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -90,10 +90,10 @@ public class ComputerSetTest {
     @Test
     public void getComputerNames() throws Exception {
         assertThat(ComputerSet.getComputerNames(), is(empty()));
-        j.createSlave("aNode", "", null);
-        assertThat(ComputerSet.getComputerNames(), contains("aNode"));
         j.createSlave("anAnotherNode", "", null);
-        assertThat(ComputerSet.getComputerNames(), containsInAnyOrder("aNode", "anAnotherNode"));
+        assertThat(ComputerSet.getComputerNames(), contains("anAnotherNode"));
+        j.createSlave("aNode", "", null);
+        assertThat(ComputerSet.getComputerNames(), contains("aNode", "anAnotherNode"));
     }
 
     @Test
@@ -118,7 +118,7 @@ public class ComputerSetTest {
         HtmlPage page = wc.goTo("computer/");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         String responseContent = page.getWebResponse().getContentAsString();
-        // the "Node Monitoring" link in the sidepanel is not visible
+        // the "Node Monitoring" link in the app bar is not visible
         assertThat(responseContent, not(containsString("Node Monitoring")));
         page = wc.goTo("computer/configure");
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
@@ -128,13 +128,13 @@ public class ComputerSetTest {
         page = wc.goTo("computer/");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         responseContent = page.getWebResponse().getContentAsString();
-        // the "Node Monitoring" link in the sidepanel is visible
-        assertThat(responseContent, containsString("Node Monitoring"));
+        // the "Node Monitoring" link in the app bar is visible
+        assertThat(responseContent, containsString("Configure Monitors"));
         page = wc.goTo("computer/configure");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-        // and the OK (save) button is visible
+        // and the save button is visible
         responseContent = page.getWebResponse().getContentAsString();
-        assertThat(responseContent, containsString("OK"));
+        assertThat(responseContent, containsString("Save"));
     }
 
     @Test
@@ -144,10 +144,10 @@ public class ComputerSetTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
-        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        FreeStyleBuild b = ExecutorTest.startBlockingBuild(p);
 
         String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+        b.getBuiltOn().toComputer().disconnect(
                 new OfflineCause.ChannelTermination(new RuntimeException(message))
         );
 
@@ -155,6 +155,8 @@ public class ComputerSetTest {
         Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
+
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
     }
 
     @Test
@@ -164,16 +166,18 @@ public class ComputerSetTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
-        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        FreeStyleBuild b = ExecutorTest.startBlockingBuild(p);
 
         String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+        b.getBuiltOn().toComputer().disconnect(
                 new OfflineCause.ChannelTermination(new RuntimeException(message))
         );
 
         WebClient wc = j.createWebClient();
-        Page page = wc.getPage(wc.createCrumbedUrl("ajaxExecutors"));
+        Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(j.jenkins.getComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
+
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
     }
 }

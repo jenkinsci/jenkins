@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:l="/lib/layout">
   <s:documentation> <![CDATA[
     Submit button. This should be always used instead of the plain <button> tag.
     ]]>
@@ -47,11 +47,17 @@ THE SOFTWARE.
 
       @since 2.376
     </s:attribute>
+    <s:attribute name="icon">
+      @since 2.411
+    </s:attribute>
     <s:attribute name="clazz" />
   </s:documentation>
 
   <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" formNoValidate="formNoValidate"
-          class="jenkins-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
+          class="jenkins-button jenkins-submit-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
+    <j:if test="${attrs.icon != null}">
+      <l:icon src="${attrs.icon}" />
+    </j:if>
     ${attrs.value ?: '%Submit'}
   </button>
 </j:jelly>

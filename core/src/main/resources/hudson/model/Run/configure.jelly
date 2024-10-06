@@ -28,6 +28,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%Edit Build Information}" />
     <l:main-panel>
+      <l:app-bar title="${%Edit Build Information}" />
       <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="readOnlyMode" value="${!h.hasPermission(it,it.UPDATE)}"/>

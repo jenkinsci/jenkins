@@ -15,20 +15,21 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.User;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.HttpURLConnection;
-import java.net.URL;
-import javax.servlet.http.HttpServletResponse;
+import java.net.URI;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlHiddenInput;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -221,7 +222,7 @@ public class DefaultCrumbIssuerTest {
 
     private void replaceAllCrumbInPageBy(HtmlPage page, String newCrumb) {
         for (DomElement el : page.getElementsByName("Jenkins-Crumb")) {
-            el.setAttribute("value", newCrumb);
+            ((HtmlHiddenInput) el).setValue(newCrumb);
         }
     }
 
@@ -302,7 +303,7 @@ public class DefaultCrumbIssuerTest {
     }
 
     private WebRequest createRequestForJobCreation(String jobName) throws Exception {
-        WebRequest req = new WebRequest(new URL(r.getURL() + "createItem?name=" + jobName), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URI(r.getURL() + "createItem?name=" + jobName).toURL(), HttpMethod.POST);
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody("<project/>");
         return req;

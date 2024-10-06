@@ -66,26 +66,68 @@ THE SOFTWARE.
         <d:invokeBody/>
       </div>
 
-      <!-- project list -->
-      <table id="projectstatus" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
-        <thead>
-          <tr>
-            <j:forEach var="col" items="${columnExtensions}">
-              <st:include page="columnHeader.jelly" it="${col}" />
-            </j:forEach>
-          </tr>
-        </thead>
+      <div class="jenkins-mobile-hide">
+        <div class="app-project-status-table">
+          <table id="projectstatus" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
+            <thead>
+              <tr>
+                <j:forEach var="col" items="${columnExtensions}">
+                  <j:if test="${col.class.simpleName.equals('BuildButtonColumn')}">
+                    <j:set var="buildButtonColumn" value="${col}" />
+                  </j:if>
+                  <st:include page="columnHeader.jelly" it="${col}" />
+                </j:forEach>
+              </tr>
+            </thead>
 
-        <j:forEach var="v" items="${attrs.views}">
-          <t:projectViewNested />
-        </j:forEach>
+            <j:forEach var="job" items="${jobs}">
+              <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
+              <t:projectViewRow jobBaseUrl="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
+            </j:forEach>
+          </table>
+        </div>
+        <t:iconSize><t:rssBar/></t:iconSize>
+      </div>
+
+      <div class="jenkins-jobs-list jenkins-mobile-show">
+        <j:set var="jenkins_mobile_show" value="${true}"/>
         <j:forEach var="job" items="${jobs}">
           <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
-          <t:projectViewRow jobBaseUrl="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
+          <j:set var="jobBaseUrl" value="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
+          <div class="jenkins-jobs-list__item">
+            <a class="jenkins-jobs-list__item__details" href="${jobBaseUrl}${job.shortUrl}">
+              <div class="jenkins-jobs-list__item__icons">
+                <j:choose>
+                  <j:when test="${job.iconColor.iconName != null}">
+                    <l:icon src="symbol-status-${job.iconColor.iconName}" tooltip="${job.iconColor.description}" />
+                  </j:when>
+                  <j:otherwise>
+                    <!-- This is for special conditions, such as folders -->
+                    <l:icon src="${job.iconColor.iconClassName}" />
+                  </j:otherwise>
+                </j:choose>
+              </div>
+              <div class="jenkins-jobs-list__item__details__text">
+                <p class="jenkins-jobs-list__item__label">${job.displayName}</p>
+                <div class="jenkins-jobs-list__item__description">
+                  <j:set var="lastBuild" value="${job.lastBuild}"/>
+                  <j:if test="${lastBuild != null}">
+                    <span>
+                      ${%Description(lastBuild.timestampString, lastBuild.durationString)}
+                    </span>
+                  </j:if>
+
+                  <j:forEach var="col" items="${columnExtensions}">
+                    <st:include page="compactColumn.jelly" it="${col}" optional="true" />
+                  </j:forEach>
+                </div>
+              </div>
+            </a>
+            <div class="jenkins-jobs-list__item__actions">
+              <st:include page="column.jelly" it="${buildButtonColumn}" optional="true"/>
+            </div>
+          </div>
         </j:forEach>
-      </table>
-      <div>
-        <t:iconSize><t:rssBar/></t:iconSize>
       </div>
     </j:if>
   </div>

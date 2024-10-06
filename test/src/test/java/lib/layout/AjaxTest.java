@@ -24,9 +24,11 @@
 
 package lib.layout;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlLink;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import jenkins.widgets.ExecutorsWidget;
+import jenkins.widgets.HasWidgetHelper;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlLink;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -60,7 +62,7 @@ public class AjaxTest {
     @Issue("JENKINS-65288")
     public void ajaxPageRenderingPossibleWithoutJellyTrace() throws Exception {
         JenkinsRule.WebClient wc = r.createWebClient();
-        HtmlPage htmlPage = wc.goTo("ajaxExecutors");
+        HtmlPage htmlPage = wc.goTo(getExecutorsWidgetAjaxViewUrl());
         r.assertGoodStatus(htmlPage);
     }
 
@@ -75,10 +77,14 @@ public class AjaxTest {
             JellyFacet.TRACE = true;
 
             JenkinsRule.WebClient wc = r.createWebClient();
-            HtmlPage htmlPage = wc.goTo("ajaxExecutors");
+            HtmlPage htmlPage = wc.goTo(getExecutorsWidgetAjaxViewUrl());
             r.assertGoodStatus(htmlPage);
         } finally {
             JellyFacet.TRACE = currentValue;
         }
+    }
+
+    private String getExecutorsWidgetAjaxViewUrl() {
+        return HasWidgetHelper.getWidget(r.jenkins.getPrimaryView(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax";
     }
 }

@@ -1,7 +1,7 @@
 package hudson.model.queue;
 
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 
 import hudson.model.AbstractProject;
 import hudson.model.Executor;
@@ -107,6 +107,7 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
                     return null;
                 }
 
+                @Deprecated
                 @Override
                 public Node getLastBuiltOn() {
                     return null;

@@ -24,36 +24,36 @@
 
 package lib.form;
 
-import static com.gargoylesoftware.htmlunit.HttpMethod.POST;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.htmlunit.HttpMethod.POST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlButtonInput;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.UnprotectedRootAction;
 import hudson.util.HttpResponses;
 import jenkins.model.OptionalJobProperty;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlElementUtil;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTextArea;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 import org.w3c.dom.NodeList;
 
@@ -120,11 +120,10 @@ public class ExpandableTextboxTest {
         assertNotEquals("hacked", p.getTitleText());
     }
 
-    private HtmlButtonInput getExpandButton(HtmlPage page) {
-        DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("input");
-        // the first one is the text input
-        assertEquals(2, buttons.size());
-        return (HtmlButtonInput) buttons.get(1);
+    private HtmlButton getExpandButton(HtmlPage page) {
+        DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("button");
+        assertEquals(1, buttons.size());
+        return (HtmlButton) buttons.get(0);
     }
 
     @TestExtension("noInjectionArePossible")
@@ -148,7 +147,7 @@ public class ExpandableTextboxTest {
         }
 
         @WebMethod(name = "submit")
-        public HttpResponse doSubmit(StaplerRequest request) {
+        public HttpResponse doSubmit(StaplerRequest2 request) {
             return HttpResponses.plainText("method:" + request.getMethod());
         }
     }
@@ -166,7 +165,7 @@ public class ExpandableTextboxTest {
         int numberOfH1Before = configurePage.getElementsByTagName("h1").size();
 
         HtmlInput xssInput = configurePage.getElementByName("_.theField");
-        HtmlInput expandButton = (HtmlInput) xssInput.getParentNode().getNextSibling().getFirstChild();
+        HtmlButton expandButton = (HtmlButton) xssInput.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
 
         // no additional h1, meaning the "payload" is not interpreted
@@ -186,7 +185,7 @@ public class ExpandableTextboxTest {
         HtmlPage configurePage = wc.getPage(p, "configure");
 
         HtmlInput input = configurePage.getElementByName("_.theField");
-        HtmlInput expandButton = (HtmlInput) input.getParentNode().getNextSibling().getFirstChild();
+        HtmlButton expandButton = (HtmlButton) input.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
         final DomElement textArea = configurePage.getElementByName("_.theField");
         assertThat(textArea, instanceOf(HtmlTextArea.class));

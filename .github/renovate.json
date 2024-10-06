@@ -1,50 +1,210 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
+    "config:recommended",
     ":disableDependencyDashboard",
     ":semanticCommitsDisabled"
   ],
-  "enabledManagers": ["npm", "regex"],
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
+  "postUpdateOptions": [
+    "yarnDedupeHighest"
+  ],
   "packageRules": [
     {
-      "matchDatasources": ["npm"],
-      "addLabels": ["javascript"],
-      "stabilityDays": 3,
-      "reviewers": ["team:sig-ux"]
+      "matchDatasources": [
+        "npm"
+      ],
+      "addLabels": [
+        "javascript"
+      ],
+      "minimumReleaseAge": "3 days",
+      "reviewers": [
+        "team:sig-ux"
+      ]
     },
     {
-      "matchPackageNames": ["bootstrap"],
-      "allowedVersions": "<=3.4.1",
-      "description": "https://issues.jenkins.io/browse/JENKINS-69409",
+      "matchPackageNames": [
+        "node"
+      ],
+      "allowedVersions": "/20.[0-9]+.[0-9]+(.[0-9]+)?$/"
+    },
+    {
+      "description": "Should be upgraded in lockstep in order to keep their corresponding Jetty versions aligned, could be grouped but releases are likely separated by a bit of time",
+      "matchManagers": [
+        "maven"
+      ],
+      "enabled": false,
+      "matchPackageNames": [
+        "org.eclipse.jetty.ee9:jetty-ee9-maven-plugin",
+        "org.jenkins-ci:winstone"
+      ]
+    },
+    {
+      "description": "Provided by Jetty and should be aligned with the version provided by the version of Jetty we deliver. See: https://github.com/jenkinsci/jenkins/pull/5211",
+      "matchManagers": [
+        "maven"
+      ],
+      "enabled": false,
+      "matchPackageNames": [
+        "jakarta.servlet:jakarta.servlet-api",
+        "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
+      ]
+    },
+    {
+      "description": "Needs significant testing. See: https://github.com/jenkinsci/jenkins/pull/5112#issuecomment-744429487 and https://github.com/jenkinsci/jenkins/pull/5116#issuecomment-744526638",
+      "matchManagers": [
+        "maven"
+      ],
+      "allowedVersions": "<2.5.0",
+      "matchPackageNames": [
+        "org.codehaus.groovy:groovy-all"
+      ]
+    },
+    {
+      "description": "Consumed by Groovy and should be updated in lockstep with Groovy. See: https://github.com/jenkinsci/jenkins/pull/5184",
+      "matchManagers": [
+        "maven"
+      ],
+      "enabled": false,
+      "matchPackageNames": [
+        "org.fusesource.jansi:jansi"
+      ]
+    },
+    {
+      "description": "Depends on commons-lang3 which is in progress for removal from core. See: https://issues.jenkins.io/browse/JENKINS-73355",
+      "matchManagers": [
+        "maven"
+      ],
+      "enabled": false,
+      "matchPackageNames": [
+        "org.apache.commons:commons-compress"
+      ]
+    },
+    {
+      "description": "Contains incompatible API changes and needs compatibility work. See: https://github.com/jenkinsci/jenkins/pull/4224",
+      "matchManagers": [
+        "maven"
+      ],
+      "enabled": false,
+      "matchPackageNames": [
+        "org.jfree:jfreechart"
+      ]
+    },
+    {
+      "description": "Starting with 7.x, Guice switches from javax.* to jakarta.* bindings. See https://github.com/google/guice/wiki/Guice700",
+      "matchManagers": [
+        "maven"
+      ],
+      "allowedVersions": "<7.0.0",
+      "matchPackageNames": [
+        "com.google.inject:guice-bom"
+      ]
+    },
+    {
+      "matchFileNames": [
+        "core/pom.xml",
+        "test/pom.xml",
+        "war/pom.xml"
+      ],
+      "matchPackageNames": [
+        "org.jenkins-ci.main:remoting"
+      ],
+      "description": "Avoid updating the remoting.minimum.supported.version property but still update latest one by not placing this property in the parent pom.xml",
       "enabled": false
     },
     {
-      "matchPackageNames": ["node"],
-      "allowedVersions": "/18.[0-9]+.[0-9]+(.[0-9]+)?$/"
+      "matchPackageNames": [
+        "net.jcip:jcip-annotations"
+      ],
+      "matchDatasources": [
+        "maven"
+      ],
+      "enabled": false,
+      "description": "maven-metadata.xml is missing for this really old package which is required by renovate"
     }
   ],
-  "regexManagers": [
+  "customManagers": [
     {
-      "fileMatch": ["war/pom.xml"],
-      "matchStrings": ["<node.version>(?<currentValue>.*?)</node.version>"],
+      "customType": "regex",
+      "fileMatch": [
+        "pom.xml"
+      ],
+      "matchStrings": [
+        "<node.version>(?<currentValue>.*?)</node.version>"
+      ],
       "depNameTemplate": "node",
       "datasourceTemplate": "npm"
     },
     {
-      "fileMatch": ["ath.sh"],
-      "matchStrings": ["export ATH_VERSION=(?<currentValue>.*?)\n"],
+      "customType": "regex",
+      "fileMatch": [
+        "ath.sh"
+      ],
+      "matchStrings": [
+        "export ATH_VERSION=(?<currentValue>.*?)\n"
+      ],
       "depNameTemplate": "jenkins/ath",
       "datasourceTemplate": "docker",
       "versioningTemplate": "loose"
     },
     {
-      "fileMatch": [".gitpod/Dockerfile"],
-      "matchStrings": ["ARG MAVEN_VERSION=(?<currentValue>.*?)\n"],
+      "customType": "regex",
+      "fileMatch": [
+        ".gitpod/Dockerfile"
+      ],
+      "matchStrings": [
+        "ARG MAVEN_VERSION=(?<currentValue>.*?)\n"
+      ],
       "depNameTemplate": "org.apache.maven:maven-core",
+      "datasourceTemplate": "maven"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "core/src/site/site.xml"
+      ],
+      "matchStrings": [
+        "lit@(?<currentValue>.*?)/"
+      ],
+      "depNameTemplate": "lit",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "core/src/site/site.xml"
+      ],
+      "matchStrings": [
+        "webcomponentsjs@(?<currentValue>.*?)/"
+      ],
+      "depNameTemplate": "@webcomponents/webcomponentsjs",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "core/src/site/site.xml"
+      ],
+      "matchStrings": [
+        "<version>(?<currentValue>.*?)</version>"
+      ],
+      "depNameTemplate": "org.apache.maven.skins:maven-fluido-skin",
       "datasourceTemplate": "maven"
     }
   ],
-  "labels": ["dependencies", "skip-changelog"],
-  "rebaseWhen": "conflicted"
+  "labels": [
+    "dependencies",
+    "skip-changelog"
+  ],
+  "rebaseWhen": "conflicted",
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/tests/**",
+    "**/__fixtures__/**"
+  ]
 }

@@ -24,13 +24,12 @@
 
 package hudson.slaves;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assume.assumeFalse;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.Node;
@@ -44,6 +43,7 @@ import java.io.IOException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import org.htmlunit.WebResponse;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

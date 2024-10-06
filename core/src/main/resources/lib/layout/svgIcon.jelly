@@ -16,7 +16,7 @@
         </st:attribute>
 
         <st:attribute name="id">
-            ID of the icon element. Since TODO.
+            ID of the icon element. Since 2.289.
         </st:attribute>
 
         <st:attribute name="href">

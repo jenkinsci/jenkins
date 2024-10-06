@@ -23,7 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -39,7 +39,9 @@ THE SOFTWARE.
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <xmlunit.version>2.9.1</xmlunit.version>
+    <xmlunit.version>2.10.0</xmlunit.version>
+    <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
+    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
   </properties>
@@ -161,10 +163,6 @@ THE SOFTWARE.
       <artifactId>commons-collections</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-fileupload</groupId>
-      <artifactId>commons-fileupload</artifactId>
-    </dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
@@ -219,6 +217,20 @@ THE SOFTWARE.
       <!-- needed by Jelly -->
       <groupId>jakarta.servlet.jsp.jstl</groupId>
       <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>jakarta.el</groupId>
+          <artifactId>jakarta.el-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>jakarta.servlet</groupId>
+          <artifactId>jakarta.servlet-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>jakarta.xml.bind</groupId>
+          <artifactId>jakarta.xml.bind-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>jaxen</groupId>
@@ -266,10 +278,6 @@ THE SOFTWARE.
       <artifactId>jcip-annotations</artifactId>
     </dependency>
     <dependency>
-      <groupId>net.sf.kxml</groupId>
-      <artifactId>kxml2</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr4-runtime</artifactId>
     </dependency>
@@ -280,13 +288,28 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
+      <exclusions>
+        <!-- Only needed for Pack200UnpackerAdapter, which we do not use -->
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-fileupload2-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-fileupload2-jakarta-servlet5</artifactId>
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.connectbot.jbcrypt</groupId>
+      <groupId>org.connectbot</groupId>
       <artifactId>jbcrypt</artifactId>
     </dependency>
     <dependency>
@@ -327,9 +350,10 @@ THE SOFTWARE.
       <artifactId>websocket-spi</artifactId>
       <version>${project.version}</version>
       <exclusions>
+        <!-- Provided by Jetty/Winstone -->
         <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>javax.servlet-api</artifactId>
+          <groupId>jakarta.servlet</groupId>
+          <artifactId>jakarta.servlet-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -384,10 +408,6 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-adjunct-timeline</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
       <exclusions>
         <exclusion>
@@ -410,26 +430,6 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm-analysis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm-commons</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm-tree</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm-util</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
     </dependency>
@@ -441,6 +441,10 @@ THE SOFTWARE.
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-web</artifactId>
       <exclusions>
+        <exclusion>
+          <groupId>io.micrometer</groupId>
+          <artifactId>micrometer-observation</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.springframework</groupId>
           <artifactId>spring-jcl</artifactId>
@@ -459,14 +463,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
-      <version>4.0.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <!-- working around MCOMPILER-97 -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>core-annotation-processors</artifactId>
-      <version>1.0</version>
+      <version>13.v2dcfc22a_a_b_29</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
@@ -480,7 +483,7 @@ THE SOFTWARE.
     </dependency-->
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
+      <artifactId>hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -499,16 +502,8 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <!-- this helps us see the source code of the control while we edit Jenkins -->
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-adjunct-timeline</artifactId>
-      <version>1.5</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -533,6 +528,62 @@ THE SOFTWARE.
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <!-- Version specified in parent POM -->
+        <executions>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes combine.children="append">
+                    <!-- Library plugins -->
+                    <exclude>com.fasterxml.jackson.*</exclude>
+                    <exclude>com.github.ben-manes.caffeine:caffeine</exclude>
+                    <exclude>com.github.jnr:jnr-posix</exclude>
+                    <exclude>com.github.mwiede:jsch</exclude>
+                    <exclude>com.google.code.gson:gson</exclude>
+                    <exclude>com.jayway.jsonpath:json-path</exclude>
+                    <exclude>commons-httpclient:commons-httpclient</exclude>
+                    <exclude>com.sun.activation:javax.activation</exclude>
+                    <exclude>com.sun.mail:javax.mail</exclude>
+                    <exclude>com.sun.xml.bind:jaxb-impl</exclude>
+                    <exclude>io.jsonwebtoken</exclude>
+                    <!-- Used in unit tests, so exclude from compile and runtime scope only -->
+                    <exclude>jakarta.activation:jakarta.activation-api:*:jar:compile</exclude>
+                    <exclude>jakarta.activation:jakarta.activation-api:*:jar:runtime</exclude>
+                    <exclude>jakarta.mail:jakarta.mail-api</exclude>
+                    <exclude>javax.activation:javax.activation-api</exclude>
+                    <exclude>javax.mail:javax.mail-api</exclude>
+                    <exclude>javax.xml.bind:jaxb-api</exclude>
+                    <exclude>joda-time:joda-time</exclude>
+                    <!-- Used in unit tests, so exclude from compile and runtime scope only -->
+                    <exclude>net.bytebuddy:byte-buddy:*:jar:compile</exclude>
+                    <exclude>net.bytebuddy:byte-buddy:*:jar:runtime</exclude>
+                    <exclude>net.i2p.crypto:eddsa</exclude>
+                    <exclude>net.minidev</exclude>
+                    <exclude>org.apache.commons:commons-lang3</exclude>
+                    <exclude>org.apache.commons:commons-text</exclude>
+                    <exclude>org.apache.httpcomponents</exclude>
+                    <exclude>org.bouncycastle</exclude>
+                    <exclude>org.eclipse.angus:angus-activation</exclude>
+                    <exclude>org.eclipse.angus:angus-mail</exclude>
+                    <exclude>org.glassfish.jersey.*</exclude>
+                    <exclude>org.json:json</exclude>
+                    <exclude>org.ow2.asm</exclude>
+                    <exclude>org.yaml:snakeyaml</exclude>
+                  </excludes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
@@ -545,6 +596,9 @@ THE SOFTWARE.
             <phase>generate-sources</phase>
             <configuration>
               <sources>
+                <!-- The antlr4 sources are found automatically by the maven compiler,
+                but listing them explicitly avoids a missing classpath entry when importing the maven project in eclipse. -->
+                <source>${project.build.directory}/generated-sources/antlr4</source>
                 <source>${project.build.directory}/generated-sources/localizer</source>
                 <source>${project.build.directory}/generated-sources/taglib-interface</source>
               </sources>
@@ -649,7 +703,7 @@ THE SOFTWARE.
         <!-- Version specified in grandparent POM -->
         <configuration>
           <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
-          <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</argLine>
+          <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
           <reuseForks>false</reuseForks>
         </configuration>
       </plugin>
@@ -674,8 +728,8 @@ THE SOFTWARE.
     <plugins>
       <plugin>
         <!-- generate Jelly tag lib documentation -->
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
+        <groupId>io.jenkins.tools.maven</groupId>
+        <artifactId>stapler-maven-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <configuration>
           <patterns>
