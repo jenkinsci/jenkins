@@ -27,6 +27,7 @@ package jenkins.util;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.greaterThan;
@@ -237,7 +238,7 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFile(root);
         Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, containsInAnyOrder(
+        assertThat(children, containsInRelativeOrder(
                 "a/aa/aa.txt",
                 "a/ab/ab.txt",
                 "b/ba/ba.txt"
@@ -281,7 +282,8 @@ public class VirtualFileTest {
         assertTrue(unzipPath.isDirectory());
         assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child("a").child("aa").child("aaa").exists());
+        // JENKINS-73837 - Empty directories are included in the zip file
+        assertTrue(unzipPath.child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child("a").child("_b").exists());
         assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
         assertFalse(unzipPath.child("b").child("_a").exists());
@@ -311,7 +313,8 @@ public class VirtualFileTest {
         assertTrue(unzipPath.child(prefix).isDirectory());
         assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child(prefix).child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
+        // JENKINS-73837 - Empty directories are included in the zip file
+        assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child(prefix).child("a").child("_b").exists());
         assertTrue(unzipPath.child(prefix).child("b").child("ba").child("ba.txt").exists());
         assertFalse(unzipPath.child(prefix).child("b").child("_a").exists());
@@ -339,7 +342,8 @@ public class VirtualFileTest {
         assertTrue(unzipPath.isDirectory());
         assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child("a").child("aa").child("aaa").exists());
+        // JENKINS-73837 - Empty directories are included in the zip file
+        assertTrue(unzipPath.child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child("a").child("_b").exists());
         assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
         assertFalse(unzipPath.child("b").child("_a").exists());
@@ -369,7 +373,8 @@ public class VirtualFileTest {
         assertTrue(unzipPath.child(prefix).isDirectory());
         assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child(prefix).child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
+        // JENKINS-73837 - Empty directories are included in the zip file
+        assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child(prefix).child("a").child("_b").exists());
         assertTrue(unzipPath.child(prefix).child("b").child("ba").child("ba.txt").exists());
         assertFalse(unzipPath.child(prefix).child("b").child("_a").exists());
