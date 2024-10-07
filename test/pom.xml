@@ -230,7 +230,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1303.v05e2505656b_7</version>
+      <version>1304.vc85a_b_ca_96613</version>
       <scope>test</scope>
     </dependency>
     <dependency>
