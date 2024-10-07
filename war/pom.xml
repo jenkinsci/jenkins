@@ -46,7 +46,7 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <mina-sshd-api.version>2.14.0-131.v04e9b_6b_e0362</mina-sshd-api.version>
+    <mina-sshd-api.version>2.14.0-133.vcc091215a_358</mina-sshd-api.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
     <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
 
@@ -314,7 +314,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1302.va_b_878c32eb_b_5</version>
+                  <version>1303.v05e2505656b_7</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -502,7 +502,7 @@ THE SOFTWARE.
                   <!-- dependency of scm-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>asm-api</artifactId>
-                  <version>9.7-33.v4d23ef79fcc8</version>
+                  <version>9.7.1-95.v9f552033802a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

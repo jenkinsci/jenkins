@@ -352,6 +352,12 @@ THE SOFTWARE.
         <artifactId>stapler-groovy</artifactId>
         <version>${stapler.version}</version>
       </dependency>
+      <!-- Override the outdated managed dependency on asm in guice-parent -->
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>9.7.1</version>
+      </dependency>
       <dependency>
         <groupId>org.samba.jcifs</groupId>
         <artifactId>jcifs</artifactId>
