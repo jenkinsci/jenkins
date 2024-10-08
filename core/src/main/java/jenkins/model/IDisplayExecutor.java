@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2023, Jan Meiswinkel
+ * Copyright 2024 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,39 +22,34 @@
  * THE SOFTWARE.
  */
 
-package jenkins.cli;
+package jenkins.model;
 
-import hudson.Extension;
-import hudson.cli.CLICommand;
-import hudson.cli.Messages;
-import java.util.logging.Logger;
-import jenkins.model.Jenkins;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
- * Safe Restart Jenkins - do not accept any new jobs and try to pause existing.
+ * A snapshot of the executor information for display purpose.
  *
- * @since 2.414
+ * @since TODO
  */
-@Extension
-@Restricted(NoExternalUse.class)
-public class SafeRestartCommand extends CLICommand {
-    private static final Logger LOGGER = Logger.getLogger(SafeRestartCommand.class.getName());
+@Restricted(Beta.class)
+public interface IDisplayExecutor {
+    /**
+     * @return The UI label for this executor.
+     */
+    @NonNull
+    String getDisplayName();
 
-    @Option(name = "-message", usage = "Message for safe restart that will be visible to users")
-    public String message = null;
+    /**
+     * @return the URL where to reach specifically this executor, relative to Jenkins URL.
+     */
+    @NonNull
+    String getUrl();
 
-    @Override
-    public String getShortDescription() {
-        return Messages.SafeRestartCommand_ShortDescription();
-    }
-
-    @Override
-    protected int run() throws Exception {
-        Jenkins.get().doSafeRestart((StaplerRequest2) null, message);
-        return 0;
-    }
+    /**
+     * @return the executor this display information is for.
+     */
+    @NonNull
+    IExecutor getExecutor();
 }
