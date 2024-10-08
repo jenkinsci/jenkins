@@ -34,6 +34,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.PermalinkList;
@@ -346,12 +347,49 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Allocates a new buildCommand number.
+     * Allocates a new build number.
+     * @see BuildNumberAssigner
      */
-    public synchronized int assignBuildNumber() throws IOException {
-        int r = nextBuildNumber++;
-        saveNextBuildNumber();
-        return r;
+    public int assignBuildNumber() throws IOException {
+        var bna = ExtensionList.lookupFirst(BuildNumberAssigner.class).assignBuildNumber(this);
+        if (bna.needsSave) {
+            saveNextBuildNumber();
+        }
+        return bna.assignedNumber;
+    }
+
+    /**
+     * Alternate strategy for assigning build numbers.
+     * @see #assignBuildNumber()
+     */
+    @Restricted(Beta.class)
+    public interface BuildNumberAssigner extends ExtensionPoint {
+        /**
+         * Strategy outcome.
+         * @param assignedNumber the return value for {@link #assignBuildNumber()}
+         * @param needsSave whether {@link #saveNextBuildNumber} should be called afterwards
+         */
+        record BuildNumberAssignment(int assignedNumber, boolean needsSave) {};
+
+        /**
+         * Assign a unique number for a new build of a given job.
+         * @see #getNextBuildNumber
+         * @see #fastUpdateNextBuildNumber
+         */
+        BuildNumberAssignment assignBuildNumber(Job<?, ?> job) throws IOException;
+    }
+
+    @Restricted(DoNotUse.class)
+    @Extension(ordinal = -1000)
+    public static final class DefaultBuildNumberAssigner implements BuildNumberAssigner {
+        @Override
+        public BuildNumberAssignment assignBuildNumber(Job<?, ?> job) throws IOException {
+            synchronized (job) {
+                int r = job.nextBuildNumber++;
+                job.saveNextBuildNumber();
+                return new BuildNumberAssignment(r, false);
+            }
+        }
     }
 
     /**
