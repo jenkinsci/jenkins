@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
@@ -915,7 +916,8 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, containsInAnyOrder(
+            // JENKINS-73837 - Using hasItems instead of containsInAnyOrder to allow unmatched directories to be ignored
+            assertThat(entryNames, hasItems(
                     p.getName() + "/intermediateFolder/public2.key",
                     p.getName() + "/public1.key"
             ));
@@ -925,7 +927,8 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, contains("intermediateFolder/public2.key"));
+            // JENKINS-73837 - Using hasItems instead of containsInAnyOrder to allow unmatched directories to be ignored
+            assertThat(entryNames, hasItems("intermediateFolder/public2.key"));
         }
         // Explicitly delete everything including junctions, which TemporaryDirectoryAllocator.dispose may have trouble with:
         new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds("cmd", "/c", "rmdir", "/s", "/q", j.jenkins.getRootDir().getAbsolutePath()).start().join();
@@ -987,7 +990,8 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasSize(0));
+            // JENKINS-73837 - Allows empty folders.
+            assertThat(entryNames, hasSize(6));
         }
         {
             Page zipPage = wc.goTo(p.getUrl() + "ws/a1/*zip*/a1.zip", null);
@@ -1270,8 +1274,10 @@ public class DirectoryBrowserSupportTest {
         assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
         List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-        assertThat(entryNames, hasSize(2));
-        assertThat(entryNames, containsInAnyOrder(
+        // JENKINS-73837 - Allows empty folders.
+        assertThat(entryNames, hasSize(4));
+        // JENKINS-73837 - Using hasItems instead of containsInAnyOrder to allow unmatched directories to be ignored
+        assertThat(entryNames, hasItems(
                 "test0/anotherDir/one.txt",
                 "test0/anotherDir/insideDir/two.txt"
         ));
@@ -1280,8 +1286,10 @@ public class DirectoryBrowserSupportTest {
         assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
         entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-        assertThat(entryNames, hasSize(2));
-        assertThat(entryNames, containsInAnyOrder(
+        // JENKINS-73837 - Allows empty folders.
+        assertThat(entryNames, hasSize(3));
+        // JENKINS-73837 - Using hasItems instead of containsInAnyOrder to allow unmatched directories to be ignored
+        assertThat(entryNames, hasItems(
                 "anotherDir/one.txt",
                 "anotherDir/insideDir/two.txt"
         ));
