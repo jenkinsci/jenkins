@@ -24,7 +24,6 @@
 
 package hudson.model;
 
-import static hudson.util.QuotedStringTokenizer.quote;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;

@@ -25,9 +25,8 @@
 package hudson.util;
 
 import hudson.Functions;
-import java.io.IOException;
-
 import jakarta.servlet.ServletException;
+import java.io.IOException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponses.HttpResponseException;
 import org.kohsuke.stapler.StaplerRequest;
