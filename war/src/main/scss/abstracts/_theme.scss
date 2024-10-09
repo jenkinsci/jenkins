@@ -24,6 +24,8 @@ $semantics: (
   "success": var(--green),
   "destructive": var(--red),
   "build": var(--green),
+  "danger": var(--red),
+  "info": var(--blue),
 );
 
 :root,
@@ -37,7 +39,7 @@ $semantics: (
   --font-size-base: 1rem; // 16px
   --font-size-sm: 0.875rem; // 14px
   --font-size-xs: 0.75rem; // 12px
-  --font-size-monospace: 0.95em;
+  --font-size-monospace: 1em;
 
   // Line height
   --line-height-base: 1.5;
@@ -50,9 +52,9 @@ $semantics: (
   --dark-grey: #4d545d;
 
   // branding
-  --secondary: hsl(240, 10%, 50%);
-  --focus-input-border: #063f61;
-  --focus-input-glow: #{color.change(#0b6aa2, $alpha: 0.25)};
+  --secondary: rgb(96, 125, 159);
+  --focus-input-border: var(--accent-color);
+  --focus-input-glow: color-mix(in sRGB, var(--accent-color) 15%, transparent);
 
   // Deprecated
   --focus-btn-primary: #{color.change(#0b6aa2, $alpha: 0.5)};
@@ -90,18 +92,46 @@ $semantics: (
   --breadcrumbs-bar-background: hsla(240, 20%, 96.5%, 0.8);
 
   // Alert call outs
-  --alert-success-text-color: #155724;
-  --alert-success-bg-color: #d4edda;
-  --alert-success-border-color: #c3e6cb;
-  --alert-info-text-color: #31708f;
-  --alert-info-bg-color: #d9edf7;
-  --alert-info-border-color: #bce8f1;
-  --alert-warning-text-color: #8a6d3b;
-  --alert-warning-bg-color: #fcf8e3;
-  --alert-warning-border-color: #faebcc;
-  --alert-danger-text-color: #a94442;
-  --alert-danger-bg-color: #f2dede;
-  --alert-danger-border-color: #ebccd1;
+  --alert-success-text-color: var(--success-color);
+  --alert-success-bg-color: color-mix(
+    in sRGB,
+    var(--success-color) 10%,
+    transparent
+  );
+  --alert-success-border-color: color-mix(
+    in sRGB,
+    var(--success-color) 5%,
+    transparent
+  );
+  --alert-info-text-color: var(--blue);
+  --alert-info-bg-color: color-mix(in sRGB, var(--blue) 10%, transparent);
+  --alert-info-border-color: color-mix(in sRGB, var(--blue) 5%, transparent);
+  --alert-warning-text-color: color-mix(
+    in sRGB,
+    var(--warning-color) 80%,
+    var(--text-color)
+  );
+  --alert-warning-bg-color: color-mix(
+    in sRGB,
+    var(--warning-color) 10%,
+    transparent
+  );
+  --alert-warning-border-color: color-mix(
+    in sRGB,
+    var(--warning-color) 5%,
+    transparent
+  );
+  --alert-danger-text-color: var(--error-color);
+  --alert-danger-bg-color: color-mix(
+    in sRGB,
+    var(--error-color) 10%,
+    transparent
+  );
+  --alert-danger-border-color: color-mix(
+    in sRGB,
+    var(--error-color) 5%,
+    transparent
+  );
 
   // Typography
   --text-color-secondary: var(--secondary);
@@ -144,8 +174,8 @@ $semantics: (
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
-  --table-border-radius: 10px;
-  --table-row-border-radius: 4px;
+  --table-border-radius: 0.75rem;
+  --table-row-border-radius: 0.3125rem;
 
   // Deprecated
   --even-row-color: var(--very-light-grey);
@@ -167,18 +197,16 @@ $semantics: (
   --link-text-decoration: none;
   --link-text-decoration--hover: underline;
   --link-text-decoration--active: underline;
-  --link-font-weight: 500;
+  --link-font-weight: 450;
 
   // Tooltips
-  --tooltip-backdrop-filter: contrast(0.6) brightness(2.4) saturate(2)
-    blur(15px);
+  --tooltip-backdrop-filter: saturate(2) blur(20px);
   --tooltip-color: var(--text-color);
   --tooltip-box-shadow: 0 0 8px 2px rgba(0, 0, 30, 0.05),
     0 0 1px 1px rgba(0, 0, 20, 0.025), 0 10px 20px rgba(0, 0, 20, 0.15);
 
   // Dropdowns
-  --dropdown-backdrop-filter: contrast(0.6) brightness(2.5) saturate(1.5)
-    blur(20px);
+  --dropdown-backdrop-filter: saturate(1.5) blur(20px);
   --dropdown-box-shadow: 0 10px 30px rgba(0, 0, 20, 0.2),
     0 2px 10px rgba(0, 0, 20, 0.05), inset 0 -1px 2px rgba(255, 255, 255, 0.025);
 
@@ -187,7 +215,6 @@ $semantics: (
     --dialog-backdrop-background: hsla(240, 10%, 20%, 0.8);
   }
 
-  --dialog-backdrop-filter: brightness(3) blur(50px);
   --dialog-box-shadow: 0 10px 40px rgba(0, 0, 20, 0.15),
     0 2px 15px rgba(0, 0, 20, 0.05),
     inset 0 0 2px 2px rgba(255, 255, 255, 0.025);
@@ -214,7 +241,7 @@ $semantics: (
   --pane-link-color--visited: black;
 
   // Cards
-  --card-background: transparent;
+  --card-background: var(--background);
   --card-background--hover: transparent;
   --card-background--active: transparent;
   --card-border-color: hsla(240, 25%, 75%, 0.25);
@@ -240,6 +267,7 @@ $semantics: (
   --tab-baseline-default-display: none;
 
   // Side panel
+  --side-panel-width: 340px;
   --panel-header-bg-color: var(--light-grey);
   --panel-border-color: var(--light-grey);
   --side-panel-hover-color: var(--panel-border-color);
@@ -247,10 +275,22 @@ $semantics: (
   --task-link-bg-color--hover: var(--very-light-grey);
 
   // Form
-  --section-padding: 1.75rem;
-  --input-color: var(--white);
-  --input-border: #c3ccd1;
-  --input-border-hover: #5c7889;
+  --section-padding: 1.625rem;
+  --input-color: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 1.5%,
+    var(--background)
+  );
+  --input-border: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 25%,
+    transparent
+  );
+  --input-border-hover: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 50%,
+    transparent
+  );
   --input-hidden-password-bg-color: #f9f9f9;
   --form-item-max-width: min(65vw, 1600px);
   --form-item-max-width--medium: min(50vw, 1400px);
@@ -264,9 +304,9 @@ $semantics: (
     --form-item-max-width--small: 100%;
   }
 
-  --form-label-font-weight: 500;
-  --form-input-padding: 0.5rem;
-  --form-input-border-radius: 6px;
+  --form-label-font-weight: 450;
+  --form-input-padding: 0.625rem;
+  --form-input-border-radius: 0.625rem;
   --form-input-glow: 0 0 0 10px transparent;
   --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);
   --pre-background: rgba(0, 0, 0, 0.05);
@@ -291,12 +331,6 @@ $semantics: (
 
   // Plugin manager
   --plugin-manager-bg-color-already-upgraded: var(--light-grey);
-  --plugin-manager-category-link-bg-color: var(--very-light-grey);
-  --plugin-manager-category-link-bg-color--hover: #f2f2f2;
-  --plugin-manager-category-link-border-color: var(--medium-grey);
-  --plugin-manager-category-link-border-color--hover: var(--black);
-  --plugin-manager-category-text-color: var(--text-color);
-  --plugin-manager-category-link-color--hover: var(--text-color);
 
   // Auto complete
   --auto-complete-bg-color--prehighlight: #b3d4ff;

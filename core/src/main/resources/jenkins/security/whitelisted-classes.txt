@@ -133,8 +133,6 @@ java.util.logging.Level
 java.util.logging.LogRecord
 java.util.regex.Pattern
 
-org.apache.commons.fileupload.disk.DiskFileItem
-org.apache.commons.fileupload.util.FileItemHeadersImpl
 org.apache.tools.ant.Location
 
 # TODO remove when https://github.com/jenkinsci/xtrigger-lib/pull/9 is widely adopted in fstrigger-plugin, urltrigger-plugin, etc.

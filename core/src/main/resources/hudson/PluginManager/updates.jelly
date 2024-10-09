@@ -69,7 +69,7 @@ THE SOFTWARE.
                 <tr>
                   <l:isAdmin>
                     <th data-sort-disable="true">
-                      <l:rowSelectionController>
+                      <l:rowSelectionController class="app-checkbox-install-plugin">
                         <j:if test="${app.updateCenter.hasIncompatibleUpdates(cache)}">
                           <button tooltip="${%CompatibleTooltip}" type="button" data-select="compatible" class="jenkins-button jenkins-button--tertiary">
                             <div class="jenkins-table__checkbox-dropdown__icon">
@@ -101,7 +101,7 @@ THE SOFTWARE.
                                    id="plugin.${p.name}.${p.sourceId}"
                                    checked="${installedOk ? 'checked' : null}"
                                    disabled="${installedOk ? 'disabled' : null}"
-                                   data-compat-warning="${!p.isCompatible(cache)}"/>
+                                   data-compat-warning="${!p.isCompatible(cache)}" class="app-checkbox-install-plugin"/>
                             <label for="plugin.${p.name}.${p.sourceId}" />
                           </span>
                         </td>
@@ -136,7 +136,7 @@ THE SOFTWARE.
                           </div>
                         </j:if>
                         <j:if test="${!p.isCompatibleWithInstalledVersion()}">
-                          <div class="alert alert-danger">${%compatWarning}
+                          <div class="jenkins-alert jenkins-alert-danger">${%compatWarning}
                             <j:if test="${p.hasIncompatibleParentPlugins()}">
                               <br/>${%parentCompatWarning}
                               <ul>
@@ -153,15 +153,15 @@ THE SOFTWARE.
                           </div>
                         </j:if>
                         <j:if test="${p.isForNewerHudson()}">
-                          <div class="alert alert-danger">${%coreWarning(p.requiredCore)}</div>
+                          <div class="jenkins-alert jenkins-alert-danger">${%coreWarning(p.requiredCore)}</div>
                         </j:if>
                         <j:if test="${p.fixesSecurityVulnerabilities()}">
-                          <div class="alert alert-warning">
+                          <div class="jenkins-alert jenkins-alert-warning">
                             ${%Applying this update will address security vulnerabilities in the currently installed version.}
                           </div>
                         </j:if>
                         <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion(cache)}">
-                          <div class="alert alert-danger">${%depCompatWarning}
+                          <div class="jenkins-alert jenkins-alert-danger">${%depCompatWarning}
                             <br/>${%parentDepCompatWarning}
                             <ul>
                               <j:forEach var="d"
@@ -177,12 +177,12 @@ THE SOFTWARE.
                           </div>
                         </j:if>
                         <j:if test="${p.isNeededDependenciesForNewerJenkins(cache)}">
-                          <div class="alert alert-danger">
+                          <div class="jenkins-alert jenkins-alert-danger">
                             ${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}
                           </div>
                         </j:if>
                         <j:if test="${p.hasWarnings()}">
-                          <div class="alert alert-danger">${%securityWarning}
+                          <div class="jenkins-alert jenkins-alert-danger">${%securityWarning}
                             <ul>
                               <j:forEach var="warning" items="${p.getWarnings()}">
                                 <li>
@@ -195,12 +195,12 @@ THE SOFTWARE.
                           </div>
                         </j:if>
                         <j:if test="${p.isDeprecated()}">
-                          <div class="alert alert-warning">
+                          <div class="jenkins-alert jenkins-alert-warning">
                             ${%deprecationWarning(p.getDeprecation().url)}
                           </div>
                         </j:if>
                         <j:if test="${it.hasAdoptThisPluginLabel(p)}">
-                          <div class="alert alert-warning">
+                          <div class="jenkins-alert jenkins-alert-warning">
                             ${%adoptThisPlugin}
                           </div>
                         </j:if>
@@ -230,17 +230,11 @@ THE SOFTWARE.
             </table>
           </j:when>
           <j:otherwise>
-            <l:notice icon="symbol-up-to-date" text="${%No updates available}" />
+            <l:notice icon="symbol-up-to-date" title="${%No updates available}" />
           </j:otherwise>
         </j:choose>
         <d:invokeBody/>
       </form>
     </l:main-panel>
-    <div class="grey-anime-preload" style="display:none">
-      <l:icon class="icon-grey-anime icon-md"/>
-      <l:icon class="icon-blue icon-md"/>
-      <l:icon class="icon-red icon-md"/>
-      <l:icon class="icon-grey icon-md"/>
-    </div>
   </l:layout>
 </j:jelly>

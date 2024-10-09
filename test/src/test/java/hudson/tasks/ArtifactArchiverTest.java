@@ -26,6 +26,7 @@ package hudson.tasks;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -51,6 +52,8 @@ import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -61,6 +64,7 @@ import jenkins.util.VirtualFile;
 import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.structs.describable.DescribableModel;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
@@ -390,6 +394,59 @@ public class ArtifactArchiverTest {
         VirtualFile artifacts = project.getBuildByNumber(1).getArtifactManager().root();
         assertTrue(artifacts.child(".svn").child("file").exists());
         assertTrue(artifacts.child("dir").child(".svn").child("file").exists());
+    }
+
+    @Ignore("Test is too slow and requires a lot of disk space")
+    @Issue("JENKINS-10629")
+    @Test
+    public void testLargeArchiveFromAgent() throws Exception {
+        final String filename = "large";
+        final long size = 10L * 1024L * 1024L * 1024L; // 10 GB
+
+        Slave agent = j.createOnlineSlave();
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setAssignedNode(agent);
+        project.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath filePath = build.getWorkspace().child(filename);
+                try (OutputStream os = filePath.write()) {
+                    // Create byte array and fill it with data
+                    byte[] megabyte = new byte[1024 * 1024];
+                    for (int i = 0; i < megabyte.length; i++) {
+                        megabyte[i] = (byte) (i % 128);
+                    }
+                    // Fill file with 1 MB chunks
+                    for (int i = 0; i < size / megabyte.length; i++) {
+                        os.write(megabyte);
+                    }
+                }
+                return true;
+            }
+        });
+        project.getPublishersList().add(new ArtifactArchiver(filename));
+
+        // Assert that the build succeeded
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+        VirtualFile virtualFile = build.getArtifactManager().root().child(filename);
+
+        // Assert that the artifact was copied
+        assertTrue(virtualFile.exists());
+
+        // Assert that it has the right size
+        assertEquals(size, virtualFile.length());
+
+        // Assert that the data at the end of the file is the expected data
+        try (InputStream is = virtualFile.open()) {
+            is.skip(size - 1024 * 1024);
+            byte[] expected = new byte[1024 * 1024];
+            for (int i = 0; i < expected.length; i++) {
+                expected[i] = (byte) (i % 128);
+            }
+            byte[] actual = new byte[1024 * 1024];
+            is.read(actual);
+            assertArrayEquals(expected, actual);
+        }
     }
 
     @LocalData

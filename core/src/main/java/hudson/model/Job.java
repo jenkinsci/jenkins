@@ -24,8 +24,8 @@
 
 package hudson.model;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -69,6 +69,8 @@ import hudson.util.TextFile;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
 import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
@@ -85,10 +87,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderProperty;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import jenkins.model.HistoricalBuild;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
@@ -98,6 +100,7 @@ import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONException;
@@ -122,7 +125,9 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
@@ -266,8 +271,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             // If any of the other ItemListeners modify the job, they effect
             // a save, which will clear the holdOffBuildUntilUserSave and
             // causing a regression of JENKINS-2494
-            if (item instanceof Job) {
-                Job job = (Job) item;
+            if (item instanceof Job job) {
                 synchronized (job) {
                     job.holdOffBuildUntilUserSave = false;
                 }
@@ -626,16 +630,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * @deprecated see {@link LazyBuildMixIn#createHistoryWidget()}
+     * @deprecated Remove any override, history widget is now created via {@link jenkins.widgets.WidgetFactory} implementation.
      */
     @Deprecated(forRemoval = true, since = "2.410")
     protected HistoryWidget createHistoryWidget() {
-        return new HistoryWidget<Job, RunT>(this, getBuilds(), HISTORY_ADAPTER);
+        throw new IllegalStateException("HistoryWidget is now created via WidgetFactory implementation");
     }
 
-    public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<>() {
+    public static final HistoryWidget.Adapter<HistoricalBuild> HISTORY_ADAPTER = new Adapter<>() {
         @Override
-        public int compare(Run record, String key) {
+        public int compare(HistoricalBuild record, String key) {
             try {
                 int k = Integer.parseInt(key);
                 return record.getNumber() - k;
@@ -645,12 +649,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         @Override
-        public String getKey(Run record) {
+        public String getKey(HistoricalBuild record) {
             return String.valueOf(record.getNumber());
         }
 
         @Override
-        public boolean isBuilding(Run record) {
+        public boolean isBuilding(HistoricalBuild record) {
             return record.isBuilding();
         }
 
@@ -855,9 +859,43 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return m.get(m.firstKey());
     }
 
+    /**
+     * @since 2.475
+     */
+    @Override
+    public Object getDynamic(String token, StaplerRequest2 req,
+                             StaplerResponse2 rsp) {
+        if (Util.isOverridden(Job.class, getClass(), "getDynamic", String.class, StaplerRequest.class, StaplerResponse.class)) {
+            return getDynamic(token, StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+        }
+        try {
+            // try to interpret the token as build number
+            return getBuildByNumber(Integer.parseInt(token));
+        } catch (NumberFormatException e) {
+            // try to map that to widgets
+            for (Widget w : getWidgets()) {
+                if (w.getUrlName().equals(token))
+                    return w;
+            }
+
+            // is this a permalink?
+            for (Permalink p : getPermalinks()) {
+                if (p.getId().equals(token))
+                    return p.resolve(this);
+            }
+
+            return super.getDynamic(token, req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #getDynamic(String, StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
     @Override
     public Object getDynamic(String token, StaplerRequest req,
             StaplerResponse rsp) {
+        // Intentionally not factoring this out into a common implementation method because it contains a call to super.
         try {
             // try to interpret the token as build number
             return getBuildByNumber(Integer.parseInt(token));
@@ -1093,7 +1131,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * @since 2.60
      */
-    public void doRssChangelog(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssChangelog(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         class FeedItem {
             ChangeLogSet.Entry e;
             int idx;
@@ -1110,8 +1148,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         List<FeedItem> entries = new ArrayList<>();
         String scmDisplayName = "";
-        if (this instanceof SCMTriggerItem) {
-            SCMTriggerItem scmItem = (SCMTriggerItem) this;
+        if (this instanceof SCMTriggerItem scmItem) {
             List<String> scmNames = new ArrayList<>();
             for (SCM s : scmItem.getSCMs()) {
                 scmNames.add(s.getDescriptor().getDisplayName());
@@ -1170,8 +1207,29 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
 
+    /**
+     * @since 2.475
+     */
+    @Override
+    public ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
+        if (Util.isOverridden(Job.class, getClass(), "doChildrenContextMenu", StaplerRequest.class, StaplerResponse.class)) {
+            return doChildrenContextMenu(StaplerRequest.fromStaplerRequest2(request), StaplerResponse.fromStaplerResponse2(response));
+        } else {
+            return doChildrenContextMenuImpl(request, response);
+        }
+    }
 
-    @Override public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    /**
+     * @deprecated use {@link #doChildrenContextMenu(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    @Override
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        return doChildrenContextMenuImpl(StaplerRequest.toStaplerRequest2(request), StaplerResponse.toStaplerResponse2(response));
+    }
+
+    private ContextMenu doChildrenContextMenuImpl(StaplerRequest2 request, StaplerResponse2 response) {
         // not sure what would be really useful here. This needs more thoughts.
         // for the time being, I'm starting with permalinks
         ContextMenu menu = new ContextMenu();
@@ -1329,8 +1387,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Accepts submission from the configuration page.
      */
     @POST
-    public synchronized void doConfigSubmit(StaplerRequest req,
-            StaplerResponse rsp) throws IOException, ServletException, FormException {
+    public synchronized void doConfigSubmit(StaplerRequest2 req,
+            StaplerResponse2 rsp) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
         description = req.getParameter("description");
@@ -1375,15 +1433,32 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Derived class can override this to perform additional config submission
      * work.
+     *
+     * @since 2.475
      */
-    protected void submit(StaplerRequest req, StaplerResponse rsp)
+    protected void submit(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException, ServletException, FormException {
+        if (Util.isOverridden(Job.class, getClass(), "submit", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                submit(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        }
+    }
+
+    /**
+     * @deprecated use {@link #submit(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    protected void submit(StaplerRequest req, StaplerResponse rsp)
+            throws IOException, javax.servlet.ServletException, FormException {
     }
 
     /**
      * Accepts and serves the job description
      */
-    public void doDescription(StaplerRequest req, StaplerResponse rsp)
+    public void doDescription(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException {
         if (req.getMethod().equals("GET")) {
             //read
@@ -1409,7 +1484,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the image that shows the current buildCommand status.
      */
-    public void doBuildStatus(StaplerRequest req, StaplerResponse rsp)
+    public void doBuildStatus(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException {
         rsp.sendRedirect2(req.getContextPath() + "/images/48x48/" + getBuildStatusUrl());
     }
@@ -1579,7 +1654,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @RequirePOST
     public/* not synchronized. see renameTo() */void doDoRename(
             StaplerRequest req, StaplerResponse rsp) throws IOException,
-            ServletException {
+            javax.servlet.ServletException {
         String newName = req.getParameter("newName");
         doConfirmRename(newName).generateResponse(req, rsp, null);
     }
@@ -1591,12 +1666,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
-    public void doRssAll(StaplerRequest req, StaplerResponse rsp)
+    public void doRssAll(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds().newBuilds());
     }
 
-    public void doRssFailed(StaplerRequest req, StaplerResponse rsp)
+    public void doRssFailed(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly().newBuilds());
     }

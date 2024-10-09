@@ -36,7 +36,7 @@ THE SOFTWARE.
     </l:app-bar>
 
     <f:form method="post" name="config" action="configSubmit">
-      <div class="alert alert-info jenkins-form-item">
+      <div class="jenkins-alert jenkins-alert-info jenkins-form-item">
         ${%fine_warning}
       </div>
       <j:set var="instance" value="${it}" />

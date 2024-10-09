@@ -1,72 +1,20 @@
+@use "../../../scss/abstracts/mixins";
+
 #add-item-panel {
-  max-width: 950px;
+  max-width: 850px;
   margin: auto;
 
-  form > .header {
-    position: relative;
-    border: 1px solid var(--input-border);
-    border-bottom: none;
-    background: var(--light-grey);
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    z-index: 5;
-  }
-
-  form > .footer {
-    position: relative;
-    border: 1px solid var(--input-border);
-    border-top: none;
-    background: var(--light-grey);
-    height: 110px;
-
-    .btn-decorator {
-      position: absolute;
-      bottom: 0px;
-      padding: 20px 30px;
-      width: auto;
-      border-top-right-radius: 10px;
-      border: 1px solid var(--add-item-btn-decorator-border-color);
-      background: var(--add-item-btn-decorator-bg-color);
-      text-align: center;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-
-      input[type="checkbox"] {
-        width: auto;
-        min-width: auto;
-        margin-right: 0px;
-      }
-    }
-  }
-
-  .add-item-name {
-    padding: 20px;
-
-    label {
-      position: relative;
-      padding-bottom: 10px;
-    }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-padding);
   }
 
   .item-copy {
     position: relative;
-    border: 1px solid var(--input-border);
-    border-top: none;
-    padding: 20px;
-    background-color: var(--light-grey);
-
-    p.description {
-      font-size: var(--font-size-base);
-      margin-top: 0;
-    }
 
     .add-item-copy {
       position: relative;
-      padding-left: 58px;
-
-      /* This is needed because <s:textbox /> included YUI styles and we need to override this one */
-      font-family: var(--font-family-sans) !important;
 
       input[type="radio"] {
         display: none;
@@ -80,27 +28,15 @@
       input {
         font-size: inherit;
       }
-
-      .icon {
-        left: 0;
-        top: 0;
-      }
     }
   }
 
   .add-item-name,
   .add-item-copy {
-    .input-help {
-      color: #666;
-      font-style: italic;
-      font-size: var(--font-size-sm);
-      padding-top: 2px;
-    }
-
     .input-validation-message {
-      color: red;
+      color: var(--error-color);
       padding-top: 2px;
-      font-weight: bold;
+      font-weight: 500;
     }
 
     .input-message-disabled {
@@ -109,45 +45,27 @@
   }
 
   .icon {
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    height: 48px;
-    width: 48px;
-    background: var(--input-color);
-    border: 1px solid #6699cc;
-    border-radius: 50%;
-    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    width: 2.5rem;
 
     img {
       position: relative;
+      width: 100%;
+      height: 100%;
     }
   }
 
-  .icon:before {
-    content: " ";
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 24px;
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
-    background: #c0d8e2;
-  }
-
   .default-icon {
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    height: 48px;
-    width: 48px;
+    height: 40px;
+    width: 40px;
     border-radius: 50%;
     text-align: center;
-    line-height: 48px;
+    line-height: 36px;
     font-weight: bold;
-    font-size: 175%;
+    font-size: 125%;
     color: #ffffff;
     text-shadow: rgba(0, 0, 0, 0.25) 0 -1px 1px;
     opacity: 0.75;
@@ -213,13 +131,7 @@
   }
 
   .categories {
-    border: 1px solid var(--input-border);
-    background-color: var(--very-light-grey);
-
     .category {
-      border-bottom: 1px solid var(--input-border);
-      padding: 10px;
-
       .header {
         padding: 0 20px;
 
@@ -232,29 +144,20 @@
           margin-top: 5px;
         }
       }
-    }
 
-    .category:last-child {
-      border-bottom: none;
+      .desc {
+        color: var(--text-color-secondary);
+      }
     }
   }
 
   .categories.flat {
     .category {
-      padding: 0 10px;
       border-bottom: none;
 
       .header {
         display: none;
       }
-    }
-
-    .category:first-child {
-      padding: 10px 10px 0 10px;
-    }
-
-    .category:last-child {
-      padding: 0 10px 10px 10px;
     }
   }
 }
@@ -269,43 +172,37 @@
 }
 
 .j-item-options {
-  li:hover,
-  li:focus {
-    border-color: var(--input-border);
-    background: var(--light-bg-color--hover);
-    outline: 0;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 
   li.active {
-    cursor: text;
-    background-color: var(--background);
-    border-color: var(--input-border);
-    box-shadow: inset 999rem 0 var(--background);
-    -webkit-touch-callout: text;
-    user-select: text;
-    transition: 0.5s;
-
-    .icon {
-      opacity: 1;
+    &::before {
+      background: var(--item-background--hover);
     }
   }
 
   li {
+    @include mixins.item;
+
     -webkit-touch-callout: none;
     user-select: none;
-    cursor: pointer;
-    border: 1px solid transparent;
-    border-radius: 3px;
-    padding: 10px 10px 10px 68px;
+    padding: 0.75rem 1rem;
     min-height: 68px;
-    margin: 2px 0;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.25rem 1rem;
+
+    .icon {
+      grid-row: span 2;
+    }
 
     label {
       display: block;
-      font-size: var(--font-size-base);
-      font-weight: bold;
+      font-size: var(--font-size-sm);
+      font-weight: 500;
       color: var(--text-color);
-      padding-bottom: 5px;
       cursor: pointer;
 
       input {
@@ -314,6 +211,10 @@
         left: 25px;
         display: none;
       }
+    }
+
+    .desc {
+      grid-column: 2;
     }
   }
 }

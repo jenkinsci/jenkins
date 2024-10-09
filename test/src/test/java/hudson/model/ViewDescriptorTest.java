@@ -42,7 +42,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class ViewDescriptorTest {
 
@@ -156,7 +156,7 @@ public class ViewDescriptorTest {
         }
 
         @Override
-        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) {
+        public ViewProperty reconfigure(StaplerRequest2 req, JSONObject form) {
             return this;
         }
 

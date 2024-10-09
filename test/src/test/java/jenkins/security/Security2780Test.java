@@ -27,7 +27,7 @@ public class Security2780Test {
         AtomicBoolean alertTriggered = new AtomicBoolean(false);
         wc.setAlertHandler((p, s) -> alertTriggered.set(true));
         HtmlPage page = wc.goTo("");
-        page.executeJavaScript("document.querySelector('a.jenkins-table__button')._tippy.show()");
+        page.executeJavaScript("document.querySelector('.jenkins-table a.jenkins-button')._tippy.show()");
         wc.waitForBackgroundJavaScript(2000L);
         ScriptResult result = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();

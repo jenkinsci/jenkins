@@ -31,19 +31,24 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
+import hudson.ExtensionList;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.RootAction;
 import hudson.util.Secret;
+import jakarta.servlet.ServletException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.htmlunit.Page;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTextArea;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -53,8 +58,8 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 
 @Restricted(NoExternalUse.class)
@@ -121,7 +126,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
 
         public JSONObject lastJsonReceived;
 
-        public void doSubmitTest(StaplerRequest req, StaplerResponse res) throws Exception {
+        public void doSubmitTest(StaplerRequest2 req, StaplerResponse2 res) throws Exception {
             lastJsonReceived = req.getSubmittedForm();
 
             res.setStatus(200);
@@ -223,6 +228,81 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         ));
     }
 
+    @Test
+    @Issue("SECURITY-3451")
+    public void secretTextAreaSubmissionRedaction() throws Exception {
+        final TestSecretTextarea action = ExtensionList.lookupSingleton(TestSecretTextarea.class);
+
+        logging.record("", Level.WARNING).capture(100);
+
+        final String secretValue = "s3cr3t";
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
+
+            HtmlPage page = wc.goTo("test");
+
+            final HtmlForm form = page.getFormByName("config");
+            final HtmlElement button = form.getElementsByTagName("button").stream().filter(b -> HtmlElementUtil.hasClassName(b, "secret-update-btn")).findFirst().orElseThrow();
+            HtmlElementUtil.click(button);
+
+            ((HtmlTextArea) form.getElementsByTagName("textarea").stream().filter(field -> HtmlElementUtil.hasClassName(field, "secretTextarea-redact")).findFirst().orElseThrow()).setText(secretValue);
+
+            Page formSubmitPage = j.submit(form);
+            assertThat(formSubmitPage.getWebResponse().getContentAsString(), allOf(
+                    containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE),
+                    not(containsString(secretValue))
+            ));
+        }
+
+        // check the system log also
+        Throwable thrown = logging.getRecords().stream().filter(r -> r.getMessage().contains("Error while serving")).findAny().get().getThrown();
+        // the exception from RequestImpl
+        assertThat(thrown.getCause().getMessage(), allOf(
+                containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE),
+                not(containsString(secretValue))
+        ));
+
+        StringWriter buffer = new StringWriter();
+        thrown.printStackTrace(new PrintWriter(buffer));
+        String fullStack = buffer.getBuffer().toString();
+        assertThat(fullStack, allOf(
+                containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE),
+                not(containsString(secretValue))
+        ));
+    }
+
+    public static class SecretTextareaDescribable {
+        @DataBoundConstructor
+        public SecretTextareaDescribable(Secret secret) {
+            throw new IllegalArgumentException("there is something wrong with the secret");
+        }
+    }
+
+    @TestExtension("secretTextAreaSubmissionRedaction")
+    public static class TestSecretTextarea implements RootAction {
+
+        public JSONObject lastJsonReceived;
+
+        public void doSubmitTest(StaplerRequest2 req) throws ServletException {
+            req.bindJSON(SecretTextareaDescribable.class, req.getSubmittedForm());
+        }
+
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public String getUrlName() {
+            return "test";
+        }
+    }
+
     public static class TestDescribable implements Describable<TestDescribable> {
 
         @DataBoundConstructor
@@ -250,7 +330,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         public TestDescribable testDescribable;
 
         @POST
-        public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws Exception {
+        public void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws Exception {
             Jenkins.get().getDescriptorOrDie(TestDescribable.class).newInstance(req, req.getSubmittedForm());
         }
 
@@ -276,7 +356,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         public TestDescribable testDescribable;
 
         @POST
-        public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws Exception {
+        public void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws Exception {
             req.bindJSON(TestDescribable.class, req.getSubmittedForm());
         }
 

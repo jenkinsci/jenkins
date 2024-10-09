@@ -3,13 +3,23 @@
 }
 
 .tabBar {
+  position: relative;
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
   background: var(--tabs-background);
   border-radius: var(--tabs-border-radius);
-  padding: 2.5px;
+  padding: 2px;
   margin-bottom: var(--section-padding);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: var(--card-border-width) solid var(--tabs-border-color);
+    border-radius: inherit;
+    pointer-events: none;
+  }
 
   .tab {
     float: left;
@@ -23,13 +33,13 @@
   justify-content: center;
   min-width: 3rem;
   text-decoration: none;
-  margin: 2.5px;
+  margin: 2px;
   padding: 0.4rem 1.2rem;
   border-radius: 100px;
   background: var(--tabs-item-background);
   color: var(--tabs-item-foreground);
-  font-weight: 600;
-  font-size: 0.85rem;
+  font-weight: 500;
+  font-size: 0.875rem;
   transition: var(--standard-transition);
   cursor: pointer;
 

@@ -106,7 +106,7 @@ public class SecurityContextExecutorServiceTest {
     @Test
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testCallableAgainstAllContexts() throws Exception {
-        Callable<SecurityContext> c = () -> SecurityContextHolder.getContext();
+        Callable<SecurityContext> c = SecurityContextHolder::getContext;
         SecurityContextHolder.setContext(systemContext);
         Future<SecurityContext> result = wrappedService.submit(c);
         // Assert the context inside the callable thread was set to ACL.SYSTEM2
@@ -127,7 +127,7 @@ public class SecurityContextExecutorServiceTest {
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testCallableCollectionAgainstAllContexts() throws Exception {
         Collection<Callable<SecurityContext>> callables = new ArrayList<>();
-        Callable<SecurityContext> c = () -> SecurityContextHolder.getContext();
+        Callable<SecurityContext> c = SecurityContextHolder::getContext;
         callables.add(c);
         callables.add(c);
         callables.add(c);

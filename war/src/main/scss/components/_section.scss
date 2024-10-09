@@ -30,8 +30,15 @@
 
 .jenkins-section__title {
   margin: 0 0 var(--section-padding) 0;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.jenkins-section__description {
+  // Tweaked margin so that it appears visually centred when placed next to `.jenkins-section__title`
+  margin: -0.5rem 0 1rem;
+  color: var(--text-color-secondary);
+  line-height: 1.66;
 }
 
 .jenkins-section__items {
@@ -106,17 +113,17 @@
   }
 
   dt {
-    font-size: 0.925rem;
-    font-weight: 600;
+    font-size: 0.9375rem;
+    font-weight: 500;
     margin: 0.1rem 0 0.2rem;
     color: var(--text-color);
   }
 
   dd {
     color: var(--text-color-secondary);
-    font-weight: 500;
+    font-weight: 450;
     line-height: 1.6;
     margin: 0 0.66rem 0 0;
-    font-size: 0.925rem;
+    font-size: 0.9375rem;
   }
 }

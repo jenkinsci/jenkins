@@ -76,7 +76,7 @@ public class ConsoleAnnotatorTest {
         // make sure raw console output doesn't include the garbage
         TextPage raw = (TextPage) r.createWebClient().goTo(b.getUrl() + "consoleText", "text/plain");
         System.out.println(raw.getContent());
-        String nl = System.getProperty("line.separator");
+        String nl = System.lineSeparator();
         assertTrue(raw.getContent().contains(nl + "---" + nl + "ooo" + nl + "ooo" + nl));
 
         // there should be two 'ooo's
@@ -96,7 +96,7 @@ public class ConsoleAnnotatorTest {
     }
 
     public static class DemoAnnotator extends ConsoleAnnotator<FreeStyleBuild> {
-        private static final String ANNOTATE_TEXT = "ooo" + System.getProperty("line.separator");
+        private static final String ANNOTATE_TEXT = "ooo" + System.lineSeparator();
 
         @Override
         public ConsoleAnnotator<FreeStyleBuild> annotate(FreeStyleBuild build, MarkupText text) {

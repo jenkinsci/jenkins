@@ -40,7 +40,6 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import jenkins.model.Jenkins;
 import jenkins.security.ConfidentialStoreRule;
-import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -72,7 +71,7 @@ public class SecretTest {
     public void encryptedValuePattern() {
         final Random random = new Random();
         for (int i = 1; i < 100; i++) {
-            String plaintext = RandomStringUtils.random(random.nextInt(i));
+            String plaintext = random(i, random);
             String ciphertext = Secret.fromString(plaintext).getEncryptedValue();
             //println "${plaintext} → ${ciphertext}"
             assertTrue(ENCRYPTED_VALUE_PATTERN.matcher(ciphertext).matches());
@@ -85,6 +84,14 @@ public class SecretTest {
         assertTrue(ENCRYPTED_VALUE_PATTERN.matcher("abcdefghijklmnopqr0123456789").matches());
         //legacy key
         assertTrue(ENCRYPTED_VALUE_PATTERN.matcher("abcdefghijklmnopqr012345678==").matches());
+    }
+
+    private static String random(int count, Random random) {
+        String result = "";
+        for (int i = 0; i < count; i++) {
+            result += (char) random.nextInt(30000);
+        }
+        return result;
     }
 
     @Test

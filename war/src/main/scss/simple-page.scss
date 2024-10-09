@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 @use "./base/core";
+@use "./components/spinner";
 @use "./pages/sign-in-register";
 
 .simple-page h1 {
@@ -36,14 +37,20 @@
 }
 
 .simple-page .safe-restarting {
+  padding: 10px 30px;
+  border-radius: 10px;
   text-align: center;
-  border-color: var(--alert-success-border-color);
+  margin-top: 2rem;
   background-color: var(--alert-success-bg-color);
-  border-width: 2px;
-  border-radius: 2px;
-  border-style: solid;
-  margin: 5% auto auto;
-  padding: 5px;
+  border: 1px solid var(--alert-success-border-color);
+
+  * {
+    color: var(--alert-success-text-color) !important;
+  }
+
+  strong {
+    font-weight: 500;
+  }
 }
 
 .simple-page .safe-restarting > p {
@@ -67,7 +74,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 90vh;
+  min-height: 100vh;
 }
 
 .simple-page .jenkins-button {
@@ -83,7 +90,7 @@
 }
 
 .simple-page .logo > img {
-  height: 130px;
+  height: 140px;
 }
 
 .simple-page form .submit input {
@@ -97,6 +104,42 @@
   border-color: var(--danger-color, #c4000a);
 }
 
-.simple-page .alert {
+.simple-page .alert,
+.simple-page .jenkins-alert {
   color: var(--danger-color, #c4000a);
+}
+
+@keyframes fade-in-jenkins-booting {
+  from {
+    scale: 97.5%;
+    opacity: 0;
+    filter: blur(1px);
+  }
+}
+
+.app-jenkins-booting {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: fade-in-jenkins-booting 0.4s both 0.2s;
+  // Optical compensation to visually center content
+  margin-top: -3rem;
+
+  * {
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+.loading {
+  margin: 1rem 0 0;
+
+  p {
+    font-weight: 500;
+    font-size: 1.125rem;
+  }
+}
+
+.restarting {
+  color: var(--text-color-secondary);
 }

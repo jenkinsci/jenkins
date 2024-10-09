@@ -43,11 +43,12 @@ import hudson.util.DescriptorList;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import jenkins.model.IComputer;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Controls authorization throughout Hudson.
@@ -155,6 +156,22 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
     }
 
     /**
+     * Implementation can choose to provide different ACL for different computers.
+     * This can be used as a basis for more fine-grained access control.
+     * <p>
+     * Default implementation delegates to {@link #getACL(Computer)} if the computer is an instance of {@link Computer},
+     * otherwise it will fall back to {@link #getRootACL()}.
+     *
+     * @since TODO
+     **/
+    public @NonNull ACL getACL(@NonNull IComputer computer) {
+        if (computer instanceof Computer c) {
+            return getACL(c);
+        }
+        return getRootACL();
+    }
+
+    /**
      * Implementation can choose to provide different ACL for different {@link Cloud}s.
      * This can be used as a basis for more fine-grained access control.
      *
@@ -241,7 +258,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             }
 
             @Override
-            public @NonNull AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            public @NonNull AuthorizationStrategy newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
                 return UNSECURED;
             }
         }

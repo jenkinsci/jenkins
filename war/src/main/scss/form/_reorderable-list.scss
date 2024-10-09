@@ -7,6 +7,14 @@
   border-radius: 10px;
   margin-bottom: 1rem;
   margin-top: 1rem;
+  transition:
+    opacity 0.2s ease-in,
+    max-height 0.2s ease-in;
+}
+
+.repeated-chunk.fade-in,
+.repeated-chunk.fade-out {
+  opacity: 0;
 }
 
 .repeated-chunk .show-if-last {

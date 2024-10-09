@@ -67,7 +67,7 @@ THE SOFTWARE.
           <local:row name="${lr.name}" href="${lr.searchUrl}/">
             <l:isAdmin>
               <div class="jenkins-table__cell__button-wrapper">
-                <a href="${lr.searchUrl}/configure" class="jenkins-table__button">
+                <a href="${lr.searchUrl}/configure" class="jenkins-button jenkins-button--tertiary">
                   <l:icon src="symbol-settings" />
                 </a>
               </div>

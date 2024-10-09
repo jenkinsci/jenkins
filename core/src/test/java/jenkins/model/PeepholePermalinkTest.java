@@ -39,7 +39,7 @@ public final class PeepholePermalinkTest {
         PeepholePermalink.initialized();
         Thread t = new Thread(() -> {
             assertThat("successfully loaded permalinks",
-                PermalinkProjectAction.Permalink.BUILTIN.stream().map(p -> p.getId()).collect(Collectors.toSet()),
+                PermalinkProjectAction.Permalink.BUILTIN.stream().map(PermalinkProjectAction.Permalink::getId).collect(Collectors.toSet()),
                 containsInAnyOrder("lastBuild", "lastStableBuild", "lastSuccessfulBuild", "lastFailedBuild", "lastUnstableBuild", "lastUnsuccessfulBuild", "lastCompletedBuild"));
         });
         t.start();

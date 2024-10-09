@@ -40,6 +40,9 @@ THE SOFTWARE.
             <l:breakable value="${it.displayName}"/>
           </h1>
         </div>
+        <div class="jenkins-app-bar__controls">
+          <t:editDescriptionButton permission="${it.CONFIGURE}"/>
+        </div>
       </div>
 
       <j:if test="${(it.fullName!=it.fullDisplayName) and (it.class.name!='hudson.matrix.MatrixConfiguration')}"> <!-- TODO rather check for TopLevelItem (how to do this from Jelly?) -->
@@ -52,7 +55,7 @@ THE SOFTWARE.
           </j:otherwise>
         </j:choose>
       </j:if>
-      <t:editableDescription permission="${it.CONFIGURE}"/>
+      <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
 
       <st:include page="jobpropertysummaries.jelly" />
       <!-- inject main part here -->

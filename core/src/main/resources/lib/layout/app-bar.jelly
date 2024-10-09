@@ -31,6 +31,9 @@ THE SOFTWARE.
     <st:attribute name="headingLevel">
       Defaults to h1
     </st:attribute>
+    <st:attribute name="subtitle">
+      The subtitle for the application bar
+    </st:attribute>
     Generates a row containing the page title and an optional set of controls
   </st:documentation>
 
@@ -39,6 +42,9 @@ THE SOFTWARE.
       <div class="jenkins-app-bar__content">
         <x:element name="${headingLevel ?: 'h1'}">
           ${title}
+          <j:if test="${attrs.subtitle != null}">
+            <span class="jenkins-app-bar__subtitle">${attrs.subtitle}</span>
+          </j:if>
         </x:element>
       </div>
       <div class="jenkins-app-bar__controls">

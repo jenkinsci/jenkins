@@ -182,6 +182,10 @@ public abstract class Cause {
             upstreamCauses = new ArrayList<>();
             Set<String> traversed = new HashSet<>();
             for (Cause c : up.getCauses()) {
+                if (traversed.size() >= MAX_LEAF) {
+                    upstreamCauses.add(new DeeplyNestedUpstreamCause());
+                    break;
+                }
                 upstreamCauses.add(trim(c, MAX_DEPTH, traversed));
             }
         }
@@ -239,14 +243,16 @@ public abstract class Cause {
             }
             UpstreamCause uc = (UpstreamCause) c;
             List<Cause> cs = new ArrayList<>();
-            if (depth > 0) {
-                if (traversed.add(uc.upstreamUrl + uc.upstreamBuild)) {
-                    for (Cause c2 : uc.upstreamCauses) {
-                        cs.add(trim(c2, depth - 1, traversed));
+            if (traversed.add(uc.upstreamUrl + uc.upstreamBuild)) {
+                for (Cause c2 : uc.upstreamCauses) {
+                    if (depth <= 0 || traversed.size() >= MAX_LEAF) {
+                        cs.add(new DeeplyNestedUpstreamCause());
+                        break;
                     }
+                    cs.add(trim(c2, depth - 1, traversed));
                 }
-            } else if (traversed.size() < MAX_LEAF) {
-                cs.add(new DeeplyNestedUpstreamCause());
+            } else {
+                traversed.add(uc.upstreamUrl + uc.upstreamBuild + '#' + traversed.size());
             }
             return new UpstreamCause(uc.upstreamProject, uc.upstreamBuild, uc.upstreamUrl, cs);
         }

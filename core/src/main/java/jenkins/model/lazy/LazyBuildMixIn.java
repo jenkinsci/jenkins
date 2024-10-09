@@ -39,7 +39,6 @@ import hudson.model.Run;
 import hudson.model.RunMap;
 import hudson.model.listeners.ItemListener;
 import hudson.model.queue.SubTask;
-import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import java.io.File;
 import java.io.IOException;
@@ -297,10 +296,11 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     }
 
     /**
-     * Suitable for {@link Job#createHistoryWidget}.
+     * @deprecated Remove any code calling this method, history widget is now created via {@link jenkins.widgets.WidgetFactory} implementation.
      */
+    @Deprecated(forRemoval = true, since = "2.459")
     public final HistoryWidget createHistoryWidget() {
-        return new BuildHistoryWidget(asJob(), builds, Job.HISTORY_ADAPTER);
+        throw new IllegalStateException("HistoryWidget is now created via WidgetFactory implementation");
     }
 
     /**

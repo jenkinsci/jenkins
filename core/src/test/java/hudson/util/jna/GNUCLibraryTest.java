@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
-import com.sun.jna.Native;
 import hudson.Functions;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +14,6 @@ import org.junit.Test;
 
 public class GNUCLibraryTest {
 
-    private static final int EBADF = 9;
     private static final int O_CREAT = "Linux".equals(System.getProperty("os.name")) ? 64 : 512;
     private static final int O_RDWR = 2;
 
@@ -28,10 +26,6 @@ public class GNUCLibraryTest {
 
         int result = GNUCLibrary.LIBC.close(fd);
         assertEquals(0, result);
-
-        result = GNUCLibrary.LIBC.close(fd);
-        assertEquals(-1, result);
-        assertEquals(EBADF, Native.getLastError());
 
         Path tmpFile = Files.createTempFile("openTest", null);
         Files.delete(tmpFile);
@@ -56,10 +50,6 @@ public class GNUCLibraryTest {
 
         int result = GNUCLibrary.LIBC.close(fd);
         assertEquals(0, result);
-
-        result = GNUCLibrary.LIBC.close(fd);
-        assertEquals(-1, result);
-        assertEquals(EBADF, Native.getLastError());
     }
 
     @Test

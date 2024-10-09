@@ -25,12 +25,15 @@
 package hudson.model;
 
 import hudson.util.RunList;
+import jakarta.servlet.ServletException;
+import java.io.IOException;
 import java.util.ArrayList;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * UI widget for showing the SIMILE timeline control.
@@ -60,12 +63,15 @@ public class BuildTimelineWidget {
         return builds.getLastBuild();
     }
 
-    public HttpResponse doData(StaplerRequest req, @QueryParameter long min, @QueryParameter long max) {
-        return (req1, rsp, node) -> {
-            JSONObject o = new JSONObject();
-            o.put("events", JSONArray.fromObject(new ArrayList<>()));
-            rsp.setContentType("application/javascript;charset=UTF-8");
-            o.write(rsp.getWriter());
+    public HttpResponse doData(StaplerRequest2 req, @QueryParameter long min, @QueryParameter long max) {
+        return new HttpResponse() {
+            @Override
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
+                JSONObject o = new JSONObject();
+                o.put("events", JSONArray.fromObject(new ArrayList<>()));
+                rsp.setContentType("text/javascript;charset=UTF-8");
+                o.write(rsp.getWriter());
+            }
         };
     }
 

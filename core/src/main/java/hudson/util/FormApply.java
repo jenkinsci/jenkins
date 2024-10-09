@@ -26,11 +26,13 @@ package hudson.util;
 
 import hudson.Functions;
 import java.io.IOException;
-import javax.servlet.ServletException;
+
+import jakarta.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponses.HttpResponseException;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Server-side code related to the {@code <f:apply>} button.
@@ -49,7 +51,7 @@ public class FormApply {
     public static HttpResponseException success(final String destination) {
         return new HttpResponseException() {
             @Override
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
                 if (isApply(req)) {
                     // if the submission is via 'apply', show a response in the notification bar
                     showNotification(Messages.HttpResponses_Saved(), NotificationType.SUCCESS)
@@ -63,11 +65,21 @@ public class FormApply {
 
     /**
      * Is this submission from the "apply" button?
+     *
+     * @since 2.475
      */
-    public static boolean isApply(StaplerRequest req) {
+    public static boolean isApply(StaplerRequest2 req) {
         return Boolean.parseBoolean(req.getParameter("core:apply"));
     }
 
+
+    /**
+     * @deprecated use {@link #isApply(StaplerRequest2)}
+     */
+    @Deprecated
+    public static boolean isApply(StaplerRequest req) {
+        return isApply(StaplerRequest.toStaplerRequest2(req));
+    }
 
     /**
      * Generates the response for the asynchronous background form submission (AKA the Apply button.)
@@ -81,7 +93,7 @@ public class FormApply {
     public static HttpResponseException applyResponse(final String script) {
         return new HttpResponseException() {
             @Override
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
                 rsp.setContentType("text/html;charset=UTF-8");
                 rsp.getWriter().println("<html><body><script>" +
                         "window.applyCompletionHandler = function (w) {" +
@@ -107,7 +119,7 @@ public class FormApply {
     public static HttpResponseException showNotification(final String message, final NotificationType notificationType) {
         return new HttpResponseException() {
             @Override
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException {
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException {
                 rsp.setContentType("text/html;charset=UTF-8");
                 rsp.getWriter().println("<script id='form-apply-data-holder' data-message='" + Functions.htmlAttributeEscape(message) + "' " +
                         "data-notification-type='" + notificationType + "' " +

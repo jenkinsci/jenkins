@@ -48,6 +48,7 @@ import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -71,7 +72,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.security.MasterToSlaveCallable;
@@ -82,8 +82,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
@@ -393,7 +393,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
 
         void broadcast() {
             for (Computer c : Jenkins.get().getComputers()) {
-                if (c.getName().length() > 0) { // i.e. not master
+                if (!c.getName().isEmpty()) { // i.e. not master
                     VirtualChannel ch = c.getChannel();
                     if (ch != null) {
                         try {
@@ -439,7 +439,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
      * Accepts submission from the configuration page.
      */
     @POST
-    public synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         JSONObject src = req.getSubmittedForm();
@@ -536,7 +536,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
      * Deletes this recorder, then go back to the parent.
      */
     @RequirePOST
-    public synchronized void doDoDelete(StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doDoDelete(StaplerResponse2 rsp) throws IOException, ServletException {
         delete();
         rsp.sendRedirect2("..");
     }
@@ -556,13 +556,13 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
         loggers.forEach(Target::disable);
 
         getParent().getRecorders().forEach(logRecorder -> logRecorder.getLoggers().forEach(Target::enable));
-        SaveableListener.fireOnChange(this, getConfigFile());
+        SaveableListener.fireOnDeleted(this, getConfigFile());
     }
 
     /**
      * RSS feed for log entries.
      */
-    public void doRss(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRss(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         LogRecorderManager.doRss(req, rsp, getLogRecords());
     }
 
@@ -595,7 +595,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
             }
         });
         for (Computer c : Jenkins.get().getComputers()) {
-            if (c.getName().length() == 0) {
+            if (c.getName().isEmpty()) {
                 continue; // master
             }
             List<LogRecord> recs = new ArrayList<>();

@@ -6,6 +6,7 @@ $dropdown-padding: 0.4rem;
   border-radius: 15px;
   box-shadow: var(--dropdown-box-shadow);
   outline: none !important;
+  background: color-mix(in sRGB, var(--background) 85%, transparent);
   backdrop-filter: var(--dropdown-backdrop-filter);
   max-width: unset !important;
   max-height: 75vh;
@@ -92,7 +93,7 @@ $dropdown-padding: 0.4rem;
     color: var(--text-color-secondary) !important;
     margin: $dropdown-padding 0.55rem;
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: 500;
     opacity: 0.8;
 
     &:not(:first-of-type) {
@@ -133,7 +134,7 @@ $dropdown-padding: 0.4rem;
     margin: 0;
     padding: $dropdown-padding 1.75rem $dropdown-padding 0.6rem;
     font-size: 0.8125rem;
-    font-weight: 500;
+    font-weight: 450;
     text-decoration: none !important;
     background: transparent;
     color: var(--text-color) !important;
@@ -252,5 +253,20 @@ $dropdown-padding: 0.4rem;
     min-height: 0.3125rem;
     border: 1px solid currentColor;
     border-radius: 50%;
+  }
+}
+
+.jenkins-jumplist-link {
+  appearance: none;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 }

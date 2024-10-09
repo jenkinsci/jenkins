@@ -29,6 +29,7 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
@@ -51,6 +52,7 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
+import jakarta.servlet.ServletException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -81,7 +83,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletException;
+import java.util.stream.Collectors;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import jenkins.model.GlobalConfiguration;
@@ -106,8 +108,8 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -176,7 +178,7 @@ public class PluginManagerTest {
             return "pluginManagerGetPlugin";
         }
 
-        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("application/octet-stream");
             staplerResponse.setStatus(200);
             staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
@@ -576,8 +578,7 @@ public class PluginManagerTest {
             Thread.sleep(100);
             done = true;
             for (UpdateCenterJob job : r.jenkins.getUpdateCenter().getJobs()) {
-                if (job instanceof UpdateCenter.DownloadJob) {
-                    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob) job;
+                if (job instanceof UpdateCenter.DownloadJob j) {
                     assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
                     done &= !(j.status instanceof UpdateCenter.DownloadJob.Pending ||
                             j.status instanceof UpdateCenter.DownloadJob.Installing);
@@ -624,6 +625,17 @@ public class PluginManagerTest {
         assertNotNull(r.jenkins.getPluginManager().getPlugin("variant"));
         dynamicLoad("jenkins-50336.hpi");
         assertTrue(ExtensionList.lookup(GlobalConfiguration.class).stream().anyMatch(gc -> "io.jenkins.plugins.MyGlobalConfiguration".equals(gc.getClass().getName())));
+    }
+
+    @Test @Issue("JENKINS-64840")
+    @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi", "depender-0.0.2.hpi"})
+    public void getPluginsSortedByTitle() throws Exception {
+        List<String> installedPlugins = r.jenkins.getPluginManager().getPluginsSortedByTitle()
+                .stream()
+                .map(PluginWrapper::getDisplayName)
+                .collect(Collectors.toUnmodifiableList());
+
+        assertThat(installedPlugins, containsInRelativeOrder("dependee", "depender", "mandatory-depender"));
     }
 
     @Issue("JENKINS-62622")
@@ -793,7 +805,7 @@ public class PluginManagerTest {
 
             PluginManagerUtil.getCheckForUpdatesButton(p).click();
             HtmlPage available = wc.goTo("pluginManager/available");
-            assertTrue(available.querySelector(".alert-danger")
+            assertTrue(available.querySelector(".jenkins-alert-danger")
                     .getTextContent().contains("This plugin is built for Jenkins 9999999"));
             wc.waitForBackgroundJavaScript(100);
 
@@ -868,7 +880,7 @@ public class PluginManagerTest {
             return "security3037UpdateCenter";
         }
 
-        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("application/json");
             staplerResponse.setStatus(200);
             staplerResponse.serveFile(staplerRequest, PluginManagerTest.class.getResource("/plugins/security3037-update-center.json"));
@@ -893,7 +905,7 @@ public class PluginManagerTest {
             return "pluginManagerGetPlugin";
         }
 
-        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("application/octet-stream");
             staplerResponse.setStatus(200);
             staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));

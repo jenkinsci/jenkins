@@ -21,7 +21,6 @@
       0 0 0 2px transparent,
       0 0 0 12px transparent;
     transition: var(--standard-transition);
-    font-weight: 500;
     height: var(--search-bar-height);
 
     &::placeholder {
@@ -142,7 +141,7 @@
     justify-content: center;
     transition: 0.25s ease;
     text-align: center;
-    font-size: 0.8em;
+    font-size: 0.6875rem;
     font-weight: 500;
     line-height: 1;
     color: var(--text-color-secondary);
@@ -257,7 +256,7 @@
     align-items: center;
     gap: 0.7rem;
     padding: 0.5rem 0.7rem;
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     border-radius: 10px;
     color: var(--text-color);
     font-weight: 500;

@@ -77,11 +77,10 @@ function generateButtons() {
 
       function insert(instance, template) {
         let nc = document.createElement("div");
-        nc.className = "repeated-chunk";
+        nc.className = "repeated-chunk fade-in";
         nc.setAttribute("name", template.name);
         nc.setAttribute("descriptorId", template.descriptorId);
         nc.innerHTML = template.html;
-        nc.style.opacity = "0";
 
         instance.hide();
 
@@ -150,18 +149,9 @@ function generateButtons() {
             if (withDragDrop) {
               registerSortableDragDrop(nc);
             }
-
-            new YAHOO.util.Anim(
-              nc,
-              {
-                opacity: { to: 1 },
-              },
-              0.2,
-              YAHOO.util.Easing.easeIn,
-            ).animate();
-
             Behaviour.applySubtree(nc, true);
             ensureVisible(nc);
+            nc.classList.remove("fade-in");
             layoutUpdateCallback.call();
           },
           true,

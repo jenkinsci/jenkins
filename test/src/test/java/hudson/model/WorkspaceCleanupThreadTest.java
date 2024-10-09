@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.MasterToSlaveFileCallable;
+import jenkins.model.Jenkins;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -181,10 +182,26 @@ public class WorkspaceCleanupThreadTest {
         FilePath ws = createOldWorkspaceOn(r.jenkins, p);
         FilePath tmp = WorkspaceList.tempDir(ws);
         tmp.child("stuff").write("content", null);
+        tmp.act(new Touch(0));
         createOldWorkspaceOn(r.createOnlineSlave(), p);
         performCleanup();
         assertFalse(ws.exists());
         assertFalse("temporary directory should be cleaned up as well", tmp.exists());
+    }
+
+    @Issue("JENKINS-65829")
+    @Test
+    public void deleteSoleLibsDirectory() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        FilePath jobWs = Jenkins.get().getWorkspaceFor(p);
+        FilePath libsWs = jobWs.withSuffix(WorkspaceList.COMBINATOR + "libs");
+        libsWs.child("test-libs").write("content", null);
+        libsWs.act(new Touch(0));
+        assertFalse(jobWs.exists());
+        assertTrue(libsWs.exists());
+        performCleanup();
+        assertFalse(jobWs.exists());
+        assertFalse("libs directory should be cleaned up as well", libsWs.exists());
     }
 
     private FilePath createOldWorkspaceOn(Node slave, FreeStyleProject p) throws Exception {
@@ -195,6 +212,13 @@ public class WorkspaceCleanupThreadTest {
         assertNotNull(ws);
         ws.act(new Touch(0));
         return ws;
+    }
+
+    private FilePath createOldLibsWorkspace(FreeStyleProject p) throws IOException, InterruptedException {
+        FilePath libsWs = Jenkins.get().getWorkspaceFor(p).withSuffix(WorkspaceList.COMBINATOR + "libs");
+        libsWs.child("test-libs").write("content", null);
+        libsWs.act(new Touch(0));
+        return libsWs;
     }
 
     private void performCleanup() throws InterruptedException, IOException {

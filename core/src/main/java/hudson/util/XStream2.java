@@ -469,7 +469,7 @@ public class XStream2 extends XStream {
      */
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
-        private static final ClassValue<Class<? extends ConverterMatcher>> classCache = new ClassValue<Class<? extends ConverterMatcher>>() {
+        private static final ClassValue<Class<? extends ConverterMatcher>> classCache = new ClassValue<>() {
             @Override
             protected Class<? extends ConverterMatcher> computeValue(Class<?> type) {
                 return computeConverterClass(type);

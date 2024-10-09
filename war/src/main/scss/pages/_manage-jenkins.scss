@@ -34,32 +34,29 @@
   content: ": ";
 }
 
-.manage-messages {
-  .alert:last-of-type {
+.manage-messages .alert,
+.manage-messages .jenkins-alert {
+  &:last-of-type {
     margin-bottom: 30px;
   }
-}
 
-.manage-messages .alert a {
-  text-decoration: underline;
-}
-
-.manage-messages .alert a:hover {
-  text-decoration: underline;
-}
-
-.manage-messages .alert form {
-  position: relative;
-  float: right;
-  margin: -6px 0 0 !important;
-  display: flex;
-  gap: 0.5rem;
-
-  & > div {
-    display: contents;
+  a {
+    text-decoration: underline;
   }
-}
 
-.manage-messages .alert form span {
-  margin: 0 0 0 4px !important;
+  form {
+    position: relative;
+    float: right;
+    margin: -6px 0 0 !important;
+    display: flex;
+    gap: 0.5rem;
+
+    & > div {
+      display: contents;
+    }
+
+    span {
+      margin: 0 0 0 4px !important;
+    }
+  }
 }

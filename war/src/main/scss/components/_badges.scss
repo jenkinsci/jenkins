@@ -1,62 +1,24 @@
-.am-badge,
-.plugin-manager__category-label:link,
-.plugin-manager__category-label:visited {
-  display: inline-block;
-  border: 1px solid var(--plugin-manager-category-link-border-color);
-  background-color: var(--plugin-manager-category-link-bg-color);
-  color: var(--plugin-manager-category-text-color);
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 0 0.5rem;
-  margin: 0 0.25rem 0 0;
-  text-decoration: none;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: baseline;
-  transition: all 0.15s ease-in-out;
-}
-
-.plugin-manager__category-label:link,
-.plugin-manager__category-label:visited {
-  &:hover,
-  &:focus,
-  &:active {
-    background-color: var(--plugin-manager-category-link-bg-color--hover);
-    border-color: var(--plugin-manager-category-link-border-color--hover);
-    color: var(--plugin-manager-category-link-color--hover);
-  }
-}
-
-.am-badge {
-  display: inline;
-}
-
 .jenkins-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 100px;
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
+  font-weight: 400;
   min-height: 20px;
   min-width: 20px;
   padding: 0 0.4rem;
-  box-shadow: 0 1px 1px rgba(black, 0.1);
-  animation: animate-in-badge var(--elastic-transition) 0.1s both;
+  background: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 12.5%,
+    transparent
+  );
 
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(white, black);
-    border-radius: 100px;
-    mix-blend-mode: overlay;
-    opacity: 0.35;
-  }
-}
-
-@keyframes animate-in-badge {
-  from {
-    transform: scale(0);
+  &[class*="color"] {
+    background: color-mix(in sRGB, var(--color) 85%, transparent);
+    color: var(--white) !important;
+    box-shadow: inset 0 -1px 2px var(--color, var(--text-color-secondary));
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(2.5px);
   }
 }
