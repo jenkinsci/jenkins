@@ -351,43 +351,36 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see BuildNumberAssigner
      */
     public int assignBuildNumber() throws IOException {
-        var bna = ExtensionList.lookupFirst(BuildNumberAssigner.class).assignBuildNumber(this);
-        if (bna.needsSave) {
-            saveNextBuildNumber();
-        }
-        return bna.assignedNumber;
+        return ExtensionList.lookupFirst(BuildNumberAssigner.class).assignBuildNumber(this, this::saveNextBuildNumber);
     }
 
     /**
      * Alternate strategy for assigning build numbers.
-     * @see #assignBuildNumber()
      */
     @Restricted(Beta.class)
     public interface BuildNumberAssigner extends ExtensionPoint {
         /**
-         * Strategy outcome.
-         * @param assignedNumber the return value for {@link #assignBuildNumber()}
-         * @param needsSave whether {@link #saveNextBuildNumber} should be called afterwards
+         * Implementation of {@link Job#assignBuildNumber}.
          */
-        record BuildNumberAssignment(int assignedNumber, boolean needsSave) {};
-
+        int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException;
         /**
-         * Assign a unique number for a new build of a given job.
-         * @see #getNextBuildNumber
-         * @see #fastUpdateNextBuildNumber
+         * Provides an externally accessible alias for {@link Job#saveNextBuildNumber}, which is {@code protected}.
+         * ({@link #getNextBuildNumber} and {@link #fastUpdateNextBuildNumber} are already accessible.)
          */
-        BuildNumberAssignment assignBuildNumber(Job<?, ?> job) throws IOException;
+        interface SaveNextBuildNumber {
+            void call() throws IOException;
+        }
     }
 
     @Restricted(DoNotUse.class)
     @Extension(ordinal = -1000)
     public static final class DefaultBuildNumberAssigner implements BuildNumberAssigner {
         @Override
-        public BuildNumberAssignment assignBuildNumber(Job<?, ?> job) throws IOException {
+        public int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException {
             synchronized (job) {
                 int r = job.nextBuildNumber++;
-                job.saveNextBuildNumber();
-                return new BuildNumberAssignment(r, false);
+                saveNextBuildNumber.call();
+                return r;
             }
         }
     }
