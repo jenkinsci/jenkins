@@ -686,7 +686,8 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, containsInAnyOrder(
+            // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
+            assertThat(entryNames, hasItems(
                     p.getName() + "/intermediateFolder/public2.key",
                     p.getName() + "/public1.key"
             ));
@@ -696,7 +697,8 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, containsInAnyOrder(
+            // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
+            assertThat(entryNames, hasItems(
                     "intermediateFolder/public2.key",
                     "public1.key"
             ));
@@ -706,14 +708,16 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, contains("intermediateFolder/public2.key"));
+            // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
+            assertThat(entryNames, hasItems("intermediateFolder/public2.key"));
         }
         { // workaround for JENKINS-19947 is still supported, i.e. no parent folder, even inside a sub-folder
             Page zipPage = wc.goTo(p.getUrl() + "ws/intermediateFolder/**/*zip*/intermediateFolder.zip", null);
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, contains("public2.key"));
+            // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
+            assertThat(entryNames, hasItems("public2.key"));
         }
     }
 

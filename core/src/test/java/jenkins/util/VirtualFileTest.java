@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
@@ -254,7 +255,8 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
         Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, containsInAnyOrder(
+        // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
+        assertThat(children, hasItems(
                 "a/aa/aa.txt",
                 "a/ab/ab.txt",
                 "b/ba/ba.txt"
@@ -509,7 +511,8 @@ public class VirtualFileTest {
         VirtualFile symlinkVirtualPath = VirtualFile.forFilePath(symlinkPath);
         VirtualFile symlinkChildVirtualPath = symlinkVirtualPath.child("aa");
         Collection<String> children = symlinkChildVirtualPath.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, contains("aa.txt"));
+        // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
+        assertThat(children, hasItems("aa.txt"));
     }
 
     @Test
@@ -524,7 +527,8 @@ public class VirtualFileTest {
         VirtualFile symlinkVirtualFile = VirtualFile.forFile(symlinkFile);
         VirtualFile symlinkChildVirtualFile = symlinkVirtualFile.child("aa");
         Collection<String> children = symlinkChildVirtualFile.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, contains("aa.txt"));
+        // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
+        assertThat(children, hasItems("aa.txt"));
     }
 
     @Test
