@@ -60,7 +60,7 @@ public abstract class SaveableListener implements ExtensionPoint {
      *      The saveable object.
      * @param file
      *      The {@link XmlFile} for this saveable object.
-     * @since TODO
+     * @since 2.480
      */
     public void onDeleted(Saveable o, XmlFile file) {}
 
@@ -92,7 +92,7 @@ public abstract class SaveableListener implements ExtensionPoint {
 
     /**
      * Fires the {@link #onDeleted} event.
-     * @since TODO
+     * @since 2.480
      */
     public static void fireOnDeleted(Saveable o, XmlFile file) {
         Listeners.notify(SaveableListener.class, false, l -> l.onDeleted(o, file));
