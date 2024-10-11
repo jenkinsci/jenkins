@@ -604,7 +604,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @NonNull
     private Node getNodeOrDie() {
-        return nodeName == null ? Jenkins.get() : Jenkins.get().getNode(nodeName);
+        var node = nodeName == null ? Jenkins.get() : Jenkins.get().getNode(nodeName);
+        if (node == null) {
+            throw new IllegalStateException("Can't set a temporary offline cause if the node has been removed");
+        }
+        return node;
     }
 
     @Exported
