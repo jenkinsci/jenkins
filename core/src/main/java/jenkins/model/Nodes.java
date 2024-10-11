@@ -295,6 +295,7 @@ public class Nodes implements PersistenceRoot {
                 jenkins.trimLabels(node);
             }
             NodeListener.fireOnDeleted(node);
+            SaveableListener.fireOnDeleted(node, getConfigFile(node));
         }
     }
 

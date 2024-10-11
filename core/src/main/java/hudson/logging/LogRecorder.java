@@ -557,7 +557,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
         loggers.forEach(Target::disable);
 
         getParent().getRecorders().forEach(logRecorder -> logRecorder.getLoggers().forEach(Target::enable));
-        SaveableListener.fireOnChange(this, getConfigFile());
+        SaveableListener.fireOnDeleted(this, getConfigFile());
     }
 
     /**

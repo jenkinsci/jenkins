@@ -44,6 +44,9 @@ THE SOFTWARE.
 	                    <j:choose>
 	                        <j:when test="${app.useSecurity}">
                                 ${%noAccess}
+                                <j:if test="${h.isAnonymous()}">
+                                    ${%tryLoggingIn}
+                                </j:if>
 		                    </j:when>
 		                    <j:otherwise>
 		                        ${%notFound}

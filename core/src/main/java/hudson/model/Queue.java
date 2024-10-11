@@ -1957,24 +1957,6 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         /**
-         * Works just like {@link #checkAbortPermission()} except it indicates the status by a return value,
-         * instead of exception.
-         * Also used by default for {@link hudson.model.Queue.Item#hasCancelPermission}.
-         * <p>
-         * NOTE: If you have implemented {@link AccessControlled} this returns by default
-         * {@code return hasPermission(hudson.model.Item.CANCEL);}
-         *
-         * @return false
-         *      if the user doesn't have the permission.
-         */
-        default boolean hasAbortPermission() {
-            if (this instanceof AccessControlled) {
-                return ((AccessControlled) this).hasPermission(CANCEL);
-            }
-            return true;
-        }
-
-        /**
          * Returns the URL of this task relative to the context root of the application.
          *
          * <p>
@@ -1984,6 +1966,7 @@ public class Queue extends ResourceController implements Saveable {
          * @return
          *      URL that ends with '/'.
          */
+        @Override
         String getUrl();
 
         /**
