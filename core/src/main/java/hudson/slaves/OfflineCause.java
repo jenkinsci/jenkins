@@ -33,6 +33,8 @@ import java.util.Collections;
 import java.util.Date;
 import jenkins.model.Jenkins;
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -69,6 +71,19 @@ public abstract class OfflineCause {
      */
     public final @NonNull Date getTime() {
         return new Date(timestamp);
+    }
+
+    /**
+     * @deprecated Only exists for backward compatibility.
+     * @see Computer#setTemporarilyOffline(boolean).
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    public static class LegacyOfflineCause extends OfflineCause {
+        @Exported(name = "description") @Override
+        public String toString() {
+            return "";
+        }
     }
 
     /**

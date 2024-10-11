@@ -30,7 +30,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
-import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
@@ -47,7 +46,6 @@ import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.slaves.Cloud;
-import hudson.slaves.ComputerListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProperty;
@@ -264,25 +262,11 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         setNodeName(name);
     }
 
-    /**
-     * Let Nodes be aware of the lifecycle of their own {@link Computer}.
-     */
-    @Extension
-    public static class InternalComputerListener extends ComputerListener {
-        @Override
-        public void onOnline(Computer c, TaskListener listener) {
-            Node node = c.getNode();
-
-            // At startup, we need to restore any previously in-effect temp offline cause.
-            // We wait until the computer is started rather than getting the data to it sooner
-            // so that the normal computer start up processing works as expected.
-            if (node != null && node.temporaryOfflineCause != null && node.temporaryOfflineCause != c.getOfflineCause()) {
-                c.setTemporarilyOffline(true, node.temporaryOfflineCause);
-            }
-        }
+    public boolean isTemporarilyOffline() {
+        return temporaryOfflineCause != null;
     }
 
-    private OfflineCause temporaryOfflineCause;
+    private volatile OfflineCause temporaryOfflineCause;
 
     /**
      * Enable a {@link Computer} to inform its node when it is taken
