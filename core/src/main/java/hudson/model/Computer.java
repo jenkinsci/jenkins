@@ -66,6 +66,7 @@ import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
+import hudson.util.FormApply;
 import hudson.util.Futures;
 import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
@@ -1512,7 +1513,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         // take the user back to the agent top page.
-        rsp.sendRedirect2("../" + result.getNodeName() + '/');
+        FormApply.success("../" + result.getNodeName() + '/').generateResponse(req, rsp, null);
     }
 
     /**

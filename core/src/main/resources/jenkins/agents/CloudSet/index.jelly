@@ -79,7 +79,11 @@ THE SOFTWARE.
                 </j:forEach>
               </tbody>
             </table>
-            <f:saveApplyBar/>
+            <l:isAdmin>
+              <f:bottomButtonBar>
+                <f:submit id="saveButton" value="${%Save}" clazz="jenkins-hidden" />
+              </f:bottomButtonBar>
+            </l:isAdmin>
           </f:form>
           <st:adjunct includes="lib.form.confirm" />
         </j:when>
