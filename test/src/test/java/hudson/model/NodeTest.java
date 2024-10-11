@@ -102,7 +102,7 @@ public class NodeTest {
         assertEquals("Node should have offline cause which was set.", cause, node.toComputer().getOfflineCause());
         OfflineCause cause2 = new OfflineCause.ByCLI("another message");
         node.setTemporaryOfflineCause(cause2);
-        assertEquals("Node should have original offline cause after setting another.", cause, node.toComputer().getOfflineCause());
+        assertEquals("Node should have the new offline cause.", cause2, node.toComputer().getOfflineCause());
     }
 
     @Test

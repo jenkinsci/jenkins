@@ -46,6 +46,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.slaves.Cloud;
+import hudson.slaves.ComputerListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProperty;
@@ -67,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.model.Nodes;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -277,6 +279,11 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             if (temporaryOfflineCause != cause) {
                 temporaryOfflineCause = cause;
                 save();
+            }
+            if (temporaryOfflineCause != null) {
+                Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(toComputer(), temporaryOfflineCause));
+            } else {
+                Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOnline(toComputer()));
             }
         } catch (java.io.IOException e) {
             LOGGER.warning("Unable to complete save, temporary offline status will not be persisted: " + e.getMessage());

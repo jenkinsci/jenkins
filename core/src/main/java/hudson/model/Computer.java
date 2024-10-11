@@ -688,7 +688,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Deprecated
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
-        offlineCause = temporarilyOffline ? cause : null;
+        if (cause == null) {
+            setTemporarilyOffline(temporarilyOffline);
+        } else {
+            setTemporarilyOfflineCause(cause);
+        }
     }
 
     /**
@@ -698,13 +702,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @param temporarilyOfflineCause The reason why the node is being put offline.
      *                                If null, this cancels the status
      */
-    public void setTemporarilyOfflineCause(OfflineCause temporarilyOfflineCause) {
+    public void setTemporarilyOfflineCause(@CheckForNull OfflineCause temporarilyOfflineCause) {
         getNodeOrDie().setTemporaryOfflineCause(temporarilyOfflineCause);
-        if (temporarilyOfflineCause != null) {
-            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(this, temporarilyOfflineCause));
-        } else {
-            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOnline(this));
-        }
     }
 
     public OfflineCause getTemporarilyOfflineCause() {
