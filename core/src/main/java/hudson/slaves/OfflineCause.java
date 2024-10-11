@@ -75,7 +75,7 @@ public abstract class OfflineCause {
 
     /**
      * @deprecated Only exists for backward compatibility.
-     * @see Computer#setTemporarilyOffline(boolean).
+     * @see Computer#setTemporarilyOffline(boolean)
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
