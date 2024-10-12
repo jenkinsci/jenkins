@@ -31,7 +31,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * A snapshot of the executor information for display purpose.
  *
- * @since TODO
+ * @since 2.480
  */
 @Restricted(Beta.class)
 public interface IDisplayExecutor {
