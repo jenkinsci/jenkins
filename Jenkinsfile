@@ -29,7 +29,7 @@ stage('Record build') {
         /*
          * TODO Add the commits of the transitive closure of the Jenkins WAR under test to this build.
          */
-        sh 'launchable verify && launchable record build --name ${BUILD_TAG} --branch ${env.BRANCH_NAME} --source jenkinsci/jenkins=.'
+        sh 'launchable verify && launchable record build --name ${BUILD_TAG} --branch ${BRANCH_NAME} --source jenkinsci/jenkins=.'
         axes.values().combinations {
           def (platform, jdk) = it
           if (platform == 'windows' && jdk != 17) {
