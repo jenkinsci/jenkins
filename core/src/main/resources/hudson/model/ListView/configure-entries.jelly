@@ -32,18 +32,27 @@ THE SOFTWARE.
       <f:checkbox title="${%Recurse in subfolders}" id="recurse" />
     </f:entry>
 
+    <d:taglib uri="local">
+      <d:tag name="checkbox">
+        <f:checkbox name="item_${job.getRelativeNameFromGroup(it.ownerItemGroup)}"
+                    checked="${it.jobNamesContains(job)}"
+                    title="${job.displayName}"
+                    tooltip="${!job.fullName.equals(job.displayName) ? job.fullName : null}"
+                    json="true" />
+        <j:if test="${job.getItems().size() gt 0}">
+          <div class="listview-jobs listview-jobs--nested" style="${it.recurse ? '' : 'display: none'}">
+            <j:forEach var="job" items="${job.getItems()}">
+              <local:checkbox xmlns:local="local" job="${job}" />
+            </j:forEach>
+          </div>
+        </j:if>
+      </d:tag>
+    </d:taglib>
+
     <f:entry>
-      <div class="listview-jobs">
-        <j:forEach var="job" items="${h.getAllTopLevelItems(it.ownerItemGroup)}">
-          <j:set var="spanClass" value="notnested"/>
-          <j:set var="spanStyle" value=""/>
-          <j:if test="${job.parent!=it.ownerItemGroup}">
-            <j:set var="spanClass" value="nested"/>
-            <j:set var="spanStyle" value="${it.recurse?'':'display:none'}"/>
-          </j:if>
-          <span class="${spanClass}" style="${spanStyle}">
-            <f:checkbox name="item_${job.getRelativeNameFromGroup(it.ownerItemGroup)}" checked="${it.jobNamesContains(job)}" title="${h.getRelativeDisplayNameFrom(job,it.ownerItemGroup)}" tooltip="${job.fullName}" json="true"/>
-          </span>
+      <div class="listview-jobs" xmlns:local="local">
+        <j:forEach var="job" items="${it.ownerItemGroup.getItems()}">
+          <local:checkbox job="${job}" />
         </j:forEach>
       </div>
     </f:entry>
