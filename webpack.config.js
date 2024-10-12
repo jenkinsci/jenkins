@@ -57,7 +57,7 @@ module.exports = (env, argv) => ({
     styles: [path.join(__dirname, "src/main/scss/styles.scss")],
   },
   output: {
-    path: path.join(__dirname, "src/main/webapp/jsbundles"),
+    path: path.join(__dirname, "war/src/main/webapp/jsbundles"),
   },
   devtool:
     argv.mode === "production"
@@ -89,7 +89,7 @@ module.exports = (env, argv) => ({
             options: {
               sourceMap: true,
               // ignore the URLS on the base styles as they are picked
-              // from the src/main/webapp/images dir
+              // from the war/src/main/webapp/images dir
               url: {
                 filter: (url, resourcePath) => {
                   return !resourcePath.includes("styles.scss");
