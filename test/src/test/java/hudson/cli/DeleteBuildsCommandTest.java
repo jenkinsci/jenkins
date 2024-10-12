@@ -32,21 +32,18 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeFalse;
 
-import hudson.Functions;
 import hudson.model.ExecutorTest;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.labels.LabelAtom;
 import hudson.tasks.Shell;
-import java.io.IOException;
 import jenkins.model.Jenkins;
-import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -139,8 +136,8 @@ public class DeleteBuildsCommandTest {
         assertThat(result.stdout(), containsString("Deleted 0 builds"));
     }
 
-    @Test public void deleteBuildsShouldSuccessEvenTheBuildIsRunning() throws Exception {
-        assumeFalse("You can't delete files that are in use on Windows", Functions.isWindows());
+    @Issue("JENKINS-73835")
+    @Test public void deleteBuildsShouldFailIfTheBuildIsRunning() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         ExecutorTest.startBlockingBuild(project);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
@@ -148,15 +145,9 @@ public class DeleteBuildsCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Run.DELETE)
                 .invokeWithArgs("aProject", "1");
-        assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Deleted 1 builds"));
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(0));
-        assertThat(project.isBuilding(), equalTo(false));
-        try {
-            project.delete();
-        } catch (IOException | InterruptedException x) {
-            throw new AssumptionViolatedException("Could not delete test project (race condition?)", x);
-        }
+        assertThat(result, failedWith(1));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("Unable to delete aProject #1 because it is still running"));
     }
 
     @Test public void deleteBuildsShouldSuccessEvenTheBuildIsStuckInTheQueue() throws Exception {

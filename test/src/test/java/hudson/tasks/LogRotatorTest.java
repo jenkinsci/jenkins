@@ -50,8 +50,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -61,6 +63,9 @@ import org.jvnet.hudson.test.TestBuilder;
  * Verifies that the last successful and stable builds of a job will be kept if requested.
  */
 public class LogRotatorTest {
+
+    @ClassRule
+    public static BuildWatcher watcher = new BuildWatcher();
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
@@ -94,6 +99,17 @@ public class LogRotatorTest {
         j.buildAndAssertStatus(Result.FAILURE, project); // #2
         assertNull(project.getBuildByNumber(1));
         assertEquals(2, numberOf(project.getLastFailedBuild()));
+    }
+
+    @Test
+    public void ableToDeleteCurrentBuild() throws Exception {
+        var p = j.createFreeStyleProject();
+        // Keep 0 builds, i.e. immediately delete builds as they complete.
+        LogRotator logRotator = new LogRotator(-1, 0, -1, -1);
+        logRotator.setRemoveLastBuild(true);
+        p.setBuildDiscarder(logRotator);
+        j.buildAndAssertStatus(Result.SUCCESS, p);
+        assertNull(p.getBuildByNumber(1));
     }
 
     @Test
