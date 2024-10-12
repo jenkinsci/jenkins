@@ -73,7 +73,7 @@ THE SOFTWARE.
       </thead>
       <tbody>
       <j:getStatic var="extendedReadPermission" className="hudson.model.Computer" field="EXTENDED_READ"/>
-      <j:forEach var="c" items="${it._all}">
+      <j:forEach var="c" items="${it.computers}">
         <tr id="node_${c.name}">
           <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
             <div class="jenkins-table__cell__button-wrapper">
