@@ -233,7 +233,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      */
     protected boolean markOnline(Computer c) {
         if (isIgnored() || c.isOnline()) return false; // noop
-        c.setTemporarilyOfflineCause(null);
+        c.setTemporaryOfflineCause(null);
         return true;
     }
 
@@ -247,7 +247,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     protected boolean markOffline(Computer c, OfflineCause oc) {
         if (isIgnored() || c.isTemporarilyOffline()) return false; // noop
 
-        c.setTemporarilyOfflineCause(oc);
+        c.setTemporaryOfflineCause(oc);
 
         // notify the admin
         MonitorMarkedNodeOffline no = AdministrativeMonitor.all().get(MonitorMarkedNodeOffline.class);
