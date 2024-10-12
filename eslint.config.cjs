@@ -18,7 +18,7 @@ module.exports = [
       // External scripts
       ".pnp.cjs",
       ".pnp.loader.mjs",
-      "war/src/main/js/plugin-setup-wizard/bootstrap-detached.js",
+      "src/main/js/plugin-setup-wizard/bootstrap-detached.js",
       "war/src/main/webapp/scripts/yui/*",
     ],
   },
@@ -91,8 +91,8 @@ module.exports = [
   {
     files: [
       "eslint.config.cjs",
-      "war/postcss.config.js",
-      "war/webpack.config.js",
+      "postcss.config.js",
+      "webpack.config.js",
       ".stylelintrc.js",
     ],
     languageOptions: {

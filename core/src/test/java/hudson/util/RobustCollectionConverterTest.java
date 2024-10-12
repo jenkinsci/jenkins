@@ -32,6 +32,8 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.thoughtworks.xstream.security.InputManipulationException;
+import hudson.model.Saveable;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,10 +44,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import jenkins.util.xstream.CriticalXStreamException;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
 public class RobustCollectionConverterTest {
+    private final boolean originalRecordFailures = RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS;
+
+    @Before
+    public void before() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
+    }
+
+    @After
+    public void after() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = originalRecordFailures;
+    }
+
     @Test
     public void workingByDefaultWithSimplePayload() {
         XStream2 xstream2 = new XStream2();
@@ -172,5 +188,59 @@ public class RobustCollectionConverterTest {
             s2 = t2;
         }
         return set;
+    }
+
+    @Issue("JENKINS-63343")
+    @Test
+    public void checkElementTypes() {
+        var xmlContent =
+                """
+                <hudson.util.RobustCollectionConverterTest_-Data>
+                  <numbers>
+                    <int>1</int>
+                    <int>2</int>
+                    <string>oops!</string>
+                    <null/>
+                    <int>3</int>
+                  </numbers>
+                </hudson.util.RobustCollectionConverterTest_-Data>
+                """;
+        var actual = (Data) new XStream2().fromXML(xmlContent);
+        assertEquals(Arrays.asList(1, 2, null, 3), actual.numbers);
+    }
+
+    @Test
+    public void rawtypes() {
+        var xmlContent =
+                """
+                <hudson.util.RobustCollectionConverterTest_-DataRaw>
+                  <values>
+                    <int>1</int>
+                    <int>2</int>
+                    <string>oops!</string>
+                    <int>3</int>
+                  </values>
+                </hudson.util.RobustCollectionConverterTest_-DataRaw>
+                """;
+        var actual = (DataRaw) new XStream2().fromXML(xmlContent);
+        assertEquals(List.of(1, 2, "oops!", 3), actual.values);
+    }
+
+    public static class Data implements Saveable {
+        private List<Integer> numbers;
+
+        @Override
+        public void save() throws IOException {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+        }
+    }
+
+    public static class DataRaw implements Saveable {
+        private List values;
+
+        @Override
+        public void save() throws IOException {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+        }
     }
 }
