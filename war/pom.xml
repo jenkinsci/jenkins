@@ -300,7 +300,7 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>839.vff91cd7e3a_b_2</version>
+                  <version>840.v812f627cb_578</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
