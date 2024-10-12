@@ -254,8 +254,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * Adds a computer
          *
          * @since 1.513
+         * @deprecated use {@link #add(IComputer)} instead.
          */
+        @Deprecated(since = "2.480")
         public ContextMenu add(Computer c) {
+            return add((IComputer) c);
+        }
+
+        /**
+         * Adds a {@link IComputer} instance.
+         * @param c the computer to add to the menu
+         * @return this
+         * @since 2.480
+         */
+        public ContextMenu add(IComputer c) {
             return add(new MenuItem()
                 .withDisplayName(c.getDisplayName())
                 .withIconClass(c.getIconClassName())
