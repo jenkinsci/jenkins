@@ -2071,7 +2071,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the read-only list of all {@link Computer}s.
      */
     public Computer[] getComputers() {
-        return computers.values().stream().sorted(Comparator.comparing(Computer::getName)).toArray(Computer[]::new);
+        return getComputersCollection().stream().sorted(Comparator.comparing(Computer::getName)).toArray(Computer[]::new);
     }
 
     @CLIResolver
@@ -2080,7 +2080,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 || name.equals("(master)")) // backwards compatibility for URLs
             name = "";
 
-        for (Computer c : computers.values()) {
+        for (Computer c : getComputersCollection()) {
             if (c.getName().equals(name))
                 return c;
         }
@@ -2245,6 +2245,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Override
     protected ConcurrentMap<Node, Computer> getComputerMap() {
         return computers;
+    }
+
+    /**
+     * @return the collection of all {@link Computer}s in this instance.
+     */
+    @Restricted(NoExternalUse.class)
+    public Collection<Computer> getComputersCollection() {
+        return computers.values();
     }
 
     /**
@@ -2477,7 +2485,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     protected Computer get(String key) { return getComputer(key); }
 
                     @Override
-                    protected Collection<Computer> all() { return computers.values(); }
+                    protected Collection<Computer> all() { return getComputersCollection(); }
                 })
                 .add(new CollectionSearchIndex() { // for users
                     @Override
@@ -3812,7 +3820,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         final Set<Future<?>> pending = new HashSet<>();
         // JENKINS-28840 we know we will be interrupting all the Computers so get the Queue lock once for all
         Queue.withLock(() -> {
-            for (Computer c : computers.values()) {
+            for (Computer c : getComputersCollection()) {
                 try {
                     c.interrupt();
                     killComputer(c);
@@ -4663,7 +4671,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Queues up a safe restart of Jenkins. Jobs have to finish or pause before it can proceed. No new jobs are accepted.
      *
-     * @since 2.414
+     * @since 2.475
      */
     public HttpResponse doSafeRestart(StaplerRequest2 req, @QueryParameter("message") String message) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(MANAGE);
@@ -4680,6 +4688,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         return HttpResponses.redirectToDot();
+    }
+
+    /**
+     * @deprecated use {@link #doSafeRestart(StaplerRequest2, String)}
+     * @since 2.414
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public HttpResponse doSafeRestart(StaplerRequest req, @QueryParameter("message") String message) throws IOException, javax.servlet.ServletException, RestartNotSupportedException {
+        try {
+            return doSafeRestart(StaplerRequest.toStaplerRequest2(req), message);
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
     }
 
     private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {
@@ -5474,6 +5496,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
          * Returns "" to match with {@link Jenkins#getNodeName()}.
          */
         @Override
+        @NonNull
         public String getName() {
             return "";
         }
@@ -5495,6 +5518,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         @Override
+        @NonNull
         public String getUrl() {
             return "computer/(built-in)/";
         }

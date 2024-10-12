@@ -72,7 +72,7 @@ THE SOFTWARE.
         </tr>
       </thead>
       <tbody>
-
+      <j:getStatic var="extendedReadPermission" className="hudson.model.Computer" field="EXTENDED_READ"/>
       <j:forEach var="c" items="${it._all}">
         <tr id="node_${c.name}">
           <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
@@ -93,7 +93,7 @@ THE SOFTWARE.
           </j:forEach>
 
           <td class="jenkins-table__cell--tight">
-            <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
+            <j:if test="${c.hasPermission(extendedReadPermission)}">
               <div class="jenkins-table__cell__button-wrapper">
                 <a href="../${c.url}configure" class="jenkins-button jenkins-button--tertiary">
                   <l:icon src="symbol-settings" />

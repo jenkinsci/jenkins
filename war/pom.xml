@@ -46,7 +46,7 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <mina-sshd-api.version>2.13.2-125.v200281b_61d59</mina-sshd-api.version>
+    <mina-sshd-api.version>2.14.0-133.vcc091215a_358</mina-sshd-api.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
     <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
 
@@ -148,13 +148,21 @@ THE SOFTWARE.
                 <enforceBytecodeVersion>
                   <maxJdkVersion>11</maxJdkVersion>
                   <excludes>
+                    <exclude>com.infradna.tool:bridge-method-annotation</exclude>
+                    <exclude>org.jenkins-ci:annotation-indexer</exclude>
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
+                    <exclude>org.jenkins-ci:crypto-util</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
                     <exclude>org.jenkins-ci.main:websocket-jetty12-ee9</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
+                    <exclude>org.jenkins-ci:memory-monitor</exclude>
+                    <exclude>org.jenkins-ci:symbol-annotation</exclude>
+                    <exclude>org.jenkins-ci:task-reactor</exclude>
+                    <exclude>org.jenkins-ci:version-number</exclude>
                     <exclude>org.jvnet.hudson:commons-jelly-tags-define</exclude>
                     <exclude>org.jvnet.winp:winp</exclude>
+                    <exclude>org.kohsuke:access-modifier-annotation</exclude>
                     <exclude>org.kohsuke.stapler:stapler</exclude>
                     <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
                     <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
@@ -271,7 +279,7 @@ THE SOFTWARE.
                   <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>472.vf7c289a_4b_420</version>
+                  <version>488.v0c9639c1a_eb_3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -292,7 +300,7 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>832.va_66e270d2946</version>
+                  <version>839.vff91cd7e3a_b_2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -306,7 +314,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1300.v03d9d8a_cf1fb_</version>
+                  <version>1304.vc85a_b_ca_96613</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -410,7 +418,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>696.v778d637b_a_762</version>
+                  <version>698.v8e3b_c788f0a_6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -480,7 +488,7 @@ THE SOFTWARE.
                   <!-- detached after 2.356 -->
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>instance-identity</artifactId>
-                  <version>185.v303dc7c645f9</version>
+                  <version>201.vd2a_b_5a_468a_a_6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -494,7 +502,7 @@ THE SOFTWARE.
                   <!-- dependency of scm-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>asm-api</artifactId>
-                  <version>9.7-33.v4d23ef79fcc8</version>
+                  <version>9.7.1-95.v9f552033802a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -580,7 +588,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.lib</groupId>
                   <artifactId>support-log-formatter</artifactId>
-                  <version>1.2</version>
+                  <version>1.3</version>
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}</outputDirectory>

@@ -12,6 +12,10 @@ const SELECTED_ITEM_CLASS = "jenkins-dropdown__item--selected";
  * @param callback - called to retrieve the list of dropdown items
  */
 function generateDropdown(element, callback, immediate) {
+  if (element._tippy && element._tippy.props.theme === "dropdown") {
+    element._tippy.destroy();
+  }
+
   tippy(
     element,
     Object.assign({}, Templates.dropdown(), {
