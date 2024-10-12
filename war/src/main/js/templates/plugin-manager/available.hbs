@@ -63,7 +63,7 @@
         {{#if this.releaseTimestamp }}
             <td style="width: 25%" data="{{ this.releaseTimestamp.iso8601 }}">
                 <time datetime="{{ this.releaseTimestamp.iso8601 }}">
-                    {{ this.releaseTimestamp.displayValue }}
+                    {{ this.releaseTimestamp.iso8601 }}
                 </time>
             </td>
         {{else}}
