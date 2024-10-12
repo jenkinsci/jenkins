@@ -148,25 +148,11 @@ public abstract class DirScanner implements Serializable {
                     File file = new File(dir, f);
                     scanSingle(file, f, visitor);
                 }
-                List<String> emptyDirs = new ArrayList<>();
-                Path rootDir = dir.toPath();
-
-                Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                        Path relativePath = rootDir.relativize(dir);
-                        if (!relativePath.toString().isEmpty()) {
-                            emptyDirs.add(relativePath.toString());
-                        }
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-
-                for (String emptyDir : emptyDirs) {
-                    File file = new File(dir, emptyDir);
-                    scanSingle(file, emptyDir, visitor);
+                for (String elem : ds.getIncludedDirectories()) {
+                  if(!elem.isEmpty()){
+                    scanSingle(new File(dir, elem), elem, visitor);
+                  }
                 }
-
             }
         }
 
