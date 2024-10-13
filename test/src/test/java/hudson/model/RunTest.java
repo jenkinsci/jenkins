@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import hudson.ExtensionList;
@@ -62,6 +63,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -126,6 +128,18 @@ public class RunTest  {
         public void onDeleted(Saveable o, XmlFile file) {
             deleted = true;
         }
+    }
+
+    @Issue("JENKINS-73835")
+    @Test public void buildsMayNotBeDeletedWhileRunning() throws Exception {
+        var p = j.createFreeStyleProject();
+        p.getBuildersList().add(new SleepBuilder(999999));
+        var b = p.scheduleBuild2(0).waitForStart();
+        var ex = assertThrows(IOException.class, () -> b.delete());
+        assertThat(ex.getMessage(), containsString("Unable to delete " + b + " because it is still running"));
+        b.getExecutor().interrupt();
+        j.waitForCompletion(b);
+        b.delete(); // Works fine.
     }
 
     @Issue("SECURITY-1902")

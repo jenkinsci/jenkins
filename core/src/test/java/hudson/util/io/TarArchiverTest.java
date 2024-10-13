@@ -36,6 +36,7 @@ import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -45,6 +46,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarInputStream;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -127,6 +129,28 @@ public class TarArchiverTest {
         }
     }
 
+    @Ignore("TODO fails to add empty directories to archive")
+    @Issue("JENKINS-73837")
+    @Test
+    public void emptyDirectory() throws Exception {
+        Path tar = tmp.newFile("test.tar").toPath();
+        Path root = tmp.newFolder().toPath();
+        Files.createDirectory(root.resolve("foo"));
+        Files.createDirectory(root.resolve("bar"));
+        Files.writeString(root.resolve("bar/file.txt"), "foobar", StandardCharsets.UTF_8);
+        try (OutputStream out = Files.newOutputStream(tar)) {
+            new FilePath(root.toFile()).tar(out, "**");
+        }
+        Set<String> names = new HashSet<>();
+        try (InputStream is = Files.newInputStream(tar);
+                TarInputStream tis = new TarInputStream(is, StandardCharsets.UTF_8.name())) {
+            TarEntry te;
+            while ((te = tis.getNextEntry()) != null) {
+                names.add(te.getName());
+            }
+        }
+        assertEquals(Set.of("foo/", "bar/", "bar/file.txt"), names);
+    }
 
     /**
      * Test backing up an open file

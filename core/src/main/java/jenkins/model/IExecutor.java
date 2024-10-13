@@ -35,7 +35,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * Interface for an executor that can be displayed in the executors widget.
  *
- * @since TODO
+ * @since 2.480
  */
 @Restricted(Beta.class)
 public interface IExecutor {
