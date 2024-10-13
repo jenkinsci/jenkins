@@ -84,29 +84,37 @@ function init() {
   behaviorShim.specify("INPUT.combobox2", "combobox", 100, function (e) {
     // form field with auto-completion support
     // insert the auto-completion container
-    const div = document.createElement("DIV");
-    e.parentNode.insertBefore(div, e.nextElementSibling);
-    e.style.position = "relative";
+    refillOnChange(e, function (params) {
+      const div = document.createElement("DIV");
+      e.parentNode.insertBefore(div, e.nextElementSibling);
+      e.style.position = "relative";
 
-    const url = e.getAttribute("fillUrl");
-    fetch(url)
-      .then((rsp) => (rsp.ok ? rsp.json() : {}))
-      .then((items) => {
-        e.addEventListener("focus", () => updateSuggestions(e, div, items));
+      const url = e.getAttribute("fillUrl");
+      fetch(url, {
+        headers: crumb.wrap({
+          "Content-Type": "application/x-www-form-urlencoded",
+        }),
+        method: "post",
+        body: new URLSearchParams(params),
+      })
+        .then((rsp) => (rsp.ok ? rsp.json() : {}))
+        .then((items) => {
+          e.addEventListener("focus", () => updateSuggestions(e, div, items));
 
-        // otherwise menu won't hide on tab with nothing selected
-        // needs delay as without that it blocks click selection of an item
-        e.addEventListener("focusout", () =>
-          setTimeout(() => e.dropdown.hide(), 200),
-        );
+          // otherwise menu won't hide on tab with nothing selected
+          // needs delay as without that it blocks click selection of an item
+          e.addEventListener("focusout", () =>
+            setTimeout(() => e.dropdown.hide(), 200),
+          );
 
-        e.addEventListener(
-          "input",
-          debounce(() => {
-            updateSuggestions(e, div, items);
-          }),
-        );
-      });
+          e.addEventListener(
+            "input",
+            debounce(() => {
+              updateSuggestions(e, div, items);
+            }),
+          );
+        });
+    });
   });
 }
 
