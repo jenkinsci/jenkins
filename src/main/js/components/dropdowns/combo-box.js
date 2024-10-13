@@ -2,21 +2,10 @@ import behaviorShim from "@/util/behavior-shim";
 import Utils from "@/components/dropdowns/utils";
 
 function init() {
-  function validate(e) {
-    if (e.targetUrl) {
-      const method = e.getAttribute("checkMethod") || "post";
-      try {
-        FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
-      } catch (x) {
-        console.warn(x);
-      }
-    }
-  }
-
   function convertSuggestionToItem(suggestion, e) {
     const confirm = () => {
       e.value = suggestion.name;
-      validate(e);
+      Utils.validateDropdown(e);
       e.focus();
     };
     return {
@@ -32,13 +21,9 @@ function init() {
     };
   }
 
-  function getMaxSuggestionCount(e) {
-    return parseInt(e.dataset["maxsuggestions"]) || 20;
-  }
-
   function createAndShowDropdown(e, div, suggestions) {
     const items = suggestions
-      .splice(0, getMaxSuggestionCount(e))
+      .splice(0, Utils.getMaxSuggestionCount(e, 20))
       .map((s) => convertSuggestionToItem(s, e));
     if (!e.dropdown) {
       Utils.generateDropdown(
@@ -66,19 +51,6 @@ function init() {
         return { name: item };
       });
     createAndShowDropdown(e, div, suggestions || []);
-  }
-
-  function debounce(callback) {
-    callback.running = false;
-    return () => {
-      if (!callback.running) {
-        callback.running = true;
-        setTimeout(() => {
-          callback();
-          callback.running = false;
-        }, 300);
-      }
-    };
   }
 
   behaviorShim.specify("INPUT.combobox2", "combobox", 100, function (e) {
@@ -109,7 +81,7 @@ function init() {
 
           e.addEventListener(
             "input",
-            debounce(() => {
+            Utils.debounce(() => {
               updateSuggestions(e, div, items);
             }),
           );

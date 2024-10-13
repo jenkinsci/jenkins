@@ -9,24 +9,13 @@ function init() {
     return prev + item + delimiter + " ";
   }
 
-  function validate(e) {
-    if (e.targetUrl) {
-      const method = e.getAttribute("checkMethod") || "post";
-      try {
-        FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
-      } catch (x) {
-        console.warn(x);
-      }
-    }
-  }
-
   function convertSuggestionToItem(suggestion, e) {
     const delimiter = e.getAttribute("autoCompleteDelimChar");
     const confirm = () => {
       e.value = delimiter
         ? addValue(e.value, suggestion.name, delimiter)
         : suggestion.name;
-      validate(e);
+      Utils.validateDropdown(e);
       e.focus();
     };
     return {
@@ -42,13 +31,9 @@ function init() {
     };
   }
 
-  function getMaxSuggestionCount(e) {
-    return parseInt(e.dataset["maxsuggestions"]) || 10;
-  }
-
   function createAndShowDropdown(e, suggestions) {
     const items = suggestions
-      .splice(0, getMaxSuggestionCount(e))
+      .splice(0, Utils.getMaxSuggestionCount(e, 10))
       .map((s) => convertSuggestionToItem(s, e));
     if (!e.dropdown) {
       Utils.generateDropdown(
@@ -81,19 +66,6 @@ function init() {
       .then((response) => createAndShowDropdown(e, response.suggestions || []));
   }
 
-  function debounce(callback) {
-    callback.running = false;
-    return () => {
-      if (!callback.running) {
-        callback.running = true;
-        setTimeout(() => {
-          callback();
-          callback.running = false;
-        }, 300);
-      }
-    };
-  }
-
   behaviorShim.specify(
     "INPUT.auto-complete",
     "input-auto-complete",
@@ -110,7 +82,7 @@ function init() {
       );
       e.addEventListener(
         "input",
-        debounce(() => {
+        Utils.debounce(() => {
           updateSuggestions(e);
         }),
       );
