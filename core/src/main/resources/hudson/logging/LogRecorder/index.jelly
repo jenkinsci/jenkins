@@ -67,7 +67,7 @@ THE SOFTWARE.
     </l:app-bar>
 
     <j:if test="${noLogs}">
-      <l:notice text="${%No logs available}" icon="symbol-journal" />
+      <l:notice title="${%No logs available}" icon="symbol-journal" />
     </j:if>
 
     <t:logRecords logRecords="${it.logRecords}"/>

@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <!--
-  Render a single build history entry indicated by ${build} (hudson.model.Build)
+  Render a single build history entry indicated by ${build} (jenkins.model.HistoricalBuild)
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt">

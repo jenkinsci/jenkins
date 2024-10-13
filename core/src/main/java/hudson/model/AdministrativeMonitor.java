@@ -37,8 +37,8 @@ import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -175,7 +175,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * URL binding to disable this monitor.
      */
     @RequirePOST
-    public void doDisable(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doDisable(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         disable(true);
         rsp.sendRedirect2(req.getContextPath() + "/manage");
@@ -188,7 +188,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *     Changing this permission check to return {@link Jenkins#SYSTEM_READ} will make the active
      *     administrative monitor appear on {@code manage.jelly} and on the globally visible
      *     {@link jenkins.management.AdministrativeMonitorsDecorator} to users without Administer permission.
-     *     {@link #doDisable(StaplerRequest, StaplerResponse)} will still always require Administer permission.
+     *     {@link #doDisable(StaplerRequest2, StaplerResponse2)} will still always require Administer permission.
      * </p>
      * <p>
      *     This method only allows for a single permission to be returned. If more complex permission checks are required,
@@ -200,7 +200,10 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *     Form UI elements that change system state, e.g. toggling a feature on or off, need to be hidden from users
      *     lacking Administer permission.
      * </p>
+     * @since 2.233
+     * @deprecated Callers should use {@link #checkRequiredPermission()} or {@link #hasRequiredPermission()}.
      */
+    @Deprecated
     public Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
     }
@@ -213,6 +216,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * </p>
      * @see #getRequiredPermission()
      * @see #hasRequiredPermission()
+     * @since 2.468
      */
     public void checkRequiredPermission() {
         Jenkins.get().checkPermission(getRequiredPermission());
@@ -226,6 +230,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * </p>
      * @see #getRequiredPermission()
      * @see #checkRequiredPermission()
+     * @since 2.468
      */
     public boolean hasRequiredPermission() {
         return Jenkins.get().hasPermission(getRequiredPermission());
@@ -236,7 +241,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *
      * @return true if the current user has the minimum required permission to view any administrative monitor.
      *
-     * @since TODO
+     * @since 2.468
      */
     public static boolean hasPermissionToDisplay() {
         return Jenkins.get().hasAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);

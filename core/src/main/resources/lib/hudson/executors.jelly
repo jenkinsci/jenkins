@@ -27,7 +27,7 @@ THE SOFTWARE.
   <st:documentation>
     Displays the status of executors.
     <st:attribute name="computers">
-      If specified, this is the list of computers whose executors are rendered. If omitted, all the computers
+      If specified, this is the list of executor holders whose executors are rendered. If omitted, all the computers
       in the system will be rendered.
     </st:attribute>
   </st:documentation>
@@ -39,9 +39,9 @@ THE SOFTWARE.
         <j:choose>
           <j:when test="${c.offline}">
             <j:choose>
-              <j:when test="${c.offlineCause!=null and !c.connecting}">
+              <j:when test="${c.hasOfflineCause() and !c.connecting}">
                 <div>
-                  (<l:icon src="symbol-error" class="icon-xs jenkins-!-error-color" title="${c.offlineCause}"/> ${%offline})
+                  (<l:icon src="symbol-error" class="icon-xs jenkins-!-error-color" title="${c.offlineCauseReason}"/> ${%offline})
                 </div>
               </j:when>
               <j:when test="${c.connecting}">
@@ -73,16 +73,16 @@ THE SOFTWARE.
                 <tr>
                   <!-- not actually optional, but it helps with backward compatibility -->
                   <j:set var="executor" value="${e}" />
-                  <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true">
+                  <j:set var="exe" value="${e.currentExecutable}" />
+                  <j:set var="exeparent" value="${e.parentTask}" />
+                  <j:set var="exeparentcanread" value="${exeparent.hasReadPermission()}" />
+                  <st:include it="${exe}" page="executorCell.jelly" optional="true">
                     <td class="pane">
                       <div style="white-space: normal">
-                        <j:set var="exe" value="${e.currentExecutable}" />
-                        <j:set var="wu" value="${e.currentWorkUnit}" />
                         <j:choose>
-                          <j:when test="${exe == null and wu != null}">
-                            <j:set var="exeparent" value="${wu.work}"/>
+                          <j:when test="${exeparent != null}">
                             <j:choose>
-                              <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
+                              <j:when test="${exeparentcanread}">
                                 <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
                                 <t:progressBar tooltip="${%Pending}" pos="-1" href="${rootURL}/${exeparent.url}"/>
                               </j:when>
@@ -91,30 +91,26 @@ THE SOFTWARE.
                               </j:otherwise>
                             </j:choose>
                           </j:when>
-                          <j:when test="${exe == null and wu == null}">
+                          <j:when test="${exe == null}">
                             <!-- went idle concurrent with testing for idle -->
                             ${%Idle}
                           </j:when>
                           <j:otherwise>
-                        <j:invokeStatic var="exeparent"
-                           className="hudson.model.queue.Executables" method="getParentOf">
-                          <j:arg type="hudson.model.Queue$Executable" value="${exe}" />
-                        </j:invokeStatic>
-                        <j:choose>
-                          <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
-                            <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
-                            <t:buildProgressBar build="${exe}" executor="${executor}"/>
-                          </j:when>
-                          <j:otherwise>
-                            <span>${%Unknown Task}</span>
-                          </j:otherwise>
-                        </j:choose>
+                            <j:choose>
+                              <j:when test="${exeparentcanread}">
+                                <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
+                                <t:buildProgressBar build="${exe}" executor="${executor}"/>
+                              </j:when>
+                              <j:otherwise>
+                                <span>${%Unknown Task}</span>
+                              </j:otherwise>
+                            </j:choose>
                           </j:otherwise>
                         </j:choose>
                       </div>
                     </td>
                     <td class="pane">
-                      <j:if test="${h.hasPermission(exeparent,exeparent.READ)}">
+                      <j:if test="${exeparentcanread}">
                           <a href="${rootURL}/${exe.url}" class="model-link inside" style="display: block;"><l:breakable value="${exe.displayName}"/></a>
                       </j:if>
                     </td>
@@ -123,7 +119,7 @@ THE SOFTWARE.
               </table>
             </div>
             <div class="executor-stop">
-              <j:if test="${h.hasPermission(exeparent,exeparent.READ) and e.hasStopPermission()}">
+              <j:if test="${exeparentcanread and e.hasStopPermission()}">
                 <l:stopButton href="${rootURL}/${c.url}${url}/stopBuild?runExtId=${h.urlEncode(exe.externalizableId)}" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
               </j:if>
             </div>
@@ -143,7 +139,7 @@ THE SOFTWARE.
                                       and !builtInHasExecutors)}"/>
   <!-- Remove the built-in from the list when it is included but has no executors to show -->
   <j:choose>
-    <j:when test="${!builtInHasExecutors and computers.get(0).node == app and computers.size() gt 1}">
+    <j:when test="${!builtInHasExecutors and computers.size() gt 1 and computers.get(0).node == app}">
       <j:set var="computers" value="${computers.subList(1, computers.size())}"/>
     </j:when>
   </j:choose>

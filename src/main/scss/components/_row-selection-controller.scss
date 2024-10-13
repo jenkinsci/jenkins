@@ -1,0 +1,225 @@
+.jenkins-table__checkbox-container {
+  position: relative;
+  display: flex;
+}
+
+.jenkins-table__checkbox {
+  appearance: none;
+  display: inline-grid;
+  width: 1.375rem;
+  height: 1.375rem;
+  background: transparent;
+  outline: none;
+  border: none;
+  box-shadow:
+    0 0 0 10px transparent,
+    inset 0 0 0 0.125rem var(--input-border);
+  border-radius: 6px;
+  transition: var(--standard-transition);
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    box-shadow:
+      0 0 0 10px transparent,
+      inset 0 0 0 0.3125rem var(--input-border-hover);
+  }
+
+  &:active,
+  &:focus {
+    box-shadow:
+      0 0 0 5px var(--focus-input-glow),
+      inset 0 0 0 0.3125rem var(--focus-input-border);
+  }
+
+  svg {
+    width: 0.85rem;
+    height: 0.85rem;
+    grid-column-start: 1;
+    grid-row-start: 1;
+    place-self: center center;
+    transition: var(--elastic-transition);
+    transform: scale(0);
+    color: var(--text-color);
+    opacity: 0;
+
+    * {
+      stroke-width: 60px;
+    }
+  }
+
+  .jenkins-table__checkbox__all-symbol {
+    color: var(--background);
+  }
+
+  &--indeterminate {
+    .jenkins-table__checkbox__indeterminate-symbol {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  &--all {
+    box-shadow:
+      0 0 0 10px transparent,
+      inset 0 0 0 0.6875rem var(--focus-input-border);
+
+    &:hover {
+      box-shadow:
+        0 0 0 10px transparent,
+        inset 0 0 0 1.375rem var(--focus-input-border);
+    }
+
+    &:active,
+    &:focus {
+      box-shadow:
+        0 0 0 5px var(--focus-input-glow),
+        inset 0 0 0 1.375rem var(--focus-input-border);
+    }
+
+    .jenkins-table__checkbox__all-symbol {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  &[disabled],
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.2;
+    transition: none;
+  }
+}
+
+.jenkins-table__checkbox-options {
+  height: 1.375rem;
+  min-height: unset !important;
+  padding: 0 0.2rem !important;
+  margin: 0 0 0 0.2rem !important;
+  border-radius: 6px;
+
+  svg {
+    max-width: 0.9rem;
+    max-height: 0.9rem;
+    pointer-events: none;
+    color: var(--input-border);
+    transition: var(--standard-transition);
+
+    * {
+      stroke-width: 60px;
+    }
+  }
+
+  &::before,
+  &::after {
+    border-radius: 0.33rem;
+  }
+
+  &:hover {
+    svg {
+      color: var(--input-border-hover);
+    }
+  }
+
+  &:active,
+  &:focus {
+    svg {
+      color: var(--focus-input-border);
+    }
+  }
+
+  &[disabled],
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.2;
+    transition: none;
+  }
+}
+
+.jenkins-table__checkbox-dropdown {
+  position: absolute;
+  top: 1.375rem;
+  left: 1.375rem;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.8rem;
+  z-index: 999;
+  padding: 0.4rem;
+  box-shadow:
+    inset 0 0 0 2px rgba(white, 0.05),
+    0 0 0 1px rgba(black, 0.05),
+    0 5px 10px rgba(black, 0.1),
+    0 5px 20px rgba(black, 0.3);
+  min-width: 170px;
+  opacity: 0;
+  visibility: collapse;
+  transform: scale(0.9);
+  transform-origin: top left;
+  transition: var(--standard-transition);
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+  }
+
+  &::before {
+    backdrop-filter: brightness(3) blur(5px);
+  }
+
+  &::after {
+    background: var(--background);
+    opacity: 0.9;
+  }
+
+  span {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    padding: 0.5rem 0.75rem;
+  }
+
+  .jenkins-button {
+    justify-content: flex-start;
+    gap: 0.75rem;
+    border-radius: 10px;
+    margin: 0 !important;
+    padding: 0.5rem 0.9rem !important;
+    min-height: 2.25rem !important;
+  }
+
+  &--visible {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+}
+
+.jenkins-table__checkbox-dropdown__icon {
+  position: relative;
+  width: 1.1rem;
+  height: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -0.15rem;
+    border: 0.1rem solid var(--text-color-secondary);
+    border-radius: 6px;
+    opacity: 0.25;
+  }
+
+  svg {
+    width: 0.9rem;
+    height: 0.9rem;
+
+    * {
+      stroke-width: 50px;
+    }
+  }
+}

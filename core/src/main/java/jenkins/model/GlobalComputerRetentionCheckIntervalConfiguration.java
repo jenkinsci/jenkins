@@ -23,7 +23,7 @@ public class GlobalComputerRetentionCheckIntervalConfiguration extends GlobalCon
     /**
      * Gets the check interval for computer retention.
      *
-     * @since TODO
+     * @since 2.463
      */
     public int getComputerRetentionCheckInterval() {
         if (computerRetentionCheckInterval <= 0) {
@@ -42,7 +42,7 @@ public class GlobalComputerRetentionCheckIntervalConfiguration extends GlobalCon
      *
      * @param interval new check interval in seconds
      * @throws IllegalArgumentException interval must be greater than zero
-     * @since TODO
+     * @since 2.463
      */
     private void setComputerRetentionCheckInterval(int interval) throws IllegalArgumentException {
         if (interval <= 0) {

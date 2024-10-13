@@ -69,7 +69,7 @@ import org.jvnet.hudson.test.Issue;
 public class PathRemoverTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
-    @Rule public Timeout timeout = new Timeout(10, TimeUnit.SECONDS);
+    @Rule public Timeout timeout = new Timeout(30, TimeUnit.SECONDS);
     @Rule public FileLockerRule locker = new FileLockerRule();
 
     @Test
