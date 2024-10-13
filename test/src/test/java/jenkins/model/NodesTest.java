@@ -37,10 +37,13 @@ import static org.junit.Assert.assertThrows;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.XmlFile;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.Node;
+import hudson.model.Saveable;
 import hudson.model.Slave;
+import hudson.model.listeners.SaveableListener;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
@@ -99,6 +102,10 @@ public class NodesTest {
         assertEquals(0, l.deleted);
         assertEquals(1, l.updated);
         assertEquals(1, l.created);
+        var saveableListener = ExtensionList.lookupSingleton(SaveableListenerImpl.class);
+        assertEquals(0, saveableListener.deleted);
+        r.jenkins.removeNode(newNode);
+        assertEquals(1, saveableListener.deleted);
     }
 
     @TestExtension("addNodeShouldReplaceExistingNode")
@@ -119,6 +126,16 @@ public class NodesTest {
         @Override
         protected void onCreated(Node node) {
             created++;
+        }
+    }
+
+    @TestExtension("addNodeShouldReplaceExistingNode")
+    public static final class SaveableListenerImpl extends SaveableListener {
+        int deleted;
+
+        @Override
+        public void onDeleted(Saveable o, XmlFile file) {
+            deleted++;
         }
     }
 

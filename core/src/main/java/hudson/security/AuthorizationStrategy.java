@@ -43,6 +43,7 @@ import hudson.util.DescriptorList;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import jenkins.model.IComputer;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
@@ -152,6 +153,22 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      */
     public @NonNull ACL getACL(@NonNull Computer computer) {
         return getACL(computer.getNode());
+    }
+
+    /**
+     * Implementation can choose to provide different ACL for different computers.
+     * This can be used as a basis for more fine-grained access control.
+     * <p>
+     * Default implementation delegates to {@link #getACL(Computer)} if the computer is an instance of {@link Computer},
+     * otherwise it will fall back to {@link #getRootACL()}.
+     *
+     * @since 2.480
+     **/
+    public @NonNull ACL getACL(@NonNull IComputer computer) {
+        if (computer instanceof Computer c) {
+            return getACL(c);
+        }
+        return getRootACL();
     }
 
     /**
