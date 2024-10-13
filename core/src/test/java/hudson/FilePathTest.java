@@ -140,15 +140,15 @@ public class FilePathTest {
     @Test public void noRaceConditionInCopyTo() throws Exception {
         final File tmp = temp.newFile();
 
-           int fileSize = 90000;
+        int fileSize = 90000;
 
-            givenSomeContentInFile(tmp, fileSize);
+        givenSomeContentInFile(tmp, fileSize);
 
-            List<Future<Integer>> results = whenFileIsCopied100TimesConcurrently(tmp);
+        List<Future<Integer>> results = whenFileIsCopied100TimesConcurrently(tmp);
 
-            // THEN copied count was always equal the expected size
-            for (Future<Integer> f : results)
-                assertEquals(fileSize, f.get().intValue());
+        // THEN copied count was always equal the expected size
+        for (Future<Integer> f : results)
+            assertEquals(fileSize, f.get().intValue());
     }
 
     private void givenSomeContentInFile(File file, int size) throws IOException {
@@ -217,55 +217,55 @@ public class FilePathTest {
         // should return number of files processed, whether or not they were copied or already current
         File src = temp.newFolder("src");
         File dst = temp.newFolder("dst");
-            File.createTempFile("foo", ".tmp", src);
-            FilePath fp = new FilePath(src);
-            assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
-            // copy again should still report 1
-            assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
+        File.createTempFile("foo", ".tmp", src);
+        FilePath fp = new FilePath(src);
+        assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
+        // copy again should still report 1
+        assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
     }
 
     @Issue("JENKINS-9540")
     @Test public void errorMessageInRemoteCopyRecursive() throws Exception {
         File src = temp.newFolder("src");
         File dst = temp.newFolder("dst");
-            FilePath from = new FilePath(src);
-            FilePath to = new FilePath(channels.british, dst.getAbsolutePath());
-            for (int i = 0; i < 10000; i++) {
-                // TODO is there a simpler way to force the TarOutputStream to be flushed and the reader to start?
-                // Have not found a way to make the failure guaranteed.
-                try (OutputStream os = from.child("content" + i).write()) {
-                    for (int j = 0; j < 1024; j++) {
-                        os.write('.');
-                    }
+        FilePath from = new FilePath(src);
+        FilePath to = new FilePath(channels.british, dst.getAbsolutePath());
+        for (int i = 0; i < 10000; i++) {
+            // TODO is there a simpler way to force the TarOutputStream to be flushed and the reader to start?
+            // Have not found a way to make the failure guaranteed.
+            try (OutputStream os = from.child("content" + i).write()) {
+                for (int j = 0; j < 1024; j++) {
+                    os.write('.');
                 }
             }
-            FilePath toF = to.child("content0");
-            toF.write().close();
-            toF.chmod(0400);
-            try {
-                from.copyRecursiveTo(to);
-                // on Windows this may just succeed; OK, test did not prove anything then
-            } catch (IOException x) {
-                if (Functions.printThrowable(x).contains("content0")) {
-                    // Fine, error message talks about permission denied.
-                } else {
-                    throw x;
-                }
-            } finally {
-                toF.chmod(0700);
+        }
+        FilePath toF = to.child("content0");
+        toF.write().close();
+        toF.chmod(0400);
+        try {
+            from.copyRecursiveTo(to);
+            // on Windows this may just succeed; OK, test did not prove anything then
+        } catch (IOException x) {
+            if (Functions.printThrowable(x).contains("content0")) {
+                // Fine, error message talks about permission denied.
+            } else {
+                throw x;
             }
+        } finally {
+            toF.chmod(0700);
+        }
     }
 
     @Issue("JENKINS-4039")
     @Test public void archiveBug() throws Exception {
-            FilePath d = new FilePath(channels.french, temp.getRoot().getPath());
-            d.child("test").touch(0);
-            try (OutputStream out = OutputStream.nullOutputStream()) {
-                d.zip(out);
-            }
-            try (OutputStream out = OutputStream.nullOutputStream()) {
-                d.zip(out, "**/*");
-            }
+        FilePath d = new FilePath(channels.french, temp.getRoot().getPath());
+        d.child("test").touch(0);
+        try (OutputStream out = OutputStream.nullOutputStream()) {
+            d.zip(out);
+        }
+        try (OutputStream out = OutputStream.nullOutputStream()) {
+            d.zip(out, "**/*");
+        }
     }
 
     @Test public void normalization() {
@@ -397,36 +397,36 @@ public class FilePathTest {
 
     @Test public void list() throws Exception {
         File baseDir = temp.getRoot();
-            final Set<FilePath> expected = new HashSet<>();
-            expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
-            expected.add(createFilePath(baseDir, "top", "sub", "trace.log"));
-            expected.add(createFilePath(baseDir, "top", "db", "db.log"));
-            expected.add(createFilePath(baseDir, "top", "db", "trace.log"));
-            final FilePath[] result = new FilePath(baseDir).list("**");
-            assertEquals(expected, new HashSet<>(Arrays.asList(result)));
+        final Set<FilePath> expected = new HashSet<>();
+        expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
+        expected.add(createFilePath(baseDir, "top", "sub", "trace.log"));
+        expected.add(createFilePath(baseDir, "top", "db", "db.log"));
+        expected.add(createFilePath(baseDir, "top", "db", "trace.log"));
+        final FilePath[] result = new FilePath(baseDir).list("**");
+        assertEquals(expected, new HashSet<>(Arrays.asList(result)));
     }
 
     @Test public void listWithExcludes() throws Exception {
         File baseDir = temp.getRoot();
-            final Set<FilePath> expected = new HashSet<>();
-            expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
-            createFilePath(baseDir, "top", "sub", "trace.log");
-            expected.add(createFilePath(baseDir, "top", "db", "db.log"));
-            createFilePath(baseDir, "top", "db", "trace.log");
-            final FilePath[] result = new FilePath(baseDir).list("**", "**/trace.log");
-            assertEquals(expected, new HashSet<>(Arrays.asList(result)));
+        final Set<FilePath> expected = new HashSet<>();
+        expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
+        createFilePath(baseDir, "top", "sub", "trace.log");
+        expected.add(createFilePath(baseDir, "top", "db", "db.log"));
+        createFilePath(baseDir, "top", "db", "trace.log");
+        final FilePath[] result = new FilePath(baseDir).list("**", "**/trace.log");
+        assertEquals(expected, new HashSet<>(Arrays.asList(result)));
     }
 
     @Test public void listWithDefaultExcludes() throws Exception {
         File baseDir = temp.getRoot();
-            final Set<FilePath> expected = new HashSet<>();
-            expected.add(createFilePath(baseDir, "top", "sub", "backup~"));
-            expected.add(createFilePath(baseDir, "top", "CVS", "somefile,v"));
-            expected.add(createFilePath(baseDir, "top", ".git", "config"));
-            // none of the files are included by default (default includes true)
-            assertEquals(0, new FilePath(baseDir).list("**", "").length);
-            final FilePath[] result = new FilePath(baseDir).list("**", "", false);
-            assertEquals(expected, new HashSet<>(Arrays.asList(result)));
+        final Set<FilePath> expected = new HashSet<>();
+        expected.add(createFilePath(baseDir, "top", "sub", "backup~"));
+        expected.add(createFilePath(baseDir, "top", "CVS", "somefile,v"));
+        expected.add(createFilePath(baseDir, "top", ".git", "config"));
+        // none of the files are included by default (default includes true)
+        assertEquals(0, new FilePath(baseDir).list("**", "").length);
+        final FilePath[] result = new FilePath(baseDir).list("**", "", false);
+        assertEquals(expected, new HashSet<>(Arrays.asList(result)));
     }
 
     @Issue("JENKINS-11073")
@@ -455,49 +455,49 @@ public class FilePathTest {
      */
     @Test public void copyToWithPermission() throws IOException, InterruptedException {
         File tmp = temp.getRoot();
-            File child = new File(tmp, "child");
-            FilePath childP = new FilePath(child);
-            childP.touch(4711);
+        File child = new File(tmp, "child");
+        FilePath childP = new FilePath(child);
+        childP.touch(4711);
 
-            Chmod chmodTask = new Chmod();
-            chmodTask.setProject(new Project());
-            chmodTask.setFile(child);
-            chmodTask.setPerm("0400");
-            chmodTask.execute();
+        Chmod chmodTask = new Chmod();
+        chmodTask.setProject(new Project());
+        chmodTask.setFile(child);
+        chmodTask.setPerm("0400");
+        chmodTask.execute();
 
-            FilePath copy = new FilePath(channels.british, tmp.getPath()).child("copy");
+        FilePath copy = new FilePath(channels.british, tmp.getPath()).child("copy");
+        childP.copyToWithPermission(copy);
+
+        assertEquals(childP.mode(), copy.mode());
+        if (!Functions.isWindows()) {
+            assertEquals(childP.lastModified(), copy.lastModified());
+        }
+
+        // JENKINS-11073:
+        // Windows seems to have random failures when setting the timestamp on newly generated
+        // files. So test that:
+        for (int i = 0; i < 100; i++) {
+            copy = new FilePath(channels.british, tmp.getPath()).child("copy" + i);
             childP.copyToWithPermission(copy);
-
-            assertEquals(childP.mode(), copy.mode());
-            if (!Functions.isWindows()) {
-                assertEquals(childP.lastModified(), copy.lastModified());
-            }
-
-            // JENKINS-11073:
-            // Windows seems to have random failures when setting the timestamp on newly generated
-            // files. So test that:
-            for (int i = 0; i < 100; i++) {
-                copy = new FilePath(channels.british, tmp.getPath()).child("copy" + i);
-                childP.copyToWithPermission(copy);
-            }
+        }
     }
 
     @Test public void symlinkInTar() throws Exception {
         assumeFalse(Functions.isWindows());
 
         FilePath tmp = new FilePath(temp.getRoot());
-            FilePath in = tmp.child("in");
-            in.mkdirs();
-            in.child("c").touch(0);
-            in.child("b").symlinkTo("c", TaskListener.NULL);
+        FilePath in = tmp.child("in");
+        in.mkdirs();
+        in.child("c").touch(0);
+        in.child("b").symlinkTo("c", TaskListener.NULL);
 
-            FilePath tar = tmp.child("test.tar");
-            in.tar(tar.write(), "**/*");
+        FilePath tar = tmp.child("test.tar");
+        in.tar(tar.write(), "**/*");
 
-            FilePath dst = in.child("dst");
-            tar.untar(dst, TarCompression.NONE);
+        FilePath dst = in.child("dst");
+        tar.untar(dst, TarCompression.NONE);
 
-            assertEquals("c", dst.child("b").readLink());
+        assertEquals("c", dst.child("b").readLink());
     }
 
     @Issue("JENKINS-13649")
@@ -516,18 +516,18 @@ public class FilePathTest {
 
     @Test public void validateAntFileMask() throws Exception {
         File tmp = temp.getRoot();
-            FilePath d = new FilePath(channels.french, tmp.getPath());
-            d.child("d1/d2/d3").mkdirs();
-            d.child("d1/d2/d3/f.txt").touch(0);
-            d.child("d1/d2/d3/f.html").touch(0);
-            d.child("d1/d2/f.txt").touch(0);
-            assertValidateAntFileMask(null, d, "**/*.txt");
-            assertValidateAntFileMask(null, d, "d1/d2/d3/f.txt");
-            assertValidateAntFileMask(null, d, "**/*.html");
-            assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d, "**/*.js");
-            assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAnything("index.htm"), d, "index.htm");
-            assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest("f.html", "d1/d2/d3/f.html"), d, "f.html");
-            // TODO lots more to test, e.g. multiple patterns separated by commas; ought to have full code coverage for this method
+        FilePath d = new FilePath(channels.french, tmp.getPath());
+        d.child("d1/d2/d3").mkdirs();
+        d.child("d1/d2/d3/f.txt").touch(0);
+        d.child("d1/d2/d3/f.html").touch(0);
+        d.child("d1/d2/f.txt").touch(0);
+        assertValidateAntFileMask(null, d, "**/*.txt");
+        assertValidateAntFileMask(null, d, "d1/d2/d3/f.txt");
+        assertValidateAntFileMask(null, d, "**/*.html");
+        assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d, "**/*.js");
+        assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAnything("index.htm"), d, "index.htm");
+        assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest("f.html", "d1/d2/d3/f.html"), d, "f.html");
+        // TODO lots more to test, e.g. multiple patterns separated by commas; ought to have full code coverage for this method
     }
 
     @SuppressWarnings("deprecation")
@@ -539,18 +539,18 @@ public class FilePathTest {
     @SuppressWarnings("deprecation")
     @Test public void validateAntFileMaskBounded() throws Exception {
         File tmp = temp.getRoot();
-            FilePath d = new FilePath(channels.french, tmp.getPath());
-            FilePath d2 = d.child("d1/d2");
-            d2.mkdirs();
-            for (int i = 0; i < 100; i++) {
-                FilePath d3 = d2.child("d" + i);
-                d3.mkdirs();
-                d3.child("f.txt").touch(0);
-            }
-            assertNull(d.validateAntFileMask("d1/d2/**/f.txt"));
-            assertNull(d.validateAntFileMask("d1/d2/**/f.txt", 10));
-            assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d.validateAntFileMask("**/*.js", 1000));
-            assertThrows(InterruptedException.class, () -> d.validateAntFileMask("**/*.js", 10));
+        FilePath d = new FilePath(channels.french, tmp.getPath());
+        FilePath d2 = d.child("d1/d2");
+        d2.mkdirs();
+        for (int i = 0; i < 100; i++) {
+            FilePath d3 = d2.child("d" + i);
+            d3.mkdirs();
+            d3.child("f.txt").touch(0);
+        }
+        assertNull(d.validateAntFileMask("d1/d2/**/f.txt"));
+        assertNull(d.validateAntFileMask("d1/d2/**/f.txt", 10));
+        assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d.validateAntFileMask("**/*.js", 1000));
+        assertThrows(InterruptedException.class, () -> d.validateAntFileMask("**/*.js", 10));
     }
 
     @Issue("JENKINS-5253")
@@ -575,59 +575,59 @@ public class FilePathTest {
     @Issue("JENKINS-15418")
     @Test public void deleteLongPathOnWindows() throws Exception {
         File tmp = temp.getRoot();
-            FilePath d = new FilePath(channels.french, tmp.getPath());
+        FilePath d = new FilePath(channels.french, tmp.getPath());
 
-            // construct a very long path
-            StringBuilder sb = new StringBuilder();
-            while (sb.length() + tmp.getPath().length() < 260 - "very/".length()) {
-                sb.append("very/");
-            }
-            sb.append("pivot/very/very/long/path");
+        // construct a very long path
+        StringBuilder sb = new StringBuilder();
+        while (sb.length() + tmp.getPath().length() < 260 - "very/".length()) {
+            sb.append("very/");
+        }
+        sb.append("pivot/very/very/long/path");
 
-            FilePath longPath = d.child(sb.toString());
-            longPath.mkdirs();
-            FilePath childInLongPath = longPath.child("file.txt");
-            childInLongPath.touch(0);
+        FilePath longPath = d.child(sb.toString());
+        longPath.mkdirs();
+        FilePath childInLongPath = longPath.child("file.txt");
+        childInLongPath.touch(0);
 
-            File firstDirectory = new File(tmp.getAbsolutePath() + "/very");
-            Util.deleteRecursive(firstDirectory);
+        File firstDirectory = new File(tmp.getAbsolutePath() + "/very");
+        Util.deleteRecursive(firstDirectory);
 
-            assertFalse("Could not delete directory!", firstDirectory.exists());
+        assertFalse("Could not delete directory!", firstDirectory.exists());
     }
 
     @Issue("JENKINS-16215")
     @Test public void installIfNecessaryAvoidsExcessiveDownloadsByUsingIfModifiedSince() throws Exception {
         File tmp = temp.getRoot();
-            final FilePath d = new FilePath(tmp);
+        final FilePath d = new FilePath(tmp);
 
-            d.child(".timestamp").touch(123000);
+        d.child(".timestamp").touch(123000);
 
-            final HttpURLConnection con = mock(HttpURLConnection.class);
-            final URL url = someUrlToZipFile(con);
+        final HttpURLConnection con = mock(HttpURLConnection.class);
+        final URL url = someUrlToZipFile(con);
 
-            when(con.getResponseCode())
+        when(con.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
 
-            assertFalse(d.installIfNecessaryFrom(url, null, "message if failed"));
+        assertFalse(d.installIfNecessaryFrom(url, null, "message if failed"));
 
-            verify(con).setIfModifiedSince(123000);
+        verify(con).setIfModifiedSince(123000);
     }
 
     @Issue("JENKINS-16215")
     @Test public void installIfNecessaryPerformsInstallation() throws Exception {
         File tmp = temp.getRoot();
-            final FilePath d = new FilePath(tmp);
+        final FilePath d = new FilePath(tmp);
 
-            final HttpURLConnection con = mock(HttpURLConnection.class);
-            final URL url = someUrlToZipFile(con);
+        final HttpURLConnection con = mock(HttpURLConnection.class);
+        final URL url = someUrlToZipFile(con);
 
-            when(con.getResponseCode())
-              .thenReturn(HttpURLConnection.HTTP_OK);
+        when(con.getResponseCode())
+                .thenReturn(HttpURLConnection.HTTP_OK);
 
-            when(con.getInputStream())
-              .thenReturn(someZippedContent());
+        when(con.getInputStream())
+                .thenReturn(someZippedContent());
 
-            assertTrue(d.installIfNecessaryFrom(url, null, "message if failed"));
+        assertTrue(d.installIfNecessaryFrom(url, null, "message if failed"));
     }
 
     @Issue("JENKINS-26196")
@@ -766,23 +766,23 @@ public class FilePathTest {
     @Issue("JENKINS-16846")
     @Test public void moveAllChildrenTo() throws IOException, InterruptedException {
         File tmp = temp.getRoot();
-            final String dirname = "sub";
-            final File top = new File(tmp, "test");
-            final File sub = new File(top, dirname);
-            final File subsub = new File(sub, dirname);
+        final String dirname = "sub";
+        final File top = new File(tmp, "test");
+        final File sub = new File(top, dirname);
+        final File subsub = new File(sub, dirname);
 
-            subsub.mkdirs();
+        subsub.mkdirs();
 
-            final File subFile1 = new File(sub.getAbsolutePath() + "/file1.txt");
-            subFile1.createNewFile();
-            final File subFile2 = new File(subsub.getAbsolutePath() + "/file2.txt");
-            subFile2.createNewFile();
+        final File subFile1 = new File(sub.getAbsolutePath() + "/file1.txt");
+        subFile1.createNewFile();
+        final File subFile2 = new File(subsub.getAbsolutePath() + "/file2.txt");
+        subFile2.createNewFile();
 
-            final FilePath src = new FilePath(sub);
-            final FilePath dst = new FilePath(top);
+        final FilePath src = new FilePath(sub);
+        final FilePath dst = new FilePath(top);
 
-            // test conflict subdir
-            src.moveAllChildrenTo(dst);
+        // test conflict subdir
+        src.moveAllChildrenTo(dst);
     }
 
     @Issue("JENKINS-10629")
