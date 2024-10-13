@@ -32,9 +32,13 @@ function init() {
     };
   }
 
+  function getMaxSuggestionCount(e) {
+    return parseInt(e.dataset["maxsuggestions"]) || 20;
+  }
+
   function createAndShowDropdown(e, div, suggestions) {
     const items = suggestions
-      .splice(0, 20)
+      .splice(0, getMaxSuggestionCount(e))
       .map((s) => convertSuggestionToItem(s, e));
     if (!e.dropdown) {
       Utils.generateDropdown(

@@ -11,12 +11,11 @@ function init() {
 
   function validate(e) {
     if (e.targetUrl) {
-      var method = e.getAttribute("checkMethod") || "post";
+      const method = e.getAttribute("checkMethod") || "post";
       try {
         FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
       } catch (x) {
         console.warn(x);
-        return;
       }
     }
   }
@@ -34,7 +33,7 @@ function init() {
       label: suggestion.name,
       onClick: confirm,
       onKeyPress: (evt) => {
-        if (evt.key == "Tab") {
+        if (evt.key === "Tab") {
           confirm();
           e.dropdown.hide();
           evt.preventDefault();
