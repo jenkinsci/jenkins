@@ -134,16 +134,16 @@ public class VirtualFileTest {
             System.err.println("testing " + vf.getClass().getName());
             assertEquals("[.hg/config.txt, sub/mid.txt, sub/subsub/lowest.txt, top.txt]", new TreeSet<>(vf.list("**/*.txt", null, false)).toString());
             assertEquals("[sub/mid.txt, sub/subsub/lowest.txt, top.txt]", new TreeSet<>(vf.list("**/*.txt", null, true)).toString());
-            assertEquals("[.hg/config.txt, sub/mid.txt, sub/subsub/lowest.txt, top.txt, very/deep/path/here]", new TreeSet<>(vf.list("**", null, false)).toString());
+            assertEquals("[.hg, .hg/config.txt, sub, sub/mid.txt, sub/subsub, sub/subsub/lowest.txt, top.txt, very, very/deep, very/deep/path, very/deep/path/here]", new TreeSet<>(vf.list("**", null, false)).toString());
             assertEquals("[]", new TreeSet<>(vf.list("", null, false)).toString());
-            assertEquals("[sub/mid.txt, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", null, false)).toString());
-            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/", false)).toString());
-            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/**", false)).toString());
-            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "**/subsub/", false)).toString());
+            assertEquals("[sub, sub/mid.txt, sub/subsub, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", null, false)).toString());
+            assertEquals("[sub, sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/", false)).toString());
+            assertEquals("[sub, sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/**", false)).toString());
+            assertEquals("[sub, sub/mid.txt]", new TreeSet<>(vf.list("sub/", "**/subsub/", false)).toString());
             assertEquals("[.hg/config.txt, sub/mid.txt]", new TreeSet<>(vf.list("**/mid*,**/conf*", null, false)).toString());
-            assertEquals("[sub/mid.txt, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", "**/notthere/", false)).toString());
+            assertEquals("[sub, sub/mid.txt, sub/subsub, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", "**/notthere/", false)).toString());
             assertEquals("[top.txt]", new TreeSet<>(vf.list("*.txt", null, false)).toString());
-            assertEquals("[sub/subsub/lowest.txt, top.txt, very/deep/path/here]", new TreeSet<>(vf.list("**", "**/mid*,**/conf*", false)).toString());
+            assertEquals("[.hg, sub, sub/subsub, sub/subsub/lowest.txt, top.txt, very, very/deep, very/deep/path, very/deep/path/here]", new TreeSet<>(vf.list("**", "**/mid*,**/conf*", false)).toString());
         }
     }
     /** Roughly analogous to {@code org.jenkinsci.plugins.compress_artifacts.ZipStorage}. */
