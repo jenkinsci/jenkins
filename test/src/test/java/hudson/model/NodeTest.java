@@ -27,6 +27,7 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -115,6 +116,7 @@ public class NodeTest {
         try (ACLContext ignored = ACL.as2(someone.impersonate2())) {
             computer.doToggleOffline("original message");
             cause = (OfflineCause.UserCause) computer.getOfflineCause();
+            assertThat(computer.getTemporaryOfflineCauseReason(), is("original message"));
             assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
             assertEquals(someone, cause.getUser());
         }
@@ -122,6 +124,7 @@ public class NodeTest {
         try (ACLContext ignored = ACL.as2(root.impersonate2())) {
             computer.doChangeOfflineCause("new message");
             cause = (OfflineCause.UserCause) computer.getOfflineCause();
+            assertThat(computer.getTemporaryOfflineCauseReason(), is("new message"));
             assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
             assertEquals(root, cause.getUser());
 

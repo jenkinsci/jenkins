@@ -151,15 +151,15 @@ public abstract class OfflineCause {
         // null when unknown
         private /*final*/ @CheckForNull String userId;
 
+        private final String message;
+
         public UserCause(@CheckForNull User user, @CheckForNull String message) {
-            this(
-                    user != null ? user.getId() : null,
-                    message != null ? " : " + message : ""
-            );
+            this(user != null ? user.getId() : null, message);
         }
 
         private UserCause(String userId, String message) {
-            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS2.getName(), message));
+            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS2.getName(), message != null ? " : " + message : ""));
+            this.message = message;
             this.userId = userId;
         }
 
@@ -168,6 +168,10 @@ public abstract class OfflineCause {
                     ? User.getUnknown()
                     : User.getById(userId, true)
             ;
+        }
+
+        public String getMessage() {
+            return message;
         }
 
         // Storing the User in a filed was a mistake, switch to userId

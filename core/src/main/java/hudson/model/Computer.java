@@ -712,6 +712,20 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         node.setTemporaryOfflineCause(temporaryOfflineCause);
     }
 
+    @SuppressWarnings("unused") // used by setOfflineCause.jelly
+    public String getTemporaryOfflineCauseReason() {
+        var node = getNode();
+        if (node == null) {
+            // Node was deleted; computer still exists
+            return null;
+        }
+        var cause = node.getTemporaryOfflineCause();
+        if (cause instanceof OfflineCause.UserCause userCause) {
+            return userCause.getMessage();
+        }
+        return cause != null ? cause.toString() : "";
+    }
+
     @Exported
     @Override
     public String getIcon() {
