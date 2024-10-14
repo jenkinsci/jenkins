@@ -29,31 +29,42 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%Edit View}" permission="${it.CONFIGURE}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Configure}" />
+
+    <l:breadcrumb title="${title}" />
+
     <l:main-panel>
+      <l:app-bar title="${title}" />
+
       <!-- to make the form field binding work -->
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${it.descriptor}" />
 
-      <f:form method="post" action="configSubmit" name="viewConfig">
-        <f:entry title="${%Name}">
-          <f:textbox name="name" value="${it.viewName}" autocomplete="on"/>
-        </f:entry>
-        <f:entry field="description" title="${%Description}" help="/help/view-config/description.html">
-          <f:textarea codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-        </f:entry>
-        <f:entry field="filterQueue" help="/help/view-config/filter-queue.html">
-            <f:checkbox title="${%Filter build queue}"/>
-        </f:entry>
-        <f:entry field="filterExecutors" help="/help/view-config/filter-executors.html">
-            <f:checkbox title="${%Filter build executors}"/>
-        </f:entry>
+      <f:form method="post" action="configSubmit" name="viewConfig" class="jenkins-form">
+        <f:section>
+          <f:entry title="${%Name}">
+            <f:textbox name="name" value="${it.viewName}" autocomplete="on" />
+          </f:entry>
+          <f:entry field="description" title="${%Description}" description="${%description.description}">
+            <f:textarea codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+          </f:entry>
+        </f:section>
 
         <!-- subtypes can put entries here. -->
         <st:include page="configure-entries.jelly" optional="true" />
 
         <!-- view property configurations -->
         <f:descriptorList descriptors="${it.getVisiblePropertyDescriptors()}" instances="${it.properties}" />
+
+        <f:section title="${%Widgets}" description="${%widgets.description}">
+          <f:entry field="filterQueue">
+            <f:checkbox title="${%Filter build queue}"
+                        description="${%widgets.filterqueue.description}" />
+          </f:entry>
+          <f:entry field="filterExecutors">
+            <f:checkbox title="${%Filter build executors}"
+                        description="${%widgets.filterexecutors.description}" />
+          </f:entry>
+        </f:section>
 
         <f:saveApplyBar/>
       </f:form>

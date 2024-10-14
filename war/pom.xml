@@ -272,14 +272,14 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, and mailer -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>display-url-api</artifactId>
-                  <version>2.204.vf6fddd8a_8b_e9</version>
+                  <version>2.209.v582ed814ff2f</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>488.v0c9639c1a_eb_3</version>
+                  <version>489.vd4b_25144138f</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -300,7 +300,7 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>839.vff91cd7e3a_b_2</version>
+                  <version>840.v812f627cb_578</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -645,7 +645,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty.ee9</groupId>
         <artifactId>jetty-ee9-maven-plugin</artifactId>
-        <version>12.0.13</version>
+        <version>12.0.14</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)

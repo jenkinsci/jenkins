@@ -40,7 +40,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * Interface for computer-like objects meant to be passed to {@code t:executors} tag.
  *
- * @since TODO
+ * @since 2.480
  */
 @Restricted(Beta.class)
 public interface IComputer extends AccessControlled {
