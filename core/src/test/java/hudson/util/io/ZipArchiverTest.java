@@ -81,7 +81,6 @@ public class ZipArchiverTest {
         }
     }
 
-    @Ignore("TODO fails to add empty directories to archive")
     @Issue("JENKINS-49296")
     @Test
     public void emptyDirectory() throws Exception {
