@@ -35,6 +35,7 @@ THE SOFTWARE.
       </l:header>
     </l:isAdmin>
     <l:main-panel>
+      <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
       <j:choose>
         <j:when test="${it.cloudAvailable and it.hasClouds()}">
           <l:app-bar title="${%Clouds}">

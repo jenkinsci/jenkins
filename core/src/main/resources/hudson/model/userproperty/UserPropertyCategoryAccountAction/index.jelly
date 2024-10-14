@@ -62,11 +62,8 @@ THE SOFTWARE.
                         </f:section>
                     </j:if>
                 </j:forEach>
-                
-                <f:bottomButtonBar>
-                    <f:submit value="${%Save}" />
-                    <f:apply />
-                </f:bottomButtonBar>
+
+                <f:saveApplyBar/>
             </f:form>
             <st:adjunct includes="lib.form.confirm" />
         </l:main-panel>

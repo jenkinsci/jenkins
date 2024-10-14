@@ -4159,7 +4159,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         updateComputerList();
 
-        rsp.sendRedirect(req.getContextPath() + '/' + toComputer().getUrl());  // back to the computer page
+        FormApply.success(req.getContextPath() + '/' + toComputer().getUrl()).generateResponse(req, rsp, null);
     }
 
     /**
