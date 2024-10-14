@@ -551,7 +551,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>json-api</artifactId>
-                  <version>20240303-41.v94e11e6de726</version>
+                  <version>20240303-101.v7a_8666713110</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
