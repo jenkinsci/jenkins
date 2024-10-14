@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -104,6 +105,9 @@ public class NodeTest {
         OfflineCause cause2 = new OfflineCause.ByCLI("another message");
         node.setTemporaryOfflineCause(cause2);
         assertEquals("Node should have the new offline cause.", cause2, node.toComputer().getOfflineCause());
+        // Exists in some plugins
+        node.toComputer().setTemporarilyOffline(false, new OfflineCause.ByCLI("A third message"));
+        assertThat(node.getTemporaryOfflineCause(), nullValue());
     }
 
     @Test

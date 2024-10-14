@@ -694,7 +694,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (cause == null) {
             setTemporarilyOffline(temporarilyOffline);
         } else {
-            setTemporaryOfflineCause(cause);
+            setTemporaryOfflineCause(temporarilyOffline ? cause : null);
         }
     }
 
