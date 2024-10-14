@@ -622,8 +622,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @Override
     public boolean isOffline() {
-        var node = getNode();
-        return node == null || node.isTemporarilyOffline() || getChannel() == null;
+        return isTemporarilyOffline() || getChannel() == null;
     }
 
     public final boolean isOnline() {
