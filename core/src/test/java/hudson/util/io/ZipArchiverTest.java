@@ -81,26 +81,25 @@ public class ZipArchiverTest {
         }
     }
 
-    @Ignore("TODO fails to add empty directories to archive")
     @Issue("JENKINS-49296")
     @Test
     public void emptyDirectory() throws Exception {
         Path zip = tmp.newFile("test.zip").toPath();
         Path root = tmp.newFolder().toPath();
-        Files.createDirectory(root.resolve("foo"));
-        Files.createDirectory(root.resolve("bar"));
-        Files.writeString(root.resolve("bar/file.txt"), "foobar", StandardCharsets.UTF_8);
+        Files.createDirectory(root.resolve("a"));
+        Files.createDirectory(root.resolve("b"));
+        Files.writeString(root.resolve("a/file.txt"), "empty_dir_zip_test");
         try (OutputStream out = Files.newOutputStream(zip)) {
             new FilePath(root.toFile()).zip(out, "**");
         }
-        Set<String> names = new HashSet<>();
-        try (InputStream is = Files.newInputStream(zip);
-             ZipInputStream zis = new ZipInputStream(is, StandardCharsets.UTF_8)) {
-            ZipEntry ze;
-            while ((ze = zis.getNextEntry()) != null) {
-                names.add(ze.getName());
+        Set<String> actual = new HashSet<>();
+        Set<String> expected = Set.of("a/", "b/", "a/file.txt");
+        try (ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(zip), StandardCharsets.UTF_8)) {
+            ZipEntry zipEntry;
+            while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+                actual.add(zipEntry.getName());
             }
         }
-        assertEquals(Set.of("foo/", "bar/", "bar/file.txt"), names);
+        assertEquals(expected, actual);
     }
 }
