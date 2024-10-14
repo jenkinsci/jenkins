@@ -116,6 +116,7 @@ public class NodeTest {
         try (ACLContext ignored = ACL.as2(someone.impersonate2())) {
             computer.doToggleOffline("original message");
             cause = (OfflineCause.UserCause) computer.getOfflineCause();
+            assertThat(computer.getOfflineCauseReason(), is("original message"));
             assertThat(computer.getTemporaryOfflineCauseReason(), is("original message"));
             assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
             assertEquals(someone, cause.getUser());

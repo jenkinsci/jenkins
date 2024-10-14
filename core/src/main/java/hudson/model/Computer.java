@@ -373,6 +373,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @Override
     public String getOfflineCauseReason() {
+        var offlineCause = getOfflineCause();
         if (offlineCause == null) {
             return "";
         }
