@@ -3,7 +3,9 @@ package hudson.util.io;
 import static org.junit.Assert.assertEquals;
 
 import hudson.FilePath;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
@@ -14,6 +16,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
+
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,7 +25,8 @@ import org.jvnet.hudson.test.Issue;
 
 public class ZipArchiverTest {
 
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     @Issue("JENKINS-9942")
     @Test
@@ -92,7 +96,8 @@ public class ZipArchiverTest {
         }
         Set<String> actual = new HashSet<>();
         Set<String> expected = Set.of("a/", "b/", "a/file.txt");
-        try (ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(zip), StandardCharsets.UTF_8)) {
+        try (InputStream inputStream = Files.newInputStream(zip);
+             ZipInputStream zipInputStream = new ZipInputStream(inputStream, StandardCharsets.UTF_8)) {
             ZipEntry zipEntry;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                 actual.add(zipEntry.getName());
