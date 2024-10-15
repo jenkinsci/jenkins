@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts
+Copyright (c) 2024, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-<div>
-  If checked, only those build executors will be shown that could execute the
-  jobs in this view.
-</div>
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Creates the bottom bar for the "Save" and "Apply" buttons.
+    In read only mode (&lt;j:set var="readOnlyMode" value="true"/&gt;) the buttons are not displayed.
+  </st:documentation>
+
+  <j:if test="${!readOnlyMode}">
+    <f:bottomButtonBar>
+      <f:submit value="${%Save}" />
+      <f:apply/>
+    </f:bottomButtonBar>
+    <st:adjunct includes="lib.form.confirm" />
+  </j:if>
+</j:jelly>
