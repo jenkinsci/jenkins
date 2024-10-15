@@ -27,11 +27,9 @@ package jenkins.util;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
@@ -239,10 +237,16 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFile(root);
         Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, containsInRelativeOrder(
+        assertThat(children, containsInAnyOrder(
                 "a/aa/aa.txt",
                 "a/ab/ab.txt",
-                "b/ba/ba.txt"
+                "b/ba/ba.txt",
+                "a",
+                "a/aa",
+                "a/aa/aaa",
+                "a/ab",
+                "b",
+                "b/ba"
         ));
     }
 
@@ -255,10 +259,16 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
         Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, hasItems(
+        assertThat(children, containsInAnyOrder(
                 "a/aa/aa.txt",
                 "a/ab/ab.txt",
-                "b/ba/ba.txt"
+                "b/ba/ba.txt",
+                "a",
+                "a/aa",
+                "a/aa/aaa",
+                "a/ab",
+                "b",
+                "b/ba"
         ));
     }
 
@@ -506,7 +516,7 @@ public class VirtualFileTest {
         VirtualFile symlinkVirtualPath = VirtualFile.forFilePath(symlinkPath);
         VirtualFile symlinkChildVirtualPath = symlinkVirtualPath.child("aa");
         Collection<String> children = symlinkChildVirtualPath.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, hasItems("aa.txt"));
+        assertThat(children, containsInAnyOrder("aaa", "aa.txt"));
     }
 
     @Test
@@ -521,7 +531,7 @@ public class VirtualFileTest {
         VirtualFile symlinkVirtualFile = VirtualFile.forFile(symlinkFile);
         VirtualFile symlinkChildVirtualFile = symlinkVirtualFile.child("aa");
         Collection<String> children = symlinkChildVirtualFile.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, hasItems("aa.txt"));
+        assertThat(children, containsInAnyOrder("aaa", "aa.txt"));
     }
 
     @Test
