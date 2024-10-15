@@ -685,7 +685,6 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
             assertThat(entryNames, hasItems(
                     p.getName() + "/intermediateFolder/public2.key",
                     p.getName() + "/public1.key"
@@ -696,7 +695,6 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
             assertThat(entryNames, hasItems(
                     "intermediateFolder/public2.key",
                     "public1.key"
@@ -707,7 +705,6 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
             assertThat(entryNames, hasItems("intermediateFolder/public2.key"));
         }
         { // workaround for JENKINS-19947 is still supported, i.e. no parent folder, even inside a sub-folder
@@ -715,7 +712,6 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
             assertThat(entryNames, hasItems("public2.key"));
         }
     }
@@ -919,7 +915,6 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            // JENKINS-73837 - Using hasItems instead of containsInAnyOrder to allow unmatched directories to be ignored
             assertThat(entryNames, hasItems(
                     p.getName() + "/intermediateFolder/public2.key",
                     p.getName() + "/public1.key"
@@ -930,7 +925,6 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            // JENKINS-73837 - Using hasItems instead of containsInAnyOrder to allow unmatched directories to be ignored
             assertThat(entryNames, hasItems("intermediateFolder/public2.key"));
         }
         // Explicitly delete everything including junctions, which TemporaryDirectoryAllocator.dispose may have trouble with:
@@ -993,7 +987,6 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            // JENKINS-73837 - Allows empty folders.
             assertThat(entryNames, hasSize(6));
         }
         {
@@ -1277,9 +1270,7 @@ public class DirectoryBrowserSupportTest {
         assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
         List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-        // JENKINS-73837 - Allows empty folders.
         assertThat(entryNames, hasSize(4));
-        // JENKINS-73837 - Using hasItems instead of containsInAnyOrder to allow unmatched directories to be ignored
         assertThat(entryNames, hasItems(
                 "test0/anotherDir/one.txt",
                 "test0/anotherDir/insideDir/two.txt"
@@ -1289,9 +1280,7 @@ public class DirectoryBrowserSupportTest {
         assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
         entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-        // JENKINS-73837 - Allows empty folders.
         assertThat(entryNames, hasSize(3));
-        // JENKINS-73837 - Using hasItems instead of containsInAnyOrder to allow unmatched directories to be ignored
         assertThat(entryNames, hasItems(
                 "anotherDir/one.txt",
                 "anotherDir/insideDir/two.txt"

@@ -255,7 +255,6 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
         Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
         assertThat(children, hasItems(
                 "a/aa/aa.txt",
                 "a/ab/ab.txt",
@@ -284,7 +283,6 @@ public class VirtualFileTest {
         assertTrue(unzipPath.isDirectory());
         assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists());
-        // JENKINS-73837 - Empty directories are included in the zip file
         assertTrue(unzipPath.child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child("a").child("_b").exists());
         assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
@@ -315,7 +313,6 @@ public class VirtualFileTest {
         assertTrue(unzipPath.child(prefix).isDirectory());
         assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child(prefix).child("a").child("ab").child("ab.txt").exists());
-        // JENKINS-73837 - Empty directories are included in the zip file
         assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child(prefix).child("a").child("_b").exists());
         assertTrue(unzipPath.child(prefix).child("b").child("ba").child("ba.txt").exists());
@@ -344,7 +341,6 @@ public class VirtualFileTest {
         assertTrue(unzipPath.isDirectory());
         assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists());
-        // JENKINS-73837 - Empty directories are included in the zip file
         assertTrue(unzipPath.child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child("a").child("_b").exists());
         assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
@@ -375,7 +371,6 @@ public class VirtualFileTest {
         assertTrue(unzipPath.child(prefix).isDirectory());
         assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child(prefix).child("a").child("ab").child("ab.txt").exists());
-        // JENKINS-73837 - Empty directories are included in the zip file
         assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child(prefix).child("a").child("_b").exists());
         assertTrue(unzipPath.child(prefix).child("b").child("ba").child("ba.txt").exists());
@@ -511,7 +506,6 @@ public class VirtualFileTest {
         VirtualFile symlinkVirtualPath = VirtualFile.forFilePath(symlinkPath);
         VirtualFile symlinkChildVirtualPath = symlinkVirtualPath.child("aa");
         Collection<String> children = symlinkChildVirtualPath.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
         assertThat(children, hasItems("aa.txt"));
     }
 
@@ -527,7 +521,6 @@ public class VirtualFileTest {
         VirtualFile symlinkVirtualFile = VirtualFile.forFile(symlinkFile);
         VirtualFile symlinkChildVirtualFile = symlinkVirtualFile.child("aa");
         Collection<String> children = symlinkChildVirtualFile.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        // JENKINS-73837 - Since we now allow empty directories, this had to be changed to hasItems
         assertThat(children, hasItems("aa.txt"));
     }
 
