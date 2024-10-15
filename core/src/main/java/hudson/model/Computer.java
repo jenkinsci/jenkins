@@ -686,10 +686,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * @deprecated as of TODO.
+     * @deprecated
      *      Use {@link #setTemporaryOfflineCause(OfflineCause)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "TODO")
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
         if (cause == null) {
             setTemporarilyOffline(temporarilyOffline);
