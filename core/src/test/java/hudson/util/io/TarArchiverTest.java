@@ -127,25 +127,6 @@ public class TarArchiverTest {
         }
     }
 
-    /**
-     * Test backing up an open file
-     */
-
-    @Issue("JENKINS-20187")
-    @Test public void growingFileTar() throws Exception {
-        File file = new File(tmp.getRoot(), "growing.file");
-        GrowingFileRunnable runnable1 = new GrowingFileRunnable(file);
-        Thread t1 = new Thread(runnable1);
-        t1.start();
-
-        try (OutputStream out = OutputStream.nullOutputStream()) {
-            new FilePath(tmp.getRoot()).tar(out, "**");
-        }
-
-        runnable1.doFinish();
-        t1.join();
-    }
-
     @Issue("JENKINS-73837")
     @Test
     public void emptyDirectory() throws Exception {
@@ -168,6 +149,25 @@ public class TarArchiverTest {
             }
         }
         assertEquals(Set.of("a/", "b/", "a/file.txt"), names);
+    }
+
+    /**
+     * Test backing up an open file
+     */
+
+    @Issue("JENKINS-20187")
+    @Test public void growingFileTar() throws Exception {
+        File file = new File(tmp.getRoot(), "growing.file");
+        GrowingFileRunnable runnable1 = new GrowingFileRunnable(file);
+        Thread t1 = new Thread(runnable1);
+        t1.start();
+
+        try (OutputStream out = OutputStream.nullOutputStream()) {
+            new FilePath(tmp.getRoot()).tar(out, "**");
+        }
+
+        runnable1.doFinish();
+        t1.join();
     }
 
     private static class GrowingFileRunnable implements Runnable {
