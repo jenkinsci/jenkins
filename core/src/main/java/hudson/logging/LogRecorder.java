@@ -44,6 +44,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
+import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
@@ -463,7 +464,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
 
         save();
         if (oldFile != null) oldFile.delete();
-        rsp.sendRedirect2(redirect);
+        FormApply.success(redirect).generateResponse(req, rsp, null);
     }
 
     @RequirePOST

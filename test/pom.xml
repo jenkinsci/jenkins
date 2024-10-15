@@ -106,7 +106,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
-        <version>2.204.vf6fddd8a_8b_e9</version>
+        <version>2.209.v582ed814ff2f</version>
       </dependency>
       <dependency>
         <!-- Required by workflow-support -->
@@ -118,7 +118,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1362.v67dc1f0e1b_b_3</version>
+        <version>1365.v4778ca_84b_de5</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
