@@ -36,6 +36,7 @@ import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -142,7 +143,8 @@ public class TarArchiverTest {
         }
 
         Set<String> names = new HashSet<>();
-        try (TarInputStream tarInputStream = new TarInputStream(Files.newInputStream(tar), StandardCharsets.UTF_8.name())) {
+        try (InputStream inputStream = Files.newInputStream(tar);
+             TarInputStream tarInputStream = new TarInputStream(inputStream, StandardCharsets.UTF_8.name())) {
             TarEntry tarEntry;
             while ((tarEntry = tarInputStream.getNextEntry()) != null) {
                 names.add(tarEntry.getName());
