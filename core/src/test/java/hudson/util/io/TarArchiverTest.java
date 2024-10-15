@@ -133,24 +133,21 @@ public class TarArchiverTest {
     public void emptyDirectory() throws Exception {
         Path tar = tmp.newFile("test.tar").toPath();
         Path root = tmp.newFolder().toPath();
-        Files.createDirectory(root.resolve("a"));
-        Files.createDirectory(root.resolve("b"));
-
-        Files.writeString(root.resolve("a/file.txt"), "empty_dir_test");
-
-        try (OutputStream outputStream = Files.newOutputStream(tar)) {
-            new FilePath(root.toFile()).tar(outputStream, "**");
+        Files.createDirectory(root.resolve("foo"));
+        Files.createDirectory(root.resolve("bar"));
+        Files.writeString(root.resolve("bar/file.txt"), "foobar", StandardCharsets.UTF_8);
+        try (OutputStream out = Files.newOutputStream(tar)) {
+            new FilePath(root.toFile()).tar(out, "**");
         }
-
         Set<String> names = new HashSet<>();
-        try (InputStream inputStream = Files.newInputStream(tar);
-             TarInputStream tarInputStream = new TarInputStream(inputStream, StandardCharsets.UTF_8.name())) {
-            TarEntry tarEntry;
-            while ((tarEntry = tarInputStream.getNextEntry()) != null) {
-                names.add(tarEntry.getName());
+        try (InputStream is = Files.newInputStream(tar);
+                TarInputStream tis = new TarInputStream(is, StandardCharsets.UTF_8.name())) {
+            TarEntry te;
+            while ((te = tis.getNextEntry()) != null) {
+                names.add(te.getName());
             }
         }
-        assertEquals(Set.of("a/", "b/", "a/file.txt"), names);
+        assertEquals(Set.of("foo/", "bar/", "bar/file.txt"), names);
     }
 
     /**

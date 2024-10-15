@@ -23,8 +23,7 @@ import org.jvnet.hudson.test.Issue;
 
 public class ZipArchiverTest {
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     @Issue("JENKINS-9942")
     @Test
@@ -86,21 +85,20 @@ public class ZipArchiverTest {
     public void emptyDirectory() throws Exception {
         Path zip = tmp.newFile("test.zip").toPath();
         Path root = tmp.newFolder().toPath();
-        Files.createDirectory(root.resolve("a"));
-        Files.createDirectory(root.resolve("b"));
-        Files.writeString(root.resolve("a/file.txt"), "empty_dir_zip_test");
+        Files.createDirectory(root.resolve("foo"));
+        Files.createDirectory(root.resolve("bar"));
+        Files.writeString(root.resolve("bar/file.txt"), "foobar", StandardCharsets.UTF_8);
         try (OutputStream out = Files.newOutputStream(zip)) {
             new FilePath(root.toFile()).zip(out, "**");
         }
-        Set<String> actual = new HashSet<>();
-        Set<String> expected = Set.of("a/", "b/", "a/file.txt");
-        try (InputStream inputStream = Files.newInputStream(zip);
-             ZipInputStream zipInputStream = new ZipInputStream(inputStream, StandardCharsets.UTF_8)) {
-            ZipEntry zipEntry;
-            while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-                actual.add(zipEntry.getName());
+        Set<String> names = new HashSet<>();
+        try (InputStream is = Files.newInputStream(zip);
+             ZipInputStream zis = new ZipInputStream(is, StandardCharsets.UTF_8)) {
+            ZipEntry ze;
+            while ((ze = zis.getNextEntry()) != null) {
+                names.add(ze.getName());
             }
         }
-        assertEquals(expected, actual);
+        assertEquals(Set.of("foo/", "bar/", "bar/file.txt"), names);
     }
 }
