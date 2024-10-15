@@ -118,7 +118,7 @@ public class OfflineNodeCommandTest {
         slave.toComputer().setTemporarilyOffline(true, null);
         assertThat(slave.toComputer().isOffline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
+        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.LegacyOfflineCause.class));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -177,7 +177,7 @@ public class OfflineNodeCommandTest {
         slave.toComputer().setTemporarilyOffline(true, null);
         assertThat(slave.toComputer().isOffline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
+        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.LegacyOfflineCause.class));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
