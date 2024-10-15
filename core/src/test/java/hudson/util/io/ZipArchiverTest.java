@@ -3,7 +3,6 @@ package hudson.util.io;
 import static org.junit.Assert.assertEquals;
 
 import hudson.FilePath;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,7 +15,6 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
-
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
