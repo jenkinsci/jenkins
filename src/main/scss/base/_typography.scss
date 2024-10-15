@@ -51,8 +51,8 @@ h6,
   line-height: var(--line-height-heading);
   font-weight: 600;
   display: block;
-  margin-top: var(--section-padding);
-  margin-bottom: calc(var(--section-padding) / 2);
+  margin-top: 0;
+  margin-bottom: var(--section-padding);
 }
 
 h1,

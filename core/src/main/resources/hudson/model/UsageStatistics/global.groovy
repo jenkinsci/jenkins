@@ -8,7 +8,7 @@ def f=namespace(lib.FormTagLib)
 
 f.section(title: _("Usage Statistics")) {
     if (UsageStatistics.DISABLED) {
-        span(class: "jenkins-not-applicable") {
+        div(class: "jenkins-not-applicable jenkins-!-margin-bottom-2") {
             raw(_("disabledBySystemProperty"))
         }
     } else if (FIPS140.useCompliantAlgorithms()) {
