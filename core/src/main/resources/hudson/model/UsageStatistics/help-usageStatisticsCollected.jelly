@@ -1,6 +1,5 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <h1>Testing</h1>
     <p>
         For any project, it's critical to know how the software is used, but tracking usage data is inherently difficult in open-source projects.
         Anonymous usage statistics address this need.
