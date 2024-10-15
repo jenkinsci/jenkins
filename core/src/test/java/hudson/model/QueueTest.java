@@ -3,16 +3,16 @@ package hudson.model;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -20,7 +20,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class QueueTest {
 
     @Mock
-    StaplerResponse resp;
+    StaplerResponse2 resp;
     @Mock
     Queue.Task task;
     @Mock
@@ -36,9 +36,9 @@ public class QueueTest {
     public void cancelItemOnaValidItemShouldReturnA204() throws IOException, ServletException {
         when(task.hasAbortPermission()).thenReturn(true);
         Queue queue = new Queue(LoadBalancer.CONSISTENT_HASH);
-        queue.schedule(task, 6000);
+        long id = queue.schedule(task, 6000).getId();
 
-        HttpResponse httpResponse = queue.doCancelItem(Queue.WaitingItem.getCurrentCounterValue());
+        HttpResponse httpResponse = queue.doCancelItem(id);
         httpResponse.generateResponse(null, resp, null);
 
         verify(resp).setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -48,9 +48,9 @@ public class QueueTest {
     @Test
     public void cancelItemOnANonExistingItemShouldReturnA404()  throws IOException, ServletException {
         Queue queue = new Queue(LoadBalancer.CONSISTENT_HASH);
-        queue.schedule(task, 6000);
+        long id = queue.schedule(task, 6000).getId();
 
-        HttpResponse httpResponse = queue.doCancelItem(Queue.WaitingItem.getCurrentCounterValue() + 1);
+        HttpResponse httpResponse = queue.doCancelItem(id + 1);
         httpResponse.generateResponse(null, resp, null);
 
         verify(resp).setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -61,9 +61,9 @@ public class QueueTest {
     public void cancelItemOnANonCancellableItemShouldReturnA422()  throws IOException, ServletException {
         when(task.hasAbortPermission()).thenReturn(false);
         Queue queue = new Queue(LoadBalancer.CONSISTENT_HASH);
-        queue.schedule(task, 6000);
+        long id = queue.schedule(task, 6000).getId();
 
-        HttpResponse httpResponse = queue.doCancelItem(Queue.WaitingItem.getCurrentCounterValue());
+        HttpResponse httpResponse = queue.doCancelItem(id);
         httpResponse.generateResponse(null, resp, null);
 
         verify(resp).setStatus(422);

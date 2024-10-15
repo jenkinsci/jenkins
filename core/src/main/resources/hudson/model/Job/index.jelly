@@ -26,8 +26,25 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout title="${it.displayName}${not empty it.parent.fullDisplayName?' ['+it.parent.fullDisplayName+']':''}">
     <st:include page="sidepanel.jelly" />
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
-      <h1 class="job-index-headline page-headline">${it.pronoun} <l:breakable value="${it.displayName}"/></h1>
+      <div class="jenkins-app-bar">
+        <div class="jenkins-app-bar__content jenkins-build-caption">
+          <j:set var="lastBuild" value="${it.lastBuild}" />
+          <j:if test="${lastBuild != null}">
+            <a href="${rootURL + '/' + lastBuild.url}" class="jenkins-!-display-contents" tabindex="-1">
+              <l:icon src="symbol-status-${lastBuild.iconColor.iconName}" tooltip="${lastBuild.iconColor.description}"/>
+            </a>
+          </j:if>
+          <h1 class="job-index-headline page-headline">
+            <l:breakable value="${it.displayName}"/>
+          </h1>
+        </div>
+        <div class="jenkins-app-bar__controls">
+          <t:editDescriptionButton permission="${it.CONFIGURE}"/>
+        </div>
+      </div>
+
       <j:if test="${(it.fullName!=it.fullDisplayName) and (it.class.name!='hudson.matrix.MatrixConfiguration')}"> <!-- TODO rather check for TopLevelItem (how to do this from Jelly?) -->
         <j:choose>
           <j:when test="${it.parent!=app}">
@@ -38,7 +55,7 @@ THE SOFTWARE.
           </j:otherwise>
         </j:choose>
       </j:if>
-      <t:editableDescription permission="${it.CONFIGURE}"/>
+      <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
 
       <st:include page="jobpropertysummaries.jelly" />
       <!-- inject main part here -->

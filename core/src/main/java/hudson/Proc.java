@@ -33,7 +33,6 @@ import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.NamingThreadFactory;
-import hudson.util.NullStream;
 import hudson.util.ProcessTree;
 import hudson.util.StreamCopyThread;
 import java.io.File;
@@ -52,7 +51,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.io.input.NullInputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -428,8 +426,8 @@ public abstract class Proc {
             return String.join(" ", cmd);
         }
 
-        public static final InputStream SELFPUMP_INPUT = new NullInputStream(0);
-        public static final OutputStream SELFPUMP_OUTPUT = new NullStream();
+        public static final InputStream SELFPUMP_INPUT = InputStream.nullInputStream();
+        public static final OutputStream SELFPUMP_OUTPUT = OutputStream.nullOutputStream();
     }
 
     /**

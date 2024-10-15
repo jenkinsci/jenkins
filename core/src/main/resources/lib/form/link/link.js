@@ -9,19 +9,3 @@ Behaviour.specify("A.post", "link.post", 0, function (element) {
     return false;
   };
 });
-
-Behaviour.specify("A.post-async", "link.post-async", 0, function (element) {
-  element.onclick = function () {
-    new Ajax.Request(element.getAttribute("href"));
-    return false;
-  };
-});
-
-Behaviour.specify("A.async", "link.async", 0, function (element) {
-  element.onclick = function () {
-    new Ajax.Request(element.getAttribute("href"), {
-      method: "get",
-    });
-    return false;
-  };
-});

@@ -1,0 +1,20 @@
+<div>
+  Om din Jenkins-server är bakom en brandvägg och inte har direkt åtkomst till
+  internet samt om JVM på din server inte är korrekt konfigurerad (
+  <a
+    href="https://docs.oracle.com/javase/8/docs/technotes/guides/net/properties.html"
+  >
+    Se JDK-nätverksegenskaperna för mer information
+  </a>
+  ) för att aktivera internetanslutning kan du ange namnet på HTTP-proxyservern
+  i det här fältet för att låta Jenkins installera insticksprogram å dina
+  vägnar. Observera att Jenkins använder HTTPS för att kommunicera med
+  uppdateringscentret och ladda ned insticksprogram.
+
+  <p>
+    Om detta fält lämnas tomt kommer Jenkins försöka ansluta till internet
+    direkt.
+  </p>
+
+  <p>Kontrollera webbläsarens proxykonfiguration om du är osäker på värdet.</p>
+</div>

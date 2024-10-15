@@ -1,0 +1,110 @@
+#plugins {
+  .app-plugin-manager__categories {
+    margin: 0.5rem 0;
+
+    a {
+      margin: 0 1.25rem 0 0 !important;
+      font-size: 0.75rem;
+    }
+  }
+
+  tr.already-upgraded {
+    background-color: var(--plugin-manager-bg-color-already-upgraded);
+  }
+
+  tr.all-dependents-disabled .enable input,
+  tr.all-dependents-disabled .enable button,
+  tr.all-dependents-disabled .enable .jenkins-toggle-switch label {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    visibility: visible;
+  }
+
+  tr.has-dependents input,
+  tr.has-disabled-dependency .enable input,
+  tr.has-disabled-dependency .enable .jenkins-toggle-switch label,
+  tr.has-dependents button,
+  tr.has-dependents .enable button,
+  tr.has-dependents .enable .jenkins-toggle-switch label {
+    pointer-events: none;
+    opacity: 0.25;
+  }
+
+  tr.has-dependents-but-disabled .enable input,
+  tr.has-dependents-but-disabled .enable button,
+  tr.has-dependents-but-disabled .enable .jenkins-toggle-switch label {
+    pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  tr.has-disabled-dependency .enable input,
+  tr.has-disabled-dependency .enable button,
+  tr.has-disabled-dependency .enable .jenkins-toggle-switch label {
+    opacity: 0.4;
+  }
+
+  tr.deleted input,
+  tr.deleted button,
+  tr.deleted .jenkins-toggle-switch label {
+    visibility: hidden !important;
+  }
+
+  .dependent-list,
+  .dependency-list {
+    display: none;
+  }
+
+  .enable-state-info,
+  .uninstall-state-info {
+    padding: 5px 20px;
+    max-width: 70%;
+    border: solid 1px var(--warning-color);
+    border-radius: 3px;
+    text-align: center;
+  }
+
+  .enable-state-info {
+    float: left;
+  }
+
+  .uninstall-state-info {
+    float: right;
+  }
+
+  .plugin-dependency-info .title,
+  .plugin-dependency-info .subtitle {
+    opacity: 0.7;
+  }
+
+  .plugin-dependency-info .title {
+    margin-bottom: 5px;
+    font-size: larger;
+    font-weight: bolder;
+  }
+
+  .plugin-dependency-info span {
+    margin: 5px 5px 0 0;
+    background-color: var(--accent-color);
+    display: inline-block;
+    padding: 0.2em 0.6em 0.3em;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--white);
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25em;
+  }
+}
+
+.app-plugin-manager__sidebar {
+  position: sticky;
+  top: calc(40px + 1.6rem);
+
+  h1 {
+    margin-top: 1rem !important;
+    margin-bottom: 0.1rem !important;
+  }
+}

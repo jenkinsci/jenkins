@@ -23,27 +23,41 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
-  <s:documentation>
-    Submit button themed by YUI. This should be always
-    used instead of the plain &lt;input tag.
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:l="/lib/layout">
+  <s:documentation> <![CDATA[
+    Submit button. This should be always used instead of the plain <button> tag.
+    ]]>
+    <s:attribute name="id">
+      If specified the ID of the button.
 
+      @since 2.376
+    </s:attribute>
     <s:attribute name="name">
       If specified, becomes the value of the name attribute.
       When you have more than one submit button on the form, this can be used to determine
       which button is pressed, as the server will get a parameter by this name.
     </s:attribute>
     <s:attribute name="value" use="required">
-      The text of the submit button. Something like "submit", "OK", etc.
+      The text of the submit button, defaults to 'Submit'
+      It's recommended to be more descriptive when possible, e.g. 'Create', 'Next'
     </s:attribute>
+    <s:attribute name="primary">
+      Sets whether this button is a primary button or not.
+      Defaults to true.
 
-    <s:attribute name="large">
-      Set to "true" to enable the large variant of the button
+      @since 2.376
     </s:attribute>
+    <s:attribute name="icon">
+      @since 2.411
+    </s:attribute>
+    <s:attribute name="clazz" />
   </s:documentation>
 
-  <input type="submit"
-         name="${attrs.name ?: 'Submit'}"
-         value="${attrs.value ?: '%Submit'}"
-         class="submit-button primary ${attrs.large ? 'large-button' : ''}" />
+  <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" formNoValidate="formNoValidate"
+          class="jenkins-button jenkins-submit-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
+    <j:if test="${attrs.icon != null}">
+      <l:icon src="${attrs.icon}" />
+    </j:if>
+    ${attrs.value ?: '%Submit'}
+  </button>
 </j:jelly>

@@ -1,4 +1,6 @@
 FROM gitpod/workspace-full
 
+ARG MAVEN_VERSION=3.9.9
+
 RUN brew install gh && \
-    bash -c ". /home/gitpod/.sdkman/bin/sdkman-init.sh && sdk install maven 3.8.4 && sdk default maven 3.8.4"
+    bash -c ". /home/gitpod/.sdkman/bin/sdkman-init.sh && sdk install maven ${MAVEN_VERSION} && sdk default maven ${MAVEN_VERSION}"

@@ -27,6 +27,7 @@ THE SOFTWARE.
   <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it.ARTIFACTS)}">
     <l:layout title="${it.fullDisplayName} Artifacts">
       <st:include page="sidepanel.jelly" />
+      <l:breadcrumb title="${%Artifacts}" />
       <l:main-panel>
         <t:buildCaption>${%Build Artifacts}</t:buildCaption>
         <table class="fileList">

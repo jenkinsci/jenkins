@@ -24,22 +24,17 @@
 
 package jenkins.security;
 
-import hudson.init.InitMilestone;
-import hudson.init.Initializer;
-import hudson.util.PluginServletFilter;
+import hudson.Extension;
+import hudson.Functions;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jenkins.util.HttpServletFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -49,45 +44,30 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @since 2.200
  */
+@Extension
 @Restricted(NoExternalUse.class)
-public class ResourceDomainFilter implements Filter {
+public class ResourceDomainFilter implements HttpServletFilter {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainFilter.class.getName());
 
-    private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList("/" + ResourceDomainRootAction.URL, "/favicon.ico", "/favicon.svg", "/robots.txt"));
+    private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList("/" + ResourceDomainRootAction.URL, "/favicon.ico", "/favicon.svg", "/apple-touch-icon.png", "/mask-icon.svg", "/robots.txt", "/images/rage.svg"));
     public static final String ERROR_RESPONSE = "Jenkins serves only static files on this domain.";
 
-    @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)
-    public static void init() throws ServletException {
-        PluginServletFilter.addFilter(new ResourceDomainFilter());
-    }
-
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException {
-        if (servletRequest instanceof HttpServletRequest) {
-            HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-            HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-            if (ResourceDomainConfiguration.isResourceRequest(httpServletRequest)) {
-                String path = httpServletRequest.getPathInfo();
-                if (!path.startsWith("/" + ResourceDomainRootAction.URL + "/") && !ALLOWED_PATHS.contains(path)) {
-                    LOGGER.fine(() -> "Rejecting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
-                    httpServletResponse.sendError(404, ERROR_RESPONSE);
-                    return;
-                }
-                LOGGER.finer(() -> "Accepting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
+    public boolean handle(HttpServletRequest req, HttpServletResponse rsp) throws IOException, ServletException {
+        if (ResourceDomainConfiguration.isResourceRequest(req)) {
+            String path = req.getPathInfo();
+            if (!path.startsWith("/" + ResourceDomainRootAction.URL + "/") && !ALLOWED_PATHS.contains(path) && !isAllowedPathWithResourcePrefix(path)) {
+                LOGGER.fine(() -> "Rejecting request to " + req.getRequestURL() + " from " + req.getRemoteAddr() + " on resource domain");
+                rsp.sendError(404, ERROR_RESPONSE);
+                return true;
             }
+            LOGGER.finer(() -> "Accepting request to " + req.getRequestURL() + " from " + req.getRemoteAddr() + " on resource domain");
         }
-        filterChain.doFilter(servletRequest, servletResponse);
+        return false;
     }
 
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-
-    }
-
-    @Override
-    public void destroy() {
-
+    private static boolean isAllowedPathWithResourcePrefix(String path) {
+        return path.startsWith(Functions.getResourcePath()) && ALLOWED_PATHS.contains(path.substring(Functions.getResourcePath().length()));
     }
 }

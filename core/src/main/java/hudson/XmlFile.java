@@ -201,6 +201,9 @@ public final class XmlFile {
     }
 
     public void write(Object o) throws IOException {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, new Throwable(), () -> "Writing " + file);
+        }
         mkdirs();
         AtomicFileWriter w = force
                 ? new AtomicFileWriter(file)

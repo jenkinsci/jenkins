@@ -25,14 +25,23 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
-      <h1>
-        <span class="icon-lg">
-          <l:icon src="${h.getUserAvatar(user,'48x48')}" />
-        </span>
-        ${it.fullName}
-      </h1>
-      <t:editableDescription permission="${app.ADMINISTER}" />
+      <div class="jenkins-app-bar">
+        <div class="jenkins-app-bar__content jenkins-build-caption" data-status-url="${rootURL}/${it.url}statusIcon">
+          <h1>
+            <span class="icon-lg">
+              <l:icon src="${h.getUserAvatar(it, '48x48')}"/>
+            </span>
+            ${it.fullName}
+          </h1>
+        </div>
+        <div class="jenkins-app-bar__controls">
+          <t:editDescriptionButton permission="${app.ADMINISTER}"/>
+        </div>
+      </div>
+
+      <t:editableDescription permission="${app.ADMINISTER}" hideButton="true"/>
       <div>
         ${%Jenkins User ID}: ${it.id}
       </div>

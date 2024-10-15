@@ -647,5 +647,3 @@ public class InetAddressValidatorTest extends TestCase {
         assertFalse("IPV6 ':10.0.0.1 should be invalid", validator.isValidInet6Address("':10.0.0.1"));
     }
 }
-
-

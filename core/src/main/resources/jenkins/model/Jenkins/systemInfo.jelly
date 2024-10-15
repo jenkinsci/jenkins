@@ -28,125 +28,83 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%System Information}">
+    <l:header>
+      <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
+      <script src="${resURL}/jsbundles/pages/manage-jenkins/system-information.js" type="text/javascript" defer="true" />
+    </l:header>
     <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%System Information}"/>
     <l:main-panel>
+      <l:app-bar title="${%System Information}" />
+
       <l:hasPermission permission="${app.SYSTEM_READ}">
-        <div class="jenkins-app-bar">
-          <div class="jenkins-app-bar__content">
-            <h1>${%System Properties}</h1>
-          </div>
-        </div>
-        <t:propertyTable items="${h.systemProperties}" />
+        <l:tabPane title="${%System Properties}">
+          <t:propertyTable items="${h.systemProperties}" sensitive="true" />
+        </l:tabPane>
       </l:hasPermission>
+
       <l:hasPermission permission="${app.SYSTEM_READ}">
-        <div class="jenkins-app-bar">
-          <div class="jenkins-app-bar__content">
-            <h1>${%Environment Variables}</h1>
-          </div>
-        </div>
-        <t:propertyTable items="${h.envVars}" />
+        <l:tabPane title="${%Environment Variables}">
+          <t:propertyTable items="${h.envVars}" sensitive="true" />
+        </l:tabPane>
       </l:hasPermission>
-      <div class="jenkins-app-bar">
-        <div class="jenkins-app-bar__content">
-          <h1>${%Plugins}</h1>
-        </div>
-      </div>
-      <table class="jenkins-table sortable">
-        <thead>
-          <tr>
-            <th initialSortDir="down">${%Name}</th>
-            <th>${%Version}</th>
-            <th>${%Enabled}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <j:choose>
-            <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
-              <tr>
-                <td colspan="3">
-                  ${%No plugins installed.}
-                </td>
-              </tr>
-            </j:when>
-            <j:otherwise>
-              <j:forEach var="p" items="${app.pluginManager.plugins}">
-                <j:set var="state" value="${p.enabled?'true':'false'}"/>
+
+      <l:tabPane title="${%Plugins}">
+
+        <j:choose>
+          <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
+            <l:notice icon="symbol-plugins" title="${%No plugins installed}" />
+          </j:when>
+          <j:otherwise>
+            <table class="jenkins-table sortable">
+              <thead>
                 <tr>
-                  <td>
-                    <st:out value="${p.shortName}"/>
-                  </td>
-                  <td>
-                    <st:out value="${p.version}"/>
-                  </td>
-                  <td>
-                    <st:out value="${state}"/>
-                  </td>
+                  <th initialSortDir="down">${%Name}</th>
+                  <th>${%Version}</th>
+                  <th>${%Enabled}</th>
                 </tr>
-              </j:forEach>
-            </j:otherwise>
-          </j:choose>
+              </thead>
+              <tbody>
+                <j:forEach var="p" items="${app.pluginManager.plugins}">
+                  <j:set var="state" value="${p.enabled?'true':'false'}"/>
+                  <tr>
+                    <td>
+                      <a class="jenkins-table__link" href="${p.url}" target="_blank" rel="noopener noreferrer">
+                        <st:out value="${p.displayName}"/>
+                      </a>
+                    </td>
+                    <td>
+                      <st:out value="${p.version}"/>
+                    </td>
+                    <td>
+                      <st:out value="${state}"/>
+                    </td>
+                  </tr>
+                </j:forEach>
+              </tbody>
+            </table>
+          </j:otherwise>
+        </j:choose>
+      </l:tabPane>
 
-        </tbody>
-      </table>
-      <div class="jenkins-app-bar">
-        <div class="jenkins-app-bar__content">
-          <h1>${%Memory Usage}</h1>
-        </div>
-      </div>
-      <j:set var="type" value="${request.getParameter('type')}" />
-      <j:choose>
-        <j:when test="${type == 'sec10'}" />
-        <j:when test="${type == 'min'}" />
-        <j:when test="${type == 'hour'}" />
-        <j:otherwise>
-          <j:set var="type" value="min" />
-        </j:otherwise>
-      </j:choose>
-
-      <div>
-        ${%Timespan}:
-        <j:choose>
-          <j:when test="${type != 'sec10'}">
-            <a href="?type=sec10">${%Short}</a>
-          </j:when>
-          <j:otherwise>
-            ${%Short}
-          </j:otherwise>
-        </j:choose>
-        <st:nbsp />
-        <j:choose>
-          <j:when test="${type != 'min'}">
-            <a href="?type=min">${%Medium}</a>
-          </j:when>
-          <j:otherwise>
-            ${%Medium}
-          </j:otherwise>
-        </j:choose>
-        <st:nbsp />
-        <j:choose>
-          <j:when test="${type != 'hour'}">
-            <a href="?type=hour">${%Long}</a>
-          </j:when>
-          <j:otherwise>
-            ${%Long}
-          </j:otherwise>
-        </j:choose>
-      </div>
-      <script type="text/javascript">
-        var w = document.getElementById('main-panel').offsetWidth - 30;
-        document.write('<img src="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=' + w + '&amp;height=500" srcset="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=' + w + '&amp;height=500&amp;scale=2 2x" alt="[${%Memory usage graph}]"/>');
-      </script>
-      <noscript>
-        <img src="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=500&amp;height=300" srcset="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=500&amp;height=300&amp;scale=2 2x" alt="[${%Memory usage graph}]"/>
-      </noscript>
-      <l:isAdmin>
-        <div class="jenkins-app-bar">
-          <div class="jenkins-app-bar__content">
-            <h1>${%Thread Dumps}</h1>
+      <l:tabPane title="${%Memory Usage}">
+        <f:entry title="${%Timespan}" class="jenkins-form-item--small">
+          <div class="jenkins-select">
+            <select id="timespan-select" class="jenkins-select__input">
+              <option value="sec10">${%Short}</option>
+              <option value="min" selected="true">${%Medium}</option>
+              <option value="hour">${%Long}</option>
+            </select>
           </div>
-        </div>
-        <p>${%threadDump_blurb('threadDump')}</p>
+        </f:entry>
+
+        <div id="graph-host" />
+      </l:tabPane>
+
+      <l:isAdmin>
+        <l:tabPane title="${%Thread Dumps}">
+          <p>${%threadDump_blurb('threadDump')}</p>
+        </l:tabPane>
       </l:isAdmin>
     </l:main-panel>
   </l:layout>

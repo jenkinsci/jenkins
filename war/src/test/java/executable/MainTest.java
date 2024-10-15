@@ -1,84 +1,73 @@
 package executable;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class MainTest {
 
     @Test
-    void shouldFailForOldJava() {
-        assertJavaCheckFails(52, false);
-        assertJavaCheckFails(52, true);
+    void unsupported() {
+        assertJavaCheckFails(8, false);
+        assertJavaCheckFails(8, true);
+        assertJavaCheckFails(11, false);
+        assertJavaCheckFails(11, true);
     }
 
     @Test
-    void shouldBeOkForJava11() {
-        assertJavaCheckPasses(55, false);
-        assertJavaCheckPasses(55, true);
+    void supported() {
+        assertJavaCheckPasses(17, false);
+        assertJavaCheckPasses(17, true);
+        assertJavaCheckPasses(21, false);
+        assertJavaCheckPasses(21, true);
     }
 
     @Test
-    void shouldFailForMidJavaVersionsIfNoFlag() {
-        assertJavaCheckFails(56, false);
-        assertJavaCheckPasses(56, true);
-        assertJavaCheckFails(57, false);
-        assertJavaCheckPasses(57, true);
-        assertJavaCheckFails(58, false);
-        assertJavaCheckPasses(58, true);
-        assertJavaCheckFails(59, false);
-        assertJavaCheckPasses(59, true);
-        assertJavaCheckFails(60, false);
-        assertJavaCheckPasses(60, true);
+    void future() {
+        assertJavaCheckFails(18, false);
+        assertJavaCheckFails(19, false);
+        assertJavaCheckFails(20, false);
+        assertJavaCheckFails(22, false);
+        assertJavaCheckPasses(18, true);
+        assertJavaCheckPasses(19, true);
+        assertJavaCheckPasses(20, true);
+        assertJavaCheckPasses(22, true);
     }
 
-    @Test
-    void shouldBeOkForJava17() {
-        assertJavaCheckPasses(61, false);
-        assertJavaCheckPasses(61, true);
+    private static void assertJavaCheckFails(int releaseVersion, boolean enableFutureJava) {
+        assertJavaCheckFails(null, releaseVersion, enableFutureJava);
     }
 
-    @Test
-    void shouldFailForNewJavaVersionsIfNoFlag() {
-        assertJavaCheckFails(62, false);
-        assertJavaCheckPasses(62, true);
-        assertJavaCheckFails(63, false);
-        assertJavaCheckPasses(63, true);
-    }
-
-    private static void assertJavaCheckFails(int classVersion, boolean enableFutureJava) {
-        assertJavaCheckFails(null, classVersion, enableFutureJava);
-    }
-
-    private static void assertJavaCheckFails(@CheckForNull String message, int classVersion, boolean enableFutureJava) {
-        boolean failed = false;
-        try {
-            Main.verifyJavaVersion(classVersion, enableFutureJava);
-        } catch (Error error) {
-            failed = true;
-            System.out.printf("Java class version check failed as it was expected for Java class version %s.0 and enableFutureJava=%s%n",
-                classVersion, enableFutureJava);
-            error.printStackTrace(System.out);
+    private static void assertJavaCheckFails(
+            @CheckForNull String message, int releaseVersion, boolean enableFutureJava) {
+        if (message == null) {
+            message = String.format(
+                    "Java version check should have failed for Java version %d and enableFutureJava=%b",
+                    releaseVersion, enableFutureJava);
         }
 
-        if (!failed) {
-            Assertions.fail(message != null ? message :
-                    String.format("Java version Check should have failed for Java class version %s.0 and enableFutureJava=%s",
-                            classVersion, enableFutureJava));
+        assertThrows(
+                UnsupportedClassVersionError.class,
+                () -> Main.verifyJavaVersion(releaseVersion, enableFutureJava),
+                message);
+    }
+
+    private static void assertJavaCheckPasses(int releaseVersion, boolean enableFutureJava) {
+        assertJavaCheckPasses(null, releaseVersion, enableFutureJava);
+    }
+
+    private static void assertJavaCheckPasses(
+            @CheckForNull String message, int releaseVersion, boolean enableFutureJava) {
+        if (message == null) {
+            message = String.format(
+                    "Java version check should have passed for Java version %d and enableFutureJava=%b",
+                    releaseVersion, enableFutureJava);
         }
-    }
-
-    private static void assertJavaCheckPasses(int classVersion, boolean enableFutureJava) {
-        assertJavaCheckPasses(null, classVersion, enableFutureJava);
-    }
-
-    private static void assertJavaCheckPasses(@CheckForNull String message, int classVersion, boolean enableFutureJava) {
         try {
-            Main.verifyJavaVersion(classVersion, enableFutureJava);
-        } catch (Error error) {
-            throw new AssertionError(message != null ? message :
-                    String.format("Java version Check should have passed for Java class version %s.0 and enableFutureJava=%s",
-                            classVersion, enableFutureJava), error);
+            Main.verifyJavaVersion(releaseVersion, enableFutureJava);
+        } catch (UnsupportedClassVersionError e) {
+            throw new AssertionError(message, e);
         }
     }
 }

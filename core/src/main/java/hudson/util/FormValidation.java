@@ -28,6 +28,7 @@ import static hudson.Functions.jsStringEscape;
 import static hudson.Util.singleQuote;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -39,35 +40,39 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.tasks.Builder;
 import hudson.util.ReflectionUtils.Parameter;
+import jakarta.servlet.ServletException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import javax.servlet.ServletException;
+import java.util.stream.Stream;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Represents the result of the form field validation.
  *
  * <p>
  * Use one of the factory methods to create an instance, then return it from your {@code doCheckXyz}
- * method. (Via {@link HttpResponse}, the returned object will render the result into {@link StaplerResponse}.)
+ * method. (Via {@link HttpResponse}, the returned object will render the result into {@link StaplerResponse2}.)
  * This way of designing form field validation allows you to reuse {@code doCheckXyz()} methods
  * programmatically as well (by using {@link #kind}.
  *
@@ -220,6 +225,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * @return Validation of the least successful kind aggregating all child messages.
      * @since 1.590
      */
+    @SuppressFBWarnings(value = "POTENTIAL_XML_INJECTION", justification = "intentional; caller's responsibility to escape HTML")
     public static @NonNull FormValidation aggregate(@NonNull Collection<FormValidation> validations) {
         if (validations == null || validations.isEmpty()) return FormValidation.ok();
 
@@ -268,7 +274,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         return new FormValidation(kind, message) {
             @Override
             public String renderHtml() {
-                StaplerRequest req = Stapler.getCurrentRequest();
+                StaplerRequest2 req = Stapler.getCurrentRequest2();
                 if (req == null) { // being called from some other context
                     return message;
                 }
@@ -444,7 +450,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
                     return error(errorMessage);
             }
             v = v.trim();
-            if (!allowEmpty && v.length() == 0)
+            if (!allowEmpty && v.isEmpty())
                 return error(errorMessage);
 
             Base64.getDecoder().decode(v.getBytes(StandardCharsets.UTF_8));
@@ -462,9 +468,45 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public abstract static class URLCheck {
         /**
+         * Open the given URI and read text content from it. This method honors the Content-type
+         * header.
+         *
+         * @throws IOException if the URI scheme is not supported, the connection was interrupted,
+         *     or the response was an error
+         * @since 2.382
+         */
+        protected Stream<String> open(URI uri) throws IOException {
+            HttpClient httpClient = ProxyConfiguration.newHttpClient();
+            HttpRequest httpRequest;
+            try {
+                httpRequest = ProxyConfiguration.newHttpRequestBuilder(uri).GET().build();
+            } catch (IllegalArgumentException e) {
+                throw new IOException(e);
+            }
+            java.net.http.HttpResponse<Stream<String>> httpResponse;
+            try {
+                httpResponse =
+                        httpClient.send(httpRequest, java.net.http.HttpResponse.BodyHandlers.ofLines());
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
+            if (httpResponse.statusCode() != HttpURLConnection.HTTP_OK) {
+                throw new IOException(
+                        "Server returned HTTP response code "
+                                + httpResponse.statusCode()
+                                + " for URI "
+                                + uri);
+            }
+            return httpResponse.body();
+        }
+
+        /**
          * Opens the given URL and reads text content from it.
          * This method honors Content-type header.
+         *
+         * @deprecated use {@link #open(URI)}
          */
+        @Deprecated
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
             URLConnection con = ProxyConfiguration.open(url);
@@ -476,10 +518,24 @@ public abstract class FormValidation extends IOException implements HttpResponse
         }
 
         /**
+         * Find the string literal from the given stream of lines.
+         *
+         * @return true if found, false otherwise
+         * @since 2.382
+         */
+        protected boolean findText(Stream<String> in, String literal) {
+            try (in) {
+                return in.anyMatch(line -> line.contains(literal));
+            }
+        }
+
+        /**
          * Finds the string literal from the given reader.
          * @return
          *      true if found, false otherwise.
+         * @deprecated use {@link #findText(Stream, String)}
          */
+        @Deprecated
         protected boolean findText(BufferedReader in, String literal) throws IOException {
             String line;
             while ((line = in.readLine()) != null)
@@ -495,13 +551,13 @@ public abstract class FormValidation extends IOException implements HttpResponse
          * @param url
          *      Pass in the URL that was connected. Used for error diagnosis.
          */
-        protected FormValidation handleIOException(String url, IOException e) throws IOException, ServletException {
+        protected FormValidation handleIOException(String url, IOException e) throws IOException {
             // any invalid URL comes here
             if (e.getMessage().equals(url))
                 // Sun JRE (and probably others too) often return just the URL in the error.
-                return error("Unable to connect " + url);
+                return error("Unable to connect " + url, e);
             else
-                return error(e.getMessage());
+                return error(e.getMessage(), e);
         }
 
         /**
@@ -524,7 +580,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          * Implement the actual form validation logic, by using other convenience methods defined in this class.
          * If you are not using any of those, you don't need to extend from this class.
          */
-        protected abstract FormValidation check() throws IOException, ServletException;
+        protected abstract FormValidation check() throws IOException;
     }
 
 
@@ -544,7 +600,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
     }
 
     @Override
-    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+    public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
         respond(rsp, renderHtml());
     }
 
@@ -553,7 +609,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
     /**
      * Sends out an arbitrary HTML fragment as the output.
      */
-    protected void respond(StaplerResponse rsp, String html) throws IOException, ServletException {
+    protected void respond(StaplerResponse2 rsp, String html) throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");
         if (APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
             for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
@@ -581,7 +637,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
 
         public CheckMethod(Descriptor descriptor, String fieldName) {
             this.descriptor = descriptor;
-            this.capitalizedFieldName = StringUtils.capitalize(fieldName);
+            this.capitalizedFieldName = fieldName == null || fieldName.isEmpty() ? fieldName : Character.toTitleCase(fieldName.charAt(0)) + fieldName.substring(1);
 
             method = ReflectionUtils.getPublicMethodNamed(descriptor.getClass(), "doCheck" + capitalizedFieldName);
             if (method != null) {
@@ -600,8 +656,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 QueryParameter qp = p.annotation(QueryParameter.class);
                 if (qp != null) {
                     String name = qp.value();
-                    if (name.length() == 0) name = p.name();
-                    if (name == null || name.length() == 0)
+                    if (name.isEmpty()) name = p.name();
+                    if (name == null || name.isEmpty())
                         continue;   // unknown parameter name. we'll report the error when the form is submitted.
                     if (name.equals("value"))
                         continue;   // 'value' parameter is implicit

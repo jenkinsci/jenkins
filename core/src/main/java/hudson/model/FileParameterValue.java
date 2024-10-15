@@ -39,28 +39,22 @@ import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 import jenkins.util.SystemProperties;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemHeaders;
-import org.apache.commons.fileupload.disk.DiskFileItem;
-import org.apache.commons.fileupload.util.FileItemHeadersImpl;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.core.FileItemFactory;
+import org.apache.commons.fileupload2.core.FileItemHeaders;
+import org.apache.commons.fileupload2.core.FileItemHeadersProvider;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * {@link ParameterValue} for {@link FileParameterDefinition}.
- *
- * <h2>Persistence</h2>
- * <p>
- * {@link DiskFileItem} is persistable via serialization,
- * (although the data may get very large in XML) so this object
- * as a whole is persistable.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -98,8 +92,16 @@ public class FileParameterValue extends ParameterValue {
         this(name, file, FilenameUtils.getName(file.getName()));
     }
 
+    /**
+     * @deprecated use {@link #FileParameterValue(String, FileItem)}
+     */
+    @Deprecated
+    public FileParameterValue(String name, org.apache.commons.fileupload.FileItem file) {
+        this(name, file.toFileUpload2FileItem(), FilenameUtils.getName(file.getName()));
+    }
+
     public FileParameterValue(String name, File file, String originalFileName) {
-        this(name, new FileItemImpl(file), originalFileName);
+        this(name, new FileItemImpl2(file), originalFileName);
     }
 
     protected FileParameterValue(String name, FileItem file, String originalFileName) {
@@ -147,8 +149,16 @@ public class FileParameterValue extends ParameterValue {
         return originalFileName;
     }
 
-    public FileItem getFile() {
+    public FileItem getFile2() {
         return file;
+    }
+
+    /**
+     * @deprecated use {@link #getFile2}
+     */
+    @Deprecated
+    public org.apache.commons.fileupload.FileItem getFile() {
+        return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(getFile2());
     }
 
     @Override
@@ -225,9 +235,9 @@ public class FileParameterValue extends ParameterValue {
     }
 
     /**
-     * Serve this file parameter in response to a {@link StaplerRequest}.
+     * Serve this file parameter in response to a {@link StaplerRequest2}.
      */
-    public DirectoryBrowserSupport doDynamic(StaplerRequest request, StaplerResponse response) {
+    public DirectoryBrowserSupport doDynamic(StaplerRequest2 request, StaplerResponse2 response) {
         AbstractBuild build = (AbstractBuild) request.findAncestor(AbstractBuild.class).getObject();
         File fileParameter = getFileParameterFolderUnderBuild(build);
         return new DirectoryBrowserSupport(build, new FilePath(fileParameter), Messages.FileParameterValue_IndexTitle(), "folder.png", false);
@@ -249,11 +259,120 @@ public class FileParameterValue extends ParameterValue {
 
     /**
      * Default implementation from {@link File}.
+     *
+     * @deprecated use {@link FileItemImpl2}
      */
-    public static final class FileItemImpl implements FileItem {
-        private final File file;
+    @Deprecated
+    public static final class FileItemImpl implements org.apache.commons.fileupload.FileItem {
+        private final FileItem delegate;
 
         public FileItemImpl(File file) {
+            if (file == null) {
+                throw new NullPointerException("file");
+            }
+            this.delegate = new FileItemImpl2(file);
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).getInputStream();
+        }
+
+        @Override
+        public String getContentType() {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).getContentType();
+        }
+
+        @Override
+        @SuppressFBWarnings(value = "FILE_UPLOAD_FILENAME", justification = "for compatibility")
+        public String getName() {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).getName();
+        }
+
+        @Override
+        public boolean isInMemory() {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).isInMemory();
+        }
+
+        @Override
+        public long getSize() {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).getSize();
+        }
+
+        @Override
+        public byte[] get() {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).get();
+        }
+
+        @Override
+        public String getString(String encoding) throws UnsupportedEncodingException {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).getString(encoding);
+        }
+
+        @Override
+        public String getString() {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).getString();
+        }
+
+        @Override
+        public void write(File to) throws Exception {
+            org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).write(to);
+        }
+
+        @Override
+        public void delete() {
+            org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).delete();
+        }
+
+        @Override
+        public String getFieldName() {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).getFieldName();
+        }
+
+        @Override
+        public void setFieldName(String name) {
+            org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).setFieldName(name);
+        }
+
+        @Override
+        public boolean isFormField() {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).isFormField();
+        }
+
+        @Override
+        public void setFormField(boolean state) {
+            org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).setFormField(state);
+        }
+
+        @Override
+        @Deprecated
+        public OutputStream getOutputStream() throws IOException {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).getOutputStream();
+        }
+
+        @Override
+        public org.apache.commons.fileupload.FileItemHeaders getHeaders() {
+            return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).getHeaders();
+        }
+
+        @Override
+        public void setHeaders(org.apache.commons.fileupload.FileItemHeaders headers) {
+            org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(delegate).setHeaders(headers);
+        }
+
+        @Override
+        public FileItem toFileUpload2FileItem() {
+            return delegate;
+        }
+    }
+
+    /**
+     * Default implementation from {@link File}.
+     */
+    public static final class FileItemImpl2 implements FileItem {
+        private final File file;
+
+        public FileItemImpl2(File file) {
             if (file == null) {
                 throw new NullPointerException("file");
             }
@@ -288,17 +407,19 @@ public class FileParameterValue extends ParameterValue {
         @Override
         public byte[] get() {
             try {
-                try (InputStream inputStream = Files.newInputStream(file.toPath())) {
-                    return IOUtils.toByteArray(inputStream);
-                }
+                return Files.readAllBytes(file.toPath());
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
         }
 
         @Override
-        public String getString(String encoding) throws UnsupportedEncodingException {
-            return new String(get(), encoding);
+        public String getString(Charset toCharset) throws IOException {
+            try {
+                return new String(get(), toCharset);
+            } catch (UncheckedIOException e) {
+                throw e.getCause();
+            }
         }
 
         @Override
@@ -307,17 +428,19 @@ public class FileParameterValue extends ParameterValue {
         }
 
         @Override
-        public void write(File to) throws Exception {
-            new FilePath(file).copyTo(new FilePath(to));
+        public FileItem write(Path to) throws IOException {
+            try {
+                new FilePath(file).copyTo(new FilePath(to.toFile()));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            return this;
         }
 
         @Override
-        public void delete() {
-            try {
-                Files.deleteIfExists(file.toPath());
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+        public FileItem delete() throws IOException {
+            Files.deleteIfExists(Util.fileToPath(file));
+            return this;
         }
 
         @Override
@@ -326,7 +449,8 @@ public class FileParameterValue extends ParameterValue {
         }
 
         @Override
-        public void setFieldName(String name) {
+        public FileItem setFieldName(String name) {
+            return this;
         }
 
         @Override
@@ -335,7 +459,8 @@ public class FileParameterValue extends ParameterValue {
         }
 
         @Override
-        public void setFormField(boolean state) {
+        public FileItem setFormField(boolean state) {
+            return this;
         }
 
         @Override
@@ -346,11 +471,12 @@ public class FileParameterValue extends ParameterValue {
 
         @Override
         public FileItemHeaders getHeaders() {
-            return new FileItemHeadersImpl();
+            return FileItemFactory.AbstractFileItemBuilder.newFileItemHeaders();
         }
 
         @Override
-        public void setHeaders(FileItemHeaders headers) {
+        public FileItemHeadersProvider setHeaders(FileItemHeaders headers) {
+            return this;
         }
     }
 }

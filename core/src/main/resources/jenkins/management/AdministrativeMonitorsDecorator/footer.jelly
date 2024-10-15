@@ -40,8 +40,7 @@ THE SOFTWARE.
                    href="#"
                    data-href="${rootURL}/administrativeMonitorsApi/nonSecurityPopupContent"
                    title="${%tooltip(activeNonSecurityAMCount)}">
-                    <l:svgIcon
-                            href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_notifications_24px"/>
+                    <l:icon src="symbol-notifications" class="icon-md"/>
                     <div class="am-monitor__indicator-mobile"/>
                     <span class="am-monitor__count">
                         ${activeNonSecurityAMCount}
@@ -58,8 +57,7 @@ THE SOFTWARE.
                    href="#"
                    data-href="${rootURL}/administrativeMonitorsApi/securityPopupContent"
                    title="${%tooltipSec(activeSecurityAMCount)}">
-                    <l:svgIcon
-                            href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_warning_shield_24px"/>
+                    <l:icon src="symbol-shield-warning" class="icon-md"/>
                     <div class="am-monitor__indicator-mobile"/>
                     <span class="am-monitor__count">
                         ${activeSecurityAMCount}

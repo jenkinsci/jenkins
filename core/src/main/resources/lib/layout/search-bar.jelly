@@ -1,0 +1,67 @@
+<!--
+The MIT License
+
+Copyright (c) 2022 Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation>
+    <st:attribute name="value" />
+    <st:attribute name="placeholder" />
+    <st:attribute name="id" />
+    <st:attribute name="autofocus" />
+    <st:attribute name="clazz" />
+    <st:attribute name="hasKeyboardShortcut">
+      If false the default keyboard shortcut for the input is disabled. Defaults to true.
+    </st:attribute>
+    <st:attribute name="enabled" since="2.420">
+      Defaults to true. Sets whether the search bar is enabled or not.
+    </st:attribute>
+    Creates a search input
+
+    @since 2.369
+  </st:documentation>
+
+  <div class="jenkins-search-container">
+    <div class="jenkins-search ${attrs.enabled == false ? 'jenkins-search--disabled' : ''} ${attrs.clazz}">
+      <div class="jenkins-search__icon">
+        <l:icon src="symbol-search" />
+      </div>
+      <input value="${attrs.value}"
+             id="${attrs.id}"
+             class="jenkins-search__input"
+             placeholder="${attrs.placeholder ?: '%Search'}"
+             type="search"
+             autofocus="${attrs.autofocus == 'true' ? 'true' : null}"
+             autocomplete="off"
+             autocorrect="off"
+             autocapitalize="off"
+             spellcheck="false"
+             disabled="${attrs.enabled == false ? true : null}" />
+      <j:if test="${attrs.hasKeyboardShortcut != 'false'}">
+        <div class="jenkins-search__shortcut" tooltip="${%Press / on your keyboard to focus}">
+          <l:icon src="symbol-search-shortcut" />
+        </div>
+      </j:if>
+    </div>
+  </div>
+</j:jelly>

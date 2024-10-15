@@ -2,8 +2,6 @@ package hudson.slaves;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
@@ -12,6 +10,8 @@ import hudson.model.StringParameterDefinition;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;

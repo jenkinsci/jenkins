@@ -40,12 +40,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.WebAssert;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
 import hudson.ExtensionList;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -70,7 +64,14 @@ import java.util.Set;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
-import jenkins.security.apitoken.ApiTokenTestHelper;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.WebAssert;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.WebConnectionWrapper;
+import org.jenkinsci.plugins.matrixauth.PermissionEntry;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -257,7 +258,7 @@ public class UserTest {
         user.addProperty(prop);
         assertNotNull("User should have SomeUserProperty property.", user.getProperty(SomeUserProperty.class));
         assertEquals("UserProperty1 should be assigned to its descriptor", prop, user.getProperties().get(prop.getDescriptor()));
-        assertTrue("User should should contain SomeUserProperty.", user.getAllProperties().contains(prop));
+        assertTrue("User should contain SomeUserProperty.", user.getAllProperties().contains(prop));
         }
         j.jenkins.reload();
         {
@@ -404,20 +405,23 @@ public class UserTest {
         User user = realm.createAccount("John Smith", "password");
         User user2 = realm.createAccount("John Smith2", "password");
         user2.save();
-        auth.add(Jenkins.ADMINISTER, user.getId());
-        auth.add(Jenkins.READ, user2.getId());
+        auth.add(Jenkins.ADMINISTER, PermissionEntry.user(user.getId()));
+        auth.add(Jenkins.READ, PermissionEntry.user(user2.getId()));
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
-        HtmlForm form = j.createWebClient().withBasicCredentials(user.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
-        form.getInputByName("_.fullName").setValueAttribute("Alice Smith");
+        HtmlForm form = j.createWebClient().withBasicCredentials(user.getId(), "password").goTo(user2.getUrl() + "/account/").getFormByName("config");
+        form.getInputByName("_.fullName").setValue("Alice Smith");
         j.submit(form);
         assertEquals("User should have full name Alice Smith.", "Alice Smith", user2.getFullName());
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
-        assertThrows("User should not have permission to configure another user.", AccessDeniedException3.class, () -> user.doConfigSubmit(null, null));
-        form = j.createWebClient().withBasicCredentials(user2.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
+        try (JenkinsRule.WebClient webClient = j.createWebClient().withBasicCredentials(user2.getId(), "password")) {
+            FailingHttpStatusCodeException failingHttpStatusCodeException = assertThrows("User should not have permission to configure another user.", FailingHttpStatusCodeException.class, () -> webClient.goTo(user.getUrl() + "/account/"));
+            assertThat(failingHttpStatusCodeException.getStatusCode(), is(403));
+            form = webClient.goTo(user2.getUrl() + "/account/").getFormByName("config");
+            form.getInputByName("_.fullName").setValue("John");
+            j.submit(form);
+        }
 
-        form.getInputByName("_.fullName").setValueAttribute("John");
-        j.submit(form);
-        assertEquals("User should be albe to configure himself.", "John", user2.getFullName());
+        assertEquals("User should be able to configure himself.", "John", user2.getFullName());
 
     }
 
@@ -515,8 +519,6 @@ public class UserTest {
     @Test
     // @Issue("SECURITY-180")
     public void security180() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         final GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -774,7 +776,7 @@ public class UserTest {
                 return r;
             }
         };
-        wc.login("alice").goTo("me/configure");
+        wc.login("alice").goTo("me/account/");
         assertThat(failingResources, empty());
     }
 

@@ -24,18 +24,37 @@
 
 package hudson.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.thoughtworks.xstream.security.InputManipulationException;
+import hudson.model.Saveable;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import jenkins.util.xstream.CriticalXStreamException;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
 public class RobustMapConverterTest {
+    private final boolean originalRecordFailures = RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS;
+
+    @Before
+    public void before() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
+    }
+
+    @After
+    public void after() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = originalRecordFailures;
+    }
+
     /**
      * As RobustMapConverter is the replacer of the default MapConverter
      * We had to patch it in order to not be impacted by CVE-2021-43859
@@ -51,16 +70,12 @@ public class RobustMapConverterTest {
 
         xstream2.setCollectionUpdateLimit(3);
         final String xml = xstream2.toXML(map);
-        try {
-            xstream2.fromXML(xml);
-            fail("Thrown " + CriticalXStreamException.class.getName() + " expected");
-        } catch (final CriticalXStreamException e) {
-            Throwable cause = e.getCause();
-            assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-            assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
-            InputManipulationException ime = (InputManipulationException) cause;
-            assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 3 seconds"));
-        }
+        CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
+        Throwable cause = e.getCause();
+        assertNotNull(cause);
+        assertThat(cause, instanceOf(InputManipulationException.class));
+        InputManipulationException ime = (InputManipulationException) cause;
+        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 3 seconds"));
     }
 
     @Test(timeout = 30 * 1000)
@@ -75,16 +90,12 @@ public class RobustMapConverterTest {
             Map<Object, Object> map = preparePayload();
 
             final String xml = xstream2.toXML(map);
-            try {
-                xstream2.fromXML(xml);
-                fail("Thrown " + CriticalXStreamException.class.getName() + " expected");
-            } catch (final CriticalXStreamException e) {
-                Throwable cause = e.getCause();
-                assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-                assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
-                InputManipulationException ime = (InputManipulationException) cause;
-                assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 4 seconds"));
-            }
+            CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
+            Throwable cause = e.getCause();
+            assertNotNull(cause);
+            assertThat(cause, instanceOf(InputManipulationException.class));
+            InputManipulationException ime = (InputManipulationException) cause;
+            assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 4 seconds"));
         } finally {
             if (currentValue == null) {
                 System.clearProperty(XStream2.COLLECTION_UPDATE_LIMIT_PROPERTY_NAME);
@@ -103,16 +114,12 @@ public class RobustMapConverterTest {
         Map<Object, Object> map = preparePayload();
 
         final String xml = xstream2.toXML(map);
-        try {
-            xstream2.fromXML(xml);
-            fail("Thrown " + CriticalXStreamException.class.getName() + " expected");
-        } catch (final CriticalXStreamException e) {
-            Throwable cause = e.getCause();
-            assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-            assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
-            InputManipulationException ime = (InputManipulationException) cause;
-            assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
-        }
+        CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
+        Throwable cause = e.getCause();
+        assertNotNull(cause);
+        assertThat(cause, instanceOf(InputManipulationException.class));
+        InputManipulationException ime = (InputManipulationException) cause;
+        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
     }
 
     // Inspired by https://github.com/x-stream/xstream/commit/e8e88621ba1c85ac3b8620337dd672e0c0c3a846#diff-9fde4ecf1bb4dc9850c031cb161960d2e61e069b386fa0b3db0d57e0e9f5baa
@@ -151,5 +158,146 @@ public class RobustMapConverterTest {
             m2 = t2;
         }
         return map;
+    }
+
+    @Test
+    public void robustAgainstInvalidEntry() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
+        XStream2 xstream2 = new XStream2();
+        String xml =
+            """
+            <hudson.util.RobustMapConverterTest_-Data>
+              <map>
+                <string>key1</string>
+                <entry>
+                  <string>key2</string>
+                  <string>value2</string>
+                </entry>
+              </map>
+            </hudson.util.RobustMapConverterTest_-Data>
+            """;
+        Data data = (Data) xstream2.fromXML(xml);
+        assertThat(data.map, equalTo(Map.of("key2", "value2")));
+    }
+
+    @Test
+    public void robustAgainstInvalidEntryWithNoValue() {
+        XStream2 xstream2 = new XStream2();
+        String xml =
+            """
+            <hudson.util.RobustMapConverterTest_-Data>
+              <map>
+                <entry>
+                  <string>key1</string>
+                </entry>
+                <entry>
+                  <string>key2</string>
+                  <string>value2</string>
+                </entry>
+              </map>
+            </hudson.util.RobustMapConverterTest_-Data>
+            """;
+        Data data = (Data) xstream2.fromXML(xml);
+        assertThat(data.map, equalTo(Map.of("key2", "value2")));
+    }
+
+    @Issue("JENKINS-63343")
+    @Test
+    public void robustAgainstInvalidKeyType() {
+        XStream2 xstream2 = new XStream2();
+        String xml =
+            """
+            <hudson.util.RobustMapConverterTest_-Data>
+              <map>
+                <entry>
+                  <int>1</int> <!-- bad type -->
+                  <string>value1</string>
+                </entry>
+                <entry>
+                  <string>key2</string>
+                  <string>value2</string>
+                </entry>
+                <entry>
+                  <null/>
+                  <string>value3</string>
+                </entry>
+              </map>
+            </hudson.util.RobustMapConverterTest_-Data>
+            """;
+        Data data = (Data) xstream2.fromXML(xml);
+        var map = new HashMap<>();
+        map.put("key2", "value2");
+        map.put(null, "value3");
+        assertThat(data.map, equalTo(map));
+    }
+
+    @Issue("JENKINS-63343")
+    @Test
+    public void robustAgainstInvalidValueType() {
+        XStream2 xstream2 = new XStream2();
+        String xml =
+            """
+            <hudson.util.RobustMapConverterTest_-Data>
+              <map>
+                <entry>
+                  <string>key1</string>
+                  <string>value1</string>
+                </entry>
+                <entry>
+                  <string>key2</string>
+                  <int>2</int> <!-- bad type -->
+                </entry>
+                <entry>
+                  <string>key3</string>
+                  <null/>
+                </entry>
+              </map>
+            </hudson.util.RobustMapConverterTest_-Data>
+            """;
+        Data data = (Data) xstream2.fromXML(xml);
+        var map = new HashMap<>();
+        map.put("key1", "value1");
+        map.put("key3", null);
+        assertThat(data.map, equalTo(map));
+    }
+
+    @Test
+    public void rawtypes() {
+        XStream2 xstream2 = new XStream2();
+        String xml =
+            """
+            <hudson.util.RobustMapConverterTest_-DataRaw>
+              <map>
+                <entry>
+                  <string>key1</string>
+                  <string>value1</string>
+                </entry>
+                <entry>
+                  <string>key2</string>
+                  <int>2</int>
+                </entry>
+              </map>
+            </hudson.util.RobustMapConverterTest_-DataRaw>
+            """;
+        var data = (DataRaw) xstream2.fromXML(xml);
+        assertThat(data.map, equalTo(Map.of("key1", "value1", "key2", 2)));
+    }
+
+    private static class Data implements Saveable {
+        Map<String, String> map;
+
+        @Override
+        public void save() throws IOException {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+        }
+    }
+
+    private static class DataRaw implements Saveable {
+        Map map;
+
+        @Override
+        public void save() throws IOException {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+        }
     }
 }

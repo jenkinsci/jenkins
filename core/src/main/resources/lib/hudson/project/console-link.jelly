@@ -25,16 +25,5 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <!-- Displays a console link for a build. -->
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-    <j:choose>
-        <j:when test="${it.logFile.length() > 200000}">
-            <!-- Show raw link directly so user need not click through live console page, though this is not so bad now as they would just see: Skipping nnn KB.. Full Log. -->
-            <l:task href="${buildUrl.baseUrl}/console" icon="icon-terminal icon-md" title="${%Console Output}"/>
-            <l:task href="${buildUrl.baseUrl}/consoleText" icon="icon-document icon-md" title="${%View as plain text}"/>
-        </j:when>
-        <j:otherwise>
-            <l:task icon="images/svgs/terminal.svg" href="${buildUrl.baseUrl}/console" title="${%Console Output}">
-                <l:task href="${buildUrl.baseUrl}/consoleText" icon="icon-document icon-md" title="${%View as plain text}"/>
-            </l:task>
-        </j:otherwise>
-    </j:choose>
+    <l:task href="${h.getConsoleUrl(it) ?: (buildUrl.baseUrl + '/console')}" icon="icon-terminal icon-md"  title="${%Console Output}" />
 </j:jelly>

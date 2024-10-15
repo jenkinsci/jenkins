@@ -111,7 +111,7 @@ public class SuggestedItem {
             buf.setLength(0);
             buf.append(f);
         } else {
-            if (buf.length() == 0 || buf.charAt(buf.length() - 1) != '/')
+            if (buf.isEmpty() || buf.charAt(buf.length() - 1) != '/')
                 buf.append('/');
             buf.append(f);
         }

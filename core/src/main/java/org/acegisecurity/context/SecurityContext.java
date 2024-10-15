@@ -27,46 +27,67 @@ package org.acegisecurity.context;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.User;
 import hudson.security.ACL;
+import java.io.Serializable;
 import org.acegisecurity.Authentication;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @deprecated Use {@link ACL#as(User)} or {@link org.springframework.security.core.context.SecurityContext}
  */
 @Deprecated
-public interface SecurityContext {
+public interface SecurityContext extends Serializable {
 
     Authentication getAuthentication();
 
     void setAuthentication(Authentication a);
 
     static @NonNull SecurityContext fromSpring(@NonNull org.springframework.security.core.context.SecurityContext c) {
-        return new SecurityContext() {
-            @Override
-            public Authentication getAuthentication() {
-                org.springframework.security.core.Authentication a = c.getAuthentication();
-                return a != null ? Authentication.fromSpring(a) : null;
-            }
+        return new FromSpring(c);
+    }
 
-            @Override
-            public void setAuthentication(Authentication a) {
-                c.setAuthentication(a != null ? a.toSpring() : null);
-            }
-        };
+    @Restricted(NoExternalUse.class)
+    class FromSpring implements SecurityContext {
+        private final org.springframework.security.core.context.SecurityContext c;
+
+        FromSpring(org.springframework.security.core.context.SecurityContext c) {
+            this.c = c;
+        }
+
+        @Override
+        public Authentication getAuthentication() {
+            org.springframework.security.core.Authentication a = c.getAuthentication();
+            return a != null ? Authentication.fromSpring(a) : null;
+        }
+
+        @Override
+        public void setAuthentication(Authentication a) {
+            c.setAuthentication(a != null ? a.toSpring() : null);
+        }
     }
 
     default @NonNull org.springframework.security.core.context.SecurityContext toSpring() {
-        return new org.springframework.security.core.context.SecurityContext() {
-            @Override
-            public org.springframework.security.core.Authentication getAuthentication() {
-                Authentication a = SecurityContext.this.getAuthentication();
-                return a != null ? a.toSpring() : null;
-            }
+        return new ToSpring(this);
+    }
 
-            @Override
-            public void setAuthentication(org.springframework.security.core.Authentication authentication) {
-                SecurityContext.this.setAuthentication(authentication != null ? Authentication.fromSpring(authentication) : null);
-            }
-        };
+    @Restricted(NoExternalUse.class)
+    class ToSpring implements org.springframework.security.core.context.SecurityContext {
+        private final SecurityContext c;
+
+        ToSpring(SecurityContext c) {
+            this.c = c;
+        }
+
+        @Override
+        public org.springframework.security.core.Authentication getAuthentication() {
+            Authentication a = c.getAuthentication();
+            return a != null ? a.toSpring() : null;
+        }
+
+        @Override
+        public void setAuthentication(org.springframework.security.core.Authentication authentication) {
+            c.setAuthentication(authentication != null ? Authentication.fromSpring(authentication) : null);
+        }
     }
 
 }

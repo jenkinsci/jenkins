@@ -25,8 +25,8 @@ THE SOFTWARE.
 <!--
   Link to a range of build. Used by fingerprint/index.jsp
 
-	<%@ attribute name="range" type="java.lang.Object" required="true" %>
-	<%@ attribute name="job" type="hudson.model.Job" required="true" %>
+	<%@ attribute name="range" type="java.lang.Object" use="required" %>
+	<%@ attribute name="job" type="hudson.model.Job" use="required" %>
 -->
 <!-- it's hudson.model.Fingerprint.RangeSet but Tomcat can't seem to handler inner classes -->
 <?jelly escape-by-default='true'?>

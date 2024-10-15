@@ -31,6 +31,7 @@ THE SOFTWARE.
   <l:layout permission="${it.EXTENDED_READ}" title="${%title(it.displayName)}">
     <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
     <st:include page="sidepanel.jelly"/>
+    <l:breadcrumb title="${%Configure}" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config" class="jenkins-form">
         <j:set var="instance" value="${it.node}" />
@@ -45,15 +46,8 @@ THE SOFTWARE.
         <!-- main body of the configuration -->
         <st:include it="${instance}" page="configure-entries.jelly" />
 
-        <j:if test="${h.hasPermission(it, it.CONFIGURE)}">
-          <f:bottomButtonBar>
-            <f:submit value="${%Save}"/>
-          </f:bottomButtonBar>
-        </j:if>
+        <f:saveApplyBar/>
       </f:form>
-      <j:if test="${h.hasPermission(it, it.CONFIGURE)}">
-        <st:adjunct includes="lib.form.confirm" />
-      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

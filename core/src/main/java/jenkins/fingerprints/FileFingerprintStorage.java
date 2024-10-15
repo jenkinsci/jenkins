@@ -101,11 +101,10 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
         try {
             Object loaded = configFile.read();
-            if (!(loaded instanceof Fingerprint)) {
+            if (!(loaded instanceof Fingerprint f)) {
                 throw new IOException("Unexpected Fingerprint type. Expected " + Fingerprint.class + " or subclass but got "
                         + (loaded != null ? loaded.getClass() : "null"));
             }
-            Fingerprint f = (Fingerprint) loaded;
             if (f.getPersistedFacets() == null) {
                 logger.log(Level.WARNING, "Malformed fingerprint {0}: Missing facets", configFile);
                 Files.deleteIfExists(Util.fileToPath(file));

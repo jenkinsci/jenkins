@@ -27,7 +27,6 @@ package hudson.triggers;
 
 import static java.util.logging.Level.WARNING;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -82,7 +81,6 @@ import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -91,8 +89,8 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * {@link Trigger} that checks for SCM updates periodically.
@@ -110,7 +108,7 @@ public class SCMTrigger extends Trigger<Item> {
     private boolean ignorePostCommitHooks;
 
     @DataBoundConstructor
-    public SCMTrigger(String scmpoll_spec) throws ANTLRException {
+    public SCMTrigger(String scmpoll_spec) {
         super(scmpoll_spec);
     }
 
@@ -125,7 +123,7 @@ public class SCMTrigger extends Trigger<Item> {
      * @deprecated since 2.21
      */
     @Deprecated
-    public SCMTrigger(String scmpoll_spec, boolean ignorePostCommitHooks) throws ANTLRException {
+    public SCMTrigger(String scmpoll_spec, boolean ignorePostCommitHooks) {
         super(scmpoll_spec);
         this.ignorePostCommitHooks = ignorePostCommitHooks;
     }
@@ -358,7 +356,7 @@ public class SCMTrigger extends Trigger<Item> {
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
             String t = json.optString("pollingThreadCount", null);
             if (doCheckPollingThreadCount(t).kind != FormValidation.Kind.OK) {
                 setPollingThreadCount(THREADS_DEFAULT);
@@ -382,7 +380,7 @@ public class SCMTrigger extends Trigger<Item> {
         public FormValidation doCheckScmpoll_spec(@QueryParameter String value,
                                                   @QueryParameter boolean ignorePostCommitHooks,
                                                   @AncestorInPath Item item) {
-            if (StringUtils.isBlank(value)) {
+            if (value == null || value.isBlank()) {
                 if (ignorePostCommitHooks) {
                     return FormValidation.ok(Messages.SCMTrigger_no_schedules_no_hooks());
                 } else {
@@ -468,9 +466,9 @@ public class SCMTrigger extends Trigger<Item> {
         /**
          * Sends out the raw polling log output.
          */
-        public void doPollingLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        public void doPollingLog(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
             rsp.setContentType("text/plain;charset=UTF-8");
-            try (OutputStream os = rsp.getCompressedOutputStream(req);
+            try (OutputStream os = rsp.getOutputStream();
                  // Prevent jelly from flushing stream so Content-Length header can be added afterwards
                  FlushProofOutputStream out = new FlushProofOutputStream(os)) {
                 getPollingLogText().writeLogTo(0, out);

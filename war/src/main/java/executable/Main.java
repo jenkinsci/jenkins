@@ -28,12 +28,10 @@ package executable;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -42,37 +40,43 @@ import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
-import java.util.Set;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Launcher class for stand-alone execution of Jenkins as
  * {@code java -jar jenkins.war}.
  *
+ * <p>On a high-level architectural note, this class is intended to be a very thin wrapper whose
+ * primary purpose is to extract Winstone and delegate to Winstone's own initialization mechanism.
+ * The logic in this class should only perform Jenkins-specific argument and environment validation
+ * and Jenkins-specific Winstone customization prior to delegating to Winstone.
+ *
+ * <p>In particular, managing the logging subsystem is completely delegated to Winstone, and this
+ * class should neither assume that logging has been initialized nor take advantage of the logging
+ * subsystem. In the event that this class needs to print information to the user, it should do so
+ * via the standard output (stdout) and standard error (stderr) streams rather than via the logging
+ * subsystem. Such messages should generally be avoided except for fatal scenarios, such as an
+ * inappropriate Java Virtual Machine (JVM) or some other serious failure that would preclude
+ * starting Winstone.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Main {
 
-    private static final int MINIMUM_JAVA_VERSION = 11;
-    private static final int MAXIMUM_JAVA_VERSION = 17;
-    private static final Set<Integer> SUPPORTED_JAVA_VERSIONS =
-            new HashSet<>(Arrays.asList(MINIMUM_JAVA_VERSION, MAXIMUM_JAVA_VERSION));
-    private static final int MINIMUM_JAVA_CLASS_VERSION = 55;
-    private static final int MAXIMUM_JAVA_CLASS_VERSION = 61;
-    private static final Set<Integer> SUPPORTED_JAVA_CLASS_VERSIONS =
-            new HashSet<>(Arrays.asList(MINIMUM_JAVA_CLASS_VERSION, MAXIMUM_JAVA_CLASS_VERSION));
-
-    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    /**
+     * This list must remain synchronized with the one in {@code
+     * JavaVersionRecommendationAdminMonitor}.
+     */
+    private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS = new TreeSet<>(List.of(17, 21));
 
     /**
      * Sets custom session cookie name.
@@ -99,55 +103,50 @@ public class Main {
      */
     private static final String ENABLE_FUTURE_JAVA_CLI_SWITCH = "--enable-future-java";
 
-    public static void main(String[] args) throws IllegalAccessException {
-        try {
-            String v = System.getProperty("java.class.version");
-            if (v != null) {
-                String classVersionString = v.split("\\.")[0];
-                try {
-                    int javaVersion = Integer.parseInt(classVersionString);
-                    verifyJavaVersion(javaVersion, isFutureJavaEnabled(args));
-                } catch (NumberFormatException e) {
-                    // err on the safe side and keep on going
-                    LOGGER.log(Level.WARNING, "Failed to parse java.class.version: {0}. Will continue execution", v);
-                }
-            }
-
-            _main(args);
-        } catch (UnsupportedClassVersionError e) {
-            System.err.printf(
-                    "Jenkins requires Java versions %s but you are running with Java %s from %s%n",
-                    SUPPORTED_JAVA_VERSIONS, System.getProperty("java.specification.version"), System.getProperty("java.home"));
-            e.printStackTrace();
-        }
-    }
-
-    /*package*/ static void verifyJavaVersion(int javaClassVersion, boolean enableFutureJava) {
-        final String displayVersion = String.format("%d.0", javaClassVersion);
-        if (SUPPORTED_JAVA_CLASS_VERSIONS.contains(javaClassVersion)) {
+    /*package*/ static void verifyJavaVersion(int releaseVersion, boolean enableFutureJava) {
+        if (SUPPORTED_JAVA_VERSIONS.contains(releaseVersion)) {
             // Great!
-        } else if (javaClassVersion > MINIMUM_JAVA_CLASS_VERSION) {
+        } else if (releaseVersion >= SUPPORTED_JAVA_VERSIONS.first()) {
             if (enableFutureJava) {
-                LOGGER.log(Level.WARNING,
-                        String.format("Running with Java class version %s which is not in the list of supported versions: %s. " +
-                                        "Argument %s is set, so will continue. " +
-                                        "See https://jenkins.io/redirect/java-support/",
-                                javaClassVersion, SUPPORTED_JAVA_CLASS_VERSIONS, ENABLE_FUTURE_JAVA_CLI_SWITCH));
+                System.err.printf(
+                        "Running with Java %d from %s, which is not fully supported. "
+                                + "Continuing because %s is set. "
+                                + "Supported Java versions are: %s. "
+                                + "See https://jenkins.io/redirect/java-support/ for more information.%n",
+                        releaseVersion,
+                        System.getProperty("java.home"),
+                        ENABLE_FUTURE_JAVA_CLI_SWITCH,
+                        SUPPORTED_JAVA_VERSIONS);
+            } else if (releaseVersion > SUPPORTED_JAVA_VERSIONS.last()) {
+                throw new UnsupportedClassVersionError(
+                        String.format(
+                                "Running with Java %d from %s, which is not yet fully supported.%n"
+                                        + "Run the command again with the %s flag to enable preview support for future Java versions.%n"
+                                        + "Supported Java versions are: %s",
+                                releaseVersion,
+                                System.getProperty("java.home"),
+                                ENABLE_FUTURE_JAVA_CLI_SWITCH,
+                                SUPPORTED_JAVA_VERSIONS));
             } else {
-                Error error = new UnsupportedClassVersionError(displayVersion);
-                LOGGER.log(Level.SEVERE, String.format("Running with Java class version %s which is not in the list of supported versions: %s. " +
-                                "Run with the " + ENABLE_FUTURE_JAVA_CLI_SWITCH + " flag to enable such behavior. " +
-                                "See https://jenkins.io/redirect/java-support/",
-                        javaClassVersion, SUPPORTED_JAVA_CLASS_VERSIONS), error);
-                throw error;
+                throw new UnsupportedClassVersionError(
+                        String.format(
+                                "Running with Java %d from %s, which is not fully supported.%n"
+                                        + "Run the command again with the %s flag to bypass this error.%n"
+                                        + "Supported Java versions are: %s",
+                                releaseVersion,
+                                System.getProperty("java.home"),
+                                ENABLE_FUTURE_JAVA_CLI_SWITCH,
+                                SUPPORTED_JAVA_VERSIONS));
             }
         } else {
-            Error error = new UnsupportedClassVersionError(displayVersion);
-            LOGGER.log(Level.SEVERE,
-                    String.format("Running with Java class version %s, which is older than the Minimum required version %s. " +
-                                    "See https://jenkins.io/redirect/java-support/",
-                            javaClassVersion, MINIMUM_JAVA_CLASS_VERSION), error);
-            throw error;
+            throw new UnsupportedClassVersionError(
+                    String.format(
+                            "Running with Java %d from %s, which is older than the minimum required version (Java %d).%n"
+                                    + "Supported Java versions are: %s",
+                            releaseVersion,
+                            System.getProperty("java.home"),
+                            SUPPORTED_JAVA_VERSIONS.first(),
+                            SUPPORTED_JAVA_VERSIONS));
         }
     }
 
@@ -171,19 +170,32 @@ public class Main {
     }
 
     @SuppressFBWarnings(
-            value = {"PATH_TRAVERSAL_IN", "THROWS_METHOD_THROWS_RUNTIMEEXCEPTION"},
-            justification = "User provided values for running the program and intentional propagation of reflection errors")
-    private static void _main(String[] args) throws IllegalAccessException {
+            value = "PATH_TRAVERSAL_IN",
+            justification = "User provided values for running the program")
+    public static void main(String[] args) throws IllegalAccessException {
+        try {
+            verifyJavaVersion(Runtime.version().feature(), isFutureJavaEnabled(args));
+        } catch (UnsupportedClassVersionError e) {
+            System.err.println(e.getMessage());
+            System.err.println("See https://jenkins.io/redirect/java-support/ for more information.");
+            System.exit(1);
+        }
+
         //Allows to pass arguments through stdin to "hide" sensitive parameters like httpsKeyStorePassword
         //to achieve this use --paramsFromStdIn
         if (hasArgument("--paramsFromStdIn", args)) {
             System.out.println("--paramsFromStdIn detected. Parameters are going to be read from stdin. Other parameters passed directly will be ignored.");
-            String argsInStdIn = readStringNonBlocking(System.in, 131072).trim();
+            String argsInStdIn;
+            try {
+                argsInStdIn = new String(System.in.readNBytes(131072), StandardCharsets.UTF_8).trim();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
             args = argsInStdIn.split(" +");
         }
         // If someone just wants to know the version, print it out as soon as possible, with no extraneous file or webroot info.
         // This makes it easier to grab the version from a script
-        final List<String> arguments = new ArrayList<>(Arrays.asList(args));
+        final List<String> arguments = new ArrayList<>(List.of(args));
         if (arguments.contains("--version")) {
             System.out.println(getVersion("?"));
             return;
@@ -200,19 +212,6 @@ public class Main {
             }
         }
 
-        // if the output should be redirect to a file, do it now
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].startsWith("--logfile=")) {
-                PrintStream ps = createLogFileStream(new File(args[i].substring("--logfile=".length())));
-                System.setOut(ps);
-                System.setErr(ps);
-                // don't let winstone see this
-                List<String> _args = new ArrayList<>(Arrays.asList(args));
-                _args.remove(i);
-                args = _args.toArray(new String[0]);
-                break;
-            }
-        }
         for (String arg : args) {
             if (arg.startsWith("--pluginroot=")) {
                 System.setProperty("hudson.PluginManager.workDir",
@@ -235,9 +234,10 @@ public class Main {
         if (!hasOption(arguments, "--webroot=")) {
             // defaults to ~/.jenkins/war since many users reported that cron job attempts to clean up
             // the contents in the temporary directory.
-            final FileAndDescription describedHomeDir = getHomeDir();
-            System.out.println("webroot: " + describedHomeDir.description);
-            arguments.add("--webroot=" + new File(describedHomeDir.file, "war"));
+            final File jenkinsHome = getJenkinsHome();
+            final File webRoot = new File(jenkinsHome, "war");
+            System.out.println("webroot: " + webRoot);
+            arguments.add("--webroot=" + webRoot);
         }
 
         // only do a cleanup if you set the extractedFilesFolder property.
@@ -260,13 +260,13 @@ public class Main {
         }
         deleteWinstoneTempContents(new File(tempFile.getParent(), "winstone/" + me.getName()));
         if (!tempFile.delete()) {
-            LOGGER.log(Level.WARNING, "Failed to delete the temporary file {0}", tempFile);
+            System.err.println("Failed to delete temporary file: " + tempFile);
         }
 
         // locate the Winstone launcher
         ClassLoader cl;
         try {
-            cl = new URLClassLoader(new URL[] {tmpJar.toURI().toURL()});
+            cl = new URLClassLoader("Jenkins Main ClassLoader", new URL[] {tmpJar.toURI().toURL()}, ClassLoader.getSystemClassLoader());
         } catch (MalformedURLException e) {
             throw new UncheckedIOException(e);
         }
@@ -294,8 +294,9 @@ public class Main {
                 "   --pluginroot             = folder where the plugin archives are expanded into. Default is ${JENKINS_HOME}/plugins\n" +
                 "                              (NOTE: this option does not change the directory where the plugin archives are stored)\n" +
                 "   --extractedFilesFolder   = folder where extracted files are to be located. Default is the temp folder\n" +
-                "   --logfile                = redirect log messages to this file\n" +
-                "   " + ENABLE_FUTURE_JAVA_CLI_SWITCH + "     = allows running with new Java versions which are not fully supported (class version " + MINIMUM_JAVA_CLASS_VERSION + " and above)\n" +
+                "   " + ENABLE_FUTURE_JAVA_CLI_SWITCH + "     = allows running with Java versions which are not fully supported\n" +
+                "   --paramsFromStdIn        = Read parameters from standard input (stdin)\n" +
+                "   --version                = Print version to standard output (stdout) and exit\n" +
                 "{OPTIONS}");
 
         if (!DISABLE_CUSTOM_JSESSIONID_COOKIE_NAME) {
@@ -348,39 +349,8 @@ public class Main {
         }
     }
 
-    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "--logfile relies on the default encoding, fine")
-    private static PrintStream createLogFileStream(File file) {
-        LogFileOutputStream los;
-        try {
-            los = new LogFileOutputStream(file);
-        } catch (FileNotFoundException e) {
-            throw new UncheckedIOException(e);
-        }
-        return new PrintStream(los);
-    }
-
-    // TODO: Get rid of FB warning after updating to Java 7
-    /**
-     * reads up to maxRead bytes from InputStream if available into a String
-     *
-     * @param in input stream to be read
-     * @param maxToRead maximum number of bytes to read from the in
-     * @return a String read from in
-     */
-    @SuppressFBWarnings(value = {"DM_DEFAULT_ENCODING", "RR_NOT_CHECKED"}, justification = "Legacy behavior, We expect less input than maxToRead")
-    private static String readStringNonBlocking(InputStream in, int maxToRead) {
-        byte[] buffer;
-        try {
-            buffer = new byte[Math.min(in.available(), maxToRead)];
-            in.read(buffer);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        return new String(buffer);
-    }
-
     private static void trimOffOurOptions(List<String> arguments) {
-        arguments.removeIf(arg -> arg.startsWith("--daemon") || arg.startsWith("--logfile") || arg.startsWith("--extractedFilesFolder")
+        arguments.removeIf(arg -> arg.startsWith("--extractedFilesFolder")
                 || arg.startsWith("--pluginroot") || arg.startsWith(ENABLE_FUTURE_JAVA_CLI_SWITCH));
     }
 
@@ -439,19 +409,11 @@ public class Main {
         myself.deleteOnExit();
         try (InputStream is = Main.class.getProtectionDomain().getCodeSource().getLocation().openStream();
              OutputStream os = new FileOutputStream(myself)) {
-            copyStream(is, os);
+            is.transferTo(os);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
         return myself;
-    }
-
-    private static void copyStream(InputStream in, OutputStream out) throws IOException {
-        byte[] buf = new byte[8192];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
     }
 
     /**
@@ -473,7 +435,7 @@ public class Main {
             throw new UncheckedIOException("Jenkins failed to create a temporary file in " + tmpdir + ": " + e, e);
         }
         try (InputStream is = res.openStream(); OutputStream os = new FileOutputStream(tmp)) {
-            copyStream(is, os);
+            is.transferTo(os);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -494,7 +456,6 @@ public class Main {
             for (File file : files) {
                 for (String pattern : patterns) {
                     if (file.getName().matches(pattern)) {
-                        LOGGER.log(Level.FINE, "Deleting the temporary file {0}", file);
                         deleteWinstoneTempContents(file);
                     }
                 }
@@ -504,7 +465,6 @@ public class Main {
 
     private static void deleteWinstoneTempContents(File file) {
         if (!file.exists()) {
-            LOGGER.log(Level.FINEST, "No file found at {0}, nothing to delete.", file);
             return;
         }
         if (file.isDirectory()) {
@@ -516,71 +476,41 @@ public class Main {
             }
         }
         if (!file.delete()) {
-            LOGGER.log(Level.WARNING, "Failed to delete the temporary Winstone file {0}", file);
-        }
-    }
-
-    /** Add some metadata to a File, allowing to trace setup issues */
-    private static class FileAndDescription {
-        final File file;
-        final String description;
-
-        FileAndDescription(File file, String description) {
-            this.file = file;
-            this.description = description;
+            System.err.println("Failed to delete temporary Winstone file: " + file);
         }
     }
 
     /**
      * Determines the home directory for Jenkins.
-     *
+     * <p>
      * People makes configuration mistakes, so we are trying to be nice
      * with those by doing {@link String#trim()}.
-     *
-     * @return the File alongside with some description to help the user troubleshoot issues
      */
     @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "User provided values for running the program.")
-    private static FileAndDescription getHomeDir() {
+    private static File getJenkinsHome() {
         // check the system property for the home directory first
         for (String name : HOME_NAMES) {
             String sysProp = System.getProperty(name);
-            if (sysProp != null)
-                return new FileAndDescription(new File(sysProp.trim()), "System.getProperty(\"" + name + "\")");
+            if (sysProp != null) {
+                return new File(sysProp.trim());
+            }
         }
 
         // look at the env var next
-        try {
-            for (String name : HOME_NAMES) {
-                String env = System.getenv(name);
-                if (env != null)
-                    return new FileAndDescription(new File(env.trim()).getAbsoluteFile(), "EnvVars.masterEnvVars.get(\"" + name + "\")");
+        for (String name : HOME_NAMES) {
+            String env = System.getenv(name);
+            if (env != null) {
+                return new File(env.trim());
             }
-        } catch (Throwable e) {
-            // this code fails when run on JDK1.4
         }
 
         // otherwise pick a place by ourselves
-
-/* ServletContext not available yet
-        String root = event.getServletContext().getRealPath("/WEB-INF/workspace");
-        if(root!=null) {
-            File ws = new File(root.trim());
-            if(ws.exists())
-                // Hudson <1.42 used to prefer this before ~/.hudson, so
-                // check the existence and if it's there, use it.
-                // otherwise if this is a new installation, prefer ~/.hudson
-                return new FileAndDescription(ws, "getServletContext().getRealPath(\"/WEB-INF/workspace\")");
-        }
-*/
-
-        // if for some reason we can't put it within the webapp, use home directory.
         File legacyHome = new File(new File(System.getProperty("user.home")), ".hudson");
         if (legacyHome.exists()) {
-            return new FileAndDescription(legacyHome, "$user.home/.hudson"); // before rename, this is where it was stored
+            return legacyHome; // before rename, this is where it was stored
         }
 
-        File newHome = new File(new File(System.getProperty("user.home")), ".jenkins");
-        return new FileAndDescription(newHome, "$user.home/.jenkins");
+        return new File(new File(System.getProperty("user.home")), ".jenkins");
     }
 
     private static final String[] HOME_NAMES = {"JENKINS_HOME", "HUDSON_HOME"};

@@ -32,7 +32,6 @@ import static java.util.logging.Level.WARNING;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
@@ -60,9 +59,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.servlet.ServletException;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
+import jenkins.model.IExecutor;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
@@ -90,13 +89,7 @@ import org.springframework.security.core.Authentication;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-@SuppressFBWarnings(
-        value = {
-            "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION",
-            "THROWS_METHOD_THROWS_CLAUSE_THROWABLE"
-        },
-        justification = "TODO needs triage")
-public class Executor extends Thread implements ModelObject {
+public class Executor extends Thread implements ModelObject, IExecutor {
     protected final @NonNull Computer owner;
     private final Queue queue;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -331,17 +324,19 @@ public class Executor extends Thread implements ModelObject {
 
     @Override
     public void run() {
-        if (!owner.isOnline()) {
-            resetWorkUnit("went off-line before the task's worker thread started");
-            owner.removeExecutor(this);
-            queue.scheduleMaintenance();
-            return;
-        }
-        if (owner.getNode() == null) {
-            resetWorkUnit("was removed before the task's worker thread started");
-            owner.removeExecutor(this);
-            queue.scheduleMaintenance();
-            return;
+        if (!(owner instanceof Jenkins.MasterComputer)) {
+            if (!owner.isOnline()) {
+                resetWorkUnit("went off-line before the task's worker thread started");
+                owner.removeExecutor(this);
+                queue.scheduleMaintenance();
+                return;
+            }
+            if (owner.getNode() == null) {
+                resetWorkUnit("was removed before the task's worker thread started");
+                owner.removeExecutor(this);
+                queue.scheduleMaintenance();
+                return;
+            }
         }
         final WorkUnit workUnit;
         lock.writeLock().lock();
@@ -359,13 +354,15 @@ public class Executor extends Thread implements ModelObject {
             task = Queue.withLock(new Callable<>() {
                 @Override
                 public SubTask call() throws Exception {
-                    if (!owner.isOnline()) {
-                        resetWorkUnit("went off-line before the task's worker thread was ready to execute");
-                        return null;
-                    }
-                    if (owner.getNode() == null) {
-                        resetWorkUnit("was removed before the task's worker thread was ready to execute");
-                        return null;
+                    if (!(owner instanceof Jenkins.MasterComputer)) {
+                        if (!owner.isOnline()) {
+                            resetWorkUnit("went off-line before the task's worker thread was ready to execute");
+                            return null;
+                        }
+                        if (owner.getNode() == null) {
+                            resetWorkUnit("was removed before the task's worker thread was ready to execute");
+                            return null;
+                        }
                     }
                     // after this point we cannot unwind the assignment of the work unit, if the owner
                     // is removed or goes off-line then the build will just have to fail.
@@ -530,6 +527,7 @@ public class Executor extends Thread implements ModelObject {
      * @return
      *      null if the executor is idle.
      */
+    @Override
     public @CheckForNull Queue.Executable getCurrentExecutable() {
         lock.readLock().lock();
         try {
@@ -559,14 +557,8 @@ public class Executor extends Thread implements ModelObject {
         return Collections.unmodifiableCollection(causes);
     }
 
-    /**
-     * Returns the current {@link WorkUnit} (of {@link #getCurrentExecutable() the current executable})
-     * that this executor is running.
-     *
-     * @return
-     *      null if the executor is idle.
-     */
     @CheckForNull
+    @Override
     public WorkUnit getCurrentWorkUnit() {
         lock.readLock().lock();
         try {
@@ -605,22 +597,14 @@ public class Executor extends Thread implements ModelObject {
         return "Executor #" + getNumber();
     }
 
-    /**
-     * Gets the executor number that uniquely identifies it among
-     * other {@link Executor}s for the same computer.
-     *
-     * @return
-     *      a sequential number starting from 0.
-     */
     @Exported
+    @Override
     public int getNumber() {
         return number;
     }
 
-    /**
-     * Returns true if this {@link Executor} is ready for action.
-     */
     @Exported
+    @Override
     public boolean isIdle() {
         lock.readLock().lock();
         try {
@@ -709,13 +693,8 @@ public class Executor extends Thread implements ModelObject {
         return null;
     }
 
-    /**
-     * Returns the progress of the current build in the number between 0-100.
-     *
-     * @return -1
-     *      if it's impossible to estimate the progress.
-     */
     @Exported
+    @Override
     public int getProgress() {
         long d = executableEstimatedDuration;
         if (d <= 0) {
@@ -729,14 +708,8 @@ public class Executor extends Thread implements ModelObject {
         return num;
     }
 
-    /**
-     * Returns true if the current build is likely stuck.
-     *
-     * <p>
-     * This is a heuristics based approach, but if the build is suspiciously taking for a long time,
-     * this method returns true.
-     */
     @Exported
+    @Override
     public boolean isLikelyStuck() {
         lock.readLock().lock();
         try {
@@ -758,6 +731,7 @@ public class Executor extends Thread implements ModelObject {
         }
     }
 
+    @Override
     public long getElapsedTime() {
         lock.readLock().lock();
         try {
@@ -781,20 +755,7 @@ public class Executor extends Thread implements ModelObject {
         }
     }
 
-    /**
-     * Gets the string that says how long since this build has started.
-     *
-     * @return
-     *      string like "3 minutes" "1 day" etc.
-     */
-    public String getTimestampString() {
-        return Util.getTimeSpanString(getElapsedTime());
-    }
-
-    /**
-     * Computes a human-readable text that shows the expected remaining time
-     * until the build completes.
-     */
+    @Override
     public String getEstimatedRemainingTime() {
         long d = executableEstimatedDuration;
         if (d < 0) {
@@ -855,7 +816,7 @@ public class Executor extends Thread implements ModelObject {
      */
     @RequirePOST
     @Deprecated
-    public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
         doStop().generateResponse(req, rsp, this);
     }
 
@@ -915,9 +876,7 @@ public class Executor extends Thread implements ModelObject {
         return HttpResponses.redirectViaContextPath("/");
     }
 
-    /**
-     * Checks if the current user has a permission to stop this build.
-     */
+    @Override
     public boolean hasStopPermission() {
         lock.readLock().lock();
         try {

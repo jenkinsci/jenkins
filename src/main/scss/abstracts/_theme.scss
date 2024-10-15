@@ -1,0 +1,368 @@
+@use "sass:color";
+@use "../base/breakpoints";
+
+$colors: (
+  "blue": #006fe6,
+  "brown": #a2845e,
+  "cyan": #32ade6,
+  "green": #1ea64b,
+  "indigo": #5856d6,
+  "orange": #fe820a,
+  "pink": #fb0f45,
+  "purple": #af52de,
+  "red": #e6001f,
+  "yellow": #ffb31a,
+  "white": #fff,
+  "black": #14141f,
+);
+
+$semantics: (
+  "accent": var(--blue),
+  "text": var(--black),
+  "error": var(--red),
+  "warning": var(--orange),
+  "success": var(--green),
+  "destructive": var(--red),
+  "build": var(--green),
+  "danger": var(--red),
+  "info": var(--blue),
+);
+
+:root,
+.app-theme-picker__picker[data-theme="none"] {
+  // Font related properties
+  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu,
+    cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family-mono: ui-monospace, sfmono-regular, sf mono, jetbrainsmono,
+    consolas, monospace;
+  --font-size-base: 1rem; // 16px
+  --font-size-sm: 0.875rem; // 14px
+  --font-size-xs: 0.75rem; // 12px
+  --font-size-monospace: 1em;
+
+  // Line height
+  --line-height-base: 1.5;
+  --line-height-heading: 1.2;
+
+  // Color palette
+  --very-light-grey: #f8f8f8;
+  --light-grey: hsl(240, 20%, 96.5%);
+  --medium-grey: #9ba7af;
+  --dark-grey: #4d545d;
+
+  // branding
+  --secondary: rgb(96, 125, 159);
+  --focus-input-border: var(--accent-color);
+  --focus-input-glow: color-mix(in sRGB, var(--accent-color) 15%, transparent);
+
+  // Deprecated
+  --focus-btn-primary: #{color.change(#0b6aa2, $alpha: 0.5)};
+  --focus-btn-secondary: #{color.change(#0b6aa2, $alpha: 0.5)};
+  --focus-btn-danger: #{color.change(#cc0003, $alpha: 0.5)};
+
+  // State colors
+  --primary-hover: #0587d4;
+  --primary-active: #095683;
+  --danger-hover: #eb383b;
+  --danger-active: #b50003;
+
+  // Status icon colors
+  --weather-icon-color: var(--accent-color);
+  --unstable-build-icon-color: var(--orange);
+
+  // Background colors
+  --background: var(--white);
+
+  // Header
+  --brand-link-color: var(--secondary);
+  --header-link-color: var(--white);
+  --header-link-color-active: #f5f5f5;
+  --header-search-border: var(--white);
+  --search-input-color: var(--brand-link-color);
+  --search-bg: var(--white);
+  --search-box-completion-bg: var(--primary-hover);
+  --search-box-shadow: 0 1px 7px 0 rgba(0, 0, 0, 0.3);
+  --header-bg-classic: #000;
+  --header-link-bg-classic-hover: #404040;
+  --header-link-bg-classic-active: #404040;
+  --header-item-border-radius: 4px;
+
+  // Breadcrumbs bar
+  --breadcrumbs-bar-background: hsla(240, 20%, 96.5%, 0.8);
+
+  // Alert call outs
+  --alert-success-text-color: var(--success-color);
+  --alert-success-bg-color: color-mix(
+    in sRGB,
+    var(--success-color) 10%,
+    transparent
+  );
+  --alert-success-border-color: color-mix(
+    in sRGB,
+    var(--success-color) 5%,
+    transparent
+  );
+  --alert-info-text-color: var(--blue);
+  --alert-info-bg-color: color-mix(in sRGB, var(--blue) 10%, transparent);
+  --alert-info-border-color: color-mix(in sRGB, var(--blue) 5%, transparent);
+  --alert-warning-text-color: color-mix(
+    in sRGB,
+    var(--warning-color) 80%,
+    var(--text-color)
+  );
+  --alert-warning-bg-color: color-mix(
+    in sRGB,
+    var(--warning-color) 10%,
+    transparent
+  );
+  --alert-warning-border-color: color-mix(
+    in sRGB,
+    var(--warning-color) 5%,
+    transparent
+  );
+  --alert-danger-text-color: var(--error-color);
+  --alert-danger-bg-color: color-mix(
+    in sRGB,
+    var(--error-color) 10%,
+    transparent
+  );
+  --alert-danger-border-color: color-mix(
+    in sRGB,
+    var(--error-color) 5%,
+    transparent
+  );
+
+  // Typography
+  --text-color-secondary: var(--secondary);
+
+  // Deprecated - Button generic
+  --btn-font-weight: bold;
+  --btn-text-color: var(--white);
+  --btn-font-size: var(--font-size-xs);
+  --btn-line-height: 1rem;
+  --btn-large-font-size: var(--font-size-sm);
+  --btn-large-line-height: 1.25rem;
+  // Deprecated - Button primary
+  --button-color--primary: var(--background);
+  --btn-primary-bg: #063f61;
+  --btn-primary-bg-hover: #{lighten(#063f61, 7.5%)};
+  --btn-primary-bg-active: #{lighten(#063f61, 12%)};
+  // Deprecated - Button primary
+  --btn-secondary-color: var(--secondary);
+  --btn-secondary-bg: var(--btn-text-color);
+  --btn-secondary-border: var(--medium-grey);
+  --btn-secondary-color--hover: var(--accent-color);
+  --btn-secondary-bg--hover: var(--btn-secondary-bg);
+  --btn-secondary-border--hover: var(--accent-color);
+  --btn-secondary-color--focus: var(--accent-color);
+  --btn-secondary-bg--focus: var(--btn-secondary-bg);
+  --btn-secondary-border--focus: var(--accent-color);
+  --btn-secondary-color--active: var(--primary-active);
+  --btn-secondary-bg--active: var(--btn-secondary-bg);
+  --btn-secondary-border--active: var(--primary-active);
+  // Deprecated - Button link
+  --btn-link-color: var(--accent-color);
+  --btn-link-font-weight: var(--link-font-weight);
+  --btn-link-color--hover: var(--primary-hover);
+  --btn-link-bg--hover: var(--very-light-grey);
+  --btn-link-color--active: var(--primary-active);
+  --btn-link-bg--active: var(--light-grey);
+
+  // Table
+  --table-background: var(--panel-header-bg-color);
+  --table-header-foreground: var(--text-color);
+  --table-body-background: var(--background);
+  --table-body-foreground: var(--text-color);
+  --table-border-radius: 0.75rem;
+  --table-row-border-radius: 0.3125rem;
+
+  // Deprecated
+  --even-row-color: var(--very-light-grey);
+  --bigtable-border-width: var(--pane-border-width);
+  --bigtable-header-bg: var(--dark-grey);
+  --bigtable-header-font-weight: bold; // Does specifying this make sense
+  --bigtable-header-text-color: var(--white);
+  --bigtable-row-border-color: var(--medium-grey);
+  --bigtable-cell-padding-x: 0.75rem;
+  --bigtable-cell-padding-y: 0.5rem;
+  --table-parameters-bg--hover: var(--light-grey);
+  --table-striped-bg--hover: var(--light-grey);
+
+  // Link
+  --link-color: var(--accent-color);
+  --link-visited-color: var(--link-color);
+  --link-color--hover: var(--link-color);
+  --link-color--active: var(--link-color);
+  --link-text-decoration: none;
+  --link-text-decoration--hover: underline;
+  --link-text-decoration--active: underline;
+  --link-font-weight: 450;
+
+  // Tooltips
+  --tooltip-backdrop-filter: saturate(2) blur(20px);
+  --tooltip-color: var(--text-color);
+  --tooltip-box-shadow: 0 0 8px 2px rgba(0, 0, 30, 0.05),
+    0 0 1px 1px rgba(0, 0, 20, 0.025), 0 10px 20px rgba(0, 0, 20, 0.15);
+
+  // Dropdowns
+  --dropdown-backdrop-filter: saturate(1.5) blur(20px);
+  --dropdown-box-shadow: 0 10px 30px rgba(0, 0, 20, 0.2),
+    0 2px 10px rgba(0, 0, 20, 0.05), inset 0 -1px 2px rgba(255, 255, 255, 0.025);
+
+  // Dialogs
+  ::backdrop {
+    --dialog-backdrop-background: hsla(240, 10%, 20%, 0.8);
+  }
+
+  --dialog-box-shadow: 0 10px 40px rgba(0, 0, 20, 0.15),
+    0 2px 15px rgba(0, 0, 20, 0.05),
+    inset 0 0 2px 2px rgba(255, 255, 255, 0.025);
+
+  // Dark link
+  --link-dark-color: var(--text-color);
+  --link-dark-visited-color: var(--link-dark-color);
+  --link-dark-color--hover: var(--primary-hover);
+  --link-dark-color--active: var(--primary-active);
+  --link-dark-text-decoration: none;
+  --link-dark-text-decoration--hover: underline;
+  --link-dark-text-decoration--active: underline;
+  --link-dark-font-weight: 500;
+
+  // Pane
+  --pane-border-width: 1px;
+  --pane-header-text-color: var(--text-color);
+  --pane-header-bg: var(--light-grey);
+  --pane-header-border-color: var(--light-grey);
+  --pane-header-font-weight: bold;
+  --pane-border-color: var(--light-grey);
+  --pane-text-color: var(--text-color);
+  --pane-link-color: black;
+  --pane-link-color--visited: black;
+
+  // Cards
+  --card-background: var(--background);
+  --card-background--hover: transparent;
+  --card-background--active: transparent;
+  --card-border-color: hsla(240, 25%, 75%, 0.25);
+  --card-border-color--hover: hsla(240, 25%, 75%, 0.5);
+  --card-border-color--active: hsla(240, 25%, 75%, 0.75);
+  --card-border-width: 2px;
+
+  // Tab bar
+  --tabs-background: var(--panel-header-bg-color);
+  --tabs-item-background: transparent;
+  --tabs-item-foreground: var(--text-color);
+  --tabs-item-background--hover: rgba(0, 0, 0, 0.05);
+  --tabs-item-foreground--hover: var(--text-color);
+  --tabs-item-background--active: rgba(0, 0, 0, 0.1);
+  --tabs-item-foreground--active: var(--text-color);
+  --tabs-item-background--selected: white;
+  --tabs-item-foreground--selected: var(--link-color);
+  --tabs-border-radius: calc((10px + 34px) / 2);
+
+  // Deprecated - Tabbar baseline
+  --tab-baseline-width: 2px;
+  --tab-baseline-color: var(--light-grey);
+  --tab-baseline-default-display: none;
+
+  // Side panel
+  --side-panel-width: 340px;
+  --panel-header-bg-color: var(--light-grey);
+  --panel-border-color: var(--light-grey);
+  --side-panel-hover-color: var(--panel-border-color);
+  --task-link-bg-color--active: var(--panel-border-color);
+  --task-link-bg-color--hover: var(--very-light-grey);
+
+  // Form
+  --section-padding: 1.625rem;
+  --input-color: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 1.5%,
+    var(--background)
+  );
+  --input-border: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 25%,
+    transparent
+  );
+  --input-border-hover: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 50%,
+    transparent
+  );
+  --input-hidden-password-bg-color: #f9f9f9;
+  --form-item-max-width: min(65vw, 1600px);
+  --form-item-max-width--medium: min(50vw, 1400px);
+  --form-item-max-width--small: min(35vw, 1200px);
+
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media screen and (max-width: breakpoints.$tablet-breakpoint) {
+    --section-padding: 1.25rem;
+    --form-item-max-width: 100%;
+    --form-item-max-width--medium: 100%;
+    --form-item-max-width--small: 100%;
+  }
+
+  --form-label-font-weight: 450;
+  --form-input-padding: 0.625rem;
+  --form-input-border-radius: 0.625rem;
+  --form-input-glow: 0 0 0 10px transparent;
+  --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);
+  --pre-background: rgba(0, 0, 0, 0.05);
+  --pre-color: var(--text-color);
+  --selection-color: rgba(2, 76, 182, 0.3);
+
+  // Animations
+  --standard-transition: 0.3s ease;
+  --elastic-transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
+
+  // Deprecated - Pop out menus
+  --menu-text-color: black;
+  --menu-bg-color: var(--white);
+  --menu-selected-color: #b3d4ff;
+  --menu-box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+
+  // Deprecated - Add form widget / configure job
+  --light-bg-color: #eee;
+  --light-bg-color--hover: rgba(255, 255, 255, 0.65);
+  --add-item-btn-decorator-border-color: #acb;
+  --add-item-btn-decorator-bg-color: rgba(245, 249, 239, 0.75);
+
+  // Plugin manager
+  --plugin-manager-bg-color-already-upgraded: var(--light-grey);
+
+  // Auto complete
+  --auto-complete-bg-color--prehighlight: #b3d4ff;
+
+  // Default button
+  --button-background: hsla(240, 25%, 75%, 0.1);
+  --button-background--hover: hsla(240, 25%, 75%, 0.175);
+  --button-background--active: hsla(240, 25%, 75%, 0.25);
+  --button-box-shadow--focus: hsla(240, 25%, 75%, 0.1);
+
+  // Variables for sidebar items, card items
+  --item-background--hover: hsla(240, 25%, 75%, 0.15);
+  --item-background--active: hsla(240, 25%, 75%, 0.225);
+  --item-box-shadow--focus: hsla(240, 25%, 75%, 0.105);
+
+  // Deprecated
+  --primary: var(--accent-color); // Use var(--accent-color) instead
+  --success: var(--green); // Use var(--success-color) instead
+  --danger: var(--red); // Use var(--destructive-color) instead
+  --warning: var(--orange); // Use var(--warning-color) instead
+
+  // Colors
+  @each $key, $value in $colors {
+    --#{$key}: #{$value};
+
+    @if $key != "black" and $key != "white" {
+      --light-#{$key}: #{lighten($value, 20%)};
+      --dark-#{$key}: #{darken($value, 20%)};
+    }
+  }
+
+  @each $key, $value in $semantics {
+    --#{$key}-color: #{$value};
+  }
+}

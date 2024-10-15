@@ -33,7 +33,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
 
 import hudson.slaves.DumbSlave;
-import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -128,15 +127,12 @@ public class WaitNodeOfflineCommandTest {
         slave.toComputer().waitUntilOnline();
         boolean timeoutOccurred = false;
 
-        FutureTask task = new FutureTask(new Callable() {
-            @Override
-            public Object call() {
-                final CLICommandInvoker.Result result = command
-                        .authorizedTo(Jenkins.READ)
-                        .invokeWithArgs("aNode");
-                fail("Never should return from previous CLI call!");
-                return null;
-            }
+        FutureTask task = new FutureTask(() -> {
+            final CLICommandInvoker.Result result = command
+                    .authorizedTo(Jenkins.READ)
+                    .invokeWithArgs("aNode");
+            fail("Never should return from previous CLI call!");
+            return null;
         });
         try {
             task.get(30, TimeUnit.SECONDS);

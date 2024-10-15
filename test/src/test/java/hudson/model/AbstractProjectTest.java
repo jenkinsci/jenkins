@@ -37,17 +37,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -67,6 +56,7 @@ import hudson.util.OneShotEvent;
 import hudson.util.StreamTaskListener;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -79,6 +69,17 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.ElementNotFoundException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
 import org.jenkinsci.plugins.matrixauth.AuthorizationType;
 import org.jenkinsci.plugins.matrixauth.PermissionEntry;
 import org.junit.Rule;
@@ -140,7 +141,7 @@ public class AbstractProjectTest {
         // make sure that the action link is protected
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.getPage(new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
+        Page page = wc.getPage(new WebRequest(new URI(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace").toURL(), HttpMethod.POST));
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
     }
 
@@ -244,12 +245,7 @@ public class AbstractProjectTest {
                 };
             }
         });
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                p.pollSCMChanges(StreamTaskListener.fromStdout());
-            }
-        };
+        Thread t = new Thread(() -> p.poll(StreamTaskListener.fromStdout()));
         try {
             t.start();
             Future<FreeStyleBuild> f = p.scheduleBuild2(0);
@@ -323,7 +319,7 @@ public class AbstractProjectTest {
     private String deleteRedirectTarget(String job) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         String base = wc.getContextPath();
-        String loc = wc.getPage(wc.addCrumb(new WebRequest(new URL(base + job + "/doDelete"), HttpMethod.POST))).getUrl().toString();
+        String loc = wc.getPage(wc.addCrumb(new WebRequest(new URI(base + job + "/doDelete").toURL(), HttpMethod.POST))).getUrl().toString();
         assert loc.startsWith(base) : loc;
         return loc.substring(base.length());
     }
@@ -484,11 +480,11 @@ public class AbstractProjectTest {
     @Issue("JENKINS-30742")
     public void resolveForCLI() throws Exception {
         CmdLineException e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created"));
-        assertEquals("No such job \u2018never_created\u2019 exists.", e.getMessage());
+        assertEquals("No such job ‘never_created’ exists.", e.getMessage());
 
         AbstractProject<?, ?> project = j.jenkins.createProject(FreeStyleProject.class, "never_created");
         e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created1"));
-        assertEquals("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?", e.getMessage());
+        assertEquals("No such job ‘never_created1’ exists. Perhaps you meant ‘never_created’?", e.getMessage());
     }
 
     public static class MockBuildTriggerThrowsNPEOnStart extends Trigger<Item> {

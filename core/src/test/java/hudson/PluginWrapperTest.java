@@ -1,8 +1,8 @@
 package hudson;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -21,12 +21,11 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import jenkins.model.Jenkins;
-import jenkins.util.AntClassLoader;
 import jenkins.util.URLClassLoader2;
-import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -106,15 +105,7 @@ public class PluginWrapperTest {
     @Issue("JENKINS-66563")
     @Test
     public void insertJarsIntoClassPath() throws Exception {
-        try (AntClassLoader cl = new AntClassLoader()) {
-            assertInjectingJarsWorks(cl);
-        }
-    }
-
-    @Issue("JENKINS-66563")
-    @Test
-    public void insertJarsIntoClassPathURLCL() throws Exception {
-        try (URLClassLoader2 cl = new URLClassLoader2(new URL[0])) {
+        try (URLClassLoader2 cl = new URLClassLoader2("Test", new URL[0])) {
             assertInjectingJarsWorks(cl);
         }
     }
@@ -160,7 +151,7 @@ public class PluginWrapperTest {
         private ClassLoader cl = null;
 
         private PluginWrapperBuilder(String name) {
-            this.name = name;
+            this.name = Objects.requireNonNull(name);
         }
 
         public PluginWrapperBuilder version(String version) {
@@ -201,7 +192,7 @@ public class PluginWrapperTest {
             Manifest manifest = new Manifest();
             Attributes attributes = manifest.getMainAttributes();
             attributes.putValue("Short-Name", name);
-            attributes.putValue("Long-Name", StringUtils.capitalize(name));
+            attributes.putValue("Long-Name", Character.toTitleCase(name.charAt(0)) + name.substring(1));
             attributes.putValue("Jenkins-Version", requiredCoreVersion);
             attributes.putValue("Plugin-Version", version);
             return new PluginWrapper(

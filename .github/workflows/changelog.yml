@@ -9,15 +9,22 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   update_draft_release:
+    permissions:
+      pull-requests: write # to add label to PR (release-drafter/release-drafter)
+      contents: write # to create a github release (release-drafter/release-drafter)
+
     if: github.repository_owner == 'jenkinsci'
     runs-on: ubuntu-latest
     steps:
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - name: Generate GitHub Release Draft
         id: release-drafter
-        uses: release-drafter/release-drafter@v5
+        uses: release-drafter/release-drafter@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
@@ -28,7 +35,7 @@ jobs:
         env:
           GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}
       - name: Upload Changelog YAML
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: changelog.yaml
           path: changelog.yaml
@@ -37,14 +44,17 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'jenkinsci'
     steps:
-      - uses: tibdex/github-app-token@v1
+      - uses: tibdex/github-app-token@v2
         id: generate-token
         with:
           app_id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
+          installation_retrieval_mode: repository
+          installation_retrieval_payload: jenkins-infra/jenkins.io
           private_key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
-          repository: jenkins-infra/jenkins.io
+          repositories: >-
+            ["jenkins.io"]
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Publish jenkins.io changelog draft
@@ -57,4 +67,8 @@ jobs:
           GIT_COMMITTER_EMAIL: <86592549+jenkins-infra-changelog-generator[bot]@users.noreply.github.com>
         run: |
           wget --quiet https://raw.githubusercontent.com/jenkinsci/core-changelog-generator/master/generate-weekly-changelog.sh
+          # Create a Python virtual environment for pip install
+          # See https://github.com/jenkinsci/core-changelog-generator/issues/37
+          python3 -m venv venv
+          source venv/bin/activate
           bash generate-weekly-changelog.sh

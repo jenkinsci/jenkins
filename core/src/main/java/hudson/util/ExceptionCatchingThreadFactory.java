@@ -35,6 +35,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.226
+ * @see jenkins.util.ErrorLoggingExecutorService
  */
 public class ExceptionCatchingThreadFactory implements ThreadFactory, Thread.UncaughtExceptionHandler {
     private final ThreadFactory core;

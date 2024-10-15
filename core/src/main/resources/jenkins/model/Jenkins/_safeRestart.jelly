@@ -25,18 +25,30 @@ THE SOFTWARE.
 <!-- Delete view -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<l:layout title="Safely Restart Jenkins">
+	<l:layout title="${%Safe restart}">
 		<st:include page="sidepanel.jelly" />
+		<l:breadcrumb title="${%Safe restart}" />
 		<l:main-panel>
+			<l:app-bar title="${%Safe restart}" />
 			<j:choose>
 				<j:when test="${app.lifecycle.canRestart()}">
-					<form method="post" action="safeRestart">
-						${%Are you sure you want to restart Jenkins? Jenkins will restart once all running jobs are finished.}
-						<f:submit value="${%Yes}" />
-					</form>
+          <p>${%restartWarning}</p>
+
+          <form method="post" action="safeRestart">
+            <f:entry title="${%Jenkins is restarting banner}"
+                     description="${%description}">
+              <f:textbox name="message" value="${app.quietDownReason ?: null}"/>
+            </f:entry>
+            <f:bottomButtonBar>
+              <f:submit clazz="jenkins-!-destructive-color" value="${%Restart}"/>
+              <j:if test="${app.isQuietingDown()}">
+                <f:submit name="cancel" primary="false" value="${%Cancel}"/>
+              </j:if>
+            </f:bottomButtonBar>
+          </form>
 				</j:when>
 				<j:otherwise>
-					${%Jenkins cannot restart itself as currently configured.}
+					${%cannotRestart}
 				</j:otherwise>
 			</j:choose>
 		</l:main-panel>

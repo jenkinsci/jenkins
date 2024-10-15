@@ -30,6 +30,7 @@ THE SOFTWARE.
 
   <l:layout title="${%title(it.displayName)}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Mark offline}" />
     <l:main-panel>
       <l:hasPermission permission="${it.DISCONNECT}">
         <h2>${%title(it.displayName)}</h2>

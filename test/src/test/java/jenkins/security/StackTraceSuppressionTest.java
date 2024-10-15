@@ -24,17 +24,17 @@
 
 package jenkins.security;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.User;
 import java.io.IOException;
 import jenkins.model.Jenkins;
+import org.htmlunit.html.HtmlPage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -161,7 +161,7 @@ public class StackTraceSuppressionTest {
     }
 
     private void checBaseResponseContent(String content) {
-        assertThat(content, containsString("A problem occurred while processing the request."));
+        assertThat(content, containsString("A problem occurred while processing the request"));
         assertThat(content, containsString("Logging ID="));
         assertThat(content, containsString("Oops!"));
     }

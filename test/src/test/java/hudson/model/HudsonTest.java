@@ -30,14 +30,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Node.Mode;
 import hudson.search.SearchTest;
 import hudson.security.AuthorizationStrategy;
@@ -47,9 +39,17 @@ import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.BuildStep;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import jenkins.model.Jenkins;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -151,7 +151,7 @@ public class HudsonTest {
     public void breadcrumb() throws Exception {
         HtmlPage root = j.createWebClient().goTo("");
         DomElement navbar = root.getElementById("breadcrumbs");
-        assertEquals(1, DomNodeUtil.selectNodes(navbar, "LI/A").size());
+        assertEquals(1, navbar.querySelectorAll(".jenkins-breadcrumbs__list-item").size());
     }
 
     /**
@@ -178,7 +178,7 @@ public class HudsonTest {
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         // try to delete it by hitting the final URL directly
-        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "computer/(built-in)/doDelete"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URI(wc.getContextPath() + "computer/(built-in)/doDelete").toURL(), HttpMethod.POST);
         page = wc.getPage(wc.addCrumb(req));
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
 

@@ -27,23 +27,26 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Configure System}" type="one-column">
+<l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%System}" type="one-column">
   <st:include page="sidepanel.jelly" />
-  <f:breadcrumb-config-outline title="${%Configure System}" />
-
-  <l:app-bar title="${%Configure System}" />
+  <f:breadcrumb-config-outline title="${%System}" />
 
   <l:main-panel>
+    <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
+    <l:app-bar title="${%System}" />
+
     <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
     <f:form method="post" name="config" action="configSubmit" class="jenkins-form">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
 
       <f:entry title="${%Home directory}" description="${%By default, Jenkins stores all of its data in this directory on the file system}" help="/help/system-config/homeDirectory.html">
-        <div class="jenkins-quote jenkins-quote--monospace">${it.rootDir}</div>
+        <div class="jenkins-quote jenkins-quote--monospace">
+          ${it.rootDir}
+          <l:copyButton tooltip="${%Copy home directory}" text="${it.rootDir}" iconOnly="true" clazz="jenkins-!-margin-left-1" />
+        </div>
       </f:entry>
       <f:entry title="${%System Message}" description="${%This message will be displayed at the top of the Jenkins main page. This can be useful for posting notifications to your users}">
-        <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}" />
         <f:textarea name="system_message" value="${it.systemMessage}" disabled="${readOnlyMode?'true':null}" readonly="${readOnlyMode?'true':null}"
                     codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
       </f:entry>
@@ -53,21 +56,13 @@ THE SOFTWARE.
       <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfigUnclassifiedReadable()}">
         <j:set var="readOnlyMode" value="${!editable.contains(descriptor)}" />
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
-        <f:rowSet name="${descriptor.jsonSafeClassName}" isFormItem="false">
+        <f:rowSet name="${descriptor.jsonSafeClassName}">
           <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
         </f:rowSet>
       </j:forEach>
-
-      <l:hasAdministerOrManage>
-        <f:bottomButtonBar>
-          <f:submit value="${%Save}" />
-          <f:apply />
-        </f:bottomButtonBar>
-      </l:hasAdministerOrManage>
+      <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
+      <f:saveApplyBar/>
     </f:form>
-    <l:hasAdministerOrManage>
-      <st:adjunct includes="lib.form.confirm" />
-    </l:hasAdministerOrManage>
   </l:main-panel>
 </l:layout>
 </j:jelly>

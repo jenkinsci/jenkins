@@ -1,0 +1,21 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+    <l:layout title="">
+        <l:main-panel>
+            <l:userExperimentalFlag
+                    var="test1Flag"
+                    flagClassName="jenkins.model.experimentalflags.UserExperimentalFlagsPropertyTest$Test1UserExperimentalFlag"/>
+            <span id="test1Flag">${test1Flag}</span>
+            
+            <l:userExperimentalFlag
+                    var="test2Flag"
+                    flagClassName="jenkins.model.experimentalflags.UserExperimentalFlagsPropertyTest$Test2UserExperimentalFlag"/>
+            <span id="test2Flag">${test2Flag}</span>
+            
+            <l:userExperimentalFlag
+                    var="test3Flag"
+                    flagClassName="jenkins.model.experimentalflags.UserExperimentalFlagsPropertyTest$Test3UserExperimentalFlag"/>
+            <span id="test3Flag">${test3Flag}</span>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

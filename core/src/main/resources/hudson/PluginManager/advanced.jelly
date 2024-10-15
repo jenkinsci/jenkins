@@ -28,30 +28,20 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <l:layout title="${%Advanced settings} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+    <l:layout title="${%Advanced settings} - ${%Plugins}" permission="${app.SYSTEM_READ}">
         <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-        <l:app-bar title="${%Advanced settings}"/>
-
-      <st:include page="sidepanel.jelly"/>
+        <st:include page="sidepanel.jelly"/>
+        <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
         <l:main-panel>
+          <l:app-bar title="${%Advanced settings}"/>
+
+          <div class="jenkins-alert jenkins-alert-info">
+              <strong>${%proxyMovedBlurb(rootURL+"/manage/configure")}</strong>
+          </div>
+
           <div class="jenkins-form">
-            <section class="jenkins-section jenkins-!-margin-bottom-5">
-                <h2 class="jenkins-section__title">${%HTTP Proxy Configuration}</h2>
-                <f:form method="post" action="proxyConfigure" name="proxyConfigure">
-                    <j:scope>
-                        <j:set var="instance" value="${app.proxy}"/>
-                        <j:set var="descriptor" value="${it.proxyDescriptor}"/>
-                        <st:include from="${descriptor}" page="${descriptor.configPage}"/>
-                    </j:scope>
-                    <l:isAdmin>
-                        <f:block>
-                            <f:submit/>
-                        </f:block>
-                    </l:isAdmin>
-                </f:form>
-            </section>
 
             <l:isAdmin>
                 <section class="jenkins-section jenkins-!-margin-bottom-5">
@@ -60,8 +50,8 @@ THE SOFTWARE.
                         <div style="margin-bottom: 1em;">
                             ${%deploytext}
                         </div>
-                        <f:entry title="${%File}">
-                            <input type="file" name="name" class="jenkins-input" accept=".hpi,.jpi"/>
+                        <f:entry title="${%File}" field="name">
+                            <f:file accept=".hpi,.jpi" />
                         </f:entry>
                         <p>${%Or}</p>
                         <f:entry title="${%URL}">
@@ -77,10 +67,18 @@ THE SOFTWARE.
                 <h2 class="jenkins-section__title">${%Update Site}</h2>
                 <f:form method="post" action="siteConfigure" name="siteConfigure">
                     <f:entry title="${%URL}">
+                        <l:isAdmin>
+                            <j:if test="${app.updateCenter.ID_DEFAULT.equals(app.updateCenter.PREDEFINED_UPDATE_SITE_ID)}">
+                                <a id="reset-to-default" href="#">${%Reset to default}</a>
+                            </j:if>
+                        </l:isAdmin>
                         <f:textbox name="site"
-                                   value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"/>
+                                   id="update-site-url"
+                                   value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"
+                                   checkUrl="checkUpdateSiteUrl" checkDependsOn=""/>
                     </f:entry>
                     <l:isAdmin>
+                        <st:adjunct includes="hudson.PluginManager._updateSite"/>
                         <f:block>
                             <f:submit/>
                         </f:block>

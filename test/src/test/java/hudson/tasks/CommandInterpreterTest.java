@@ -1,5 +1,8 @@
 package hudson.tasks;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+
 import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
@@ -22,7 +25,7 @@ public class CommandInterpreterTest {
     @LocalData
     public void ensurePluginCommandInterpretersCanBeLoaded() {
         final Builder builder = j.jenkins.getItemByFullName("a", FreeStyleProject.class).getBuildersList().get(0);
-        Assert.assertTrue(builder instanceof TestCommandInterpreter);
+        assertThat(builder, instanceOf(TestCommandInterpreter.class));
 
         try {
             ((TestCommandInterpreter) builder).getConfiguredLocalRules().isEmpty();

@@ -41,6 +41,8 @@ import hudson.util.HttpResponses;
 import hudson.views.ListViewColumn;
 import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,7 +57,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.jcip.annotations.GuardedBy;
 import net.sf.json.JSONObject;
@@ -67,7 +68,8 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.access.AccessDeniedException;
@@ -97,7 +99,7 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Whether to recurse in ItemGroups
      */
-    private boolean recurse;
+    private volatile boolean recurse;
 
     /**
      * Compiled include pattern from the includeRegex string.
@@ -357,9 +359,9 @@ public class ListView extends View implements DirectlyModifiableView {
         }
     }
 
-    private boolean needToAddToCurrentView(StaplerRequest req) throws ServletException {
+    private boolean needToAddToCurrentView(StaplerRequest2 req) throws ServletException {
         String json = req.getParameter("json");
-        if (json != null && json.length() > 0) {
+        if (json != null && !json.isEmpty()) {
             // Submitted via UI
             JSONObject form = req.getSubmittedForm();
             return form.has("addToCurrentView") && form.getBoolean("addToCurrentView");
@@ -371,7 +373,7 @@ public class ListView extends View implements DirectlyModifiableView {
 
     @Override
     @POST
-    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public Item doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwner().getItemGroup();
         if (ig instanceof ModifiableItemGroup) {
             TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>) ig).doCreateItem(req, rsp);
@@ -439,7 +441,32 @@ public class ListView extends View implements DirectlyModifiableView {
      * Load view-specific properties here.
      */
     @Override
-    protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
+    protected void submit(StaplerRequest2 req) throws ServletException, FormException, IOException {
+        if (Util.isOverridden(View.class, getClass(), "submit", StaplerRequest.class)) {
+            try {
+                submit(StaplerRequest.fromStaplerRequest2(req));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            submitImpl(req);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #submit(StaplerRequest2)}
+     */
+    @Deprecated
+    @Override
+    protected void submit(StaplerRequest req) throws javax.servlet.ServletException, FormException, IOException {
+        try {
+            submitImpl(StaplerRequest.toStaplerRequest2(req));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private void submitImpl(StaplerRequest2 req) throws ServletException, FormException, IOException {
         JSONObject json = req.getSubmittedForm();
         synchronized (this) {
             recurse = json.optBoolean("recurse", true);
@@ -452,7 +479,7 @@ public class ListView extends View implements DirectlyModifiableView {
             }
             for (TopLevelItem item : items) {
                 String relativeNameFrom = item.getRelativeNameFrom(getOwner().getItemGroup());
-                if (req.getParameter(relativeNameFrom) != null) {
+                if (req.getParameter("item_" + relativeNameFrom) != null) {
                     jobNames.add(relativeNameFrom);
                 }
             }

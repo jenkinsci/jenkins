@@ -25,7 +25,6 @@
 
 package hudson.triggers;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -63,7 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import jenkins.model.ParameterizedJobMixIn;
+import jenkins.triggers.TriggeredItem;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -77,6 +76,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * put {@link Extension} on your {@link TriggerDescriptor} class.
  *
  * @author Kohsuke Kawaguchi
+ * @see TriggeredItem
  */
 public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>, ExtensionPoint {
 
@@ -91,6 +91,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * @see Items#currentlyUpdatingByXml
      */
     public void start(J project, boolean newInstance) {
+        LOGGER.finer(() -> "Starting " + this + " on " + project);
         this.job = project;
 
         try { // reparse the tabs with the job as the hash
@@ -99,7 +100,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             } else {
                 LOGGER.log(Level.WARNING, "The job {0} has a null crontab spec which is incorrect", job.getFullName());
             }
-        } catch (ANTLRException e) {
+        } catch (IllegalArgumentException e) {
             // this shouldn't fail because we've already parsed stuff in the constructor,
             // so if it fails, use whatever 'tabs' that we already have.
             LOGGER.log(Level.WARNING, String.format("Failed to parse crontab spec %s in job %s", spec, project.getFullName()), e);
@@ -169,8 +170,11 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * Creates a new {@link Trigger} that gets {@link #run() run}
      * periodically. This is useful when your trigger does
      * some polling work.
+     *
+     * @param cronTabSpec the crontab entry to be parsed
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
      */
-    protected Trigger(@NonNull String cronTabSpec) throws ANTLRException {
+    protected Trigger(@NonNull String cronTabSpec) {
         this.spec = cronTabSpec;
         this.tabs = CronTabList.create(cronTabSpec);
     }
@@ -195,7 +199,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     protected Object readResolve() throws ObjectStreamException {
         try {
             tabs = CronTabList.create(spec);
-        } catch (ANTLRException e) {
+        } catch (IllegalArgumentException e) {
             InvalidObjectException x = new InvalidObjectException(e.getMessage());
             x.initCause(e);
             throw x;
@@ -203,6 +207,10 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         return this;
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + "[" + spec + "]";
+    }
 
     /**
      * Runs every minute to check {@link TimerTrigger} and schedules build.
@@ -279,9 +287,11 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
 
         // Process all triggers, except SCMTriggers when synchronousPolling is set
-        for (ParameterizedJobMixIn.ParameterizedJob<?, ?> p : inst.allItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
+        for (TriggeredItem p : inst.allItems(TriggeredItem.class)) {
+            LOGGER.finer(() -> "considering " + p);
             for (Trigger t : p.getTriggers().values()) {
-                if (!(t instanceof SCMTrigger && scmd.synchronousPolling)) {
+                LOGGER.finer(() -> "found trigger " + t);
+                if (!(p instanceof AbstractProject && t instanceof SCMTrigger && scmd.synchronousPolling)) {
                     if (t != null && t.spec != null && t.tabs != null) {
                         LOGGER.log(Level.FINE, "cron checking {0} with spec ‘{1}’", new Object[]{p, t.spec.trim()});
 
@@ -289,6 +299,9 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                             LOGGER.log(Level.CONFIG, "cron triggered {0}", p);
                             try {
                                 long begin_time = System.currentTimeMillis();
+                                if (t.job == null) {
+                                    LOGGER.fine(() -> t + " not yet started on " + p + " but trying to run anyway");
+                                }
                                 t.run();
                                 long end_time = System.currentTimeMillis();
                                 if (end_time - begin_time > CRON_THRESHOLD * 1000) {

@@ -1,0 +1,18 @@
+<div>
+  I projekt-, användar-, vy- och byggbeskrivningen låter Jenkins användare ange
+  fritext som beskriver någonting. Den här konfigurationen avgör hur sådan
+  fritext konverteras till HTML. Som standard behandlar Jenkins texten som HTML
+  och använder den i befintligt skick (och detta är standard främst på grund av
+  bakåtkompatibilitet.)
+
+  <p>
+    Även om detta är bekvämt och folk ofta använder det för att ladda
+    &lt;iframe>, &lt;script> och så vidare för att kombinera data från andra
+    källor, denna funktion gör det möjligt för fientliga användare att genomföra
+    <a href="https://en.wikipedia.org/wiki/Cross-site_scripting">
+      XSS-attacker
+    </a>
+    . Om risken överväger fördelen kan man installera och använda ytterligare
+    insticksprogram för formatering.
+  </p>
+</div>

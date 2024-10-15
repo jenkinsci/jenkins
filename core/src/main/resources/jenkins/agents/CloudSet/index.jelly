@@ -1,0 +1,150 @@
+<!--
+The MIT License
+
+Copyright (c) 2023, CloudBees Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Entrance to the configuration page
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <l:layout title="${it.displayName}" type="one-column">
+    <l:isAdmin>
+      <l:header>
+        <script src="${resURL}/jsbundles/pages/cloud-set.js" type="text/javascript" />
+        <link rel="stylesheet" href="${resURL}/jsbundles/pages/cloud-set.css" type="text/css" />
+      </l:header>
+    </l:isAdmin>
+    <l:main-panel>
+      <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
+      <j:choose>
+        <j:when test="${it.cloudAvailable and it.hasClouds()}">
+          <l:app-bar title="${%Clouds}">
+            <l:isAdmin>
+              <a class="jenkins-button jenkins-button--primary" href="new">
+                <l:icon src="symbol-add"/>
+                ${%newCloud}
+              </a>
+            </l:isAdmin>
+          </l:app-bar>
+          <p class="description">${%description}</p>
+          <f:form method="post" name="config" action="reorder">
+            <table id="clouds" class="jenkins-table">
+              <thead>
+                <tr>
+                  <th tooltip="${%Drag and drop cells to reorder}">${%Order}</th>
+                  <th>${%Name}</th>
+                  <th/>
+                </tr>
+              </thead>
+              <tbody class="with-drag-drop">
+                <j:forEach var="cloud" items="${it.clouds}">
+                  <tr class="repeated-chunk" id="cloud_${cloud.name}">
+                    <td data="${cloud.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
+                      <div class="jenkins-table__cell__button-wrapper dd-handle">
+                        <l:icon src="${cloud.iconClassName}" tooltip="${cloud.iconAltText}"/>
+                      </div>
+                    </td>
+                    <td>
+                      <input type="hidden" name="name" value="${cloud.name}" />
+                      <a href="${it.getCloudUrl(request,app,cloud)}" class="jenkins-table__link model-link inside">${cloud.name}</a>
+                    </td>
+                    <td class="jenkins-table__cell--tight">
+                      <div class="jenkins-table__cell__button-wrapper">
+                        <a href="${it.getCloudUrl(request,app,cloud)}configure" class="jenkins-button">
+                          <l:icon src="symbol-settings"/>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </j:forEach>
+              </tbody>
+            </table>
+            <l:isAdmin>
+              <f:bottomButtonBar>
+                <f:submit id="saveButton" value="${%Save}" clazz="jenkins-hidden" />
+              </f:bottomButtonBar>
+            </l:isAdmin>
+          </f:form>
+          <st:adjunct includes="lib.form.confirm" />
+        </j:when>
+        <j:otherwise>
+          <div class="empty-state-block">
+            <l:app-bar title="${%Clouds}"/>
+
+            <section class="empty-state-section">
+              <j:choose>
+                <j:when test="${it.cloudAvailable}">
+                  <j:choose>
+                    <j:when test="${h.hasPermission(app.ADMINISTER)}">
+                      <p>${%noCloudAvailableCTA}</p>
+                    </j:when>
+                    <j:otherwise>
+                      <p>${%noCloudAvailable}</p>
+                    </j:otherwise>
+                  </j:choose>
+                </j:when>
+                <j:otherwise>
+                  <p>${%noCloudPlugin}</p>
+                </j:otherwise>
+              </j:choose>
+              <ul class="empty-state-section-list">
+                <l:isAdmin>
+                  <j:if test="${it.cloudAvailable}">
+                    <li class="content-block">
+                      <a href="new"
+                         class="content-block__link">
+                        <span>${%newCloud}</span>
+                        <span class="trailing-icon">
+                          <l:icon src="symbol-add"/>
+                        </span>
+                      </a>
+                    </li>
+                  </j:if>
+                  <li class="content-block">
+                    <a href="${rootURL}/manage/pluginManager/available?filter=${it.cloudUpdateCenterCategoryLabel}"
+                       class="content-block__link">
+                      <span>${%installCloudPlugin}</span>
+                      <span class="trailing-icon">
+                        <l:icon src="symbol-plugins" />
+                      </span>
+                    </a>
+                  </li>
+                </l:isAdmin>
+                <li class="content-block">
+                  <a href="https://www.jenkins.io/redirect/distributed-builds"
+                     class="content-block__link"
+                     target="_blank" rel="noopener noreferrer">
+                    <span>${%learnMoreDistributedBuilds}</span>
+                    <span class="trailing-icon">
+                      <l:icon src="symbol-help-circle" />
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </j:otherwise>
+      </j:choose>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

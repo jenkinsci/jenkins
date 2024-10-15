@@ -1,0 +1,59 @@
+<!-- This maven skin decorates the taglib documentation located at https://reports.jenkins.io/core-taglib/jelly-taglib-ref.html -->
+<project name="Jenkins">
+    <body>
+        <breadcrumbs>
+            <item name="Homepage" href="https://jenkins.io/" target="_blank"/>
+        </breadcrumbs>
+        <head>
+            <![CDATA[
+                <script src="https://cdn.jsdelivr.net/npm/lit@3.2.1/polyfill-support.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.8.0/webcomponents-loader.js"></script>
+                <script data="jio" src="https://cdn.jsdelivr.net/npm/@jenkinsci/jenkins-io-components/+esm" type="module"></script>
+                <script data="jio" nomodule="" src="https://cdn.jsdelivr.net/npm/@jenkinsci/jenkins-io-components"></script>
+                <jio-navbar class="fixed-top" property="https://reports.jenkins.io"></jio-navbar>
+                <!-- Overwrite bootstrap classes from maven-fluido-skin to put the jio-components in place -->
+                <style>
+                  .container-fluid {
+                    padding-right: 0px;
+                    padding-left: 0px;
+                  }
+                  hr {
+                    border-top: 0px;
+                    border-bottom: 0px;
+                    margin: 0px;
+                  }
+                  #poweredBy {
+                    display: none;
+                  }
+                </style>
+            ]]>
+        </head>
+        <footer>
+            <![CDATA[
+                <jio-footer property="https://reports.jenkins.io"></jio-footer>
+            ]]>
+        </footer>
+    </body>
+    <bannerLeft>
+        <name>Jenkins Taglib Documentation</name>
+    </bannerLeft>
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.12.0</version>
+    </skin>
+    <custom>
+        <matomo>
+            <siteId>3</siteId>
+            <url>https://jenkins-matomo.do.g4v.dev</url>
+            <options>
+                <disableCookies/>
+                <trackPageView/>
+                <enableLinkTracking/>
+            </options>
+        </matomo>
+        <fluidoSkin>
+            <sideBarEnabled>false</sideBarEnabled>
+        </fluidoSkin>
+    </custom>
+</project>

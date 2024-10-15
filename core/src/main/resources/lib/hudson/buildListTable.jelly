@@ -30,44 +30,31 @@ THE SOFTWARE.
       A collection of builds to be displayed.
     </st:attribute>
   </st:documentation>
+  <template id="jenkins-build-status-icons">
+    <l:icon src="symbol-status-blue" id="blue" />
+    <l:icon src="symbol-status-yellow" id="yellow" />
+    <l:icon src="symbol-status-red" id="red" />
+    <l:icon src="symbol-status-nobuilt" id="nobuilt" />
+    <l:icon src="symbol-status-aborted" id="aborted" />
+    <l:icon src="symbol-status-disabled" id="disabled" />
+    <l:icon src="symbol-status-blue-anime" id="blue-anime" />
+    <l:icon src="symbol-status-yellow-anime" id="yellow-anime" />
+    <l:icon src="symbol-status-red-anime" id="red-anime" />
+    <l:icon src="symbol-status-nobuilt-anime" id="nobuilt-anime" />
+    <l:icon src="symbol-status-aborted-anime" id="aborted-anime" />
+    <l:icon src="symbol-status-disabled-anime" id="disabled-anime" />
+    <l:icon src="symbol-terminal" id="console" />
+  </template>
 
   <t:setIconSize/>
   <st:adjunct includes="hudson.model.Job.buildTimeTrend_resources" />
-  <script>
-      function displayBuilds(data) {
-          var p = $$('projectStatus');
-          p.show();
-          for (var x = 0; data.length > x; x++) {
-              var e = data[x];
-              var tr = new Element('tr');
-              tr.insert(new Element('td', {data: e.iconColorOrdinal, class: 'jenkins-table__cell--tight jenkins-table__icon'}).
-                  insert(new Element('div', {class: 'jenkins-table__cell__button-wrapper'}).
-                      insert(generateSVGIcon(e.iconName, "${iconSizeClass}"))));
-              tr.insert(new Element('td').
-                  insert(new Element('a', {class: 'jenkins-table__link model-link', href: '${rootURL}/' + e.parentUrl}).
-                   insert(new Element('span').
-                      update(e.parentFullDisplayName))).
-                  insert(new Element('a', {class: 'jenkins-table__link jenkins-table__badge model-link inside', href: '${rootURL}/' + e.url}).
-                      update(e.displayName.escapeHTML())));
-              tr.insert(new Element('td', {data: e.timestampString2}).
-                  insert(new Element('button', {class: 'jenkins-table__link', tooltip: '${%Click to center timeline on event}', onclick: 'javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime("' + e.timestampString3 + '"))'}).
-                    update(e.timestampString.escapeHTML())));
-              tr.insert(new Element('td', {style: e.buildStatusSummaryWorse ? 'color: var(--red)' : ''}).
-                  update(e.buildStatusSummaryMessage.escapeHTML()));
-              tr.insert(new Element('td', {class: 'jenkins-table__cell--tight'}).
-                    insert(new Element('div', {class: 'jenkins-table__cell__button-wrapper'}).
-                        insert(new Element('a', {class: 'jenkins-table__button', href: '${rootURL}/' + e.url + 'console'}).
-                            insert(`<l:icon src="symbol-terminal" alt="${%Console output}" />`))));
-              p.insert(tr);
-              Behaviour.applySubtree(tr);
-          }
-          ts_refresh(p);
-      }
-  </script>
   <j:new var="handler" className="jenkins.widgets.BuildListTable"/>
   ${handler.setBuilds(attrs.builds)}
   <l:progressiveRendering handler="${handler}" callback="displayBuilds"/>
-  <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="projectStatus" style="display: none;">
+  <j:set var="consoleOutputIcon" trim="true">
+    <l:icon src="symbol-terminal" alt="${%Console output}" />
+  </j:set>
+  <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="projectStatus" style="display: none;" data-icon-size-class="${iconSizeClass}"  data-console-output-icon="${consoleOutputIcon}">
     <thead>
         <tr>
             <th class="jenkins-table__cell--tight">${%S}</th>

@@ -30,8 +30,8 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task contextMenu="false" href="${rootURL}/${it.url}" icon="symbol-computer" title="${%Status}"/>
-      <l:task href="${rootURL}/${it.url}delete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete Agent}"/>
+      <l:task contextMenu="false" href="${rootURL}/${it.url}" icon="${it.iconClassName}" title="${%Status}"/>
+      <l:delete permission="${it.DELETE}" title="${%Delete Agent}" message="${%delete.confirm(it.name)}"/>
       <l:task href="${rootURL}/${it.url}configure" icon="symbol-settings" permission="${it.EXTENDED_READ}"
               title="${it.hasPermission(it.CONFIGURE) ? '%Configure' : '%View Configuration'}"/>
       <l:task href="${rootURL}/${it.url}builds" icon="symbol-build-history" title="${%Build History}"/>
@@ -45,6 +45,8 @@ THE SOFTWARE.
      <j:forEach var="box" items="${it.computerPanelBoxs}">
         <st:include it="${box}" page="box.jelly" />
     </j:forEach>
-    <t:executors computers="${[it]}"/>
+    <j:forEach var="w" items="${it.widgets}">
+      <st:include it="${w}" page="index" />
+    </j:forEach>
   </l:side-panel>
 </j:jelly>

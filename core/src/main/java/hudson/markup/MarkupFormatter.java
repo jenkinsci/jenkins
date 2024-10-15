@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -44,7 +45,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 import org.kohsuke.stapler.verb.POST;
@@ -60,9 +62,14 @@ import org.kohsuke.stapler.verb.POST;
  * This is an extension point in Hudson, allowing plugins to implement different markup formatters.
  *
  * <p>
- * Implement the following methods to enable and control CodeMirror syntax highlighting
- * public String getCodeMirrorMode() // return null to disable CodeMirror dynamically
- * public String getCodeMirrorConfig()
+ * Implement the following methods to enable and control CodeMirror syntax highlighting:
+ * <ul>
+ *     <li><code>public String getCodeMirrorMode()</code> (return <code>null</code> to disable CodeMirror dynamically)</li>
+ *     <li>
+ *         <code>public String getCodeMirrorConfig()</code> (JSON snippet without surrounding curly braces, e.g., <code>"mode": "text/css"</code>.
+ *         Historically this allowed invalid JSON, but since TODO it needs to be properly quoted etc.
+ *     </li>
+ * </ul>
  *
  * <h2>Views</h2>
  * <p>
@@ -138,7 +145,7 @@ public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupForm
     @GET
     @WebMethod(name = "previewDescription")
     @Restricted(NoExternalUse.class)
-    public HttpResponse previewsNowNeedPostForSecurity2153(@QueryParameter String text, StaplerRequest req) throws IOException {
+    public HttpResponse previewsNowNeedPostForSecurity2153(@QueryParameter String text, StaplerRequest2 req) throws IOException {
         LOGGER.log(Level.FINE, "Received a GET request at " + req.getRequestURL());
         if (PREVIEWS_ALLOW_GET) {
             return doPreviewDescription(text);
@@ -155,15 +162,18 @@ public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupForm
      */
     private static HttpResponse html(int status, @NonNull String html, @NonNull Map<String, String> headers) {
         // TODO Move to Stapler's HttpResponses, (also add a corresponding 'text' method)
-        return (req, rsp, node) -> {
-            rsp.setContentType("text/html;charset=UTF-8");
-            rsp.setStatus(status);
-            for (Map.Entry<String, String> header : headers.entrySet()) {
-                rsp.setHeader(header.getKey(), header.getValue());
+        return new HttpResponse() {
+            @Override
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
+                rsp.setContentType("text/html;charset=UTF-8");
+                rsp.setStatus(status);
+                for (Map.Entry<String, String> header : headers.entrySet()) {
+                    rsp.setHeader(header.getKey(), header.getValue());
+                }
+                PrintWriter pw = rsp.getWriter();
+                pw.print(html);
+                pw.flush();
             }
-            PrintWriter pw = rsp.getWriter();
-            pw.print(html);
-            pw.flush();
         };
     }
 }

@@ -35,6 +35,25 @@ import java.util.List;
  * <p>
  * This class provides a few hooks to augment the HTML of the login page.
  *
+ * <dl>
+ *  <dt>simple-branding.jelly</dt>
+ *  <dd>
+ *    This view contributes to the branding section, usually located on the left side of the login/register pages.
+ *  </dd>
+ *  <dt>simple-footer.jelly</dt>
+ *  <dd>
+ *    This view contributes to the footer section, located below the login/register form.
+ *  </dd>
+ *  <dt>simple-head.jelly</dt>
+ *  <dd>
+ *    This view contributes to the head section.
+ *  </dd>
+ *  <dt>simple-header.jelly</dt>
+ *  <dd>
+ *    This view contributes to the header section just above the login/register form.
+ *  </dd>
+ * </dl>
+ *
  * @since 2.128
  */
 public class SimplePageDecorator extends Descriptor<SimplePageDecorator> implements ExtensionPoint, Describable<SimplePageDecorator> {

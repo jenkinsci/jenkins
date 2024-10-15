@@ -24,6 +24,9 @@
 
 package jenkins.websocket;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.util.Iterator;
@@ -34,7 +37,8 @@ import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Support for serving WebSocket responses.
@@ -62,57 +66,79 @@ public class WebSockets {
     // TODO ability to handle subprotocols?
 
     public static HttpResponse upgrade(WebSocketSession session) {
-        if (provider == null) {
-            throw HttpResponses.notFound();
-        }
-        return (req, rsp, node) -> {
-            try {
-                session.handler = provider.handle(req, rsp, new Provider.Listener() {
-                    @Override
-                    public void onWebSocketConnect() {
-                        session.startPings();
-                        session.opened();
-                    }
-
-                    @Override
-                    public void onWebSocketClose(int statusCode, String reason) {
-                        session.stopPings();
-                        session.closed(statusCode, reason);
-                    }
-
-                    @Override
-                    public void onWebSocketError(Throwable cause) {
-                        if (cause instanceof ClosedChannelException) {
-                            onWebSocketClose(0, cause.toString());
-                        } else {
-                            session.error(cause);
-                        }
-                    }
-
-                    @Override
-                    public void onWebSocketBinary(byte[] payload, int offset, int length) {
-                        try {
-                            session.binary(payload, offset, length);
-                        } catch (IOException x) {
-                            session.error(x);
-                        }
-                    }
-
-                    @Override
-                    public void onWebSocketText(String message) {
-                        try {
-                            session.text(message);
-                        } catch (IOException x) {
-                            session.error(x);
-                        }
-                    }
-                });
-            } catch (Exception x) {
-                LOGGER.log(Level.WARNING, null, x);
-                throw HttpResponses.error(x);
+        return new HttpResponse() {
+            @Override
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
+                upgradeResponse(session, req, rsp);
             }
-            // OK, unless handler is null in which case we expect an error was already sent.
         };
+    }
+
+    /**
+     * Variant of {@link #upgrade} that does not presume a {@link StaplerRequest2}.
+     * @since 2.446
+     */
+    public static void upgradeResponse(WebSocketSession session, HttpServletRequest req, HttpServletResponse rsp) throws IOException, ServletException {
+        if (provider == null) {
+            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        try {
+            session.handler = provider.handle(req, rsp, new Provider.Listener() {
+                private Object providerSession;
+
+                @Override
+                public void onWebSocketConnect(Object providerSession) {
+                    this.providerSession = providerSession;
+                    session.startPings();
+                    session.opened();
+                }
+
+                @Override
+                public Object getProviderSession() {
+                    return providerSession;
+                }
+
+                @Override
+                public void onWebSocketClose(int statusCode, String reason) {
+                    session.stopPings();
+                    session.closed(statusCode, reason);
+                }
+
+                @Override
+                public void onWebSocketError(Throwable cause) {
+                    if (cause instanceof ClosedChannelException) {
+                        onWebSocketClose(0, cause.toString());
+                    } else {
+                        session.error(cause);
+                    }
+                }
+
+                @Override
+                public void onWebSocketBinary(byte[] payload, int offset, int length) {
+                    try {
+                        session.binary(payload, offset, length);
+                    } catch (IOException x) {
+                        session.error(x);
+                    }
+                }
+
+                @Override
+                public void onWebSocketText(String message) {
+                    try {
+                        session.text(message);
+                    } catch (IOException x) {
+                        session.error(x);
+                    }
+                }
+            });
+            // OK, unless handler is null in which case we expect an error was already sent.
+        } catch (IOException | ServletException x) {
+            throw x;
+        } catch (Exception x) {
+            LOGGER.log(Level.WARNING, null, x);
+            rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 
     public static boolean isSupported() {

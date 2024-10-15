@@ -23,14 +23,15 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
     Renders inline an optional single-value nested data-bound property of the current instance,
-    by using a &lt;f:optionalBlock>
+    by using a <f:optionalBlock>
 
     This is useful when your object composes another data-bound object, and when that's optional,
     where the absence of the value is signified as null (in which case the optionalBlock will be drawn unchecked),
     and the presence of the value.
+    ]]>
     <st:attribute name="field" use="required" />
     <st:attribute name="title" use="required" />
     <st:attribute name="help" />

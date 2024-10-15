@@ -26,16 +26,15 @@ public class DownloadServiceTest {
     @WithoutJenkins // could have been in core/src/test/ but update-center.json was already in test/src/test/ (used by UpdateSiteTest)
     @Test
     public void testLoadJSON() throws Exception {
-        assertRoots("[list]", "hudson.tasks.Maven.MavenInstaller.json"); // format used by most tools
-        assertRoots("[data, version]", "hudson.tools.JDKInstaller.json"); // anomalous format
-        assertRoots("[connectionCheckUrl, core, id, plugins, signature, updateCenterVersion]", "update-center.json");
+        assertRoots("[list]", getClass().getResource("hudson.tasks.Maven.MavenInstaller.json")); // format used by most tools
+        assertRoots("[data, version]", getClass().getResource("hudson.tools.JDKInstaller.json")); // anomalous format
+        assertRoots("[connectionCheckUrl, core, id, plugins, signature, updateCenterVersion]", UpdateSiteTest.extract("update-center.json"));
     }
 
-    private static void assertRoots(String expected, String file) throws Exception {
-        URL resource = DownloadServiceTest.class.getResource(file);
-        assertNotNull(file, resource);
+    private static void assertRoots(String expected, URL resource) throws Exception {
+        assertNotNull(resource);
         JSONObject json = JSONObject.fromObject(DownloadService.loadJSON(resource));
-        @SuppressWarnings("unchecked") Set<String> keySet = json.keySet();
+        Set<String> keySet = json.keySet();
         assertEquals(expected, new TreeSet<>(keySet).toString());
     }
 

@@ -27,16 +27,17 @@ package hudson.model;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.util.List;
+import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.WithTimeout;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -50,6 +51,7 @@ public class ManagementLinkTest {
      * Makes sure every link works.
      */
     @Test
+    @WithTimeout(300)
     public void links() throws Exception {
         WebClient wc = j.createWebClient();
 

@@ -26,12 +26,12 @@ package jenkins.security.stapler;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.Locale;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class StaplerDispatchValidatorTest {
 
     @Before
     public void setUp() throws Exception {
-        StaplerDispatchValidator validator = StaplerDispatchValidator.getInstance(j.jenkins.servletContext);
+        StaplerDispatchValidator validator = StaplerDispatchValidator.getInstance(j.jenkins.getServletContext());
         try (InputStream whitelist = getClass().getResourceAsStream("StaplerDispatchValidatorTest/whitelist.txt")) {
             validator.loadWhitelist(whitelist);
         }
@@ -103,15 +103,6 @@ public class StaplerDispatchValidatorTest {
     @Test
     public void canViewPagesThatRedirectToViews() throws Exception {
         String[] urls = {"groovy/redirect", "jelly/redirect"};
-        for (String url : urls) {
-            HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
-        }
-    }
-
-    @Test
-    public void canViewCompressedViews() throws Exception {
-        String[] urls = {"groovy/compress", "jelly/compress"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
             assertEquals("Fragment", root.getElementById("frag").asNormalizedText());

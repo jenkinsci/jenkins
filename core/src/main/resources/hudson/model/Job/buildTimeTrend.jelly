@@ -25,35 +25,55 @@ THE SOFTWARE.
 
 <!-- Displays the chart that show how long builds are taking -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout title="${%title(it.displayName)}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Build Time Trend}" />
     <st:adjunct includes="hudson.model.Job.buildTimeTrend_resources" />
     <l:main-panel>
-      <h1>${%Timeline}</h1>
-      <st:include page="control.jelly" it="${it.timeline}" />
+      <template id="jenkins-build-status-icons">
+        <l:icon src="symbol-status-blue" id="blue" />
+        <l:icon src="symbol-status-yellow" id="yellow" />
+        <l:icon src="symbol-status-red" id="red" />
+        <l:icon src="symbol-status-nobuilt" id="nobuilt" />
+        <l:icon src="symbol-status-aborted" id="aborted" />
+        <l:icon src="symbol-status-disabled" id="disabled" />
 
+        <l:icon src="symbol-status-blue-anime" id="blue-anime" />
+        <l:icon src="symbol-status-yellow-anime" id="yellow-anime" />
+        <l:icon src="symbol-status-red-anime" id="red-anime" />
+        <l:icon src="symbol-status-nobuilt-anime" id="nobuilt-anime" />
+        <l:icon src="symbol-status-aborted-anime" id="aborted-anime" />
+        <l:icon src="symbol-status-disabled-anime" id="disabled-anime" />
+        <l:icon src="symbol-terminal" id="console" />
+      </template>
       <h1>${%Build Time Trend}</h1>
-          <div align="center">
+          <div id="buildTimeTrend">
+            <div>
+              <j:new var="handler" className="jenkins.widgets.BuildTimeTrend"/>
+              ${handler.setBuilds(it.builds)}
+              <j:set var="showAgent" value="${!empty(app.nodes) and handler.isAbstractProject(it)}"/>
+              <l:progressiveRendering handler="${handler}" callback="buildTimeTrend_displayBuilds"/>
+              <t:setIconSize/>
+              <table class="jenkins-table jenkins-table--auto-width ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable jenkins-hidden" id="trend"
+                     data-show-agent="${showAgent}" data-icon-size-class="${iconSizeClass}">
+                <thead>
+                  <tr>
+                    <th class="jenkins-table__cell--tight">${%S}</th>
+                    <th initialSortDir="up">${%Build}</th>
+                    <th>${%Time Since}</th>
+                    <th>${%Duration}</th>
+                    <j:if test="${showAgent}">
+                      <th>${%Agent}</th>
+                    </j:if>
+                    <th class="jenkins-table__cell--tight" data-sort-disable="true"></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+              <t:iconSize/>
+            </div>
             <img class="build-time-graph" src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[${%Build time graph}]" />
-          </div>
-
-          <j:set var="isDistributedBuildEnabled" value="${!empty(app.nodes)}"/>
-          <div align="center">
-            <j:new var="handler" className="jenkins.widgets.BuildTimeTrend"/>
-            ${handler.setBuilds(it.builds)}
-            <l:progressiveRendering handler="${handler}" callback="buildTimeTrend_displayBuilds"/>
-            <table class="sortable" id="trend" 
-                   data-is-distributed-build-enabled="${isDistributedBuildEnabled}">
-              <tr>
-                <th><st:nbsp/></th>
-                <th initialSortDir="up">${%Build}</th>
-                <th>${%Duration}</th>
-                <j:if test="${isDistributedBuildEnabled}">
-                  <th>${%Agent}</th>
-                </j:if>
-              </tr>
-            </table>
           </div>
     </l:main-panel>
   </l:layout>

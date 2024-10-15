@@ -34,13 +34,16 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.XmlFile;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.Node;
+import hudson.model.Saveable;
 import hudson.model.Slave;
+import hudson.model.listeners.SaveableListener;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
@@ -49,6 +52,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class NodesTest {
 
@@ -59,7 +63,10 @@ public class NodesTest {
     @Issue("JENKINS-50599")
     public void addNodeShouldFailAtomically() throws Exception {
         InvalidNode node = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
-        IOException e = assertThrows("Adding the node should have thrown an exception during serialization", IOException.class, () -> r.jenkins.addNode(node));
+        IOException e = assertThrows(
+                "Adding the node should have thrown an exception during serialization",
+                IOException.class,
+                () -> r.jenkins.addNode(node));
         String className = InvalidNode.class.getName();
         assertThat("The exception should be from failing to serialize the node",
                 e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
@@ -73,7 +80,10 @@ public class NodesTest {
         Node oldNode = r.createSlave("foo", "", null);
         r.jenkins.addNode(oldNode);
         InvalidNode newNode = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
-        IOException e = assertThrows("Adding the node should have thrown an exception during serialization", IOException.class, () -> r.jenkins.addNode(newNode));
+        IOException e = assertThrows(
+                "Adding the node should have thrown an exception during serialization",
+                IOException.class,
+                () -> r.jenkins.addNode(newNode));
         String className = InvalidNode.class.getName();
         assertThat("The exception should be from failing to serialize the node",
                 e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
@@ -92,6 +102,10 @@ public class NodesTest {
         assertEquals(0, l.deleted);
         assertEquals(1, l.updated);
         assertEquals(1, l.created);
+        var saveableListener = ExtensionList.lookupSingleton(SaveableListenerImpl.class);
+        assertEquals(0, saveableListener.deleted);
+        r.jenkins.removeNode(newNode);
+        assertEquals(1, saveableListener.deleted);
     }
 
     @TestExtension("addNodeShouldReplaceExistingNode")
@@ -112,6 +126,16 @@ public class NodesTest {
         @Override
         protected void onCreated(Node node) {
             created++;
+        }
+    }
+
+    @TestExtension("addNodeShouldReplaceExistingNode")
+    public static final class SaveableListenerImpl extends SaveableListener {
+        int deleted;
+
+        @Override
+        public void onDeleted(Saveable o, XmlFile file) {
+            deleted++;
         }
     }
 
@@ -152,12 +176,11 @@ public class NodesTest {
         assertThat(r.jenkins.getNodes(), hasSize(0));
 
         DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
-        try {
-            r.jenkins.addNode(node);
-            fail("Adding the node should have thrown an exception during checkGoodName");
-        } catch (Failure e) {
-            assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
-        }
+        Failure e = assertThrows(
+                "Adding the node should have thrown an exception during checkGoodName",
+                Failure.class,
+                () -> r.jenkins.addNode(node));
+        assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
 
         assertThat(r.jenkins.getNodes(), hasSize(0));
     }
@@ -170,12 +193,11 @@ public class NodesTest {
         assertThat(r.jenkins.getNodes(), hasSize(1));
 
         DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
-        try {
-            r.jenkins.addNode(node);
-            fail("Adding the node should have thrown an exception during checkGoodName");
-        } catch (Failure e) {
-            assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
-        }
+        Failure e = assertThrows(
+                "Adding the node should have thrown an exception during checkGoodName",
+                Failure.class,
+                () -> r.jenkins.addNode(node));
+        assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
 
         assertThat(r.jenkins.getNodes(), hasSize(1));
     }
@@ -201,4 +223,20 @@ public class NodesTest {
             }
         }
     }
+
+    @Test
+    @LocalData
+    public void vetoLoad() {
+        assertNull("one-node should not have been loaded because vetoed by VetoLoadingNodes", Jenkins.get().getNode("one-node"));
+    }
+
+    @TestExtension("vetoLoad")
+    public static class VetoLoadingNodes extends NodeListener {
+        @Override
+        protected boolean allowLoad(@NonNull Node node) {
+            // Don't allow loading any node.
+            return false;
+        }
+    }
+
 }

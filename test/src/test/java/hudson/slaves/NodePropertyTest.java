@@ -6,20 +6,20 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlLabel;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlLabel;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -52,7 +52,7 @@ public class NodePropertyTest {
         boolean reconfigured = false;
 
         @Override
-        public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) {
+        public NodeProperty<?> reconfigure(StaplerRequest2 req, JSONObject form) {
             reconfigured = true;
             return this;
         }

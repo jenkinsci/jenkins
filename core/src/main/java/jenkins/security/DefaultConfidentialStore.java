@@ -19,7 +19,6 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.IOUtils;
 
 /**
  * Default portable implementation of {@link ConfidentialStore} that uses
@@ -104,7 +103,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
             sym.init(Cipher.DECRYPT_MODE, masterKey);
             try (InputStream fis = Files.newInputStream(f.toPath());
                  CipherInputStream cis = new CipherInputStream(fis, sym)) {
-                byte[] bytes = IOUtils.toByteArray(cis);
+                byte[] bytes = cis.readAllBytes();
                 return verifyMagic(bytes);
             }
         } catch (GeneralSecurityException e) {

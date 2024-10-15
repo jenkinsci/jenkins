@@ -24,20 +24,23 @@
 
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import hudson.XmlFile;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.BuildTrigger;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.concurrent.Future;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
@@ -58,10 +61,11 @@ public class CauseTest {
     @Test public void deeplyNestedCauses() throws Exception {
         FreeStyleProject a = j.createFreeStyleProject("a");
         FreeStyleProject b = j.createFreeStyleProject("b");
-        Run<?, ?> early = null;
-        Run<?, ?> last = null;
+        FreeStyleBuild early = null;
+        FreeStyleBuild last = null;
         for (int i = 1; i <= 15; i++) {
-            last = b.scheduleBuild2(0, new Cause.UpstreamCause((Run<?, ?>) a.scheduleBuild2(0, last == null ? null : new Cause.UpstreamCause(last)).get())).get();
+            last = j.waitForCompletion(a.scheduleBuild2(0, last == null ? null : new Cause.UpstreamCause(last)).get());
+            last = j.waitForCompletion(b.scheduleBuild2(0, new Cause.UpstreamCause(last)).get());
             if (i == 5) {
                 early = last;
             }
@@ -77,24 +81,32 @@ public class CauseTest {
         FreeStyleProject a = j.createFreeStyleProject("a");
         FreeStyleProject b = j.createFreeStyleProject("b");
         FreeStyleProject c = j.createFreeStyleProject("c");
+        List<QueueTaskFuture<FreeStyleBuild>> futures = new ArrayList<>();
         Run<?, ?> last = null;
         for (int i = 1; i <= 10; i++) {
             Cause cause = last == null ? null : new Cause.UpstreamCause(last);
-            Future<? extends Run<?, ?>> next1 = a.scheduleBuild2(0, cause);
-            a.scheduleBuild2(0, cause);
-            cause = new Cause.UpstreamCause(next1.get());
-            Future<? extends Run<?, ?>> next2 = b.scheduleBuild2(0, cause);
-            b.scheduleBuild2(0, cause);
-            cause = new Cause.UpstreamCause(next2.get());
-            Future<? extends Run<?, ?>> next3 = c.scheduleBuild2(0, cause);
-            c.scheduleBuild2(0, cause);
-            last = next3.get();
+            last = j.waitForCompletion(a.scheduleBuild2(0, cause).get());
+            recordFuture(b.scheduleBuild2(1, cause), futures);
+            cause = new Cause.UpstreamCause(last);
+            last = j.waitForCompletion(b.scheduleBuild2(0, cause).get());
+            recordFuture(c.scheduleBuild2(1, cause), futures);
+            cause = new Cause.UpstreamCause(last);
+            last = j.waitForCompletion(c.scheduleBuild2(0, cause).get());
+            recordFuture(a.scheduleBuild2(1, cause), futures);
         }
+        last = j.waitForCompletion(a.scheduleBuild2(0, new Cause.UpstreamCause(last)).get());
         int count = new XmlFile(Run.XSTREAM, new File(last.getRootDir(), "build.xml")).asString().split(Pattern.quote("<hudson.model.Cause_-UpstreamCause")).length;
         assertFalse("too big at " + count, count > 100);
         //j.interactiveBreak();
+        for (QueueTaskFuture<FreeStyleBuild> future : futures) {
+            j.assertBuildStatusSuccess(j.waitForCompletion(future.waitForStart()));
+        }
     }
 
+    private static QueueTaskFuture<FreeStyleBuild> recordFuture(QueueTaskFuture<FreeStyleBuild> future, List<QueueTaskFuture<FreeStyleBuild>> futures) {
+        futures.add(future);
+        return future;
+    }
 
     @Issue("JENKINS-48467")
     @Test public void userIdCausePrintTest() throws Exception {
@@ -137,7 +149,7 @@ public class CauseTest {
     @LocalData
     public void xssInRemoteCause() throws IOException, SAXException {
         final Item item = j.jenkins.getItemByFullName("fs");
-        Assert.assertTrue(item instanceof FreeStyleProject);
+        assertThat(item, instanceOf(FreeStyleProject.class));
         FreeStyleProject fs = (FreeStyleProject) item;
         final FreeStyleBuild build = fs.getBuildByNumber(1);
 

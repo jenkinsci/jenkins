@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <!--
-  <%@ attribute name="job" required="true" type="hudson.model.Job" %>
+  <%@ attribute name="job" use="required" type="hudson.model.Job" %>
   <%@ attribute name="iconSizeClass" type="java.lang.String" %>
   <%@ attribute name="iconSize" type="java.lang.String" %>
   <%@ attribute name="td" required="false" type="java.lang.String" %>
@@ -31,60 +31,54 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <j:set var="healthReports" value="${job.buildHealthReports}"/>
-    <j:new var="emptyHealthReport" className="hudson.model.HealthReport"/>
-    <j:set var="buildHealth" value="${empty(healthReports) ? emptyHealthReport : healthReports[0]}"/>
-    <j:if test="${td}"><j:set var="useTdElement" value="x"/></j:if>
-    <x:element name="${useTdElement!=null?'td':'div'}">
-        <x:attribute name="data">${buildHealth.score}</x:attribute>
-        <x:attribute name="class">jenkins-table__cell--tight jenkins-table__icon healthReport</x:attribute>
-        <j:if test="${buildHealth!=null}">
-            <div class="jenkins-table__cell__button-wrapper">
-                <j:if test="${iconSizeClass == null}">
-                  <j:choose>
-                    <j:when  test="${iconSize == null}">
-                      <j:set var="iconSizeClass" value="icon-sm"/>
-                    </j:when>
-                    <j:otherwise>
-                      <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(iconSize)}"/>
-                    </j:otherwise>
-                  </j:choose>
-                </j:if>
-                <j:choose>
-                <j:when test="${!empty(healthReports)}">
-                    <a class="build-health-link jenkins-table__button" href="${empty(link)?'#':link}" style="${attrs.style}">
-                       <l:svgIcon href="${resURL}/images/${icons.getIconByClassSpec(buildHealth.iconClassName + ' icon-md').url}" ariaHidden="true"/>
-                    </a>
-                </j:when>
-                    <j:otherwise>
-                        <l:svgIcon href="${resURL}/images/${icons.getIconByClassSpec(buildHealth.iconClassName + ' icon-md').url}"/>
-                    </j:otherwise>
-                </j:choose>
-            </div>
-        </j:if>
-        <j:if test="${!empty(healthReports)}">
-            <div class="jenkins-tooltip healthReportDetails">
-                <table class="jenkins-table">
-                    <thead>
-                        <tr>
-                            <th align="left">W</th>
-                            <th align="left">${%Description}</th>
-                            <th align="right">%</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <j:forEach var="rpt" items="${healthReports}">
-                            <tr>
-                                <td align="left">
-                                    <l:icon class="${rpt.iconClassName} icon-sm" />
-                                </td>
-                                <td align="left">${rpt.localizableDescription}</td>
-                                <td align="right">${rpt.score}</td>
-                            </tr>
-                        </j:forEach>
-                    </tbody>
-                </table>
-            </div>
-        </j:if>
-    </x:element>
+  <j:set var="healthReports" value="${job.buildHealthReports}"/>
+  <j:new var="emptyHealthReport" className="hudson.model.HealthReport"/>
+  <j:set var="buildHealth" value="${empty(healthReports) ? emptyHealthReport : healthReports[0]}"/>
+  <j:if test="${td}"><j:set var="useTdElement" value="x"/></j:if>
+  <x:element name="${useTdElement!=null?'td':'div'}">
+    <x:attribute name="data">${buildHealth.score}</x:attribute>
+    <x:attribute name="class">jenkins-table__cell--tight jenkins-table__icon healthReport</x:attribute>
+    <j:if test="${!empty(healthReports)}">
+      <x:attribute name="data-html-tooltip">
+        <div class="jenkins-tooltip--table-wrapper">
+          <table class="jenkins-table">
+            <thead>
+              <tr>
+                <th class="jenkins-!-padding-left-0" align="center">W</th>
+                <th align="left">${%Description}</th>
+                <th align="right">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              <j:forEach var="rpt" items="${healthReports}">
+                <tr>
+                  <td align="left" class="jenkins-table__cell--tight jenkins-table__icon">
+                    <div class="jenkins-table__cell__button-wrapper">
+                      <l:icon src="symbol-weather-${buildHealth.iconClassName}" />
+                    </div>
+                  </td>
+                  <td align="left">${rpt.localizableDescription}</td>
+                  <td align="right">${rpt.score}</td>
+                </tr>
+              </j:forEach>
+            </tbody>
+          </table>
+        </div>
+      </x:attribute>
+    </j:if>
+    <j:if test="${buildHealth!=null}">
+      <div class="jenkins-table__cell__button-wrapper">
+        <j:choose>
+          <j:when test="${!empty(healthReports)}">
+            <a class="build-health-link jenkins-button jenkins-button--tertiary" href="${empty(link)?'#':link}" style="${attrs.style}">
+              <l:icon src="symbol-weather-${buildHealth.iconClassName}" />
+            </a>
+          </j:when>
+          <j:otherwise>
+            <l:icon src="symbol-weather-${buildHealth.iconClassName}" tooltip="${buildHealth.score}%" />
+          </j:otherwise>
+        </j:choose>
+      </div>
+    </j:if>
+  </x:element>
 </j:jelly>

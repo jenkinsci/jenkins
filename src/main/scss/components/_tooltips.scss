@@ -1,0 +1,54 @@
+.tippy-box[data-theme~="tooltip"] {
+  color: var(--tooltip-color);
+  padding: 0.45rem 0.8rem;
+  border-radius: 0.66rem;
+  box-shadow: var(--tooltip-box-shadow);
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  max-width: min(50vw, 1000px) !important;
+  white-space: pre-line;
+  z-index: 0;
+  background: color-mix(in sRGB, var(--background) 85%, transparent);
+  backdrop-filter: var(--tooltip-backdrop-filter);
+
+  .tippy-content {
+    padding: 0;
+  }
+
+  // We style tables as they have additional margin/border radius when in tooltips
+  .jenkins-tooltip--table-wrapper {
+    background-color: rgba(black, 0.05);
+    margin: -0.45rem -0.8rem;
+    border-radius: 0.6rem;
+  }
+
+  .jenkins-table {
+    --table-background: transparent;
+    --table-border-radius: 8px;
+
+    margin: 0;
+    width: 450px;
+  }
+}
+
+.tippy-box[data-animation="tooltip"][data-state="hidden"] {
+  opacity: 0;
+  transform: scale(0.995);
+
+  &[data-placement^="top"] {
+    transform-origin: bottom;
+    transform: translateY(2px) scale(0.995);
+  }
+
+  &[data-placement^="bottom"] {
+    transform-origin: top;
+    transform: translateY(-2px) scale(0.995);
+  }
+}
+
+// Workaround for NG Warnings which supports modern Tippy tooltips and a custom solution,
+// hide the custom solution
+.jenkins-table .healthReportDetails {
+  display: none !important;
+}

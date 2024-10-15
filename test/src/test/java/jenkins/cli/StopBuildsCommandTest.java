@@ -26,7 +26,7 @@ package jenkins.cli;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 
 import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
@@ -38,13 +38,18 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SleepBuilder;
 
 public class StopBuildsCommandTest {
+
+    @ClassRule
+    public static BuildWatcher buildWatcher = new BuildWatcher();
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
@@ -173,6 +178,28 @@ public class StopBuildsCommandTest {
 
         b1.doStop();
         b2.doStop();
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(b1));
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(b2));
+    }
+
+    @Test
+    public void shouldStopEarlierBuildsEvenIfLatestComplete() throws Exception {
+        final FreeStyleProject project = createLongRunningProject(TEST_JOB_NAME);
+        project.setConcurrentBuild(true);
+        j.jenkins.setNumExecutors(3);
+
+        FreeStyleBuild b1 = project.scheduleBuild2(0).waitForStart();
+        j.waitForMessage("Sleeping", b1);
+        FreeStyleBuild b2 = project.scheduleBuild2(0).waitForStart();
+        j.waitForMessage("Sleeping", b2);
+
+        project.getBuildersList().clear();
+        FreeStyleBuild b3 = j.buildAndAssertSuccess(project);
+
+        final String stdout = runWith(List.of(TEST_JOB_NAME)).stdout();
+
+        assertThat(stdout, equalTo("Build '#2' stopped for job 'jobName'" + LN +
+                "Build '#1' stopped for job 'jobName'" + LN));
         j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(b1));
         j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(b2));
     }

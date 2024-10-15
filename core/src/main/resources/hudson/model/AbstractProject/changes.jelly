@@ -29,6 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%changes.title(it.name)}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Changes}" />
     <l:main-panel>
       <j:set var="from" value="${request.getParameter('from')}"/>
       <j:set var="to" value="${request.getParameter('to')}"/>

@@ -1,0 +1,67 @@
+<!--
+The MIT License
+
+Copyright (c) 2022, CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+    <j:set var="userProperty" value="${instance}"/>
+    <f:entry field="experimentalFlags">
+        <j:invokeStatic var="flagConfigs" className="jenkins.model.experimentalflags.UserExperimentalFlag"
+                        method="all"/>
+    
+        <j:if test="${empty(flagConfigs)}">
+            <div class="jenkins-form-item">
+                ${%NoFlagInfo}
+            </div>
+        </j:if>
+        <j:if test="${!empty(flagConfigs)}">
+            <f:rowSet name="flags">
+                <table class="jenkins-table sortable">
+                    <thead>
+                        <tr>
+                            <th>${%FlagDisplayName}</th>
+                            <th width="45%">${%FlagDescription}</th>
+                            <th>${%FlagConfig}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <j:forEach var="flagConfig" items="${flagConfigs}" varStatus="loop">
+                            <j:set var="flagValue" value="${userProperty.getFlagValue(flagConfig.flagKey)}"/>
+                            <tr>
+                                <td>
+                                    ${flagConfig.displayName}<span class="jenkins-label jenkins-label--tertiary jenkins-!-padding-left-1">${flagConfig.flagKey}</span>
+                                </td>
+                                <td>
+                                    <st:include it="${flagConfig}" page="${flagConfig.flagDescriptionPage}"/>
+                                </td>
+                                <td>
+                                    <st:include it="${flagConfig}" page="${flagConfig.flagConfigPage}"/>
+                                </td>
+                            </tr>
+                        </j:forEach>
+                    </tbody>
+                </table>
+            </f:rowSet>
+        </j:if>
+    </f:entry>
+</j:jelly>

@@ -214,7 +214,6 @@ public class PathRemover {
         return accumulatedErrors;
     }
 
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", justification = "https://github.com/spotbugs/spotbugs/issues/756")
     private List<IOException> tryRemoveDirectoryContents(@NonNull Path path) {
         Path normalized = path.normalize();
         List<IOException> accumulatedErrors = new ArrayList<>();
@@ -229,7 +228,6 @@ public class PathRemover {
         return accumulatedErrors;
     }
 
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", justification = "https://github.com/spotbugs/spotbugs/issues/756")
     private void removeOrMakeRemovableThenRemove(@NonNull Path path) throws IOException {
         pathChecker.check(path);
         try {

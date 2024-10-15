@@ -33,6 +33,7 @@ import hudson.model.UpdateCenter.DownloadJob.Pending;
 import hudson.model.UpdateCenter.DownloadJob.Success;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.model.UpdateSite;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,7 +41,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -112,7 +112,7 @@ public class InstallUtilTest {
         Assert.assertEquals(InstallState.UPGRADE, InstallUtil.getNextInstallState(InstallState.UNKNOWN));
 
         // Fudge things yet again, changing the stored version to something very very new, faking a downgrade...
-        InstallUtil.saveLastExecVersion("1000.0");
+        InstallUtil.saveLastExecVersion("1000000.0");
         Assert.assertEquals(InstallState.DOWNGRADE, InstallUtil.getNextInstallState(InstallState.UNKNOWN));
     }
 

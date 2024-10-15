@@ -27,7 +27,7 @@ package jenkins.security.UpdateSiteWarningsMonitor
 def f = namespace(lib.FormTagLib)
 def l = namespace(lib.LayoutTagLib)
 
-def listWarnings(warnings) {
+def listWarnings(warnings, boolean core) {
     def fixables = 0
     warnings.each { warning ->
         dd {
@@ -37,7 +37,7 @@ def listWarnings(warnings) {
                 if (fixable) {
                     fixables++
                 } else {
-                    raw(_("unfixable"))
+                    raw(_(core ? "unfixableCore" : "unfixable"))
                 }
             }
         }
@@ -45,18 +45,18 @@ def listWarnings(warnings) {
     if (fixables == warnings.size) {
         dd {
             if (fixables == 1) {
-                raw(_("allFixable1", rootURL))
+                raw(_(core ? "allFixable1Core" : "allFixable1", rootURL))
             } else {
-                raw(_("allFixable", rootURL))
+                raw(_(core ? "allFixableCore" : "allFixable", rootURL))
             }
         }
     } else if (fixables > 0) {
         dd {
-            raw(_("someFixable", rootURL))
+            raw(_(core ? "someFixableCore" : "someFixable", rootURL))
         }
     } else {
         dd {
-            raw(_("noneFixable"))
+            raw(_(core ? "noneFixableCore" : "noneFixable"))
         }
     }
 }
@@ -64,7 +64,7 @@ def listWarnings(warnings) {
 def coreWarnings = my.activeCoreWarnings
 def pluginWarnings = my.activePluginWarningsByPlugin
 
-div(class: "alert alert-danger", role: "alert") {
+div(class: "jenkins-alert jenkins-alert-danger", role: "alert") {
 
     l.isAdmin() {
         form(method: "post", action: "${rootURL}/${my.url}/forward") {
@@ -82,7 +82,7 @@ div(class: "alert alert-danger", role: "alert") {
             dt {
                 text(_("coreTitle", jenkins.model.Jenkins.version))
             }
-            listWarnings(coreWarnings)
+            listWarnings(coreWarnings, true)
         }
     }
     if (!pluginWarnings.isEmpty()) {
@@ -91,7 +91,7 @@ div(class: "alert alert-danger", role: "alert") {
                 dt {
                     a(_("pluginTitle", plugin.displayName, plugin.version), href: plugin.url, rel: 'noopener noreferrer', target: "_blank")
                 }
-                listWarnings(warnings)
+                listWarnings(warnings, false)
             }
         }
     }

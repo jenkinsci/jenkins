@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
-  <div class="alert alert-warning">
+  <div class="jenkins-alert jenkins-alert-warning">
     <l:isAdmin>
       <form method="post" action="${rootURL}/${it.url}/disable">
         <f:submit value="${%Dismiss}"/>

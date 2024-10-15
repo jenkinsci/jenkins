@@ -39,7 +39,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it,attrs.permission)}">
-    <j:set var="artifacts" value="${build.getArtifactsUpTo(build.TREE_CUTOFF+1)}" />
+    <j:set var="artifacts" value="${build.getArtifactsUpTo(build.LIST_CUTOFF+1)}" />
     <j:if test="${!empty(artifacts)}">
       <t:summary icon="symbol-cube" href="${baseURL}artifact/">
         <a href="${baseURL}artifact/">${caption}</a>
@@ -48,67 +48,34 @@ THE SOFTWARE.
             ${%building}
           </p>
         </j:if>
-        <j:choose>
-          <j:when test="${size(artifacts) le build.LIST_CUTOFF}">
-            <!-- if not too many, just list them -->
-            <table class="fileList">
-              <j:forEach var="f" items="${artifacts}">
-                <tr>
-                  <td>
-                    <l:icon class="icon-document icon-sm"/>
-                  </td>
-                  <td>
-                    <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
-                  </td>
-                  <td class="fileSize">
-                    ${h.humanReadableByteSize(f.getFileSize())}
-                  </td>
-                  <td>
-                    <j:if test="${app.fingerprintMap.ready}">
-                      <a href="${baseURL}artifact/${f.href}/*fingerprint*/">
-                        <l:icon class="icon-fingerprint icon-sm"/>
-                      </a>
-                      <st:nbsp/>
-                    </j:if>
-                    <a href="${baseURL}artifact/${f.href}/*view*/">${%view}</a>
-                  </td>
-                </tr>
-              </j:forEach>
-            </table>
-          </j:when>
-          <j:when test="${size(artifacts) le build.TREE_CUTOFF}">
-              <!-- otherwise (unless way too many) use a tree view -->
-              <l:yui module="treeview"/>
-              <link rel="stylesheet" href="${resURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css"/>
-              <style type="text/css">#artifact-tree td { vertical-align:middle; }</style>
-              <br/>
-              <small>
-                <a href="javascript: YAHOO.widget.TreeView.getNode('artifact-tree',1).tree.expandAll()">${%Expand all}</a>
-                <st:nbsp/>
-                <a href="javascript: YAHOO.widget.TreeView.getNode('artifact-tree',1).tree.collapseAll();">${%Collapse all}</a>
-              </small>
-              <div id="artifact-tree"></div>
-              <script language="javascript">// &lt;![CDATA[
-                YAHOO.util.Event.onContentReady('artifact-tree', function () {
-                var artifactTree = new YAHOO.widget.TreeView('artifact-tree');
-                var artifactRoot = new YAHOO.widget.TextNode('${h.jsStringEscape('%View')}',
-                                                             artifactTree.getRoot(), false);
-                <j:forEach var="e" items="${artifacts.getTree().entrySet()}">
-                  <j:set var="f" value="${e.key}"/>
-                  var ${f.treeNodeId} = new YAHOO.widget.TextNode(
-                    '${h.jsStringEscape(f.fileName)}', ${e.value?:'artifactRoot'}, false);
-                        <j:if test="${f.href!=null}">
-                          <!-- Assign href property instead of passing to constructor above,
-                               as constructor does urlencoding, but f.href is already encoded -->
-                          ${f.treeNodeId}.href = '${baseURL}artifact/${h.jsStringEscape(f.href)}';
-                        </j:if>
-                </j:forEach>
-                artifactTree.draw();
-               });
-             // ]]&gt;</script>
-          </j:when>
+        <j:if test="${size(artifacts) le build.LIST_CUTOFF}">
+          <!-- if not too many, just list them -->
+          <table class="fileList">
+            <j:forEach var="f" items="${artifacts}">
+              <tr>
+                <td>
+                  <l:icon class="icon-document icon-sm"/>
+                </td>
+                <td>
+                  <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
+                </td>
+                <td class="fileSize">
+                  ${h.humanReadableByteSize(f.getFileSize())}
+                </td>
+                <td>
+                  <j:if test="${app.fingerprintMap.ready}">
+                    <a href="${baseURL}artifact/${f.href}/*fingerprint*/">
+                      <l:icon class="icon-fingerprint icon-sm"/>
+                    </a>
+                    <st:nbsp/>
+                  </j:if>
+                  <a href="${baseURL}artifact/${f.href}/*view*/">${%view}</a>
+                </td>
+              </tr>
+            </j:forEach>
+          </table>
+        </j:if>
           <!-- otherwise just show link to directory browser -->
-        </j:choose>
       </t:summary>
     </j:if>
   </j:if>

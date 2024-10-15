@@ -1,0 +1,154 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe,
+Stephen Connolly, id:lecric, Alan Harder
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <h2 class="jenkins-dialog__subtitle">${%Status}</h2>
+
+  <dl class="app-icon-legend">
+    <dt>
+      <l:icon src="symbol-status-blue" />
+    </dt>
+    <dd>
+      ${%blue}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-blue-anime" />
+    </dt>
+    <dd>
+      ${%blue_anime}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-yellow" />
+    </dt>
+    <dd>
+      ${%yellow}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-yellow-anime" />
+    </dt>
+    <dd>
+      ${%yellow_anime}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-red" />
+    </dt>
+    <dd>
+      ${%red}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-red-anime" />
+    </dt>
+    <dd>
+      ${%red_anime}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-nobuilt" />
+    </dt>
+    <dd>
+      ${%lightgrey}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-nobuilt-anime" />
+    </dt>
+    <dd>
+      ${%lightgrey_anime}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-aborted" />
+    </dt>
+    <dd>
+      ${%darkgrey}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-aborted-anime" />
+    </dt>
+    <dd>
+      ${%darkgrey_anime}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-disabled" />
+    </dt>
+    <dd>
+      ${%grey}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-disabled-anime" />
+    </dt>
+    <dd>
+      ${%grey_anime}
+    </dd>
+  </dl>
+
+  <h2 class="jenkins-dialog__subtitle">${%Project Health}</h2>
+
+  <dl class="app-icon-legend">
+    <dt>
+      <l:icon src="symbol-weather-icon-health-80plus" />
+    </dt>
+    <dd>
+      ${%health-81plus}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-weather-icon-health-60to79" />
+    </dt>
+    <dd>
+      ${%health-61to80}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-weather-icon-health-40to59" />
+    </dt>
+    <dd>
+      ${%health-41to60}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-weather-icon-health-20to39" />
+    </dt>
+    <dd>
+      ${%health-21to40}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-weather-icon-health-00to19" />
+    </dt>
+    <dd>
+      ${%health-00to20}
+    </dd>
+  </dl>
+</j:jelly>

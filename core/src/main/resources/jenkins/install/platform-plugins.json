@@ -17,7 +17,6 @@
       { "name": "config-file-provider" },
       { "name": "credentials-binding", "suggested": true },
       { "name": "embeddable-build-status" },
-      { "name": "rebuild" },
       { "name": "ssh-agent" },
       { "name": "throttle-concurrents" },
       { "name": "timestamper", "suggested": true },
@@ -36,7 +35,7 @@
   {
     "category": "Build Analysis and Reporting",
     "plugins": [
-      { "name": "cobertura" },
+      { "name": "coverage" },
       { "name": "htmlpublisher" },
       { "name": "junit" },
       { "name": "warnings-ng" },
@@ -49,9 +48,8 @@
       { "name": "workflow-aggregator", "suggested": true, "added": "2.0" },
       { "name": "github-branch-source", "suggested": true, "added": "2.0" },
       { "name": "pipeline-github-lib", "suggested": true, "added": "2.0" },
-      { "name": "pipeline-stage-view", "suggested": true, "added": "2.0" },
+      { "name": "pipeline-graph-view", "suggested": true },
       { "name": "conditional-buildstep" },
-      { "name": "jenkins-multijob-plugin" },
       { "name": "parameterized-trigger" },
       { "name": "copyartifact" }
     ]
@@ -75,8 +73,7 @@
     "category": "Distributed Builds",
     "plugins": [
       { "name": "matrix-project" },
-      { "name": "ssh-slaves", "suggested": true },
-      { "name": "windows-slaves" }
+      { "name": "ssh-slaves", "suggested": true }
     ]
   },
   {
@@ -96,6 +93,10 @@
       { "name": "emailext-template" },
       { "name": "mailer", "suggested": true }
     ]
+  },
+  {
+    "category": "Appearance",
+    "plugins": [{ "name": "dark-theme", "suggested": true }]
   },
   {
     "category": "Languages",

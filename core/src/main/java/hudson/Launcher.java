@@ -24,8 +24,6 @@
 
 package hudson;
 
-import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -63,7 +61,6 @@ import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterRuleWrapper;
 import jenkins.tasks.filters.EnvVarsFilterableBuilder;
 import jenkins.util.MemoryReductionUtil;
-import org.apache.commons.io.input.NullInputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -192,7 +189,7 @@ public abstract class Launcher {
         @CheckForNull
         protected FilePath pwd;
         @CheckForNull
-        protected OutputStream stdout = NULL_OUTPUT_STREAM, stderr;
+        protected OutputStream stdout = OutputStream.nullOutputStream(), stderr;
         @CheckForNull
         private TaskListener stdoutListener;
         @CheckForNull
@@ -1512,7 +1509,7 @@ public abstract class Launcher {
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for debugging")
     public static boolean showFullPath = false;
 
-    private static final NullInputStream NULL_INPUT_STREAM = new NullInputStream(0);
+    private static final InputStream NULL_INPUT_STREAM = InputStream.nullInputStream();
 
     private static final Logger LOGGER = Logger.getLogger(Launcher.class.getName());
 }

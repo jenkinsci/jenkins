@@ -295,9 +295,9 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     public String toStringWithQuote() {
         StringBuilder buf = new StringBuilder();
         for (String arg : args) {
-            if (buf.length() > 0)  buf.append(' ');
+            if (!buf.isEmpty())  buf.append(' ');
 
-            if (arg.indexOf(' ') >= 0 || arg.length() == 0)
+            if (arg.indexOf(' ') >= 0 || arg.isEmpty())
                 buf.append('"').append(arg).append('"');
             else
                 buf.append(arg);
@@ -400,7 +400,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @return true if there are any masked arguments; false otherwise
      */
     public boolean hasMaskedArguments() {
-        return mask.length() > 0;
+        return !mask.isEmpty();
     }
 
     /**
@@ -437,9 +437,9 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
             if (mask.get(i))
                 arg = "******";
 
-            if (buf.length() > 0)  buf.append(' ');
+            if (!buf.isEmpty())  buf.append(' ');
 
-            if (arg.indexOf(' ') >= 0 || arg.length() == 0)
+            if (arg.indexOf(' ') >= 0 || arg.isEmpty())
                 buf.append('"').append(arg).append('"');
             else
                 buf.append(arg);

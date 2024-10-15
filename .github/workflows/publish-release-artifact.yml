@@ -4,19 +4,24 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
   determine-version:
     runs-on: ubuntu-latest
     outputs:
       project-version: ${{ steps.set-version.outputs.project-version }}
       is-lts: ${{ steps.set-version.outputs.is-lts }}
+      is-rc: ${{ steps.set-version.outputs.is-rc }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: 11
+          java-version: 17
+          cache: "maven"
       - name: Set version
         id: set-version
         run: |
@@ -30,13 +35,23 @@ jobs:
             is_lts=false
           fi
 
-          echo "Version is $version, is_lts: $is_lts"
+          is_rc=false
+          if [[ ${version} == *"-SNAPSHOT" ]]; then
+            is_rc=true
+          fi
 
-          echo "::set-output name=is-lts::${is_lts}"
-          echo "::set-output name=project-version::$version"
+          echo "Version is $version, is_lts: $is_lts, is_rc: $is_rc"
+
+          echo "is-lts=${is_lts}" >> $GITHUB_OUTPUT
+          echo "project-version=$version" >> $GITHUB_OUTPUT
+          echo "is-rc=${is_rc}" >> $GITHUB_OUTPUT
   war:
+    permissions:
+      contents: write # to upload release asset (softprops/action-gh-release)
+
     runs-on: ubuntu-latest
     needs: determine-version
+    if: ${{ needs.determine-version.outputs.is-rc == 'false' }}
     steps:
       - name: Fetch war
         id: fetch-war
@@ -45,7 +60,7 @@ jobs:
           PROJECT_VERSION=${{ needs.determine-version.outputs.project-version }}
           IS_LTS=${{ needs.determine-version.outputs.is-lts }}
           echo $PROJECT_VERSION
-          echo "::set-output name=file-name::$FILE_NAME"
+          echo "file-name=$FILE_NAME" >> $GITHUB_OUTPUT
 
           REPO=war
           if [ ${IS_LTS} = 'true' ]
@@ -58,17 +73,18 @@ jobs:
           wget -q https://get.jenkins.io/${REPO}/${PROJECT_VERSION}/${FILE_NAME}
       - name: Upload Release Asset
         id: upload-war
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ steps.fetch-war.outputs.file-name }}
-          asset_name: ${{ steps.fetch-war.outputs.file-name }}
-          asset_content_type: application/java-archive
+          files: ${{ steps.fetch-war.outputs.file-name }}
   debian:
+    permissions:
+      contents: write # to upload release asset (softprops/action-gh-release)
+
     runs-on: ubuntu-latest
     needs: determine-version
+    if: ${{ needs.determine-version.outputs.is-rc == 'false' }}
     steps:
       - name: Fetch Deb
         id: fetch-deb
@@ -78,7 +94,7 @@ jobs:
           echo $PROJECT_VERSION
           FILE_NAME=jenkins_${PROJECT_VERSION}_all.deb
           IS_LTS=${{ needs.determine-version.outputs.is-lts }}
-          echo "::set-output name=file-name::$FILE_NAME"
+          echo "file-name=$FILE_NAME" >> $GITHUB_OUTPUT
 
           REPO=debian
           if [ ${IS_LTS} = 'true' ]
@@ -92,17 +108,18 @@ jobs:
       - name: Upload Release Asset
         id: upload-deb
         if: always()
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ steps.fetch-deb.outputs.file-name }}
-          asset_name: ${{ steps.fetch-deb.outputs.file-name }}
-          asset_content_type: application/vnd.debian.binary-package
+          files: ${{ steps.fetch-deb.outputs.file-name }}
   redhat:
+    permissions:
+      contents: write # to upload release asset (softprops/action-gh-release)
+
     runs-on: ubuntu-latest
     needs: determine-version
+    if: ${{ needs.determine-version.outputs.is-rc == 'false' }}
     steps:
       - name: Fetch RPM
         id: fetch-rpm
@@ -113,7 +130,7 @@ jobs:
           FILE_NAME=jenkins-${PROJECT_VERSION}-1.1.noarch.rpm
           IS_LTS=${{ needs.determine-version.outputs.is-lts }}
 
-          echo "::set-output name=file-name::$FILE_NAME"
+          echo "file-name=$FILE_NAME" >> $GITHUB_OUTPUT
 
           REPO=redhat
           if [ ${IS_LTS} = 'true' ]
@@ -127,17 +144,18 @@ jobs:
       - name: Upload Release Asset
         id: upload-rpm
         if: always()
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ steps.fetch-rpm.outputs.file-name }}
-          asset_name: ${{ steps.fetch-rpm.outputs.file-name }}
-          asset_content_type: application/x-redhat-package-manager
+          files: ${{ steps.fetch-rpm.outputs.file-name }}
   windows:
+    permissions:
+      contents: write # to upload release asset (softprops/action-gh-release)
+
     runs-on: ubuntu-latest
     needs: determine-version
+    if: ${{ needs.determine-version.outputs.is-rc == 'false' }}
     steps:
       - name: Fetch MSI
         id: fetch-msi
@@ -148,7 +166,7 @@ jobs:
           FILE_NAME=jenkins.msi
           IS_LTS=${{ needs.determine-version.outputs.is-lts }}
 
-          echo "::set-output name=file-name::$FILE_NAME"
+          echo "file-name=$FILE_NAME" >> $GITHUB_OUTPUT
 
           REPO=windows
           if [ ${IS_LTS} = 'true' ]
@@ -162,17 +180,18 @@ jobs:
       - name: Upload Release Asset
         id: upload-msi
         if: always()
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ steps.fetch-msi.outputs.file-name }}
-          asset_name: ${{ steps.fetch-msi.outputs.file-name }}
-          asset_content_type: application/octet-stream
+          files: ${{ steps.fetch-msi.outputs.file-name }}
   suse:
+    permissions:
+      contents: write # to upload release asset (softprops/action-gh-release)
+
     runs-on: ubuntu-latest
     needs: determine-version
+    if: ${{ needs.determine-version.outputs.is-rc == 'false' }}
     steps:
       - name: Fetch suse rpm
         id: fetch-suse-rpm
@@ -183,7 +202,7 @@ jobs:
           # we need opensuse to the file 
           OUTPUT_FILE_NAME=jenkins-${PROJECT_VERSION}-1.2-opensuse.noarch.rpm
           IS_LTS=${{ needs.determine-version.outputs.is-lts }}
-          echo "::set-output name=file-name::$OUTPUT_FILE_NAME"
+          echo "file-name=$OUTPUT_FILE_NAME" >> $GITHUB_OUTPUT
 
           REPO=opensuse
           if [ ${IS_LTS} = 'true' ]
@@ -197,11 +216,8 @@ jobs:
       - name: Upload Release Asset
         id: upload-suse-rpm
         if: always()
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ steps.fetch-suse-rpm.outputs.file-name }}
-          asset_name: ${{ steps.fetch-suse-rpm.outputs.file-name }}
-          asset_content_type: application/x-redhat-package-manager
+          files: ${{ steps.fetch-suse-rpm.outputs.file-name }}

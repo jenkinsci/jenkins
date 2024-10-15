@@ -26,12 +26,12 @@ package hudson.diagnosis;
 
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import java.net.URL;
 import java.util.List;
 import jenkins.model.JenkinsLocationConfiguration;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.WebRequest;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

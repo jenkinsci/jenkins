@@ -27,14 +27,16 @@ THE SOFTWARE.
   This is used to achieve the effect of "tail -f"
   without relying on full page reload.
 
-	<%@attribute name="href" required="true" description="URL that returns text data" %>
-	<%@attribute name="idref" required="true" description="ID of the HTML element in which the result is displayed" %>
+	<%@attribute name="href" use="required" description="URL that returns text data" %>
+	<%@attribute name="idref" use="required" description="ID of the HTML element in which the result is displayed" %>
 	<%@attribute name="spinner" required="false" description="ID of the HTML element in which the spinner is displayed" %>
 	<%@attribute name="startOffset" required="false" description="Skip this many bytes rather than showing from start of data" %>
 	<%@attribute name="onFinishEvent" required="false" description="JS custom event to be fired when progress is finished" %>
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="progressiveText-holder" data-href="${href}" data-idref="${idref}" data-spinner="${spinner}" data-start-offset="${startOffset}" data-on-finish-event="${empty(onFinishEvent) ? '' : onFinishEvent}"/>
+  <div class="progressiveText-holder" data-href="${href}" data-idref="${idref}" data-spinner="${spinner}" data-start-offset="${startOffset}"
+       data-on-finish-event="${empty(onFinishEvent) ? '' : onFinishEvent}"
+       data-error-message="${%errorMessage}"/>
   <st:adjunct includes="lib.hudson.progressive-text"/>
 </j:jelly>

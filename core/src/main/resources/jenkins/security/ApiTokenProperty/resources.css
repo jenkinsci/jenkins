@@ -82,7 +82,9 @@
   font-size: 0.75rem;
   color: #6d7680;
 }
-.token-list .token-list-new-item .token-revoke.hidden-button {
+.token-list
+  .token-list-new-item
+  .api-token-property-token-revoke.hidden-button {
   display: none;
 }
 .token-list .token-list-new-item .token-cancel.hidden-button {

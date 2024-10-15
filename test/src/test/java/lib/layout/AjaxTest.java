@@ -24,14 +24,16 @@
 
 package lib.layout;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlLink;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import jenkins.widgets.ExecutorsWidget;
+import jenkins.widgets.HasWidgetHelper;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlLink;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.PresetData;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.kohsuke.stapler.jelly.JellyFacet;
 
 public class AjaxTest {
@@ -40,8 +42,9 @@ public class AjaxTest {
     public JenkinsRule r = new JenkinsRule();
 
     @Issue("JENKINS-21254")
-    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     @Test public void rejectedLinks() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         JenkinsRule.WebClient wc = r.createWebClient();
         String prefix = r.contextPath + '/';
         for (DomElement e : wc.goTo("login").getElementsByTagName("link")) {
@@ -59,7 +62,7 @@ public class AjaxTest {
     @Issue("JENKINS-65288")
     public void ajaxPageRenderingPossibleWithoutJellyTrace() throws Exception {
         JenkinsRule.WebClient wc = r.createWebClient();
-        HtmlPage htmlPage = wc.goTo("ajaxExecutors");
+        HtmlPage htmlPage = wc.goTo(getExecutorsWidgetAjaxViewUrl());
         r.assertGoodStatus(htmlPage);
     }
 
@@ -74,10 +77,14 @@ public class AjaxTest {
             JellyFacet.TRACE = true;
 
             JenkinsRule.WebClient wc = r.createWebClient();
-            HtmlPage htmlPage = wc.goTo("ajaxExecutors");
+            HtmlPage htmlPage = wc.goTo(getExecutorsWidgetAjaxViewUrl());
             r.assertGoodStatus(htmlPage);
         } finally {
             JellyFacet.TRACE = currentValue;
         }
+    }
+
+    private String getExecutorsWidgetAjaxViewUrl() {
+        return HasWidgetHelper.getWidget(r.jenkins.getPrimaryView(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax";
     }
 }

@@ -1,0 +1,11 @@
+<div>
+  Fingeravtrycksregistreringen använder Ant
+  <code>org.apache.tools.ant.DirectoryScanner</code>
+  som är skiftlägeskänslig som standard. Om jobbet t.ex. producerar *.hpi-filer
+  kommer mönstret "**/*.HPI" inte att hitta dem.
+  <br />
+  <br />
+  Detta alternativ kan användas för att inaktivera skiftlägeskänslighet. När
+  detta avmarkeras kommer mönstret "**/*.HPI" och "**/cAsEsEnSiTiVe.jar" att
+  matcha alla *.hpi-filer respektive en fil som heter caseSensitive.jar.
+</div>

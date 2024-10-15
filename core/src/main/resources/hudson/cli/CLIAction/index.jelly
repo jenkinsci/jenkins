@@ -26,14 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout permission="${app.READ}">
     <st:include page="sidepanel.jelly" it="${app}"/>
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
-      <div class="jenkins-app-bar">
-        <div class="jenkins-app-bar__content">
-          <h1>
-            ${%Jenkins CLI}
-          </h1>
-        </div>
-      </div>
+      <l:app-bar title="${%Jenkins CLI}" />
       <p class="jenkins-description">
         ${%blurb(rootURL)}
       </p>

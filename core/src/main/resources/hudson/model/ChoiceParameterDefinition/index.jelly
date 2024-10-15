@@ -28,9 +28,9 @@ THE SOFTWARE.
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
         <j:set var="escapeEntryTitleAndDescription" value="false"/>
         <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
-		<div name="parameter">
-			<input type="hidden" name="name" value="${it.name}" />
-            <select name="value">
+		<div class="jenkins-select" name="parameter">
+            <input type="hidden" name="name" value="${it.name}" />
+            <select class="jenkins-select__input" name="value">
               <j:forEach var="value" items="${it.choices}">
                 <f:option selected="${it.defaultParameterValue.value==value}">${value}</f:option>
               </j:forEach>

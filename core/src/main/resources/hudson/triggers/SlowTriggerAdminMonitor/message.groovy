@@ -8,19 +8,23 @@ import org.apache.commons.jelly.tags.fmt.FmtTagLibrary
 SlowTriggerAdminMonitor tam = my
 
 dl {
-    div(class: "alert alert-warning") {
+    div(class: "jenkins-alert jenkins-alert-warning") {
         form(method: "post", name: "clear", action: rootURL + "/" + tam.url + "/clear") {
-            input(name: "clear", type: "submit", value: _("Dismiss"), class: "submit-button primary")
+            button(name: "clear", type: "submit", class: "jenkins-button jenkins-submit-button jenkins-button--primary") {
+                raw _("Dismiss")
+            }
         }
 
         text(_("blurb"))
 
-        table(class: "pane sortable bigtable", width: "100%") {
-            tr {
-                th(_("Trigger"))
-                th(_("Most Recent Occurrence"))
-                th(_("Most Recently Occurring Job"))
-                th(_("Duration"))
+        table(class: "sortable jenkins-table jenkins-!-margin-top-2", width: "100%") {
+            thead {
+                tr {
+                    th(_("Trigger"))
+                    th(_("Most Recent Occurrence"))
+                    th(_("Most Recently Occurring Job"))
+                    th(_("Duration"))
+                }
             }
 
             tam.errors.each { trigger, val ->
@@ -33,7 +37,7 @@ dl {
                         td(val.fullJobName)
                     } else {
                         td {
-                            a(job.getFullDisplayName(), href: job.getUrl(), class: 'model-link')
+                            a(job.getFullDisplayName(), href: rootURL + '/' + job.getUrl(), class: 'model-link')
                         }
                     }
                     td(Util.getTimeSpanString(val.duration))

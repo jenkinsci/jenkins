@@ -34,24 +34,28 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.fail;
 
+import hudson.XmlFile;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Queue;
 import hudson.model.QueueTest;
 import hudson.util.OneShotEvent;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * @author pjanouse
@@ -63,28 +67,41 @@ public class QuietDownCommandTest {
             = new QueueTest.TestFlyweightTask(new AtomicInteger(), null);
     private static final String TEST_REASON = "test reason";
 
+    private static final String VIEWER = "viewer";
+    private static final String ADMIN = "admin";
+
+    @ClassRule
+    public static final BuildWatcher buildWatcher = new BuildWatcher();
+
     @Rule
     public final JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public final LoggerRule logging = new LoggerRule();
 
     @Before
     public void setUp() {
         command = new CLICommandInvoker(j, "quiet-down");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to(ADMIN).
+            grant(Jenkins.READ).everywhere().to(VIEWER));
     }
 
     @Test
     public void quietDownShouldFailWithoutAdministerPermission() {
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ)
+                .asUser(VIEWER)
                 .invoke();
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: user is missing the Overall/Administer permission"));
+        assertThat(result.stderr(), containsString("ERROR: " + VIEWER + " is missing the Overall/Administer permission"));
     }
 
     @Test
     public void quietDownShouldSuccess() {
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .asUser(ADMIN)
                 .invoke();
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();
@@ -93,7 +110,7 @@ public class QuietDownCommandTest {
     @Test
     public void quietDownShouldSuccessWithBlock() {
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .asUser(ADMIN)
                 .invokeWithArgs("-block");
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();
@@ -102,7 +119,7 @@ public class QuietDownCommandTest {
     @Test
     public void quietDownShouldSuccessWithTimeout() {
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .asUser(ADMIN)
                 .invokeWithArgs("-timeout", "0");
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();
@@ -111,7 +128,7 @@ public class QuietDownCommandTest {
     @Test
     public void quietDownShouldSuccessWithReason() {
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .asUser(ADMIN)
                 .invokeWithArgs("-reason", TEST_REASON);
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();
@@ -121,7 +138,7 @@ public class QuietDownCommandTest {
     @Test
     public void quietDownShouldSuccessWithBlockAndTimeout() {
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .asUser(ADMIN)
                 .invokeWithArgs("-block", "-timeout", "0");
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();
@@ -130,7 +147,7 @@ public class QuietDownCommandTest {
     @Test
     public void quietDownShouldSuccessWithBlockAndTimeoutAndReason() {
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .asUser(ADMIN)
                 .invokeWithArgs("-block", "-timeout", "0", "-reason", TEST_REASON);
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();
@@ -140,7 +157,7 @@ public class QuietDownCommandTest {
     @Test
     public void quietDownShouldFailWithEmptyTimeout() {
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .asUser(ADMIN)
                 .invokeWithArgs("-timeout");
         assertThat(result, failedWith(2));
         assertThat(result, hasNoStandardOutput());
@@ -152,7 +169,7 @@ public class QuietDownCommandTest {
         j.jenkins.doQuietDown();
         assertJenkinsInQuietMode();
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .asUser(ADMIN)
                 .invoke();
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();
@@ -160,10 +177,10 @@ public class QuietDownCommandTest {
 
     @Test
     public void quietDownShouldSuccessWithBlockOnAlreadyQuietDownedJenkins() throws Exception {
-        j.jenkins.doQuietDown(true, 0, null);
+        j.jenkins.doQuietDown(true, 0, null, false);
         assertJenkinsInQuietMode();
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .asUser(ADMIN)
                 .invokeWithArgs("-block");
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();
@@ -171,11 +188,11 @@ public class QuietDownCommandTest {
 
     @Test
     public void quietDownShouldSuccessWithBlockAndTimeoutOnAlreadyQuietDownedJenkins() throws Exception {
-        j.jenkins.doQuietDown(true, 0, null);
+        j.jenkins.doQuietDown(true, 0, null, false);
         assertJenkinsInQuietMode();
         final long time_before = System.currentTimeMillis();
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .asUser(ADMIN)
                 .invokeWithArgs("-block", "-timeout", "20000");
         assertThat(result, succeededSilently());
         assertThat(System.currentTimeMillis() < time_before + 20000, equalTo(true));
@@ -190,18 +207,16 @@ public class QuietDownCommandTest {
     public void quietDownShouldSuccessAndRunningExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .asUser(ADMIN)
                 .invoke();
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
     }
@@ -216,21 +231,17 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         boolean timeoutOccurred = false;
-        final FutureTask exec_task = new FutureTask(new Callable() {
-            @Override
-            public Object call() {
-                assertJenkinsNotInQuietMode();
-                beforeCli.signal();
-                final CLICommandInvoker.Result result = command
-                        .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
-                        .invokeWithArgs("-block");
-                fail("Should never return from previous CLI call!");
-                return null;
-            }
+        final FutureTask exec_task = new FutureTask(() -> {
+            assertJenkinsNotInQuietMode();
+            beforeCli.signal();
+            final CLICommandInvoker.Result result = command
+                    .asUser(ADMIN)
+                    .invokeWithArgs("-block");
+            fail("Should never return from previous CLI call!");
+            return null;
         });
         try {
             threadPool.submit(exec_task);
@@ -244,9 +255,8 @@ public class QuietDownCommandTest {
             fail("Missing timeout for CLI call");
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         exec_task.cancel(true);
         assertJenkinsInQuietMode();
@@ -262,21 +272,17 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         boolean timeoutOccurred = false;
-        final FutureTask exec_task = new FutureTask(new Callable() {
-            @Override
-            public Object call() {
-                assertJenkinsNotInQuietMode();
-                beforeCli.signal();
-                final CLICommandInvoker.Result result = command
-                        .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
-                        .invokeWithArgs("-block", "-timeout", "0");
-                fail("Should never return from previous CLI call!");
-                return null;
-            }
+        final FutureTask exec_task = new FutureTask(() -> {
+            assertJenkinsNotInQuietMode();
+            beforeCli.signal();
+            final CLICommandInvoker.Result result = command
+                    .asUser(ADMIN)
+                    .invokeWithArgs("-block", "-timeout", "0");
+            fail("Should never return from previous CLI call!");
+            return null;
         });
         try {
             threadPool.submit(exec_task);
@@ -290,9 +296,8 @@ public class QuietDownCommandTest {
             fail("Missing timeout for CLI call");
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         exec_task.cancel(true);
         assertJenkinsInQuietMode();
@@ -309,23 +314,19 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
-        final FutureTask exec_task = new FutureTask(new Callable() {
-            @Override
-            public Object call() {
-                assertJenkinsNotInQuietMode();
-                final long time_before = System.currentTimeMillis();
-                beforeCli.signal();
-                final CLICommandInvoker.Result result = command
-                        .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
-                        .invokeWithArgs("-block", "-timeout", Integer.toString(TIMEOUT));
-                assertThat(result, succeededSilently());
-                assertThat(System.currentTimeMillis() > time_before + TIMEOUT, equalTo(true));
-                assertJenkinsInQuietMode();
-                return null;
-            }
+        final FutureTask exec_task = new FutureTask(() -> {
+            assertJenkinsNotInQuietMode();
+            final long time_before = System.currentTimeMillis();
+            beforeCli.signal();
+            final CLICommandInvoker.Result result = command
+                    .asUser(ADMIN)
+                    .invokeWithArgs("-block", "-timeout", Integer.toString(TIMEOUT));
+            assertThat(result, succeededSilently());
+            assertThat(System.currentTimeMillis() > time_before + TIMEOUT, equalTo(true));
+            assertJenkinsInQuietMode();
+            return null;
         });
         threadPool.submit(exec_task);
         beforeCli.block();
@@ -337,9 +338,8 @@ public class QuietDownCommandTest {
         }
         assertThat(exec_task.isDone(), equalTo(true));
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
     }
@@ -355,26 +355,21 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
-        boolean timeoutOccurred = false;
-        final FutureTask exec_task = new FutureTask(new Callable() {
-            @Override
-            public Object call() {
-                assertJenkinsNotInQuietMode();
-                beforeCli.signal();
-                final CLICommandInvoker.Result result = command
-                        .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
-                        .invokeWithArgs("-block", "-timeout", Integer.toString(2 * TIMEOUT));
-                fail("Blocking call shouldn't finish, should be killed by called thread!");
-                return null;
-            }
+        final FutureTask<Void> exec_task = new FutureTask<>(() -> {
+            assertJenkinsNotInQuietMode();
+            beforeCli.signal();
+            final CLICommandInvoker.Result result = command
+                    .asUser(ADMIN)
+                    .invokeWithArgs("-block", "-timeout", Integer.toString(2 * TIMEOUT));
+            fail("Blocking call shouldn't finish, should be killed by called thread!");
+            return null;
         });
         threadPool.submit(exec_task);
         beforeCli.block();
         assertJenkinsInQuietMode();
-        final boolean timeout_occured = false;
+        boolean timeoutOccurred = false;
         try {
             exec_task.get(TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
@@ -384,11 +379,11 @@ public class QuietDownCommandTest {
             fail("Missing timeout for CLI call");
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
+        logging.record(XmlFile.class, Level.FINEST);
     }
 
     //
@@ -401,33 +396,29 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         boolean timeoutOccurred = false;
-        final FutureTask exec_task = new FutureTask(new Callable() {
-            @Override
-            public Object call() {
-                assertJenkinsNotInQuietMode();
-                final long time_before = System.currentTimeMillis();
-                beforeCli.signal();
-                final CLICommandInvoker.Result result = command
-                        .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
-                        .invokeWithArgs("-block");
-                assertThat(result, succeededSilently());
-                assertThat(System.currentTimeMillis() > time_before + 1000, equalTo(true));
-                assertJenkinsInQuietMode();
-                return null;
-            }
+        final FutureTask exec_task = new FutureTask(() -> {
+            assertJenkinsNotInQuietMode();
+            final long time_before = System.currentTimeMillis();
+            beforeCli.signal();
+            final CLICommandInvoker.Result result = command
+                    .asUser(ADMIN)
+                    .invokeWithArgs("-block");
+            assertThat(result, succeededSilently());
+            assertThat(System.currentTimeMillis() > time_before + 1000, equalTo(true));
+            assertJenkinsInQuietMode();
+            return null;
         });
         threadPool.submit(exec_task);
         beforeCli.block();
         assertJenkinsInQuietMode();
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
 
@@ -447,33 +438,28 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
-        final FutureTask exec_task = new FutureTask(new Callable() {
-            @Override
-            public Object call() {
-                assertJenkinsNotInQuietMode();
-                final long time_before = System.currentTimeMillis();
-                beforeCli.signal();
-                final CLICommandInvoker.Result result = command
-                        .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
-                        .invokeWithArgs("-block", "-timeout", Integer.toString(TIMEOUT));
-                assertThat(result, succeededSilently());
-                assertThat(System.currentTimeMillis() > time_before + 1000, equalTo(true));
-                assertThat(System.currentTimeMillis() < time_before + TIMEOUT, equalTo(true));
-                assertJenkinsInQuietMode();
-                return null;
-            }
+        final FutureTask exec_task = new FutureTask(() -> {
+            assertJenkinsNotInQuietMode();
+            final long time_before = System.currentTimeMillis();
+            beforeCli.signal();
+            final CLICommandInvoker.Result result = command
+                    .asUser(ADMIN)
+                    .invokeWithArgs("-block", "-timeout", Integer.toString(TIMEOUT));
+            assertThat(result, succeededSilently());
+            assertThat(System.currentTimeMillis() > time_before + 1000, equalTo(true));
+            assertThat(System.currentTimeMillis() < time_before + TIMEOUT, equalTo(true));
+            assertJenkinsInQuietMode();
+            return null;
         });
         threadPool.submit(exec_task);
         beforeCli.block();
         assertJenkinsInQuietMode();
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
         get(exec_task);

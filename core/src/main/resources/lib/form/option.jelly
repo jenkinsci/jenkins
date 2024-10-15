@@ -23,9 +23,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
-  <st:documentation>
-    &lt;option> tag for the &lt;select> element that takes true/false for selected.
-
+  <st:documentation> <![CDATA[
+    <option> tag for the <select> element that takes true/false for selected.
+    ]]>
     <st:attribute name="value">
       The value to be sent when the form is submitted.
       If omitted, the body of the tag will be placed in the value attribute as well

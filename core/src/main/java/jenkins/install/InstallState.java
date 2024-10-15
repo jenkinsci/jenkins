@@ -37,7 +37,6 @@ import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.Timer;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Jenkins install state.
@@ -152,7 +151,8 @@ public class InstallState implements ExtensionPoint {
         public void initializeState() {
             // Skip this state if a boot script already configured the root URL
             // in case we add more fields in this page, this should be adapted
-            if (StringUtils.isNotBlank(JenkinsLocationConfiguration.getOrDie().getUrl())) {
+            String url = JenkinsLocationConfiguration.getOrDie().getUrl();
+            if (url != null && !url.isBlank()) {
                 InstallUtil.proceedToNextStateFrom(this);
             }
         }
@@ -315,7 +315,7 @@ public class InstallState implements ExtensionPoint {
     @Deprecated
     protected Object readResolve() {
         // If we get invalid state from the configuration, fallback to unknown
-        if (StringUtils.isBlank(name)) {
+        if (name == null || name.isBlank()) {
             LOGGER.log(Level.WARNING, "Read install state with blank name: ''{0}''. It will be ignored", name);
             return UNKNOWN;
         }

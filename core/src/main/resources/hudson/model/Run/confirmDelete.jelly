@@ -28,6 +28,7 @@ THE SOFTWARE.
          xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.fullDisplayName}">
     <st:include page="sidepanel.jelly"/>
+    <l:breadcrumb title="${%Confirm deletion}" />
     <l:main-panel>
       <j:set var="msg" value="${it.whyKeepLog}"/>
       <j:if test="${msg!=null}">
@@ -36,8 +37,8 @@ THE SOFTWARE.
 
       <j:if test="${msg==null}">
         <form method="post" action="doDelete">
-          ${%delete.build(it.displayName)}
-          <f:submit value="${%Yes}"/>
+          <span class="jenkins-!-margin-right-1">${%delete.build(it.displayName)}</span>
+          <f:submit value="${%Delete}" clazz="jenkins-!-destructive-color" />
         </form>
       </j:if>
 

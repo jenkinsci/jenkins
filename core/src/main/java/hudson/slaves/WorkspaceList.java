@@ -310,7 +310,7 @@ public final class WorkspaceList {
      */
     @CheckForNull
     public static FilePath tempDir(FilePath ws) {
-        return ws.sibling(ws.getName() + COMBINATOR + "tmp");
+        return ws.sibling(ws.getName() + TMP_DIR_SUFFIX);
     }
 
     private static final Logger LOGGER = Logger.getLogger(WorkspaceList.class.getName());
@@ -320,4 +320,9 @@ public final class WorkspaceList {
      * @since 2.244
      */
     public static final String COMBINATOR = SystemProperties.getString(WorkspaceList.class.getName(), "@");
+
+    /**
+     * Suffix for temporary folders.
+     */
+    public static final String TMP_DIR_SUFFIX = COMBINATOR + "tmp";
 }

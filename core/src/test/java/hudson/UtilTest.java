@@ -25,9 +25,10 @@
 
 package hudson;
 
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -58,6 +59,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assert;
@@ -246,7 +248,7 @@ public class UtilTest {
             Util.createSymlink(d, buf.toString(), "x", l);
 
             String log = baos.toString(Charset.defaultCharset());
-            if (log.length() > 0)
+            if (!log.isEmpty())
                 System.err.println("log output: " + log);
 
             assertEquals(buf.toString(), Util.resolveSymlink(new File(d, "x")));
@@ -431,6 +433,39 @@ public class UtilTest {
         assertTrue(Util.isSafeToRedirectTo("../.."));
         assertTrue(Util.isSafeToRedirectTo("/#foo"));
         assertTrue(Util.isSafeToRedirectTo("/?foo"));
+    }
+
+    @Test
+    public void loadFile() throws IOException {
+        // Standard character sets
+        assertEquals(
+                "Iñtërnâtiônàlizætiøn",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-utf-8.txt")), StandardCharsets.UTF_8));
+        assertEquals(
+                "Iñtërnâtiônàlizætiøn",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-iso-8859-1.txt")), StandardCharsets.ISO_8859_1));
+        assertEquals(
+                "Iñtërnâtiônàlizætiøn",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-windows-1252.txt")), Charset.forName("windows-1252")));
+
+        // Malformed input is replaced without throwing an exception
+        assertEquals(
+                "Itrntinliztin",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-utf-8.txt")), StandardCharsets.US_ASCII).replaceAll("�", ""));
+        assertEquals(
+                "Itrntinliztin",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-iso-8859-1.txt")), StandardCharsets.US_ASCII).replaceAll("�", ""));
+        assertEquals(
+                "Itrntinliztin",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-windows-1252.txt")), StandardCharsets.US_ASCII).replaceAll("�", ""));
+
+        // Unmappable character is replaced without throwing an exception
+        assertEquals(
+                "foobar",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("foo-0x81-bar.txt")), Charset.forName("windows-1252")).replaceAll("�", ""));
+
+        // Nonexistent file is returned as an empty string without throwing an exception
+        assertEquals("", Util.loadFile(new File("i-do-not-exist"), StandardCharsets.UTF_8));
     }
 
     @Test
@@ -690,6 +725,24 @@ public class UtilTest {
     public void ifOverriddenFailure() {
         AbstractMethodError error = Assert.assertThrows(AbstractMethodError.class, () -> Util.ifOverridden(() -> true, BaseClass.class, DerivedClassFailure.class, "method"));
         assertEquals("The class " + DerivedClassFailure.class.getName() + " must override at least one of the BaseClass.method methods", error.getMessage());
+    }
+
+    @Test
+    public void testGetHexOfSHA256DigestOf() throws IOException {
+        byte[] input = new byte[] {12, 34, 16};
+        String str = Util.getHexOfSHA256DigestOf(input);
+        assertEquals(str, "134fefbd329986726407a5208107ef07c9e33da779f5068bff191733268fe997");
+    }
+
+    @Test
+    public void testGetSHA256DigestOf() {
+        byte[] input = new byte[] {12, 34, 16};
+        byte[] sha256DigestActual = Util.getSHA256DigestOf(input);
+
+        byte[] expected = new byte[]
+                { 19, 79, -17, -67, 50, -103, -122, 114, 100, 7, -91, 32, -127, 7, -17, 7, -55, -29, 61, -89, 121, -11,
+                6, -117, -1, 25, 23, 51, 38, -113, -23, -105};
+        assertArrayEquals(expected, sha256DigestActual);
     }
 
     public static class BaseClass {

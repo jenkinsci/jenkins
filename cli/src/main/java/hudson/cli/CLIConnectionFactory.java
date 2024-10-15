@@ -10,6 +10,7 @@ import java.util.Base64;
  */
 public class CLIConnectionFactory {
     String authorization;
+    boolean noCertificateCheck;
 
     /**
      * For CLI connection that goes through HTTP, sometimes you need
@@ -18,6 +19,16 @@ public class CLIConnectionFactory {
      */
     public CLIConnectionFactory authorization(String value) {
         this.authorization = value;
+        return this;
+    }
+
+    /**
+     * Skip TLS certificate and hostname verification checks.
+     *
+     * @since 2.444
+     */
+    public CLIConnectionFactory noCertificateCheck(boolean value) {
+        this.noCertificateCheck = value;
         return this;
     }
 

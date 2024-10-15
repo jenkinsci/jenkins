@@ -23,12 +23,12 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Binds an enum field to a &lt;select> element.
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    Binds an enum field to a <select> element.
     The body of this tag is evaluated for each enum value,
     which is passed as 'it'.
-
+    ]]>
     <st:attribute name="field">
       Used for databinding. TBD.
     </st:attribute>
@@ -41,7 +41,7 @@ THE SOFTWARE.
     <j:set target="${attrs}" property="field" value="${entry.field}" />
   </j:if>
   <div class="jenkins-select">
-    <select class="jenkins-select__input" name="${attrs.field}">
+    <select disabled="${readOnlyMode ? 'true' : null}" class="jenkins-select__input" name="${attrs.field}">
       <j:forEach var="it" items="${descriptor.getPropertyType(instance,attrs.field).getEnumConstants()}">
         <f:option value="${it.name()}" selected="${instance[attrs.field]!=null ? it==instance[attrs.field] : it.name()==attrs.default}">
           <d:invokeBody />

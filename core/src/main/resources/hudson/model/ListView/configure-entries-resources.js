@@ -1,8 +1,11 @@
 Behaviour.specify("#recurse", "ListView", 0, function (e) {
-  var nestedElements = $$("SPAN.nested");
+  // SPAN.nested is kept for backwards compatability
+  var nestedElements = document.querySelectorAll(
+    ".listview-jobs--nested, SPAN.nested",
+  );
   e.onclick = function () {
-    nestedElements.each(function (el) {
-      e.checked ? el.show() : el.hide();
+    nestedElements.forEach(function (el) {
+      el.style.display = e.checked ? "" : "none";
     });
   };
 });

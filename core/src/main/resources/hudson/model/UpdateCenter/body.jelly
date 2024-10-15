@@ -43,25 +43,11 @@ THE SOFTWARE.
           (${%you can start using the installed plugins right away}) <!-- leave this text in for a while until users are retrained to expect plugins to work right away without restart -->
         </p>
         <l:isAdmin>
-          <div class="grey-anime-preload" style="display:none">
-            <l:icon class="icon-nobuilt-anime icon-md"/>
-            <l:icon class="icon-blue icon-md"/>
-            <l:icon class="icon-red icon-md"/>
-            <l:icon class="icon-nobuilt icon-md"/>
-          </div>
-          <p class="info jenkins-checkbox" style="font-weight: normal">
-            <j:if test="${app.lifecycle.canRestart()}">
-              <j:if test="${app.isQuietingDown() or it.isRestartScheduled()}">
-                <input id="scheduleRestartCheckbox" type="checkbox" checked="checked" />
-              </j:if>
-              <j:if test="${!app.isQuietingDown() and !it.isRestartScheduled()}">
-                <input id="scheduleRestartCheckbox" type="checkbox" />
-              </j:if>
-            </j:if>
-            <label for="scheduleRestartCheckbox">
-              ${%warning}
-            </label>
-          </p>
+          <j:if test="${app.lifecycle.canRestart()}">
+            <p class="info">
+              <f:checkbox checked="${app.isQuietingDown() or it.isRestartScheduled()}" id="scheduleRestartCheckbox" name="scheduleRestart" title="${%warning}" />
+            </p>
+          </j:if>
         </l:isAdmin>
       </form>
     </div>

@@ -4,12 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import hudson.ExtensionList;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Describable;
@@ -20,12 +14,18 @@ import java.util.List;
 import java.util.Objects;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSelect;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Tests the 'rowvg-start' and 'rowvg-end' CSS attributes and their effects.
@@ -162,7 +162,7 @@ public class RowVisibilityGroupTest {
         public Drink drink;
         private Beer beer;
 
-        public void doSubmitTest2(StaplerRequest req) throws Exception {
+        public void doSubmitTest2(StaplerRequest2 req) throws Exception {
             JSONObject json = req.getSubmittedForm();
             System.out.println(json);
             beer = (Beer) req.bindJSON(Drink.class, json.getJSONObject("drink"));

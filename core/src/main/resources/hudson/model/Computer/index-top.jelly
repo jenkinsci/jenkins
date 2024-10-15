@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <!-- Node description -->
+  <t:editableDescription permission="${it.CONFIGURE}" description="${it.node.nodeDescription}" hideButton="true" />
+</j:jelly>

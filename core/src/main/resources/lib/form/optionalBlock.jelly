@@ -23,23 +23,25 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <st:documentation>
     Foldable block that can be expanded to show more controls by checking the checkbox.
 
-    <st:attribute name="name">
+    <st:attribute name="name"> <![CDATA[
       Name of the checkbox. Can be used by the server to determine
       if the block is collapsed or expanded at the time of submission.
 
       Note that when the block is collapsed, none of its child controls will send
-      the values to the server (unlike &lt;f:advanced>)
+      the values to the server (unlike <f:advanced>)
+      ]]>
     </st:attribute>
-    <st:attribute name="title">
+    <st:attribute name="title"> <![CDATA[
       Human readable text that follows the checkbox.
 
-      If this field is null, the checkbox degrades to a &lt;f:rowSet>, which provides
+      If this field is null, the checkbox degrades to a <f:rowSet>, which provides
       a grouping at JSON level but on the UI there's no checkbox (and you always see
       the body of it.)
+        ]]>
     </st:attribute>
     <st:attribute name="field">
       Used for databinding. TBD. Either this or @name/@title combo is required.
@@ -47,9 +49,10 @@ THE SOFTWARE.
     <st:attribute name="checked">
       initial checkbox status. true/false.
     </st:attribute>
-    <st:attribute name="help">
+    <st:attribute name="help"> <![CDATA[
       If present, the (?) icon will be rendered on the right to show inline help.
-      See @help for &lt;f:entry>.
+      See @help for <f:entry>.
+      ]]>
     </st:attribute>
     <st:attribute name="negative">
       if present, the foldable section expands when the checkbox is unchecked.

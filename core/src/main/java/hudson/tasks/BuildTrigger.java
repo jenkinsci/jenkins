@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -68,12 +69,11 @@ import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.triggers.ReverseBuildTrigger;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -114,7 +114,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
     @DataBoundConstructor
     public BuildTrigger(String childProjects, String threshold) {
-        this(childProjects, Result.fromString(StringUtils.defaultString(threshold, Result.SUCCESS.toString())));
+        this(childProjects, Result.fromString(Objects.toString(threshold, Result.SUCCESS.toString())));
     }
 
     public BuildTrigger(String childProjects, Result threshold) {
@@ -385,7 +385,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         }
 
         @Override
-        public BuildTrigger newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public BuildTrigger newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             String childProjectsString = formData.getString("childProjects").trim();
             if (childProjectsString.endsWith(",")) {
                 childProjectsString = childProjectsString.substring(0, childProjectsString.length() - 1).trim();
@@ -418,7 +418,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             boolean hasProjects = false;
             while (tokens.hasMoreTokens()) {
                 String projectName = tokens.nextToken().trim();
-                if (StringUtils.isNotBlank(projectName)) {
+                if (projectName != null && !projectName.isBlank()) {
                     Item item = Jenkins.get().getItem(projectName, project, Item.class);
                     if (item == null) {
                         Job<?, ?> nearest = Items.findNearest(Job.class, projectName, project.getParent());

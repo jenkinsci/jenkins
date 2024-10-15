@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.URL;
-import javax.servlet.http.HttpServletResponse;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;

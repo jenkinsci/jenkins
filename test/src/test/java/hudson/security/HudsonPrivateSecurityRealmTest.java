@@ -38,31 +38,35 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
-import com.gargoylesoftware.htmlunit.util.Cookie;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.User;
+import hudson.security.HudsonPrivateSecurityRealm.Details;
 import hudson.security.pages.SignupPage;
 import java.lang.reflect.Field;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
-import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.seed.UserSeedProperty;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.Matcher;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPasswordInput;
+import org.htmlunit.util.Cookie;
+import org.htmlunit.util.NameValuePair;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -70,14 +74,22 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.mindrot.jbcrypt.BCrypt;
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
 
+    // the PBKDF encoded form of "password" without the quotes
+    private static final String PBKDF_ENDOCED_PASSWORD =
+            "$PBKDF2$HMACSHA512:210000:ffbb207b847010af98cdd2b09c79392c$f67c3b985daf60db83a9088bc2439f7b77016d26c1439a9877c4f863c377272283ce346edda4578a5607ea620a4beb662d853b800f373297e6f596af797743a6";
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public LoggerRule lr = new LoggerRule().record(HudsonPrivateSecurityRealm.class, Level.WARNING).capture(5);
 
     private SpySecurityListenerImpl spySecurityListener;
 
@@ -143,7 +155,8 @@ public class HudsonPrivateSecurityRealmTest {
     @Issue("SECURITY-243")
     @Test
     public void fullNameCollisionToken() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
 
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
@@ -343,7 +356,7 @@ public class HudsonPrivateSecurityRealmTest {
         info.password2 = login;
         info.fullname = StringUtils.capitalize(login);
 
-        WebRequest request = new WebRequest(new URL(wc.getContextPath() + "securityRealm/createFirstAccount"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(wc.getContextPath() + "securityRealm/createFirstAccount").toURL(), HttpMethod.POST);
         request.setRequestParameters(Arrays.asList(
                 new NameValuePair("username", login),
                 new NameValuePair("password1", login),
@@ -374,11 +387,11 @@ public class HudsonPrivateSecurityRealmTest {
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Form must be present"));
 
-        form.getInputByName("username").setValueAttribute(login);
-        form.getInputByName("password1").setValueAttribute(login);
-        form.getInputByName("password2").setValueAttribute(login);
-        form.getInputByName("fullname").setValueAttribute(StringUtils.capitalize(login));
-        form.getInputByName("email").setValueAttribute(login + "@" + login + ".com");
+        form.getInputByName("username").setValue(login);
+        form.getInputByName("password1").setValue(login);
+        form.getInputByName("password2").setValue(login);
+        form.getInputByName("fullname").setValue(StringUtils.capitalize(login));
+        form.getInputByName("email").setValue(login + "@" + login + ".com");
 
         HtmlPage p = j.submit(form);
         assertEquals(200, p.getWebResponse().getStatusCode());
@@ -510,6 +523,7 @@ public class HudsonPrivateSecurityRealmTest {
 
         XmlPage w2 = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w2, hasXPath("//name", is("user_hashed")));
+        assertThat(lr, not(hasIncorrectHashingLogEntry()));
     }
 
     @Test
@@ -637,7 +651,7 @@ public class HudsonPrivateSecurityRealmTest {
         wc_anotherTab.login(alice.getId());
         assertUserConnected(wc_anotherTab, alice.getId());
 
-        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
         HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
         HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
 
@@ -669,7 +683,7 @@ public class HudsonPrivateSecurityRealmTest {
         wc_anotherTab.login(alice.getId());
         assertUserConnected(wc_anotherTab, alice.getId());
 
-        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
         // not changing password this time
         HtmlForm form = configurePage.getFormByName("config");
         j.submit(form);
@@ -699,7 +713,7 @@ public class HudsonPrivateSecurityRealmTest {
             wc_anotherTab.login(alice.getId());
             assertUserConnected(wc_anotherTab, alice.getId());
 
-            HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
+            HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
             HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
             HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
 
@@ -714,6 +728,40 @@ public class HudsonPrivateSecurityRealmTest {
         } finally {
             UserSeedProperty.DISABLE_USER_SEED = previousConfig;
         }
+    }
+
+    @Test
+    public void userLoginAfterDisablingFIPS() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User u1 = securityRealm.createAccount("user", "password");
+        u1.setFullName("A User");
+        // overwrite the password property using an password created using an incorrect algorithm
+        u1.addProperty(Details.fromHashedPassword(PBKDF_ENDOCED_PASSWORD));
+
+        u1.save();
+        assertThat(u1.getProperty(Details.class).getPassword(), is(PBKDF_ENDOCED_PASSWORD));
+
+        try (WebClient wc = j.createWebClient()) {
+            assertThrows(FailingHttpStatusCodeException.class, () -> wc.login("user", "password"));
+        }
+        assertThat(lr, hasIncorrectHashingLogEntry());
+    }
+
+    @Test
+    public void userCreationWithPBKDFPasswords() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+
+        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
+                () -> securityRealm.createAccountWithHashedPassword("user_hashed_incorrect_algorithm", PBKDF_ENDOCED_PASSWORD));
+        assertThat(illegalArgumentException.getMessage(),
+                is("The hashed password was hashed with an incorrect algorithm. Jenkins is expecting #jbcrypt:"));
+    }
+
+    private static Matcher<LoggerRule> hasIncorrectHashingLogEntry() {
+        return LoggerRule.recorded(is(
+                "A password appears to be stored (or is attempting to be stored) that was created with a different hashing/encryption algorithm, check the FIPS-140 state of the system has not changed inadvertently"));
     }
 
     private User prepareRealmAndAlice() throws Exception {

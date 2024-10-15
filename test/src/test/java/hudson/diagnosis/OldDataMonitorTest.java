@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -93,7 +92,7 @@ public class OldDataMonitorTest {
     /**
      * Note that this doesn't actually run slowly, it just ensures that
      * the {@link OldDataMonitor#changeListener}'s {@code onChange()} can complete
-     * while {@link OldDataMonitor#doDiscard(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)}
+     * while {@link OldDataMonitor#doDiscard(org.kohsuke.stapler.StaplerRequest2, org.kohsuke.stapler.StaplerResponse2)}
      * is still running.
      *
      */
@@ -103,26 +102,20 @@ public class OldDataMonitorTest {
         final OldDataMonitor oldDataMonitor = OldDataMonitor.get(r.jenkins);
         final CountDownLatch ensureEntry = new CountDownLatch(1);
         final CountDownLatch preventExit = new CountDownLatch(1);
-        Saveable slowSavable = new Saveable() {
-            @Override
-            public void save() {
-                try {
-                    ensureEntry.countDown();
-                    preventExit.await();
-                } catch (InterruptedException e) {
-                }
+        Saveable slowSavable = () -> {
+            try {
+                ensureEntry.countDown();
+                preventExit.await();
+            } catch (InterruptedException e) {
             }
         };
 
         OldDataMonitor.report(slowSavable, (String) null);
         ExecutorService executors = Executors.newSingleThreadExecutor();
 
-        Future<Void> discardFuture = executors.submit(new Callable<>() {
-            @Override
-            public Void call() {
-                oldDataMonitor.doDiscard(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
-                return null;
-            }
+        Future<Void> discardFuture = executors.submit(() -> {
+            oldDataMonitor.doDiscard(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
+            return null;
         });
 
         ensureEntry.await();
@@ -130,7 +123,7 @@ public class OldDataMonitorTest {
         File xml = File.createTempFile("OldDataMonitorTest.slowDiscard", "xml");
         xml.deleteOnExit();
         OldDataMonitor.changeListener
-                .onChange(new Saveable() { @Override public void save() {} },
+                .onChange(() -> {},
                         new XmlFile(xml));
 
         preventExit.countDown();

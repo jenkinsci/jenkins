@@ -26,7 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} Config">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Edit Build Information}" />
     <l:main-panel>
+      <l:app-bar title="${%Edit Build Information}" />
       <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="readOnlyMode" value="${!h.hasPermission(it,it.UPDATE)}"/>
@@ -36,17 +38,8 @@ THE SOFTWARE.
         <f:entry title="${%Description}" help="/help/run-config/description.html">
           <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
-
-        <j:if test="${h.hasPermission(it,it.UPDATE)}">
-          <f:bottomButtonBar>
-            <f:submit value="${%Save}" />
-            <f:apply />
-          </f:bottomButtonBar>
-        </j:if>
+        <f:saveApplyBar/>
       </f:form>
-      <j:if test="${h.hasPermission(it,it.UPDATE)}">
-        <st:adjunct includes="lib.form.confirm" />
-      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

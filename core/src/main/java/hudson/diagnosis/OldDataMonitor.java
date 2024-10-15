@@ -57,6 +57,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -64,8 +65,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -217,7 +218,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
                 buf.append(e.getClass().getSimpleName()).append(": ").append(e.getMessage());
             }
         }
-        if (buf.length() == 0) return;
+        if (buf.isEmpty()) return;
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) { // Need this path, at least for unit tests, but also in case of very broken startup
             // Startup failed, something is very broken, so report what we can.
@@ -309,7 +310,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
     @RequirePOST
-    public HttpResponse doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public HttpResponse doAct(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (req.hasParameter("no")) {
             disable(true);
             return HttpResponses.redirectViaContextPath("/manage");
@@ -323,7 +324,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Remove those items from the data map.
      */
     @RequirePOST
-    public HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) {
+    public HttpResponse doUpgrade(StaplerRequest2 req, StaplerResponse2 rsp) {
         final String thruVerParam = req.getParameter("thruVer");
         final VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
 
@@ -340,7 +341,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Remove those items from the data map.
      */
     @RequirePOST
-    public HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
+    public HttpResponse doDiscard(StaplerRequest2 req, StaplerResponse2 rsp) {
         saveAndRemoveEntries(entry -> entry.getValue().max == null);
 
         return HttpResponses.forwardToPreviousPage();
@@ -376,7 +377,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         data.keySet().removeAll(removed);
     }
 
-    public HttpResponse doIndex(StaplerResponse rsp) throws IOException {
+    public HttpResponse doIndex(StaplerResponse2 rsp) throws IOException {
         return new HttpRedirect("manage");
     }
 
@@ -454,7 +455,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
         @Override
         public String getIconFileName() {
-            return "symbol-cube";
+            return "symbol-trash-bin";
         }
 
         @Override
@@ -470,6 +471,15 @@ public class OldDataMonitor extends AdministrativeMonitor {
         @Override
         public String getDisplayName() {
             return Messages.OldDataMonitor_DisplayName();
+        }
+
+        @Override
+        public Badge getBadge() {
+            int size = get(Jenkins.get()).data.size();
+            if (size > 0) {
+                return new Badge(Integer.toString(size), Messages.OldDataMonitor_OldDataTooltip(), Badge.Severity.WARNING);
+            }
+            return null;
         }
     }
 }

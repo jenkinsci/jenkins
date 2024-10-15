@@ -27,16 +27,19 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-<l:layout title="${%All Jenkins Logs}">
+<l:layout title="${%All Jenkins Logs}" type="one-column">
   <l:breadcrumb title="${%All Jenkins Logs}" />
   <l:main-panel>
-    <h1>${%All Jenkins Logs}</h1>
-    <div class="alert alert-info">
-      Log messages at a level lower than INFO are never recorded in the Jenkins log. Use <a href=".">log recorders</a> to record these log messages.
+    <l:app-bar title="${%All Jenkins Logs}">
+      <l:overflowButton icon="symbol-rss" text="${%Atom feed}" tooltip="${null}">
+        <st:include page="feeds.jelly" />
+      </l:overflowButton>
+    </l:app-bar>
+
+    <div class="jenkins-alert jenkins-alert-info">
+      Log messages at a level more verbose than INFO (i.e., CONFIG, FINE, FINER, FINEST) are never recorded in the Jenkins log. Use <a href=".">log recorders</a> to record these log messages.
     </div>
     <t:logRecords logRecords="${h.logRecords}"/>
-
-    <st:include page="feeds.jelly" />
   </l:main-panel>
 </l:layout>
 </j:jelly>
