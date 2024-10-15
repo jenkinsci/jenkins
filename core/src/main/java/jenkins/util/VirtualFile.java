@@ -328,7 +328,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         private static void collectFiles(VirtualFile d, Collection<String> names, String prefix) throws IOException {
             for (VirtualFile child : d.list()) {
                 names.add(prefix + child.getName());
-                collectFiles(child, names, prefix + child.getName() + "/");
+                if (child.isDirectory()) {
+                    collectFiles(child, names, prefix + child.getName() + "/");
+                }
             }
         }
     }
