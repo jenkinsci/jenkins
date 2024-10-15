@@ -264,6 +264,9 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         setNodeName(name);
     }
 
+    /**
+     * @return true if this node has a temporary offline cause set.
+     */
     boolean isTemporarilyOffline() {
         return temporaryOfflineCause != null;
     }

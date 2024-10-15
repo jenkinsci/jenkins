@@ -170,6 +170,9 @@ public abstract class OfflineCause {
             ;
         }
 
+        /**
+         * @return the message that was provided when the computer was taken offline
+         */
         public String getMessage() {
             return message;
         }
