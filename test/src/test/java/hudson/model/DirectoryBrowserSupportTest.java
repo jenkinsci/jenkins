@@ -30,7 +30,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
@@ -685,9 +684,11 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasItems(
+            assertThat(entryNames, containsInAnyOrder(
                     p.getName() + "/intermediateFolder/public2.key",
-                    p.getName() + "/public1.key"
+                    p.getName() + "/public1.key",
+                    p.getName() + "/intermediateFolder/",
+                    p.getName() + "/intermediateFolder/otherFolder/"
             ));
         }
         { // workaround for JENKINS-19947 is still supported, i.e. no parent folder
@@ -695,9 +696,12 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasItems(
+            assertThat(entryNames, containsInAnyOrder(
                     "intermediateFolder/public2.key",
-                    "public1.key"
+                    "public1.key",
+                    "intermediateFolder/",
+                    "intermediateFolder/otherFolder/"
+
             ));
         }
         { // all the outside folders / files are not included in the zip
@@ -705,14 +709,14 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasItems("intermediateFolder/public2.key"));
+            assertThat(entryNames, containsInAnyOrder("intermediateFolder/public2.key", "intermediateFolder/otherFolder/"));
         }
         { // workaround for JENKINS-19947 is still supported, i.e. no parent folder, even inside a sub-folder
             Page zipPage = wc.goTo(p.getUrl() + "ws/intermediateFolder/**/*zip*/intermediateFolder.zip", null);
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasItems("public2.key"));
+            assertThat(entryNames, containsInAnyOrder("public2.key", "otherFolder/"));
         }
     }
 
@@ -915,9 +919,11 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasItems(
+            assertThat(entryNames, containsInAnyOrder(
                     p.getName() + "/intermediateFolder/public2.key",
-                    p.getName() + "/public1.key"
+                    p.getName() + "/public1.key",
+                    p.getName() + "/intermediateFolder/",
+                    p.getName() + "/intermediateFolder/otherFolder/"
             ));
         }
         { // all the outside folders / files are not included in the zip
@@ -925,7 +931,7 @@ public class DirectoryBrowserSupportTest {
             assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
 
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasItems("intermediateFolder/public2.key"));
+            assertThat(entryNames, containsInAnyOrder("intermediateFolder/public2.key", "intermediateFolder/otherFolder/"));
         }
         // Explicitly delete everything including junctions, which TemporaryDirectoryAllocator.dispose may have trouble with:
         new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds("cmd", "/c", "rmdir", "/s", "/q", j.jenkins.getRootDir().getAbsolutePath()).start().join();
@@ -1271,9 +1277,11 @@ public class DirectoryBrowserSupportTest {
 
         List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
         assertThat(entryNames, hasSize(4));
-        assertThat(entryNames, hasItems(
+        assertThat(entryNames, containsInAnyOrder(
                 "test0/anotherDir/one.txt",
-                "test0/anotherDir/insideDir/two.txt"
+                "test0/anotherDir/insideDir/two.txt",
+                "test0/anotherDir/",
+                "test0/anotherDir/insideDir/"
         ));
 
         zipPage = wc.goTo("job/" + p.getName() + "/ws/anotherDir/*zip*/" + p.getName(), null);
@@ -1281,9 +1289,10 @@ public class DirectoryBrowserSupportTest {
 
         entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
         assertThat(entryNames, hasSize(3));
-        assertThat(entryNames, hasItems(
+        assertThat(entryNames, containsInAnyOrder(
                 "anotherDir/one.txt",
-                "anotherDir/insideDir/two.txt"
+                "anotherDir/insideDir/two.txt",
+                "anotherDir/insideDir/"
         ));
     }
 
