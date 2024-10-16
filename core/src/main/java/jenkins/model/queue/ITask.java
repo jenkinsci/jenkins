@@ -32,7 +32,7 @@ import hudson.security.AccessControlled;
 /**
  * A task that can be displayed in the executors widget.
  *
- * @since TODO
+ * @since 2.480
  */
 public interface ITask extends ModelObject {
     /**

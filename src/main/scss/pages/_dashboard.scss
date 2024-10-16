@@ -180,3 +180,17 @@ $min-button-size: 36px;
     height: 1rem;
   }
 }
+
+div.listview-jobs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  &--nested {
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid color-mix(in sRGB, var(--input-border), transparent);
+    margin-left: 10px;
+    padding-left: 22px;
+  }
+}

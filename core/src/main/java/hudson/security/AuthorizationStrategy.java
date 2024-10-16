@@ -162,7 +162,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * Default implementation delegates to {@link #getACL(Computer)} if the computer is an instance of {@link Computer},
      * otherwise it will fall back to {@link #getRootACL()}.
      *
-     * @since TODO
+     * @since 2.480
      **/
     public @NonNull ACL getACL(@NonNull IComputer computer) {
         if (computer instanceof Computer c) {
