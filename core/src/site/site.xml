@@ -40,7 +40,7 @@
     <skin>
         <groupId>org.apache.maven.skins</groupId>
         <artifactId>maven-fluido-skin</artifactId>
-        <version>1.12.0</version>
+        <version>2.0.0-M11</version>
     </skin>
     <custom>
         <matomo>
