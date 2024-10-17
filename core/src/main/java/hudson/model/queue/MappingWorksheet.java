@@ -405,6 +405,6 @@ public class MappingWorksheet {
 
         public abstract boolean isAvailable();
 
-        protected abstract void set(WorkUnit p) throws UnsupportedOperationException;
+        protected abstract void set(WorkUnit p);
     }
 }
