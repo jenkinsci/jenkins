@@ -1,0 +1,176 @@
+@use "../abstracts/mixins";
+
+.jenkins-command-palette__dialog {
+  &::backdrop {
+    background: var(--command-palette-backdrop-background);
+    backdrop-filter: contrast(0.7) brightness(0.9) saturate(1.25) blur(3px);
+    animation: jenkins-modal-backdrop-animate-in 0.3s;
+  }
+}
+
+.jenkins-command-palette__dialog {
+  background: none;
+  border: none;
+  height: 100vw !important;
+  max-height: 100vh !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.jenkins-command-palette__wrapper {
+  width: 100%;
+  height: 100%;
+  max-height: 100vh;
+  overflow: scroll;
+  padding-top: 20vh;
+}
+
+.jenkins-command-palette {
+  position: relative;
+  width: 50vw;
+  min-width: 400px;
+  max-width: 650px;
+  color: var(--text-color);
+  pointer-events: auto;
+  margin: 0 auto 20vh;
+
+  &__search {
+    --search-bar-height: 3rem !important;
+
+    background: transparent;
+    box-shadow:
+      0 0 0 20px transparent,
+      var(--command-palette-inset-shadow);
+    margin-bottom: 1.5rem;
+    border-radius: 1rem;
+    transition: var(--standard-transition);
+    z-index: 10;
+    backdrop-filter: var(--command-palette-results-backdrop-filter);
+    max-width: unset;
+
+    input {
+      background: transparent !important;
+      border-radius: inherit;
+
+      &::before,
+      &::after {
+        border-radius: inherit;
+      }
+    }
+
+    &::before {
+      content: unset;
+    }
+  }
+
+  &__results-container {
+    display: flex;
+    flex-direction: column;
+    border-radius: 1rem;
+    backdrop-filter: var(--command-palette-results-backdrop-filter);
+    box-shadow: var(--command-palette-inset-shadow);
+    height: 0;
+    transition: height var(--standard-transition);
+    overflow: hidden;
+    will-change: height;
+  }
+
+  &__results {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+
+    &__heading {
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin: 0;
+      padding: 0.75rem 0.75rem 0.625rem;
+      color: var(--text-color-secondary);
+
+      &:not(:first-of-type) {
+        padding-top: 2rem;
+      }
+    }
+
+    &__item {
+      @include mixins.item;
+
+      --item-background--hover: color-mix(
+        in sRGB,
+        var(--text-color-secondary) 15%,
+        transparent
+      );
+      --item-background--active: color-mix(
+        in sRGB,
+        var(--text-color-secondary) 20%,
+        transparent
+      );
+
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      background: transparent;
+      padding: 0.75rem;
+      border-radius: 0.66rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-color) !important;
+      transition: var(--standard-transition);
+      box-shadow: 0 0 0 10px transparent;
+      border: none;
+      outline: none;
+
+      &--hover {
+        &::before {
+          background-color: var(--item-background--hover);
+        }
+      }
+
+      &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.4rem;
+        height: 1.4rem;
+        margin-right: 12.5px;
+        overflow: hidden;
+        pointer-events: none;
+        color: var(--text-color);
+
+        svg,
+        img {
+          width: 1.2rem;
+          height: 1.2rem;
+        }
+      }
+
+      &__description {
+        opacity: 0.5;
+        margin-left: 1ch;
+      }
+
+      &__chevron {
+        position: absolute;
+        top: calc(50% - 8px);
+        right: 12.5px;
+        width: 16px;
+        height: 16px;
+        opacity: 0.5;
+      }
+    }
+  }
+
+  &__info {
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin: 0;
+    padding: 12.5px 12.5px 10px;
+    color: var(--text-color);
+
+    span {
+      color: var(--text-color-secondary);
+    }
+  }
+}

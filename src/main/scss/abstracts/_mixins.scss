@@ -59,6 +59,7 @@
 @mixin item {
   position: relative;
   z-index: 0;
+  text-decoration: none !important;
   border-radius: 0.66rem;
 
   &::before,
