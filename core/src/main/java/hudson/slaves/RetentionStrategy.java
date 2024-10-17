@@ -272,6 +272,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
                     c.connect(false);
+                } else if (c.getOfflineCause() == null) {
+                    c.setOfflineCause(new OfflineCause.IdleOfflineCause());
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();

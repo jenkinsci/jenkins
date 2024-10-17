@@ -128,6 +128,30 @@ public class ComputerTest {
         verifyOfflineCause(computer);
     }
 
+    @Test
+    public void offlineCauseRemainsAfterTemporaryCauseRemoved() throws Exception {
+        var agent = j.createSlave();
+        var computer = agent.toComputer();
+        var initialOfflineCause = new OfflineCause.UserCause(User.getOrCreateByIdOrFullName("username"), "Initial cause");
+        computer.setOfflineCause(initialOfflineCause);
+        assertThat(computer.getOfflineCause(), equalTo(initialOfflineCause));
+        var temporaryCause = new OfflineCause.UserCause(User.getOrCreateByIdOrFullName("username"), "msg");
+        computer.setTemporarilyOffline(true, temporaryCause);
+        assertThat(computer.getOfflineCause(), equalTo(temporaryCause));
+        computer.setTemporarilyOffline(false, null);
+        assertThat(computer.getOfflineCause(), equalTo(initialOfflineCause));
+    }
+
+    @Test
+    public void computerIconDependsOnOfflineCause() throws Exception {
+        var agent = j.createSlave();
+        var computer = agent.toComputer();
+        assertThat(computer.getIcon(), equalTo("symbol-computer-offline"));
+        var cause = new OfflineCause.IdleOfflineCause();
+        computer.setOfflineCause(cause);
+        assertThat(computer.getIcon(), equalTo(cause.getComputerIcon()));
+    }
+
     @Test @LocalData
     public void removeUserDetailsFromOfflineCause() throws Exception {
         Computer computer = j.jenkins.getComputer("deserialized");
