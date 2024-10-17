@@ -1303,14 +1303,17 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
             return formField;
         }
 
+        private String errorMessage() {
+            return getFormField() + ": " + getMessage();
+        }
+
         @Override
         public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
             if (FormApply.isApply(req)) {
-                FormApply.applyResponse("notificationBar.show(" + quote(getMessage()) + ",notificationBar.ERROR)")
+                FormApply.applyResponse("notificationBar.show(" + quote(errorMessage()) + ",notificationBar.ERROR)")
                         .generateResponse(req, rsp, node);
             } else {
-                // for now, we can't really use the field name that caused the problem.
-                new Failure(getMessage()).generateResponse(req, rsp, node, getCause());
+                new Failure(errorMessage()).generateResponse(req, rsp, node, getCause());
             }
         }
     }
