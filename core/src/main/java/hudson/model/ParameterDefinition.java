@@ -99,7 +99,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 @ExportedBean(defaultVisibility = 3)
 public abstract class ParameterDefinition implements
         Describable<ParameterDefinition>, ExtensionPoint, Serializable {
-
+    private static final long serialVersionUID = 1L;
     private final String name;
 
     private String description;
