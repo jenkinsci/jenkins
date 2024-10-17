@@ -32,6 +32,7 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import java.util.List;
 import java.util.concurrent.Future;
+import jenkins.agents.IOfflineCause;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
@@ -92,6 +93,12 @@ public interface IComputer extends AccessControlled {
     }
 
     /**
+     * @return the offline cause if the computer is offline.
+     * @since TODO
+     */
+    IOfflineCause getOfflineCause();
+
+    /**
      * If the computer was offline (either temporarily or not),
      * this method will return the cause as a string (without user info).
      * <p>
@@ -101,7 +108,12 @@ public interface IComputer extends AccessControlled {
      *      empty string if the system was put offline without given a cause.
      */
     @NonNull
-    String getOfflineCauseReason();
+    default String getOfflineCauseReason() {
+        if (getOfflineCause() == null) {
+            return "";
+        }
+        return getOfflineCause().getReason();
+    }
 
     /**
      * @return true if the node is currently connecting to the Jenkins controller.
@@ -115,12 +127,45 @@ public interface IComputer extends AccessControlled {
      *
      * @see #getIconClassName()
      */
-    String getIcon();
+    default String getIcon() {
+        // The computer is not accepting tasks, e.g. because the availability demands it being offline.
+        if (!isAcceptingTasks()) {
+            return "symbol-computer-not-accepting";
+        }
+        var offlineCause = getOfflineCause();
+        if (offlineCause != null) {
+            return offlineCause.getComputerIcon();
+        }
+        // The computer is not connected or it is temporarily offline due to a node monitor
+        if (isOffline()) return "symbol-computer-offline";
+        return "symbol-computer";
+    }
 
     /**
      * Returns the alternative text for the computer icon.
      */
-    String getIconAltText();
+    @SuppressWarnings("unused") // jelly
+    default String getIconAltText() {
+        if (!isAcceptingTasks()) {
+            return "[suspended]";
+        }
+        var offlineCause = getOfflineCause();
+        if (offlineCause != null) {
+            return offlineCause.getComputerIconAltText();
+        }
+        // There is a "technical" reason the computer will not accept new builds
+        if (isOffline()) return "[offline]";
+        return "[online]";
+    }
+
+    default String getTooltip() {
+        var offlineCause = getOfflineCause();
+        if (offlineCause != null) {
+            return offlineCause.toString();
+        } else {
+            return "";
+        }
+    }
 
     /**
      * Returns the class name that will be used to look up the icon.
