@@ -206,8 +206,39 @@ function convertHtmlToItems(children) {
   return items;
 }
 
+function validateDropdown(e) {
+  if (e.targetUrl) {
+    const method = e.getAttribute("checkMethod") || "post";
+    try {
+      FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
+    } catch (x) {
+      console.warn(x);
+    }
+  }
+}
+
+function getMaxSuggestionCount(e, defaultValue) {
+  return parseInt(e.dataset["maxsuggestions"]) || defaultValue;
+}
+
+function debounce(callback) {
+  callback.running = false;
+  return () => {
+    if (!callback.running) {
+      callback.running = true;
+      setTimeout(() => {
+        callback();
+        callback.running = false;
+      }, 300);
+    }
+  };
+}
+
 export default {
   convertHtmlToItems,
   generateDropdown,
   generateDropdownItems,
+  validateDropdown,
+  getMaxSuggestionCount,
+  debounce,
 };
