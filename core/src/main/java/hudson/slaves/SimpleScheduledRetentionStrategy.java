@@ -242,6 +242,8 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                     c.disconnect(OfflineCause.create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
                 }
             }
+        } else {
+            c.setOfflineCause(new ScheduledOfflineCause());
         }
         return 0;
     }
@@ -250,6 +252,24 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         updateStartStopWindow();
         long now = System.currentTimeMillis();
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
+    }
+
+    public static class ScheduledOfflineCause extends OfflineCause.SimpleOfflineCause {
+        public ScheduledOfflineCause() {
+            super(Messages._SimpleScheduledRetentionStrategy_ScheduledOfflineCause_displayName());
+        }
+
+        @NonNull
+        @Override
+        public String getComputerIcon() {
+            return "symbol-computer-not-accepting";
+        }
+
+        @NonNull
+        @Override
+        public String getIcon() {
+            return "symbol-trigger";
+        }
     }
 
     @Extension @Symbol("schedule")
