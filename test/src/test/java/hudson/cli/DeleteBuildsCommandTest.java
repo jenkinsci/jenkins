@@ -36,6 +36,7 @@ import static org.junit.Assert.assertNotNull;
 import hudson.model.ExecutorTest;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.labels.LabelAtom;
 import hudson.tasks.Shell;
@@ -139,7 +140,7 @@ public class DeleteBuildsCommandTest {
     @Issue("JENKINS-73835")
     @Test public void deleteBuildsShouldFailIfTheBuildIsRunning() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        ExecutorTest.startBlockingBuild(project);
+        var build = ExecutorTest.startBlockingBuild(project);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final CLICommandInvoker.Result result = command
@@ -148,6 +149,9 @@ public class DeleteBuildsCommandTest {
         assertThat(result, failedWith(1));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("Unable to delete aProject #1 because it is still running"));
+
+        build.doStop();
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(build));
     }
 
     @Test public void deleteBuildsShouldSuccessEvenTheBuildIsStuckInTheQueue() throws Exception {
