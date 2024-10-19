@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.123</version>
+    <version>1.125</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.481</revision>
+    <revision>2.482</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-10-08T14:08:31Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-10-15T13:52:44Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3261.v9c670a_4748a_9</remoting.version>
+    <remoting.version>3270.v9e0d174083ed</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
