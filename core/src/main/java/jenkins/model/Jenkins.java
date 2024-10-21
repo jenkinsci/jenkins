@@ -4659,7 +4659,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Deprecated(since = "2.414")
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
-        return doSafeRestart(StaplerRequest.toStaplerRequest2(req), null);
+        return doSafeRestart(req != null ? StaplerRequest.toStaplerRequest2(req) : null, null);
     }
 
     /**
@@ -4692,7 +4692,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @StaplerNotDispatchable
     public HttpResponse doSafeRestart(StaplerRequest req, @QueryParameter("message") String message) throws IOException, javax.servlet.ServletException, RestartNotSupportedException {
         try {
-            return doSafeRestart(StaplerRequest.toStaplerRequest2(req), message);
+            return doSafeRestart(req != null ? StaplerRequest.toStaplerRequest2(req) : null, message);
         } catch (ServletException e) {
             throw ServletExceptionWrapper.fromJakartaServletException(e);
         }
