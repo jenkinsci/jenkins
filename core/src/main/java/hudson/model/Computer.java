@@ -66,6 +66,7 @@ import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
+import hudson.util.FormApply;
 import hudson.util.Futures;
 import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
@@ -178,11 +179,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected volatile OfflineCause offlineCause;
 
     private long connectTime = 0;
-
-    /**
-     * True if Jenkins shouldn't start new builds on this node.
-     */
-    private boolean temporarilyOffline;
 
     /**
      * {@link Node} object may be created and deleted independently
@@ -360,6 +356,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public OfflineCause getOfflineCause() {
+        var node = getNode();
+        if (node != null) {
+            var temporaryOfflineCause = node.getTemporaryOfflineCause();
+            if (temporaryOfflineCause != null) {
+                return temporaryOfflineCause;
+            }
+        }
         return offlineCause;
     }
 
@@ -371,6 +374,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @Override
     public String getOfflineCauseReason() {
+        var offlineCause = getOfflineCause();
         if (offlineCause == null) {
             return "";
         }
@@ -549,7 +553,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Deprecated
     public void cliOffline(String cause) throws ExecutionException, InterruptedException {
         checkPermission(DISCONNECT);
-        setTemporarilyOffline(true, new ByCLI(cause));
+        setTemporaryOfflineCause(new ByCLI(cause));
     }
 
     /**
@@ -558,7 +562,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Deprecated
     public void cliOnline() throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
-        setTemporarilyOffline(false, null);
+        setTemporaryOfflineCause(null);
     }
 
     /**
@@ -620,7 +624,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @Override
     public boolean isOffline() {
-        return temporarilyOffline || getChannel() == null;
+        return isTemporarilyOffline() || getChannel() == null;
     }
 
     public final boolean isOnline() {
@@ -669,41 +673,64 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @Deprecated
     public boolean isTemporarilyOffline() {
-        return temporarilyOffline;
+        var node = getNode();
+        return node != null && node.isTemporarilyOffline();
     }
 
     /**
      * @deprecated as of 1.320.
-     *      Use {@link #setTemporarilyOffline(boolean, OfflineCause)}
+     *      Use {@link #setTemporaryOfflineCause(OfflineCause)}
      */
     @Deprecated
     public void setTemporarilyOffline(boolean temporarilyOffline) {
-        setTemporarilyOffline(temporarilyOffline, null);
+        setTemporaryOfflineCause(temporarilyOffline ? new OfflineCause.LegacyOfflineCause() : null);
+    }
+
+    /**
+     * @deprecated
+     *      Use {@link #setTemporaryOfflineCause(OfflineCause)} instead.
+     */
+    @Deprecated(since = "TODO")
+    public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
+        if (cause == null) {
+            setTemporarilyOffline(temporarilyOffline);
+        } else {
+            setTemporaryOfflineCause(temporarilyOffline ? cause : null);
+        }
     }
 
     /**
      * Marks the computer as temporarily offline. This retains the underlying
      * {@link Channel} connection, but prevent builds from executing.
      *
-     * @param cause
-     *      If the first argument is true, specify the reason why the node is being put
-     *      offline.
+     * @param temporaryOfflineCause The reason why the node is being put offline.
+     *                                If null, this cancels the status
+     * @since TODO
      */
-    public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
-        offlineCause = temporarilyOffline ? cause : null;
-        this.temporarilyOffline = temporarilyOffline;
-        Node node = getNode();
-        if (node != null) {
-            node.setTemporaryOfflineCause(offlineCause);
+    public void setTemporaryOfflineCause(@CheckForNull OfflineCause temporaryOfflineCause) {
+        var node = getNode();
+        if (node == null) {
+            throw new IllegalStateException("Can't set a temporary offline cause if the node has been removed");
         }
-        synchronized (statusChangeLock) {
-            statusChangeLock.notifyAll();
+        node.setTemporaryOfflineCause(temporaryOfflineCause);
+    }
+
+    /**
+     * @since TODO
+     * @return If the node is temporarily offline, the reason why.
+     */
+    @SuppressWarnings("unused") // used by setOfflineCause.jelly
+    public String getTemporaryOfflineCauseReason() {
+        var node = getNode();
+        if (node == null) {
+            // Node was deleted; computer still exists
+            return null;
         }
-        if (temporarilyOffline) {
-            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(this, cause));
-        } else {
-            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOnline(this));
+        var cause = node.getTemporaryOfflineCause();
+        if (cause instanceof OfflineCause.UserCause userCause) {
+            return userCause.getMessage();
         }
+        return cause != null ? cause.toString() : "";
     }
 
     @Exported
@@ -785,16 +812,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             this.nodeName = null;
 
         setNumExecutors(node.getNumExecutors());
-        if (this.temporarilyOffline) {
-            // When we get a new node, push our current temp offline
-            // status to it (as the status is not carried across
-            // configuration changes that recreate the node).
-            // Since this is also called the very first time this
-            // Computer is created, avoid pushing an empty status
-            // as that could overwrite any status that the Node
-            // brought along from its persisted config data.
-            node.setTemporaryOfflineCause(this.offlineCause);
-        }
     }
 
     /**
@@ -1396,24 +1413,23 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @RequirePOST
     public HttpResponse doToggleOffline(@QueryParameter String offlineMessage) throws IOException, ServletException {
-        if (!temporarilyOffline) {
-            checkPermission(DISCONNECT);
-            offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
-            setTemporarilyOffline(!temporarilyOffline,
-                    new OfflineCause.UserCause(User.current(), offlineMessage));
-        } else {
-            checkPermission(CONNECT);
-            setTemporarilyOffline(!temporarilyOffline, null);
+        var node = getNode();
+        if (node == null) {
+            return HttpResponses.notFound();
         }
-        return HttpResponses.redirectToDot();
+        if (node.isTemporarilyOffline()) {
+            checkPermission(CONNECT);
+            setTemporaryOfflineCause(null);
+            return HttpResponses.redirectToDot();
+        } else {
+            return doChangeOfflineCause(offlineMessage);
+        }
     }
 
     @RequirePOST
     public HttpResponse doChangeOfflineCause(@QueryParameter String offlineMessage) throws IOException, ServletException {
         checkPermission(DISCONNECT);
-        offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
-        setTemporarilyOffline(true,
-                new OfflineCause.UserCause(User.current(), offlineMessage));
+        setTemporaryOfflineCause(new OfflineCause.UserCause(User.current(), Util.fixEmptyAndTrim(offlineMessage)));
         return HttpResponses.redirectToDot();
     }
 
@@ -1512,7 +1528,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         // take the user back to the agent top page.
-        rsp.sendRedirect2("../" + result.getNodeName() + '/');
+        FormApply.success("../" + result.getNodeName() + '/').generateResponse(req, rsp, null);
     }
 
     /**

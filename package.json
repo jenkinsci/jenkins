@@ -24,14 +24,14 @@
   },
   "devDependencies": {
     "@babel/cli": "7.25.7",
-    "@babel/core": "7.25.7",
-    "@babel/preset-env": "7.25.7",
-    "@eslint/js": "9.12.0",
+    "@babel/core": "7.25.8",
+    "@babel/preset-env": "7.25.8",
+    "@eslint/js": "9.13.0",
     "babel-loader": "9.2.1",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "7.1.2",
     "css-minimizer-webpack-plugin": "7.0.0",
-    "eslint": "9.12.0",
+    "eslint": "9.13.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-formatter-checkstyle": "8.40.0",
     "globals": "15.11.0",
@@ -39,13 +39,13 @@
     "mini-css-extract-plugin": "2.9.1",
     "postcss": "8.4.47",
     "postcss-loader": "8.1.1",
-    "postcss-preset-env": "10.0.6",
+    "postcss-preset-env": "10.0.7",
     "postcss-scss": "4.0.9",
     "prettier": "3.3.3",
-    "sass": "1.79.4",
+    "sass": "1.80.3",
     "sass-loader": "16.0.2",
     "style-loader": "4.0.0",
-    "stylelint": "16.9.0",
+    "stylelint": "16.10.0",
     "stylelint-checkstyle-reporter": "1.0.0",
     "stylelint-config-standard": "36.0.1",
     "webpack": "5.95.0",
@@ -68,5 +68,5 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "packageManager": "yarn@4.5.0"
+  "packageManager": "yarn@4.5.1"
 }

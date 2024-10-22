@@ -9,32 +9,20 @@ function init() {
     return prev + item + delimiter + " ";
   }
 
-  function validate(e) {
-    if (e.targetUrl) {
-      var method = e.getAttribute("checkMethod") || "post";
-      try {
-        FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
-      } catch (x) {
-        console.warn(x);
-        return;
-      }
-    }
-  }
-
   function convertSuggestionToItem(suggestion, e) {
     const delimiter = e.getAttribute("autoCompleteDelimChar");
     const confirm = () => {
       e.value = delimiter
         ? addValue(e.value, suggestion.name, delimiter)
         : suggestion.name;
-      validate(e);
+      Utils.validateDropdown(e);
       e.focus();
     };
     return {
       label: suggestion.name,
       onClick: confirm,
       onKeyPress: (evt) => {
-        if (evt.key == "Tab") {
+        if (evt.key === "Tab") {
           confirm();
           e.dropdown.hide();
           evt.preventDefault();
@@ -43,13 +31,9 @@ function init() {
     };
   }
 
-  function getMaxSuggestionCount(e) {
-    return parseInt(e.dataset["maxsuggestions"]) || 10;
-  }
-
   function createAndShowDropdown(e, suggestions) {
     const items = suggestions
-      .splice(0, getMaxSuggestionCount(e))
+      .splice(0, Utils.getMaxSuggestionCount(e, 10))
       .map((s) => convertSuggestionToItem(s, e));
     if (!e.dropdown) {
       Utils.generateDropdown(
@@ -82,19 +66,6 @@ function init() {
       .then((response) => createAndShowDropdown(e, response.suggestions || []));
   }
 
-  function debounce(callback) {
-    callback.running = false;
-    return () => {
-      if (!callback.running) {
-        callback.running = true;
-        setTimeout(() => {
-          callback();
-          callback.running = false;
-        }, 300);
-      }
-    };
-  }
-
   behaviorShim.specify(
     "INPUT.auto-complete",
     "input-auto-complete",
@@ -111,7 +82,7 @@ function init() {
       );
       e.addEventListener(
         "input",
-        debounce(() => {
+        Utils.debounce(() => {
           updateSuggestions(e);
         }),
       );

@@ -1012,6 +1012,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             adjuncts = new AdjunctManager(getServletContext(), pluginManager.uberClassLoader, "adjuncts/" + SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
             ClassFilterImpl.register();
+            LOGGER.info("Starting version " + getVersion());
 
             // initialization consists of ...
             executeReactor(is,
@@ -4157,7 +4158,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         updateComputerList();
 
-        rsp.sendRedirect(req.getContextPath() + '/' + toComputer().getUrl());  // back to the computer page
+        FormApply.success(req.getContextPath() + '/' + toComputer().getUrl()).generateResponse(req, rsp, null);
     }
 
     /**
@@ -4665,7 +4666,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Deprecated(since = "2.414")
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
-        return doSafeRestart(StaplerRequest.toStaplerRequest2(req), null);
+        return doSafeRestart(req != null ? StaplerRequest.toStaplerRequest2(req) : null, null);
     }
 
     /**
@@ -4698,7 +4699,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @StaplerNotDispatchable
     public HttpResponse doSafeRestart(StaplerRequest req, @QueryParameter("message") String message) throws IOException, javax.servlet.ServletException, RestartNotSupportedException {
         try {
-            return doSafeRestart(StaplerRequest.toStaplerRequest2(req), message);
+            return doSafeRestart(req != null ? StaplerRequest.toStaplerRequest2(req) : null, message);
         } catch (ServletException e) {
             throw ServletExceptionWrapper.fromJakartaServletException(e);
         }
