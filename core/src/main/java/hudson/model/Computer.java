@@ -355,6 +355,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      null if the system was put offline without given a cause.
      */
     @Exported
+    @Override
     public OfflineCause getOfflineCause() {
         var node = getNode();
         if (node != null) {
@@ -374,19 +375,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @Override
     public String getOfflineCauseReason() {
-        var offlineCause = getOfflineCause();
-        if (offlineCause == null) {
-            return "";
-        }
-        // fetch the localized string for "Disconnected By"
-        String gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("", "");
-        // regex to remove commented reason base string
-        String gsub1 = "^" + gsub_base + "[\\w\\W]* \\: ";
-        // regex to remove non-commented reason base string
-        String gsub2 = "^" + gsub_base + "[\\w\\W]*";
-
-        String newString = offlineCause.toString().replaceAll(gsub1, "");
-        return newString.replaceAll(gsub2, "");
+        return IComputer.super.getOfflineCauseReason();
     }
 
     /**
@@ -678,6 +667,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * Allows a caller to define an {@link OfflineCause} for a computer that has never been online.
+     * @since TODO
+     */
+    public void setOfflineCause(OfflineCause cause) {
+        this.offlineCause = cause;
+    }
+
+    /**
      * @deprecated as of 1.320.
      *      Use {@link #setTemporaryOfflineCause(OfflineCause)}
      */
@@ -736,35 +733,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @Override
     public String getIcon() {
-        // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
-        // The computer is not accepting tasks, e.g. because the availability demands it being offline.
-        if (!isAcceptingTasks()) {
-            return "symbol-computer-not-accepting";
-        }
-        // The computer is not connected or it is temporarily offline due to a node monitor
-        if (isOffline()) return "symbol-computer-offline";
-        return "symbol-computer";
+        return IComputer.super.getIcon();
     }
 
     /**
      * {@inheritDoc}
      *
-     * <p>
-     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}.
+     * @see #getIcon()
      */
     @Exported
     @Override
     public String getIconClassName() {
         return IComputer.super.getIconClassName();
-    }
-
-    public String getIconAltText() {
-        // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "[temporarily offline by user]";
-        // There is a "technical" reason the computer will not accept new builds
-        if (isOffline() || !isAcceptingTasks()) return "[offline]";
-        return "[online]";
     }
 
     @Exported

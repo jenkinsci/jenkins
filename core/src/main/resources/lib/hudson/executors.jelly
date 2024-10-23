@@ -33,15 +33,16 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="computerCaption">
-      <a href="${rootURL}/${c.url}" class="jenkins-link--with-icon model-link inside"><l:icon src="${c.iconClassName}" alt="${altText}"/>
+      <a href="${rootURL}/${c.url}" class="jenkins-link--with-icon model-link inside"><l:icon src="${c.iconClassName}" tooltip="${c.tooltip}"/>
         <span style="margin-left: 1ch;">${title}</span>
       </a>
         <j:choose>
           <j:when test="${c.offline}">
             <j:choose>
-              <j:when test="${c.hasOfflineCause() and !c.connecting}">
+              <j:set var="offlineCause" value="${c.offlineCause}"/>
+              <j:when test="${offlineCause != null and !c.connecting}">
                 <div>
-                  (<l:icon src="symbol-error" class="icon-xs jenkins-!-error-color" title="${c.offlineCauseReason}"/> ${%offline})
+                  (<l:icon src="${offlineCause.icon}" class="icon-xs jenkins-!-error-color" tooltip="${c.tooltip}"/> ${%offline})
                 </div>
               </j:when>
               <j:when test="${c.connecting}">
