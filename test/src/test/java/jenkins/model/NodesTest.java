@@ -25,6 +25,8 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
@@ -47,6 +49,9 @@ import hudson.model.listeners.SaveableListener;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -236,6 +241,46 @@ public class NodesTest {
         protected boolean allowLoad(@NonNull Node node) {
             // Don't allow loading any node.
             return false;
+        }
+    }
+
+    @Test
+    public void listenersCalledOnSetNodes() throws URISyntaxException, IOException, Descriptor.FormException {
+        var agentA = new DumbSlave("nodeA", "temp", r.createComputerLauncher(null));
+        var agentB = new DumbSlave("nodeB", "temp", r.createComputerLauncher(null));
+        var agentA2 = new DumbSlave("nodeA", "temp2", r.createComputerLauncher(null));
+        Jenkins.get().setNodes(List.of(agentA, agentB));
+        assertThat(CheckSetNodes.created, containsInAnyOrder(agentA.toString(), agentB.toString()));
+        Jenkins.get().setNodes(List.of(agentA2));
+        assertThat(CheckSetNodes.updated, contains(new NodePair(agentA.toString(), agentA2.toString())));
+        assertThat(CheckSetNodes.deleted, contains(agentB.toString()));
+        Jenkins.get().setNodes(List.of());
+        assertThat(CheckSetNodes.deleted, containsInAnyOrder(agentA2.toString(), agentB.toString()));
+    }
+
+    private record NodePair(String oldNode, String newNode) {
+
+    }
+
+    @TestExtension("listenersCalledOnSetNodes")
+    public static class CheckSetNodes extends NodeListener {
+        private static final List<String> created = new ArrayList<>();
+        private static final List<NodePair> updated = new ArrayList<>();
+        private static final List<String> deleted = new ArrayList<>();
+
+        @Override
+        protected void onCreated(@NonNull Node node) {
+            created.add(node.toString());
+        }
+
+        @Override
+        protected void onUpdated(@NonNull Node oldOne, @NonNull Node newOne) {
+            updated.add(new NodePair(oldOne.toString(), newOne.toString()));
+        }
+
+        @Override
+        protected void onDeleted(@NonNull Node node) {
+            deleted.add(node.toString());
         }
     }
 

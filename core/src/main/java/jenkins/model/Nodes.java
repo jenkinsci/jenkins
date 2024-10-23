@@ -54,6 +54,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -114,26 +115,32 @@ public class Nodes implements PersistenceRoot {
      * @throws IOException if the new list of nodes could not be persisted.
      */
     public void setNodes(final @NonNull Collection<? extends Node> nodes) throws IOException {
-        Set<String> toRemove = new HashSet<>();
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                toRemove.addAll(Nodes.this.nodes.keySet());
-                for (Node n : nodes) {
-                    final String name = n.getNodeName();
-                    toRemove.remove(name);
-                    Nodes.this.nodes.put(name, n);
-                    n.onLoad(Nodes.this, name);
+        Set<Node> toRemove = new HashSet<>();
+        Queue.withLock(() -> {
+            toRemove.addAll(Nodes.this.nodes.values());
+            for (var node : nodes) {
+                final var name = node.getNodeName();
+                var existingNode = toRemove.stream().filter(n -> n.getNodeName().equals(name)).findFirst();
+                if (existingNode.isPresent()) {
+                    var oldNode = existingNode.get();
+                    NodeListener.fireOnUpdated(oldNode, node);
+                    toRemove.remove(oldNode);
+                } else {
+                    NodeListener.fireOnCreated(node);
                 }
-                Nodes.this.nodes.keySet().removeAll(toRemove);
-                jenkins.updateComputerList();
-                jenkins.trimLabels();
+                Nodes.this.nodes.put(name, node);
+                node.onLoad(Nodes.this, name);
             }
+            Nodes.this.nodes.keySet().removeAll(toRemove.stream().map(Node::getNodeName).collect(Collectors.toSet()));
+            jenkins.updateComputerList();
+            jenkins.trimLabels();
         });
         save();
-        for (String name : toRemove) {
-            LOGGER.fine(() -> "deleting " + new File(getRootDir(), name));
-            Util.deleteRecursive(new File(getRootDir(), name));
+        for (var deletedNode : toRemove) {
+            NodeListener.fireOnDeleted(deletedNode);
+            var nodeName = deletedNode.getNodeName();
+            LOGGER.fine(() -> "deleting " + new File(getRootDir(), nodeName));
+            Util.deleteRecursive(new File(getRootDir(), nodeName));
         }
     }
 
