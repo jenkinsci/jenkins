@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -35,8 +36,11 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.Random;
 import java.util.stream.Stream;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -208,6 +212,18 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
         assertTrue("Resource file '" + fileName + "' not found", fileUrl != null);
         File releaseFile = new File(fileUrl.toURI());
         assertThat(monitor.readOperatingSystemName(releaseFile, pattern), is(job));
+    }
+
+    @Test
+    public void testReadOperatingSystemListOnWarningDate() throws Exception {
+        JSONObject eolIn6Months = new JSONObject();
+        eolIn6Months.put("pattern", ".*");
+        eolIn6Months.put("endOfLife", LocalDate.now().plusMonths(6).toString());
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.add(eolIn6Months);
+        monitor.readOperatingSystemList(jsonArray.toString());
+        assertTrue(monitor.isActivated());
+        assertEquals(LocalDate.now().plusMonths(6).toString(), monitor.getEndOfLifeDate());
     }
 
     @Test
