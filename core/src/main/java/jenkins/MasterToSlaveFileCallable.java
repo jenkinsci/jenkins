@@ -18,7 +18,7 @@ import org.jenkinsci.remoting.RoleChecker;
  */
 public abstract class MasterToSlaveFileCallable<T> implements FileCallable<T> {
     @Override
-    public void checkRoles(RoleChecker checker) throws SecurityException {
+    public void checkRoles(RoleChecker checker) {
         checker.check(this, Roles.SLAVE);
     }
 

@@ -54,7 +54,7 @@ public final class ResourceBundleUtil {
      * @return The bundle JSON.
      * @throws MissingResourceException Missing resource bundle.
      */
-    public static @NonNull JSONObject getBundle(@NonNull String baseName) throws MissingResourceException {
+    public static @NonNull JSONObject getBundle(@NonNull String baseName) {
         return getBundle(baseName, Locale.getDefault());
     }
 
@@ -65,7 +65,7 @@ public final class ResourceBundleUtil {
      * @return The bundle JSON.
      * @throws MissingResourceException Missing resource bundle.
      */
-    public static @NonNull JSONObject getBundle(@NonNull String baseName, @NonNull Locale locale) throws MissingResourceException {
+    public static @NonNull JSONObject getBundle(@NonNull String baseName, @NonNull Locale locale) {
         var bundleKey = baseName + ":" + locale;
         var bundleJSON = bundles.get(bundleKey);
 

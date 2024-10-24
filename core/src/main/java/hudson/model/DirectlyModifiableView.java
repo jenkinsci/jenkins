@@ -47,7 +47,7 @@ public interface DirectlyModifiableView {
      * @throws IOException Removal failed.
      * @throws IllegalArgumentException View rejected to remove an item.
      */
-    boolean remove(@NonNull TopLevelItem item) throws IOException, IllegalArgumentException;
+    boolean remove(@NonNull TopLevelItem item) throws IOException;
 
     /**
      * Add item to this view.
@@ -55,7 +55,7 @@ public interface DirectlyModifiableView {
      * @throws IOException Adding failed.
      * @throws IllegalArgumentException View rejected to add an item.
      */
-    void add(@NonNull TopLevelItem item) throws IOException, IllegalArgumentException;
+    void add(@NonNull TopLevelItem item) throws IOException;
 
     /**
      * Handle addJobToView web method.

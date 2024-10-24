@@ -121,5 +121,5 @@ public class RingBufferLogHandler extends Handler {
     public void flush() {}
 
     @Override
-    public void close() throws SecurityException {}
+    public void close() {}
 }

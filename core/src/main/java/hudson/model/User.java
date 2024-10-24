@@ -461,7 +461,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Only used for a legitimate user we have no idea about. We give it only minimum access
      */
     private static class LegitimateButUnknownUserDetails extends org.springframework.security.core.userdetails.User {
-        private LegitimateButUnknownUserDetails(String username) throws IllegalArgumentException {
+        private LegitimateButUnknownUserDetails(String username) {
             super(
                     username, "",
                     true, true, true, true,

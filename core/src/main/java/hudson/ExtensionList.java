@@ -158,7 +158,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      *
      * Meant to simplify call inside @Extension annotated class to retrieve their own instance.
      */
-    public @NonNull <U extends T> U getInstance(@NonNull Class<U> type) throws IllegalStateException {
+    public @NonNull <U extends T> U getInstance(@NonNull Class<U> type) {
         for (T ext : this)
             if (ext.getClass() == type)
                 return type.cast(ext);
