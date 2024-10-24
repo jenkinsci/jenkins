@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -35,14 +36,23 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.time.LocalDate;
 import java.util.Random;
 import java.util.stream.Stream;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.rules.TemporaryFolder;
 
 public class OperatingSystemEndOfLifeAdminMonitorTest {
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     private final OperatingSystemEndOfLifeAdminMonitor monitor;
     private final Random random = new Random();
@@ -208,6 +218,21 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
         assertTrue("Resource file '" + fileName + "' not found", fileUrl != null);
         File releaseFile = new File(fileUrl.toURI());
         assertThat(monitor.readOperatingSystemName(releaseFile, pattern), is(job));
+    }
+
+    @Test
+    public void testReadOperatingSystemListOnWarningDate() throws Exception {
+        File dataFile = tmp.newFile();
+        Files.writeString(dataFile.toPath(), "PRETTY_NAME=\"Test OS\"");
+        JSONObject eolIn6Months = new JSONObject();
+        eolIn6Months.put("pattern", "Test OS");
+        eolIn6Months.put("endOfLife", LocalDate.now().plusMonths(6).toString());
+        eolIn6Months.put("file", dataFile.getAbsolutePath());
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.add(eolIn6Months);
+        monitor.readOperatingSystemList(jsonArray.toString());
+        assertTrue(monitor.isActivated());
+        assertEquals(LocalDate.now().plusMonths(6).toString(), monitor.getEndOfLifeDate());
     }
 
     @Test
