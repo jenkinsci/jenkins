@@ -36,17 +36,23 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.Random;
 import java.util.stream.Stream;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.rules.TemporaryFolder;
 
 public class OperatingSystemEndOfLifeAdminMonitorTest {
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     private final OperatingSystemEndOfLifeAdminMonitor monitor;
     private final Random random = new Random();
@@ -216,9 +222,12 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
 
     @Test
     public void testReadOperatingSystemListOnWarningDate() throws Exception {
+        File dataFile = tmp.newFile();
+        Files.writeString(dataFile.toPath(), "PRETTY_NAME=\"Test OS\"");
         JSONObject eolIn6Months = new JSONObject();
-        eolIn6Months.put("pattern", ".*");
+        eolIn6Months.put("pattern", "Test OS");
         eolIn6Months.put("endOfLife", LocalDate.now().plusMonths(6).toString());
+        eolIn6Months.put("file", dataFile.getAbsolutePath());
         JSONArray jsonArray = new JSONArray();
         jsonArray.add(eolIn6Months);
         monitor.readOperatingSystemList(jsonArray.toString());
