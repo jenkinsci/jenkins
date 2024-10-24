@@ -38,6 +38,7 @@ exec docker run --rm \
 	--volume "$(pwd)"/war/target/jenkins.war:/jenkins.war:ro \
 	--volume /var/run/docker.sock:/var/run/docker.sock:rw \
 	--volume "$(pwd)"/target/ath-reports:/reports:rw \
+ 	--add-host jenkins.127.0.0.1.sslip.io:127.0.0.1 \
 	--interactive \
 	jenkins/ath:"$ATH_VERSION" \
 	bash <<-'INSIDE'
