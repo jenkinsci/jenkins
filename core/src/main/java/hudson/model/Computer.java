@@ -687,7 +687,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @deprecated
      *      Use {@link #setTemporaryOfflineCause(OfflineCause)} instead.
      */
-    @Deprecated(since = "TODO")
+    @Deprecated(since = "2.482")
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
         if (cause == null) {
             setTemporarilyOffline(temporarilyOffline);
@@ -702,7 +702,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @param temporaryOfflineCause The reason why the node is being put offline.
      *                                If null, this cancels the status
-     * @since TODO
+     * @since 2.482
      */
     public void setTemporaryOfflineCause(@CheckForNull OfflineCause temporaryOfflineCause) {
         var node = getNode();
@@ -713,7 +713,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * @since TODO
+     * @since 2.482
      * @return If the node is temporarily offline, the reason why.
      */
     @SuppressWarnings("unused") // used by setOfflineCause.jelly
