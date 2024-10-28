@@ -31,7 +31,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -103,6 +105,8 @@ public class LogRotatorTest {
 
     @Test
     public void ableToDeleteCurrentBuild() throws Exception {
+        assumeFalse("Deleting the current build while is is completing does not work consistently on Windows",
+                Functions.isWindows());
         var p = j.createFreeStyleProject();
         // Keep 0 builds, i.e. immediately delete builds as they complete.
         LogRotator logRotator = new LogRotator(-1, 0, -1, -1);
