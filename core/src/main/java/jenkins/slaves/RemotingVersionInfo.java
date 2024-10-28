@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.security.ControllerToAgentCallable;
 
 /**
  * Provides information about Remoting versions used within the core.
@@ -100,7 +101,7 @@ public class RemotingVersionInfo {
 
     /**
      * Gets Remoting version which is supported by the core.
-     * Jenkins core and plugins make invoke operations on agents (e.g. {@link jenkins.security.MasterToSlaveCallable})
+     * Jenkins core and plugins make invoke operations on agents (e.g. {@link ControllerToAgentCallable})
      * and use Remoting-internal API within them.
      * In such case this API should be present on the remote side.
      * This method defines a minimum expected version, so that all calls should use a compatible API.
