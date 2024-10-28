@@ -52,10 +52,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -65,9 +63,6 @@ import org.jvnet.hudson.test.TestBuilder;
  * Verifies that the last successful and stable builds of a job will be kept if requested.
  */
 public class LogRotatorTest {
-
-    @ClassRule
-    public static BuildWatcher watcher = new BuildWatcher();
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
