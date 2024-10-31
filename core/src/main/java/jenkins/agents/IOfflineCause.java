@@ -31,7 +31,7 @@ import jenkins.model.IComputer;
 
 /**
  * Represents a cause that puts a {@linkplain IComputer#isOffline() computer offline}.
- * @since TODO
+ * @since 2.483
  */
 public interface IOfflineCause {
     /**
