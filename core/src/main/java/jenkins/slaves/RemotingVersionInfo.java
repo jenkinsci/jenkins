@@ -31,7 +31,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.security.ControllerToAgentCallable;
+import jenkins.agents.ControllerToAgentCallable;
 
 /**
  * Provides information about Remoting versions used within the core.

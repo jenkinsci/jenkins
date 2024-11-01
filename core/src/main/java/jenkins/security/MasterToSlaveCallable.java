@@ -1,6 +1,7 @@
 package jenkins.security;
 
 import hudson.remoting.Callable;
+import jenkins.agents.ControllerToAgentCallable;
 
 /**
  * {@link Callable} meant to be run on agent.
