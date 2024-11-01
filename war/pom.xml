@@ -307,7 +307,7 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1366.vd44b_49a_5c85c</version>
+                  <version>1367.vdf2fc45f229c</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -365,7 +365,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>5.5.1-3</version>
+                  <version>5.5.1-4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

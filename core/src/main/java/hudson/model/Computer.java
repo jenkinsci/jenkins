@@ -668,7 +668,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Allows a caller to define an {@link OfflineCause} for a computer that has never been online.
-     * @since TODO
+     * @since 2.483
      */
     public void setOfflineCause(OfflineCause cause) {
         this.offlineCause = cause;
