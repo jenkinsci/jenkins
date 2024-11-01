@@ -94,7 +94,7 @@ public interface IComputer extends AccessControlled {
 
     /**
      * @return the offline cause if the computer is offline.
-     * @since TODO
+     * @since 2.483
      */
     IOfflineCause getOfflineCause();
 
