@@ -34,6 +34,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.PermalinkList;
@@ -337,12 +338,42 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Allocates a new buildCommand number.
+     * Allocates a new build number.
+     * @see BuildNumberAssigner
      */
-    public synchronized int assignBuildNumber() throws IOException {
-        int r = nextBuildNumber++;
-        saveNextBuildNumber();
-        return r;
+    public int assignBuildNumber() throws IOException {
+        return ExtensionList.lookupFirst(BuildNumberAssigner.class).assignBuildNumber(this, this::saveNextBuildNumber);
+    }
+
+    /**
+     * Alternate strategy for assigning build numbers.
+     */
+    @Restricted(Beta.class)
+    public interface BuildNumberAssigner extends ExtensionPoint {
+        /**
+         * Implementation of {@link Job#assignBuildNumber}.
+         */
+        int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException;
+        /**
+         * Provides an externally accessible alias for {@link Job#saveNextBuildNumber}, which is {@code protected}.
+         * ({@link #getNextBuildNumber} and {@link #fastUpdateNextBuildNumber} are already accessible.)
+         */
+        interface SaveNextBuildNumber {
+            void call() throws IOException;
+        }
+    }
+
+    @Restricted(DoNotUse.class)
+    @Extension(ordinal = -1000)
+    public static final class DefaultBuildNumberAssigner implements BuildNumberAssigner {
+        @Override
+        public int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException {
+            synchronized (job) {
+                int r = job.nextBuildNumber++;
+                saveNextBuildNumber.call();
+                return r;
+            }
+        }
     }
 
     /**
