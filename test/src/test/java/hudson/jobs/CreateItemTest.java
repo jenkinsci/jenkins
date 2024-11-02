@@ -25,14 +25,18 @@
 package hudson.jobs;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import hudson.model.Failure;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.ListView;
 import hudson.model.listeners.ItemListener;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -61,6 +65,57 @@ public class CreateItemTest {
     @Before
     public void setup() {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
+    }
+
+    @Issue("JENKINS-74795")
+    @Test
+    public void testCreateItemDoesNotPopulateDefaultView() throws Exception {
+        // Create a view that only displays jobs that start with 'a-'
+        FreeStyleProject aJob = rule.createFreeStyleProject("a-freestyle-job");
+        ListView aView = new ListView("a-view");
+        aView.setIncludeRegex("a-.*");
+        rule.jenkins.addView(aView);
+        assertThat(aView.getItems(), containsInAnyOrder(aJob));
+        assertFalse(aView.isDefault()); // Not yet the default view
+
+        // Create a view that only displays jobs that start with 'b-'
+        FreeStyleProject bJob = rule.createFreeStyleProject("b-freestyle-job");
+        ListView bView = new ListView("b-view");
+        bView.setIncludeRegex("b-.*");
+        rule.jenkins.addView(bView);
+        assertThat(bView.getItems(), containsInAnyOrder(bJob));
+        assertFalse(bView.isDefault()); // Not the default view
+
+        // Make the a-view the default
+        rule.jenkins.setPrimaryView(aView);
+        assertTrue(aView.isDefault()); // Now a-view is the default view
+
+        // Disable crumbs for easier API testing
+        rule.jenkins.setCrumbIssuer(null);
+
+        // Use createItem API to create a new job by copying existing job
+        String b2JobName = "b-freestyle-job-2";
+        URL apiURL = new URI(MessageFormat.format("{0}createItem?mode=copy&from={1}&name={2}",
+                    rule.getURL().toString(), bJob.getName(), b2JobName)).toURL();
+        WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
+        deleteContentTypeHeader(request);
+        Page p = rule.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false)
+                .getPage(request);
+        assertEquals("Creating job from copy should succeed.",
+                HttpURLConnection.HTTP_OK,
+                p.getWebResponse().getStatusCode());
+        FreeStyleProject b2Job = rule.jenkins.getItemByFullName(b2JobName, FreeStyleProject.class);
+
+        assertThat(bView.getItems(), containsInAnyOrder(bJob, b2Job));
+        assertFalse(bView.isDefault());
+
+        // Confirm new job is not visible in default view
+        assertTrue(aView.isDefault()); // a-view is still the default view
+        // TODO: When JENKINS-74795 is fixed, this assertion will pass
+        // assertThat(aView.getItems(), containsInAnyOrder(aJob));
+        // TODO: Until JENKINS-74795 is fixed, this assertion passes (a bug)
+        assertThat(aView.getItems(), containsInAnyOrder(aJob, b2Job));
     }
 
     @Issue("JENKINS-31235")
