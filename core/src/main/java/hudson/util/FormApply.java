@@ -113,7 +113,7 @@ public class FormApply {
      * @param notificationType type of notification. See {@link NotificationType} for supported types. Defines the notification
      *                         color and the icon that will be shown.
      *
-     * @since TODO
+     * @since 2.482
      */
     public static HttpResponseException showNotification(final String message, final NotificationType notificationType) {
         return new HttpResponseException() {
