@@ -1,12 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- This maven skin decorates the taglib documentation located at https://reports.jenkins.io/core-taglib/jelly-taglib-ref.html -->
-<project name="Jenkins">
+<site xmlns="http://maven.apache.org/SITE/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SITE/2.0.0 https://maven.apache.org/xsd/site-2.0.0.xsd"
+      name="Jenkins">
     <body>
         <breadcrumbs>
             <item name="Homepage" href="https://jenkins.io/" target="_blank"/>
         </breadcrumbs>
         <head>
             <![CDATA[
-                <script src="https://cdn.jsdelivr.net/npm/lit@3.2.0/polyfill-support.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/lit@3.2.1/polyfill-support.js"></script>
                 <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.8.0/webcomponents-loader.js"></script>
                 <script data="jio" src="https://cdn.jsdelivr.net/npm/@jenkinsci/jenkins-io-components/+esm" type="module"></script>
                 <script data="jio" nomodule="" src="https://cdn.jsdelivr.net/npm/@jenkinsci/jenkins-io-components"></script>
@@ -34,13 +37,11 @@
             ]]>
         </footer>
     </body>
-    <bannerLeft>
-        <name>Jenkins Taglib Documentation</name>
-    </bannerLeft>
+    <bannerLeft name="Jenkins Taglib Documentation"/>
     <skin>
         <groupId>org.apache.maven.skins</groupId>
         <artifactId>maven-fluido-skin</artifactId>
-        <version>1.12.0</version>
+        <version>2.0.0-M11</version>
     </skin>
     <custom>
         <matomo>
@@ -56,4 +57,4 @@
             <sideBarEnabled>false</sideBarEnabled>
         </fluidoSkin>
     </custom>
-</project>
+</site>

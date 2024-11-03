@@ -7,13 +7,11 @@ node/
 
 .git
 
-.yarnrc.yml
-
 # libraries / external deps / generated files
-war/src/main/js/plugin-setup-wizard/bootstrap-detached.js
+src/main/js/plugin-setup-wizard/bootstrap-detached.js
 war/src/main/webapp/scripts/yui
 war/src/main/webapp/jsbundles/
-war/src/main/scss/_bootstrap.scss
+src/main/scss/_bootstrap.scss
 
 # test files that we don't need formatted
 test/src/test/resources

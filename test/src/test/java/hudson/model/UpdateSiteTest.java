@@ -72,6 +72,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class UpdateSiteTest {
@@ -203,6 +204,19 @@ public class UpdateSiteTest {
         overrideUpdateSite(site);
         assertEquals("number of warnings", 7, site.getData().getWarnings().size());
         assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
+    }
+
+    @Issue("JENKINS-73760")
+    @Test
+    public void isLegacyDefault() {
+        assertFalse("isLegacyDefault should be false with null id", new UpdateSite(null, "url").isLegacyDefault());
+        assertFalse(
+                "isLegacyDefault should be false when id is not default and url is http://updates.jenkins-ci.org/",
+                new UpdateSite("dummy", "http://updates.jenkins-ci.org/").isLegacyDefault());
+        assertTrue(
+                "isLegacyDefault should be true when id is default and url is http://updates.jenkins-ci.org/",
+                new UpdateSite(UpdateCenter.PREDEFINED_UPDATE_SITE_ID, "http://updates.jenkins-ci.org/").isLegacyDefault());
+        assertFalse("isLegacyDefault should be false with null url", new UpdateSite(null, null).isLegacyDefault());
     }
 
     @Test public void getAvailables() throws Exception {
