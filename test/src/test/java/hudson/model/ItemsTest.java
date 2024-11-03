@@ -26,6 +26,9 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -38,6 +41,7 @@ import hudson.cli.CLICommandInvoker;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.CreateJobCommand;
 import hudson.security.ACL;
+import hudson.util.VersionNumber;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -185,12 +189,45 @@ public class ItemsTest {
             grant(Item.DISCOVER).onPaths("known").to("attacker"));
     }
 
+    private void createPrimaryView() throws Exception {
+        // Create a view that only displays jobs that start with 'a-'
+        ListView aView = new ListView("a-view");
+        aView.setIncludeRegex("a-.*");
+        r.jenkins.addView(aView);
+        assertThat(aView.getItems(), is(empty()));
+        assertFalse(aView.isDefault()); // Not yet the primary view
+
+        // Create a view that only displays jobs that start with 'b-'
+        ListView bView = new ListView("b-view");
+        bView.setIncludeRegex("b-.*");
+        r.jenkins.addView(bView);
+        assertThat(bView.getItems(), is(empty()));
+        assertFalse(bView.isDefault()); // Not the primary view
+
+        // Make the a-view the primary view
+        r.jenkins.setPrimaryView(aView);
+        assertTrue(aView.isDefault()); // Now a-view is the primary view
+    }
+
+    /* JENKINS-74795 notes that new items created through the REST API
+     * are made visible in the default view with 2.475 and newer.
+     * They were not made visible in the default view with 2.474 and
+     * earlier.
+     */
+    private void assertPrimaryViewEmpty() throws Exception {
+        // Confirm no job is visible in primary view
+        View view = r.jenkins.getPrimaryView();
+        assertTrue(view.isDefault());
+        assertThat(view.getItems(), is(empty()));
+    }
+
     /** Control cases: if there is no such item yet, nothing is stopping you. */
     @Test public void overwriteNonexistentTarget() throws Exception {
         overwriteTargetSetUp();
+        createPrimaryView();
         for (OverwriteTactic tactic : OverwriteTactic.values()) {
             tactic.run(r, "nonexistent");
-            System.out.println(tactic + " worked as expected on a nonexistent target");
+            assertPrimaryViewEmpty();
             r.jenkins.getItem("nonexistent").delete();
         }
     }
