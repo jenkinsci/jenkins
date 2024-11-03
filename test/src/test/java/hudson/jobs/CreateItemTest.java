@@ -38,12 +38,10 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ListView;
 import hudson.model.listeners.ItemListener;
-import hudson.util.VersionNumber;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.text.MessageFormat;
-import jenkins.model.Jenkins;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
@@ -114,14 +112,7 @@ public class CreateItemTest {
 
         // Confirm new job is not visible in default view
         assertTrue(aView.isDefault()); // a-view is still the default view
-        VersionNumber jenkinsVersion = Jenkins.getVersion();
-        if (jenkinsVersion == null || jenkinsVersion.isOlderThan(new VersionNumber("2.475"))) {
-            // TODO: When JENKINS-74795 is fixed, this assertion will pass
-            assertThat(aView.getItems(), containsInAnyOrder(aJob));
-        } else {
-            // TODO: Until JENKINS-74795 is fixed, this assertion passes (a bug)
-            assertThat(aView.getItems(), containsInAnyOrder(aJob, b2Job));
-        }
+        assertThat(aView.getItems(), containsInAnyOrder(aJob));
     }
 
     @Issue("JENKINS-31235")

@@ -366,8 +366,8 @@ public class ListView extends View implements DirectlyModifiableView {
             JSONObject form = req.getSubmittedForm();
             return form.has("addToCurrentView") && form.getBoolean("addToCurrentView");
         } else {
-            // Submitted via API
-            return true;
+            // Submitted via API - JENKINS-74975
+            return false;
         }
     }
 

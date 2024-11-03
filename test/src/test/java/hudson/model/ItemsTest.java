@@ -28,7 +28,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -41,7 +40,6 @@ import hudson.cli.CLICommandInvoker;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.CreateJobCommand;
 import hudson.security.ACL;
-import hudson.util.VersionNumber;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -210,7 +208,7 @@ public class ItemsTest {
     }
 
     /* JENKINS-74795 notes that new items created through the REST API
-     * are made visible in the default view with 2.475 and newer.
+     * are made visible in the default view with 2.475-2.483.
      * They were not made visible in the default view with 2.474 and
      * earlier.
      */
