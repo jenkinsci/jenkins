@@ -39,7 +39,7 @@ import org.jenkinsci.remoting.RoleChecker;
  * @param <V> the return type; note that this must either be defined in your plugin or included in the stock JEP-200 whitelist
  * @since TODO
  */
-public interface ControllerToAgentCallable<V, T extends Throwable> extends Callable<V, T>  {
+public interface ControllerToAgentCallable<V, T extends Throwable> extends Callable<V, T> {
 
     @Override
     default void checkRoles(RoleChecker checker) throws SecurityException {
