@@ -4369,7 +4369,7 @@ __metadata:
     postcss-scss: "npm:4.0.9"
     prettier: "npm:3.3.3"
     sass: "npm:1.80.5"
-    sass-loader: "npm:16.0.2"
+    sass-loader: "npm:16.0.3"
     sortablejs: "npm:1.15.3"
     style-loader: "npm:4.0.0"
     stylelint: "npm:16.10.0"
@@ -6329,9 +6329,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass-loader@npm:16.0.2":
-  version: 16.0.2
-  resolution: "sass-loader@npm:16.0.2"
+"sass-loader@npm:16.0.3":
+  version: 16.0.3
+  resolution: "sass-loader@npm:16.0.3"
   dependencies:
     neo-async: "npm:^2.6.2"
   peerDependencies:
@@ -6351,7 +6351,7 @@ __metadata:
       optional: true
     webpack:
       optional: true
-  checksum: 10c0/9c5165b44fc6229d8f36fb2af3ebb9d1e3a837bcc80040d3f3fc5793cd2998407e2ed55853c2b342cca2b5e17fa141160198ad034685a95b17126200c320ae11
+  checksum: 10c0/2dc188dd0d5276ed0251eee7f245848ccf9df6ec121227462403f322c17a3dbe100fb60d47968f078e585e4aced452eb7fa1a8e55b415d5de3151fa1bbf2d561
   languageName: node
   linkType: hard
 
