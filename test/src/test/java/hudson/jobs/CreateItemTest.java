@@ -25,19 +25,25 @@
 package hudson.jobs;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import hudson.model.Failure;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.ListView;
+import hudson.model.User;
 import hudson.model.listeners.ItemListener;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.text.MessageFormat;
+import jenkins.model.Jenkins;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
@@ -46,6 +52,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -142,4 +149,54 @@ public class CreateItemTest {
         }
     }
 
+    @Issue("JENKINS-74795")
+    @Test
+    public void testCreateItemDoesNotPopulateDefaultView() throws Exception {
+        // Create a view that only displays jobs that start with 'a-'
+        FreeStyleProject aJob = rule.createFreeStyleProject("a-freestyle-job");
+        ListView aView = new ListView("a-view");
+        aView.setIncludeRegex("a-.*");
+        rule.jenkins.addView(aView);
+        assertThat(aView.getItems(), containsInAnyOrder(aJob));
+        assertFalse(aView.isDefault()); // Not yet the default view
+
+        // Create a view that only displays jobs that start with 'b-'
+        FreeStyleProject bJob = rule.createFreeStyleProject("b-freestyle-job");
+        ListView bView = new ListView("b-view");
+        bView.setIncludeRegex("b-.*");
+        rule.jenkins.addView(bView);
+        assertThat(bView.getItems(), containsInAnyOrder(bJob));
+        assertFalse(bView.isDefault()); // Not the default view
+
+        // Make the a-view the default
+        rule.jenkins.setPrimaryView(aView);
+        assertTrue(aView.isDefault()); // Now a-view is the default view
+
+        // Use createItem API to create a new job
+        User user = User.getById("user", true);
+        rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
+        rule.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ, Item.CREATE)
+                .everywhere()
+                .to(user.getId()));
+        String b2JobName = "b-freestyle-job-2";
+        try (JenkinsRule.WebClient wc = rule.createWebClient()) {
+            wc.login(user.getId());
+            WebRequest request = new WebRequest(wc.createCrumbedUrl("createItem?name=" + b2JobName), HttpMethod.POST);
+            request.setAdditionalHeader("Content-Type", "application/xml");
+            request.setRequestBody("<project/>");
+            wc.getPage(request);
+        }
+        FreeStyleProject b2Job = rule.jenkins.getItemByFullName(b2JobName, FreeStyleProject.class);
+        assertThat(bView.getItems(), containsInAnyOrder(bJob, b2Job));
+        assertFalse(bView.isDefault());
+
+        // Confirm new job is not visible in default view
+        assertTrue(aView.isDefault()); // a-view is still the default view
+        assertThat(aView.getItems(), containsInAnyOrder(aJob));
+
+        // Confirm new job is visible in non-default view
+        assertFalse(bView.isDefault()); // b-view is not the default view
+        assertThat(bView.getItems(), containsInAnyOrder(bJob, b2Job));
+    }
 }
