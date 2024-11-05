@@ -228,6 +228,7 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
             Arguments.of("os-release-fedora-39", "Fedora.* 39.*", s("Fedora Linux 39 (Container Image)", simplify)),
             Arguments.of("os-release-fedora-39", "Fedora.* 39.*", s("Fedora Linux 39 (Container Image)", simplify)),
             Arguments.of("os-release-fedora-40", "Fedora.* 40.*", s("Fedora Linux 40 (Container Image)", simplify)),
+            Arguments.of("os-release-fedora-41", "Fedora.* 41.*", s("Fedora Linux 41 (Container Image)", simplify)),
             Arguments.of("os-release-oracle-7", "Oracle Linux.* 7.*", s("Oracle Linux Server 7.9", simplify)),
             Arguments.of("os-release-oracle-8", "Oracle Linux.* 8.*", s("Oracle Linux Server 8.10", simplify)),
             Arguments.of("os-release-oracle-9", "Oracle Linux.* 9.*", s("Oracle Linux Server 9.4", simplify)),
