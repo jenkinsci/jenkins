@@ -2259,61 +2259,6 @@ function ensureVisible(e) {
   }
 }
 
-// set up logic behind the search box
-// eslint-disable-next-line no-unused-vars
-function createSearchBox(searchURL) {
-  var ds = new YAHOO.util.XHRDataSource(searchURL + "suggest");
-  ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
-  ds.responseSchema = {
-    resultsList: "suggestions",
-    fields: ["name"],
-  };
-  var ac = new YAHOO.widget.AutoComplete(
-    "search-box",
-    "search-box-completion",
-    ds,
-  );
-  ac.typeAhead = false;
-  ac.autoHighlight = false;
-  ac.formatResult = ac.formatEscapedResult;
-  ac.maxResultsDisplayed = 25;
-
-  var box = document.getElementById("search-box");
-  var sizer = document.getElementById("search-box-sizer");
-  var comp = document.getElementById("search-box-completion");
-
-  Behaviour.addLoadEvent(function () {
-    // copy font style of box to sizer
-    var ds = sizer.style;
-    ds.fontFamily = getStyle(box, "fontFamily");
-    ds.fontSize = getStyle(box, "fontSize");
-    ds.fontStyle = getStyle(box, "fontStyle");
-    ds.fontWeight = getStyle(box, "fontWeight");
-  });
-
-  // update positions and sizes of the components relevant to search
-  function updatePos() {
-    sizer.innerHTML = escapeHTML(box.value);
-    var cssWidth,
-      offsetWidth = sizer.offsetWidth;
-    if (offsetWidth > 0) {
-      cssWidth = offsetWidth + "px";
-    } else {
-      // sizer hidden on small screen, make sure resizing looks OK
-      cssWidth = getStyle(sizer, "minWidth");
-    }
-    box.style.width = comp.firstElementChild.style.minWidth =
-      "calc(60px + " + cssWidth + ")";
-
-    var pos = YAHOO.util.Dom.getXY(box);
-    pos[1] += YAHOO.util.Dom.get(box).offsetHeight + 2;
-    YAHOO.util.Dom.setXY(comp, pos);
-  }
-
-  updatePos();
-  box.addEventListener("input", updatePos);
-}
-
 /**
  * Finds the DOM node of the given DOM node that acts as a parent in the form submission.
  *
