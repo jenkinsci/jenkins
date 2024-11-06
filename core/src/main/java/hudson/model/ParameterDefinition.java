@@ -170,8 +170,8 @@ public abstract class ParameterDefinition implements
         }
     }
 
-    @Override
     @NonNull
+    @Override
     public ParameterDescriptor getDescriptor() {
         return (ParameterDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }

@@ -145,8 +145,8 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Returns a human-readable text that represents this label.
      */
-    @Override
     @NonNull
+    @Override
     public String getDisplayName() {
         return name;
     }

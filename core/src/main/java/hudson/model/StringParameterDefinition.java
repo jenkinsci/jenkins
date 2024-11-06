@@ -134,8 +134,8 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
 
     @Extension @Symbol({"string", "stringParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
-        @Override
         @NonNull
+        @Override
         public String getDisplayName() {
             return Messages.StringParameterDefinition_DisplayName();
         }

@@ -2173,8 +2173,8 @@ public class Queue extends ResourceController implements Saveable {
 
         private final long inQueueSince;
 
-        @Override
         @NonNull
+        @Override
         public Task getTask() {
             return task;
         }

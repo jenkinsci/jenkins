@@ -337,9 +337,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
         return culprits;
     }
 
-    @Override
     @Exported
-    @NonNull public Set<User> getCulprits() {
+    @NonNull
+    @Override
+    public Set<User> getCulprits() {
         return RunWithSCM.super.getCulprits();
     }
 
@@ -348,8 +349,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
         return getCulpritIds() == null;
     }
 
-    @Override
     @NonNull
+    @Override
     public Set<User> calculateCulprits() {
         Set<User> c = RunWithSCM.super.calculateCulprits();
 

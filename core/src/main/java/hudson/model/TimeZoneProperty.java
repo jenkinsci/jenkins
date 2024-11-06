@@ -52,8 +52,7 @@ public class TimeZoneProperty extends UserProperty {
         return timeZoneName;
     }
 
-    @Extension
-    @Symbol("timezone")
+    @Extension @Symbol("timezone")
     public static class DescriptorImpl extends UserPropertyDescriptor {
 
         @NonNull

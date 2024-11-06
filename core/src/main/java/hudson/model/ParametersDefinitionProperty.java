@@ -239,8 +239,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         return null;
     }
 
-    @Extension
-    @Symbol("parameters")
+    @Extension @Symbol("parameters")
     public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
         @Override
         public ParametersDefinitionProperty newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {

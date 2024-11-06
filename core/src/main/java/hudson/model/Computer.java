@@ -756,8 +756,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return Messages.Computer_Caption(nodeName);
     }
 
-    @Override
     @NonNull
+    @Override
     public String getUrl() {
         return "computer/" + Util.fullEncode(getName()) + "/";
     }
@@ -966,8 +966,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * {@inheritDoc}
      * @since 1.607
      */
-    @Override
     @NonNull
+    @Override
     public List<IDisplayExecutor> getDisplayExecutors() {
         // The size may change while we are populating, but let's start with a reasonable guess to minimize resizing
         List<IDisplayExecutor> result = new ArrayList<>(executors.size() + oneOffExecutors.size());

@@ -174,8 +174,8 @@ public abstract class JobProperty<J extends Job<?, ?>> implements Reconfigurable
         return getJobAction((J) project);
     }
 
-    @Override
     @NonNull
+    @Override
     public final Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
         return getJobActions((J) project);
     }
