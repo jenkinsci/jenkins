@@ -24,6 +24,7 @@
 
 package jenkins.model.experimentalflags;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import org.kohsuke.accmod.Restricted;
@@ -45,5 +46,11 @@ public class RemoveYuiUserExperimentalFlag extends BooleanUserExperimentalFlag {
     @Override
     public String getShortDescription() {
         return "Remove YUI from all Jenkins UI pages. This will break anything that depends on YUI";
+    }
+
+    @NonNull
+    @Override
+    public Boolean getDefaultValue() {
+        return true;
     }
 }
