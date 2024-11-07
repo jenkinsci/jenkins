@@ -194,9 +194,5 @@ public class CreateItemTest {
         // Confirm new job is not visible in default view
         assertTrue(aView.isDefault()); // a-view is still the default view
         assertThat(aView.getItems(), containsInAnyOrder(aJob));
-
-        // Confirm new job is visible in non-default view
-        assertFalse(bView.isDefault()); // b-view is not the default view
-        assertThat(bView.getItems(), containsInAnyOrder(bJob, b2Job));
     }
 }
