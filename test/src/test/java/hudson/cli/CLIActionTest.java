@@ -158,7 +158,7 @@ public class CLIActionTest {
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-Dfile.encoding=ISO-8859-2", "-Duser.language=cs", "-Duser.country=CZ", "-jar", jar.getAbsolutePath(),
                 "-s", j.getURL().toString()./* just checking */replaceFirst("/$", ""), "test-diagnostic").
-            stdout(baos).stderr(System.err).join());
+            stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).join());
         assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString(Charset.forName("ISO-8859-2")).trim());
         // TODO test that stdout/stderr are in expected encoding (not true of -remoting mode!)
         // -ssh mode does not pass client locale or encoding

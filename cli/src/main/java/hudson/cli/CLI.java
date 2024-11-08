@@ -54,7 +54,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -367,14 +366,16 @@ public class CLI {
             ws.set(wsb.buildAsync(URI.create(url.replaceFirst("^http", "ws") + "cli/ws"), new WebSocket.Listener() {
                 @Override
                 public CompletionStage<?> onBinary(WebSocket webSocket, ByteBuffer data, boolean last) {
-                    var f = new CompletableFuture<Void>();
                     try {
                         connection.handle(new DataInputStream(new ByteArrayInputStream(data.array())));
-                        f.complete(null);
                     } catch (IOException x) {
-                        f.completeExceptionally(x);
+                        LOGGER.log(Level.WARNING, null, x);
                     }
-                    return f;
+                    return null;
+                }
+                @Override
+                public void onError(WebSocket webSocket, Throwable error) {
+                    LOGGER.log(Level.WARNING, null, error);
                 }
             }).get());
             connection.start(args);
