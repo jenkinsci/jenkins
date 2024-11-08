@@ -337,6 +337,9 @@ public class CLI {
         if (factory.authorization != null) {
             wsb.header("Authorization", factory.authorization);
         }
+        var controllerUri = new URI(url);
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin
+        wsb.header("Origin", new URI(controllerUri.getScheme(), null, controllerUri.getHost(), controllerUri.getPort(), null, null, null).toString());
         if (factory.noCertificateCheck) {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[] {new NoCheckTrustManager()}, new SecureRandom());

@@ -143,6 +143,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 LOGGER.log(Level.FINE, () -> "Rejecting origin: " + actualOrigin + "; expected was from request: " + expectedOrigin);
                 return HttpResponses.forbidden();
             }
+            LOGGER.fine(() -> "accepting Origin: " + actualOrigin);
         } else if (!ALLOW_WEBSOCKET) {
             return HttpResponses.forbidden();
         }

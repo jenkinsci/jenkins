@@ -151,6 +151,7 @@ public class CLIActionTest {
     @Issue("JENKINS-41745")
     @Test
     public void encodingAndLocale() throws Exception {
+        logging.record(CLIAction.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
