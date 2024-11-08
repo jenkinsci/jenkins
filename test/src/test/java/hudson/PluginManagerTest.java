@@ -759,7 +759,7 @@ public class PluginManagerTest {
         File dir = tmp.newFolder();
         File plugin = new File(dir, "htmlpublisher.jpi");
         FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
-        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
         File filesRef = Files.createTempFile("tmp", ".tmp").toFile();

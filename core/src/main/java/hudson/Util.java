@@ -1525,6 +1525,10 @@ public class Util {
      *                                  does not contain the specified method.
      */
     public static boolean isOverridden(@NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
+        if (base == derived) {
+            // If base and derived are the same type, the method is not overridden by definition
+            return false;
+        }
         // If derived is not a subclass or implementor of base, it can't override any method
         // Technically this should also be triggered when base == derived, because it can't override its own method, but
         // the unit tests explicitly test for that as working.
@@ -1852,7 +1856,7 @@ public class Util {
      * Find the specific ancestor, or throw an exception.
      * Useful for an ancestor we know is inside the URL to ease readability
      *
-     * @since TODO
+     * @since 2.475
      */
     @Restricted(NoExternalUse.class)
     public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest2 request, @NonNull Class<T> clazz) {

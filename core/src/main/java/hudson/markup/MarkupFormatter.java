@@ -62,9 +62,14 @@ import org.kohsuke.stapler.verb.POST;
  * This is an extension point in Hudson, allowing plugins to implement different markup formatters.
  *
  * <p>
- * Implement the following methods to enable and control CodeMirror syntax highlighting
- * public String getCodeMirrorMode() // return null to disable CodeMirror dynamically
- * public String getCodeMirrorConfig()
+ * Implement the following methods to enable and control CodeMirror syntax highlighting:
+ * <ul>
+ *     <li><code>public String getCodeMirrorMode()</code> (return <code>null</code> to disable CodeMirror dynamically)</li>
+ *     <li>
+ *         <code>public String getCodeMirrorConfig()</code> (JSON snippet without surrounding curly braces, e.g., <code>"mode": "text/css"</code>.
+ *         Historically this allowed invalid JSON, but since TODO it needs to be properly quoted etc.
+ *     </li>
+ * </ul>
  *
  * <h2>Views</h2>
  * <p>

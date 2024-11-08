@@ -34,6 +34,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.PermalinkList;
@@ -90,6 +91,7 @@ import java.util.logging.Logger;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderProperty;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import jenkins.model.HistoricalBuild;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
@@ -220,29 +222,20 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         TextFile f = getNextBuildNumberFile();
         if (f.exists()) {
-            // starting 1.28, we store nextBuildNumber in a separate file.
-            // but old Hudson didn't do it, so if the file doesn't exist,
-            // assume that nextBuildNumber was read from config.xml
             try {
                 synchronized (this) {
                     this.nextBuildNumber = Integer.parseInt(f.readTrim());
                 }
             } catch (NumberFormatException e) {
                 LOGGER.log(Level.WARNING, "Corruption in {0}: {1}", new Object[] {f, e});
-                //noinspection StatementWithEmptyBody
-                if (this instanceof LazyBuildMixIn.LazyLoadingJob) {
-                    // allow LazyBuildMixIn.onLoad to fix it
-                } else {
-                    RunT lB = getLastBuild();
-                    synchronized (this) {
-                        this.nextBuildNumber = lB != null ? lB.getNumber() + 1 : 1;
-                    }
-                    saveNextBuildNumber();
+                RunT lB = getLastBuild();
+                synchronized (this) {
+                    this.nextBuildNumber = lB != null ? lB.getNumber() + 1 : 1;
                 }
+                saveNextBuildNumber();
             }
-        } else {
-            // From the old Hudson, or doCreateItem. Create this file now.
-            saveNextBuildNumber();
+        } else if (nextBuildNumber == 0) {
+            nextBuildNumber = 1;
         }
 
         if (properties == null) // didn't exist < 1.72
@@ -345,12 +338,42 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Allocates a new buildCommand number.
+     * Allocates a new build number.
+     * @see BuildNumberAssigner
      */
-    public synchronized int assignBuildNumber() throws IOException {
-        int r = nextBuildNumber++;
-        saveNextBuildNumber();
-        return r;
+    public int assignBuildNumber() throws IOException {
+        return ExtensionList.lookupFirst(BuildNumberAssigner.class).assignBuildNumber(this, this::saveNextBuildNumber);
+    }
+
+    /**
+     * Alternate strategy for assigning build numbers.
+     */
+    @Restricted(Beta.class)
+    public interface BuildNumberAssigner extends ExtensionPoint {
+        /**
+         * Implementation of {@link Job#assignBuildNumber}.
+         */
+        int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException;
+        /**
+         * Provides an externally accessible alias for {@link Job#saveNextBuildNumber}, which is {@code protected}.
+         * ({@link #getNextBuildNumber} and {@link #fastUpdateNextBuildNumber} are already accessible.)
+         */
+        interface SaveNextBuildNumber {
+            void call() throws IOException;
+        }
+    }
+
+    @Restricted(DoNotUse.class)
+    @Extension(ordinal = -1000)
+    public static final class DefaultBuildNumberAssigner implements BuildNumberAssigner {
+        @Override
+        public int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException {
+            synchronized (job) {
+                int r = job.nextBuildNumber++;
+                saveNextBuildNumber.call();
+                return r;
+            }
+        }
     }
 
     /**
@@ -636,9 +659,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         throw new IllegalStateException("HistoryWidget is now created via WidgetFactory implementation");
     }
 
-    public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<>() {
+    public static final HistoryWidget.Adapter<HistoricalBuild> HISTORY_ADAPTER = new Adapter<>() {
         @Override
-        public int compare(Run record, String key) {
+        public int compare(HistoricalBuild record, String key) {
             try {
                 int k = Integer.parseInt(key);
                 return record.getNumber() - k;
@@ -648,12 +671,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         @Override
-        public String getKey(Run record) {
+        public String getKey(HistoricalBuild record) {
             return String.valueOf(record.getNumber());
         }
 
         @Override
-        public boolean isBuilding(Run record) {
+        public boolean isBuilding(HistoricalBuild record) {
             return record.isBuilding();
         }
 
@@ -859,7 +882,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     @Override
     public Object getDynamic(String token, StaplerRequest2 req,
@@ -1207,7 +1230,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     @Override
     public ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
@@ -1433,7 +1456,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Derived class can override this to perform additional config submission
      * work.
      *
-     * @since TODO
+     * @since 2.475
      */
     protected void submit(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException, ServletException, FormException {

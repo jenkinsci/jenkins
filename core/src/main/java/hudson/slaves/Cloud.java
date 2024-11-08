@@ -342,7 +342,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public Cloud reconfigure(@NonNull final StaplerRequest2 req, JSONObject form) throws Descriptor.FormException {
         if (Util.isOverridden(Cloud.class, getClass(), "reconfigure", StaplerRequest.class, JSONObject.class)) {

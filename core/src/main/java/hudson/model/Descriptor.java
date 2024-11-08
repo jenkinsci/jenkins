@@ -24,7 +24,6 @@
 
 package hudson.model;
 
-import static hudson.util.QuotedStringTokenizer.quote;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -580,7 +579,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
      *
      * @throws FormException
      *      Signals a problem in the submitted form.
-     * @since TODO
+     * @since 2.475
      */
     public T newInstance(@Nullable StaplerRequest2 req, @NonNull JSONObject formData) throws FormException {
         if (Util.isOverridden(Descriptor.class, getClass(), "newInstance", StaplerRequest.class, JSONObject.class)) {
@@ -626,7 +625,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
      * Replacement for {@link StaplerRequest2#bindJSON(Class, JSONObject)} which honors {@link #newInstance(StaplerRequest2, JSONObject)}.
      * This is automatically used inside {@link #newInstance(StaplerRequest2, JSONObject)} so a direct call would only be necessary
      * in case the top level binding might use a {@link Descriptor} which overrides {@link #newInstance(StaplerRequest2, JSONObject)}.
-     * @since TODO
+     * @since 2.475
      */
     public static <T> T bindJSON(StaplerRequest2 req, Class<T> type, JSONObject src) {
         return bindJSON(req, type, src, false);
@@ -859,7 +858,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
      *      See <a href="https://www.jenkins.io/doc/developer/forms/structured-form-submission/">the developer documentation</a>.
      * @return false
      *      to keep the client in the same config page.
-     * @since TODO
+     * @since 2.475
      */
     public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         if (Util.isOverridden(Descriptor.class, getClass(), "configure", StaplerRequest.class, JSONObject.class)) {
@@ -1062,7 +1061,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     @Restricted(NoExternalUse.class)
     public static URL getStaticHelpUrl(StaplerRequest2 req, Klass<?> c, String suffix) {
@@ -1142,7 +1141,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
      *      List of descriptors to create instances from.
      * @return
      *      Can be empty but never null.
-     * @since TODO
+     * @since 2.475
      */
     public static <T extends Describable<T>>
     List<T> newInstancesFromHeteroList(StaplerRequest2 req, JSONObject formData, String key,
@@ -1162,7 +1161,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static <T extends Describable<T>>
     List<T> newInstancesFromHeteroList(StaplerRequest2 req, Object formData,
@@ -1306,7 +1305,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
         @Override
         public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
             if (FormApply.isApply(req)) {
-                FormApply.applyResponse("notificationBar.show(" + quote(getMessage()) + ",notificationBar.ERROR)")
+                FormApply.showNotification(getMessage(), FormApply.NotificationType.ERROR)
                         .generateResponse(req, rsp, node);
             } else {
                 // for now, we can't really use the field name that caused the problem.

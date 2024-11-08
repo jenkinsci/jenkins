@@ -788,7 +788,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * @return
      *      null if fails.
-     * @since TODO
+     * @since 2.475
      */
     @RequirePOST
     public /* abstract */ Item doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
@@ -949,9 +949,28 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Accepts {@code config.xml} submission, as well as serve it.
+     *
+     * @since 2.475
      */
     @WebMethod(name = "config.xml")
     public HttpResponse doConfigDotXml(StaplerRequest2 req) throws IOException {
+        if (Util.isOverridden(View.class, getClass(), "doConfigDotXml", StaplerRequest.class)) {
+            return doConfigDotXml(StaplerRequest.fromStaplerRequest2(req));
+        } else {
+            return doConfigDotXmlImpl(req);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doConfigDotXml(StaplerRequest2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public HttpResponse doConfigDotXml(StaplerRequest req) throws IOException {
+        return doConfigDotXmlImpl(StaplerRequest.toStaplerRequest2(req));
+    }
+
+    private HttpResponse doConfigDotXmlImpl(StaplerRequest2 req) throws IOException {
         if (req.getMethod().equals("GET")) {
             // read
             checkPermission(READ);
@@ -1104,7 +1123,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static View create(StaplerRequest2 req, StaplerResponse2 rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {

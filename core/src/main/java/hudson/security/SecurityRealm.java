@@ -278,7 +278,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *      This parameter allows you to redirect people to different pages depending on who they are.
      * @return
      *      never null.
-     * @since TODO
+     * @since 2.475
      * @see #doLogout(StaplerRequest2, StaplerResponse2)
      */
     protected String getPostLogOutUrl2(StaplerRequest2 req, Authentication auth) {
@@ -340,7 +340,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * The default implementation erases the session and do a few other clean up, then
      * redirect the user to the URL specified by {@link #getPostLogOutUrl2(StaplerRequest2, Authentication)}.
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doLogout(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         if (Util.isOverridden(SecurityRealm.class, getClass(), "doLogout", StaplerRequest.class, StaplerResponse.class)) {
@@ -619,7 +619,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * For other plugins that want to contribute {@link Filter}, see
      * {@link PluginServletFilter}.
      *
-     * @since TODO
+     * @since 2.475
      */
     public Filter createFilter(FilterConfig filterConfig) {
         if (Util.isOverridden(SecurityRealm.class, getClass(), "createFilter", javax.servlet.FilterConfig.class)) {
@@ -678,7 +678,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         }
         filters.add(new RememberMeAuthenticationFilter(sc.manager2, sc.rememberMe2));
         filters.addAll(commonFilters());
-        return new ChainedServletFilter(filters);
+        return new ChainedServletFilter2(filters);
     }
 
     protected final List<Filter> commonFilters() {
@@ -781,7 +781,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
          */
         @Override
         public Filter createFilter(FilterConfig filterConfig) {
-            return new ChainedServletFilter();
+            return new ChainedServletFilter2();
         }
 
         /**
