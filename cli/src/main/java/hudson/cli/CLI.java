@@ -29,7 +29,6 @@ import static java.util.logging.Level.parse;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.cli.client.Messages;
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -366,12 +365,19 @@ public class CLI {
             ws.set(wsb.buildAsync(URI.create(url.replaceFirst("^http", "ws") + "cli/ws"), new WebSocket.Listener() {
                 @Override
                 public CompletionStage<?> onBinary(WebSocket webSocket, ByteBuffer data, boolean last) {
+                    // TODO if !last, buffer up (though CLIAction.ws does not currently send partial messages)
                     try {
-                        connection.handle(new DataInputStream(new ByteArrayInputStream(data.array())));
+                        connection.handle(new DataInputStream(new ByteBufferBackedInputStream(data)));
                     } catch (IOException x) {
+                        x.printStackTrace();
                         LOGGER.log(Level.WARNING, null, x);
                     }
+                    webSocket.request(1);
                     return null;
+                }
+                @Override
+                public void onOpen(WebSocket webSocket) {
+                    webSocket.request(1);
                 }
                 @Override
                 public void onError(WebSocket webSocket, Throwable error) {
@@ -397,6 +403,30 @@ public class CLI {
             } else {
                 throw new Exception(cause);
             }
+        }
+    }
+
+    // https://stackoverflow.com/a/6603018/12916
+    private static final class ByteBufferBackedInputStream extends InputStream {
+        final ByteBuffer buf;
+        ByteBufferBackedInputStream(ByteBuffer buf) {
+            this.buf = buf;
+        }
+        @Override
+        public int read() throws IOException {
+            if (!buf.hasRemaining()) {
+                return -1;
+            }
+            return buf.get() & 0xFF;
+        }
+        @Override
+        public int read(byte[] bytes, int off, int len) throws IOException {
+            if (!buf.hasRemaining()) {
+                return -1;
+            }
+            len = Math.min(len, buf.remaining());
+            buf.get(bytes, off, len);
+            return len;
         }
     }
 
