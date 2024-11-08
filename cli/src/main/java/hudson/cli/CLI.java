@@ -353,7 +353,7 @@ public class CLI {
         var out = new PlainCLIProtocol.Output() {
             @Override
             public void send(byte[] data) throws IOException {
-                ws.get().sendBinary(ByteBuffer.wrap(data), false);
+                ws.get().sendBinary(ByteBuffer.wrap(data), true);
             }
             @Override
             public void close() throws IOException {
