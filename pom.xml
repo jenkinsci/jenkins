@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.125</version>
+    <version>1.126</version>
     <relativePath />
   </parent>
 
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3273.v4cfe589b_fd83</remoting.version>
+    <remoting.version>3283.v92c105e0f819</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -281,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.20.0</version>
+              <version>10.20.1</version>
             </dependency>
           </dependencies>
           <executions>
