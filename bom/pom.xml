@@ -193,11 +193,6 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
-        <artifactId>commons-compress</artifactId>
-        <version>1.26.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.commons</groupId>
         <artifactId>commons-fileupload2</artifactId>
         <version>${commons-fileupload2.version}</version>
       </dependency>
