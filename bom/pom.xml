@@ -109,7 +109,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.20</version>
+        <version>1.4.21</version>
       </dependency>
       <dependency>
         <groupId>commons-beanutils</groupId>
