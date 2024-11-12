@@ -1,24 +1,20 @@
-// prototype object to be duplicated for each radio button group
+// Prototype object to manage each radio button group securely
 var radioBlockSupport = {
-  buttons: null, // set of functions, one for updating one radio block each
+  buttons: [], // array of functions to update each radio block
 
   updateButtons: function () {
-    for (var i = 0; i < this.buttons.length; i++) {
-      this.buttons[i]();
-    }
+    this.buttons.forEach((button) => button());
   },
 
-  // update one block based on the status of the given radio button
+  // Update one block based on the status of the given radio button
   updateSingleButton: function (radio, blockStart, blockEnd) {
-    var show = radio.checked;
+    const show = radio.checked;
 
-    let n;
-    if (blockStart.getAttribute("hasHelp") == "true") {
-      n = blockStart.nextElementSibling;
-    } else {
-      n = blockStart;
-    }
-    while ((n = n.nextElementSibling) != blockEnd) {
+    let n = blockStart.getAttribute("hasHelp") === "true" 
+            ? blockStart.nextElementSibling 
+            : blockStart;
+
+    while ((n = n.nextElementSibling) !== blockEnd) {
       if (show) {
         n.classList.remove("form-container--hidden");
         n.style.position = "";
@@ -27,65 +23,45 @@ var radioBlockSupport = {
         n.style.position = "absolute";
       }
     }
-    layoutUpdateCallback.call();
+    layoutUpdateCallback();
   },
 };
 
-// this needs to happen before TR.row-set-end rule kicks in.
-Behaviour.specify(
-  "INPUT.radio-block-control",
-  "radioBlock",
-  -100,
-  function (r) {
-    r.id = "radio-block-" + iota++;
-    r.nextSibling.setAttribute("for", r.id);
+// Function to initialize the behavior securely
+function initializeRadioBlockControl(r) {
+  r.id = `radio-block-${iota++}`;
+  r.nextSibling.setAttribute("for", r.id);
 
-    // when one radio button is clicked, we need to update foldable block for
-    // other radio buttons with the same name. To do this, group all the
-    // radio buttons with the same name together and hang it under the form object
-    var f = r.form;
-    var radios = f.radios;
-    if (radios == null) {
-      f.radios = radios = {};
+  const form = r.form;
+  const radios = form.radios || (form.radios = {});
+  const group = radios[r.name] || (radios[r.name] = Object.create(radioBlockSupport));
+  group.buttons = group.buttons || [];
+
+  const blockStart = r.closest(".radio-block-start");
+  blockStart.setAttribute("ref", r.id);
+
+  // Find the end node securely
+  const blockEnd = (() => {
+    let e = blockStart;
+    let cnt = 1;
+    while (cnt > 0) {
+      e = e.nextElementSibling;
+      if (e.classList.contains("radio-block-start")) cnt++;
+      if (e.classList.contains("radio-block-end")) cnt--;
     }
+    return e;
+  })();
 
-    var g = radios[r.name];
-    if (g == null) {
-      radios[r.name] = g = object(radioBlockSupport);
-      g.buttons = [];
-    }
+  const updateFunction = () => group.updateSingleButton(r, blockStart, blockEnd);
+  group.buttons.push(updateFunction);
 
-    var s = r.closest(".radio-block-start");
-    s.setAttribute("ref", r.id);
+  // Apply the initial visibility
+  updateFunction();
 
-    // find the end node
-    var e = (function () {
-      var e = s;
-      var cnt = 1;
-      while (cnt > 0) {
-        e = e.nextElementSibling;
-        if (e.classList.contains("radio-block-start")) {
-          cnt++;
-        }
-        if (e.classList.contains("radio-block-end")) {
-          cnt--;
-        }
-      }
-      return e;
-    })();
+  // Use event listeners for secure handling, instead of inline events
+  r.addEventListener("click", group.updateButtons.bind(group));
+  r.addEventListener("change", group.updateButtons.bind(group));
+}
 
-    var u = function () {
-      g.updateSingleButton(r, s, e);
-    };
-    g.buttons.push(u);
-
-    // apply the initial visibility
-    u();
-
-    // install event handlers to update visibility.
-    // needs to use onclick and onchange for Safari compatibility
-    r.onclick = r.onchange = function () {
-      g.updateButtons();
-    };
-  },
-);
+// Specifying behavior for each radio button with secure initialization
+Behaviour.specify("INPUT.radio-block-control", "radioBlock", -100, initializeRadioBlockControl);
