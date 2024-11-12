@@ -10,14 +10,15 @@
 
   <artifactId>cli</artifactId>
 
-  <name>Jenkins cli</name>
+  <name>Jenkins CLI</name>
   <description>Command line interface for Jenkins</description>
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <mina-sshd.version>2.14.0</mina-sshd.version>
-    <!-- Filled in by jacoco-maven-plugin -->
-    <jacocoSurefireArgs />
+    <mina-sshd.version>2.10.0</mina-sshd.version>
+    <jacoco.version>0.8.8</jacoco.version>
+    <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
+    <junit.version>5.8.2</junit.version>
   </properties>
 
   <dependencyManagement>
@@ -36,15 +37,16 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+      <version>2.11.0</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
+      <version>3.12.0</version>
       <optional>true</optional>
     </dependency>
     <dependency>
-      <!-- ed25519 algorithm, see JENKINS-45318 -->
       <groupId>net.i2p.crypto</groupId>
       <artifactId>eddsa</artifactId>
       <version>0.3.0</version>
@@ -71,21 +73,25 @@
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
+      <version>1.15</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
+      <version>1.32</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
+      <version>1.7.32</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
+      <version>4.4.2</version>
       <scope>provided</scope>
       <optional>true</optional>
       <exclusions>
@@ -98,11 +104,13 @@
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>access-modifier-annotation</artifactId>
+      <version>1.24</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -111,7 +119,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <!-- Version specified in grandparent POM -->
+        <version>3.0.0-M5</version>
         <configuration>
           <argLine>@{jacocoSurefireArgs}</argLine>
         </configuration>
@@ -119,7 +127,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>${maven-shade-plugin.version}</version>
         <executions>
           <execution>
             <goals>
@@ -162,7 +170,7 @@
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>localizer-maven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
+        <version>1.24</version>
         <executions>
           <execution>
             <goals>
@@ -179,7 +187,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <!-- Version specified in grandparent POM -->
+        <version>3.2.0</version>
         <executions>
           <execution>
             <id>add-source</id>
@@ -197,6 +205,7 @@
       </plugin>
     </plugins>
   </build>
+
   <profiles>
     <profile>
       <id>enable-jacoco</id>
@@ -205,7 +214,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <!-- Version specified in parent POM -->
+            <version>${jacoco.version}</version>
             <executions>
               <execution>
                 <goals>
