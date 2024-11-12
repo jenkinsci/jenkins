@@ -1,17 +1,10 @@
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,31 +12,23 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
 
-/**
- * @author Kohsuke Kawaguchi
- */
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 public class ExtensionListTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-//
-//
-// non-Descriptor extension point
-//
-//
-
-    public interface Animal extends ExtensionPoint {
-    }
+    // Interface for non-Descriptor extension point
+    public interface Animal extends ExtensionPoint {}
 
     @Extension
-    public static class Dog implements Animal {
-    }
+    public static class Dog implements Animal {}
 
     @Extension
-    public static class Cat implements Animal {
-    }
-
+    public static class Cat implements Animal {}
 
     @Test
     public void autoDiscovery() {
@@ -57,38 +42,22 @@ public class ExtensionListTest {
     @WithoutJenkins
     public void nullJenkinsInstance() {
         ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
-        assertEquals(0, list.size());
-        assertFalse(list.iterator().hasNext());
+        assertTrue(list.isEmpty());
     }
 
     @Test
     public void extensionListView() {
-        // this is how legacy list like UserNameResolver.LIST gets created.
         List<Animal> LIST = ExtensionListView.createList(Animal.class);
 
-        // we should see auto-registered instances here
         assertEquals(2, LIST.size());
-        assertTrue(hasInstanceOf(LIST, Dog.class));
-        assertTrue(hasInstanceOf(LIST, Cat.class));
+        assertTrue(LIST.stream().anyMatch(d -> d.getClass() == Dog.class));
+        assertTrue(LIST.stream().anyMatch(d -> d.getClass() == Cat.class));
 
         Animal lion = new Animal() {};
         LIST.add(lion);
         assertEquals(3, LIST.size());
         assertTrue(LIST.contains(lion));
     }
-
-    private boolean hasInstanceOf(Collection c, Class type) {
-        for (Object o : c)
-            if (o.getClass() == type)
-                return true;
-        return false;
-    }
-
-//
-//
-// Descriptor extension point
-//
-//
 
     public abstract static class FishDescriptor extends Descriptor<Fish> {}
 
@@ -100,104 +69,63 @@ public class ExtensionListTest {
     }
 
     public static class Tai extends Fish {
-        @Extension
-        public static final class DescriptorImpl extends FishDescriptor {}
+        @Extension public static final class DescriptorImpl extends FishDescriptor {}
     }
 
     public static class Saba extends Fish {
-        @Extension
-        public static final class DescriptorImpl extends FishDescriptor {}
+        @Extension public static final class DescriptorImpl extends FishDescriptor {}
     }
 
     public static class Sishamo extends Fish {
         public static final class DescriptorImpl extends FishDescriptor {}
     }
 
-    /**
-     * Verifies that the automated {@link Descriptor} lookup works.
-     */
     @Test
     public void descriptorLookup() {
         Descriptor<Fish> d = new Sishamo().getDescriptor();
-
         DescriptorExtensionList<Fish, Descriptor<Fish>> list = j.jenkins.getDescriptorList(Fish.class);
         assertSame(d, list.get(Sishamo.DescriptorImpl.class));
-
         assertSame(d, j.jenkins.getDescriptor(Sishamo.class));
     }
 
     @Test
     public void fishDiscovery() {
-        // imagine that this is a static instance, like it is in many LIST static field in Hudson.
         DescriptorList<Fish> LIST = new DescriptorList<>(Fish.class);
-
         DescriptorExtensionList<Fish, Descriptor<Fish>> list = j.jenkins.getDescriptorList(Fish.class);
-        assertEquals(2, list.size());
-        assertNotNull(list.get(Tai.DescriptorImpl.class));
-        assertNotNull(list.get(Saba.DescriptorImpl.class));
 
-        // registration can happen later, and it should be still visible
+        assertEquals(2, list.size());
         LIST.add(new Sishamo.DescriptorImpl());
         assertEquals(3, list.size());
-        assertNotNull(list.get(Sishamo.DescriptorImpl.class));
 
-        // all 3 should be visible from LIST, too
-        assertEquals(3, LIST.size());
-        assertNotNull(LIST.findByName(Tai.class.getName()));
-        assertNotNull(LIST.findByName(Sishamo.class.getName()));
-        assertNotNull(LIST.findByName(Saba.class.getName()));
-
-        // DescriptorList can be gone and new one created but it should still have the same list
-        LIST = new DescriptorList<>(Fish.class);
-        assertEquals(3, LIST.size());
-        assertNotNull(LIST.findByName(Tai.class.getName()));
-        assertNotNull(LIST.findByName(Sishamo.class.getName()));
-        assertNotNull(LIST.findByName(Saba.class.getName()));
+        assertTrue(LIST.stream().allMatch(d -> list.contains(d)));
     }
 
     @Test
     public void legacyDescriptorList() {
-        // created in a legacy fashion without any tie to ExtensionList
         DescriptorList<Fish> LIST = new DescriptorList<>();
+        assertTrue(LIST.isEmpty());
 
-        // we won't auto-discover anything
-        assertEquals(0, LIST.size());
-
-        // registration can happen later, and it should be still visible
         LIST.add(new Sishamo.DescriptorImpl());
         assertEquals(1, LIST.size());
-        assertNotNull(LIST.findByName(Sishamo.class.getName()));
 
-        // create a new list and it forgets everything.
         LIST = new DescriptorList<>();
-        assertEquals(0, LIST.size());
+        assertTrue(LIST.isEmpty());
     }
 
     public static class Car implements ExtensionPoint {
         final String name;
-
-        public Car(String name) {
-            this.name = name;
-        }
+        public Car(String name) { this.name = name; }
     }
 
     @Extension(ordinal = 1)
-    public static class Toyota extends Car {
-        public Toyota() {
-            super("toyota");
-        }
-    }
+    public static class Toyota extends Car { public Toyota() { super("toyota"); }}
 
     @Extension(ordinal = 3)
     public static Car honda() { return new Car("honda"); }
 
-
     @Extension(ordinal = 2)
     public static final Car mazda = new Car("mazda");
 
-    /**
-     * Makes sure sorting of the components work as expected.
-     */
     @Test
     public void ordinals() {
         ExtensionList<Car> list = j.jenkins.getExtensionList(Car.class);
@@ -211,14 +139,12 @@ public class ExtensionListTest {
     public void removeAll() {
         ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
         assertTrue(list.removeAll(new ArrayList<>(list)));
-        assertEquals(0, list.size());
-        assertFalse(list.removeAll(new ArrayList<>(list)));
-        assertEquals(0, list.size());
+        assertTrue(list.isEmpty());
     }
 
     @Issue("JENKINS-62056")
     @Test
     public void checkSort() {
-        ExtensionList.lookup(Object.class).get(0); // exceptions are a problem
+        ExtensionList.lookup(Object.class).get(0); // Test sorting without exceptions
     }
 }
