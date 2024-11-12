@@ -144,7 +144,7 @@ public class CLIActionTest {
         var exitStatus = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), "-auth", "user:bogustoken", "who-am-i"
         ).stdout(baos).start().join();
-        assertThat(baos.toString(), allOf(containsString("status code 401"), containsString("erver: Jetty")));
+        assertThat(baos.toString(), allOf(containsString("status code 401"), containsStringIgnoringCase("server: Jetty")));
         assertThat(exitStatus, is(15));
     }
 
