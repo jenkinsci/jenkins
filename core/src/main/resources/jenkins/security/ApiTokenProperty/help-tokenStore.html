@@ -9,20 +9,28 @@
   Some good practices for keeping your API tokens secure are:
   <ul>
     <li>
-      Use a different token for each application so that if an application is
-      compromised you can revoke its token individually.
+      <strong>Use Unique Tokens per Application:</strong> Assign a unique token to each application. This allows for individual token revocation if an application is compromised, reducing potential security risks.
     </li>
     <li>
-      Regenerate the tokens every 6 months (depending on your context). We
-      display an indicator concerning the age of the token.
+      <strong>Regularly Regenerate Tokens:</strong> Regenerate tokens every 6 months or as per security requirements. Jenkins shows indicators for token age to prompt timely updates.
     </li>
     <li>
-      Protect it like your password, as it allows other people to access Jenkins
-      as you.
+      <strong>Protect Tokens as You Would Passwords:</strong> Tokens allow access with your Jenkins privileges. Safeguard them as securely as you would passwords to prevent unauthorized access.
+    </li>
+    <li>
+      <strong>Monitor Token Usage:</strong> Keep track of token usage. Jenkins provides the last use date and usage count for each token, assisting in identifying and revoking unused or compromised tokens.
+    </li>
+    <li>
+      <strong>Revoke Unused Tokens:</strong> Regularly review and revoke tokens that are no longer in use to reduce the attack surface by eliminating unnecessary active tokens.
+    </li>
+    <li>
+      <strong>Implement Strong Access Controls:</strong> Ensure only authorized users create and manage tokens. Use Jenkins' role-based access control for effective permission enforcement.
+    </li>
+    <li>
+      <strong>Keep Jenkins Updated:</strong> Regularly update Jenkins and plugins to the latest versions to ensure security patches for known vulnerabilities are applied.
     </li>
   </ul>
   <div class="warning">
-    Every time Jenkins is restarted the creation dates for unused legacy tokens
-    are reset which means that the dates may be inaccurate.
+    Every time Jenkins is restarted, creation dates for unused legacy tokens reset, which may lead to inaccurate dates.
   </div>
 </div>
