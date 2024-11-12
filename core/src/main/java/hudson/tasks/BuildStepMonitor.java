@@ -8,24 +8,25 @@ import hudson.model.Describable;
 import java.io.IOException;
 
 /**
- * Used by {@link BuildStep#getRequiredMonitorService()}.
+ * Defines synchronization strategies for build steps.
  *
- * @author Kohsuke Kawaguchi
  * @since 1.319
  */
 public enum BuildStepMonitor {
     NONE {
         @Override
-        public boolean perform(BuildStep bs, AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        public boolean perform(BuildStep bs, AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            // Direct execution without synchronization
             return bs.perform(build, launcher, listener);
         }
     },
     STEP {
         @Override
-        public boolean perform(BuildStep bs, AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        public boolean perform(BuildStep bs, AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            // Step-level synchronization using CheckPoint
             CheckPoint cp = new CheckPoint(bs.getClass().getName(), bs.getClass());
             if (bs instanceof Describable) {
-                cp.block(listener, ((Describable) bs).getDescriptor().getDisplayName());
+                cp.block(listener, ((Describable<?>) bs).getDescriptor().getDisplayName());
             } else {
                 cp.block();
             }
@@ -38,9 +39,10 @@ public enum BuildStepMonitor {
     },
     BUILD {
         @Override
-        public boolean perform(BuildStep bs, AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        public boolean perform(BuildStep bs, AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            // Build-level synchronization
             if (bs instanceof Describable) {
-                CheckPoint.COMPLETED.block(listener, ((Describable) bs).getDescriptor().getDisplayName());
+                CheckPoint.COMPLETED.block(listener, ((Describable<?>) bs).getDescriptor().getDisplayName());
             } else {
                 CheckPoint.COMPLETED.block();
             }
@@ -49,7 +51,15 @@ public enum BuildStepMonitor {
     };
 
     /**
-     * Calls {@link BuildStep#perform(AbstractBuild, Launcher, BuildListener)} with the proper synchronization.
+     * Executes the build step with the appropriate synchronization.
+     *
+     * @param bs the build step to execute
+     * @param build the current build
+     * @param launcher the launcher
+     * @param listener the build listener
+     * @return true if the build can continue, false otherwise
+     * @throws IOException if an I/O error occurs
+     * @throws InterruptedException if the execution is interrupted
      */
-    public abstract boolean perform(BuildStep bs, AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException;
+    public abstract boolean perform(BuildStep bs, AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException;
 }
