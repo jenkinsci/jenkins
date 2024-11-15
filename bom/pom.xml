@@ -62,7 +62,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>6.1.14</version>
+        <version>6.2.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
