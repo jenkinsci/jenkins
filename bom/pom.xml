@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
-    <stapler.version>1922.v3f3302a_7f16f</stapler.version>
+    <stapler.version>1927.vca_a_9061b_2f28</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
