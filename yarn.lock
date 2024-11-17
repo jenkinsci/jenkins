@@ -4411,7 +4411,7 @@ __metadata:
     postcss-preset-env: "npm:10.1.0"
     postcss-scss: "npm:4.0.9"
     prettier: "npm:3.3.3"
-    sass: "npm:1.80.7"
+    sass: "npm:1.81.0"
     sass-loader: "npm:16.0.3"
     sortablejs: "npm:1.15.3"
     style-loader: "npm:4.0.0"
@@ -6400,9 +6400,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.80.7":
-  version: 1.80.7
-  resolution: "sass@npm:1.80.7"
+"sass@npm:1.81.0":
+  version: 1.81.0
+  resolution: "sass@npm:1.81.0"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -6413,7 +6413,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10c0/e0e0df8dc9dd7694826f915196a96cda45fe0fc849be9fc08b43c12aa1250eb512130979ed239e1106476973ace1f52abbcc1d5900a075d3813c282a626dcbf7
+  checksum: 10c0/9c59b3c9b4231c18fcb4583cc232dbc4de501ddc11101b7a025e44833e3f3ce6031546dc1cd109ee9f04ebcfb1fe30ff870810af33b8feb9aa9e36dfba9ec1ef
   languageName: node
   linkType: hard
 
