@@ -67,10 +67,8 @@ public class CLIActionTest {
         .when(rsp)
         .sendError(eq(HttpServletResponse.SC_NOT_FOUND), anyString());
 
-    // Вызов тестируемого метода
     cliAction.doCommand(req, rsp);
 
-    // Проверка, что sendError был вызван
     verify(rsp).sendError(HttpServletResponse.SC_NOT_FOUND, "No such command");
   }
 
@@ -124,7 +122,7 @@ public class CLIActionTest {
   @Test
   public void testWebSocketNotSupported() throws Exception {
     try (MockedStatic<WebSockets> webSocketsMock = Mockito.mockStatic(WebSockets.class)) {
-      StaplerRequest2 req = mock(StaplerRequest2.class);// Используем обычный StaplerRequest
+      StaplerRequest2 req = mock(StaplerRequest2.class);
 
       webSocketsMock.when(WebSockets::isSupported).thenReturn(false);
 
@@ -149,11 +147,11 @@ public class CLIActionTest {
 
       webSocketsMock.when(WebSockets::isSupported).thenReturn(true);
 
-      when(req.getHeader("Origin")).thenReturn("http://invalid-origin.com");
+      when(req.getHeader("Origin")).thenReturn("https://invalid-origin.com");
 
       Jenkins jenkins = mock(Jenkins.class);
       jenkinsMock.when(Jenkins::get).thenReturn(jenkins);
-      when(jenkins.getRootUrlFromRequest()).thenReturn("http://correct-origin.com/");
+      when(jenkins.getRootUrlFromRequest()).thenReturn("https://correct-origin.com/");
       when(req.getContextPath()).thenReturn("");
 
       Field allowWebSocketField = CLIAction.class.getDeclaredField("ALLOW_WEBSOCKET");
@@ -182,11 +180,11 @@ public class CLIActionTest {
 
       webSocketsMock.when(WebSockets::isSupported).thenReturn(true);
 
-      when(req.getHeader("Origin")).thenReturn("http://correct-origin.com");
+      when(req.getHeader("Origin")).thenReturn("https://correct-origin.com");
 
       Jenkins jenkins = mock(Jenkins.class);
       jenkinsMock.when(Jenkins::get).thenReturn(jenkins);
-      when(jenkins.getRootUrlFromRequest()).thenReturn("http://correct-origin.com/");
+      when(jenkins.getRootUrlFromRequest()).thenReturn("https://correct-origin.com/");
       when(req.getContextPath()).thenReturn("");
 
       Field allowWebSocketField = CLIAction.class.getDeclaredField("ALLOW_WEBSOCKET");
@@ -207,7 +205,6 @@ public class CLIActionTest {
 
       webSocketsMock.when(WebSockets::isSupported).thenReturn(true);
 
-      // Отключен WebSocket через флаг ALLOW_WEBSOCKET
       Field allowWebSocketField = CLIAction.class.getDeclaredField("ALLOW_WEBSOCKET");
       allowWebSocketField.setAccessible(true);
       allowWebSocketField.set(cliAction, false);
