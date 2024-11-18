@@ -218,8 +218,4 @@ public class CLIActionTest {
       verify(resp).setStatus(HttpServletResponse.SC_FORBIDDEN);
     }
   }
-
-  @Test
-  public void getTarget() {
-  }
 }
