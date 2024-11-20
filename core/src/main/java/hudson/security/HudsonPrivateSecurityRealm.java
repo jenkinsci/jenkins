@@ -839,6 +839,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                     throw new FormException("Please confirm the password by typing it twice", "user.password2");
                 }
 
+                if (FIPS140.useCompliantAlgorithms()) {
+                    if (pwd.length()< FIPS_PASSWORD_LENGTH || pwd2.length() < FIPS_PASSWORD_LENGTH) {
+                        throw new FormException(Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid(), "user.password1");
+                    }
+                }
+
                 // will be null if it wasn't encrypted
                 String data = Protector.unprotect(pwd);
                 String data2 = Protector.unprotect(pwd2);

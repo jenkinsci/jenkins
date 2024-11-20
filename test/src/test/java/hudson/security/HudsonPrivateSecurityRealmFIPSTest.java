@@ -30,9 +30,12 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import hudson.logging.LogRecorder;
 import hudson.logging.LogRecorderManager;
+import hudson.model.Descriptor;
 import hudson.model.User;
 import hudson.security.HudsonPrivateSecurityRealm.Details;
 import java.lang.reflect.Method;
@@ -49,6 +52,7 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.RealJenkinsRule;
+import org.kohsuke.stapler.StaplerRequest2;
 
 
 @For(HudsonPrivateSecurityRealm.class)
@@ -147,6 +151,51 @@ public class HudsonPrivateSecurityRealmFIPSTest {
                 () -> securityRealm.createAccountWithHashedPassword("user_hashed_incorrect_algorithm", JBCRYPT_ENCODED_PASSWORD));
         assertThat(illegalArgumentException.getMessage(),
                 is("The hashed password was hashed with an incorrect algorithm. Jenkins is expecting $PBKDF2"));
+    }
+
+
+    @Test
+    public void passwordLengthValidationForFIPS() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::passwordLengthValidationForFIPSStep);
+    }
+
+    private static void passwordLengthValidationForFIPSStep(JenkinsRule j)  {
+
+        // Mocking the StaplerRequest2
+        StaplerRequest2 req = mock(StaplerRequest2.class);
+        when(req.getParameter("user.password")).thenReturn("MockPassword");
+        when(req.getParameter("user.password2")).thenReturn("MockPassword");
+
+
+        Details.DescriptorImpl descriptor = new Details.DescriptorImpl();
+
+        // FormException should be thrown due to short password length (<14) under FIPS compliance
+        Descriptor.FormException formException = assertThrows(Descriptor.FormException.class, () -> {
+            descriptor.newInstance(req, null);
+        });
+        assertThat(formException.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid()));
+    }
+
+    @Test
+    public void passwordValidationForFIPS() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::passwordValidationForFIPSStep);
+    }
+
+    private static void passwordValidationForFIPSStep(JenkinsRule j)  {
+
+        // Mocking the StaplerRequest2
+        StaplerRequest2 req = mock(StaplerRequest2.class);
+        when(req.getParameter("user.password")).thenReturn("14charPassword");
+        when(req.getParameter("user.password2")).thenReturn("14charPa$$word");
+
+
+        Details.DescriptorImpl descriptor = new Details.DescriptorImpl();
+
+        // FormException should be thrown due to different passwords(although they are of correct length[>=14] under FIPS compliance)
+        Descriptor.FormException formException = assertThrows(Descriptor.FormException.class, () -> {
+            descriptor.newInstance(req, null);
+        });
+        assertThat(formException.getMessage(), is("Please confirm the password by typing it twice"));
     }
 
     private static Matcher<LogRecord> incorrectHashingLogEntry() {
