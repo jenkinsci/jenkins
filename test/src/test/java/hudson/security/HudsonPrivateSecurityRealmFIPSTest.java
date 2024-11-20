@@ -25,17 +25,10 @@
 package hudson.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import hudson.logging.LogRecorder;
 import hudson.logging.LogRecorderManager;
-import hudson.model.Descriptor;
 import hudson.model.User;
 import hudson.security.HudsonPrivateSecurityRealm.Details;
 import java.lang.reflect.Method;
@@ -46,13 +39,15 @@ import jenkins.model.Jenkins;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPasswordInput;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.RealJenkinsRule;
-import org.kohsuke.stapler.StaplerRequest2;
 
 
 @For(HudsonPrivateSecurityRealm.class)
@@ -153,49 +148,85 @@ public class HudsonPrivateSecurityRealmFIPSTest {
                 is("The hashed password was hashed with an incorrect algorithm. Jenkins is expecting $PBKDF2"));
     }
 
+    @Test
+    public void validatePasswordLengthForFIPS() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordLengthForFIPSStep);
+    }
+
+    private static void validatePasswordLengthForFIPSStep(JenkinsRule j) throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User u1 =  securityRealm.createAccount("test", "password");
+
+        WebClient wc = j.createWebClient();
+        wc.login("test","password");
+
+        HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+        //Should fail as the password length is <14 (In FIPS mode)
+        password1.setText("mockPassword");
+        password2.setText("mockPassword");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        assertThrows(FailingHttpStatusCodeException.class, () -> {
+            j.submit(form);
+        });
+    }
 
     @Test
-    public void passwordLengthValidationForFIPS() throws Throwable {
-        rjr.then(HudsonPrivateSecurityRealmFIPSTest::passwordLengthValidationForFIPSStep);
+    public void validatePasswordMismatchForFIPS() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordMismatchForFIPSStep);
     }
 
-    private static void passwordLengthValidationForFIPSStep(JenkinsRule j)  {
+    private static void validatePasswordMismatchForFIPSStep(JenkinsRule j) throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
 
-        // Mocking the StaplerRequest2
-        StaplerRequest2 req = mock(StaplerRequest2.class);
-        when(req.getParameter("user.password")).thenReturn("MockPassword");
-        when(req.getParameter("user.password2")).thenReturn("MockPassword");
+        User u1 =  securityRealm.createAccount("test", "password");
 
 
-        Details.DescriptorImpl descriptor = new Details.DescriptorImpl();
+        WebClient wc = j.createWebClient();
+        wc.login("test","password");
 
-        // FormException should be thrown due to short password length (<14) under FIPS compliance
-        Descriptor.FormException formException = assertThrows(Descriptor.FormException.class, () -> {
-            descriptor.newInstance(req, null);
+        HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+        //should fail as the passwords are different (even though the password length >=14) In FIPS mode
+        password1.setText("14charPassword");
+        password2.setText("14charPa$$word");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        assertThrows(FailingHttpStatusCodeException.class, () -> {
+            j.submit(form);
         });
-        assertThat(formException.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid()));
     }
 
     @Test
-    public void passwordValidationForFIPS() throws Throwable {
-        rjr.then(HudsonPrivateSecurityRealmFIPSTest::passwordValidationForFIPSStep);
+    public void validatePasswordSuccessForFIPS() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordSuccessForFIPSStep);
     }
 
-    private static void passwordValidationForFIPSStep(JenkinsRule j)  {
+    private static void validatePasswordSuccessForFIPSStep(JenkinsRule j) throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
 
-        // Mocking the StaplerRequest2
-        StaplerRequest2 req = mock(StaplerRequest2.class);
-        when(req.getParameter("user.password")).thenReturn("14charPassword");
-        when(req.getParameter("user.password2")).thenReturn("14charPa$$word");
+        User u1 =  securityRealm.createAccount("test", "password");
 
+        WebClient wc = j.createWebClient();
+        wc.login("test","password");
 
-        Details.DescriptorImpl descriptor = new Details.DescriptorImpl();
+        HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+        //should pass as the passwords are same and length >=14 In FIPS mode.
+        password1.setText("14charPassword");
+        password2.setText("14charPassword");
 
-        // FormException should be thrown due to different passwords(although they are of correct length[>=14] under FIPS compliance)
-        Descriptor.FormException formException = assertThrows(Descriptor.FormException.class, () -> {
-            descriptor.newInstance(req, null);
-        });
-        assertThat(formException.getMessage(), is("Please confirm the password by typing it twice"));
+        HtmlForm form = configurePage.getFormByName("config");
+        HtmlPage success = j.submit(form);
+        assertThat(success.getWebResponse().getStatusCode(), is(200));
     }
 
     private static Matcher<LogRecord> incorrectHashingLogEntry() {

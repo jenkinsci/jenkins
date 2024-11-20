@@ -840,7 +840,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 }
 
                 if (FIPS140.useCompliantAlgorithms()) {
-                    if (pwd.length()< FIPS_PASSWORD_LENGTH || pwd2.length() < FIPS_PASSWORD_LENGTH) {
+                    if (pwd.length()< FIPS_PASSWORD_LENGTH) {
                         throw new FormException(Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid(), "user.password1");
                     }
                 }
