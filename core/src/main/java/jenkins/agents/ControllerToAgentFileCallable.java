@@ -32,7 +32,7 @@ import org.jenkinsci.remoting.RoleChecker;
  * {@link FilePath.FileCallable} meant to be serialized then run on an agent.
  * Like {@link ControllerToAgentCallable} this will typically be a {@link Record}.
  * @param <T> the return type; note that this must either be defined in your plugin or included in the stock JEP-200 whitelist
- * @since TODO
+ * @since 2.485
  */
 public interface ControllerToAgentFileCallable<T> extends FilePath.FileCallable<T> {
 

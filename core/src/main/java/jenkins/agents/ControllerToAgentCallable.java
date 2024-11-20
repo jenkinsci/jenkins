@@ -37,7 +37,7 @@ import org.jenkinsci.remoting.RoleChecker;
  * newer than {@link RemotingVersionInfo#getMinimumSupportedVersion}.
  * (Core and plugin APIs will be identical to those run inside the controller.)
  * @param <V> the return type; note that this must either be defined in your plugin or included in the stock JEP-200 whitelist
- * @since TODO
+ * @since 2.485
  */
 public interface ControllerToAgentCallable<V, T extends Throwable> extends Callable<V, T> {
 
