@@ -79,6 +79,7 @@
   {
     "category": "User Management and Security",
     "plugins": [
+      { "name": "csp", "suggested": true },
       { "name": "matrix-auth", "suggested": true },
       { "name": "pam-auth", "suggested": true },
       { "name": "ldap", "suggested": true },
