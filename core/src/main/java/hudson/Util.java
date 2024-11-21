@@ -436,6 +436,14 @@ public class Util {
         // https://github.com/jenkinsci/jenkins/pull/3161 )
         final Path tempPath;
         final String tempDirNamePrefix = "jenkins";
+
+        final Path systemTmpDirectoryPath = Path.of(System.getProperty("java.io.tmpdir"));
+        if (!systemTmpDirectoryPath.toFile().exists()){
+            // In some cases the tmp directory set in the java.io.tmpdir property will not exist and hence will have to
+            // be created here.
+            systemTmpDirectoryPath.toFile().mkdirs();
+        }
+
         if (FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
             tempPath = Files.createTempDirectory(tempDirNamePrefix,
                     PosixFilePermissions.asFileAttribute(EnumSet.allOf(PosixFilePermission.class)));
