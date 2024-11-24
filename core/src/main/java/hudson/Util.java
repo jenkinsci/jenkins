@@ -438,10 +438,10 @@ public class Util {
         final String tempDirNamePrefix = "jenkins";
 
         final Path systemTmpDirectoryPath = Path.of(System.getProperty("java.io.tmpdir"));
-        if (!systemTmpDirectoryPath.toFile().exists()){
+        if (!systemTmpDirectoryPath.toFile().exists()) {
             // In some cases the tmp directory set in the java.io.tmpdir property will not exist and hence will have to
             // be created here.
-            systemTmpDirectoryPath.toFile().mkdirs();
+            Files.createDirectory(systemTmpDirectoryPath);
         }
 
         if (FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
