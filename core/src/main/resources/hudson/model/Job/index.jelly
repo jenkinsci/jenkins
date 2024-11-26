@@ -31,11 +31,33 @@ THE SOFTWARE.
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content jenkins-build-caption">
           <j:set var="lastBuild" value="${it.lastBuild}" />
-          <j:if test="${lastBuild != null}">
-            <a href="${rootURL + '/' + lastBuild.url}" class="jenkins-!-display-contents" tabindex="-1">
-              <l:icon src="symbol-status-${lastBuild.iconColor.iconName}" tooltip="${lastBuild.iconColor.description}"/>
-            </a>
-          </j:if>
+          <j:choose>
+            <j:when test="${lastBuild != null}">
+              <a href="${rootURL + '/' + lastBuild.url}" class="jenkins-!-display-contents" tabindex="-1">
+                <l:icon src="symbol-status-${lastBuild.iconColor.iconName}" tooltip="${lastBuild.iconColor.description}"/>
+              </a>
+            </j:when>
+            <j:otherwise>
+              <j:choose>
+                <j:when test="${it.icon != null}">
+                  <j:choose>
+                    <j:when test="${it.icon.iconClassName != null}">
+                      <!-- symbols and icons -->
+                      <l:icon src="${it.icon.iconClassName}" tooltip="${it.descriptor.displayName}" />
+                    </j:when>
+                    <j:otherwise>
+                      <!-- images -->
+                      <l:icon src="${it.icon.getImageOf(null)}" tooltip="${it.descriptor.displayName}" />
+                    </j:otherwise>
+                  </j:choose>
+                </j:when>
+                <j:otherwise>
+                  <!-- defaults to the item type icon -->
+                  <l:icon src="${it.descriptor.iconClassName}" tooltip="${it.descriptor.displayName}" />
+                </j:otherwise>
+              </j:choose>
+            </j:otherwise>
+          </j:choose>
           <h1 class="job-index-headline page-headline">
             <l:breakable value="${it.displayName}"/>
           </h1>

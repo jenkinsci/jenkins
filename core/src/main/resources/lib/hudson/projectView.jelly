@@ -102,8 +102,8 @@ THE SOFTWARE.
                     <l:icon src="symbol-status-${job.iconColor.iconName}" tooltip="${job.iconColor.description}" />
                   </j:when>
                   <j:otherwise>
-                    <!-- This is for special conditions, such as folders -->
-                    <l:icon src="${job.iconColor.iconClassName}" />
+                    <!-- empty icon -->
+                    <l:icon src="symbol-empty" />
                   </j:otherwise>
                 </j:choose>
               </div>
