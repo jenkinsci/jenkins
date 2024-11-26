@@ -26,8 +26,24 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <td class="jenkins-table__cell--tight jenkins-table__icon">
     <div class="jenkins-table__cell__button-wrapper">
-      <!-- defaults to the item type icon -->
-      <l:icon src="${job.descriptor.iconClassName}" tooltip="${job.descriptor.displayName}" />
+      <j:choose>
+        <j:when test="${job.icon != null}">
+          <j:choose>
+            <j:when test="${job.icon.iconClassName != null}">
+              <!-- symbols and icons -->
+              <l:icon src="${job.icon.iconClassName}" tooltip="${job.descriptor.displayName}" />
+            </j:when>
+            <j:otherwise>
+              <!-- images -->
+              <l:icon src="${job.icon.getImageOf(null)}" tooltip="${job.descriptor.displayName}" />
+            </j:otherwise>
+          </j:choose>
+        </j:when>
+        <j:otherwise>
+          <!-- defaults to the item type icon -->
+          <l:icon src="${job.descriptor.iconClassName}" tooltip="${job.descriptor.displayName}" />
+        </j:otherwise>
+      </j:choose>
     </div>
   </td>
 </j:jelly>
