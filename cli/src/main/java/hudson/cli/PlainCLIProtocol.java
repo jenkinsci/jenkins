@@ -124,46 +124,59 @@ class PlainCLIProtocol {
         public void run() {
             try {
                 while (true) {
-                    LOGGER.finest("reading frame");
-                    int framelen;
-                    try {
-                        framelen = dis.readInt();
-                    } catch (EOFException x) {
-                        side.handleClose();
-                        break; // TODO verify that we hit EOF immediately, not partway into framelen
-                    }
+                    int framelen = readFrameLength();
                     if (framelen < 0) {
                         throw new IOException("corrupt stream: negative frame length");
                     }
-                    LOGGER.finest("read frame length " + framelen);
-                    long start = cis.getByteCount();
-                    try {
-                        side.handle(new DataInputStream(new BoundedInputStream(dis, /* op byte not counted */framelen + 1)));
-                    } catch (ProtocolException x) {
-                        LOGGER.log(Level.WARNING, null, x);
-                        // but read another frame
-                    } finally {
-                        long actuallyRead = cis.getByteCount() - start;
-                        long unread = framelen + 1 - actuallyRead;
-                        if (unread > 0) {
-                            LOGGER.warning(() -> "Did not read " + unread + " bytes");
-                            IOUtils.skipFully(dis, unread);
-                        }
-                    }
+                    processFrame(framelen);
                 }
-            } catch (ClosedChannelException x) {
-                LOGGER.log(Level.FINE, null, x);
-                side.handleClose();
-            } catch (IOException x) {
-                LOGGER.log(Level.WARNING, null, flightRecorder.analyzeCrash(x, "broken stream"));
-            } catch (ReadPendingException x) {
-                // in case trick in CLIAction does not work
-                LOGGER.log(Level.FINE, null, x);
-                side.handleClose();
-            } catch (RuntimeException x) {
-                LOGGER.log(Level.WARNING, null, x);
-                side.handleClose();
+            } catch (IOException | RuntimeException x) {
+                handleException(x);
             }
+        }
+
+        private void validateFrameLength(int framelen) throws IOException {
+            if (framelen < 0) {
+                throw new IOException("corrupt stream: negative frame length");
+            }
+        }
+
+        private int readFrameLength() throws IOException {
+            try {
+                return dis.readInt();
+            } catch (EOFException x) {
+                side.handleClose();
+                throw x;
+            }
+        }
+
+        private void processFrame(int framelen) throws IOException {
+            long start = cis.getByteCount();
+            try {
+                side.handle(new DataInputStream(new BoundedInputStream(dis, framelen + 1)));
+            } catch (ProtocolException x) {
+                LOGGER.log(Level.WARNING, null, x);
+            } finally {
+                skipUnreadBytes(framelen, start);
+            }
+        }
+
+        private void skipUnreadBytes(int framelen, long start) throws IOException {
+            long actuallyRead = cis.getByteCount() - start;
+            long unread = framelen + 1 - actuallyRead;
+            if (unread > 0) {
+                LOGGER.warning(() -> "Did not read " + unread + " bytes");
+                IOUtils.skipFully(dis, unread);
+            }
+        }
+
+        private void handleException(Exception x) {
+            if (x instanceof ClosedChannelException || x instanceof ReadPendingException) {
+                LOGGER.log(Level.FINE, null, x);
+            } else {
+                LOGGER.log(Level.WARNING, null, flightRecorder.analyzeCrash((IOException) x, "broken stream"));
+            }
+            side.handleClose();
         }
 
     }
