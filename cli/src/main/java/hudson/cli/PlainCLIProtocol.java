@@ -54,29 +54,77 @@ class PlainCLIProtocol {
     /** One-byte operation to send to the other side. */
     private enum Op {
         /** UTF-8 command name or argument. */
-        ARG(true),
+        ARG(true) {
+            @Override
+            void execute(DataInputStream dis, EitherSide side) throws IOException {
+                ((ServerSide) side).onArg(dis.readUTF());
+            }
+        },
         /** UTF-8 locale identifier. */
-        LOCALE(true),
+        LOCALE(true) {
+            @Override
+            void execute(DataInputStream dis, EitherSide side) throws IOException {
+                ((ServerSide) side).onLocale(dis.readUTF());
+            }
+        },
         /** UTF-8 client encoding. */
-        ENCODING(true),
+        ENCODING(true) {
+            @Override
+            void execute(DataInputStream dis, EitherSide side) throws IOException {
+                ((ServerSide) side).onEncoding(dis.readUTF());
+            }
+        },
         /** Start running command. */
-        START(true),
+        START(true) {
+            @Override
+            void execute(DataInputStream dis, EitherSide side) throws IOException {
+                ((ServerSide) side).onStart();
+            }
+        },
         /** Exit code, as int. */
-        EXIT(false),
+        EXIT(false) {
+            @Override
+            void execute(DataInputStream dis, EitherSide side) throws IOException {
+                ((ClientSide) side).onExit(dis.readInt());
+            }
+        },
         /** Chunk of stdin, as int length followed by bytes. */
-        STDIN(true),
+        STDIN(true) {
+            @Override
+            void execute(DataInputStream dis, EitherSide side) throws IOException {
+                ((ServerSide) side).onStdin(dis.readAllBytes());
+            }
+        },
         /** EOF on stdin. */
-        END_STDIN(true),
+        END_STDIN(true) {
+            @Override
+            void execute(DataInputStream dis, EitherSide side) throws IOException {
+                ((ServerSide) side).onEndStdin();
+            }
+        },
         /** Chunk of stdout. */
-        STDOUT(false),
+        STDOUT(false) {
+            @Override
+            void execute(DataInputStream dis, EitherSide side) throws IOException {
+                ((ClientSide) side).onStdout(dis.readAllBytes());
+            }
+        },
         /** Chunk of stderr. */
-        STDERR(false);
+        STDERR(false) {
+            @Override
+            void execute(DataInputStream dis, EitherSide side) throws IOException {
+                ((ClientSide) side).onStderr(dis.readAllBytes());
+            }
+        };
+
         /** True if sent from the client to the server; false if sent from the server to the client. */
         final boolean clientSide;
 
         Op(boolean clientSide) {
             this.clientSide = clientSide;
         }
+
+        abstract void execute(DataInputStream dis, EitherSide side) throws IOException;
 
         void validate(boolean isClient) throws ProtocolException {
             if (this.clientSide != isClient) {
@@ -279,29 +327,9 @@ class PlainCLIProtocol {
 
         @Override
         protected final boolean handle(Op op, DataInputStream dis) throws IOException {
-            op.validate(false);
-            switch (op) {
-            case ARG:
-                onArg(dis.readUTF());
-                return true;
-            case LOCALE:
-                onLocale(dis.readUTF());
-                return true;
-            case ENCODING:
-                onEncoding(dis.readUTF());
-                return true;
-            case START:
-                onStart();
-                return true;
-            case STDIN:
-                onStdin(dis.readAllBytes());
-                return true;
-            case END_STDIN:
-                onEndStdin();
-                return true;
-            default:
-                return false;
-            }
+            op.validate(true);
+            op.execute(dis, this);
+            return true;
         }
 
         protected abstract void onArg(String text);
@@ -338,20 +366,9 @@ class PlainCLIProtocol {
 
         @Override
         protected boolean handle(Op op, DataInputStream dis) throws IOException {
-            op.validate(true);
-            switch (op) {
-            case EXIT:
-                onExit(dis.readInt());
-                return true;
-            case STDOUT:
-                onStdout(dis.readAllBytes());
-                return true;
-            case STDERR:
-                onStderr(dis.readAllBytes());
-                return true;
-            default:
-                return false;
-            }
+            op.validate(false);
+            op.execute(dis, this);
+            return true;
         }
 
         protected abstract void onExit(int code);
