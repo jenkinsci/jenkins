@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 @Issue("SECURITY-400")
 public class TypedFilterTest extends StaplerAbstractTest {
@@ -48,7 +48,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
 
     @TestExtension
     public static class GetTarget4 extends AbstractUnprotectedRootAction {
-        public Renderable getTarget(StaplerRequest req) {
+        public Renderable getTarget(StaplerRequest2 req) {
             return new Renderable();
         }
     }
@@ -98,7 +98,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
 
     @TestExtension
     public static class GetStaplerFallback4 extends AbstractUnprotectedRootAction {
-        public Renderable getStaplerFallback(StaplerRequest req) {
+        public Renderable getStaplerFallback(StaplerRequest2 req) {
             return new Renderable();
         }
     }
@@ -203,7 +203,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
 
     @TestExtension
     public static class GetDynamic3 extends AbstractUnprotectedRootAction {
-        public Renderable getDynamic(StaplerRequest req, String someArgs) {
+        public Renderable getDynamic(StaplerRequest2 req, String someArgs) {
             return new Renderable();
         }
     }
@@ -216,7 +216,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
 
     @TestExtension
     public static class GetDynamic4 extends AbstractUnprotectedRootAction {
-        public Renderable getDynamic(StaplerRequest req) {
+        public Renderable getDynamic(StaplerRequest2 req) {
             return new Renderable();
         }
     }

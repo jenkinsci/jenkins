@@ -31,6 +31,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.RunMap;
+import hudson.model.listeners.RunListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractCollection;
@@ -54,6 +55,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import jenkins.util.MemoryReductionUtil;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
@@ -290,8 +292,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     protected File dir;
 
     @Restricted(NoExternalUse.class) // subclassing other than by RunMap does not guarantee compatibility
-    protected AbstractLazyLoadRunMap(File dir) {
-        initBaseDir(dir);
+    protected AbstractLazyLoadRunMap() {
     }
 
     @Restricted(NoExternalUse.class)
@@ -348,13 +349,47 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
                 continue;
             }
             try {
-                list.add(Integer.parseInt(s));
+                int buildNumber = Integer.parseInt(s);
+                if (allowLoad(buildNumber)) {
+                    list.add(buildNumber);
+                } else {
+                    LOGGER.fine(() -> "declining to consider " + buildNumber + " in " + dir);
+                }
             } catch (NumberFormatException e) {
                 // matched BUILD_NUMBER but not an int?
             }
         }
         list.sort();
         numberOnDisk = list;
+    }
+
+    @Restricted(NoExternalUse.class)
+    protected boolean allowLoad(int buildNumber) {
+        return true;
+    }
+
+    /**
+     * Permits a previous blocked build number to be eligible for loading.
+     * @param buildNumber a build number
+     * @see RunListener#allowLoad
+     */
+    @Restricted(Beta.class)
+    public final void recognizeNumber(int buildNumber) {
+        if (new File(dir, Integer.toString(buildNumber)).isDirectory()) {
+            synchronized (this) {
+                SortedIntList list = new SortedIntList(numberOnDisk);
+                if (list.contains(buildNumber)) {
+                    LOGGER.fine(() -> "already knew about " + buildNumber + " in " + dir);
+                } else {
+                    list.add(buildNumber);
+                    list.sort();
+                    numberOnDisk = list;
+                    LOGGER.fine(() -> "recognizing " + buildNumber + " in " + dir);
+                }
+            }
+        } else {
+            LOGGER.fine(() -> "no such subdirectory " + buildNumber + " in " + dir);
+        }
     }
 
     @Override
@@ -518,15 +553,21 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         Index snapshot = index;
         if (snapshot.byNumber.containsKey(n)) {
             BuildReference<R> ref = snapshot.byNumber.get(n);
-            if (ref == null)      return null;    // known failure
+            if (ref == null) {
+                LOGGER.fine(() -> "known failure of #" + n + " in " + dir);
+                return null;
+            }
             R v = unwrap(ref);
-            if (v != null)        return v;       // already in memory
+            if (v != null) {
+                return v; // already in memory
+            }
             // otherwise fall through to load
         }
         synchronized (this) {
             if (index.byNumber.containsKey(n)) { // JENKINS-22767: recheck inside lock
                 BuildReference<R> ref = index.byNumber.get(n);
                 if (ref == null) {
+                    LOGGER.fine(() -> "known failure of #" + n + " in " + dir);
                     return null;
                 }
                 R v = unwrap(ref);
@@ -534,7 +575,12 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
                     return v;
                 }
             }
-            return load(n, null);
+            if (allowLoad(n)) {
+                return load(n, null);
+            } else {
+                LOGGER.fine(() -> "declining to load " + n + " in " + dir);
+                return null;
+            }
         }
     }
 
@@ -655,7 +701,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         assert Thread.holdsLock(this);
         try {
             R r = retrieve(dataDir);
-            if (r == null)    return null;
+            if (r == null) {
+                LOGGER.fine(() -> "nothing in " + dataDir);
+                return null;
+            }
 
             Index copy = editInPlace != null ? editInPlace : new Index(index);
 

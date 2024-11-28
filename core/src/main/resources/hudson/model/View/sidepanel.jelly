@@ -43,14 +43,6 @@ THE SOFTWARE.
         <l:task href="${rootURL}/${it.viewUrl}newJob" icon="symbol-add" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
       </st:include>
 
-      <j:choose>
-        <j:when test="${it.class.name=='hudson.model.AllView'}">
-          <l:task href="${rootURL}/asynchPeople/" icon="icon-user icon-md" title="${%People}"/>
-        </j:when>
-        <j:otherwise>
-          <l:task href="${rootURL}/${it.viewUrl}asynchPeople/" icon="icon-user icon-md" title="${%People}"/>
-        </j:otherwise>
-      </j:choose>
       <l:task href="${rootURL}/${it.viewUrl}builds" icon="symbol-build-history" title="${%Build History}"/>
       <j:if test="${it.isEditable()}">
         <!-- /configure URL on Jenkins object is overloaded with Jenkins's system config, so always use the explicit name. -->

@@ -32,12 +32,10 @@ import hudson.model.Node;
 import hudson.remoting.Callable;
 import hudson.util.ClockDifference;
 import java.io.IOException;
-import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link NodeMonitor} that checks clock of {@link Node} to
@@ -73,6 +71,11 @@ public class ClockMonitor extends NodeMonitor {
         }
 
         @Override
+        public boolean canTakeOffline() {
+            return false;
+        }
+
+        @Override
         protected Callable<ClockDifference, IOException> createCallable(Computer c) {
             Node n = c.getNode();
             if (n == null) return null;
@@ -83,11 +86,6 @@ public class ClockMonitor extends NodeMonitor {
         @Override
         public String getDisplayName() {
             return Messages.ClockMonitor_DisplayName();
-        }
-
-        @Override
-        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new ClockMonitor();
         }
     }
 }

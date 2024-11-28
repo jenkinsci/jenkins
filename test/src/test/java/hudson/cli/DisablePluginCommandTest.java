@@ -41,7 +41,7 @@ import hudson.Functions;
 import hudson.PluginWrapper;
 import java.io.IOException;
 import java.util.function.BiPredicate;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Rule;

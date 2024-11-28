@@ -56,7 +56,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  *
@@ -109,13 +109,16 @@ public class ValidateButtonTest {
 
             public void doValidateTest1(@QueryParameter("a") String a, @QueryParameter("b") boolean b,
                                         @QueryParameter("c") boolean c, @QueryParameter("d") String d,
-                                        @QueryParameter("e") String e) {
+                                        @QueryParameter("e") String e,
+                                        @QueryParameter("f") String f
+                                        ) {
                 try {
                     assertEquals("avalue", a);
                     assertTrue(b);
                     assertFalse(c);
                     assertEquals("dvalue", d);
                     assertEquals("e2", e);
+                    assertEquals("f", f);
                     test1Outcome = null;
                 } catch (RuntimeException t) {
                     test1Outcome = t;
@@ -211,7 +214,7 @@ public class ValidateButtonTest {
             public String paramMethod = "validateInjection";
             public String paramWith = null;
 
-            public void doValidateInjection(StaplerRequest request) {
+            public void doValidateInjection(StaplerRequest2 request) {
                 wasCalled = true;
             }
         }
@@ -264,7 +267,7 @@ public class ValidateButtonTest {
         public static class DescriptorImpl extends JobPropertyDescriptor {
             public boolean called = false;
 
-            public void doSomething(StaplerRequest req) {
+            public void doSomething(StaplerRequest2 req) {
                 called = true;
             }
         }

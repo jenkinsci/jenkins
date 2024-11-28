@@ -36,7 +36,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * Default implementation of {@link ConsoleUrlProvider} that uses the standard Jenkins console view.
  * <p>Exists so that users have a way to override {@link ConsoleUrlProviderGlobalConfiguration} and specify the default
  * console view if desired via {@link ConsoleUrlProviderUserProperty}.
- * @since TODO
+ * @since 2.433
  */
 @Restricted(value = NoExternalUse.class)
 public class DefaultConsoleUrlProvider implements ConsoleUrlProvider {

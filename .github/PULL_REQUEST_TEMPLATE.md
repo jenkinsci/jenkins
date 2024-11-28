@@ -28,22 +28,28 @@ For refactoring and code cleanup changes, exercise the code before and after the
 
 ### Proposed changelog entries
 
-- JENKINS-XXXXX, human-readable text
+- human-readable text
 
 <!-- Comment:
 The changelog entry should be in the imperative mood; e.g., write "do this"/"return that" rather than "does this"/"returns that".
 For examples, see: https://www.jenkins.io/changelog/
 
-Remove JENKINS-XXXXX if there is no issue for the pull request.
+Do not include the Jira issue in the changelog entry.
+Include the Jira issue in the description of the pull request so that the changelog generator can find it and include it in the generated changelog.
 
 You may add multiple changelog entries if applicable by adding a new entry to the list, e.g.
-- JENKINS-123456, First changelog entry
+- First changelog entry
 - Second changelog entry
 -->
 
 ### Proposed upgrade guidelines
 
 N/A
+
+<!-- Comment:
+Leave the proposed upgrade guidelines in the pull request with the "N/A" value if no upgrade guidelines are needed.
+The changelog generator relies on the presence of the upgrade guidelines section as part of its data extraction process.
+-->
 
 ```[tasklist]
 ### Submitter checklist

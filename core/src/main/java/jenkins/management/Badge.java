@@ -103,6 +103,7 @@ public class Badge {
      *
      * @return severity as String
      */
+    @Exported(visibility = 999)
     public String getSeverity() {
         return severity.toString().toLowerCase(Locale.US);
     }

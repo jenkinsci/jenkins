@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <div class="alert alert-warning">
+    <div class="jenkins-alert jenkins-alert-warning">
         <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <f:submit name="yes" value="${%Prevent users from manually creating legacy API tokens}"/>
             <f:submit name="no" value="${%Dismiss}"/>

@@ -26,15 +26,28 @@ THE SOFTWARE.
   <st:documentation>
     Progress bar for a build in progress.
 
-    <st:attribute name="build" use="required" type="hudson.model.Queue.Executable">
-      Build in progress. Must have a url property.
+    <st:attribute name="build" use="required">
+      Build in progress. Must have a url property; may have an executor property.
     </st:attribute>
     <st:attribute name="executor">
       Executor that's carrying out the build. If null, defaults to "build.executor"
     </st:attribute>
+    <st:attribute name="animate">
+      animate the progress bar
+    </st:attribute>
   </st:documentation>
   <j:set var="executor" value="${executor?:build.executor}" /> <!-- TODO use Executor.of -->
-  <t:progressBar tooltip="${%text(executor.timestampString,executor.estimatedRemainingTime)}"
-                 red="${executor.isLikelyStuck()}"
-                 pos="${executor.progress}" href="${h.getConsoleUrl(build) ?: (rootURL + '/' + build.url + 'console')}"/>
+  <j:choose>
+    <j:when test="${executor != null}">
+      <t:progressBar tooltip="${%text(executor.timestampString,executor.estimatedRemainingTime)}"
+                     red="${executor.isLikelyStuck()}"
+                     pos="${executor.progress}" href="${h.getConsoleUrl(build) ?: (rootURL + '/' + build.url + 'console')}"
+                     tooltipTemplate="${%text('%0','%1')}"
+                     animate="${attrs.animate}"/>
+    </j:when>
+    <j:otherwise>
+      <!-- TODO could offer estimatedRemainingTime etc. via HistoricalBuild -->
+      <t:progressBar href="${h.getConsoleUrl(build) ?: (rootURL + '/' + build.url + 'console')}"/>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

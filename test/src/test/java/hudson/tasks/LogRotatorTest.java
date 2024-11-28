@@ -31,7 +31,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -68,7 +70,7 @@ public class LogRotatorTest {
     @Test
     public void successVsFailure() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        project.setLogRotator(new LogRotator(-1, 2, -1, -1));
+        project.setBuildDiscarder(new LogRotator(-1, 2, -1, -1));
         j.buildAndAssertSuccess(project); // #1
         project.getBuildersList().replaceBy(Set.of(new FailureBuilder()));
         j.buildAndAssertStatus(Result.FAILURE, project); // #2
@@ -83,10 +85,37 @@ public class LogRotatorTest {
     }
 
     @Test
+    public void successVsFailureWithRemoveLastBuild() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        LogRotator logRotator = new LogRotator(-1, 1, -1, -1);
+        logRotator.setRemoveLastBuild(true);
+        project.setBuildDiscarder(logRotator);
+        project.getPublishersList().replaceBy(Set.of(new TestsFail()));
+        j.buildAndAssertStatus(Result.UNSTABLE, project); // #1
+        project.getBuildersList().replaceBy(Set.of(new FailureBuilder()));
+        j.buildAndAssertStatus(Result.FAILURE, project); // #2
+        assertNull(project.getBuildByNumber(1));
+        assertEquals(2, numberOf(project.getLastFailedBuild()));
+    }
+
+    @Test
+    public void ableToDeleteCurrentBuild() throws Exception {
+        assumeFalse("Deleting the current build while is is completing does not work consistently on Windows",
+                Functions.isWindows());
+        var p = j.createFreeStyleProject();
+        // Keep 0 builds, i.e. immediately delete builds as they complete.
+        LogRotator logRotator = new LogRotator(-1, 0, -1, -1);
+        logRotator.setRemoveLastBuild(true);
+        p.setBuildDiscarder(logRotator);
+        j.buildAndAssertStatus(Result.SUCCESS, p);
+        assertNull(p.getBuildByNumber(1));
+    }
+
+    @Test
     @Issue("JENKINS-2417")
     public void stableVsUnstable() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        project.setLogRotator(new LogRotator(-1, 2, -1, -1));
+        project.setBuildDiscarder(new LogRotator(-1, 2, -1, -1));
         j.buildAndAssertSuccess(project); // #1
         project.getPublishersList().replaceBy(Set.of(new TestsFail()));
         j.buildAndAssertStatus(Result.UNSTABLE, project); // #2
@@ -99,10 +128,27 @@ public class LogRotatorTest {
     }
 
     @Test
+    public void stableVsUnstableWithRemoveLastBuild() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        LogRotator logRotator = new LogRotator(-1, 1, -1, -1);
+        logRotator.setRemoveLastBuild(true);
+        project.setBuildDiscarder(logRotator);
+        j.buildAndAssertSuccess(project); // #1
+        project.getPublishersList().replaceBy(Set.of(new TestsFail()));
+        j.buildAndAssertStatus(Result.UNSTABLE, project); // #2
+        project.getBuildersList().replaceBy(Set.of(new FailureBuilder()));
+        j.buildAndAssertStatus(Result.FAILURE, project); // #3
+        assertNull(project.getBuildByNumber(1));
+        assertNull(project.getBuildByNumber(2));
+        assertEquals(-1, numberOf(project.getLastSuccessfulBuild()));
+        assertEquals(3, numberOf(project.getLastBuild()));
+    }
+
+    @Test
     @Issue("JENKINS-834")
     public void artifactDelete() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        project.setLogRotator(new LogRotator(-1, 6, -1, 2));
+        project.setBuildDiscarder(new LogRotator(-1, 6, -1, 2));
         project.getPublishersList().replaceBy(Set.of(new ArtifactArchiver("f", "", true, false)));
         j.buildAndAssertStatus(Result.FAILURE, project); // #1
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());

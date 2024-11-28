@@ -35,6 +35,7 @@ THE SOFTWARE.
       </l:header>
     </l:isAdmin>
     <l:main-panel>
+      <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
       <j:choose>
         <j:when test="${it.cloudAvailable and it.hasClouds()}">
           <l:app-bar title="${%Clouds}">
@@ -69,7 +70,7 @@ THE SOFTWARE.
                     </td>
                     <td class="jenkins-table__cell--tight">
                       <div class="jenkins-table__cell__button-wrapper">
-                        <a href="${it.getCloudUrl(request,app,cloud)}configure" class="jenkins-table__button">
+                        <a href="${it.getCloudUrl(request,app,cloud)}configure" class="jenkins-button">
                           <l:icon src="symbol-settings"/>
                         </a>
                       </div>
@@ -93,33 +94,42 @@ THE SOFTWARE.
             <section class="empty-state-section">
               <j:choose>
                 <j:when test="${it.cloudAvailable}">
-                  <p>${%noCloudAvailable}</p>
+                  <j:choose>
+                    <j:when test="${h.hasPermission(app.ADMINISTER)}">
+                      <p>${%noCloudAvailableCTA}</p>
+                    </j:when>
+                    <j:otherwise>
+                      <p>${%noCloudAvailable}</p>
+                    </j:otherwise>
+                  </j:choose>
                 </j:when>
                 <j:otherwise>
                   <p>${%noCloudPlugin}</p>
                 </j:otherwise>
               </j:choose>
               <ul class="empty-state-section-list">
-                <j:if test="${it.cloudAvailable}">
+                <l:isAdmin>
+                  <j:if test="${it.cloudAvailable}">
+                    <li class="content-block">
+                      <a href="new"
+                         class="content-block__link">
+                        <span>${%newCloud}</span>
+                        <span class="trailing-icon">
+                          <l:icon src="symbol-add"/>
+                        </span>
+                      </a>
+                    </li>
+                  </j:if>
                   <li class="content-block">
-                    <a href="new"
+                    <a href="${rootURL}/manage/pluginManager/available?filter=${it.cloudUpdateCenterCategoryLabel}"
                        class="content-block__link">
-                      <span>${%newCloud}</span>
+                      <span>${%installCloudPlugin}</span>
                       <span class="trailing-icon">
-                        <l:icon src="symbol-add"/>
+                        <l:icon src="symbol-plugins" />
                       </span>
                     </a>
                   </li>
-                </j:if>
-                <li class="content-block">
-                  <a href="${rootURL}/manage/pluginManager/available?filter=${it.cloudUpdateCenterCategoryLabel}"
-                     class="content-block__link">
-                    <span>${%installCloudPlugin}</span>
-                    <span class="trailing-icon">
-                      <l:icon src="symbol-plugins" />
-                    </span>
-                  </a>
-                </li>
+                </l:isAdmin>
                 <li class="content-block">
                   <a href="https://www.jenkins.io/redirect/distributed-builds"
                      class="content-block__link"

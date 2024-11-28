@@ -26,7 +26,7 @@ THE SOFTWARE.
   List of available new plugins
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
   <l:layout title="${%Available plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
     <st:include page="sidepanel.jelly"/>
     <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
@@ -53,12 +53,14 @@ THE SOFTWARE.
                                 icon="symbol-chevron-down"
                                 tooltip="${null}"
                                 clazz="jenkins-button--primary">
-                <button form="form" type="submit" class="jenkins-dropdown__item">
-                  <div class="jenkins-dropdown__item__icon">
-                    <l:icon src="symbol-download" />
-                  </div>
-                  ${%Install after restart}
-                </button>
+                <dd:custom>
+                  <button form="form" type="submit" class="jenkins-dropdown__item">
+                    <div class="jenkins-dropdown__item__icon">
+                      <l:icon src="symbol-download" />
+                    </div>
+                    ${%Install after restart}
+                  </button>
+                </dd:custom>
               </l:overflowButton>
             </div>
           </l:isAdmin>

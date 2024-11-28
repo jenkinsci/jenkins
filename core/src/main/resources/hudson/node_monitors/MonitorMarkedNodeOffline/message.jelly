@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="alert alert-warning">
+  <div class="jenkins-alert jenkins-alert-warning">
     <form method="post" action="${rootURL}/${it.url}/disable">
       <f:submit value="${%Dismiss}"/>
     </form>

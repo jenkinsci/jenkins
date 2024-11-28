@@ -51,6 +51,7 @@ import hudson.slaves.SlaveComputer;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -63,25 +64,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.SystemProperties;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Information about a Hudson agent node.
@@ -245,8 +245,7 @@ public abstract class Slave extends Node implements Serializable {
                 LOGGER.log(Level.WARNING, "could not update historical agentCommand setting to CommandLauncher", x);
             }
         }
-        // Default launcher does not use Work Directory
-        return launcher == null ? new JNLPLauncher(false) : launcher;
+        return launcher == null ? new JNLPLauncher() : launcher;
     }
 
     public void setLauncher(ComputerLauncher launcher) {
@@ -394,7 +393,7 @@ public abstract class Slave extends Node implements Serializable {
             // if computer is null then channel is null and thus we were going to return null anyway
             return null;
         } else {
-            return createPath(StringUtils.defaultString(computer.getAbsoluteRemoteFs(), remoteFS));
+            return createPath(Objects.toString(computer.getAbsoluteRemoteFs(), remoteFS));
         }
     }
 
@@ -419,7 +418,7 @@ public abstract class Slave extends Node implements Serializable {
             this.fileName = fileName;
         }
 
-        public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
             URLConnection con = connect();
             // since we end up redirecting users to jnlpJars/foo.jar/, set the content disposition
             // so that browsers can download them in the right file name.
@@ -431,7 +430,7 @@ public abstract class Slave extends Node implements Serializable {
         }
 
         @Override
-        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
             doIndex(req, rsp);
         }
 
@@ -466,7 +465,7 @@ public abstract class Slave extends Node implements Serializable {
                 }
             }
 
-            URL res = Jenkins.get().servletContext.getResource("/WEB-INF/" + name);
+            URL res = Jenkins.get().getServletContext().getResource("/WEB-INF/" + name);
             if (res == null) {
                 throw new FileNotFoundException(name); // giving up
             } else {
@@ -623,7 +622,7 @@ public abstract class Slave extends Node implements Serializable {
         /**
          * Performs syntactical check on the remote FS for agents.
          */
-        public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException {
             if (Util.fixEmptyAndTrim(value) == null)
                 return FormValidation.error(Messages.Slave_Remote_Director_Mandatory());
 

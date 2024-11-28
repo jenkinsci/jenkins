@@ -30,10 +30,14 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.XmlFile;
+import hudson.model.listeners.SaveableListener;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Builder;
@@ -59,6 +63,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -112,6 +117,29 @@ public class RunTest  {
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         b.delete();
         assertTrue(Mgr.deleted.get());
+        assertTrue(ExtensionList.lookupSingleton(SaveableListenerImpl.class).deleted);
+    }
+
+    @TestExtension("deleteArtifactsCustom")
+    public static class SaveableListenerImpl extends SaveableListener {
+        boolean deleted;
+
+        @Override
+        public void onDeleted(Saveable o, XmlFile file) {
+            deleted = true;
+        }
+    }
+
+    @Issue("JENKINS-73835")
+    @Test public void buildsMayNotBeDeletedWhileRunning() throws Exception {
+        var p = j.createFreeStyleProject();
+        p.getBuildersList().add(new SleepBuilder(999999));
+        var b = p.scheduleBuild2(0).waitForStart();
+        var ex = assertThrows(IOException.class, () -> b.delete());
+        assertThat(ex.getMessage(), containsString("Unable to delete " + b + " because it is still running"));
+        b.getExecutor().interrupt();
+        j.waitForCompletion(b);
+        b.delete(); // Works fine.
     }
 
     @Issue("SECURITY-1902")
@@ -157,7 +185,7 @@ public class RunTest  {
         HtmlPage htmlPage = wc.goTo(upProject.getUrl());
 
         // trigger the tooltip display
-        htmlPage.executeJavaScript("document.querySelector('#buildHistory table .build-badge img')._tippy.show()");
+        htmlPage.executeJavaScript("document.querySelector('#jenkins-build-history .app-builds-container__item__inner__controls svg')._tippy.show()");
         wc.waitForBackgroundJavaScript(500);
         ScriptResult result = htmlPage.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();

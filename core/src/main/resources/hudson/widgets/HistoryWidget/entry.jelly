@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <!--
-  Render a single build history entry indicated by ${build} (hudson.model.Build)
+  Render a single build history entry indicated by ${build} (jenkins.model.HistoricalBuild)
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt">
@@ -34,54 +34,58 @@ THE SOFTWARE.
   <j:if test="${h.isUserTimeZoneOverride()}">
     <i:setTimeZone value="${h.getUserTimeZone()}" />
    </j:if>
-  <tr class="build-row ${transitive} single-line" page-entry-id="${pageEntry.entryId}">
-    <td class="build-row-cell">
-      <div class="pane build-name">
-        <div class="build-icon">
-          <a class="build-status-link" href="${h.getConsoleUrl(build)}" tooltip="${build.iconColor.description} > ${%Console Output}">
-            <l:icon src="symbol-status-${build.iconColor.iconName}" />
-          </a>
-        </div>
-        <a class="model-link inside build-link display-name" update-parent-class=".build-row" href="${link}">${build.displayName}</a>
-      </div>
-      <div class="pane build-details" time="${build.timestamp.time.time}">
-        <j:set var="linkTitleAttr" value=""/> 
-        <j:if test="${!build.building}">
-          <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
-        </j:if>
-        <a class="model-link inside build-link" href="${link}" update-parent-class=".build-row" tooltip="${linkTitleAttr}">
-          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" /> ${h.getUserTimeZonePostfix()}
-        </a>
-        <j:if test="${build.building}">
-	  <j:set target="${it.widget}" property="nextBuildNumberToFetch" value="${build.number}"/>
-          <t:buildProgressBar build="${build}"/>
-        </j:if>
-      </div>
-      <div class="pane build-controls">
-        <div class="middle-align build-badge">
-          <j:set var="badges" value="${build.badgeActions}"/>
-          <j:if test="${!empty(badges)}">
-            <st:nbsp/>
-            <j:forEach var="badge" items="${badges}">
-              <st:include it="${badge}" page="badge.jelly" />
-            </j:forEach>
+
+  <div class="app-builds-container__item" page-entry-id="${pageEntry.entryId}">
+    <a class="app-builds-container__item__icon"
+       href="${h.getConsoleUrl(build)}"
+       tooltip="${build.iconColor.description}"
+       data-tooltip-append-to-parent="true">
+      <l:icon src="symbol-status-${build.iconColor.iconName}" />
+    </a>
+
+    <div class="app-builds-container__item__inner">
+      <a href="${link}" class="app-builds-container__item__inner__link">
+        ${build.displayName}
+        <span class="app-builds-container__item__time" time="${build.timestamp.time.time}">
+          <j:set var="linkTitleAttr" value="${null}" />
+          <j:if test="${!build.building}">
+            <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
           </j:if>
-        </div>
-        <j:if test="${build.building}">
-          <div class="build-stop">
-            <!-- Check CANCEL permission for Project, Admin permission otherwise -->
-            <j:if test="${empty(it.widget.owner.CANCEL) ? h.hasPermission(app.ADMINISTER) : it.widget.owner.hasPermission(it.widget.owner.CANCEL)}">
-              <l:stopButton href="${link}stop" alt="[cancel]" confirm="${%confirm(build.fullDisplayName)}" />
-            </j:if>
+          <div tooltip="${linkTitleAttr}" data-tooltip-append-to-parent="true">
+            <i:formatDate value="${build.timestamp.time}" type="time" timeStyle="short" />
+            ${h.getUserTimeZonePostfix()}
           </div>
+        </span>
+      </a>
+      <div class="app-builds-container__item__inner__controls">
+        <j:if test="${build.building}">
+          <j:if test="${build.building}">
+            <j:set target="${it.widget}" property="nextBuildNumberToFetch" value="${build.number}"/>
+            <t:buildProgressBar build="${build}"/>
+          </j:if>
+
+          <!-- Check CANCEL permission for Project, Admin permission otherwise -->
+          <j:if test="${empty(it.widget.owner.CANCEL) ? h.hasPermission(app.ADMINISTER) : it.widget.owner.hasPermission(it.widget.owner.CANCEL)}">
+            <l:stopButton href="${link}stop" alt="${%Cancel}" confirm="${%confirm(build.fullDisplayName)}" />
+          </j:if>
+        </j:if>
+
+        <j:set var="badges" value="${build.badgeActions}"/>
+        <j:if test="${!empty(badges)}">
+          <j:forEach var="badge" items="${badges}">
+            <st:include it="${badge}" page="badge.jelly" />
+          </j:forEach>
         </j:if>
       </div>
-      <j:if test="${!empty build.truncatedDescription}">
-        <div class="pane desc indent-multiline">
-          <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
-        </div>
-      </j:if>
-      <div class="left-bar" />
-    </td>
-  </tr>
+    </div>
+
+    <button class="jenkins-card__reveal jenkins-jumplist-link" data-href="${link}">
+      <l:icon src="symbol-chevron-down" />
+    </button>
+    <j:if test="${!empty build.truncatedDescription}">
+      <div class="app-builds-container__item__description">
+        <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
+      </div>
+    </j:if>
+  </div>
 </j:jelly>

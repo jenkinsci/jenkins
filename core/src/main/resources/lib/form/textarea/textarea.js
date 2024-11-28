@@ -3,7 +3,28 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   if (!config) {
     config = "";
   }
-  config = eval("({" + config + "})");
+  try {
+    config = JSON.parse("{" + config + "}");
+  } catch (ex) {
+    /*
+     * Attempt to parse fairly common legacy format whose exact content is:
+     * mode:'<MIME>'
+     */
+    let match = config.match("^mode: ?'([^']+)'$");
+    if (match) {
+      console.log(
+        "Parsing simple legacy codemirror-config value using fallback: " +
+          config,
+      );
+      config = { mode: match[1] };
+    } else {
+      console.log(
+        "Failed to parse codemirror-config '{" + config + "}' as JSON",
+        ex,
+      );
+      config = {};
+    }
+  }
   if (!config.onBlur) {
     config.onBlur = function (editor) {
       editor.save();

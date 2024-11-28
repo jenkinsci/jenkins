@@ -2365,7 +2365,7 @@ _subscribeToItemEvents: function (p_oItem) {
 
 /**
 * @method _onVisibleChange
-* @description Change event handler for the the menu's "visible" configuration
+* @description Change event handler for the menu's "visible" configuration
 * property.
 * @private
 * @param {String} p_sType String representing the name of the event that 
@@ -4818,7 +4818,7 @@ _setScrollHeight: function (p_nScrollHeight) {
     
 
             /*
-                Only clear the the "width" configuration property if it was set the 
+                Only clear the "width" configuration property if it was set the 
                 "_setScrollHeight" method and wasn't changed by some other means after it was set.
             */	
     

@@ -31,6 +31,7 @@ import groovy.lang.GroovyShell;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
+import hudson.model.ModelObject;
 import hudson.model.User;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.remoting.DelegatingCallable;
@@ -56,9 +57,12 @@ import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.ScriptListener;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Various remoting operations related to diagnostics.
@@ -176,7 +180,7 @@ public final class RemotingDiagnostics {
     private static class GetHeapDump extends MasterToSlaveCallable<FilePath, IOException> {
             @Override
             public FilePath call() throws IOException {
-                final File hprof = File.createTempFile("hudson-heapdump", "hprof");
+                final File hprof = File.createTempFile("hudson-heapdump", ".hprof");
                 Files.delete(Util.fileToPath(hprof));
                 try {
                     MBeanServer server = ManagementFactory.getPlatformMBeanServer();
@@ -196,7 +200,7 @@ public final class RemotingDiagnostics {
      * Heap dump, exposable to URL via Stapler.
      *
      */
-    public static class HeapDump {
+    public static class HeapDump implements ModelObject {
         private final AccessControlled owner;
         private final VirtualChannel channel;
 
@@ -205,28 +209,35 @@ public final class RemotingDiagnostics {
             this.channel = channel;
         }
 
-        /**
-         * Obtains the heap dump.
-         */
-        public void doIndex(StaplerResponse rsp) throws IOException {
-            rsp.sendRedirect("heapdump.hprof");
-        }
-
         @WebMethod(name = "heapdump.hprof")
-        public void doHeapDump(StaplerRequest req, StaplerResponse rsp) throws IOException, InterruptedException {
+        @RequirePOST
+        public void doHeapDump(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, InterruptedException {
             owner.checkPermission(Jenkins.ADMINISTER);
             rsp.setContentType("application/octet-stream");
 
             FilePath dump = obtain();
             try {
-                dump.copyTo(rsp.getCompressedOutputStream(req));
+                dump.copyTo(rsp.getOutputStream());
             } finally {
                 dump.delete();
             }
         }
 
+        @Restricted(DoNotUse.class)
+        public AccessControlled getContext() {
+            if (owner instanceof ModelObject) {
+                return owner;
+            }
+            return Jenkins.get();
+        }
+
         public FilePath obtain() throws IOException, InterruptedException {
             return RemotingDiagnostics.getHeapDump(channel);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Messages.HeapDump_DisplayName();
         }
     }
 }

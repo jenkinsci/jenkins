@@ -38,7 +38,7 @@ public final class QueryBuilder {
 
     public QueryBuilder add(String s) {
         if (s == null)     return this; // nothing to add
-        if (buf.length() == 0) buf.append('?');
+        if (buf.isEmpty()) buf.append('?');
         else                buf.append('&');
         buf.append(s);
         return this;

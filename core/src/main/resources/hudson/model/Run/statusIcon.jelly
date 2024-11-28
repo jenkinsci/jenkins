@@ -28,9 +28,13 @@ THE SOFTWARE.
   Displays the console output
 -->
 <?jelly escape-by-default='true'?>
-<st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-<st:setHeader name="X-Building" value="${it.building}" />
-<l:ajax>
-  <l:icon alt="${it.iconColor.description}" src="symbol-status-${it.iconColor.iconName}" class="icon-xlg" tooltip="${it.iconColor.description}"/>
-</l:ajax>
-</st:compress>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:setHeader name="X-Building" value="${it.building}" />
+  <st:setHeader name="X-Progress" value="${it.executor.progress}" />
+  <st:setHeader name="X-Executor-Runtime" value="${it.executor.timestampString}" />
+  <st:setHeader name="X-Executor-Remaining" value="${it.executor.estimatedRemainingTime}" />
+  <st:setHeader name="X-Executor-Stuck" value="${it.executor.likelyStuck}" />
+  <l:ajax>
+    <l:icon alt="${it.iconColor.description}" src="symbol-status-${it.iconColor.iconName}" class="icon-xlg" tooltip="${it.iconColor.description}"/>
+  </l:ajax>
+</j:jelly>

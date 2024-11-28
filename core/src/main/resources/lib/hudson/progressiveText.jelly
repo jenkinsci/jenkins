@@ -35,6 +35,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="progressiveText-holder" data-href="${href}" data-idref="${idref}" data-spinner="${spinner}" data-start-offset="${startOffset}" data-on-finish-event="${empty(onFinishEvent) ? '' : onFinishEvent}"/>
+  <div class="progressiveText-holder" data-href="${href}" data-idref="${idref}" data-spinner="${spinner}" data-start-offset="${startOffset}"
+       data-on-finish-event="${empty(onFinishEvent) ? '' : onFinishEvent}"
+       data-error-message="${%errorMessage}"/>
   <st:adjunct includes="lib.hudson.progressive-text"/>
 </j:jelly>

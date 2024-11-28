@@ -56,7 +56,7 @@ import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.seed.UserSeedProperty;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matcher;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
@@ -651,7 +651,7 @@ public class HudsonPrivateSecurityRealmTest {
         wc_anotherTab.login(alice.getId());
         assertUserConnected(wc_anotherTab, alice.getId());
 
-        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
         HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
         HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
 
@@ -683,7 +683,7 @@ public class HudsonPrivateSecurityRealmTest {
         wc_anotherTab.login(alice.getId());
         assertUserConnected(wc_anotherTab, alice.getId());
 
-        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
         // not changing password this time
         HtmlForm form = configurePage.getFormByName("config");
         j.submit(form);
@@ -713,7 +713,7 @@ public class HudsonPrivateSecurityRealmTest {
             wc_anotherTab.login(alice.getId());
             assertUserConnected(wc_anotherTab, alice.getId());
 
-            HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
+            HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
             HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
             HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
 

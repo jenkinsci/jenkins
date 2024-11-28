@@ -1,0 +1,95 @@
+$jenkins-dialog-padding: 1.3rem;
+
+.jenkins-dialog {
+  border-radius: 0.6rem;
+  border: none;
+  box-shadow: var(--dialog-box-shadow);
+  animation: jenkins-dialog-animate-in 0.25s cubic-bezier(0, 0.68, 0.5, 1.5);
+  overflow: hidden;
+  padding: $jenkins-dialog-padding 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: $jenkins-dialog-padding;
+
+  &::backdrop {
+    background: var(--dialog-backdrop-background);
+    animation: jenkins-dialog-backdrop-animate-in 0.15s;
+  }
+
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    padding: 0 $jenkins-dialog-padding;
+    color: var(--text-color);
+  }
+
+  &__contents {
+    overflow-y: auto;
+    overflow-wrap: break-word;
+    padding: 0 $jenkins-dialog-padding;
+    max-height: 75vh;
+    font-size: 1rem;
+    color: var(--text-color-secondary);
+
+    &--modal {
+      padding-bottom: $jenkins-dialog-padding;
+      color: var(--text-color);
+    }
+  }
+
+  &__input {
+    display: flex;
+    padding: 0 1rem 1rem;
+  }
+
+  &__buttons {
+    padding: 0 $jenkins-dialog-padding $jenkins-dialog-padding;
+    justify-content: right;
+    flex-direction: row-reverse;
+
+    .jenkins-button {
+      font-size: 0.9rem;
+      padding: 0.7rem 0.6rem;
+      min-width: 100px;
+    }
+  }
+
+  &__subtitle {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    padding: 0;
+    margin: 0 0 1rem;
+  }
+
+  &__close-button {
+    position: absolute;
+    top: $jenkins-dialog-padding - 0.5rem;
+    right: $jenkins-dialog-padding - 0.5rem;
+    aspect-ratio: 1;
+    padding: 0;
+
+    &::before,
+    &::after {
+      border-radius: 100%;
+      outline: none;
+    }
+
+    &::after {
+      backdrop-filter: contrast(0.9) blur(5px);
+    }
+  }
+}
+
+@keyframes jenkins-dialog-backdrop-animate-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes jenkins-dialog-animate-in {
+  from {
+    scale: 85%;
+    opacity: 0;
+  }
+}

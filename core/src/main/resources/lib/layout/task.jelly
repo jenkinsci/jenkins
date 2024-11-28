@@ -77,6 +77,18 @@ THE SOFTWARE.
       (onclick supersedes this except in the context menu.)
       (since 1.512)
     </st:attribute>
+    <st:attribute name="onclick" deprecated="true">
+      Onclick inline JS handler. Deprecated, specify data-callback attribute instead.
+    </st:attribute>
+    <st:attribute name="data-callback" since="2.437">
+      Name of a global function to call when clicked.
+      It will be called with an element (currently 'a') as first argument, and the event as second argument.
+      You can specify further data-* attributes to customize behavior, those will be defined on the element passed as first argument.
+      See https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset for more information about these attributes.
+      Has no effect if you specify the 'requiresConfirmation' attribute.
+      Has no effect on menu items showing in context menus, only 'href', 'post', and 'requiresConfirmation' attributes substantially change behavior there.
+      Set 'contextMenu' to 'false' to remove this task from those menus.
+    </st:attribute>
     <st:attribute name="badge" type="jenkins.management.Badge">
       If set, displays the value as a small badge on the right side of the sidepanel item.
       (since 2.401)
@@ -85,7 +97,7 @@ THE SOFTWARE.
       Message to use for confirmation, if requested; defaults to title.
       (since 1.512)
     </st:attribute>
-    <st:attribute name="destructive" type="boolean" since="TODO">
+    <st:attribute name="destructive" type="boolean" since="2.415">
       Show red confirmation button.
     </st:attribute>
   </st:documentation>
@@ -143,11 +155,7 @@ THE SOFTWARE.
                 <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
-              <j:if test="${attrs.badge != null}">
-                <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                  ${attrs.badge.text}
-                </span>
-              </j:if>
+              <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
             </span>
           </span>
         </div>
@@ -161,19 +169,6 @@ THE SOFTWARE.
               <l:icon src="${icon}" />
             </j:set>
             ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true', null, confirmationMessage ?: null) : null}
-            <j:set var="id" value="${h.generateId()}"/>
-            <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
-                <script>
-                    function postRequest_${id}(a) {
-                      fetch(a.href, {
-                        method: 'post',
-                        headers: crumb.wrap({}),
-                      })
-                      hoverNotification('${%Done.}', a.parentNode);
-                      return false;
-                    }
-                </script>
-            </j:if>
 
             <j:choose>
               <j:when test="${requiresConfirmation and not attrs.onClick}">
@@ -182,26 +177,27 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
-                  <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                      ${attrs.badge.text}
-                    </span>
-                  </j:if>
+                  <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
                 </l:confirmationLink>
               </j:when>
 
               <j:otherwise>
-                <a href="${href}" class="task-link ${isCurrent ? 'task-link--active' : ''}" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}">
+                <m:a xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+                     href="${href}"
+                     class="task-link task-link-no-confirm ${isCurrent ? 'task-link--active' : ''}"
+                     data-task-success="${%Done.}"
+                     data-task-failure="${%Failed.}"
+                     data-task-post="${attrs.post}"
+                     ATTRIBUTES="${attrs}"
+                     EXCEPT="badge confirmationMessage contextMenu destructive enabled href icon permission permissions post requiresConfirmation title">
+                  <!-- all documented attributes except onclick and data-* are in EXCEPT -->
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
-                  <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                      ${attrs.badge.text}
-                    </span>
-                  </j:if>
-                </a>
+                  <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
+                </m:a>
+                <st:adjunct includes="lib.layout.task.task" />
               </j:otherwise>
             </j:choose>
           </span>

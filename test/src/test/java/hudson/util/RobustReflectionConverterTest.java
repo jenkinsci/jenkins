@@ -61,7 +61,7 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class RobustReflectionConverterTest {
 
@@ -123,7 +123,7 @@ public class RobustReflectionConverterTest {
             }
 
             @Override
-            public AcceptOnlySpecificKeyword newInstance(StaplerRequest req, JSONObject formData)
+            public AcceptOnlySpecificKeyword newInstance(StaplerRequest2 req, JSONObject formData)
                     throws FormException {
                 AcceptOnlySpecificKeyword instance = super.newInstance(req, formData);
                 if (!instance.isAcceptable()) {
@@ -160,7 +160,7 @@ public class RobustReflectionConverterTest {
             }
 
             @Override
-            public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData)
+            public JobProperty<?> newInstance(StaplerRequest2 req, JSONObject formData)
                     throws FormException {
                 // unfortunately, default newInstance bypasses newInstances for members.
                 formData = formData.getJSONObject("keywordProperty");

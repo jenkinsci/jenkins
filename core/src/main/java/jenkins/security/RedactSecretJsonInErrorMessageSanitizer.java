@@ -88,7 +88,6 @@ public class RedactSecretJsonInErrorMessageSanitizer implements JsonInErrorMessa
         }
     }
 
-    @SuppressWarnings("unchecked")
     private JSONObject copyAndSanitizeObject(JSONObject jsonObject) {
         Set<String> redactedKeySet = retrieveRedactedKeys(jsonObject);
         JSONObject result = new JSONObject();

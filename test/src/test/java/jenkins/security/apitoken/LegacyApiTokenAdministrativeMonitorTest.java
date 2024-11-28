@@ -34,7 +34,7 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
 import java.io.IOException;
 import jenkins.security.ApiTokenProperty;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.htmlunit.Page;
 import org.htmlunit.html.DomNodeList;

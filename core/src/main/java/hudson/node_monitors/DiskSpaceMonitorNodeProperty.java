@@ -11,7 +11,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 /**
  * {@link NodeProperty} that allows users to set agent specific disk space thresholds.
  *
- * @since TODO
+ * @since 2.434
  */
 public class DiskSpaceMonitorNodeProperty extends NodeProperty<Node> {
     private final String freeDiskSpaceThreshold;

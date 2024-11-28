@@ -4,6 +4,8 @@ import hudson.Util;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.SecurityListener;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.springframework.security.authentication.AnonymousAuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -78,6 +80,15 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
         } else {
             throw new AbstractMethodError("Implement authenticate2");
         }
+    }
+
+    /**
+     * A public alias of @{link {@link #authenticate2(String, String)}.
+     * @since 2.444
+     */
+    @Restricted(Beta.class)
+    public final UserDetails authenticateByPassword(String username, String password) throws AuthenticationException {
+        return authenticate2(username, password);
     }
 
     /**

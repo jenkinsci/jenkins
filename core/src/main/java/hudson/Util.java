@@ -84,6 +84,8 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -123,6 +125,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -1522,6 +1525,10 @@ public class Util {
      *                                  does not contain the specified method.
      */
     public static boolean isOverridden(@NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
+        if (base == derived) {
+            // If base and derived are the same type, the method is not overridden by definition
+            return false;
+        }
         // If derived is not a subclass or implementor of base, it can't override any method
         // Technically this should also be triggered when base == derived, because it can't override its own method, but
         // the unit tests explicitly test for that as working.
@@ -1848,14 +1855,25 @@ public class Util {
     /**
      * Find the specific ancestor, or throw an exception.
      * Useful for an ancestor we know is inside the URL to ease readability
+     *
+     * @since 2.475
      */
     @Restricted(NoExternalUse.class)
-    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest request, @NonNull Class<T> clazz) {
+    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest2 request, @NonNull Class<T> clazz) {
         T t = request.findAncestorObject(clazz);
         if (t == null) {
             throw new IllegalArgumentException("No ancestor of type " + clazz.getName() + " in the request");
         }
         return t;
+    }
+
+    /**
+     * @deprecated use {@link #getNearestAncestorOfTypeOrThrow(StaplerRequest2, Class)}
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest request, @NonNull Class<T> clazz) {
+        return getNearestAncestorOfTypeOrThrow(StaplerRequest.toStaplerRequest2(request), clazz);
     }
 
     @Restricted(NoExternalUse.class)
@@ -1872,9 +1890,20 @@ public class Util {
                 "<!--%n", Functions.htmlAttributeEscape(redirectUrl), message);
     }
 
+    /**
+     * @deprecated use {@link #XS_DATETIME_FORMATTER2}
+     */
+    @Deprecated
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", new SimpleTimeZone(0, "GMT"));
 
+    public static final DateTimeFormatter XS_DATETIME_FORMATTER2 =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
+
     // Note: RFC822 dates must not be localized!
+    /**
+     * @deprecated use {@link DateTimeFormatter#RFC_1123_DATE_TIME}
+     */
+    @Deprecated
     public static final FastDateFormat RFC822_DATETIME_FORMATTER
             = FastDateFormat.getInstance("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 

@@ -1,0 +1,69 @@
+<div>
+  Detta avgör när, om någonsin, byggposter ska kasseras för detta projekt.
+  Byggposter inkluderar konsolutdata, arkiverade artefakter och annan metadata
+  relaterad till ett visst bygge.
+  <p>
+    Att behålla färre byggen innebär att mindre diskutrymme användas i
+    <i>Rotkatalog för byggposter</i>
+    , som kan anges på sidan
+    <i>Konfigurera system</i>
+    .
+  </p>
+
+  <p>
+    <!-- TODO: Most/all of the following should be dynamic, showing info from the
+       `BuildDiscarder` implementations that are currently loaded -->
+    Jenkins erbjuder två alternativ för att avgöra när byggen ska kasseras:
+  </p>
+
+  <ol>
+    <li>
+      Byggålder: kassera byggen när de når en viss ålder; t.ex. sju dagar
+      gammal.
+    </li>
+
+    <li>
+      Byggantal: kassera det äldsta bygget när det redan finns ett visst antal
+      byggen.
+    </li>
+  </ol>
+
+  Dessa två alternativ kan vara aktiverade samtidigt så du kan behålla byggen i
+  14 dagar men bara upp till en gräns på t.ex. 50 byggen. Om någon av gränserna
+  överskrids kommer alla byggen utöver gränsen att kasseras.
+  <p>
+    Du kan också se till att viktiga byggen sparas för alltid, oavsett
+    inställningen här &mdash; klicka på knappen
+    <i>Behåll detta bygge för alltid</i>
+    på byggsidan.
+    <br />
+    Det senaste stabila och senaste lyckade bygget exkluderas också från dessa
+    regler.
+  </p>
+
+  <hr />
+
+  I avsnittet
+  <i>Avancerat</i>
+  kan samma alternativ anges, men specifikt för
+  <b>byggartefakter</b>
+  . Om detta aktiveras kommer byggartefakter att kasseras för alla byggen som
+  överskrider definierade gränser. Alla byggen i sig kommer fortfarande att
+  sparas; endast eventuella associerade artefakterna kommer att raderas.
+  <p>
+    Till exempel om ett projekt bygger vissa programvaror och producerar ett
+    stort installationsprogram som arkiveras kanske du alltid vill behålla
+    konsolloggen och information om vilken inchecking i källkontrollen som
+    byggdes, medan du av diskutrymmesskäl kanske endast vill behålla de tre
+    senaste installationsprogrammen som byggdes.
+    <br />
+    Detta kan vara vettigt för projekt där du enkelt kan återskapa samma
+    artefakter senare genom att bygga samma inchecking i källkontrollen igen.
+  </p>
+
+  <hr />
+
+  Observera att Jenkins inte kasserar objekt omedelbart när denna konfiguration
+  uppdateras eller så snart ett konfigurerat värde överskrids; dessa regler
+  utvärderas varje gång ett bygge av detta projekt slutförs.
+</div>

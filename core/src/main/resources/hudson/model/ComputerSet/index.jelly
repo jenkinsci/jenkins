@@ -56,8 +56,8 @@ THE SOFTWARE.
 
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
-
-    <table id="computers" class="jenkins-table sortable">
+    <t:setIconSize/>
+    <table id="computers" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
       <thead>
         <tr>
           <th class="jenkins-table__cell--tight">S</th>
@@ -72,12 +72,12 @@ THE SOFTWARE.
         </tr>
       </thead>
       <tbody>
-
-      <j:forEach var="c" items="${it._all}">
+      <j:getStatic var="extendedReadPermission" className="hudson.model.Computer" field="EXTENDED_READ"/>
+      <j:forEach var="c" items="${it.computers}">
         <tr id="node_${c.name}">
           <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
             <div class="jenkins-table__cell__button-wrapper">
-              <l:icon src="${c.iconClassName}" alt="${c.iconAltText}"/>
+              <l:icon src="${c.iconClassName}" alt="${c.iconAltText}" tooltip="${c.tooltip}"/>
             </div>
           </td>
 
@@ -93,9 +93,9 @@ THE SOFTWARE.
           </j:forEach>
 
           <td class="jenkins-table__cell--tight">
-            <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
+            <j:if test="${c.hasPermission(extendedReadPermission)}">
               <div class="jenkins-table__cell__button-wrapper">
-                <a href="../${c.url}configure" class="jenkins-table__button">
+                <a href="../${c.url}configure" class="jenkins-button jenkins-button--tertiary">
                   <l:icon src="symbol-settings" />
                 </a>
               </div>
@@ -123,6 +123,17 @@ THE SOFTWARE.
       </tr>
       </tbody>
     </table>
+    <t:iconSize>
+      <div class="jenkins-buttons-row jenkins-buttons-row--invert">
+        <button class="jenkins-button jenkins-button--tertiary" id="button-computer-icon-legend">
+          ${%Legend}
+        </button>
+      </div>
+    </t:iconSize>
+    <template id="template-computer-icon-legend" data-title="${%Computer icon legend}">
+      <st:include page="_legend.jelly"/>
+    </template>
+    <script src="${resURL}/jsbundles/pages/computer-set.js" type="text/javascript" defer="true" />
   </l:main-panel>
 </l:layout>
 </j:jelly>

@@ -670,6 +670,77 @@ public class FilePathTest {
         assertTrue(d.installIfNecessaryFrom(url, null, message));
     }
 
+    @Issue("JENKINS-72469")
+    @Test public void installIfNecessaryWithoutLastModifiedStrongValidator() throws Exception {
+        String strongValidator = "\"An-ETag-strong-validator\"";
+        installIfNecessaryWithoutLastModified(strongValidator);
+    }
+
+    @Issue("JENKINS-72469")
+    @Test public void installIfNecessaryWithoutLastModifiedStrongValidatorNoQuotes() throws Exception {
+        // This ETag is a violation of the spec at https://httpwg.org/specs/rfc9110.html#field.etag
+        // However, better safe to handle without quotes as well, just in case
+        String strongValidator = "An-ETag-strong-validator-without-quotes";
+        installIfNecessaryWithoutLastModified(strongValidator);
+    }
+
+    @Issue("JENKINS-72469")
+    @Test public void installIfNecessaryWithoutLastModifiedWeakValidator() throws Exception {
+        String weakValidator = "W/\"An-ETag-weak-validator\"";
+        installIfNecessaryWithoutLastModified(weakValidator);
+    }
+
+    @Issue("JENKINS-72469")
+    @Test public void installIfNecessaryWithoutLastModifiedStrongAndWeakValidators() throws Exception {
+        String strongValidator = "\"An-ETag-validator\"";
+        String weakValidator = "W/" + strongValidator;
+        installIfNecessaryWithoutLastModified(strongValidator, weakValidator);
+    }
+
+    @Issue("JENKINS-72469")
+    @Test public void installIfNecessaryWithoutLastModifiedWeakAndStrongValidators() throws Exception {
+        String strongValidator = "\"An-ETag-validator\"";
+        String weakValidator = "W/" + strongValidator;
+        installIfNecessaryWithoutLastModified(weakValidator, strongValidator);
+    }
+
+    private void installIfNecessaryWithoutLastModified(String validator) throws Exception {
+        installIfNecessaryWithoutLastModified(validator, validator);
+    }
+
+    private void installIfNecessaryWithoutLastModified(String validator, String alternateValidator) throws Exception {
+        final HttpURLConnection con = mock(HttpURLConnection.class);
+        // getLastModified == 0 when last-modified header is not returned
+        when(con.getLastModified()).thenReturn(0L);
+        // An Etag is provided by Azul CDN without last-modified header
+        when(con.getHeaderField("ETag")).thenReturn(validator);
+        when(con.getInputStream()).thenReturn(someZippedContent());
+
+        final URL url = someUrlToZipFile(con);
+
+        File tmp = temp.getRoot();
+        final FilePath d = new FilePath(tmp);
+
+        /* Initial download expected to occur */
+        assertTrue(d.installIfNecessaryFrom(url, null, "message if failed first download"));
+
+        /* Timestamp last modified == 0 means the header was not provided */
+        assertThat(d.child(".timestamp").lastModified(), is(0L));
+
+        /* Second download should not occur if JENKINS-72469 is fixed and NOT_MODIFIED is returned */
+        when(con.getResponseCode()).thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
+        when(con.getInputStream()).thenReturn(someZippedContent());
+        when(con.getHeaderField("ETag")).thenReturn(alternateValidator);
+        assertFalse(d.installIfNecessaryFrom(url, null, "message if failed second download"));
+
+        /* Third download should not occur if JENKINS-72469 is fixed and OK is returned with matching ETag */
+        /* Unexpected to receive an OK and a matching ETag from a real web server, but check for safety */
+        when(con.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        when(con.getInputStream()).thenReturn(someZippedContent());
+        when(con.getHeaderField("ETag")).thenReturn(alternateValidator);
+        assertFalse(d.installIfNecessaryFrom(url, null, "message if failed third download"));
+    }
+
     private URL someUrlToZipFile(final URLConnection con) throws IOException {
 
         final URLStreamHandler urlHandler = new URLStreamHandler() {

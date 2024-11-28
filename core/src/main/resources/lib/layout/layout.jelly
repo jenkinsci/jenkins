@@ -24,7 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt"
+         xmlns:x="jelly:xml" xmlns:dd="/lib/layout/dropdowns">
   <st:documentation> <![CDATA[
     Outer-most tag for a normal (non-AJAX) HTML rendering.
     This is used with nested <header>, <side-panel>, and <main-panel>
@@ -127,31 +128,36 @@ THE SOFTWARE.
 
     <st:adjunct includes="org.kohsuke.stapler.bind"/>
 
-    <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
-    <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
-    <l:yui module="yahoo" />
-    <l:yui module="dom" />
-    <l:yui module="event" />
-    <j:if test="${h.yuiSuffix=='debug'}">
-      <l:yui module="logger" />
+    <l:userExperimentalFlag var="removeYUI" flagClassName="jenkins.model.experimentalflags.RemoveYuiUserExperimentalFlag" />
+    <j:if test="${!removeYUI}">
+      <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
+      <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
+      <l:yui module="yahoo" />
+      <l:yui module="dom" />
+      <l:yui module="event" />
+      <j:if test="${h.yuiSuffix=='debug'}">
+        <l:yui module="logger" />
+      </j:if>
+      <l:yui module="animation" />
+      <l:yui module="dragdrop" />
+      <l:yui module="container" />
+      <l:yui module="connection" />
+      <l:yui module="datasource" />
+      <l:yui module="autocomplete" />
+      <l:yui module="menu" />
+      <l:yui module="element" />
+      <l:yui module="button" />
+      <l:yui module="storage" />
     </j:if>
-    <l:yui module="animation" />
-    <l:yui module="dragdrop" />
-    <l:yui module="container" />
-    <l:yui module="connection" />
-    <l:yui module="datasource" />
-    <l:yui module="autocomplete" />
-    <l:yui module="menu" />
-    <l:yui module="element" />
-    <l:yui module="button" />
-    <l:yui module="storage" />
 
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
 
-    <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
-    <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>
-    <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
+    <j:if test="${!removeYUI}">
+      <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
+      <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>
+      <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
+    </j:if>
 
     <l:hasPermission permission="${app.READ}">
       <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
@@ -172,7 +178,7 @@ THE SOFTWARE.
     <script src="${resURL}/jsbundles/sortable-drag-drop.js" type="text/javascript"/>
     <script src="${resURL}/jsbundles/app.js" type="text/javascript" defer="true" />
   </head>
-  <body id="jenkins" class="yui-skin-sam ${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}">
+  <body id="jenkins" class="${removeYUI ? '' : 'yui-skin-sam'} ${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}">
 
     <j:if test="${layoutType!='full-screen'}">
       <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
@@ -192,16 +198,8 @@ THE SOFTWARE.
 
     <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">
       <j:if test="${layoutType=='two-column'}">
-        <div id="side-panel" class="app-page-body__sidebar">
-          <j:set var="mode" value="side-panel" />
-          <d:invokeBody />
-
-          <!-- add YUI logger if debugging YUI -->
-          <j:if test="${h.yuiSuffix=='debug'}">
-          <!-- script to transform this into the Logger Console is done in hudson-behavior.js -->
-          <div id="yui-logreader" style="margin-top:1em"/>
-          </j:if>
-        </div>
+        <j:set var="mode" value="side-panel" />
+        <d:invokeBody />
       </j:if>
       <div id="main-panel">
         <j:set var="mode" value="main-panel" />
@@ -230,26 +228,17 @@ THE SOFTWARE.
                               icon="${null}"
                               tooltip="${null}">
               <l:hasPermission permission="${app.SYSTEM_READ}">
-                <a class="jenkins-dropdown__item" href="${rootURL}/manage/about">
-                  <div class="jenkins-dropdown__item__icon">
-                    <l:icon src="symbol-jenkins" />
-                  </div>
-                  ${%About Jenkins}
-                </a>
-                <div class="jenkins-dropdown__separator"></div>
+                <dd:item icon="symbol-jenkins"
+                        text="${%About Jenkins}"
+                         href="${rootURL}/manage/about" />
+                <dd:separator />
               </l:hasPermission>
-              <a class="jenkins-dropdown__item" href="https://www.jenkins.io/participate/" rel="noopener noreferrer" target="_blank">
-                <div class="jenkins-dropdown__item__icon">
-                  <l:icon src="symbol-heart" />
-                </div>
-                ${%Get involved}
-              </a>
-              <a class="jenkins-dropdown__item" href="${h.getFooterURL()}" rel="noopener noreferrer" target="_blank">
-                <div class="jenkins-dropdown__item__icon">
-                  <l:icon src="symbol-external" />
-                </div>
-                ${%Website}
-              </a>
+              <dd:item icon="symbol-heart"
+                       text="${%Get involved}"
+                       href="https://www.jenkins.io/participate/" />
+              <dd:item icon="symbol-external"
+                       text="${%Website}"
+                       href="${h.getFooterURL()}" />
             </l:overflowButton>
           </div>
         </div>

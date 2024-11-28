@@ -35,7 +35,7 @@
   {
     "category": "Build Analysis and Reporting",
     "plugins": [
-      { "name": "cobertura" },
+      { "name": "coverage" },
       { "name": "htmlpublisher" },
       { "name": "junit" },
       { "name": "warnings-ng" },
@@ -48,7 +48,7 @@
       { "name": "workflow-aggregator", "suggested": true, "added": "2.0" },
       { "name": "github-branch-source", "suggested": true, "added": "2.0" },
       { "name": "pipeline-github-lib", "suggested": true, "added": "2.0" },
-      { "name": "pipeline-stage-view", "suggested": true, "added": "2.0" },
+      { "name": "pipeline-graph-view", "suggested": true },
       { "name": "conditional-buildstep" },
       { "name": "parameterized-trigger" },
       { "name": "copyartifact" }
@@ -93,6 +93,10 @@
       { "name": "emailext-template" },
       { "name": "mailer", "suggested": true }
     ]
+  },
+  {
+    "category": "Appearance",
+    "plugins": [{ "name": "dark-theme", "suggested": true }]
   },
   {
     "category": "Languages",

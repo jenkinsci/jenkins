@@ -34,7 +34,7 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class PreventRoutingTest extends StaplerAbstractTest {
 
@@ -105,7 +105,7 @@ public class PreventRoutingTest extends StaplerAbstractTest {
     }
 
     private static void notStaplerGetter(@NonNull Object o) {
-        StaplerRequest req = Stapler.getCurrentRequest();
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
         if (req != null) {
             List<Ancestor> ancestors = req.getAncestors();
             if (!ancestors.isEmpty() && ancestors.get(ancestors.size() - 1).getObject() == o) {

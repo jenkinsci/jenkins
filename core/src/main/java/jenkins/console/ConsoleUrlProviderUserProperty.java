@@ -39,7 +39,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 /**
  * Allows users to activate and sort {@link ConsoleUrlProvider} extensions based on their preferences.
  * @see ConsoleUrlProviderGlobalConfiguration
- * @since TODO
+ * @since 2.433
  */
 @Restricted(NoExternalUse.class)
 public class ConsoleUrlProviderUserProperty extends UserProperty {
@@ -63,6 +63,11 @@ public class ConsoleUrlProviderUserProperty extends UserProperty {
         @Override
         public String getDisplayName() {
             return Messages.consoleUrlProviderDisplayName();
+        }
+
+        @Override
+        public String getDescription() {
+            return Messages.consoleUrlProviderDisplayName_Description();
         }
 
         @Override
