@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,14 +13,14 @@ import java.util.logging.Logger;
  * HTTP, which is a request/response protocol.
  * {@code FullDuplexHttpService} is the counterpart on the server side.
  */
-public class FullDuplexHttpStream {
+public class HttpUploadDownloadStream {
     private final URL base;
     private final OutputStream output;
     private final InputStream input;
 
-    private static final Logger LOGGER = Logger.getLogger(FullDuplexHttpStream.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(HttpUploadDownloadStream.class.getName());
 
-    public FullDuplexHttpStream(URL base, String relativeTarget, String authorization) throws IOException {
+    public HttpUploadDownloadStream(URL base, String relativeTarget, String authorization) throws IOException {
         if (!base.toString().endsWith("/")) {
             throw new IllegalArgumentException(base.toString());
         }
