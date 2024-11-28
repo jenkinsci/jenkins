@@ -77,6 +77,12 @@ class PlainCLIProtocol {
         Op(boolean clientSide) {
             this.clientSide = clientSide;
         }
+
+        void validate(boolean isClient) throws ProtocolException {
+            if (this.clientSide != isClient) {
+                throw new ProtocolException("Operation not allowed on this side: " + this);
+            }
+        }
     }
 
     interface Output extends Closeable {
@@ -273,7 +279,7 @@ class PlainCLIProtocol {
 
         @Override
         protected final boolean handle(Op op, DataInputStream dis) throws IOException {
-            assert op.clientSide;
+            op.validate(false);
             switch (op) {
             case ARG:
                 onArg(dis.readUTF());
@@ -332,7 +338,7 @@ class PlainCLIProtocol {
 
         @Override
         protected boolean handle(Op op, DataInputStream dis) throws IOException {
-            assert !op.clientSide;
+            op.validate(true);
             switch (op) {
             case EXIT:
                 onExit(dis.readInt());
