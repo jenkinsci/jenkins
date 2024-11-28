@@ -125,9 +125,7 @@ class PlainCLIProtocol {
             try {
                 while (true) {
                     int framelen = readFrameLength();
-                    if (framelen < 0) {
-                        throw new IOException("corrupt stream: negative frame length");
-                    }
+                    validateFrameLength(framelen);
                     processFrame(framelen);
                 }
             } catch (IOException | RuntimeException x) {
