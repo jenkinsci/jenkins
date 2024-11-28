@@ -51,14 +51,11 @@ import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Shell;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Rule;
@@ -189,8 +186,8 @@ public class LauncherTest {
 
     @Issue("JENKINS-52729")
     @Test public void remotable() throws Exception {
-        File log = new File(rule.jenkins.root, "log");
-        try (var listener = new RemotableBuildListener(log)) {
+        try (var baos = new ByteArrayOutputStream()) {
+            var listener = new RemotableBuildListener(new StreamTaskListener(baos, StandardCharsets.UTF_8));
             Launcher.ProcStarter ps = rule.createOnlineSlave().createLauncher(listener).launch();
             if (Functions.isWindows()) {
                 ps.cmds("cmd", "/c", "echo", "hello");
@@ -198,44 +195,38 @@ public class LauncherTest {
                 ps.cmds("echo", "hello");
             }
             assertEquals(0, ps.stdout(listener).join());
-            assertThat(Files.readString(log.toPath(), StandardCharsets.UTF_8).replace("\r\n", "\n"),
+            assertThat(baos.toString(StandardCharsets.UTF_8).replace("\r\n", "\n"),
                 containsString("[master → slave0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
                                "[master → slave0] hello"));
         }
     }
 
-    private static class RemotableBuildListener implements BuildListener, AutoCloseable {
+    private static class RemotableBuildListener implements BuildListener {
         private static final long serialVersionUID = 1;
-        /** location of log file streamed to by multiple sources */
-        private final File logFile;
-        private OutputStream fos;
+        /** actual implementation */
+        private final TaskListener delegate;
         /** records allocation & deserialization history; e.g., {@code master → agentName} */
         private final String id;
         private transient PrintStream logger;
 
-        RemotableBuildListener(File logFile) {
-            this(logFile, "master");
+        RemotableBuildListener(TaskListener delegate) {
+            this(delegate, "master");
         }
 
-        private RemotableBuildListener(File logFile, String id) {
-            this.logFile = logFile;
+        private RemotableBuildListener(TaskListener delegate, String id) {
+            this.delegate = delegate;
             this.id = id;
         }
 
         @NonNull
         @Override public PrintStream getLogger() {
             if (logger == null) {
-                try {
-                    fos = new FileOutputStream(logFile, true);
-                    logger = new PrintStream(new LineTransformationOutputStream() {
-                        @Override protected void eol(byte[] b, int len) throws IOException {
-                            fos.write(("[" + id + "] ").getBytes(StandardCharsets.UTF_8));
-                            fos.write(b, 0, len);
-                        }
-                    }, true, StandardCharsets.UTF_8);
-                } catch (IOException x) {
-                    throw new AssertionError(x);
-                }
+                logger = new PrintStream(new LineTransformationOutputStream.Delegating(delegate.getLogger()) {
+                    @Override protected void eol(byte[] b, int len) throws IOException {
+                        out.write(("[" + id + "] ").getBytes(StandardCharsets.UTF_8));
+                        out.write(b, 0, len);
+                    }
+                }, true, StandardCharsets.UTF_8);
             }
             return logger;
         }
@@ -243,14 +234,7 @@ public class LauncherTest {
         private Object writeReplace() {
             Thread.dumpStack();
             String name = Channel.current().getName();
-            return new RemotableBuildListener(logFile, id + " → " + name);
-        }
-
-        @Override
-        public void close() throws Exception {
-            if (fos != null) {
-                fos.close();
-            }
+            return new RemotableBuildListener(delegate, id + " → " + name);
         }
     }
 

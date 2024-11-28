@@ -8,14 +8,31 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.filters.StringInputStream;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Helper class to load symbols from Jenkins core or plugins.
@@ -50,24 +67,24 @@ public final class Symbol {
         String pluginName = request.getPluginName();
         String id = request.getId();
 
-        String identifier = StringUtils.defaultIfBlank(pluginName, "core");
+        String identifier = (pluginName == null || pluginName.isBlank()) ? "core" : pluginName;
 
         String symbol = SYMBOLS
                 .computeIfAbsent(identifier, key -> new ConcurrentHashMap<>())
                 .computeIfAbsent(name, key -> loadSymbol(identifier, key));
-        if (StringUtils.isNotBlank(tooltip) && StringUtils.isBlank(htmlTooltip)) {
-            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
+        if ((tooltip != null && !tooltip.isBlank()) && (htmlTooltip == null || htmlTooltip.isBlank())) {
+            symbol = symbol.replaceAll("<svg", Matcher.quoteReplacement("<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\""));
         }
-        if (StringUtils.isNotBlank(htmlTooltip)) {
-            symbol = symbol.replaceAll("<svg", "<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\"");
+        if (htmlTooltip != null && !htmlTooltip.isBlank()) {
+            symbol = symbol.replaceAll("<svg", Matcher.quoteReplacement("<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\""));
         }
-        if (StringUtils.isNotBlank(id)) {
-            symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
+        if (id != null && !id.isBlank()) {
+            symbol = symbol.replaceAll("<svg", Matcher.quoteReplacement("<svg id=\"" + Functions.htmlAttributeEscape(id) + "\""));
         }
-        if (StringUtils.isNotBlank(classes)) {
+        if (classes != null && !classes.isBlank()) {
             symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
         }
-        if (StringUtils.isNotBlank(title)) {
+        if (title != null && !title.isBlank()) {
             symbol = "<span class=\"jenkins-visually-hidden\">" + Util.xmlEscape(title) + "</span>" + symbol;
         }
         return symbol;
@@ -89,12 +106,37 @@ public final class Symbol {
                 LOGGER.log(Level.FINE, "Failed to load symbol " + name, e);
             }
         }
-        return markup.replaceAll("(<title>).*?(</title>)", "$1$2")
-                     .replaceAll("<svg", "<svg aria-hidden=\"true\"")
-                     .replaceAll("(class=\").*?(\")", "")
-                     .replaceAll("(tooltip=\").*?(\")", "")
-                     .replaceAll("(data-html-tooltip=\").*?(\")", "")
-                     .replace("stroke:#000", "stroke:currentColor");
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        try {
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(new StringInputStream(markup));
+            Element root = doc.getDocumentElement();
+            NodeList titleList = root.getElementsByTagName("title");
+            for (int i = 0; i < titleList.getLength(); i++) {
+                Node title = titleList.item(i);
+                NodeList titleChildren = title.getChildNodes();
+                for (int j = 0; j < titleChildren.getLength(); j++) {
+                    title.removeChild(titleChildren.item(j));
+                }
+            }
+            root.removeAttribute("class");
+            root.removeAttribute("id");
+            root.removeAttribute("tooltip");
+            root.removeAttribute("data-html-tooltip");
+            root.setAttribute("aria-hidden", "true");
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            StringWriter writer = new StringWriter();
+            transformer.transform(new DOMSource(doc), new StreamResult(writer));
+            markup = writer.getBuffer().toString().replaceAll("\n|\r", "");
+        } catch (ParserConfigurationException | SAXException | IOException | TransformerException e) {
+            LOGGER.log(Level.WARNING, e, () -> "The given src for the svg is not a valid xml document");
+            return PLACEHOLDER_SVG;
+        }
+
+        return markup;
     }
 
     @CheckForNull

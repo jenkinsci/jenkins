@@ -29,9 +29,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node Monitoring Configuration}" type="one-column">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}" />
-    <l:breadcrumb title="${%Node Monitoring}" />
+    <l:breadcrumb title="${%Configure Node Monitors}" />
     <l:main-panel>
-      <l:app-bar title="${%Node Monitoring}" />
+      <l:app-bar title="${%Configure Node Monitors}" />
 
       <!-- to make the form field binding work -->
       <j:set var="instance" value="${it}" />
@@ -42,16 +42,11 @@ THE SOFTWARE.
       <f:form method="post" action="configSubmit" name="config">
         <f:descriptorList title="${%Preventive Node Monitoring}"
                           descriptors="${it.nodeMonitorDescriptors}"
-                          instances="${it.nonIgnoredMonitors}" />
+                          instances="${it.monitors}"
+                          forceRowSet="true"/>
 
-        <l:hasAdministerOrManage>
-          <f:bottomButtonBar>
-            <f:submit value="${%Save}" />
-            <f:apply />
-          </f:bottomButtonBar>
-        </l:hasAdministerOrManage>
+        <f:saveApplyBar/>
       </f:form>
-      <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

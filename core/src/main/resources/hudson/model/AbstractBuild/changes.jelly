@@ -40,7 +40,7 @@ THE SOFTWARE.
           ${%Not yet determined}
         </j:when>
         <j:otherwise>
-          ${%Failed to determine} (<a href="console">${%log}</a>)
+          ${%Failed to determine} (<a href="${h.getConsoleUrl(it)}">${%log}</a>)
         </j:otherwise>
       </j:choose>
     </l:main-panel>

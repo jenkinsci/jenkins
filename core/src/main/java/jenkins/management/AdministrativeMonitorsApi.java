@@ -6,14 +6,15 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.PageDecorator;
 import hudson.model.RootAction;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.Collection;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.verb.GET;
@@ -23,13 +24,13 @@ import org.kohsuke.stapler.verb.GET;
 @Restricted(NoExternalUse.class)
 public class AdministrativeMonitorsApi implements RootAction {
     @GET
-    public void doNonSecurityPopupContent(StaplerRequest req, StaplerResponse resp) throws IOException, ServletException {
+    public void doNonSecurityPopupContent(StaplerRequest2 req, StaplerResponse2 resp) throws IOException, ServletException {
         AdministrativeMonitorsApiData viewData = new AdministrativeMonitorsApiData(getDecorator().getNonSecurityAdministrativeMonitors());
         req.getView(viewData, "monitorsList.jelly").forward(req, resp);
     }
 
     @GET
-    public void doSecurityPopupContent(StaplerRequest req, StaplerResponse resp) throws IOException, ServletException {
+    public void doSecurityPopupContent(StaplerRequest2 req, StaplerResponse2 resp) throws IOException, ServletException {
         AdministrativeMonitorsApiData viewData = new AdministrativeMonitorsApiData(getDecorator().getSecurityAdministrativeMonitors());
         req.getView(viewData, "monitorsList.jelly").forward(req, resp);
     }

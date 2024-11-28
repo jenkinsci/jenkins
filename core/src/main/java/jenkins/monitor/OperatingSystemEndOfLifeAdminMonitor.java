@@ -145,7 +145,7 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
             }
 
             LOGGER.log(Level.FINE, "Matched operating system {0}", name);
-            if (startDate.isBefore(LocalDate.now())) {
+            if (!startDate.isAfter(LocalDate.now())) {
                 this.operatingSystemName = name;
                 this.documentationUrl = buildDocumentationUrl(this.operatingSystemName);
                 this.endOfLifeDate = endOfLife.toString();
@@ -184,7 +184,7 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
         if (dataFile == null || !dataFile.exists()) {
             return "";
         }
-        Pattern pattern = Pattern.compile("^PRETTY_NAME=[\"](" + patternStr + ".*)[\"]");
+        Pattern pattern = Pattern.compile("^PRETTY_NAME=[\"](" + patternStr + ")[\"]");
         String name = "";
         try {
             List<String> lines = dataFile.equals(lastDataFile) ? lastLines : Files.readAllLines(dataFile.toPath());
@@ -229,8 +229,8 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
         if (dataFile == null || !dataFile.exists()) {
             return "";
         }
-        String operatingSystemName = readOperatingSystemName(dataFile, patternStr);
-        return buildDocumentationUrl(operatingSystemName);
+        String name = readOperatingSystemName(dataFile, patternStr);
+        return buildDocumentationUrl(name);
     }
 
     private String buildDocumentationUrl(String operatingSystemName) {

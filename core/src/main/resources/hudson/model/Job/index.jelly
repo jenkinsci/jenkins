@@ -33,12 +33,15 @@ THE SOFTWARE.
           <j:set var="lastBuild" value="${it.lastBuild}" />
           <j:if test="${lastBuild != null}">
             <a href="${rootURL + '/' + lastBuild.url}" class="jenkins-!-display-contents" tabindex="-1">
-              <l:icon class="${lastBuild.buildStatusIconClassName}" tooltip="${lastBuild.iconColor.description}"/>
+              <l:icon src="symbol-status-${lastBuild.iconColor.iconName}" tooltip="${lastBuild.iconColor.description}"/>
             </a>
           </j:if>
           <h1 class="job-index-headline page-headline">
             <l:breakable value="${it.displayName}"/>
           </h1>
+        </div>
+        <div class="jenkins-app-bar__controls">
+          <t:editDescriptionButton permission="${it.CONFIGURE}"/>
         </div>
       </div>
 
@@ -52,7 +55,7 @@ THE SOFTWARE.
           </j:otherwise>
         </j:choose>
       </j:if>
-      <t:editableDescription permission="${it.CONFIGURE}"/>
+      <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
 
       <st:include page="jobpropertysummaries.jelly" />
       <!-- inject main part here -->

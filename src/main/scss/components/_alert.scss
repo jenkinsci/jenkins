@@ -1,0 +1,55 @@
+.alert,
+.jenkins-alert {
+  font-size: var(--font-size-sm);
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+
+  strong {
+    font-weight: 500;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+
+    &:hover,
+    &:focus,
+    &:active {
+      text-decoration: underline;
+    }
+  }
+
+  &-success {
+    color: var(--alert-success-text-color);
+    background-color: var(--alert-success-bg-color);
+    border-color: var(--alert-success-border-color);
+  }
+
+  &-info {
+    color: var(--alert-info-text-color);
+    background-color: var(--alert-info-bg-color);
+    border-color: var(--alert-info-border-color);
+  }
+
+  &-warning {
+    color: var(--alert-warning-text-color);
+    background-color: var(--alert-warning-bg-color);
+    border-color: var(--alert-warning-border-color);
+
+    p {
+      color: var(--alert-warning-text-color);
+    }
+  }
+
+  &-danger {
+    color: var(--alert-danger-text-color);
+    background-color: var(--alert-danger-bg-color);
+    border-color: var(--alert-danger-border-color);
+
+    p {
+      color: var(--alert-danger-text-color);
+    }
+  }
+}

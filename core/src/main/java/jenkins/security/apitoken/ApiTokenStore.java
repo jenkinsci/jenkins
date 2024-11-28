@@ -51,7 +51,6 @@ import java.util.stream.Collectors;
 import jenkins.security.Messages;
 import net.jcip.annotations.Immutable;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -110,7 +109,7 @@ public class ApiTokenStore {
             }
 
             String name = receivedTokenData.getString("tokenName");
-            if (StringUtils.isBlank(name)) {
+            if (name == null || name.isBlank()) {
                 LOGGER.log(Level.INFO, "Empty name received for {0}, we do not care about it", hashedToken.uuid);
                 return;
             }

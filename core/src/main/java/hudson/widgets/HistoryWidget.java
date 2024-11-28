@@ -31,14 +31,15 @@ import hudson.Functions;
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Queue;
-import hudson.model.Run;
+import hudson.util.AlternativeUiTextProvider;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.servlet.ServletException;
+import jenkins.model.HistoricalBuild;
 import jenkins.util.SystemProperties;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageFilter;
@@ -48,19 +49,25 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
- * Displays the history of records (normally {@link Run}s) on the side panel.
+ * Displays the history of records on the side panel.
  *
  * @param <O>
- *      Owner of the widget.
+ *      Owner of the widget, typically {@link Job}
  * @param <T>
- *      Type individual record.
+ *      Type individual record, typically {@link HistoricalBuild}
  * @author Kohsuke Kawaguchi
  */
 public class HistoryWidget<O extends ModelObject, T> extends Widget {
+
+    /**
+     * Replaceable title for describing the kind of tasks this history shows. Defaults to "Build History".
+     */
+    public static final AlternativeUiTextProvider.Message<HistoryWidget<?, ?>> DISPLAY_NAME = new AlternativeUiTextProvider.Message<>();
+
     /**
      * The given data model of records. Newer ones first.
      */
@@ -96,7 +103,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
      *      The parent model object that owns this widget.
      */
     public HistoryWidget(O owner, Iterable<T> baseList, Adapter<? super T> adapter) {
-        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
         this.adapter = adapter;
         this.baseList = baseList;
         this.baseUrl = Functions.getNearestAncestorUrl(currentRequest, owner);
@@ -115,7 +122,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
      * Title of the widget.
      */
     public String getDisplayName() {
-        return Messages.BuildHistoryWidget_DisplayName();
+        return AlternativeUiTextProvider.get(DISPLAY_NAME, this, Messages.BuildHistoryWidget_DisplayName());
     }
 
     @Override
@@ -135,7 +142,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
      * @return
      *      The history page filter that was passed in.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // TODO actually not type-safe
     protected HistoryPageFilter updateFirstTransientBuildKey(HistoryPageFilter historyPageFilter) {
         updateFirstTransientBuildKey(historyPageFilter.runs);
         return historyPageFilter;
@@ -188,7 +195,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     /**
      * Get a {@link jenkins.widgets.HistoryPageFilter} for rendering a page of queue items.
      */
-    public HistoryPageFilter getHistoryPageFilter() {
+    public HistoryPageFilter<T> getHistoryPageFilter() {
         HistoryPageFilter<T> historyPageFilter = newPageFilter();
 
         historyPageFilter.add(baseList);
@@ -198,6 +205,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
 
     protected HistoryPageFilter<T> newPageFilter() {
         HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<>(THRESHOLD);
+        historyPageFilter.widget = this;
 
         if (newerThan != null) {
             historyPageFilter.setNewerThan(newerThan);
@@ -227,7 +235,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
      *      The build 'number' to fetch. This is string because various variants
      *      uses non-numbers as the build key.
      */
-    public void doAjax(StaplerRequest req, StaplerResponse rsp,
+    public void doAjax(StaplerRequest2 req, StaplerResponse2 rsp,
           @Header("n") String n) throws IOException, ServletException {
 
         rsp.setContentType("text/html;charset=UTF-8");
@@ -291,7 +299,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
         String getNextKey(String key);
     }
 
-    private Long getPagingParam(@CheckForNull StaplerRequest currentRequest, @CheckForNull String name) {
+    private Long getPagingParam(@CheckForNull StaplerRequest2 currentRequest, @CheckForNull String name) {
         if (currentRequest == null || name == null) {
             return null;
         }

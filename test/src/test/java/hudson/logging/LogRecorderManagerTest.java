@@ -229,7 +229,7 @@ public class LogRecorderManagerTest {
         private static boolean recordDeletion;
 
         @Override
-        public void onChange(Saveable o, XmlFile file) {
+        public void onDeleted(Saveable o, XmlFile file) {
             if (o instanceof LogRecorder && "dummy".equals(((LogRecorder) o).getName())) {
                 if (!file.exists()) {
                     recordDeletion = true;

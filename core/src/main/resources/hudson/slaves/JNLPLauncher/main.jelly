@@ -25,12 +25,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:choose>
-    <j:when test="${!it.launcher.webSocket and app.slaveAgentPort == -1}">
-      <div class="error">
-        ${%slaveAgentPort.disabled}
-        <l:isAdmin><a href="${rootURL}/configureSecurity">${%configure.link.text}</a>.</l:isAdmin>
-      </div>
-    </j:when>
     <j:when test="${it.offline and !it.temporarilyOffline}">
       <j:set var="jenkinsURL" value="${h.inferHudsonURL(request)}"/>
       <j:set var="copy_agent_jar_unix" value="curl -sO ${jenkinsURL}jnlpJars/agent.jar" />
@@ -38,28 +32,6 @@ THE SOFTWARE.
       <j:set var="copy_java_cmd_unix" value="java -jar agent.jar -url ${jenkinsURL} ${it.launcher.getRemotingOptionsUnix(it)}${it.launcher.getWorkDirOptions(it)}" />
       <j:set var="copy_java_cmd_windows" value="java -jar agent.jar -url ${jenkinsURL} ${it.launcher.getRemotingOptionsWindows(it)}${it.launcher.getWorkDirOptions(it)}" />
       <j:if test="${h.hasPermission(it, it.CONNECT)}">
-          <j:choose>
-            <j:when test="${it.ACL.hasPermission(app.ANONYMOUS, it.CONNECT)}">
-                <h3>
-                  ${%slaveAgent.cli.run} (Unix)
-                  <l:copyButton text="${copy_agent_jar_unix};${copy_java_cmd_unix}"/>
-                </h3>
-<pre>
-${copy_agent_jar_unix}
-${copy_java_cmd_unix}
-</pre>
-
-                <h3>
-                  ${%slaveAgent.cli.run} (Windows)
-                  <l:copyButton text="${copy_agent_jar_windows} &amp; ${copy_java_cmd_windows}"/>
-                </h3>
-<pre>
-${copy_agent_jar_windows}
-${copy_java_cmd_windows}
-</pre>
-
-            </j:when>
-            <j:otherwise>
                 <j:set var="copy_java_cmd_secret_unix" value="java -jar agent.jar -url ${jenkinsURL} -secret ${it.jnlpMac} ${it.launcher.getRemotingOptionsUnix(it)}${it.launcher.getWorkDirOptions(it)}" />
                 <j:set var="copy_java_cmd_secret_windows" value="java -jar agent.jar -url ${jenkinsURL} -secret ${it.jnlpMac} ${it.launcher.getRemotingOptionsWindows(it)}${it.launcher.getWorkDirOptions(it)}" />
                 <h3>
@@ -81,31 +53,51 @@ ${copy_java_cmd_secret_unix}
 ${copy_agent_jar_windows}
 ${copy_java_cmd_secret_windows}
 </pre>
-
-                <j:set var="copy_secret_to_file" value="echo ${it.jnlpMac} &gt; secret-file" />
+                <j:set var="copy_secret_to_file_windows" value="echo ${it.jnlpMac}&gt; secret-file" />
+                <j:set var="copy_secret_to_file_unix" value="echo ${it.jnlpMac} &gt; secret-file" />
                 <j:set var="copy_java_cmd_secret2_unix" value="java -jar agent.jar -url ${jenkinsURL} -secret @secret-file ${it.launcher.getRemotingOptionsUnix(it)}${it.launcher.getWorkDirOptions(it)}" />
                 <j:set var="copy_java_cmd_secret2_windows" value="java -jar agent.jar -url ${jenkinsURL} -secret @secret-file ${it.launcher.getRemotingOptionsWindows(it)}${it.launcher.getWorkDirOptions(it)}" />
                 <h3>
                   ${%slaveAgent.cli.run.secret} (Unix)
-                  <l:copyButton text="${copy_secret_to_file};${copy_agent_jar_unix};${copy_java_cmd_secret2_unix}"/>
+                  <l:copyButton text="${copy_secret_to_file_unix};${copy_agent_jar_unix};${copy_java_cmd_secret2_unix}"/>
                 </h3>
 <pre>
-${copy_secret_to_file}
+${copy_secret_to_file_unix}
 ${copy_agent_jar_unix}
 ${copy_java_cmd_secret2_unix}
 </pre>
 
                 <h3>
                   ${%slaveAgent.cli.run.secret} (Windows)
-                  <l:copyButton text="${copy_secret_to_file} &amp; ${copy_agent_jar_windows} &amp; ${copy_java_cmd_secret2_windows}"/>
+                  <l:copyButton text="${copy_secret_to_file_windows} &amp; ${copy_agent_jar_windows} &amp; ${copy_java_cmd_secret2_windows}"/>
                 </h3>
 <pre>
-${copy_secret_to_file}
+${copy_secret_to_file_windows}
 ${copy_agent_jar_windows}
 ${copy_java_cmd_secret2_windows}
 </pre>
-            </j:otherwise>
-          </j:choose>
+          <j:if test="${!it.launcher.configured}">
+              <p>
+                  ${%commonOptions}
+              </p>
+          </j:if>
+          <j:if test="${!it.launcher.descriptor.tcpSupported}">
+              <p>
+                  ${%tcp-port-disabled}
+                  <l:isAdmin><a href="${rootURL}/manage/configureSecurity/">${%configure.link.text}</a>.</l:isAdmin>
+              </p>
+          </j:if>
+          <j:if test="${!it.launcher.descriptor.instanceIdentityInstalled}">
+              <p>
+                  ${%instance-identity-missing}
+                  <l:isAdmin><a href="${rootURL}/manage/pluginManager/available">${%install-instance-identity}</a>.</l:isAdmin>
+              </p>
+          </j:if>
+          <j:if test="${!it.launcher.descriptor.webSocketSupported}">
+              <p>
+                  ${%web-socket-unsupported}
+              </p>
+          </j:if>
           <p>
             ${%powerShell.cli.curl}
           </p>

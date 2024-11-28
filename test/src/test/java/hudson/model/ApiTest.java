@@ -32,10 +32,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
 import org.htmlunit.Page;
 import org.htmlunit.WebResponse;
@@ -70,7 +70,7 @@ public class ApiTest {
         JSONObject json = JSONObject.fromObject(response.getContentAsString());
         assertEquals("p", json.get("name"));
 
-        String s = wc.goTo(p.getUrl() + "api/json?tree=name&jsonp=wrap", "application/javascript").getWebResponse().getContentAsString();
+        String s = wc.goTo(p.getUrl() + "api/json?tree=name&jsonp=wrap", "text/javascript").getWebResponse().getContentAsString();
         assertTrue(s.startsWith("wrap("));
         assertEquals(')', s.charAt(s.length() - 1));
         json = JSONObject.fromObject(s.substring("wrap(".length(), s.length() - 1));

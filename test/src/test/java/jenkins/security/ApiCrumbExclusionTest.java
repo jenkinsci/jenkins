@@ -108,7 +108,7 @@ public class ApiCrumbExclusionTest {
     }
 
     private void checkWeCanChangeMyDescription(int expectedCode) throws IOException, SAXException {
-        HtmlPage page = wc.goTo("me/configure");
+        HtmlPage page = wc.goTo("me/account/");
         HtmlForm form = page.getFormByName("config");
         form.getTextAreaByName("_.description").setText("random description: " + Math.random());
 

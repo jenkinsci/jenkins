@@ -43,7 +43,7 @@ public class LastGrantedAuthoritiesPropertyTest {
         assertAuthorities(u.impersonate2(), "alice:authenticated:development:us");
 
         // visiting the configuration page shouldn't change authorities
-        HtmlPage pg = wc.goTo("user/alice/configure");
+        HtmlPage pg = wc.goTo("user/alice/account/");
         j.submit(pg.getFormByName("config"));
 
         p = u.getProperty(LastGrantedAuthoritiesProperty.class);

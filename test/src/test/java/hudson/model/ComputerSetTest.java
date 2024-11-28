@@ -26,7 +26,6 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
@@ -91,10 +90,10 @@ public class ComputerSetTest {
     @Test
     public void getComputerNames() throws Exception {
         assertThat(ComputerSet.getComputerNames(), is(empty()));
-        j.createSlave("aNode", "", null);
-        assertThat(ComputerSet.getComputerNames(), contains("aNode"));
         j.createSlave("anAnotherNode", "", null);
-        assertThat(ComputerSet.getComputerNames(), containsInAnyOrder("aNode", "anAnotherNode"));
+        assertThat(ComputerSet.getComputerNames(), contains("anAnotherNode"));
+        j.createSlave("aNode", "", null);
+        assertThat(ComputerSet.getComputerNames(), contains("aNode", "anAnotherNode"));
     }
 
     @Test
@@ -130,7 +129,7 @@ public class ComputerSetTest {
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         responseContent = page.getWebResponse().getContentAsString();
         // the "Node Monitoring" link in the app bar is visible
-        assertThat(responseContent, containsString("Node Monitoring"));
+        assertThat(responseContent, containsString("Configure Monitors"));
         page = wc.goTo("computer/configure");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         // and the save button is visible

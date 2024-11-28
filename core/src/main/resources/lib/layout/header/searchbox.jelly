@@ -1,0 +1,25 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <div class="searchbox hidden-xs">
+    <!-- search box -->
+    <j:set var="searchURL" value="${h.searchURL}"/>
+    <form action="${searchURL}" method="get" style="position:relative;" class="no-json" name="search" role="search">
+      <!-- this div is used to calculate the width of the text box -->
+      <div id="search-box-sizer"/>
+      <div id="searchform">
+        <input name="q" placeholder="${searchPlaceholder}" id="search-box" class="main-search__input" value="${request.getParameter('q')}" role="searchbox" />
+
+        <span class="main-search__icon-leading">
+          <l:icon src="symbol-search"/>
+        </span>
+        <a href="${searchHelpUrl}" class="main-search__icon-trailing">
+          <l:icon src="symbol-help-circle"/>
+        </a>
+
+        <div id="search-box-completion" data-search-url="${searchURL}" />
+        <st:adjunct includes="jenkins.views.JenkinsHeader.search-box" />
+      </div>
+    </form>
+  </div>
+  <script src="${resURL}/jsbundles/keyboard-shortcuts.js" type="text/javascript"/>
+</j:jelly>

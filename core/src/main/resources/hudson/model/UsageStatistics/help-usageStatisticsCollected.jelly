@@ -48,7 +48,7 @@
                 <j:if test="${not collector.end.isBefore(now)}">
                     <dt>${collector.displayName}</dt>
                     <dd>
-                        <st:include from="${collector}" optional="true" page="description.jelly"/>
+                        <st:include it="${collector}" optional="true" page="description.jelly"/>
                         <p>
                             Start date: ${collector.start}<br/>
                             End date: ${collector.end}

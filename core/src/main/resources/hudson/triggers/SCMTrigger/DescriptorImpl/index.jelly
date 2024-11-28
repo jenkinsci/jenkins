@@ -46,21 +46,25 @@ THE SOFTWARE.
           <p>
             ${%The following polling activities are currently in progress:}
           </p>
-          <table id="threads" class="sortable pane bigtable">
-            <tr>
-              <th initialSortDir="down">${%Project}</th>
-              <th>${%Running for}</th>
-            </tr>
-            <j:forEach var="r" items="${it.runners}">
+          <table id="threads" class="jenkins-table sortable">
+            <thead>
               <tr>
-                <td>
-                  <a href="${rootURL}/${r.target.asItem().url}scmPollLog/">${r.target.asItem().fullDisplayName}</a>
-                </td>
-                <td>
-                  ${r.duration}
-                </td>
+                <th initialSortDir="down">${%Project}</th>
+                <th>${%Running for}</th>
               </tr>
-            </j:forEach>
+            </thead>
+            <tbody>
+              <j:forEach var="r" items="${it.runners}">
+                <tr>
+                  <td>
+                    <a href="${rootURL}/${r.target.asItem().url}scmPollLog/">${r.target.asItem().fullDisplayName}</a>
+                  </td>
+                  <td>
+                    ${r.duration}
+                  </td>
+                </tr>
+              </j:forEach>
+            </tbody>
           </table>
         </j:otherwise>
       </j:choose>

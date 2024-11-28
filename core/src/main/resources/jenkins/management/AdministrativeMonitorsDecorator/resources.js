@@ -38,6 +38,7 @@
             var popupContent = responseText;
             amList.innerHTML = popupContent;
             amMonitorRoot.classList.add("visible");
+            amMonitorRoot.classList.remove("am-hidden");
             document.addEventListener("click", onClose);
             document.addEventListener("keydown", onEscClose);
 
@@ -50,6 +51,9 @@
     }
 
     function close() {
+      if (amMonitorRoot.classList.contains("visible")) {
+        amMonitorRoot.classList.add("am-hidden");
+      }
       amMonitorRoot.classList.remove("visible");
       document.removeEventListener("click", onClose);
       document.removeEventListener("keydown", onEscClose);

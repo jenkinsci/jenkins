@@ -29,7 +29,19 @@ THE SOFTWARE.
       <td align="right" data="-1">N/A</td>
     </j:when>
     <j:otherwise>
-      <td align="right" data="${data.freeSize}"><j:out value="${data.toHtml()}"/></td>
+      <td align="right" data="${data.freeSize}" data-total="${data.totalSize}">
+        <j:choose>
+          <j:when test="${data.triggered}">
+            <span class="error" tooltip="${data.toString()}">${data.toHtml()}</span>
+          </j:when>
+          <j:when test="${data.warning}">
+            <span class="warning" tooltip="${data.toString()}">${data.toHtml()}</span>
+          </j:when>
+          <j:otherwise>
+            <span tooltip="${data.toString()}">${data.toHtml()}</span>
+          </j:otherwise>
+        </j:choose>
+      </td>
     </j:otherwise>
   </j:choose>
 </j:jelly>

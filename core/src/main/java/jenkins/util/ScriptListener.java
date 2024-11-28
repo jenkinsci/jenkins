@@ -36,7 +36,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * A listener to track in-process script use.
@@ -44,12 +44,12 @@ import org.kohsuke.stapler.StaplerRequest;
  * <p>Note that (unsandboxed) script execution can easily result in logging configuration being changed, so if you rely
  * on complete logging of scripting actions, make sure to set up logging to remote systems.</p>
  *
- * @see jenkins.model.Jenkins#_doScript(StaplerRequest, org.kohsuke.stapler.StaplerResponse, javax.servlet.RequestDispatcher, hudson.remoting.VirtualChannel, hudson.security.ACL)
+ * @see jenkins.model.Jenkins#_doScript(StaplerRequest2, org.kohsuke.stapler.StaplerResponse2, jakarta.servlet.RequestDispatcher, hudson.remoting.VirtualChannel, hudson.security.ACL)
  * @see hudson.cli.GroovyCommand
  * @see hudson.cli.GroovyshCommand
  * @see jenkins.util.groovy.GroovyHookScript
  *
- * @since TODO
+ * @since 2.427
  */
 public interface ScriptListener extends ExtensionPoint {
 

@@ -108,6 +108,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  *
@@ -573,7 +574,7 @@ public class ProjectTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User user = User.getById("john", true);
         try (ACLContext as = ACL.as(user)) {
-            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doDoDelete(null, null));
+            assertThrows("User should not have permission to build project", AccessDeniedException3.class, () -> project.doDoDelete((StaplerRequest2) null, null));
         }
         auth.add(Jenkins.READ, user.getId());
         auth.add(Item.READ, user.getId());
@@ -644,15 +645,13 @@ public class ProjectTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.withBasicCredentials(user.getId(), "password");
-        HtmlPage p = wc.goTo(project.getUrl());
 
-        List<HtmlForm> forms = p.getForms();
-        for (HtmlForm form : forms) {
-            if ("disable".equals(form.getAttribute("action"))) {
-                j.submit(form);
-            }
-        }
-       assertTrue("Project should be disabled.", project.isDisabled());
+        HtmlPage p = wc.getPage(project, "configure");
+        HtmlForm form = p.getFormByName("config");
+        form.getInputByName("enable").click();
+        j.submit(form);
+
+        assertTrue("Project should be disabled.", project.isDisabled());
     }
 
     @Test

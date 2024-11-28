@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import hudson.ExtensionList;
 import hudson.model.RootAction;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNodeList;
@@ -216,7 +217,7 @@ public class OptionTest {
                             String bodyContainsExpected, String valueContainsExpected,
                             boolean checkExactCharacters,
                             boolean withValueTrue, boolean withValueFalse) throws Exception {
-        UsingJellyView view = j.jenkins.getExtensionList(UsingJellyView.class).get(0);
+        UsingJellyView view = ExtensionList.lookupFirst(UsingJellyView.class);
         view.setMode(mode);
         view.setInjection(msgToInject);
 
@@ -242,7 +243,7 @@ public class OptionTest {
                              String bodyContainsExpected, String valueContainsExpected,
                              boolean checkExactCharacters,
                              boolean withValueTrue, boolean withValueFalse) throws Exception {
-        UsingGroovyView view = j.jenkins.getExtensionList(UsingGroovyView.class).get(0);
+        UsingGroovyView view = ExtensionList.lookupFirst(UsingGroovyView.class);
         view.setMode(mode);
         view.setInjection(msgToInject);
 

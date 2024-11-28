@@ -251,7 +251,6 @@ public class FingerprinterTest {
         FreeStyleBuild downstreamBuild = j.buildAndAssertSuccess(downstream);
 
         String oldUpstreamName = upstream.getName();
-        String oldDownstreamName = downstream.getName();
 
         // Verify that owner entry in fingerprint record is changed
         // after source project is renamed
@@ -273,6 +272,8 @@ public class FingerprinterTest {
             assertEquals(renamedProject1, f.getOriginal().getName());
             assertNotEquals(f.getOriginal().getName(), oldUpstreamName);
         }
+
+        String oldDownstreamName = downstream.getName();
 
         // Verify that usage entry in fingerprint record is changed after
         // sink project is renamed

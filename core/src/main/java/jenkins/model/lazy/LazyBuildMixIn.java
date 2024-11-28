@@ -39,7 +39,6 @@ import hudson.model.Run;
 import hudson.model.RunMap;
 import hudson.model.listeners.ItemListener;
 import hudson.model.queue.SubTask;
-import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import java.io.File;
 import java.io.IOException;
@@ -66,8 +65,8 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
 
     private static final Logger LOGGER = Logger.getLogger(LazyBuildMixIn.class.getName());
 
-    @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
-    private @NonNull RunMap<RunT> builds = new RunMap<>();
+    // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
+    private @NonNull RunMap<RunT> builds = new RunMap<>(asJob());
 
     /**
      * Initializes this mixin.
@@ -110,8 +109,8 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
         int max = _builds.maxNumberOnDisk();
         int next = asJob().getNextBuildNumber();
         if (next <= max) {
-            LOGGER.log(Level.WARNING, "JENKINS-27530: improper nextBuildNumber {0} detected in {1} with highest build number {2}; adjusting", new Object[] {next, asJob(), max});
-            asJob().updateNextBuildNumber(max + 1);
+            LOGGER.log(Level.FINE, "nextBuildNumber {0} detected in {1} with highest build number {2}; adjusting", new Object[] {next, asJob(), max});
+            asJob().fastUpdateNextBuildNumber(max + 1);
         }
         RunMap<RunT> currentBuilds = this.builds;
         if (parent != null) {
@@ -142,7 +141,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     }
 
     private RunMap<RunT> createBuildRunMap() {
-        RunMap<RunT> r = new RunMap<>(asJob().getBuildDir(), new RunMap.Constructor<RunT>() {
+        RunMap<RunT> r = new RunMap<>(asJob(), new RunMap.Constructor<RunT>() {
             @Override
             public RunT create(File dir) throws IOException {
                 return loadBuild(dir);
@@ -297,10 +296,11 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     }
 
     /**
-     * Suitable for {@link Job#createHistoryWidget}.
+     * @deprecated Remove any code calling this method, history widget is now created via {@link jenkins.widgets.WidgetFactory} implementation.
      */
+    @Deprecated(forRemoval = true, since = "2.459")
     public final HistoryWidget createHistoryWidget() {
-        return new BuildHistoryWidget(asJob(), builds, Job.HISTORY_ADAPTER);
+        throw new IllegalStateException("HistoryWidget is now created via WidgetFactory implementation");
     }
 
     /**

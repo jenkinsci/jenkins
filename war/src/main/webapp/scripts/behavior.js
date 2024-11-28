@@ -61,14 +61,14 @@ var Behaviour = (function () {
         return location != 0
           ? location
           : a.id < b.id
-          ? -1
-          : a.id > b.id
-          ? 1
-          : a.selector < b.selector
-          ? -1
-          : a.selector > b.selector
-          ? 1
-          : 0;
+            ? -1
+            : a.id > b.id
+              ? 1
+              : a.selector < b.selector
+                ? -1
+                : a.selector > b.selector
+                  ? 1
+                  : 0;
       });
     },
 
@@ -184,7 +184,6 @@ Behaviour.start();
 function findElementsBySelector(startNode, selector, includeSelf) {
   if (includeSelf) {
     var isSelfOrChild = function (c) {
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         if (startNode == c) {
           return true;
