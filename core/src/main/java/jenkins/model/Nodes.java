@@ -118,6 +118,8 @@ public class Nodes implements PersistenceRoot {
             toRemove.putAll(Nodes.this.nodes);
             for (var node : nodes) {
                 final var name = node.getNodeName();
+                Nodes.this.nodes.put(name, node);
+                node.onLoad(Nodes.this, name);
                 var oldNode = toRemove.get(name);
                 if (oldNode != null) {
                     NodeListener.fireOnUpdated(oldNode, node);
@@ -125,8 +127,6 @@ public class Nodes implements PersistenceRoot {
                 } else {
                     NodeListener.fireOnCreated(node);
                 }
-                Nodes.this.nodes.put(name, node);
-                node.onLoad(Nodes.this, name);
             }
             Nodes.this.nodes.keySet().removeAll(toRemove.keySet());
             jenkins.updateComputerList();

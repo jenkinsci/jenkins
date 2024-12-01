@@ -41,7 +41,7 @@
     "postcss-loader": "8.1.1",
     "postcss-preset-env": "10.1.1",
     "postcss-scss": "4.0.9",
-    "prettier": "3.3.3",
+    "prettier": "3.4.1",
     "sass": "1.81.0",
     "sass-loader": "16.0.3",
     "style-loader": "4.0.0",
@@ -57,7 +57,7 @@
     "hotkeys-js": "3.12.2",
     "jquery": "3.7.1",
     "lodash": "4.17.21",
-    "sortablejs": "1.15.3",
+    "sortablejs": "1.15.4",
     "tippy.js": "6.3.7",
     "window-handle": "1.0.1"
   },
@@ -68,5 +68,5 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "packageManager": "yarn@4.5.1"
+  "packageManager": "yarn@4.5.3"
 }
