@@ -62,7 +62,7 @@ public final class SetContextClassLoader implements AutoCloseable {
      * @since 2.362
      */
     public SetContextClassLoader() {
-        this(StackWalker.getInstance().getCallerClass());
+        this(StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass());
     }
 
     /**

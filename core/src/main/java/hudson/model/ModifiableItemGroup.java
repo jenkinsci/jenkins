@@ -33,6 +33,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link ItemGroup} that is a general purpose container, which allows users and the rest of the program
@@ -50,7 +51,7 @@ public interface ModifiableItemGroup<T extends Item> extends ItemGroup<T> {
      * The request format follows that of {@code &lt;n:form xmlns:n="/lib/form">}.
      *
      */
-    @StaplerNotDispatchable
+    @RequirePOST
     default T doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         if (ReflectionUtils.isOverridden(
                 ModifiableItemGroup.class,

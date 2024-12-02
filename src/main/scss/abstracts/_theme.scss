@@ -31,9 +31,9 @@ $semantics: (
 :root,
 .app-theme-picker__picker[data-theme="none"] {
   // Font related properties
-  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu,
-    cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen,
+    ubuntu, cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-family-mono: ui-monospace, sfmono-regular, sf mono, jetbrainsmono,
     consolas, monospace;
   --font-size-base: 1rem; // 16px
