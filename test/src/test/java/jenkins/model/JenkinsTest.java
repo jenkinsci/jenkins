@@ -32,19 +32,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.XmlFile;
@@ -76,7 +72,6 @@ import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -84,7 +79,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -94,7 +88,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-import jenkins.AgentProtocol;
 import org.apache.commons.io.FileUtils;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
@@ -203,8 +196,8 @@ public class JenkinsTest {
         p.setDisplayName("displayName");
 
         Jenkins jenkins = Jenkins.get();
-        assertTrue(jenkins.isDisplayNameUnique("displayName1", curJobName));
-        assertTrue(jenkins.isDisplayNameUnique(jobName, curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, "displayName1", curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, jobName, curJobName));
     }
 
     @Test
@@ -220,7 +213,7 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        assertFalse(jenkins.isDisplayNameUnique(displayName, curJobName));
+        assertFalse(jenkins.isDisplayNameUnique(jenkins, displayName, curJobName));
     }
 
     @Test
@@ -233,7 +226,7 @@ public class JenkinsTest {
 
         Jenkins jenkins = Jenkins.get();
         // should be true as we don't test against the current job
-        assertTrue(jenkins.isDisplayNameUnique(displayName, curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, displayName, curJobName));
     }
 
     @Test
@@ -244,7 +237,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(jobName);
 
         Jenkins jenkins = Jenkins.get();
-        assertTrue(jenkins.isNameUnique("jobName1", curJobName));
+        assertTrue(jenkins.isNameUnique(jenkins, "jobName1", curJobName));
     }
 
     @Test
@@ -255,7 +248,7 @@ public class JenkinsTest {
         j.createFreeStyleProject(jobName);
 
         Jenkins jenkins = Jenkins.get();
-        assertFalse(jenkins.isNameUnique(jobName, curJobName));
+        assertFalse(jenkins.isNameUnique(jenkins, jobName, curJobName));
     }
 
     @Test
@@ -267,7 +260,7 @@ public class JenkinsTest {
 
         Jenkins jenkins = Jenkins.get();
         // true because we don't test against the current job
-        assertTrue(jenkins.isNameUnique(curJobName, curJobName));
+        assertTrue(jenkins.isNameUnique(jenkins, curJobName, curJobName));
     }
 
     @Test
@@ -281,7 +274,7 @@ public class JenkinsTest {
         p.setDisplayName("displayName");
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName("1displayName", curJobName);
+        FormValidation v = jenkins.checkDisplayName("1displayName", curProject);
         assertEquals(FormValidation.ok(), v);
     }
 
@@ -297,7 +290,7 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName(displayName, curJobName);
+        FormValidation v = jenkins.checkDisplayName(displayName, curProject);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
@@ -313,7 +306,7 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName(jobName, curJobName);
+        FormValidation v = jenkins.checkDisplayName(jobName, curProject);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
@@ -597,174 +590,6 @@ public class JenkinsTest {
         public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
             onOnlineCount++;
             throw new RuntimeException("Something happened (the listener always throws this exception)");
-        }
-    }
-
-    @Test
-    @Issue("JENKINS-39465")
-    public void agentProtocols_singleEnable_roundtrip() throws Exception {
-        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-
-        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
-        newProtocols.add(MockOptInProtocol1.NAME);
-        j.jenkins.setAgentProtocols(newProtocols);
-        j.jenkins.save();
-        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
-        assertProtocolEnabled(MockOptInProtocol1.NAME, "before the roundtrip");
-
-        j.jenkins.reload();
-
-        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
-        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, reloadedProtocols);
-        assertThat("We should have additional enabled protocol",
-                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 1));
-        assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
-    }
-
-    @Test
-    @Issue("JENKINS-39465")
-    public void agentProtocols_multipleDisable_roundtrip() throws Exception {
-        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-        assertProtocolEnabled(MockOptOutProtocol1.NAME, "after startup");
-
-        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
-        newProtocols.remove(MockOptOutProtocol1.NAME);
-        j.jenkins.setAgentProtocols(newProtocols);
-        j.jenkins.save();
-        assertProtocolDisabled(MockOptOutProtocol1.NAME, "before the roundtrip");
-        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
-        j.jenkins.reload();
-
-        assertNotSame("The protocol list must have been really refreshed", agentProtocolsBeforeReload, j.jenkins.getAgentProtocols());
-        assertThat("We should have disabled one protocol",
-                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 1));
-
-        assertProtocolDisabled(MockOptOutProtocol1.NAME, "after the roundtrip");
-    }
-
-    @Test
-    @Issue("JENKINS-39465")
-    public void agentProtocols_multipleEnable_roundtrip() throws Exception {
-        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
-        newProtocols.add(MockOptInProtocol1.NAME);
-        newProtocols.add(MockOptInProtocol2.NAME);
-        j.jenkins.setAgentProtocols(newProtocols);
-        j.jenkins.save();
-
-        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
-        assertProtocolEnabled(MockOptInProtocol1.NAME, "before the roundtrip");
-        assertProtocolEnabled(MockOptInProtocol2.NAME, "before the roundtrip");
-
-        j.jenkins.reload();
-
-        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
-        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, reloadedProtocols);
-        assertThat("There should be two additional enabled protocols",
-                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 2));
-        assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
-        assertProtocolEnabled(MockOptInProtocol2.NAME, "after the roundtrip");
-    }
-
-    @Test
-    @Issue("JENKINS-39465")
-    public void agentProtocols_singleDisable_roundtrip() throws Exception {
-        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-        final String protocolToDisable1 = MockOptOutProtocol1.NAME;
-        final String protocolToDisable2 = MockOptOutProtocol2.NAME;
-
-        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
-        newProtocols.remove(protocolToDisable1);
-        newProtocols.remove(protocolToDisable2);
-        j.jenkins.setAgentProtocols(newProtocols);
-        j.jenkins.save();
-        assertProtocolDisabled(protocolToDisable1, "before the roundtrip");
-        assertProtocolDisabled(protocolToDisable2, "before the roundtrip");
-        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
-        j.jenkins.reload();
-
-        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, j.jenkins.getAgentProtocols());
-        assertThat("We should have disabled two protocols",
-                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
-        assertProtocolDisabled(protocolToDisable1, "after the roundtrip");
-        assertProtocolDisabled(protocolToDisable2, "after the roundtrip");
-    }
-
-    private void assertProtocolDisabled(String protocolName, @CheckForNull String stage) {
-        assertThat(protocolName + " must be disabled. Stage=" + (stage != null ? stage : "undefined"),
-                j.jenkins.getAgentProtocols(), not(hasItem(protocolName)));
-    }
-
-    private void assertProtocolEnabled(String protocolName, @CheckForNull String stage) {
-        assertThat(protocolName + " must be enabled. Stage=" + (stage != null ? stage : "undefined"),
-                j.jenkins.getAgentProtocols(), hasItem(protocolName));
-    }
-
-    @TestExtension
-    public static class MockOptInProtocol1 extends MockOptInProtocol {
-
-        static final String NAME = "MOCK-OPTIN-1";
-
-        @Override
-        public String getName() {
-            return NAME;
-        }
-    }
-
-    @TestExtension
-    public static class MockOptInProtocol2 extends MockOptInProtocol {
-
-        static final String NAME = "MOCK-OPTIN-2";
-
-        @Override
-        public String getName() {
-            return NAME;
-        }
-    }
-
-    private abstract static class MockOptInProtocol extends AgentProtocol {
-        @Override
-        public boolean isOptIn() {
-            return true;
-        }
-
-        @Override
-        public void handle(Socket socket) throws IOException, InterruptedException {
-            throw new IOException("This is a mock agent protocol. It cannot be used for connection");
-        }
-    }
-
-    @TestExtension
-    public static class MockOptOutProtocol1 extends MockOptOutProtocol {
-
-        static final String NAME = "MOCK-OPTOUT-1";
-
-        @Override
-        public String getName() {
-            return NAME;
-        }
-    }
-
-    @TestExtension
-    public static class MockOptOutProtocol2 extends MockOptOutProtocol {
-
-        static final String NAME = "MOCK-OPTOUT-2";
-
-        @Override
-        public String getName() {
-            return NAME;
-        }
-    }
-
-    private abstract static class MockOptOutProtocol extends AgentProtocol {
-        @Override
-        public boolean isOptIn() {
-            return false;
-        }
-
-        @Override
-        public void handle(Socket socket) throws IOException, InterruptedException {
-            throw new IOException("This is a mock agent protocol. It cannot be used for connection");
         }
     }
 

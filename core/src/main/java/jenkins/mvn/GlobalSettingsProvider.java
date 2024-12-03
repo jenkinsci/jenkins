@@ -6,9 +6,11 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
-import javax.servlet.ServletException;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -26,12 +28,27 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      */
     public abstract FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener);
 
-    public static GlobalSettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, ServletException {
+    /**
+     * @since 2.475
+     */
+    public static GlobalSettingsProvider parseSettingsProvider(StaplerRequest2 req) throws Descriptor.FormException, ServletException {
         JSONObject settings = req.getSubmittedForm().getJSONObject("globalSettings");
         if (settings == null) {
             return new DefaultGlobalSettingsProvider();
         }
         return req.bindJSON(GlobalSettingsProvider.class, settings);
+    }
+
+    /**
+     * @deprecated use {@link #parseSettingsProvider(StaplerRequest2)}
+     */
+    @Deprecated
+    public static GlobalSettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, javax.servlet.ServletException {
+        try {
+            return parseSettingsProvider(StaplerRequest.toStaplerRequest2(req));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
     }
 
     /**

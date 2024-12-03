@@ -71,8 +71,8 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -548,7 +548,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     @Override
-    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         ContextMenu menu = new ContextMenu();
         for (Node node : getNodes()) {
             menu.add(node);

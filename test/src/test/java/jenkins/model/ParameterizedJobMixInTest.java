@@ -34,8 +34,8 @@ import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue;
 import hudson.model.StringParameterDefinition;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.URL;
-import javax.servlet.http.HttpServletResponse;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
@@ -44,6 +44,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+
 
 /**
  * Tests of {@link ParameterizedJobMixIn}.

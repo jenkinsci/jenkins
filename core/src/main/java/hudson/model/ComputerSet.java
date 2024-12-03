@@ -30,6 +30,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.Initializer;
@@ -41,28 +43,34 @@ import hudson.triggers.SafeTimerTask;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
+import jenkins.model.IComputer;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import jenkins.util.Timer;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -106,15 +114,36 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return monitors.toList();
     }
 
-    @Exported(name = "computer", inline = true)
+    /**
+     * @deprecated Use {@link #getComputers()} instead.
+     * @return All {@link Computer} instances managed by this set.
+     */
+    @Deprecated(since = "2.480")
     public Computer[] get_all() {
-        return Jenkins.get().getComputers();
+        return getComputers().stream().filter(Computer.class::isInstance).toArray(Computer[]::new);
+    }
+
+    /**
+     * @return All {@link IComputer} instances managed by this set, sorted by name.
+     */
+    @Exported(name = "computer", inline = true)
+    public Collection<? extends IComputer> getComputers() {
+        return ExtensionList.lookupFirst(ComputerSource.class).get().stream().sorted(Comparator.comparing(IComputer::getName)).toList();
+    }
+
+    /**
+     * Allows plugins to override the displayed list of computers.
+     *
+     */
+    @Restricted(Beta.class)
+    public interface ComputerSource extends ExtensionPoint {
+        Collection<? extends IComputer> get();
     }
 
     @Override
-    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         ContextMenu m = new ContextMenu();
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             m.add(c);
         }
         return m;
@@ -170,7 +199,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     @Exported
     public int getTotalExecutors() {
         int r = 0;
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             if (c.isOnline())
                 r += c.countExecutors();
         }
@@ -183,7 +212,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     @Exported
     public int getBusyExecutors() {
         int r = 0;
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             if (c.isOnline())
                 r += c.countBusy();
         }
@@ -195,7 +224,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     public int getIdleExecutors() {
         int r = 0;
-        for (Computer c : get_all())
+        for (IComputer c : getComputers())
             if ((c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
                 r += c.countIdle();
         return r;
@@ -206,15 +235,15 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return "/computers/";
     }
 
-    public Computer getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+    public Computer getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
         return Jenkins.get().getComputer(token);
     }
 
     @RequirePOST
-    public void do_launchAll(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void do_launchAll(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             if (c.isLaunchSupported())
                 c.connect(true);
         }
@@ -227,7 +256,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * TODO: ajax on the client side to wait until the update completion might be nice.
      */
     @RequirePOST
-    public void doUpdateNow(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doUpdateNow(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.MANAGE);
 
         for (NodeMonitor nodeMonitor : NodeMonitor.getAll()) {
@@ -244,7 +273,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * First check point in creating a new agent.
      */
     @RequirePOST
-    public synchronized void doCreateItem(StaplerRequest req, StaplerResponse rsp,
+    public synchronized void doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp,
                                            @QueryParameter String name, @QueryParameter String mode,
                                            @QueryParameter String from) throws IOException, ServletException {
         final Jenkins app = Jenkins.get();
@@ -290,7 +319,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * Really creates a new agent.
      */
     @POST
-    public synchronized void doDoCreateItem(StaplerRequest req, StaplerResponse rsp,
+    public synchronized void doDoCreateItem(StaplerRequest2 req, StaplerResponse2 rsp,
                                            @QueryParameter String name,
                                            @QueryParameter String type) throws IOException, ServletException, FormException {
         final Jenkins app = Jenkins.get();
@@ -348,7 +377,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * Accepts submission from the configuration page.
      */
     @POST
-    public synchronized HttpResponse doConfigSubmit(StaplerRequest req) throws IOException, ServletException, FormException {
+    public synchronized HttpResponse doConfigSubmit(StaplerRequest2 req) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
             Jenkins.get().checkPermission(Jenkins.MANAGE);
@@ -501,5 +530,14 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             LOGGER.log(Level.SEVERE, "Failed to instantiate " + d.clazz, e);
         }
         return null;
+    }
+
+    @Extension(ordinal = -1)
+    @Restricted(DoNotUse.class)
+    public static class ComputerSourceImpl implements ComputerSource {
+        @Override
+        public Collection<? extends IComputer> get() {
+            return Jenkins.get().getComputersCollection();
+        }
     }
 }
