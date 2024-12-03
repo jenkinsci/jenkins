@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.ComputerSet;
@@ -118,8 +119,8 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
         @DataBoundConstructor
         public Entry(String key, String value) {
-            this.key = key;
-            this.value = value;
+            this.key = Util.fixEmptyAndTrim(key);
+            this.value = Util.fixEmptyAndTrim(value);
         }
     }
 

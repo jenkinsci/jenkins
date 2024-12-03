@@ -141,6 +141,24 @@ public class EnvironmentVariableNodePropertyTest {
         assertEquals("value", prop.getEnvVars().get("KEY"));
     }
 
+    @Test
+    public void testExtraSpacesForController() throws Exception {
+        j.jenkins.getGlobalNodeProperties().replaceBy(
+                Set.of(new EnvironmentVariablesNodeProperty(
+                        new EnvironmentVariablesNodeProperty.Entry("      KEY       ", "         globalValue        "))));
+
+        Map<String, String> envVars = executeBuild(j.jenkins);
+
+        assertEquals("globalValue", envVars.get("KEY"));
+    }
+
+    @Test
+    public void testExtraSpacesForAgent() throws Exception {
+        setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("      KEY      ", "        agentValue      "));
+        Map<String, String> envVars = executeBuild(agent);
+        assertEquals("agentValue", envVars.get("KEY"));
+    }
+
     // //////////////////////// setup //////////////////////////////////////////
 
     @Before
