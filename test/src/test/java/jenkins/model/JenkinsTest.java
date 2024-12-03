@@ -30,9 +30,11 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -46,6 +48,7 @@ import hudson.Functions;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
+import hudson.model.AllView;
 import hudson.model.Computer;
 import hudson.model.Failure;
 import hudson.model.FreeStyleProject;
@@ -101,6 +104,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -756,4 +760,16 @@ public class JenkinsTest {
             return null;
         }
     }
+
+    @Test
+    public void reloadViews() throws Exception {
+        assertThat(j.jenkins.getPrimaryView(), isA(AllView.class));
+        assertThat(j.jenkins.getViews(), contains(isA(AllView.class)));
+        Files.writeString(j.jenkins.getConfigFile().getFile().toPath(), "<broken");
+        assertThrows(ReactorException.class, j.jenkins::reload);
+        j.createWebClient().goTo("manage/");
+        assertThat(j.jenkins.getPrimaryView(), isA(AllView.class));
+        assertThat(j.jenkins.getViews(), contains(isA(AllView.class)));
+    }
+
 }
