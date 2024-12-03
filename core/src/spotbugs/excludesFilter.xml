@@ -407,7 +407,6 @@
           <Class name="jenkins.slaves.restarter.UnixSlaveRestarter"/>
           <Class name="jenkins.SoloFilePathFilter"/>
           <Class name="jenkins.util.groovy.GroovyHookScript"/>
-          <Class name="jenkins.util.io.FileBoolean"/>
           <Class name="jenkins.util.JavaVMArguments"/>
           <Class name="jenkins.util.SystemProperties"/>
           <Class name="jenkins.util.VirtualFile$FilePathVF"/>
