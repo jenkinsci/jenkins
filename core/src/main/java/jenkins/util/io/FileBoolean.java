@@ -8,7 +8,6 @@ import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.FilenameUtils;
 
 /**
  * Uses a presence/absence of a file as a persisted boolean storage.
@@ -30,7 +29,7 @@ public class FileBoolean {
     }
 
     public FileBoolean(Class owner, String name) {
-        this(new File(Jenkins.get().getRootDir(), FilenameUtils.getName(owner.getName().replace('$', '.') + '/' + name)));
+        this(new File(Jenkins.get().getRootDir(), owner.getName().replace('$', '.') + '/' + name));
     }
 
     /**
