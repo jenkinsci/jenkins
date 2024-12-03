@@ -7,7 +7,7 @@ tag-template: jenkins-$NEXT_MINOR_VERSION
 
 template: |
   _This is an automatically generated changelog draft for Jenkins weekly releases.
-  See https://www.jenkins.io/changelog/$NEXT_MINOR_VERSION/ for the official changelog for this release.
+  See https://www.jenkins.io/changelog/$NEXT_MINOR_VERSION/ for the official changelog for this release._
 
   $CHANGES
 

@@ -1,0 +1,20 @@
+<div>
+  Detta övervakar tillgängligt diskutrymme i den temporära katalogen och om det
+  når under ett visst tröskelvärde kommer agenten tillfälligt markeras som
+  frånkopplad.
+
+  <p>
+    Java-verktyg och -tester/byggen skapar oftast filer i den temporära
+    katalogen och kanske inte fungerar korrekt om det inte finns tillgängligt
+    utrymme.
+  </p>
+
+  <p>
+    Mer specifikt kontrollerar den tillgängligt diskutrymme för en partition som
+    innehåller katalogen som anges i systemegenskapen
+    <code>java.io.tmpdir</code>
+    . Gå till
+    <code>${rootURL}/computer/AGENTNAME/systemInfo</code>
+    för att kontrollera var denna katalog finns på en angiven agent.
+  </p>
+</div>

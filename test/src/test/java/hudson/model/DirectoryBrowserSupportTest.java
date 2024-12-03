@@ -97,8 +97,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -149,8 +149,16 @@ public class DirectoryBrowserSupportTest {
         p.getBuildersList().add(new Shell("mkdir abc; touch abc/def.bin"));
         j.buildAndAssertSuccess(p);
 
-        // can we see it?
-        j.createWebClient().goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin", "application/octet-stream");
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            // normal path provided by the UI succeeds
+            wc.goTo("job/" + p.getName() + "/ws/abc/def.bin", "application/octet-stream");
+
+            // suspicious path is rejected with 400
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            HtmlPage page = wc.goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin");
+            assertEquals(400, page.getWebResponse().getStatusCode());
+            assertEquals("Error 400 Suspicious Path Character", page.getTitleText());
+        }
     }
 
     @Test
@@ -373,7 +381,7 @@ public class DirectoryBrowserSupportTest {
             return null;
         }
 
-        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws Exception {
+        public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws Exception {
             String hash = req.getRestOfPath().substring(1);
             for (byte[] file : files) {
                 if (Util.getDigestOf(new ByteArrayInputStream(file)).equals(hash)) {
@@ -1108,37 +1116,13 @@ public class DirectoryBrowserSupportTest {
         String content = "random data provided as fixed value";
         Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
-        JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
-
-        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(404));
-    }
-
-    @Test
-    @Issue("SECURITY-2481")
-    public void windows_canViewAbsolutePath_withEscapeHatch() throws Exception {
-        Assume.assumeTrue("can only be tested this on Windows", Functions.isWindows());
-
-        String originalValue = System.getProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
-        System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, "true");
-        try {
-            Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
-            String content = "random data provided as fixed value";
-            Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
-
-            JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-            Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
-
-            MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(200));
-            MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), containsString(content));
-        } finally {
-            if (originalValue == null) {
-                System.clearProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
-            } else {
-                System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, originalValue);
-            }
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            // suspicious path is rejected with 400
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            HtmlPage page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*");
+            assertEquals(400, page.getWebResponse().getStatusCode());
+            assertEquals("Error 400 Suspicious Path Character", page.getTitleText());
         }
-
     }
 
     @Test

@@ -21,6 +21,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -28,7 +29,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStore;
@@ -80,7 +80,7 @@ public class ApiTokenPropertyTest {
         assertEquals(u, wc.executeOnServer(User::current));
 
         // Make sure the UI shows the token to the user
-        HtmlPage config = wc.goTo(u.getUrl() + "/configure");
+        HtmlPage config = wc.goTo(u.getUrl() + "/security/");
         HtmlForm form = config.getFormByName("config");
         assertEquals(token, form.getInputByName("_.apiToken").getValue());
 
@@ -126,7 +126,7 @@ public class ApiTokenPropertyTest {
 
         // Make sure the UI does not show the token to another user
         WebClient wc = createClientForUser("bar");
-        HtmlPage config = wc.goTo(u.getUrl() + "/configure");
+        HtmlPage config = wc.goTo(u.getUrl() + "/security/");
         HtmlForm form = config.getFormByName("config");
         assertEquals(Messages.ApiTokenProperty_ChangeToken_TokenIsHidden(), form.getInputByName("_.apiToken").getValue());
     }

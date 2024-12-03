@@ -25,7 +25,7 @@
 
 package hudson.model;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
@@ -57,6 +57,9 @@ import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -80,8 +83,6 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
@@ -93,11 +94,14 @@ import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.xml.XMLUtils;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.symbol.Symbol;
+import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -106,7 +110,9 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -508,8 +514,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
         }
         // Check root project for sub-job projects (e.g. matrix jobs).
-        if (item.task instanceof AbstractProject<?, ?>) {
-            AbstractProject<?, ?> project = (AbstractProject<?, ?>) item.task;
+        if (item.task instanceof AbstractProject<?, ?> project) {
             return viewItems.contains(project.getRootProject());
         }
         return false;
@@ -672,7 +677,28 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Accepts the new description.
      */
     @RequirePOST
-    public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doSubmitDescription(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(View.class, getClass(), "doSubmitDescription", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                doSubmitDescription(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            doSubmitDescriptionImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doSubmitDescription(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        doSubmitDescriptionImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    private void doSubmitDescriptionImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         checkPermission(CONFIGURE);
 
         description = req.getParameter("description");
@@ -683,10 +709,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Accepts submission from the configuration page.
      *
-     * Subtypes should override the {@link #submit(StaplerRequest)} method.
+     * Subtypes should override the {@link #submit(StaplerRequest2)} method.
      */
     @POST
-    public final synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+    public final synchronized void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
         submit(req);
@@ -709,13 +735,42 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * Load view-specific properties here.
      */
-    protected abstract void submit(StaplerRequest req) throws IOException, ServletException, FormException;
+    protected /* abstract */ void submit(StaplerRequest2 req) throws IOException, ServletException, FormException {
+        if (Util.isOverridden(View.class, getClass(), "submit", StaplerRequest.class)) {
+            try {
+                submit(StaplerRequest.fromStaplerRequest2(req));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
+                    + View.class.getSimpleName() + ".submit methods");
+        }
+    }
+
+    /**
+     * @deprecated use {@link #submit(StaplerRequest2)}
+     */
+    @Deprecated
+    protected void submit(StaplerRequest req) throws IOException, javax.servlet.ServletException, FormException {
+        if (Util.isOverridden(View.class, getClass(), "submit", StaplerRequest2.class)) {
+            try {
+                submit(StaplerRequest.toStaplerRequest2(req));
+            } catch (ServletException e) {
+                throw ServletExceptionWrapper.fromJakartaServletException(e);
+            }
+        } else {
+            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
+                    + View.class.getSimpleName() + ".submit methods");
+        }
+    }
+
 
     /**
      * Deletes this view.
      */
     @RequirePOST
-    public synchronized void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         checkPermission(DELETE);
 
         owner.deleteView(this);
@@ -728,13 +783,44 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Creates a new {@link Item} in this collection.
      *
      * <p>
-     * This method should call {@link ModifiableItemGroup#doCreateItem(StaplerRequest, StaplerResponse)}
+     * This method should call {@link ModifiableItemGroup#doCreateItem(StaplerRequest2, StaplerResponse2)}
      * and then add the newly created item to this view.
      *
      * @return
      *      null if fails.
+     * @since 2.475
      */
-    public abstract Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException;
+    @RequirePOST
+    public /* abstract */ Item doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(View.class, getClass(), "doCreateItem", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                return doCreateItem(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
+                    + View.class.getSimpleName() + ".doCreateItem methods");
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doCreateItem(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        if (Util.isOverridden(View.class, getClass(), "doCreateItem", StaplerRequest2.class, StaplerResponse2.class)) {
+            try {
+                return doCreateItem(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+            } catch (ServletException e) {
+                throw ServletExceptionWrapper.fromJakartaServletException(e);
+            }
+        } else {
+            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
+                    + View.class.getSimpleName() + ".doCreateItem methods");
+        }
+    }
 
     /**
      * Makes sure that the given name is good as a job name.
@@ -773,7 +859,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @return A {@link Categories} entity that is shown as JSON file.
      */
     @Restricted(DoNotUse.class)
-    public Categories doItemCategories(StaplerRequest req, StaplerResponse rsp, @QueryParameter String iconStyle) throws IOException, ServletException {
+    public Categories doItemCategories(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String iconStyle) throws IOException, ServletException {
         getOwner().checkPermission(Item.CREATE);
 
         rsp.addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -801,11 +887,20 @@ public abstract class View extends AbstractModelObject implements AccessControll
             String iconClassName = descriptor.getIconClassName();
             if (iconClassName != null && !iconClassName.isBlank()) {
                 metadata.put("iconClassName", iconClassName);
-                if (resUrl != null) {
-                    Icon icon = IconSet.icons
-                            .getIconByClassSpec(String.join(" ", iconClassName, iconStyle));
-                    if (icon != null) {
-                        metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(resUrl));
+                if (iconClassName.startsWith("symbol-")) {
+                    String iconXml = Symbol.get(new SymbolRequest.Builder()
+                            .withName(iconClassName.split(" ")[0].substring(7))
+                            .withPluginName(Functions.extractPluginNameFromIconSrc(iconClassName))
+                            .withClasses("icon-xlg")
+                            .build());
+                    metadata.put("iconXml", iconXml);
+                } else {
+                    if (resUrl != null) {
+                        Icon icon = IconSet.icons
+                                .getIconByClassSpec(String.join(" ", iconClassName, iconStyle));
+                        if (icon != null) {
+                            metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(resUrl));
+                        }
                     }
                 }
             }
@@ -823,11 +918,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return categories;
     }
 
-    public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssAll(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds().newBuilds());
     }
 
-    public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssFailed(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly().newBuilds());
     }
 
@@ -841,11 +936,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return new BuildTimelineWidget(getBuilds());
     }
 
-    public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssLatest(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         List<Run> lastBuilds = new ArrayList<>();
         for (TopLevelItem item : getItems()) {
-            if (item instanceof Job) {
-                Job job = (Job) item;
+            if (item instanceof Job job) {
                 Run lb = job.getLastBuild();
                 if (lb != null)    lastBuilds.add(lb);
             }
@@ -855,15 +949,34 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Accepts {@code config.xml} submission, as well as serve it.
+     *
+     * @since 2.475
      */
     @WebMethod(name = "config.xml")
+    public HttpResponse doConfigDotXml(StaplerRequest2 req) throws IOException {
+        if (Util.isOverridden(View.class, getClass(), "doConfigDotXml", StaplerRequest.class)) {
+            return doConfigDotXml(StaplerRequest.fromStaplerRequest2(req));
+        } else {
+            return doConfigDotXmlImpl(req);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doConfigDotXml(StaplerRequest2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
     public HttpResponse doConfigDotXml(StaplerRequest req) throws IOException {
+        return doConfigDotXmlImpl(StaplerRequest.toStaplerRequest2(req));
+    }
+
+    private HttpResponse doConfigDotXmlImpl(StaplerRequest2 req) throws IOException {
         if (req.getMethod().equals("GET")) {
             // read
             checkPermission(READ);
             return new HttpResponse() {
                 @Override
-                public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
                     rsp.setContentType("application/xml");
                     View.this.writeXml(rsp.getOutputStream());
                 }
@@ -931,7 +1044,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     @Override
-    public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
         for (TopLevelItem i : getItems())
             m.add(Functions.getRelativeLinkTo(i), Functions.getRelativeDisplayNameFrom(i, getOwner().getItemGroup()));
@@ -955,15 +1068,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Returns the {@link ViewDescriptor} instances that can be instantiated for the {@link ViewGroup} in the current
-     * {@link StaplerRequest}.
+     * {@link StaplerRequest2}.
      * <p>
-     * <strong>NOTE: Historically this method is only ever called from a {@link StaplerRequest}</strong>
-     * @return the list of instantiable {@link ViewDescriptor} instances for the current {@link StaplerRequest}
+     * <strong>NOTE: Historically this method is only ever called from a {@link StaplerRequest2}</strong>
+     * @return the list of instantiable {@link ViewDescriptor} instances for the current {@link StaplerRequest2}
      */
     @NonNull
     public static List<ViewDescriptor> allInstantiable() {
         List<ViewDescriptor> r = new ArrayList<>();
-        StaplerRequest request = Stapler.getCurrentRequest();
+        StaplerRequest2 request = Stapler.getCurrentRequest2();
         if (request == null) {
             throw new IllegalStateException("This method can only be invoked from a stapler request");
         }
@@ -1009,7 +1122,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return Item.CREATE;
     }
 
-    public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
+    /**
+     * @since 2.475
+     */
+    public static View create(StaplerRequest2 req, StaplerResponse2 rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {
         String mode = req.getParameter("mode");
 
@@ -1061,7 +1177,20 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return v;
     }
 
-    private static View copy(StaplerRequest req, ViewGroup owner, String name) throws IOException {
+    /**
+     * @deprecated use {@link #create(StaplerRequest2, StaplerResponse2, ViewGroup)}
+     */
+    @Deprecated
+    public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
+            throws FormException, IOException, javax.servlet.ServletException {
+        try {
+            return create(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), owner);
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private static View copy(StaplerRequest2 req, ViewGroup owner, String name) throws IOException {
         View v;
         String from = req.getParameter("from");
         View src = owner.getView(from);

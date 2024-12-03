@@ -279,7 +279,7 @@ public class Icon {
         // Trim all tokens first
         for (String classNameTok : classNameTokA) {
             String trimmedToken = classNameTok.trim();
-            if (trimmedToken.length() > 0) {
+            if (!trimmedToken.isEmpty()) {
                 classNameTokL.add(trimmedToken);
             }
         }

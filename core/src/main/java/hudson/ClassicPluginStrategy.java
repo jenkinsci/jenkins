@@ -52,6 +52,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -235,7 +236,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
         dependencyLoader = getBaseClassLoader(atts, dependencyLoader);
 
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
-                createClassLoader(paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
+                createClassLoader(computeClassLoaderName(manifest, archive), paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
+    }
+
+    private static String computeClassLoaderName(Manifest mf, File archive) {
+        return "PluginClassLoader for " + PluginWrapper.computeShortName(mf, archive.getName());
     }
 
     private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
@@ -247,7 +252,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         for (Dependency d : DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion)) {
             LOGGER.fine(() -> "implied dep " + pluginName + " → " + d.shortName);
-            pluginManager.considerDetachedPlugin(d.shortName);
+            pluginManager.considerDetachedPlugin(d.shortName, pluginName);
             optionalDependencies.add(d);
         }
     }
@@ -263,15 +268,28 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion);
     }
 
-    @Deprecated
+    /**
+     * @deprecated since 2.459 use {@link #createClassLoader(String, List, ClassLoader, Attributes)}
+     */
+    @Deprecated(since = "2.459")
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent) throws IOException {
         return createClassLoader(paths, parent, null);
     }
 
     /**
-     * Creates the classloader that can load all the specified jar files and delegate to the given parent.
+     * @deprecated since 2.459 use {@link #createClassLoader(String, List, ClassLoader, Attributes)}
      */
+    @Deprecated(since="2.459")
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
+        // generate a legacy id so at least we can track to something
+        return createClassLoader("unidentified-" + UUID.randomUUID(), paths, parent, atts);
+    }
+
+    /**
+     * Creates a  classloader that can load all the specified jar files and delegate to the given parent.
+     * @since 2.459
+     */
+    protected ClassLoader createClassLoader(String name, List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
         boolean usePluginFirstClassLoader =
                 atts != null && Boolean.parseBoolean(atts.getValue("PluginFirstClassLoader"));
 
@@ -285,9 +303,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
         URLClassLoader2 classLoader;
         if (usePluginFirstClassLoader) {
-            classLoader = new PluginFirstClassLoader2(urls.toArray(new URL[0]), parent);
+            classLoader = new PluginFirstClassLoader2(name, urls.toArray(new URL[0]), parent);
         } else {
-            classLoader = new URLClassLoader2(urls.toArray(new URL[0]), parent);
+            classLoader = new URLClassLoader2(name, urls.toArray(new URL[0]), parent);
         }
         return classLoader;
     }
@@ -561,7 +579,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
 
         DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies, PluginManager pluginManager) {
-            super(parent);
+            super("dependency ClassLoader for " + archive.getPath(), parent);
             this._for = archive;
             this.dependencies = List.copyOf(dependencies);
             this.pluginManager = pluginManager;

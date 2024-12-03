@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-    <div class="alert alert-${it.severityAsString}">
+    <div class="jenkins-alert jenkins-alert-${it.severityAsString}">
         <form id="JavaVersionRecommendationAdminMonitor" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <f:submit name="yes" value="${%More Info}"/>
             <l:isAdmin>

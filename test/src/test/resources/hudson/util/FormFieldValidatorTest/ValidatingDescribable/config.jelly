@@ -1,0 +1,20 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+  <f:entry title="Password (empty)" field="emptyPassword">
+    <f:password/>
+  </f:entry>
+  <f:entry title="Password (populated)" field="populatedPassword">
+    <f:password/>
+  </f:entry>
+  <f:entry title="Textarea" field="textarea">
+    <f:textarea/>
+  </f:entry>
+  <f:entry title="Secret Textarea (empty)" field="emptySecretTextarea">
+    <f:secretTextarea/>
+  </f:entry>
+  <f:entry title="Secret Textarea (populated)" field="populatedSecretTextarea">
+    <f:secretTextarea/>
+  </f:entry>
+
+</j:jelly>

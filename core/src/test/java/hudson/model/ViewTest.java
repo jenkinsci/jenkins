@@ -13,8 +13,8 @@ import java.util.Collection;
 import java.util.List;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mockito;
 
 public class ViewTest {
@@ -186,11 +186,11 @@ public class ViewTest {
         }
 
         @Override
-        protected void submit(StaplerRequest req) {
+        protected void submit(StaplerRequest2 req) {
         }
 
         @Override
-        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) {
+        public Item doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) {
             return null;
         }
     }

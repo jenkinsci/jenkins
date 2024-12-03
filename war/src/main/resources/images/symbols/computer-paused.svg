@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" version="1.1" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+ <g fill="none" fill-rule="evenodd">
+  <g transform="translate(32 64)" stroke="currentColor" stroke-width="32">
+   <rect width="448" height="320" rx="32"/>
+   <polygon points="272 384 264 320 184 320 176 384" stroke-linecap="round"/>
+   <line x1="336" x2="112" y1="384" y2="384" stroke-linecap="round"/>
+   <path d="m187.82 261.69h-20.183c-5.1884 0-9.3944-4.206-9.3944-9.3944v-187.89c0-5.1884 4.206-9.3944 9.3944-9.3944h20.183c5.1884 0 9.3944 4.206 9.3944 9.3944v187.89c0 5.1884-4.206 9.3944-9.3944 9.3944zm92.549 0h-20.183c-5.1884 0-9.3944-4.206-9.3944-9.3944v-187.89c0-5.1884 4.206-9.3944 9.3944-9.3944h20.183c5.1884 0 9.3944 4.206 9.3944 9.3944v187.89c0 5.1884-4.206 9.3944-9.3944 9.3944z" fill="currentColor" stroke-width="18.789"/>
+  </g>
+ </g>
+</svg>

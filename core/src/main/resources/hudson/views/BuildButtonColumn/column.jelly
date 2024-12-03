@@ -37,15 +37,16 @@ THE SOFTWARE.
                 <j:set var="title" value="${%Schedule_a_task_with_parameters(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
               </j:when>
               <j:otherwise>
-                <span class="build-button-column-icon-reference-holder" data-id="${id}" data-url="${href}" data-notification="${%Task_scheduled(it.taskNoun(job))}"/>
+                <span class="build-button-column-icon-reference-holder" data-id="${id}" data-url="${href}"
+                      data-notification="${%Task_scheduled(it.taskNoun(job))}"
+                      data-failure="${%Task_schedule_failed(h.getRelativeDisplayNameFrom(job, itemGroup))}"
+                />
                 <j:set var="title" value="${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
               </j:otherwise>
             </j:choose>
             <j:set var="isQueued" value="${app.queue.contains(job)}"/>
-            <a id="${id}" tooltip="${title}" class="jenkins-table__button jenkins-!-build-color" href="${href}">
-              <span class="${isQueued ? 'pulse-animation': ''}">
-                <l:icon src="symbol-play" />
-              </span>
+            <a id="${id}" tooltip="${title}" class="jenkins-button jenkins-button--tertiary jenkins-!-build-color ${isQueued ? 'pulse-animation': ''}" href="${href}">
+              <l:icon src="symbol-play" />
               <st:adjunct includes="hudson.views.BuildButtonColumn.icon"/>
             </a>
           </div>
