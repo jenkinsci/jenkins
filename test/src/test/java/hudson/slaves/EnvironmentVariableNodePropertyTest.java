@@ -159,6 +159,42 @@ public class EnvironmentVariableNodePropertyTest {
         assertEquals("agentValue", envVars.get("KEY"));
     }
 
+    @Test
+    public void testEmptyForController() throws Exception {
+        j.jenkins.getGlobalNodeProperties().replaceBy(
+                Set.of(new EnvironmentVariablesNodeProperty(
+                        new EnvironmentVariablesNodeProperty.Entry("KEY", ""))));
+
+        Map<String, String> envVars = executeBuild(j.jenkins);
+
+        assertEquals("", envVars.get("KEY"));
+    }
+
+    @Test
+    public void testEmptyForAgent() throws Exception {
+        setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", ""));
+        Map<String, String> envVars = executeBuild(agent);
+        assertEquals("", envVars.get("KEY"));
+    }
+
+    @Test
+    public void testOnlySpacesForController() throws Exception {
+        j.jenkins.getGlobalNodeProperties().replaceBy(
+                Set.of(new EnvironmentVariablesNodeProperty(
+                        new EnvironmentVariablesNodeProperty.Entry("KEY", "                  "))));
+
+        Map<String, String> envVars = executeBuild(j.jenkins);
+
+        assertEquals("", envVars.get("KEY"));
+    }
+
+    @Test
+    public void testOnlySpacesForAgent() throws Exception {
+        setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", "                "));
+        Map<String, String> envVars = executeBuild(agent);
+        assertEquals("", envVars.get("KEY"));
+    }
+
     // //////////////////////// setup //////////////////////////////////////////
 
     @Before

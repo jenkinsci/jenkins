@@ -119,8 +119,8 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
         @DataBoundConstructor
         public Entry(String key, String value) {
-            this.key = Util.fixEmptyAndTrim(key);
-            this.value = Util.fixEmptyAndTrim(value);
+            this.key = Util.fixNull(Util.fixEmptyAndTrim(key));
+            this.value = Util.fixNull(Util.fixEmptyAndTrim(value));
         }
     }
 
