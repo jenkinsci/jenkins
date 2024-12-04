@@ -1,6 +1,7 @@
 package hudson.slaves;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -167,14 +168,14 @@ public class EnvironmentVariableNodePropertyTest {
 
         Map<String, String> envVars = executeBuild(j.jenkins);
 
-        assertEquals("", envVars.get("KEY"));
+        assertNull(envVars.get("KEY"));
     }
 
     @Test
     public void testEmptyForAgent() throws Exception {
         setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", ""));
         Map<String, String> envVars = executeBuild(agent);
-        assertEquals("", envVars.get("KEY"));
+        assertNull(envVars.get("KEY"));
     }
 
     @Test
@@ -185,14 +186,142 @@ public class EnvironmentVariableNodePropertyTest {
 
         Map<String, String> envVars = executeBuild(j.jenkins);
 
-        assertEquals("", envVars.get("KEY"));
+        assertNull(envVars.get("KEY"));
     }
 
     @Test
     public void testOnlySpacesForAgent() throws Exception {
         setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", "                "));
         Map<String, String> envVars = executeBuild(agent);
-        assertEquals("", envVars.get("KEY"));
+        assertNull(envVars.get("KEY"));
+    }
+
+    @Test
+    public void testFormRoundTripForControllerWithEmpty() throws Exception {
+        j.jenkins.getGlobalNodeProperties().replaceBy(
+                Set.of(new EnvironmentVariablesNodeProperty(
+                        new EnvironmentVariablesNodeProperty.Entry("", ""))));
+
+        WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.getPage(j.jenkins, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+
+        assertEquals(1, j.jenkins.getGlobalNodeProperties().toList().size());
+
+        EnvironmentVariablesNodeProperty prop = j.jenkins.getGlobalNodeProperties().get(EnvironmentVariablesNodeProperty.class);
+        assertEquals(0, prop.getEnvVars().size());
+    }
+
+    @Test
+    public void testFormRoundTripForAgentWithEmpty() throws Exception {
+        setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("", ""));
+
+        WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.getPage(agent, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+
+        assertEquals(1, agent.getNodeProperties().toList().size());
+
+        EnvironmentVariablesNodeProperty prop = agent.getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
+        assertEquals(0, prop.getEnvVars().size());
+    }
+
+    @Test
+    public void testFormRoundTripForControllerWithSpaces() throws Exception {
+        j.jenkins.getGlobalNodeProperties().replaceBy(
+                Set.of(new EnvironmentVariablesNodeProperty(
+                        new EnvironmentVariablesNodeProperty.Entry("   ", "   "))));
+
+        WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.getPage(j.jenkins, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+
+        assertEquals(1, j.jenkins.getGlobalNodeProperties().toList().size());
+
+        EnvironmentVariablesNodeProperty prop = j.jenkins.getGlobalNodeProperties().get(EnvironmentVariablesNodeProperty.class);
+        assertEquals(0, prop.getEnvVars().size());
+    }
+
+    @Test
+    public void testFormRoundTripForAgentWithSpaces() throws Exception {
+        setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("   ", "   "));
+
+        WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.getPage(agent, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+
+        assertEquals(1, agent.getNodeProperties().toList().size());
+
+        EnvironmentVariablesNodeProperty prop = agent.getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
+        assertEquals(0, prop.getEnvVars().size());
+    }
+
+    @Test
+    public void testFormRoundTripForControllerWithSpacesAndKey() throws Exception {
+        j.jenkins.getGlobalNodeProperties().replaceBy(
+                Set.of(new EnvironmentVariablesNodeProperty(
+                        new EnvironmentVariablesNodeProperty.Entry("KEY", "   "))));
+
+        WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.getPage(j.jenkins, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+
+        assertEquals(1, j.jenkins.getGlobalNodeProperties().toList().size());
+
+        EnvironmentVariablesNodeProperty prop = j.jenkins.getGlobalNodeProperties().get(EnvironmentVariablesNodeProperty.class);
+        assertEquals(0, prop.getEnvVars().size());
+    }
+
+    @Test
+    public void testFormRoundTripForAgentWithSpacesAndKey() throws Exception {
+        setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", "   "));
+
+        WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.getPage(agent, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+
+        assertEquals(1, agent.getNodeProperties().toList().size());
+
+        EnvironmentVariablesNodeProperty prop = agent.getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
+        assertEquals(0, prop.getEnvVars().size());
+    }
+
+    @Test
+    public void testFormRoundTripForControllerWithEmptyAndKey() throws Exception {
+        j.jenkins.getGlobalNodeProperties().replaceBy(
+                Set.of(new EnvironmentVariablesNodeProperty(
+                        new EnvironmentVariablesNodeProperty.Entry("KEY", ""))));
+
+        WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.getPage(j.jenkins, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+
+        assertEquals(1, j.jenkins.getGlobalNodeProperties().toList().size());
+
+        EnvironmentVariablesNodeProperty prop = j.jenkins.getGlobalNodeProperties().get(EnvironmentVariablesNodeProperty.class);
+        assertEquals(0, prop.getEnvVars().size());
+    }
+
+    @Test
+    public void testFormRoundTripForAgentWithEmptyAndKey() throws Exception {
+        setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", ""));
+
+        WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.getPage(agent, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+
+        assertEquals(1, agent.getNodeProperties().toList().size());
+
+        EnvironmentVariablesNodeProperty prop = agent.getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
+        assertEquals(0, prop.getEnvVars().size());
     }
 
     // //////////////////////// setup //////////////////////////////////////////
