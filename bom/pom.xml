@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
-    <stapler.version>1922.v3f3302a_7f16f</stapler.version>
+    <stapler.version>1928.v9115fe47607f</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -62,7 +62,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>6.1.14</version>
+        <version>6.2.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -70,7 +70,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/reference/6.3/getting-spring-security.html#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>6.3.4</version>
+        <version>6.4.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -129,7 +129,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
-        <version>2.17.0</version>
+        <version>2.18.0</version>
       </dependency>
       <dependency>
         <groupId>commons-jelly</groupId>
@@ -295,7 +295,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.hudson</groupId>
         <artifactId>commons-jelly-tags-define</artifactId>
-        <version>1.1-jenkins-20240903</version>
+        <version>1.1-jenkins-20241115</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
@@ -335,7 +335,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>json-lib</artifactId>
-        <version>2.4-jenkins-7</version>
+        <version>2.4-jenkins-8</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>

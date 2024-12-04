@@ -118,7 +118,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1367.vdf2fc45f229c</version>
+        <version>1369.v9b_98a_4e95b_2d</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -134,7 +134,7 @@ THE SOFTWARE.
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>932.vb_555de1b_a_b_94</version>
+        <version>936.v9fa_77211ca_e1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -178,7 +178,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2345.v699712948764</version>
+      <version>2363.vf95c19b_2ca_72</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -218,7 +218,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.955.v81e2a_35c08d3</version>
+      <version>6.959.v4ed5cc9e2dd4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -344,7 +344,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>307.vecc0205ca_707</version>
+                  <version>325.v40b_a_ccf974db_</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
@@ -352,7 +352,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.29.0-17</version>
+                  <version>1.29.0-18</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>prism-api.jpi</destFileName>
