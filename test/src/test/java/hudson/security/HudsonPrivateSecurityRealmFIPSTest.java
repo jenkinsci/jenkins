@@ -43,6 +43,9 @@ import jenkins.model.Jenkins;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPasswordInput;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
@@ -147,6 +150,87 @@ public class HudsonPrivateSecurityRealmFIPSTest {
                 () -> securityRealm.createAccountWithHashedPassword("user_hashed_incorrect_algorithm", JBCRYPT_ENCODED_PASSWORD));
         assertThat(illegalArgumentException.getMessage(),
                 is("The hashed password was hashed with an incorrect algorithm. Jenkins is expecting $PBKDF2"));
+    }
+
+    @Test
+    public void validatePasswordLengthForFIPS() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordLengthForFIPSStep);
+    }
+
+    private static void validatePasswordLengthForFIPSStep(JenkinsRule j) throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User u1 =  securityRealm.createAccount("test", "aValidFipsPass");
+
+        WebClient wc = j.createWebClient();
+        wc.login("test","aValidFipsPass");
+
+        HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+        //Should fail as the password length is <14 (In FIPS mode)
+        password1.setText("mockPassword");
+        password2.setText("mockPassword");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        assertThrows(FailingHttpStatusCodeException.class, () -> {
+            j.submit(form);
+        });
+    }
+
+    @Test
+    public void validatePasswordMismatchForFIPS() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordMismatchForFIPSStep);
+    }
+
+    private static void validatePasswordMismatchForFIPSStep(JenkinsRule j) throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User u1 =  securityRealm.createAccount("test", "aValidFipsPass");
+
+
+        WebClient wc = j.createWebClient();
+        wc.login("test","aValidFipsPass");
+
+        HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+        //should fail as the passwords are different (even though the password length >=14) In FIPS mode
+        password1.setText("14charPassword");
+        password2.setText("14charPa$$word");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        assertThrows(FailingHttpStatusCodeException.class, () -> {
+            j.submit(form);
+        });
+    }
+
+    @Test
+    public void validatePasswordSuccessForFIPS() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordSuccessForFIPSStep);
+    }
+
+    private static void validatePasswordSuccessForFIPSStep(JenkinsRule j) throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User u1 =  securityRealm.createAccount("test", "aValidFipsPass");
+
+        WebClient wc = j.createWebClient();
+        wc.login("test","aValidFipsPass");
+
+        HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+        //should pass as the passwords are same and length >=14 In FIPS mode.
+        password1.setText("14charPassword");
+        password2.setText("14charPassword");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        HtmlPage success = j.submit(form);
+        assertThat(success.getWebResponse().getStatusCode(), is(200));
     }
 
     private static Matcher<LogRecord> incorrectHashingLogEntry() {
