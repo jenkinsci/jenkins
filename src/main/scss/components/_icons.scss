@@ -68,12 +68,12 @@
 
 .icon-aborted,
 .icon-aborted-anime {
-  @include status-icon-color(var(--black));
+  @include status-icon-color(var(--aborted-icon-color));
 }
 
 .icon-disabled,
 .icon-disabled-anime {
-  @include status-icon-color(var(--black), 0.5);
+  @include status-icon-color(var(--disabled-icon-color), 0.5);
 }
 
 .icon-grey,

@@ -70,6 +70,8 @@ $semantics: (
   // Status icon colors
   --weather-icon-color: var(--accent-color);
   --unstable-build-icon-color: var(--orange);
+  --aborted-icon-color: var(--black)
+  --disabled-icon-color: var(--black);  
 
   // Background colors
   --background: var(--white);
