@@ -172,6 +172,12 @@
     padding: 0.5rem 0.75rem;
     min-height: 1.75rem;
 
+    // fix background deviation
+    [tooltip]::before {
+      border: initial;
+      transform: initial;
+    }
+
     // Increase the size of symbols compared to regular buttons
     svg {
       width: 1.5rem !important;
