@@ -663,18 +663,21 @@ function registerValidator(e) {
   e.targetUrl = function () {
     var url = this.getAttribute("checkUrl");
     var depends = this.getAttribute("checkDependsOn");
+    if (depends === null) {
+      depends = "";
+    }
 
-    if (depends == null) {
+    try {
       // legacy behaviour where checkUrl is a JavaScript
-      try {
-        return eval(url); // need access to 'this', so no 'geval'
-      } catch (e) {
+      return eval(url); // need access to 'this', so no 'geval'
+    } catch (e) {
+      if (url.includes("?")) {
+        // this is a non-JS URL that includes query parameters, likely invalid legacy URL
         console.warn(
-          "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
+          "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e
         );
         return url; // return plain url as fallback
       }
-    } else {
       var q = qs(this).addThis();
       if (depends.length > 0) {
         depends.split(" ").forEach(
