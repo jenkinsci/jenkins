@@ -72,16 +72,6 @@
       ]
     },
     {
-      "description": "Depends on commons-lang3 which is in progress for removal from core. See: https://issues.jenkins.io/browse/JENKINS-73355",
-      "matchManagers": [
-        "maven"
-      ],
-      "enabled": false,
-      "matchPackageNames": [
-        "org.apache.commons:commons-compress"
-      ]
-    },
-    {
       "description": "Contains incompatible API changes and needs compatibility work. See: https://github.com/jenkinsci/jenkins/pull/4224",
       "matchManagers": [
         "maven"
