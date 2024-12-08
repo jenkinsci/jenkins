@@ -16,7 +16,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -81,7 +80,6 @@ public class ZipArchiverTest {
         }
     }
 
-    @Ignore("TODO fails to add empty directories to archive")
     @Issue("JENKINS-49296")
     @Test
     public void emptyDirectory() throws Exception {
