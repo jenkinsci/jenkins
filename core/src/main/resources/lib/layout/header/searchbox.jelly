@@ -5,7 +5,18 @@
       <st:include it="${factory}" page="search.jelly" optional="true" />
     </j:forEach>
 
-    <button id="button-open-command-palette" tooltip="${%Search}" data-keyboard-shortcut="CMD+K"
+    <j:set var="commandPaletteTooltip">
+      <div class="jenkins-keyboard-shortcut__tooltip">
+        <span class="jenkins-!-margin-right-1">
+          ${%Search}
+        </span>
+        <l:keyboard-shortcut shortcut="CMD+K" />
+      </div>
+    </j:set>
+
+    <button id="button-open-command-palette"
+            data-html-tooltip="${commandPaletteTooltip}"
+            data-keyboard-shortcut="CMD+K"
             data-search-url="${rootURL + '/search/suggest'}"
             data-search-help-url="${searchHelpUrl}"
     >

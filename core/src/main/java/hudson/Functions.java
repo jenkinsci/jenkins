@@ -125,6 +125,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -2581,5 +2582,26 @@ public class Functions {
     @Restricted(NoExternalUse.class)
     public static ExtensionList<SearchFactory> getSearchFactories() {
         return SearchFactory.all();
+    }
+
+    /**
+     * @param keyboardShortcut the shortcut to be translated
+     * @return the translated shortcut, e.g. CMD+K to ⌘+K for macOS, CTRL+K for Windows
+     */
+    @Restricted(NoExternalUse.class)
+    public static String translateModifierKeysForUsersPlatform(String keyboardShortcut) {
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse2());
+        String userAgent = currentRequest.getHeader("User-Agent");
+
+        List<String> platformsThatUseCommand = List.of("MAC", "IPHONE", "IPAD");
+        boolean useCmdKey = platformsThatUseCommand.stream().anyMatch(e -> userAgent.toUpperCase().contains(e));
+
+        return keyboardShortcut.replace("CMD", useCmdKey ? "⌘" : "CTRL");
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String formatMessage(String format, Object args) {
+        return MessageFormat.format(format, args);
     }
 }

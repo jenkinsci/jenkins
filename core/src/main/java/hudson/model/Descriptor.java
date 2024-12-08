@@ -474,6 +474,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
         if (method == null)
             return;    // no auto-completion
 
+        // build query parameter line by figuring out what should be submitted
+        List<String> depends = buildFillDependencies(method, new ArrayList<>());
+        if (!depends.isEmpty()) {
+            attributes.put("fillDependsOn", String.join(" ", depends));
+        }
+
         attributes.put("autoCompleteUrl", String.format("%s/%s/autoComplete%s", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
     }
 
