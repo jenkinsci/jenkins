@@ -2602,6 +2602,10 @@ public class Functions {
 
     @Restricted(NoExternalUse.class)
     public static String formatMessage(String format, Object args) {
+        if (format == null) {
+            return args.toString();
+        }
+
         return MessageFormat.format(format, args);
     }
 }
