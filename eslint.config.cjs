@@ -36,7 +36,6 @@ module.exports = [
         CodeMirror: "readonly",
         ComboBox: "readonly",
         COMBOBOX_VERSION: "writeable",
-        createSearchBox: "readonly",
         crumb: "readonly",
         dialog: "readonly",
         ensureVisible: "readonly",

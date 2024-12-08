@@ -1,19 +1,21 @@
 import hotkeys from "hotkeys-js";
 
 window.addEventListener("load", () => {
-  const searchBar = document.querySelector("#search-box");
-  searchBar.placeholder =
-    searchBar.placeholder +
-    ` (${translateModifierKeysForUsersPlatform("CMD+K").replace("CMD", "⌘")})`;
+  const openCommandPaletteButton = document.querySelector(
+    "#button-open-command-palette",
+  );
+  if (openCommandPaletteButton) {
+    hotkeys(translateModifierKeysForUsersPlatform("CMD+K"), () => {
+      openCommandPaletteButton.click();
 
-  hotkeys(translateModifierKeysForUsersPlatform("CMD+K"), () => {
-    searchBar.focus();
+      // Returning false stops the event and prevents default browser events
+      return false;
+    });
+  }
 
-    // Returning false stops the event and prevents default browser events
-    return false;
-  });
-
-  const pageSearchBar = document.querySelectorAll(".jenkins-search__input");
+  const pageSearchBar = document.querySelectorAll(
+    "#page-body .jenkins-search__input",
+  );
   if (pageSearchBar.length === 1) {
     hotkeys("/", () => {
       pageSearchBar[0].focus();

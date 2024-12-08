@@ -62,6 +62,7 @@ import hudson.model.User;
 import hudson.model.View;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import hudson.search.SearchFactory;
 import hudson.search.SearchableModelObject;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -2578,6 +2579,11 @@ public class Functions {
         return String.valueOf(Math.floor(Math.random() * 3000));
     }
 
+    @Restricted(NoExternalUse.class)
+    public static ExtensionList<SearchFactory> getSearchFactories() {
+        return SearchFactory.all();
+    }
+
     /**
      * @param keyboardShortcut the shortcut to be translated
      * @return the translated shortcut, e.g. CMD+K to ⌘+K for macOS, CTRL+K for Windows
@@ -2596,6 +2602,10 @@ public class Functions {
 
     @Restricted(NoExternalUse.class)
     public static String formatMessage(String format, Object args) {
+        if (format == null) {
+            return args.toString();
+        }
+
         return MessageFormat.format(format, args);
     }
 }
