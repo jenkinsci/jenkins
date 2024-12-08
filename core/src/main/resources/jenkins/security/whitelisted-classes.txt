@@ -105,6 +105,11 @@ java.util.HashMap
 java.util.HashSet
 java.util.Hashtable
 java.util.ImmutableCollections$List12
+java.util.ImmutableCollections$ListN
+java.util.ImmutableCollections$Map1
+java.util.ImmutableCollections$MapN
+java.util.ImmutableCollections$Set12
+java.util.ImmutableCollections$SetN
 java.util.LinkedHashMap
 java.util.LinkedHashSet
 java.util.LinkedList
