@@ -895,6 +895,7 @@ function preventInputEe(event) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function escapeHTML(html) {
   return html
     .replace(/&/g, "&amp;")
@@ -2201,6 +2202,7 @@ function toQueryString(params) {
 }
 
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'
+// eslint-disable-next-line no-unused-vars
 function getStyle(e, a) {
   if (document.defaultView && document.defaultView.getComputedStyle) {
     return document.defaultView
