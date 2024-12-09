@@ -1,4 +1,5 @@
 import Dropdowns from "@/components/dropdowns";
+import CommandPalette from "@/components/command-palette";
 import Notifications from "@/components/notifications";
 import SearchBar from "@/components/search-bar";
 import Tooltips from "@/components/tooltips";
@@ -7,6 +8,7 @@ import ConfirmationLink from "@/components/confirmation-link";
 import Dialogs from "@/components/dialogs";
 
 Dropdowns.init();
+CommandPalette.init();
 Notifications.init();
 SearchBar.init();
 Tooltips.init();

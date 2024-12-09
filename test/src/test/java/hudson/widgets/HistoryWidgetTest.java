@@ -36,7 +36,7 @@ public class HistoryWidgetTest {
 
         { // Filter input shouldn't display when there's no build
             HtmlPage page = wc.goTo("job/" + p.getName());
-            DomNode searchInputContainer = page.querySelector(".jenkins-search");
+            DomNode searchInputContainer = page.querySelector("#jenkins-builds .jenkins-search");
             assertTrue(searchInputContainer.getAttributes().getNamedItem("class").getNodeValue().contains("jenkins-hidden"));
         }
 
@@ -44,7 +44,7 @@ public class HistoryWidgetTest {
 
         { // Filter input should display when there's a build
             HtmlPage page = wc.goTo("job/" + p.getName());
-            DomNode searchInputContainer = page.querySelector(".jenkins-search");
+            DomNode searchInputContainer = page.querySelector("#jenkins-builds .jenkins-search");
             assertFalse(searchInputContainer.getAttributes().getNamedItem("class").getNodeValue().contains("jenkins-hidden"));
         }
     }
