@@ -130,6 +130,11 @@ public abstract class Telemetry implements ExtensionPoint {
         return ExtensionList.lookup(Telemetry.class);
     }
 
+    @Restricted(NoExternalUse.class) // called by jelly
+    public static boolean isAnyTrialActive() {
+        return all().stream().anyMatch(Telemetry::isActivePeriod);
+    }
+
     /**
      * @since 2.147
      * @return whether to collect telemetry

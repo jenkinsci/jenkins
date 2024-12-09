@@ -136,8 +136,7 @@ public class JenkinsTest {
         assumeFalse(Functions.isWindows());
 
         HtmlPage page = j.createWebClient().goTo("fingerprintCheck");
-        // The form doesn't have a name, the page contain the search form and the one we're interested in
-        HtmlForm form = page.getForms().get(1);
+        HtmlForm form = page.getForms().get(0);
         File dir = tmp.newFolder();
         File plugin = new File(dir, "htmlpublisher.jpi");
         // We're using a plugin to have a file above DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD

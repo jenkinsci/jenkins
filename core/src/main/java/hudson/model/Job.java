@@ -541,7 +541,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             public void suggest(String token, List<SearchItem> result) {
                 find(token, result);
             }
-        }).add("configure", "config", "configure");
+        });
     }
 
     @Override

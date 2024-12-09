@@ -158,7 +158,7 @@ public class Search implements StaplerProxy {
     public void doSuggest(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String query) throws IOException, ServletException {
         Result r = new Result();
         for (SuggestedItem item : getSuggestions(req, query))
-            r.suggestions.add(new Item(item.getPath()));
+            r.suggestions.add(new Item(item.getPath(), item.getUrl()));
 
         rsp.serveExposedBean(req, r, Flavor.JSON);
     }
@@ -252,12 +252,25 @@ public class Search implements StaplerProxy {
 
     @ExportedBean(defaultVisibility = 999)
     public static class Item {
+
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String name;
 
+        private final String url;
+
         public Item(String name) {
+            this(name, null);
+        }
+
+        public Item(String name, String url) {
             this.name = name;
+            this.url = url;
+        }
+
+        @Exported
+        public String getUrl() {
+            return url;
         }
     }
 

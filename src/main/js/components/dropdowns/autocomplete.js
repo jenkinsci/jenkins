@@ -59,9 +59,30 @@ function init() {
       }
       return;
     }
-    const url =
-      e.getAttribute("autoCompleteUrl") + "?value=" + encodeURIComponent(word);
-    fetch(url)
+
+    const url = e.getAttribute("autoCompleteUrl");
+
+    const depends = e.getAttribute("fillDependsOn");
+    const q = qs(e).addThis();
+    if (depends && depends.length > 0) {
+      depends.split(" ").forEach(
+        TryEach(function (n) {
+          q.nearBy(n);
+        }),
+      );
+    }
+
+    const queryString = q.toString();
+    const idx = queryString.indexOf("?");
+    const parameters = queryString.substring(idx + 1);
+
+    fetch(url, {
+      method: "post",
+      headers: crumb.wrap({
+        "Content-Type": "application/x-www-form-urlencoded",
+      }),
+      body: parameters,
+    })
       .then((rsp) => (rsp.ok ? rsp.json() : {}))
       .then((response) => createAndShowDropdown(e, response.suggestions || []));
   }
