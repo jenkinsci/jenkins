@@ -160,14 +160,19 @@ public class Search implements StaplerProxy {
     public void doSuggest(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String query) throws IOException, ServletException {
         Result r = new Result();
         for (SuggestedItem item : getSuggestions(req, query)) {
-            String symbolName = item.item.getSearchIcon();
+            String icon = item.item.getSearchIcon();
+            String iconXml = null;
 
-            if (symbolName == null || !symbolName.startsWith("symbol-")) {
-                symbolName = "symbol-search";
+            if (icon == null) {
+                iconXml = Symbol.get(new SymbolRequest.Builder().withRaw("symbol-search").build());
+            } else if (icon.startsWith("symbol-")) {
+                icon = null;
+                iconXml = Symbol.get(new SymbolRequest.Builder().withRaw(icon).build());
+            } else {
+                icon = item.item.getSearchIcon();
             }
 
-            r.suggestions.add(new Item(item.getPath(), item.getUrl(), "",
-                    Symbol.get(new SymbolRequest.Builder().withRaw(symbolName).build())));
+            r.suggestions.add(new Item(item.getPath(), item.getUrl(), icon, iconXml));
         }
         rsp.serveExposedBean(req, r, Flavor.JSON);
     }
