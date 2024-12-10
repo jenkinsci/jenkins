@@ -46,6 +46,8 @@ import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
+import org.jenkins.ui.symbol.Symbol;
+import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
@@ -157,9 +159,16 @@ public class Search implements StaplerProxy {
      */
     public void doSuggest(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String query) throws IOException, ServletException {
         Result r = new Result();
-        for (SuggestedItem item : getSuggestions(req, query))
-            r.suggestions.add(new Item(item.getPath(), item.getUrl()));
+        for (SuggestedItem item : getSuggestions(req, query)) {
+            String symbolName = item.item.getSearchIcon();
 
+            if (symbolName == null || !symbolName.startsWith("symbol-")) {
+                symbolName = "symbol-search";
+            }
+
+            r.suggestions.add(new Item(item.getPath(), item.getUrl(), "",
+                    Symbol.get(new SymbolRequest.Builder().withRaw(symbolName).build())));
+        }
         rsp.serveExposedBean(req, r, Flavor.JSON);
     }
 
@@ -259,18 +268,34 @@ public class Search implements StaplerProxy {
 
         private final String url;
 
+        public final String icon;
+
+        public final String iconXml;
+
         public Item(String name) {
-            this(name, null);
+            this(name, null, null, null);
         }
 
-        public Item(String name, String url) {
+        public Item(String name, String url, String icon, String iconXml) {
             this.name = name;
             this.url = url;
+            this.icon = icon;
+            this.iconXml = iconXml;
         }
 
         @Exported
         public String getUrl() {
             return url;
+        }
+
+        @Exported
+        public String getIcon() {
+            return icon;
+        }
+
+        @Exported
+        public String getIconXml() {
+            return iconXml;
         }
     }
 

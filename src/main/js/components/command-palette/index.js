@@ -94,18 +94,23 @@ function init() {
       }
 
       searchResultsContainer.style.height = searchResults.offsetHeight + "px";
+      debouncedSpinner.cancel();
       commandPaletteSearchBarContainer.classList.remove(
         "jenkins-search--loading",
       );
     });
   }
 
+  const debouncedSpinner = debounce(() => {
+    commandPaletteSearchBarContainer.classList.add("jenkins-search--loading");
+  }, 150);
+
   const debouncedLoad = debounce(() => {
     renderResults();
   }, 150);
 
   commandPaletteInput.addEventListener("input", () => {
-    commandPaletteSearchBarContainer.classList.add("jenkins-search--loading");
+    debouncedSpinner();
     debouncedLoad();
   });
 
@@ -119,7 +124,16 @@ function init() {
   }
 
   function hideCommandPalette() {
-    commandPalette.close();
+    commandPalette.setAttribute("closing", "");
+
+    commandPalette.addEventListener(
+      "animationend",
+      () => {
+        commandPalette.removeAttribute("closing");
+        commandPalette.close();
+      },
+      { once: true },
+    );
   }
 
   function itemMouseEnter(item) {

@@ -147,6 +147,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
 import hudson.search.CollectionSearchIndex;
+import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.security.ACL;
@@ -2345,9 +2346,29 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder builder = super.makeSearchIndex();
-        if (hasPermission(ADMINISTER)) {
-            builder.add("manage", Messages.ManageJenkinsAction_DisplayName());
-        }
+
+        this.actions.stream().filter(e -> e.getIconFileName() != null).forEach(action -> builder.add(new SearchItem() {
+            @Override
+            public String getSearchName() {
+                return action.getDisplayName();
+            }
+
+            @Override
+            public String getSearchUrl() {
+                return action.getUrlName();
+            }
+
+            @Override
+            public String getSearchIcon() {
+                return action.getIconFileName();
+            }
+
+            @Override
+            public SearchIndex getSearchIndex() {
+                return SearchIndex.EMPTY;
+            }
+        }));
+
         builder.add(new CollectionSearchIndex<TopLevelItem>() {
                     @Override
                     protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }

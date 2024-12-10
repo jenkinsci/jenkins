@@ -1,6 +1,5 @@
 import { LinkResult } from "./models";
 import Search from "@/api/search";
-import * as Symbols from "./symbols";
 
 export const JenkinsSearchSource = {
   execute(query) {
@@ -18,7 +17,7 @@ export const JenkinsSearchSource = {
       rsp.json().then((data) => {
         return data["suggestions"].slice().map((e) =>
           LinkResult({
-            icon: Symbols.SEARCH,
+            icon: e.iconXml,
             label: e.name,
             url: correctAddress(e.url),
           }),
