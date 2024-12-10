@@ -27,6 +27,7 @@ package jenkins.model.experimentalflags;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -51,6 +52,6 @@ public class RemoveYuiUserExperimentalFlag extends BooleanUserExperimentalFlag {
     @NonNull
     @Override
     public Boolean getDefaultValue() {
-        return true;
+        return SystemProperties.getBoolean(RemoveYuiUserExperimentalFlag.class.getName() + ".defaultValue", true);
     }
 }
