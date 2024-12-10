@@ -77,6 +77,7 @@ import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -673,9 +674,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * To be called from {@link Jenkins#reload} only.
+     * Called from {@link Jenkins#reload}.
      */
-    @Restricted(NoExternalUse.class)
+    @Restricted(Beta.class)
     public static void reload() throws IOException {
         UserIdMapper.getInstance().reload();
         AllUsers.reload();
