@@ -166,7 +166,7 @@ public class Search implements StaplerProxy {
                 symbolName = "symbol-search";
             }
 
-            r.suggestions.add(new Item(item.getPath(), item.getUrl(), "",
+            r.suggestions.add(new Item(item.getPath(), item.getUrl(),
                     Symbol.get(new SymbolRequest.Builder().withRaw(symbolName).build())));
         }
         rsp.serveExposedBean(req, r, Flavor.JSON);
@@ -268,29 +268,21 @@ public class Search implements StaplerProxy {
 
         private final String url;
 
-        public final String icon;
-
         public final String iconXml;
 
         public Item(String name) {
-            this(name, null, null, null);
+            this(name, null, null);
         }
 
-        public Item(String name, String url, String icon, String iconXml) {
+        public Item(String name, String url, String iconXml) {
             this.name = name;
             this.url = url;
-            this.icon = icon;
             this.iconXml = iconXml;
         }
 
         @Exported
         public String getUrl() {
             return url;
-        }
-
-        @Exported
-        public String getIcon() {
-            return icon;
         }
 
         @Exported
