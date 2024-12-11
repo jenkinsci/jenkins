@@ -18,6 +18,7 @@ export const JenkinsSearchSource = {
         return data["suggestions"].slice().map((e) =>
           LinkResult({
             icon: e.iconXml,
+            type: e.type,
             label: e.name,
             url: correctAddress(e.url),
           }),

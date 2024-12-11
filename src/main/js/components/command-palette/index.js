@@ -59,6 +59,7 @@ function init() {
       results = Promise.all([
         LinkResult({
           icon: Symbols.HELP,
+          type: "symbol",
           label: i18n.dataset.getHelp,
           url: headerCommandPaletteButton.dataset.searchHelpUrl,
           isExternal: true,

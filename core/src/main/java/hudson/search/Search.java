@@ -58,6 +58,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.DataWriter;
+import org.kohsuke.stapler.export.ExportConfig;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
@@ -159,17 +160,23 @@ public class Search implements StaplerProxy {
      */
     public void doSuggest(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String query) throws IOException, ServletException {
         Result r = new Result();
-        for (SuggestedItem item : getSuggestions(req, query)) {
-            String symbolName = item.item.getSearchIcon();
+        for (SuggestedItem curItem : getSuggestions(req, query)) {
+            String iconName = curItem.item.getSearchIcon();
 
-            if (symbolName == null || !symbolName.startsWith("symbol-")) {
-                symbolName = "symbol-search";
+            if (iconName == null ||
+                    (!iconName.startsWith("symbol-") && !iconName.startsWith("http"))
+            ) {
+                iconName = "symbol-search";
             }
 
-            r.suggestions.add(new Item(item.getPath(), item.getUrl(),
-                    Symbol.get(new SymbolRequest.Builder().withRaw(symbolName).build())));
+            if (iconName.startsWith("symbol")) {
+                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(),
+                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build())));
+            } else {
+                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image"));
+            }
         }
-        rsp.serveExposedBean(req, r, Flavor.JSON);
+        rsp.serveExposedBean(req, r, new ExportConfig());
     }
 
     /**
@@ -268,6 +275,8 @@ public class Search implements StaplerProxy {
 
         private final String url;
 
+        private final String type;
+
         public final String iconXml;
 
         public Item(String name) {
@@ -278,6 +287,14 @@ public class Search implements StaplerProxy {
             this.name = name;
             this.url = url;
             this.iconXml = iconXml;
+            this.type = "symbol";
+        }
+
+        public Item(String name, String url, String iconXml, String type) {
+            this.name = name;
+            this.url = url;
+            this.iconXml = iconXml;
+            this.type = type;
         }
 
         @Exported
@@ -288,6 +305,11 @@ public class Search implements StaplerProxy {
         @Exported
         public String getIconXml() {
             return iconXml;
+        }
+
+        @Exported
+        public String getType() {
+            return type;
         }
     }
 
