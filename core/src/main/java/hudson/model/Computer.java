@@ -1109,11 +1109,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return getUrl();
     }
 
-    @Override
-    public String getSearchIcon() {
-        return this.getIconClassName();
-    }
-
     /**
      * {@link RetentionStrategy} associated with this computer.
      *
