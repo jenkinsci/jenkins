@@ -63,7 +63,7 @@ public interface SearchItem {
         return "symbol-search";
     }
 
-    default SearchGroup getSearchGroup() {
+    default String getSearchGroup() {
         return SearchGroup.OTHER;
     }
 

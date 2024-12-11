@@ -21,6 +21,7 @@ export const JenkinsSearchSource = {
             type: e.type,
             label: e.name,
             url: correctAddress(e.url),
+            group: e.group,
           }),
         );
       }),

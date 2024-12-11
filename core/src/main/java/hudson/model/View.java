@@ -42,6 +42,7 @@ import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.search.CollectionSearchIndex;
+import hudson.search.SearchGroup;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -563,6 +564,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     @Override
     public String getSearchIcon() {
         return "symbol-jobs";
+    }
+
+    @Override
+    public String getSearchGroup() {
+        return SearchGroup.VIEW;
     }
 
     /**

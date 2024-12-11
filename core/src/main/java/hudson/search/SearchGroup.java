@@ -1,31 +1,16 @@
 package hudson.search;
 
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
+public final class SearchGroup {
 
-@ExportedBean(defaultVisibility = 999)
-public class SearchGroup {
+    public static final String VIEW = Messages.SearchGroup_views();
 
-    private final String displayName;
+    public static final String BUILD = Messages.SearchGroup_builds();
 
-    public SearchGroup(String displayName) {
-        this.displayName = displayName;
-    }
+    public static final String COMPUTER = Messages.SearchGroup_nodes();
 
-    @Exported
-    public String getDisplayName() {
-        return displayName;
-    }
+    public static final String PROJECT = Messages.SearchGroup_projects();
 
-    public static final SearchGroup VIEW = new SearchGroup(Messages.SearchGroup_views());
+    public static final String PEOPLE = Messages.SearchGroup_people();
 
-    public static final SearchGroup BUILD = new SearchGroup(Messages.SearchGroup_builds());
-
-    public static final SearchGroup COMPUTER = new SearchGroup(Messages.SearchGroup_nodes());
-
-    public static final SearchGroup PROJECT = new SearchGroup(Messages.SearchGroup_projects());
-
-    public static final SearchGroup PEOPLE = new SearchGroup(Messages.SearchGroup_people());
-
-    public static final SearchGroup OTHER = new SearchGroup(Messages.SearchGroup_other());
+    public static final String OTHER = Messages.SearchGroup_other();
 }

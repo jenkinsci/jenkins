@@ -171,7 +171,7 @@ public class Search implements StaplerProxy {
 
             if (iconName.startsWith("symbol")) {
                 r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(),
-                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build())));
+                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build()), "symbol", curItem.item.getSearchGroup()));
             } else {
                 r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image", curItem.item.getSearchGroup()));
             }
@@ -279,21 +279,13 @@ public class Search implements StaplerProxy {
 
         private final String iconXml;
 
-        private final SearchGroup group;
+        private final String group;
 
         public Item(String name) {
-            this(name, null, null);
+            this(name, null, null, null, null);
         }
 
-        public Item(String name, String url, String iconXml) {
-            this.name = name;
-            this.url = url;
-            this.iconXml = iconXml;
-            this.type = "symbol";
-            this.group = null;
-        }
-
-        public Item(String name, String url, String iconXml, String type, SearchGroup group) {
+        public Item(String name, String url, String iconXml, String type, String group) {
             this.name = name;
             this.url = url;
             this.iconXml = iconXml;
@@ -317,7 +309,7 @@ public class Search implements StaplerProxy {
         }
 
         @Exported
-        public SearchGroup getGroup() {
+        public String getGroup() {
             return group;
         }
     }

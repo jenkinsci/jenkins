@@ -1111,7 +1111,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     @Override
-    public SearchGroup getSearchGroup() {
+    public String getSearchGroup() {
         return SearchGroup.COMPUTER;
     }
 

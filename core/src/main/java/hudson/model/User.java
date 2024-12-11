@@ -40,6 +40,7 @@ import hudson.XmlFile;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.listeners.SaveableListener;
+import hudson.search.SearchGroup;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.SecurityRealm;
@@ -281,6 +282,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Override
     public String getSearchIcon() {
         return UserAvatarResolver.resolve(this, "48x48");
+    }
+
+    @Override
+    public String getSearchGroup() {
+        return SearchGroup.PEOPLE;
     }
 
     /**
