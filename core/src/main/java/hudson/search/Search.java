@@ -277,23 +277,23 @@ public class Search implements StaplerProxy {
 
         private final String type;
 
-        public final String iconXml;
+        private final String icon;
 
         public Item(String name) {
             this(name, null, null);
         }
 
-        public Item(String name, String url, String iconXml) {
+        public Item(String name, String url, String icon) {
             this.name = name;
             this.url = url;
-            this.iconXml = iconXml;
+            this.icon = icon;
             this.type = "symbol";
         }
 
-        public Item(String name, String url, String iconXml, String type) {
+        public Item(String name, String url, String icon, String type) {
             this.name = name;
             this.url = url;
-            this.iconXml = iconXml;
+            this.icon = icon;
             this.type = type;
         }
 
@@ -303,8 +303,8 @@ public class Search implements StaplerProxy {
         }
 
         @Exported
-        public String getIconXml() {
-            return iconXml;
+        public String getIcon() {
+            return icon;
         }
 
         @Exported

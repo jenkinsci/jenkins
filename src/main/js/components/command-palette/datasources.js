@@ -17,7 +17,7 @@ export const JenkinsSearchSource = {
       rsp.json().then((data) => {
         return data["suggestions"].slice().map((e) =>
           LinkResult({
-            icon: e.iconXml,
+            icon: e.icon,
             type: e.type,
             label: e.name,
             url: correctAddress(e.url),
