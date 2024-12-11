@@ -63,6 +63,10 @@ public interface SearchItem {
         return "symbol-search";
     }
 
+    default SearchGroup getSearchGroup() {
+        return SearchGroup.OTHER;
+    }
+
     /**
      * Returns the {@link SearchIndex} to further search sub items inside this item.
      *
