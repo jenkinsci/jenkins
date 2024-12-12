@@ -226,7 +226,7 @@ public class CLI {
                 for (Handler h : Logger.getLogger("").getHandlers()) {
                     h.setLevel(level);
                 }
-                for (Logger logger : new Logger[] {LOGGER, FullDuplexHttpStream.LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
+                for (Logger logger : new Logger[] {LOGGER, HttpUploadDownloadStream.LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
                     logger.setLevel(level);
                 }
                 args = args.subList(2, args.size());
@@ -413,7 +413,7 @@ public class CLI {
             HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
             HttpsURLConnection.setDefaultHostnameVerifier((s, sslSession) -> true);
         }
-        FullDuplexHttpStream streams = new FullDuplexHttpStream(new URL(url), "cli?remoting=false", factory.authorization);
+        HttpUploadDownloadStream streams = new HttpUploadDownloadStream(new URL(url), "cli?remoting=false", factory.authorization);
         try (ClientSideImpl connection = new ClientSideImpl(new PlainCLIProtocol.FramedOutput(streams.getOutputStream()))) {
             connection.start(args);
             InputStream is = streams.getInputStream();
