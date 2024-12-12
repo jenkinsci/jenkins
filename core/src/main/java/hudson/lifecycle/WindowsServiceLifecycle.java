@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
@@ -145,7 +146,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
         int r = new LocalLauncher(task).launch().cmds(executable, "restart!")
                 .stdout(task).pwd(home).join();
         if (r != 0)
-            throw new IOException(baos.toString());
+            throw new IOException(new String(baos.toByteArray(), StandardCharsets.UTF_8));
     }
 
     private static File getBaseDir() {
