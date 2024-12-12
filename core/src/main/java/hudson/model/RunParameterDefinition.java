@@ -32,6 +32,7 @@ import hudson.util.EnumConverter;
 import hudson.util.RunList;
 import java.util.Objects;
 import java.util.logging.Logger;
+import jenkins.model.EnvironmentVariableParameterNameFormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
@@ -142,7 +143,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Extension @Symbol({"run", "runParam"})
-    public static class DescriptorImpl extends ParameterDescriptor {
+    public static class DescriptorImpl extends ParameterDescriptor implements EnvironmentVariableParameterNameFormValidation {
         @NonNull
         @Override
         public String getDisplayName() {
