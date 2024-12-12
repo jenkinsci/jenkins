@@ -202,6 +202,22 @@ public class DirectoryBrowserSupportTest {
         assertFalse(text, text.contains("x.txt"));
     }
 
+    @Test
+    public void viewGzippedArtifact() throws Exception {
+        Assume.assumeFalse("can't test this on Windows", Functions.isWindows());
+
+        // create a gzipped artifact
+        String content = "This is a test";
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new SingleFileSCM("test.txt", content));
+        p.getBuildersList().add(new Shell("gzip test.txt"));
+        p.getPublishersList().add(new ArtifactArchiver("test.txt.gz", "", true));
+        j.buildAndAssertSuccess(p);
+
+        Page page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.txt.gz/*view*/", "text/plain");
+        assertEquals(content, page.getWebResponse().getContentAsString());
+    }
+
     @Issue("JENKINS-19752")
     @Test
     public void zipDownload() throws Exception {
