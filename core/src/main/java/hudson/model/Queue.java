@@ -178,6 +178,9 @@ import org.springframework.security.core.Authentication;
 @ExportedBean
 public class Queue extends ResourceController implements Saveable {
 
+    private static final int LEFT_ITEMS_CACHE_EXPIRATION_SECONDS = SystemProperties.getInteger(Queue.class.getName() + ".LEFT_ITEMS_CACHE_EXPIRATION_SECONDS", 5 * 60);
+    private static final int LEFT_ITEMS_CACHE_SIZE = SystemProperties.getInteger(Queue.class.getName() + ".LEFT_ITEMS_CACHE_SIZE", 10_000);
+
     /**
 
      * Items that are waiting for its quiet period to pass.
@@ -217,7 +220,7 @@ public class Queue extends ResourceController implements Saveable {
      *
      * This map is forgetful, since we can't remember everything that executed in the past.
      */
-    private final Cache<Long, LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(5 * 60, TimeUnit.SECONDS).build();
+    private final Cache<Long, LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(LEFT_ITEMS_CACHE_EXPIRATION_SECONDS, TimeUnit.SECONDS).maximumSize(LEFT_ITEMS_CACHE_SIZE).recordStats().build();
 
     /**
      * Data structure created for each idle {@link Executor}.
