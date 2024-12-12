@@ -110,6 +110,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @since 1.532
  */
 public abstract class VirtualFile implements Comparable<VirtualFile>, Serializable {
+    private static final long serialVersionUID = 1L;
 
     /**
      * Gets the base name, meaning just the last portion of the path name without any
@@ -568,6 +569,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     }
 
     private static final class FileVF extends VirtualFile {
+        private static final long serialVersionUID = 2L;
         private final File f;
         private final File root;
         private boolean cacheDescendant = false;
@@ -864,6 +866,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     }
 
     private static final class FilePathVF extends VirtualFile {
+        private static final long serialVersionUID = 3L;
         private final FilePath f;
         private final FilePath root;
         private boolean cacheDescendant = false;
@@ -1152,6 +1155,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     }
 
     private static final class Scanner extends MasterToSlaveFileCallable<List<String>> {
+        private static final long serialVersionUID = 1L;
         private final String includes, excludes;
         private final boolean useDefaultExcludes;
         private final String verificationRoot;
@@ -1191,6 +1195,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         @Override public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return f.canRead();
         }
-    }
 
+        private static final long serialVersionUID = 1L;
+    }
 }
