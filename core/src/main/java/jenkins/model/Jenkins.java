@@ -3297,11 +3297,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (cfg.exists()) {
             // reset some data that may not exist in the disk file
             // so that we can take a proper compensation action later.
+            String originalPrimaryView = primaryView;
+            List<View> originalViews = new ArrayList<>(views);
             primaryView = null;
             views.clear();
-
-            // load from disk
-            cfg.unmarshal(Jenkins.this);
+            try {
+                // load from disk
+                cfg.unmarshal(Jenkins.this);
+            } catch (IOException | RuntimeException x) {
+                primaryView = originalPrimaryView;
+                views.clear();
+                views.addAll(originalViews);
+                throw x;
+            }
         }
         // initialize views by inserting the default view if necessary
         // this is both for clean Jenkins and for backward compatibility.
