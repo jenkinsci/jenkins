@@ -520,6 +520,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Override
+    public String getSearchIcon() {
+        return "symbol-status-" +  this.getIconColor().getIconName();
+    }
+
+    @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex().add(new SearchIndex() {
             @Override

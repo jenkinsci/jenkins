@@ -560,6 +560,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return getUrl();
     }
 
+    @Override
+    public String getSearchIcon() {
+        return "symbol-jobs";
+    }
+
     /**
      * Returns the transient {@link Action}s associated with the top page.
      *

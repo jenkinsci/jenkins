@@ -46,6 +46,8 @@ import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
+import org.jenkins.ui.symbol.Symbol;
+import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
@@ -56,6 +58,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.DataWriter;
+import org.kohsuke.stapler.export.ExportConfig;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
@@ -157,10 +160,23 @@ public class Search implements StaplerProxy {
      */
     public void doSuggest(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String query) throws IOException, ServletException {
         Result r = new Result();
-        for (SuggestedItem item : getSuggestions(req, query))
-            r.suggestions.add(new Item(item.getPath(), item.getUrl()));
+        for (SuggestedItem curItem : getSuggestions(req, query)) {
+            String iconName = curItem.item.getSearchIcon();
 
-        rsp.serveExposedBean(req, r, Flavor.JSON);
+            if (iconName == null ||
+                    (!iconName.startsWith("symbol-") && !iconName.startsWith("http"))
+            ) {
+                iconName = "symbol-search";
+            }
+
+            if (iconName.startsWith("symbol")) {
+                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(),
+                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build())));
+            } else {
+                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image"));
+            }
+        }
+        rsp.serveExposedBean(req, r, new ExportConfig());
     }
 
     /**
@@ -259,18 +275,41 @@ public class Search implements StaplerProxy {
 
         private final String url;
 
+        private final String type;
+
+        private final String icon;
+
         public Item(String name) {
-            this(name, null);
+            this(name, null, null);
         }
 
-        public Item(String name, String url) {
+        public Item(String name, String url, String icon) {
             this.name = name;
             this.url = url;
+            this.icon = icon;
+            this.type = "symbol";
+        }
+
+        public Item(String name, String url, String icon, String type) {
+            this.name = name;
+            this.url = url;
+            this.icon = icon;
+            this.type = type;
         }
 
         @Exported
         public String getUrl() {
             return url;
+        }
+
+        @Exported
+        public String getIcon() {
+            return icon;
+        }
+
+        @Exported
+        public String getType() {
+            return type;
         }
     }
 
