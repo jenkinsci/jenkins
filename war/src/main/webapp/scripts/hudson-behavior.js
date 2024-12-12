@@ -194,16 +194,6 @@ var resURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
   }
 })();
 
-(function initializeYUIDebugLogReader() {
-  Behaviour.addLoadEvent(function () {
-    var logReaderElement = document.getElementById("yui-logreader");
-    if (logReaderElement !== null) {
-      var logReader = new YAHOO.widget.LogReader("yui-logreader");
-      logReader.collapse();
-    }
-  });
-})();
-
 // Form check code
 //========================================================
 var FormChecker = {
