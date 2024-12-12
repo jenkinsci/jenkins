@@ -67,7 +67,9 @@ THE SOFTWARE.
                 data-detached-disable="${%detached-disable}"
                 data-detached-uninstall="${%detached-uninstall}"
                 data-detached-possible-dependents="${%detached-possible-dependents}"
-                data-uninstall-description="${%uninstall-description}" />
+                data-uninstall-description="${%uninstall-description}"
+                data-uninstall-detached-warning="${%uninstall-detached-warning}"
+      />
 
       <j:choose>
         <j:when test="${noPlugins}">
