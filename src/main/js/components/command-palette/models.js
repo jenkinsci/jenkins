@@ -5,7 +5,7 @@ import { xmlEscape } from "@/util/security";
  * @param {Object} params
  * @param {string} params.icon
  * @param {string} params.label
- * @param {string} params.type
+ * @param {'symbol' | 'image'} params.type
  * @param {string} params.url
  * @param {string | null} params.group
  * @param {boolean | undefined} params.isExternal

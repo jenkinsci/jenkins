@@ -277,7 +277,7 @@ public class Search implements StaplerProxy {
 
         private final String type;
 
-        private final String iconXml;
+        private final String icon;
 
         private final String group;
 
@@ -285,10 +285,11 @@ public class Search implements StaplerProxy {
             this(name, null, null, null, null);
         }
 
-        public Item(String name, String url, String iconXml, String type, String group) {
+        public Item(String name, String url, String icon, String type, String group) {
             this.name = name;
             this.url = url;
-            this.iconXml = iconXml;
+            this.icon = icon;
+            this.name = name;
             this.type = type;
             this.group = group;
         }
@@ -299,8 +300,8 @@ public class Search implements StaplerProxy {
         }
 
         @Exported
-        public String getIconXml() {
-            return iconXml;
+        public String getIcon() {
+            return icon;
         }
 
         @Exported
