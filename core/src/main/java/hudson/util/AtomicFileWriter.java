@@ -149,7 +149,7 @@ public class AtomicFileWriter extends Writer {
 
         try {
             // JENKINS-48407: NIO's createTempFile creates file with 0600 permissions, so we use pre-NIO for this...
-            tmpPath = File.createTempFile("atomic", "tmp", dir.toFile()).toPath();
+            tmpPath = File.createTempFile(destPath.getFileName().toString() + "-atomic", "tmp", dir.toFile()).toPath();
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in " + dir, e);
         }
@@ -209,34 +209,17 @@ public class AtomicFileWriter extends Writer {
         try {
             // Try to make an atomic move.
             Files.move(tmpPath, destPath, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException moveFailed) {
-            // If it falls here that can mean many things. Either that the atomic move is not supported,
-            // or something wrong happened. Anyway, let's try to be over-diagnosing
-            if (moveFailed instanceof AtomicMoveNotSupportedException) {
-                LOGGER.log(Level.WARNING, "Atomic move not supported. falling back to non-atomic move.", moveFailed);
-            } else {
-                LOGGER.log(Level.WARNING, "Unable to move atomically, falling back to non-atomic move.", moveFailed);
-            }
-
-            if (destPath.toFile().exists()) {
-                LOGGER.log(Level.INFO, "The target file {0} was already existing", destPath);
-            }
-
+        } catch (AtomicMoveNotSupportedException e) {
+            // Both files are on the same filesystem, so this should not happen.
+            LOGGER.log(Level.WARNING, e, () -> "Atomic move " + tmpPath + " → " + destPath + " not supported. falling back to non-atomic move.");
+            Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+        } finally {
             try {
-                Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException replaceFailed) {
-                replaceFailed.addSuppressed(moveFailed);
-                LOGGER.log(Level.WARNING, "Unable to move {0} to {1}. Attempting to delete {0} and abandoning.",
-                           new Path[]{tmpPath, destPath});
-                try {
-                    Files.deleteIfExists(tmpPath);
-                } catch (IOException deleteFailed) {
-                    replaceFailed.addSuppressed(deleteFailed);
-                    LOGGER.log(Level.WARNING, "Unable to delete {0}, good bye then!", tmpPath);
-                    throw replaceFailed;
-                }
-
-                throw replaceFailed;
+                // In case of prior failure, the temporary file should be deleted.
+                // If the operation succeeded, the tmpPath is already deleted.
+                Files.deleteIfExists(tmpPath);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, e, () -> "Failed to delete temporary file " + tmpPath + " for destination file " + destPath);
             }
         }
 
