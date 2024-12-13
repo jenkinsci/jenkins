@@ -1,0 +1,61 @@
+@use "theme";
+
+$positions: (
+    t: "top",
+    r: "right",
+    b: "bottom",
+    l: "left"
+);
+$styles: (
+    solid: "solid",
+    dashed: "dashed",
+    dotted: "dotted",
+    double: "double",
+    hidden: "hidden",
+    none: "none"
+);
+$base-unit: 1px;
+$borderStyle: solid;
+$borderColor: black;
+.jenkins-border {
+    --border-style: #{$borderStyle};
+    --border-color: #{$borderColor};
+    border: #{$base-unit} var(--border-style) var(--border-color);
+
+    @each $position, $pos in $positions {
+        &-#{$position} {
+            border: 0 var(--border-style) var(--border-color);
+            border-#{$pos}-width: $base-unit !important;
+            border-#{$pos}-style: var(--border-style, #{$borderStyle});
+            border-#{$pos}-color: var(--border-color, #{$borderColor});
+            @for $size from 0 through 15 {
+                &-#{$size} {
+                    border: 0 var(--border-style, #{$borderStyle}) var(--border-color, #{$borderColor});
+                    border-#{$pos}-width: $size * $base-unit !important;
+                    border-#{$pos}-style: var(--border-style, #{$borderStyle});
+                    border-#{$pos}-color: var(--border-color, #{$borderColor});
+                }
+            }
+        }
+    }
+    @for $size from 0 through 15 {
+        &-#{$size} {
+            border: 0 var(--border-style, #{$borderStyle}) var(--border-color, #{$borderColor});
+            border-width: $size * $base-unit !important;
+        }
+    }
+    @each $key, $value in theme.$colors {
+        &-#{$key} {
+            border: 0 var(--border-style, #{$borderStyle}) var(--border-color, #{$borderColor});
+            --border-color: #{$value};
+            border-color: var(--border-color) !important;
+        }
+    }
+    @each $key, $value in $styles {
+        &-#{$key} {
+            border: 0 var(--border-style, #{$borderStyle}) var(--border-color, #{$borderColor});
+            --border-style: #{$value};
+            border-style: var(--border-style) !important;
+        }
+    }
+}
