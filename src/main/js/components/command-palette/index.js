@@ -32,6 +32,8 @@ function init() {
     searchResultsContainer,
     () => searchResults.querySelectorAll("a"),
     hoverClass,
+    () => {},
+    () => commandPalette.open,
   );
 
   // Events
