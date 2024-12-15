@@ -24,6 +24,9 @@
 
 package jenkins.model.lazy;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
@@ -85,6 +88,40 @@ public class LazyBuildMixInTest {
         assertNotSame(b1, b1a);
         assertEquals(1, b1a.getNumber());
         assertEquals(b3, b1a.getNextBuild());
+    }
+
+    @Test public void numericLookups() throws Exception {
+        var p = r.createFreeStyleProject();
+        var b1 = r.buildAndAssertSuccess(p);
+        var b2 = r.buildAndAssertSuccess(p);
+        var b3 = r.buildAndAssertSuccess(p);
+        var b4 = r.buildAndAssertSuccess(p);
+        var b5 = r.buildAndAssertSuccess(p);
+        var b6 = r.buildAndAssertSuccess(p);
+        b1.delete();
+        b3.delete();
+        b6.delete();
+        // leaving 2, 4, 5
+        assertThat(p.getFirstBuild(), is(b2));
+        assertThat(p.getLastBuild(), is(b5));
+        assertThat(p.getNearestBuild(-1), is(b2));
+        assertThat(p.getNearestBuild(0), is(b2));
+        assertThat(p.getNearestBuild(1), is(b2));
+        assertThat(p.getNearestBuild(2), is(b2));
+        assertThat(p.getNearestBuild(3), is(b4));
+        assertThat(p.getNearestBuild(4), is(b4));
+        assertThat(p.getNearestBuild(5), is(b5));
+        assertThat(p.getNearestBuild(6), nullValue());
+        assertThat(p.getNearestBuild(7), nullValue());
+        assertThat(p.getNearestOldBuild(-1), nullValue());
+        assertThat(p.getNearestOldBuild(0), nullValue());
+        assertThat(p.getNearestOldBuild(1), nullValue());
+        assertThat(p.getNearestOldBuild(2), is(b2));
+        assertThat(p.getNearestOldBuild(3), is(b2));
+        assertThat(p.getNearestOldBuild(4), is(b4));
+        assertThat(p.getNearestOldBuild(5), is(b5));
+        assertThat(p.getNearestOldBuild(6), is(b5));
+        assertThat(p.getNearestOldBuild(7), is(b5));
     }
 
     @Issue("JENKINS-20662")
