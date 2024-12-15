@@ -90,7 +90,7 @@ $semantics: (
   --header-item-border-radius: 4px;
 
   // Breadcrumbs bar
-  --breadcrumbs-bar-background: hsla(240, 20%, 96.5%, 0.8);
+  --breadcrumbs-bar-background: oklch(0.968 0.005 260 / 80%);
 
   // Alert call outs
   --alert-success-text-color: var(--success-color);
