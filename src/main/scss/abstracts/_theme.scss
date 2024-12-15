@@ -2,16 +2,17 @@
 @use "../base/breakpoints";
 
 $colors: (
-  "blue": #006fe6,
-  "brown": #a2845e,
-  "cyan": #32ade6,
-  "green": #1ea64b,
-  "indigo": #5856d6,
-  "orange": #fe820a,
-  "pink": #fb0f45,
-  "purple": #af52de,
-  "red": #e6001f,
-  "yellow": #ffb31a,
+  "blue": oklch(56.4% 0.2257 257.41),
+  "brown": oklch(63.24% 0.0757 72.67),
+  "cyan": oklch(69.92% 0.1497 234.48),
+  "green": oklch(63.35% 0.188 148.27),
+  "indigo": oklch(52.94% 0.191 278.34),
+  "orange": oklch(73.01% 0.1905 53.01),
+  "pink": oklch(62.44% 0.2568 21.06),
+  "purple": oklch(61.49% 0.2129 312.42),
+  "red": oklch(57.65% 0.2453 27.03),
+  "yellow": oklch(83.93% 0.17 76),
+  "teal": oklch(65.68% 0.1122 216.72),
   "white": #fff,
   "black": #14141f,
 );
@@ -370,8 +371,8 @@ $semantics: (
     --#{$key}: #{$value};
 
     @if $key != "black" and $key != "white" {
-      --light-#{$key}: #{lighten($value, 20%)};
-      --dark-#{$key}: #{darken($value, 20%)};
+      --light-#{$key}: #{color.adjust($value, $lightness: 20%)};
+      --dark-#{$key}: #{color.adjust($value, $lightness: -20%)};
     }
   }
 
