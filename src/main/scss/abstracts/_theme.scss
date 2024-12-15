@@ -2,19 +2,19 @@
 @use "../base/breakpoints";
 
 $colors: (
-  "blue": oklch(58.61% 0.2308 256.91),
-  "brown": oklch(63.25% 0.0941 72.67),
-  "cyan": oklch(70% 0.1497 234.48),
-  "green": oklch(65.73% 0.2155 150),
-  "indigo": oklch(57.42% 0.191 278.34),
-  "orange": oklch(74.04% 0.2001 50.74),
-  "pink": oklch(63.95% 0.2601 21.9),
-  "purple": oklch(60.98% 0.2001 308.19),
-  "red": oklch(62.46% 0.2671 30),
-  "yellow": oklch(83.93% 0.17 76),
-  "teal": oklch(65.68% 0.1122 216.72),
+  "blue": oklch(55% 0.2308 256.91),
+  "brown": oklch(60% 0.0941 72.67),
+  "cyan": oklch(60% 0.1497 234.48),
+  "green": oklch(70% 0.2155 150),
+  "indigo": oklch(60% 0.191 278.34),
+  "orange": oklch(70% 0.2001 50.74),
+  "pink": oklch(60% 0.2601 12.28),
+  "purple": oklch(60% 0.2308 314.6),
+  "red": oklch(60% 0.2671 30),
+  "yellow": oklch(80% 0.17 76),
+  "teal": oklch(60% 0.1122 216.72),
   "white": #fff,
-  "black": #14141f,
+  "black": oklch(2% 0.075 260),
 );
 
 $semantics: (
@@ -53,7 +53,7 @@ $semantics: (
   --dark-grey: #4d545d;
 
   // branding
-  --secondary: rgb(96, 125, 159);
+  --secondary: oklch(from var(--black) 60% c h);
   --focus-input-border: var(--accent-color);
   --focus-input-glow: color-mix(in sRGB, var(--accent-color) 15%, transparent);
 
@@ -171,7 +171,7 @@ $semantics: (
   --btn-link-bg--active: var(--light-grey);
 
   // Table
-  --table-background: var(--panel-header-bg-color);
+  --table-background: oklch(from var(--text-color-secondary) l c h / 0.1);
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
@@ -258,13 +258,13 @@ $semantics: (
   --card-background: var(--background);
   --card-background--hover: transparent;
   --card-background--active: transparent;
-  --card-border-color: hsla(240, 25%, 75%, 0.25);
-  --card-border-color--hover: hsla(240, 25%, 75%, 0.5);
-  --card-border-color--active: hsla(240, 25%, 75%, 0.75);
+  --card-border-color: oklch(from var(--text-color-secondary) l c h / 0.15);
+  --card-border-color--hover: oklch(from var(--text-color-secondary) l c h / 0.3);
+  --card-border-color--active: oklch(from var(--text-color-secondary) l c h / 0.5);
   --card-border-width: 2px;
 
   // Tab bar
-  --tabs-background: var(--panel-header-bg-color);
+  --tabs-background: oklch(from var(--text-color-secondary) l c h / 0.1);
   --tabs-item-background: transparent;
   --tabs-item-foreground: var(--text-color);
   --tabs-item-background--hover: rgba(0, 0, 0, 0.05);
@@ -350,15 +350,15 @@ $semantics: (
   --auto-complete-bg-color--prehighlight: #b3d4ff;
 
   // Default button
-  --button-background: hsla(240, 25%, 75%, 0.1);
-  --button-background--hover: hsla(240, 25%, 75%, 0.175);
-  --button-background--active: hsla(240, 25%, 75%, 0.25);
-  --button-box-shadow--focus: hsla(240, 25%, 75%, 0.1);
+  --button-background: oklch(from var(--text-color-secondary) l c h / 0.075);
+  --button-background--hover: oklch(from var(--text-color-secondary) l c h / 0.15);
+  --button-background--active: oklch(from var(--text-color-secondary) l c h / 0.25);
+  --button-box-shadow--focus: oklch(from var(--text-color-secondary) l c h / 0.1);
 
   // Variables for sidebar items, card items
-  --item-background--hover: hsla(240, 25%, 75%, 0.15);
-  --item-background--active: hsla(240, 25%, 75%, 0.225);
-  --item-box-shadow--focus: hsla(240, 25%, 75%, 0.105);
+  --item-background--hover: oklch(from var(--text-color-secondary) l c h / 0.1);
+  --item-background--active: oklch(from var(--text-color-secondary) l c h / 0.15);
+  --item-box-shadow--focus: oklch(from var(--text-color-secondary) l c h / 0.1);
 
   // Deprecated
   --primary: var(--accent-color); // Use var(--accent-color) instead
