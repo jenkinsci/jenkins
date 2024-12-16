@@ -67,6 +67,11 @@ public class AtomicFileWriter extends Writer {
     private static /* final */ boolean REQUIRES_DIR_FSYNC = SystemProperties.getBoolean(
             AtomicFileWriter.class.getName() + ".REQUIRES_DIR_FSYNC", !Functions.isWindows());
 
+    /**
+     * Whether the platform supports atomic move.
+     */
+    private static boolean atomicMoveSupported = true;
+
     static {
         if (DISABLE_FORCED_FLUSH) {
             LOGGER.log(Level.WARNING, "DISABLE_FORCED_FLUSH flag used, this could result in dataloss if failures happen in your storage subsystem.");
@@ -207,12 +212,19 @@ public class AtomicFileWriter extends Writer {
     public void commit() throws IOException {
         close();
         try {
-            // Try to make an atomic move.
-            Files.move(tmpPath, destPath, StandardCopyOption.ATOMIC_MOVE);
-        } catch (AtomicMoveNotSupportedException e) {
-            // Both files are on the same filesystem, so this should not happen.
-            LOGGER.log(Level.WARNING, e, () -> "Atomic move " + tmpPath + " → " + destPath + " not supported. falling back to non-atomic move.");
-            Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+            if (atomicMoveSupported) {
+                try {
+                    // Try to make an atomic move.
+                    Files.move(tmpPath, destPath, StandardCopyOption.ATOMIC_MOVE);
+                } catch (AtomicMoveNotSupportedException e) {
+                    // Both files are on the same filesystem, so this should not happen.
+                    LOGGER.log(Level.WARNING, e, () -> "Atomic move " + tmpPath + " → " + destPath + " not supported. Falling back to non-atomic move.");
+                    atomicMoveSupported = false;
+                }
+            }
+            if (!atomicMoveSupported) {
+                Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+            }
         } finally {
             try {
                 // In case of prior failure, the temporary file should be deleted.
