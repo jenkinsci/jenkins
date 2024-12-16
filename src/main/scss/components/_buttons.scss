@@ -44,21 +44,51 @@
 
 .jenkins-button--primary {
   color: var(--button-color--primary) !important;
-
+  
   &::before {
-    background: var(--accent-color) !important;
-  }
+      background: var(--accent-color) !important;
+    }
+    
+    &::after {
+        box-shadow: 0 0 0 0.66rem var(--accent-color);
+        opacity: 0;
+    }
+    
+    &:not(:disabled) {
+        &:hover {
+            &::before {
+                opacity: 0.9;
+            }
+        }
+        
+        &:active,
+        &:focus-visible {
+            &::before {
+                opacity: 0.8;
+            }
+            
+            &::after {
+                box-shadow: 0 0 0 0.33rem var(--accent-color);
+                opacity: 0.2;
+            }
+        }
+    }
+}
 
-  &::after {
-    box-shadow: 0 0 0 0.66rem var(--accent-color);
-    opacity: 0;
-  }
-
-  &:not(:disabled) {
-    &:hover {
-      &::before {
-        opacity: 0.9;
-      }
+.jenkins-button--primary-inverted {
+  color: var(--btn-secondary-color) !important;
+  border: 2px solid var(--btn-secondary-border);
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: var(--font-size-xs);
+  &::before {
+      background: transparent !important;
+    }
+    
+    &:not(:disabled) {
+        &:hover {
+            border: 2px solid var(--accent-color) !important;
+            color: var(--accent-color) !important;
     }
 
     &:active,
@@ -72,6 +102,60 @@
         opacity: 0.2;
       }
     }
+  }
+}
+
+.jenkins-button--danger {
+  color: var(--white) !important;
+  background-color: var(--destructive-color);
+  border-color: var(--destructive-color);
+  font-weight: bold;
+  font-size: var(--font-size-xs);
+  
+  &:not(:disabled) {
+    &:hover,
+    &:focus {
+        color: var(--white);
+        background-color: var(--danger-hover);
+        border-color: var(--danger-hover);
+    }
+  }
+  
+  &:focus {
+    box-shadow: 0 0 0 0.2rem var(--danger-active);
+  }
+  
+  &:active {
+    color: var(--white);
+    background-color: var(--danger-active);
+    border-color: var(--danger-active);
+  }
+}
+
+.jenkins-button--success {
+  color: var(--white) !important;
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+  font-weight: bold;
+  font-size: var(--font-size-xs);
+  
+  &:not(:disabled) {
+    &:hover,
+    &:focus {
+        color: var(--white);
+        background-color: var(--light-green);
+        border-color: var(--light-green);
+    }
+  }
+  
+  &:focus {
+    box-shadow: 0 0 0 0.2rem var(--light-green);
+  }
+  
+  &:active {
+    color: var(--white);
+    background-color: var(--light-green);
+    border-color: var(--light-green);
   }
 }
 
