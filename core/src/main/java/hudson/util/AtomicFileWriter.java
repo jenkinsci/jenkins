@@ -212,19 +212,7 @@ public class AtomicFileWriter extends Writer {
     public void commit() throws IOException {
         close();
         try {
-            if (atomicMoveSupported) {
-                try {
-                    // Try to make an atomic move.
-                    Files.move(tmpPath, destPath, StandardCopyOption.ATOMIC_MOVE);
-                } catch (AtomicMoveNotSupportedException e) {
-                    // Both files are on the same filesystem, so this should not happen.
-                    LOGGER.log(Level.WARNING, e, () -> "Atomic move " + tmpPath + " → " + destPath + " not supported. Falling back to non-atomic move.");
-                    atomicMoveSupported = false;
-                }
-            }
-            if (!atomicMoveSupported) {
-                Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
-            }
+            move(tmpPath, destPath);
         } finally {
             try {
                 // In case of prior failure, the temporary file should be deleted.
@@ -245,6 +233,22 @@ public class AtomicFileWriter extends Writer {
             try (FileChannel parentChannel = FileChannel.open(destPath.getParent())) {
                 parentChannel.force(true);
             }
+        }
+    }
+
+    private static void move(Path source, Path destination) throws IOException {
+        if (atomicMoveSupported) {
+            try {
+                // Try to make an atomic move.
+                Files.move(source, destination, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
+                // Both files are on the same filesystem, so this should not happen.
+                LOGGER.log(Level.WARNING, e, () -> "Atomic move " + source + " → " + destination + " not supported. Falling back to non-atomic move.");
+                atomicMoveSupported = false;
+            }
+        }
+        if (!atomicMoveSupported) {
+            Files.move(source, destination, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
