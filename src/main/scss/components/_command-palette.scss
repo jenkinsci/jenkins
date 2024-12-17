@@ -13,8 +13,7 @@
   user-select: none;
 
   &::backdrop {
-    //background: var(--command-palette-backdrop-background);
-    background: red;
+    background: var(--command-palette-backdrop-background);
     backdrop-filter: contrast(0.7) brightness(0.9) saturate(1.25) blur(3px);
     animation: jenkins-dialog-backdrop-animate-in 0.1s linear;
   }
