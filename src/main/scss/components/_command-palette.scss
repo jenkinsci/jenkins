@@ -1,10 +1,11 @@
 @use "../abstracts/mixins";
+@use "../base/breakpoints";
 
 .jenkins-command-palette__dialog {
   background: none;
   border: none;
-  height: 100vw !important;
-  max-height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
   width: 100vw !important;
   max-width: 100vw !important;
   margin: 0 !important;
@@ -12,7 +13,8 @@
   user-select: none;
 
   &::backdrop {
-    background: var(--command-palette-backdrop-background);
+    //background: var(--command-palette-backdrop-background);
+    background: red;
     backdrop-filter: contrast(0.7) brightness(0.9) saturate(1.25) blur(3px);
     animation: jenkins-dialog-backdrop-animate-in 0.1s linear;
   }
@@ -47,28 +49,38 @@
 }
 
 .jenkins-command-palette__wrapper {
+  --inset: 15vh;
+
   width: 100%;
   height: 100%;
-  max-height: 100vh;
+  max-height: 100dvh;
   overflow: scroll;
-  padding-top: 20vh;
+  padding-top: var(--inset);
+
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media (max-width: breakpoints.$tablet-breakpoint) {
+    --inset: 10vh;
+  }
 }
 
 .jenkins-command-palette {
   position: relative;
   width: 50vw;
-  min-width: 400px;
   max-width: 650px;
   color: var(--text-color);
   pointer-events: auto;
-  margin: 0 auto 20vh;
+  margin: 0 auto var(--inset);
+
+  @media (max-width: breakpoints.$tablet-breakpoint) {
+    width: calc(100% - (var(--section-padding) * 2));
+  }
 
   &__search {
     --search-bar-height: 3rem !important;
 
     background: transparent;
     box-shadow: var(--command-palette-inset-shadow);
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--section-padding);
     border-radius: 1rem;
     transition: var(--standard-transition);
     z-index: 10;
