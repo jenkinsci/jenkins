@@ -70,6 +70,7 @@
   pointer-events: auto;
   margin: 0 auto var(--inset);
 
+  /* stylelint-disable-next-line media-query-no-invalid */
   @media (max-width: breakpoints.$tablet-breakpoint) {
     width: calc(100% - (var(--section-padding) * 2));
   }
