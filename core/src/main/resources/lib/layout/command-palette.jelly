@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2024, Jenkins contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,25 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-    <j:set var="primaryView" value="${it.primaryView}"/>
-    <j:if test="${primaryView != null}">
-        <st:include it="${primaryView}" page="sidepanel.jelly"/>
-    </j:if>
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:l="/lib/layout">
+  <s:documentation>
+    The command palette overlay
+  </s:documentation>
+
+  <div id="command-palette-i18n" class="i18n"
+       data-no-results-for="${%No results for}"
+       data-help="${%Help}"
+       data-get-help="${%Get help using Jenkins search}"
+  />
+
+  <dialog id="command-palette" class="jenkins-command-palette__dialog">
+    <div class="jenkins-command-palette__wrapper">
+      <div class="jenkins-command-palette">
+        <l:search-bar id="command-bar" clazz="jenkins-command-palette__search" hasKeyboardShortcut="false" />
+        <div id="search-results-container" class="jenkins-command-palette__results-container">
+          <div id="search-results" class="jenkins-command-palette__results" />
+        </div>
+      </div>
+    </div>
+  </dialog>
 </j:jelly>

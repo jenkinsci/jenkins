@@ -38,7 +38,7 @@
       min-height: 1.1rem;
       aspect-ratio: 1;
       margin-right: 0.2rem;
-      background: currentColor;
+      background: var(--text-color-secondary);
       mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 48C141.31 48 48 141.31 48 256s93.31 208 208 208 208-93.31 208-208S370.69 48 256 48zm75.31 260.69a16 16 0 11-22.62 22.62L256 278.63l-52.69 52.68a16 16 0 01-22.62-22.62L233.37 256l-52.68-52.69a16 16 0 0122.62-22.62L256 233.37l52.69-52.68a16 16 0 0122.62 22.62L278.63 256z'/%3E%3C/svg%3E");
       mask-size: contain;
       mask-repeat: no-repeat;
@@ -49,11 +49,11 @@
       cursor: pointer;
 
       &:hover {
-        opacity: 0.75 !important;
+        opacity: 0.85 !important;
       }
 
       &:active {
-        opacity: 1 !important;
+        opacity: 0.7 !important;
       }
     }
 
@@ -75,6 +75,21 @@
           pointer-events: all;
           transform: scale(1);
         }
+      }
+    }
+
+    &:active,
+    &:focus {
+      outline: none;
+      background: var(--item-background--active);
+      box-shadow:
+        0 0 0 2px var(--focus-input-border),
+        0 0 0 7px var(--focus-input-glow);
+
+      &::-webkit-search-cancel-button {
+        opacity: 1;
+        pointer-events: all;
+        transform: scale(1);
       }
     }
 
@@ -106,22 +121,24 @@
     &::before,
     &::after {
       content: "";
-      width: 0;
-      height: 0;
+      width: 45%;
+      height: 45%;
       max-width: 1.1rem;
       max-height: 1.1rem;
-      border: 0.125rem solid currentColor;
+      border: 0.125rem solid var(--text-color-secondary);
       border-radius: 100%;
       transition: var(--standard-transition);
       grid-column-start: 1;
       grid-row-start: 1;
       place-self: center center;
       opacity: 0;
+      scale: 0;
+      filter: blur(2.5px);
     }
 
     &::after {
+      border-color: currentColor;
       clip-path: inset(0 0 50% 50%);
-      transition: var(--standard-transition);
       animation: loading-spinner 1s infinite linear;
 
       @media (prefers-reduced-motion) {
@@ -130,56 +147,34 @@
     }
   }
 
-  &__shortcut {
+  .jenkins-keyboard-shortcut {
     position: absolute;
-    aspect-ratio: 1 / 1;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.25s ease;
-    text-align: center;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    line-height: 1;
+    top: calc(50% - 0.6875rem);
+    right: 0.5rem;
+    min-width: 1.375rem;
+    min-height: 1.375rem;
+    padding: 0;
     color: var(--text-color-secondary);
-
-    &::after {
-      content: "";
-      position: absolute;
-      top: calc(50% - 1em);
-      right: calc(50% - 1em);
-      width: 2em;
-      height: 2em;
-      border: 0.1rem solid var(--item-background--active);
-      border-radius: 0.3rem;
-    }
-
-    svg {
-      width: 1.2em;
-      height: 1.2em;
-    }
   }
 
   &--loading {
     .jenkins-search__icon {
       svg {
         opacity: 0;
-        transform: scale(0);
+        scale: 0;
+        filter: blur(5px);
       }
 
       &::before {
-        opacity: 0.2;
-        width: 45%;
-        height: 45%;
+        opacity: 0.5;
+        scale: 1;
+        filter: blur(0);
       }
 
       &::after {
         opacity: 1;
-        width: 45%;
-        height: 45%;
+        scale: 1;
+        filter: blur(0);
       }
     }
   }
@@ -189,6 +184,10 @@
 
     max-width: 50vw;
     margin-block: -6px;
+
+    .jenkins-keyboard-shortcut {
+      right: 0.8125rem;
+    }
 
     &::before {
       content: "";
@@ -210,7 +209,7 @@
       fill: var(--focus-input-border);
     }
 
-    .jenkins-search__shortcut {
+    .jenkins-keyboard-shortcut {
       opacity: 0;
       transform: scale(0.9);
       pointer-events: none;
@@ -221,7 +220,7 @@
     color: var(--text-color-secondary);
     opacity: 0.5;
 
-    .jenkins-search__shortcut {
+    .jenkins-keyboard-shortcut {
       display: none;
     }
   }

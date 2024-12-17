@@ -81,7 +81,7 @@ export default function makeKeyboardNavigable(
 }
 
 function scrollAndSelect(selectedItem, selectedClass, items) {
-  if (selectedItem !== null) {
+  if (selectedItem) {
     if (!isInViewport(selectedItem)) {
       selectedItem.scrollIntoView(false);
     }
