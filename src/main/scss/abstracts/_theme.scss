@@ -351,8 +351,8 @@ $semantics: (
 
   // Default button
   --button-background: oklch(from var(--text-color-secondary) l c h / 0.075);
-  --button-background--hover: oklch(from var(--text-color-secondary) l c h / 0.15);
-  --button-background--active: oklch(from var(--text-color-secondary) l c h / 0.25);
+  --button-background--hover: oklch(from var(--text-color-secondary) l c h / 0.125);
+  --button-background--active: oklch(from var(--text-color-secondary) l c h / 0.175);
   --button-box-shadow--focus: oklch(from var(--text-color-secondary) l c h / 0.1);
 
   // Variables for sidebar items, card items
