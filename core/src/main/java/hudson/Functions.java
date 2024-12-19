@@ -652,14 +652,23 @@ public class Functions {
     }
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
+    
 
-    @Restricted(NoExternalUse.class)
-    public static String validateIconSize(String iconSize) throws SecurityException {
-        if (!ICON_SIZE.matcher(iconSize).matches()) {
-            throw new SecurityException("invalid iconSize");
-        }
-        return iconSize;
+ /**
+  * Validates the given icon size.
+  *
+  * @param iconSize the size of the icon to validate; must not be null
+  * @return the validated icon size if valid
+  * @throws SecurityException if the icon size is invalid
+  */
+  @Restricted(NoExternalUse.class)
+  public static String validateIconSize(@NonNull String iconSize) throws SecurityException {
+    if (!ICON_SIZE.matcher(iconSize).matches()) {
+        throw new SecurityException("Invalid iconSize: " + iconSize);
     }
+    return iconSize;
+}
+
 
     /**
      * Gets the suffix to use for YUI JavaScript.
