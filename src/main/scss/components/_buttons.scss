@@ -75,6 +75,35 @@
   }
 }
 
+.jenkins-button--outline {
+  color: var(--btn-secondary-color) !important;
+  border: 2px solid var(--btn-secondary-border);
+  font-weight: bold;
+  font-size: var(--font-size-xs);
+  &::before {
+    background: transparent !important;
+  }
+
+  &:not(:disabled) {
+    &:hover {
+      border: 2px solid var(--accent-color) !important;
+      color: var(--accent-color) !important;
+    }
+
+    &:active,
+    &:focus-visible {
+      &::before {
+        opacity: 0.8;
+      }
+
+      &::after {
+        box-shadow: 0 0 0 0.33rem var(--accent-color);
+        opacity: 0.2;
+      }
+    }
+  }
+}
+
 .jenkins-button--tertiary {
   &::before {
     background: transparent;
