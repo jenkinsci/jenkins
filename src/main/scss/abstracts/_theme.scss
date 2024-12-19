@@ -325,7 +325,7 @@ $semantics: (
   --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);
   --pre-background: rgba(0, 0, 0, 0.05);
   --pre-color: var(--text-color);
-  --selection-color: rgba(2, 76, 182, 0.3);
+  --selection-color: oklch(from var(--accent-color) l c h / 0.2);
 
   // Animations
   --standard-transition: 0.3s ease;
