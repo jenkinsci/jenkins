@@ -14,7 +14,7 @@ $colors: (
   "yellow": oklch(80% 0.17 76),
   "teal": oklch(60% 0.1122 216.72),
   "white": #fff,
-  "black": oklch(2% 0.075 256.91),
+  "black": oklch(from var(--accent-color) 2% 0.075 h)
 );
 
 $semantics: (
