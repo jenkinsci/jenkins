@@ -10,6 +10,7 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3538/badge)](https://bestpractices.coreinfrastructure.org/projects/3538)
 [![Reproducible Builds](https://img.shields.io/badge/Reproducible_Builds-ok-green)](https://maven.apache.org/guides/mini/guide-reproducible-builds.html)
 [![Gitter](https://img.shields.io/gitter/room/jenkinsci/jenkins)](https://app.gitter.im/#/room/#jenkinsci_jenkins:gitter.im)
+[![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20Jenkins%20Guru-006BFF)](https://gurubase.io/g/jenkins)
 
 In a nutshell, Jenkins is the leading open-source automation server.
 Built with Java, it provides over 1,800 [plugins](https://plugins.jenkins.io/) to support automating virtually anything,
