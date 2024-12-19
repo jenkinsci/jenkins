@@ -14,7 +14,7 @@ $colors: (
   "yellow": oklch(80% 0.17 76),
   "teal": oklch(60% 0.1122 216.72),
   "white": #fff,
-  "black": oklch(2% 0.075 260),
+  "black": oklch(2% 0.075 256.91),
 );
 
 $semantics: (
@@ -84,7 +84,7 @@ $semantics: (
   --search-bg: var(--white);
   --search-box-completion-bg: var(--primary-hover);
   --search-box-shadow: 0 1px 7px 0 rgba(0, 0, 0, 0.3);
-  --header-bg-classic: #000;
+  --header-bg-classic: var(--black);
   --header-link-bg-classic-hover: #404040;
   --header-link-bg-classic-active: #404040;
   --header-item-border-radius: 4px;
