@@ -14,7 +14,7 @@ $colors: (
   "yellow": oklch(80% 0.17 76),
   "teal": oklch(60% 0.1122 216.72),
   "white": #fff,
-  "black": oklch(from var(--accent-color) 2% 0.075 h)
+  "black": oklch(from var(--accent-color) 2% 0.075 h),
 );
 
 $semantics: (
@@ -90,7 +90,7 @@ $semantics: (
   --header-item-border-radius: 4px;
 
   // Breadcrumbs bar
-  --breadcrumbs-bar-background: oklch(0.968 0.005 260 / 80%);
+  --breadcrumbs-bar-background: oklch(96.8% 0.005 260 / 0.8);
 
   // Alert call outs
   --alert-success-text-color: var(--success-color);
@@ -259,8 +259,12 @@ $semantics: (
   --card-background--hover: transparent;
   --card-background--active: transparent;
   --card-border-color: oklch(from var(--text-color-secondary) l c h / 0.15);
-  --card-border-color--hover: oklch(from var(--text-color-secondary) l c h / 0.3);
-  --card-border-color--active: oklch(from var(--text-color-secondary) l c h / 0.5);
+  --card-border-color--hover: oklch(
+    from var(--text-color-secondary) l c h / 0.3
+  );
+  --card-border-color--active: oklch(
+    from var(--text-color-secondary) l c h / 0.5
+  );
   --card-border-width: 2px;
 
   // Tab bar
@@ -351,13 +355,21 @@ $semantics: (
 
   // Default button
   --button-background: oklch(from var(--text-color-secondary) l c h / 0.075);
-  --button-background--hover: oklch(from var(--text-color-secondary) l c h / 0.125);
-  --button-background--active: oklch(from var(--text-color-secondary) l c h / 0.175);
-  --button-box-shadow--focus: oklch(from var(--text-color-secondary) l c h / 0.1);
+  --button-background--hover: oklch(
+    from var(--text-color-secondary) l c h / 0.125
+  );
+  --button-background--active: oklch(
+    from var(--text-color-secondary) l c h / 0.175
+  );
+  --button-box-shadow--focus: oklch(
+    from var(--text-color-secondary) l c h / 0.1
+  );
 
   // Variables for sidebar items, card items
   --item-background--hover: oklch(from var(--text-color-secondary) l c h / 0.1);
-  --item-background--active: oklch(from var(--text-color-secondary) l c h / 0.15);
+  --item-background--active: oklch(
+    from var(--text-color-secondary) l c h / 0.15
+  );
   --item-box-shadow--focus: oklch(from var(--text-color-secondary) l c h / 0.1);
 
   // Deprecated
