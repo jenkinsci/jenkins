@@ -39,6 +39,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -89,6 +91,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see Jenkins#administrativeMonitors
  */
 @LegacyInstancesAreScopedToHudson
+@ExportedBean
 public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint, StaplerProxy {
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.
@@ -97,6 +100,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * This ID is used to remember persisted setting for this monitor,
      * so the ID should remain consistent beyond the Hudson JVM lifespan.
      */
+    @Exported
     public final String id;
 
     protected AdministrativeMonitor(String id) {
@@ -146,6 +150,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * This flag implements the ability for the admin to say "no thank you" to the monitor that
      * he wants to ignore.
      */
+    @Exported
     public boolean isEnabled() {
         return !Jenkins.get().getDisabledAdministrativeMonitors().contains(id);
     }
@@ -158,6 +163,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * This method is called from the HTML rendering thread,
      * so it should run efficiently.
      */
+    @Exported
     public abstract boolean isActivated();
 
     /**
@@ -167,6 +173,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *
      * @since 2.267
      */
+    @Exported
     public boolean isSecurity() {
         return false;
     }
