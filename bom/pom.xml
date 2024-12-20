@@ -70,7 +70,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/reference/6.3/getting-spring-security.html#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>6.4.1</version>
+        <version>6.4.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -88,7 +88,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>33.3.1-jre</version>
+        <version>33.4.0-jre</version>
       </dependency>
       <dependency>
         <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
