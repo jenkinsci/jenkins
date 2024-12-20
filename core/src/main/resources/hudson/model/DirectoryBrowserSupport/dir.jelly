@@ -114,7 +114,7 @@ THE SOFTWARE.
               <tr>
                 <td style="text-align:right;" colspan="3">
                   <div style="margin-top: 1em;">
-                    <a class="jenkins-link--with-icon" href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
+                    <a class="jenkins-link--with-icon" href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${h.urlEncode(dir.name)}.zip">
                       <l:icon src="symbol-download"/>
                       (${%all files in zip})
                     </a>
