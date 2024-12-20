@@ -53,4 +53,9 @@ public class LayoutTest {
         }
     }
 
+    @Test public void fullScreen() throws Exception {
+        // Example page using <l:layout type="full-screen">:
+        r.createWebClient().goTo("setupWizard/proxy-configuration");
+    }
+
 }
