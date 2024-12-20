@@ -76,8 +76,8 @@
 }
 
 .jenkins-button--outline {
-  color: var(--btn-secondary-color) !important;
-  border: 2px solid var(--btn-secondary-border);
+  color: var(--text-color) !important;
+  border: 2px solid var(--text-color);
   font-weight: bold;
   font-size: var(--font-size-xs);
   &::before {
@@ -144,6 +144,36 @@
       }
     }
   }
+}
+
+.jenkins-button--outline[class*="color"] {
+    color: var(--color) !important;
+    border: 2px solid var(--color);
+    &::before {
+      background: var(--color) !important;
+    }
+    
+    &:not(:disabled) {
+        &:hover {
+          border: 2px solid var(--background) !important;
+          color: var(--background
+          ) !important;
+          background: var(--color) !important;
+          opacity: 0.8;
+      }
+  
+      &:active,
+      &:focus-visible {
+        &::before {
+            opacity: 0.8;
+        }
+  
+        &::after {
+          box-shadow: 0 0 0 0.33rem var(--background);
+          opacity: 0.2;
+        }
+      }
+    }
 }
 
 .jenkins-button--primary[class*="color"] {
