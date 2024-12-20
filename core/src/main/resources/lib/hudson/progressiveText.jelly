@@ -35,6 +35,16 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Use AJAX to load text data progressively.
+    This is used to achieve the effect of "tail -f"
+    without relying on full page reload.
+    <st:attribute name="href" use="required">URL that returns text data</st:attribute>
+	  <st:attribute name="idref" use="required">ID of the HTML element in which the result is displayed</st:attribute>
+	  <st:attribute name="spinner" required="false">ID of the HTML element in which the spinner is displayed</st:attribute>
+	  <st:attribute name="startOffset" required="false">Skip this many bytes rather than showing from start of data</st:attribute>
+	  <st:attribute name="onFinishEvent" required="false">JS custom event to be fired when progress is finished</st:attribute>
+  </st:documentation>
   <div class="progressiveText-holder" data-href="${href}" data-idref="${idref}" data-spinner="${spinner}" data-start-offset="${startOffset}"
        data-on-finish-event="${empty(onFinishEvent) ? '' : onFinishEvent}"
        data-error-message="${%errorMessage}"/>
