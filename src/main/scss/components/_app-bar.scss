@@ -6,9 +6,10 @@
   justify-content: space-between;
   margin-bottom: var(--section-padding);
   gap: var(--section-padding);
+  flex-wrap: wrap;
 
   /* stylelint-disable-next-line media-query-no-invalid */
-  @media (max-width: breakpoints.$tablet-breakpoint) {
+  @media (width <= 800px) {
     align-items: stretch;
     flex-direction: column;
   }
@@ -17,7 +18,6 @@
     display: flex;
     justify-content: center;
     flex-direction: column;
-    width: 100%;
     min-height: 2.25rem;
   }
 
@@ -32,7 +32,7 @@
     }
 
     /* stylelint-disable-next-line media-query-no-invalid */
-    @media (max-width: breakpoints.$tablet-breakpoint) {
+    @media (width <= 800px) {
       justify-content: stretch;
       flex-wrap: wrap;
 
