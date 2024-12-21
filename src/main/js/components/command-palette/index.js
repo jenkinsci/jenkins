@@ -13,6 +13,9 @@ function init() {
   const headerCommandPaletteButton = document.getElementById(
     "button-open-command-palette",
   );
+  if (headerCommandPaletteButton === null) {
+    return; // no JenkinsHeader, no h:searchbox
+  }
   const commandPalette = document.getElementById("command-palette");
   const commandPaletteWrapper = commandPalette.querySelector(
     ".jenkins-command-palette__wrapper",
