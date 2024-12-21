@@ -24,9 +24,9 @@
 
 package hudson.cli.handlers;
 
+import hudson.cli.declarative.OptionHandlerExtension;
 import hudson.model.Node;
 import jenkins.model.Jenkins;
-import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
@@ -40,7 +40,7 @@ import org.kohsuke.args4j.spi.Setter;
  * @author ogondza
  * @since 1.526
  */
-@MetaInfServices
+@OptionHandlerExtension
 public class NodeOptionHandler extends OptionHandler<Node> {
 
     public NodeOptionHandler(CmdLineParser parser, OptionDef option, Setter<Node> setter) {
