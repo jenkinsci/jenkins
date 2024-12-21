@@ -1037,6 +1037,7 @@ public class SlaveComputer extends Computer {
                 // we need to prevent forked Maven processes from seeing it, or else
                 // they'll hang
                 env.remove("MAVEN_OPTS");
+                env.remove("MAVEN_DEBUG_OPTS");
             }
             return env;
         }
