@@ -75,6 +75,36 @@
   }
 }
 
+.jenkins-button--outline {
+  color: var(--text-color) !important;
+  border: 2px solid var(--text-color);
+  font-weight: bold;
+  font-size: var(--font-size-xs);
+
+  &::before {
+    background: transparent !important;
+  }
+
+  &:not(:disabled) {
+    &:hover {
+      border: 2px solid var(--accent-color) !important;
+      color: var(--accent-color) !important;
+    }
+
+    &:active,
+    &:focus-visible {
+      &::before {
+        opacity: 0.8;
+      }
+
+      &::after {
+        box-shadow: 0 0 0 0.33rem var(--accent-color);
+        opacity: 0.2;
+      }
+    }
+  }
+}
+
 .jenkins-button--tertiary {
   &::before {
     background: transparent;
@@ -112,6 +142,36 @@
       &::after {
         box-shadow: 0 0 0 0.33rem currentColor;
         opacity: 0.1;
+      }
+    }
+  }
+}
+
+.jenkins-button--outline[class*="color"] {
+  color: var(--color) !important;
+  border: 2px solid var(--color);
+
+  &::before {
+    background: var(--color) !important;
+  }
+
+  &:not(:disabled) {
+    &:hover {
+      border: 2px solid var(--background) !important;
+      color: var(--background) !important;
+      background: var(--color) !important;
+      opacity: 0.8;
+    }
+
+    &:active,
+    &:focus-visible {
+      &::before {
+        opacity: 0.8;
+      }
+
+      &::after {
+        box-shadow: 0 0 0 0.33rem var(--background);
+        opacity: 0.2;
       }
     }
   }
