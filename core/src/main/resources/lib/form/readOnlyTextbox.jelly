@@ -62,6 +62,12 @@ THE SOFTWARE.
       If @field is specified, this will be inferred automatically,
       which is the recommended approach.
     </st:attribute>
+    <st:attribute name="onchange" deprecated="true">
+      onchange handler. Deprecated; assign an ID and look up the element that way to attach event handlers.
+    </st:attribute>
+    <st:attribute name="onkeyup" deprecated="true">
+      onkeyup handler. Deprecated; assign an ID and look up the element that way to attach event handlers.
+    </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
   <input class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs.clazz}"
