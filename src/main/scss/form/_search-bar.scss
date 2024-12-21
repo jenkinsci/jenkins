@@ -185,10 +185,10 @@
     --search-bar-height: 3rem;
 
     width: 100%;
+    margin-block: -6px;
 
     /* stylelint-disable-next-line media-query-no-invalid */
     @media (min-width: breakpoints.$tablet-breakpoint) {
-      margin-block: -6px;
       max-width: 50vw;
     }
 
