@@ -536,21 +536,24 @@ function findNext(src, filter) {
 }
 
 function findFormItem(src, name, directionF) {
-  var name2 = "_." + name; // handles <textbox field="..." /> notation silently
+  const name2 = "_." + name; // handles <textbox field="..." /> notation silently
   return directionF(src, function (e) {
-    if (e.tagName == "INPUT" && e.type == "radio" && e.checked == true) {
-      var r = 0;
-      while (e.name.substring(r, r + 8) == "removeme") {
-        //radio buttons have must be unique in repeatable blocks so name is prefixed
-        r = e.name.indexOf("_", r + 8) + 1;
+    if (e.tagName === "INPUT" && e.type === "radio" ) {
+      if (e.checked === true) {
+        let r = 0;
+        while (e.name.substring(r, r + 8) === "removeme") {
+          //radio buttons have must be unique in repeatable blocks so name is prefixed
+          r = e.name.indexOf("_", r + 8) + 1;
+        }
+        return name === e.name.substring(r);
       }
-      return name == e.name.substring(r);
+      return false
     }
     return (
-      (e.tagName == "INPUT" ||
-        e.tagName == "TEXTAREA" ||
-        e.tagName == "SELECT") &&
-      (e.name == name || e.name == name2)
+      (e.tagName === "INPUT" ||
+        e.tagName === "TEXTAREA" ||
+        e.tagName === "SELECT") &&
+      (e.name === name || e.name === name2)
     );
   });
 }
@@ -730,7 +733,15 @@ function registerValidator(e) {
           console.warn("Unable to find nearby " + name);
           return;
         }
-        c.addEventListener("change", checker.bind(e));
+
+        if (c.tagName === 'INPUT' && c.type === "radio") {
+          document.querySelectorAll(`input[name='${c.name}'][type='radio']`)
+            .forEach(element => {
+              element.addEventListener("change", checker.bind(e));
+            })
+        } else {
+          c.addEventListener("change", checker.bind(e));
+        }
       }),
     );
   }
