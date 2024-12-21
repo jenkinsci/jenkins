@@ -8,7 +8,6 @@
   gap: var(--section-padding);
   flex-wrap: wrap;
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media (width <= 800px) {
     align-items: stretch;
     flex-direction: column;
@@ -31,7 +30,6 @@
       min-width: 260px;
     }
 
-    /* stylelint-disable-next-line media-query-no-invalid */
     @media (width <= 800px) {
       justify-content: stretch;
       flex-wrap: wrap;
