@@ -10,7 +10,7 @@
   "postUpdateOptions": [
     "yarnDedupeHighest"
   ],
-  "ignoreDeps": ["softprops/actions-gh-release"],
+  "ignoreDeps": ["softprops/action-gh-release"],
   "packageRules": [
     {
       "matchDatasources": [
