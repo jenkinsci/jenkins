@@ -56,7 +56,7 @@ function loadScriptIfNotLoaded(url, item) {
  * @param {DropdownItem}  menuItem
  * @return {Element}
  */
-function menuItem(menuItem, type = "jenkins-dropdown__item") {
+function menuItem(menuItem, type = "jenkins-dropdown__item", options) {
   /**
    * @type {DropdownItem}
    */
@@ -146,9 +146,9 @@ function menuItem(menuItem, type = "jenkins-dropdown__item") {
         );
     });
   }
-  if (options.onKeyPress) {
-    item.onkeypress = options.onKeyPress;
-  }
+  // if (options.onKeyPress) {
+  //   item.onkeypress = options.onKeyPress;
+  // }
   return item;
 }
 
