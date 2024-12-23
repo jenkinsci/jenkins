@@ -136,6 +136,12 @@ THE SOFTWARE.
         <artifactId>workflow-support</artifactId>
         <version>936.v9fa_77211ca_e1</version>
       </dependency>
+
+      <dependency>
+        <groupId>org.htmlunit</groupId>
+        <artifactId>htmlunit</artifactId>
+        <version>4.8.0-SNAPSHOT</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
