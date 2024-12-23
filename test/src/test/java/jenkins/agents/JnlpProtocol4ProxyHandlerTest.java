@@ -95,11 +95,6 @@ public final class JnlpProtocol4ProxyHandlerTest {
         }
 
         @Override
-        public String getDisplayName() {
-            return "Test handler";
-        }
-
-        @Override
         public void handle(Socket socket) throws IOException, InterruptedException {
             var agentIO = socket.getChannel();
             var br = new BufferedReader(Channels.newReader(agentIO, StandardCharsets.UTF_8));

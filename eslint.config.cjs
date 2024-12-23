@@ -16,9 +16,9 @@ module.exports = [
       "**/jsbundles/",
 
       // External scripts
-      "war/.pnp.cjs",
-      "war/.pnp.loader.mjs",
-      "war/src/main/js/plugin-setup-wizard/bootstrap-detached.js",
+      ".pnp.cjs",
+      ".pnp.loader.mjs",
+      "src/main/js/plugin-setup-wizard/bootstrap-detached.js",
       "war/src/main/webapp/scripts/yui/*",
     ],
   },
@@ -36,7 +36,6 @@ module.exports = [
         CodeMirror: "readonly",
         ComboBox: "readonly",
         COMBOBOX_VERSION: "writeable",
-        createSearchBox: "readonly",
         crumb: "readonly",
         dialog: "readonly",
         ensureVisible: "readonly",
@@ -47,6 +46,7 @@ module.exports = [
         findFormParent: "readonly",
         fireEvent: "readonly",
         Form: "readonly",
+        FormChecker: "readonly",
         getElementOverflowParams: "readonly",
         hoverNotification: "readonly",
         iota: "writeable",
@@ -60,6 +60,7 @@ module.exports = [
         object: "readonly",
         objectToUrlFormEncoded: "readonly",
         onSetupWizardInitialized: "readonly",
+        qs: "readonly",
         refillOnChange: "readonly",
         refreshPart: "readonly",
         registerSortableDragDrop: "readonly",
@@ -71,6 +72,7 @@ module.exports = [
         shortenName: "readonly",
         Sortable: "readonly",
         toQueryString: "readonly",
+        TryEach: "readonly",
         ts_refresh: "readonly",
         updateOptionalBlock: "readonly",
         Utilities: "readonly",
@@ -90,9 +92,9 @@ module.exports = [
   {
     files: [
       "eslint.config.cjs",
-      "war/postcss.config.js",
-      "war/webpack.config.js",
-      "war/.stylelintrc.js",
+      "postcss.config.js",
+      "webpack.config.js",
+      ".stylelintrc.js",
     ],
     languageOptions: {
       globals: {

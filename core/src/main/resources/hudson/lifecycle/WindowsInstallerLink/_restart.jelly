@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml" xmlns:l="/lib/layout">
     <j:new var="h" className="hudson.Functions" />
     <st:statusCode value="503" /><!-- SERVICE NOT AVAILABLE -->
     <st:header name="Expires" value="0" />
@@ -40,21 +40,17 @@ THE SOFTWARE.
             <!-- mobile friendly layout -->
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <link rel="stylesheet" href="${resURL}/jsbundles/simple-page.css" type="text/css" />
-            <link rel="stylesheet" href="${resURL}/css/loading.css" type="text/css" />
         </head>
         <body>
             <div class="simple-page" role="main">
-                <div class="modal signup">
-                    <div class="signupIntroDefault">
-                        <div class="logo" />
-                        <h1 class="loading">
-                            ${%Please wait while Jenkins is restarting}
-                            <span>.</span><span>.</span><span>.</span>
-                        </h1>
-                        <p>
-                            ${%blurb}
-                        </p>
-                    </div>
+                <div class="app-jenkins-booting">
+                    <div class="logo" />
+                    <h1 class="loading">
+                        <l:spinner text="${%Please wait while Jenkins is restarting}" />
+                    </h1>
+                    <p>
+                        ${%blurb}
+                    </p>
                 </div>
             </div>
             <script src="${resURL}/scripts/loading.js" type="text/javascript" />

@@ -67,6 +67,7 @@ import java.util.regex.Pattern;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
+import jenkins.security.ExtendedReadSecretRedaction;
 import jenkins.tasks.SimpleBuildStep;
 import org.htmlunit.Page;
 import org.htmlunit.html.DomElement;
@@ -76,6 +77,7 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTextInput;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -84,7 +86,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.springframework.security.core.Authentication;
 
 public class PasswordTest {
@@ -124,6 +126,7 @@ public class PasswordTest {
 
     @Issue({"SECURITY-266", "SECURITY-304"})
     @Test
+    @For(ExtendedReadSecretRedaction.class)
     public void testExposedCiphertext() throws Exception {
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
         Item.EXTENDED_READ.setEnabled(true);
@@ -244,7 +247,7 @@ public class PasswordTest {
             static String checkedSecret;
 
             public FormValidation doCheckSecret(@QueryParameter String value) {
-                StaplerRequest req = Stapler.getCurrentRequest();
+                StaplerRequest2 req = Stapler.getCurrentRequest2();
                 incomingURL = req.getRequestURIWithQueryString();
                 System.err.println("processing " + incomingURL + " via " + req.getMethod() + ": " + value);
                 checkedSecret = value;

@@ -198,7 +198,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
      * Cancels any builds in progress of this item (if a job) or descendants (if a folder).
      * Also cancels any associated queue items.
      * @param initiatingItem an item being deleted
-     * @since TODO
+     * @since 2.470
      */
     public static void cancelBuildsInProgress(@NonNull Item initiatingItem) throws Failure, InterruptedException {
         Queue queue = Queue.getInstance();
@@ -266,12 +266,10 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
                     // comparison with executor.getCurrentExecutable() == executable currently should always be
                     // true as we no longer recycle Executors, but safer to future-proof in case we ever
                     // revisit recycling.
-                    if (!entry.getKey().isAlive()
+                    if (!entry.getKey().isActive()
                             || entry.getValue() != entry.getKey().getCurrentExecutable()) {
                         iterator.remove();
                     }
-                    // I don't know why, but we have to keep interrupting
-                    entry.getKey().interrupt(Result.ABORTED);
                 }
                 Thread.sleep(50L);
             }

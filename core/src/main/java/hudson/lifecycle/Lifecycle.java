@@ -329,7 +329,7 @@ public abstract class Lifecycle implements ExtensionPoint {
     /**
      * Called when Jenkins has failed to boot.
      * @param problem a boot failure (could be {@link JenkinsReloadFailed})
-     * @since TODO
+     * @since 2.469
      */
     public void onBootFailure(BootFailure problem) {
     }

@@ -1,0 +1,1000 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Stephen Connolly
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+form {
+  margin: 0;
+}
+
+td {
+  vertical-align: top;
+}
+
+dt {
+  font-weight: bold;
+}
+
+.fixed-width {
+  font-family: monospace;
+}
+
+.center {
+  text-align: center;
+}
+
+.middle-align td,
+td.middle-align {
+  vertical-align: middle;
+}
+
+.center-align td,
+td.center-align {
+  text-align: center;
+}
+
+.no-wrap td,
+td.no-wrap {
+  white-space: nowrap;
+}
+
+#main-table {
+  padding: 0;
+  border-collapse: collapse;
+}
+
+#safe-restart-msg {
+  font-weight: bold;
+  color: white;
+  background-color: var(--warning);
+  text-align: center;
+  margin-bottom: var(--section-padding);
+  padding: 0.5em;
+  -moz-border-radius: 0.5em;
+  border-radius: var(--form-input-border-radius);
+}
+
+#shutdown-msg {
+  font-weight: bold;
+  color: white;
+  background-color: #ef2929;
+  text-align: center;
+  margin-bottom: var(--section-padding);
+  padding: 0.5em;
+  -moz-border-radius: 0.5em;
+  border-radius: var(--form-input-border-radius);
+}
+
+a.lowkey:link {
+  text-decoration: none;
+  color: inherit;
+}
+
+a.lowkey:hover {
+  text-decoration: underline;
+  color: inherit;
+}
+
+a.lowkey:visited {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* tip - anchors of class info */
+a.tip {
+  position: relative;
+  z-index: 24;
+  text-decoration: underline;
+}
+
+a.tip:hover {
+  z-index: 25;
+}
+
+a.tip span {
+  display: none;
+}
+
+a.tip:hover span {
+  display: block;
+  position: absolute;
+  top: 2em;
+  left: 2em;
+  width: 400px;
+  border: 1px solid #bbb;
+  background-color: #fffff0;
+  color: #000;
+  text-align: left;
+}
+
+img {
+  vertical-align: middle;
+  border: 0;
+}
+
+div.disabled {
+  opacity: 0.4;
+  background-color: #000;
+}
+
+table.tab {
+  border-collapse: collapse;
+}
+
+td.tab {
+  vertical-align: middle;
+  border: 1px #090 solid;
+  background: #f0f0f0;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0 0 var(--section-padding);
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background-color: var(--pre-background);
+  color: var(--pre-color);
+  font-family: var(--font-family-mono);
+  font-weight: 400;
+  line-height: 1.66;
+
+  a {
+    word-wrap: break-word;
+  }
+}
+
+pre.jenkins-readonly {
+  margin-bottom: 0 !important;
+}
+
+pre.console {
+  overflow: auto;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+
+  &::after {
+    content: " "; /* Older browser do not support empty content */
+    visibility: hidden;
+    display: block;
+    height: 0;
+    clear: both;
+  }
+}
+
+.setting-leftspace {
+  width: 2em;
+}
+
+.setting-name {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+}
+
+.setting-help {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  width: 16px;
+  vertical-align: middle;
+  float: right;
+}
+
+.setting-no-help {
+  width: 16px;
+}
+
+.setting-input {
+  width: 100%;
+  border-radius: 3px;
+  border: 1px solid var(--input-border);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  padding: 6px;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+.setting-description {
+  font-size: var(--font-size-xs);
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.setting-name,
+.setting-main > input:not([type="file"]),
+.setting-main > textarea {
+  vertical-align: middle;
+  margin-top: 0;
+}
+
+.setting-main > .yui-button {
+  clear: both;
+  float: right;
+}
+
+.expanding-input {
+  display: flex;
+  align-items: center;
+}
+
+.expanding-input__input {
+  flex: 1;
+}
+
+.expanding-input__button {
+  flex-shrink: 1;
+}
+
+.advancedBody {
+  display: none;
+}
+
+.jenkins-not-applicable {
+  color: darkgrey;
+  font-style: italic;
+}
+
+.changeset-message {
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background-color: var(--pre-background);
+
+  pre {
+    padding: 0 0 0.1rem;
+    margin-bottom: 0;
+    background-color: transparent;
+  }
+}
+
+.disabledJob {
+  color: gray;
+}
+
+.bottom-sticker,
+#bottom-sticker {
+  position: sticky;
+  // This has to be set to -1px so that IntersectionObserver can add the
+  // &--stuck class when the element is stuck to the bottom of the screen
+  // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
+  bottom: -1px;
+  margin-left: calc(var(--section-padding) * -1);
+  width: calc(
+    100% + calc(var(--section-padding) * 2)
+  ); /* it needs to occupy the entire width or else the underlying content will see through */
+
+  z-index: 998; /* behind top-sticker */
+}
+
+.bottom-sticker-inner {
+  position: relative;
+  padding: 1em var(--section-padding);
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--background);
+    opacity: 0;
+    z-index: -1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -30px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(rgba(black, 0), rgba(#556, 0.075) 110%);
+    max-width: 100%;
+    height: 30px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      white var(--section-padding),
+      white calc(100% - var(--section-padding)),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  &--stuck {
+    .bottom-sticker-inner {
+      backdrop-filter: blur(15px);
+
+      &::before {
+        opacity: 0.75 !important;
+
+        @supports not (backdrop-filter: blur(15px)) {
+          opacity: 1 !important;
+        }
+      }
+
+      &::after {
+        opacity: 1 !important;
+      }
+    }
+  }
+
+  .yui-button {
+    margin-left: 0;
+    margin-right: 0.5rem;
+  }
+}
+
+.icon16x16 {
+  width: 16px;
+  height: 16px;
+}
+
+.icon24x24 {
+  width: 24px;
+  height: 24px;
+}
+
+.icon32x32 {
+  width: 32px;
+  height: 32px;
+}
+
+/* ====================== help ===================================== */
+
+.help {
+  position: relative;
+  display: none; /* hidden until loaded */
+  padding: 1rem;
+  margin: 1rem 0;
+  word-break: break-word;
+  border-radius: 6px;
+  z-index: 0;
+
+  --section-padding: 0.8rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--text-color);
+    opacity: 0.05;
+    z-index: -1;
+    border-radius: inherit;
+  }
+
+  p:first-of-type {
+    margin-top: 0;
+  }
+
+  p:last-of-type {
+    margin-bottom: 0;
+  }
+
+  // add spacing above headings except for when its the first element in the help
+  // the need for this is caused by p:last-of-type setting margin-bottom to 0
+  // unfortunately because of the varied markup I wasn't able to find a way to avoid this
+  h1:not(:first-child),
+  .h1:not(:first-child),
+  h2:not(:first-child),
+  .h2:not(:first-child),
+  h3:not(:first-child),
+  .h3:not(:first-child),
+  h4:not(:first-child),
+  .h4:not(:first-child),
+  h5:not(:first-child),
+  .h5:not(:first-child),
+  h6:not(:first-child),
+  .h6:not(:first-child) {
+    margin-top: var(--section-padding);
+  }
+}
+
+.help .from-plugin {
+  text-align: right;
+  color: #666;
+}
+
+.icon-help,
+.svg-icon.icon-help {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+img.icon-help {
+  vertical-align: text-top;
+}
+
+/* ============================ health report hover ========================== */
+
+.healthReport a {
+  text-decoration: none;
+}
+
+#side-panel .healthReport a {
+  height: 100%;
+}
+
+.healthReport div.healthReportDetails {
+  display: none;
+  margin-left: 20px;
+  padding: 0;
+
+  --table-border-radius: 7px;
+
+  table {
+    border-radius: 0;
+    width: 450px;
+    margin-bottom: 0;
+    box-sizing: content-box;
+    padding-bottom: 2px;
+
+    * {
+      box-sizing: border-box;
+    }
+  }
+}
+
+.healthReport:hover div.healthReportDetails,
+.healthReport.hover div.healthReportDetails {
+  display: block;
+}
+
+/* ================ Element overflow calculation helper styles ================ */
+
+.force-wrap,
+.force-wrap a {
+  white-space: normal !important;
+  overflow: visible !important;
+}
+
+.force-nowrap,
+.force-nowrap a {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+
+/* ========================= editable combobox style ========================= */
+.comboBoxList {
+  overflow-y: scroll;
+  color: var(--text-color);
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(black, 0.15);
+  margin-top: 8px;
+  margin-left: 3px;
+  max-height: 300px;
+  z-index: 1000;
+  background: var(--background);
+  padding: 0.3rem;
+}
+
+.comboBoxItem {
+  position: relative;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  font-weight: 500;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--text-color);
+    border-radius: 10px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    z-index: -1;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 0.1;
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      opacity: 0.2;
+    }
+  }
+}
+
+.combobox-values {
+  display: none;
+}
+
+/* ========================= directory tree ========================= */
+.parentPath form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .jenkins-input {
+    display: inline-flex;
+    width: 300px;
+  }
+}
+
+.dirTree li {
+  list-style: none;
+}
+
+.dirTree .rootIcon {
+  margin-right: 1em;
+}
+
+table.fileList {
+  padding: 0;
+}
+
+table.fileList td:not(:first-of-type) {
+  padding: 0 1rem 0 0;
+  color: var(--text-color-secondary);
+
+  svg {
+    color: var(--link-color) !important;
+  }
+}
+
+table.fileList td.fileSize {
+  text-align: right;
+}
+
+/* ========================= test result ========================= */
+.result-passed {
+  color: #3465a4;
+}
+
+.result-skipped {
+  color: #db0;
+}
+
+.result-fixed {
+  color: #3465a4;
+  font-weight: bold;
+}
+
+.result-failed {
+  color: #ef2929;
+}
+
+.result-regression {
+  color: #ef2929;
+  font-weight: bold;
+}
+
+.test-trend-caption {
+  text-align: center;
+  font-size: var(--font-size-base);
+  font-weight: bold;
+}
+
+/* ========================= fingerprint ========================= */
+.md5sum {
+  text-align: right;
+}
+
+.fingerprint-summary-header {
+  font-size: var(--font-size-base);
+  vertical-align: middle;
+}
+
+table.fingerprint-in-build td {
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+.radioBlock-container {
+  margin-bottom: 0.875rem;
+
+  &:last-of-type {
+    margin-bottom: var(--section-padding);
+  }
+}
+
+.optionalBlock-container > .form-container,
+.radioBlock-container > .form-container,
+.jenkins-radio__children,
+.dropdownList-container {
+  position: relative;
+  padding-left: 32px;
+  transition: var(--standard-transition);
+  margin-top: calc(var(--section-padding) / 3);
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10px;
+    bottom: 0;
+    width: 2px;
+    background: var(--input-border);
+    border-radius: 2px;
+    transition: var(--standard-transition);
+  }
+
+  &:empty {
+    display: none;
+  }
+}
+
+.dropdownList-container {
+  margin-bottom: var(--section-padding);
+}
+
+.form-container--hidden {
+  visibility: hidden !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  max-height: 0 !important;
+  height: 0 !important;
+  overflow: hidden;
+}
+
+.row-set-end {
+  display: none;
+}
+
+/* ========================= resizable text area ========================= */
+
+textarea {
+  margin-bottom: 0;
+  resize: vertical;
+}
+
+/* ========================= progress bar ========================= */
+
+table.progress-bar {
+  border-collapse: collapse;
+  border: 1px solid #3465a4;
+  height: 6px;
+  width: 100px;
+  clear: none;
+}
+
+table.progress-bar tr.unknown {
+  background-image: url("../images/progress-unknown.gif");
+}
+
+td.progress-bar-done {
+  background-color: #3465a4;
+}
+
+td.progress-bar-left {
+  background-color: #bababa;
+}
+
+table.progress-bar.red {
+  border: 1px solid #c00;
+}
+
+table.progress-bar.red tr.unknown {
+  background-image: url("../images/progress-unknown-red.gif");
+}
+
+table.progress-bar.red td.progress-bar-done {
+  background-color: #c00;
+}
+
+/* Unknown */
+
+[data-symbol-animation] {
+  animation: spin 1s linear infinite;
+  transform-origin: 0 0;
+
+  @media (prefers-reduced-motion) {
+    animation-duration: 3s;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+/* ========================= YUI dialog ========================= */
+
+/* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
+ to the latest YUI will fix this? */
+.dialog .hd {
+  margin: 0 !important;
+  font-size: var(--font-size-xs) !important;
+}
+
+.dialog .bd {
+  margin: 0 !important;
+}
+
+.dialog .ft {
+  margin: 0 !important;
+}
+
+/* ========================= tags/labels ================== */
+// Used in core/src/main/java/hudson/util/TagCloud.java#getClassName
+
+/* tag0 is the least important tag in a tag cloud */
+.tag0 {
+  font-size: 1em;
+}
+
+.tag1 {
+  font-size: 1.1em;
+}
+
+.tag2 {
+  font-size: 1.2em;
+}
+
+.tag3 {
+  font-size: 1.3em;
+}
+
+.tag4 {
+  font-size: 1.4em;
+}
+
+.tag5 {
+  font-size: 1.5em;
+}
+
+.tag6 {
+  font-size: 1.6em;
+}
+
+.tag7 {
+  font-size: 1.7em;
+}
+
+.tag8 {
+  font-size: 1.8em;
+}
+
+.tag9 {
+  font-size: 1.9em;
+}
+
+/* ========================= logRecords.jelly ================== */
+
+.logrecord-container {
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: var(--section-padding);
+
+  pre {
+    padding-top: 0;
+    padding-bottom: 0.1rem;
+    margin-bottom: 0;
+    border-radius: 0;
+
+    &:first-of-type {
+      padding-top: 0.8rem;
+    }
+
+    &:last-of-type {
+      padding-bottom: 0.8rem;
+    }
+  }
+}
+
+.logrecord-metadata {
+  font-size: var(--font-size-xs);
+}
+
+.logrecord-metadata-new {
+  color: var(--green);
+}
+
+.logrecord-metadata-old {
+  color: var(--text-color-secondary);
+}
+
+/* ========================= matrix configuration table ================== */
+table#configuration-matrix {
+  border: 1px var(--medium-grey) solid;
+  border-collapse: collapse;
+}
+
+tr.matrix-row {
+  background-color: var(--bigtable-header-bg);
+  color: var(--bigtable-header-text-color);
+  font-weight: var(--bigtable-header-font-weight);
+}
+
+td.matrix-header {
+  border: 1px var(--medium-grey) solid;
+  padding: 3px;
+}
+
+td#matrix-title {
+  padding: 3px;
+}
+
+td.matrix-leftcolumn {
+  border: 1px var(--medium-grey) solid;
+  font-weight: bold;
+  background: var(--very-light-grey);
+  padding: 3px;
+}
+
+td.matrix-cell {
+  border: 1px var(--medium-grey) solid;
+  text-align: center;
+}
+
+/* ========================= select.jelly ================== */
+select.select-ajax-pending {
+  padding-left: 1.5em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  color: transparent;
+  background-image: url("../images/spinner.gif"); /* this is why here and not in an adjunct */
+  background-repeat: no-repeat;
+  background-position: 2px;
+}
+
+/* ========================= Button styles ================= */
+#disable-project {
+  margin-top: 6px;
+}
+
+.i18n {
+  display: none;
+}
+
+body.no-decoration #main-panel {
+  margin: 0 auto !important;
+}
+
+body.no-decoration #page-header,
+body.no-decoration #side-panel,
+body.no-decoration footer {
+  display: none;
+}
+
+body.no-sticker #bottom-sticker {
+  display: none;
+}
+
+/* see the Icon class for the definition of these CSS classes */
+.icon-xs,
+svg.icon-xs {
+  width: 12px;
+  height: 12px;
+  vertical-align: middle;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.icon-sm,
+svg.icon-sm {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.icon-md,
+svg.icon-md {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.icon-lg,
+svg.icon-lg {
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.icon-xlg,
+svg.icon-xlg {
+  width: 48px;
+  height: 48px;
+  vertical-align: middle;
+
+  svg {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* -------------------------------------- */
+
+/* -------------- SVG icons ------------- */
+
+.svg-icon {
+  display: inline-block;
+  vertical-align: middle;
+
+  /* default dimensions */
+  height: 24px;
+  width: 24px;
+
+  /* default fill fallback */
+  fill: var(--text-color);
+  fill: currentColor;
+}
+
+.jenkins-icon-adjacent {
+  margin-left: 0.5rem;
+  width: 100%;
+}
+
+/* -------------- Unclassified ---------- */
+
+.spacer {
+  height: var(--section-padding);
+}
+
+/* used by elements that are hidden by default but revealed throught JavaScript */
+.default-hidden {
+  display: none;
+}
+
+.app-summary {
+  & > td:first-of-type {
+    img,
+    svg {
+      width: 48px !important;
+      height: 48px !important;
+      margin-right: 1rem;
+    }
+  }
+}
+
+/* -------------------------------------- */

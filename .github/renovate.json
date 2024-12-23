@@ -36,7 +36,7 @@
       ],
       "enabled": false,
       "matchPackageNames": [
-        "org.eclipse.jetty:jetty-maven-plugin",
+        "org.eclipse.jetty.ee9:jetty-ee9-maven-plugin",
         "org.jenkins-ci:winstone"
       ]
     },
@@ -72,16 +72,6 @@
       ]
     },
     {
-      "description": "Depends on commons-lang3 which is in progress for removal from core. See: https://issues.jenkins.io/browse/JENKINS-73355",
-      "matchManagers": [
-        "maven"
-      ],
-      "enabled": false,
-      "matchPackageNames": [
-        "org.apache.commons:commons-compress"
-      ]
-    },
-    {
       "description": "Contains incompatible API changes and needs compatibility work. See: https://github.com/jenkinsci/jenkins/pull/4224",
       "matchManagers": [
         "maven"
@@ -89,17 +79,6 @@
       "enabled": false,
       "matchPackageNames": [
         "org.jfree:jfreechart"
-      ]
-    },
-    {
-      "description": "Starting with 6.x, Spring requires Java 17 at a minimum.",
-      "matchManagers": [
-        "maven"
-      ],
-      "allowedVersions": "<6.0.0",
-      "matchPackageNames": [
-        "org.springframework:spring-framework-bom",
-        "org.springframework.security:spring-security-bom"
       ]
     },
     {
@@ -139,7 +118,7 @@
     {
       "customType": "regex",
       "fileMatch": [
-        "war/pom.xml"
+        "pom.xml"
       ],
       "matchStrings": [
         "<node.version>(?<currentValue>.*?)</node.version>"

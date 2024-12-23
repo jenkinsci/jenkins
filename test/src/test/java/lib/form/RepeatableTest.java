@@ -55,7 +55,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author Alan.Harder@sun.com
@@ -658,7 +658,7 @@ public class RepeatableTest {
             return Jenkins.get().getDescriptorList(Fruit.class);
         }
 
-        public void doSubmitTest(StaplerRequest req) throws Exception {
+        public void doSubmitTest(StaplerRequest2 req) throws Exception {
             formData = req.getSubmittedForm();
             if (bindClass != null) {
                 bindResult = req.bindJSONToList(bindClass, formData.get("items"));

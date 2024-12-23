@@ -5,8 +5,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
@@ -24,8 +22,6 @@ import org.kohsuke.stapler.lang.FieldRef;
 @Restricted(NoExternalUse.class)
 public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
     private static final Logger LOGGER = Logger.getLogger(TypedFilter.class.getName());
-
-    private static final Map<Class<?>, Boolean> staplerCache = new HashMap<>();
 
     private boolean isClassAcceptable(Class<?> clazz) {
         if (clazz.isArray()) {
@@ -46,31 +42,23 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
                 return false;
             }
         }
-        return SKIP_TYPE_CHECK || isStaplerRelevantCached(clazz);
+        return SKIP_TYPE_CHECK || isStaplerRelevant.get(clazz);
     }
 
-    private static boolean isStaplerRelevantCached(@NonNull Class<?> clazz) {
-        if (staplerCache.containsKey(clazz)) {
-            return staplerCache.get(clazz);
+    private static final ClassValue<Boolean> isStaplerRelevant = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> clazz) {
+            return isSpecificClassStaplerRelevant(clazz) || isSuperTypesStaplerRelevant(clazz);
         }
-        boolean ret = isStaplerRelevant(clazz);
-
-        staplerCache.put(clazz, ret);
-        return ret;
-    }
-
-    @Restricted(NoExternalUse.class)
-    public static boolean isStaplerRelevant(@NonNull Class<?> clazz) {
-        return isSpecificClassStaplerRelevant(clazz) || isSuperTypesStaplerRelevant(clazz);
-    }
+    };
 
     private static boolean isSuperTypesStaplerRelevant(@NonNull Class<?> clazz) {
         Class<?> superclass = clazz.getSuperclass();
-        if (superclass != null && isStaplerRelevantCached(superclass)) {
+        if (superclass != null && isStaplerRelevant.get(superclass)) {
             return true;
         }
         for (Class<?> interfaceClass : clazz.getInterfaces()) {
-            if (isStaplerRelevantCached(interfaceClass)) {
+            if (isStaplerRelevant.get(interfaceClass)) {
                 return true;
             }
         }

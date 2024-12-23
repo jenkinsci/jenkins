@@ -46,15 +46,8 @@ THE SOFTWARE.
         <!-- main body of the configuration -->
         <st:include it="${instance}" page="configure-entries.jelly" />
 
-        <j:if test="${h.hasPermission(it, it.CONFIGURE)}">
-          <f:bottomButtonBar>
-            <f:submit value="${%Save}"/>
-          </f:bottomButtonBar>
-        </j:if>
+        <f:saveApplyBar/>
       </f:form>
-      <j:if test="${h.hasPermission(it, it.CONFIGURE)}">
-        <st:adjunct includes="lib.form.confirm" />
-      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

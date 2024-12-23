@@ -2,6 +2,7 @@ package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
+import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.Computer;
@@ -10,18 +11,19 @@ import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.Run;
 import hudson.slaves.Cloud;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.servlet.ServletException;
 import jenkins.management.Badge;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.Event;
 import jenkins.model.menu.event.LinkEvent;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
@@ -37,7 +39,9 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -62,10 +66,31 @@ public interface ModelObjectWithContextMenu extends ModelObject {
      * Generates the context menu.
      *
      * The typical implementation is {@code return new ContextMenu().from(this,request,response);},
-     * which implements the default behaviour. See {@link ContextMenu#from(ModelObjectWithContextMenu, StaplerRequest, StaplerResponse)}
+     * which implements the default behaviour. See {@link ContextMenu#from(ModelObjectWithContextMenu, StaplerRequest2, StaplerResponse2)}
      * for more details of what it does. This should suit most implementations.
      */
-    ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception;
+    default ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
+        if (Util.isOverridden(ModelObjectWithContextMenu.class, getClass(), "doContextMenu", StaplerRequest.class, StaplerResponse.class)) {
+            return doContextMenu(StaplerRequest.fromStaplerRequest2(request), StaplerResponse.fromStaplerResponse2(response));
+        } else {
+            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
+                    + ModelObjectWithContextMenu.class.getSimpleName() + ".doContextMenu methods");
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doContextMenu(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    default ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        if (Util.isOverridden(ModelObjectWithContextMenu.class, getClass(), "doContextMenu", StaplerRequest2.class, StaplerResponse2.class)) {
+            return doContextMenu(StaplerRequest.toStaplerRequest2(request), StaplerResponse.toStaplerResponse2(response));
+        } else {
+            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
+                    + ModelObjectWithContextMenu.class.getSimpleName() + ".doContextMenu methods");
+        }
+    }
 
     /**
      * Data object that represents the context menu.
@@ -81,7 +106,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public final List<MenuItem> items = new ArrayList<>();
 
         @Override
-        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
+        public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object o) throws IOException, ServletException {
             rsp.serveExposedBean(req, this, Flavor.JSON);
         }
 
@@ -110,10 +135,27 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             menuItem.semantic = action.getSemantic();
             menuItem.group = action.getGroup();
             menuItem.event = action.getEvent();
-
-            if (action.getEvent().getClass() == LinkEvent.class) {
-                menuItem.url = ((LinkEvent)action.getEvent()).getUrl();
+            if (!Functions.isContextMenuVisible(action)) {
+                return this;
             }
+            StaplerRequest2 req = Stapler.getCurrentRequest2();
+            String text = action.getDisplayName();
+            String base = Functions.getIconFilePath(action);
+            if (base == null)     return this;
+            String url =  Functions.getActionUrl(req.findAncestor(ModelObject.class).getUrl(), action);
+
+            if (base.startsWith("symbol-")) {
+                Icon icon = Functions.tryGetIcon(base);
+//                return add(url, icon.getClassSpec(), text);
+            } else {
+                String icon = Stapler.getCurrentRequest2().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
+//                return add(url, icon, text);
+            }
+//        }
+
+//            if (action.getEvent().getClass() == LinkEvent.class) {
+//                menuItem.url = ((LinkEvent)action.getEvent()).getUrl();
+//            }
 
             String icon = action.getIconFileName();
             if (action instanceof IconSpec) {
@@ -183,8 +225,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * Adds a computer
          *
          * @since 1.513
+         * @deprecated use {@link #add(IComputer)} instead.
          */
+        @Deprecated(since = "2.480")
         public ContextMenu add(Computer c) {
+            return add((IComputer) c);
+        }
+
+        /**
+         * Adds a {@link IComputer} instance.
+         * @param c the computer to add to the menu
+         * @return this
+         * @since 2.480
+         */
+        public ContextMenu add(IComputer c) {
             return add(new MenuItem()
                     .withDisplayName(c.getDisplayName())
                     .withIconClass(c.getIconClassName())
@@ -235,14 +289,14 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          *
          * <p>
          * Unconventional {@link ModelObject} implementations that do not use {@code sidepanel.groovy}
-         * can override {@link ModelObjectWithContextMenu#doContextMenu(StaplerRequest, StaplerResponse)}
+         * can override {@link ModelObjectWithContextMenu#doContextMenu(StaplerRequest2, StaplerResponse2)}
          * directly to provide alternative semantics.
          */
-        public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response) throws JellyException, IOException {
+        public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest2 request, StaplerResponse2 response) throws JellyException, IOException {
             return from(self, request, response, "sidepanel");
         }
 
-        public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response, String view) throws JellyException, IOException {
+        public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest2 request, StaplerResponse2 response, String view) throws JellyException, IOException {
             // TODO - refactor this
             if (self instanceof Run) {
                 this.addAll(((Actionable) self).getMagic());
@@ -391,9 +445,9 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         public MenuItem withUrl(String url) {
             try {
-                this.url = new URI(Stapler.getCurrentRequest().getRequestURI()).resolve(new URI(url)).toString();
+                this.url = new URI(Stapler.getCurrentRequest2().getRequestURI()).resolve(new URI(url)).toString();
             } catch (URISyntaxException x) {
-                throw new IllegalArgumentException("Bad URI from " + Stapler.getCurrentRequest().getRequestURI() + " vs. " + url, x);
+                throw new IllegalArgumentException("Bad URI from " + Stapler.getCurrentRequest2().getRequestURI() + " vs. " + url, x);
             }
             return this;
         }
@@ -403,7 +457,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          */
         public MenuItem withContextRelativeUrl(String url) {
             if (!url.startsWith("/"))   url = '/' + url;
-            this.url = Stapler.getCurrentRequest().getContextPath() + url;
+            this.url = Stapler.getCurrentRequest2().getContextPath() + url;
             return this;
         }
 
@@ -454,7 +508,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         private String getResourceUrl() {
-            return Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH;
+            return Stapler.getCurrentRequest2().getContextPath() + Jenkins.RESOURCE_PATH;
         }
 
     }
@@ -474,7 +528,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         /**
          * Determines whether to show this action right now.
          * Can always return false, for an action which should never be in the context menu;
-         * or could examine {@link Stapler#getCurrentRequest}.
+         * or could examine {@link Stapler#getCurrentRequest2}.
          * @return true to display it, false to hide
          * @see ContextMenu#add(Action)
          */

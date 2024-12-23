@@ -194,16 +194,6 @@ var resURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
   }
 })();
 
-(function initializeYUIDebugLogReader() {
-  Behaviour.addLoadEvent(function () {
-    var logReaderElement = document.getElementById("yui-logreader");
-    if (logReaderElement !== null) {
-      var logReader = new YAHOO.widget.LogReader("yui-logreader");
-      logReader.collapse();
-    }
-  });
-})();
-
 // Form check code
 //========================================================
 var FormChecker = {
@@ -895,6 +885,7 @@ function preventInputEe(event) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function escapeHTML(html) {
   return html
     .replace(/&/g, "&amp;")
@@ -1329,49 +1320,6 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
       registerRegexpValidator(e, /^[1-9]\d*$/, "Not a positive integer");
-    },
-  );
-
-  Behaviour.specify(
-    "INPUT.auto-complete",
-    "input-auto-complete",
-    ++p,
-    function (e) {
-      // form field with auto-completion support
-      // insert the auto-completion container
-      var div = document.createElement("DIV");
-      e.parentNode.insertBefore(div, e.nextElementSibling);
-      e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
-
-      var ds = new YAHOO.util.XHRDataSource(e.getAttribute("autoCompleteUrl"));
-      ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
-      ds.responseSchema = {
-        resultsList: "suggestions",
-        fields: ["name"],
-      };
-
-      // Instantiate the AutoComplete
-      var ac = new YAHOO.widget.AutoComplete(e, div, ds);
-      ac.generateRequest = function (query) {
-        return "?value=" + query;
-      };
-      ac.autoHighlight = false;
-      ac.prehighlightClassName = "yui-ac-prehighlight";
-      ac.animSpeed = 0;
-      ac.formatResult = ac.formatEscapedResult;
-      ac.useShadow = true;
-      ac.autoSnapContainer = true;
-      ac.delimChar = e.getAttribute("autoCompleteDelimChar");
-      ac.doBeforeExpandContainer = function (textbox, container) {
-        // adjust the width every time we show it
-        container.style.width = textbox.clientWidth + "px";
-        var Dom = YAHOO.util.Dom;
-        Dom.setXY(container, [
-          Dom.getX(textbox),
-          Dom.getY(textbox) + textbox.offsetHeight,
-        ]);
-        return true;
-      };
     },
   );
 
@@ -2244,6 +2192,7 @@ function toQueryString(params) {
 }
 
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'
+// eslint-disable-next-line no-unused-vars
 function getStyle(e, a) {
   if (document.defaultView && document.defaultView.getComputedStyle) {
     return document.defaultView
@@ -2300,61 +2249,6 @@ function ensureVisible(e) {
   } else if (d > 0) {
     document.documentElement.scrollTop += d;
   }
-}
-
-// set up logic behind the search box
-// eslint-disable-next-line no-unused-vars
-function createSearchBox(searchURL) {
-  var ds = new YAHOO.util.XHRDataSource(searchURL + "suggest");
-  ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
-  ds.responseSchema = {
-    resultsList: "suggestions",
-    fields: ["name"],
-  };
-  var ac = new YAHOO.widget.AutoComplete(
-    "search-box",
-    "search-box-completion",
-    ds,
-  );
-  ac.typeAhead = false;
-  ac.autoHighlight = false;
-  ac.formatResult = ac.formatEscapedResult;
-  ac.maxResultsDisplayed = 25;
-
-  var box = document.getElementById("search-box");
-  var sizer = document.getElementById("search-box-sizer");
-  var comp = document.getElementById("search-box-completion");
-
-  Behaviour.addLoadEvent(function () {
-    // copy font style of box to sizer
-    var ds = sizer.style;
-    ds.fontFamily = getStyle(box, "fontFamily");
-    ds.fontSize = getStyle(box, "fontSize");
-    ds.fontStyle = getStyle(box, "fontStyle");
-    ds.fontWeight = getStyle(box, "fontWeight");
-  });
-
-  // update positions and sizes of the components relevant to search
-  function updatePos() {
-    sizer.innerHTML = escapeHTML(box.value);
-    var cssWidth,
-      offsetWidth = sizer.offsetWidth;
-    if (offsetWidth > 0) {
-      cssWidth = offsetWidth + "px";
-    } else {
-      // sizer hidden on small screen, make sure resizing looks OK
-      cssWidth = getStyle(sizer, "minWidth");
-    }
-    box.style.width = comp.firstElementChild.style.minWidth =
-      "calc(60px + " + cssWidth + ")";
-
-    var pos = YAHOO.util.Dom.getXY(box);
-    pos[1] += YAHOO.util.Dom.get(box).offsetHeight + 2;
-    YAHOO.util.Dom.setXY(comp, pos);
-  }
-
-  updatePos();
-  box.addEventListener("input", updatePos);
 }
 
 /**
@@ -2572,6 +2466,9 @@ function buildFormTree(form) {
           p = findParent(e);
           addProperty(p, e.name, e.value);
           if (e.classList.contains("complex-password-field")) {
+            addProperty(p, "$redact", shortenName(e.name));
+          }
+          if (e.classList.contains("secretTextarea-redact")) {
             addProperty(p, "$redact", shortenName(e.name));
           }
           break;
