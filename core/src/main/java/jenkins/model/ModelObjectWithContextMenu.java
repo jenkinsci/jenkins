@@ -22,7 +22,6 @@ import jenkins.management.Badge;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.Event;
-import jenkins.model.menu.event.LinkEvent;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
