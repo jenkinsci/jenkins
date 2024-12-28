@@ -538,7 +538,7 @@ function findNext(src, filter) {
 function findFormItem(src, name, directionF) {
   const name2 = "_." + name; // handles <textbox field="..." /> notation silently
   return directionF(src, function (e) {
-    if (e.tagName === "INPUT" && e.type === "radio" ) {
+    if (e.tagName === "INPUT" && e.type === "radio") {
       if (e.checked === true) {
         let r = 0;
         while (e.name.substring(r, r + 8) === "removeme") {
@@ -547,7 +547,7 @@ function findFormItem(src, name, directionF) {
         }
         return name === e.name.substring(r);
       }
-      return false
+      return false;
     }
     return (
       (e.tagName === "INPUT" ||
@@ -734,11 +734,12 @@ function registerValidator(e) {
           return;
         }
 
-        if (c.tagName === 'INPUT' && c.type === "radio") {
-          document.querySelectorAll(`input[name='${c.name}'][type='radio']`)
-            .forEach(element => {
+        if (c.tagName === "INPUT" && c.type === "radio") {
+          document
+            .querySelectorAll(`input[name='${c.name}'][type='radio']`)
+            .forEach((element) => {
               element.addEventListener("change", checker.bind(e));
-            })
+            });
         } else {
           c.addEventListener("change", checker.bind(e));
         }
