@@ -34,7 +34,7 @@
     "eslint": "9.17.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-formatter-checkstyle": "8.40.0",
-    "globals": "15.13.0",
+    "globals": "15.14.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.9.2",
     "postcss": "8.4.49",
@@ -49,7 +49,7 @@
     "stylelint-checkstyle-reporter": "1.0.0",
     "stylelint-config-standard": "36.0.1",
     "webpack": "5.97.1",
-    "webpack-cli": "5.1.4",
+    "webpack-cli": "6.0.1",
     "webpack-remove-empty-scripts": "1.0.4"
   },
   "dependencies": {
