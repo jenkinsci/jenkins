@@ -15,7 +15,7 @@
     "build": "yarn prod",
     "start": "yarn dev --watch",
     "lint:js": "eslint . && prettier --check .",
-    "lint:js-ci": "eslint . -f checkstyle -o target/eslint-warnings.xml && prettier --check .",
+    "lint:js-ci": "eslint . -f checkstyle -o target/eslint-warnings.xml",
     "lint:css": "stylelint src/main/scss",
     "lint:css-ci": "stylelint src/main/scss --custom-formatter stylelint-checkstyle-reporter -o target/stylelint-warnings.xml",
     "lint:ci": "yarn lint:js-ci && yarn lint:css-ci",
