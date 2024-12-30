@@ -147,6 +147,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
 import hudson.search.CollectionSearchIndex;
+import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.security.ACL;
@@ -2345,11 +2346,29 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder builder = super.makeSearchIndex();
-        if (hasPermission(ADMINISTER)) {
-                builder.add("configure", "config", "configure")
-                    .add("manage")
-                    .add("log");
-        }
+
+        this.actions.stream().filter(e -> e.getIconFileName() != null).forEach(action -> builder.add(new SearchItem() {
+            @Override
+            public String getSearchName() {
+                return action.getDisplayName();
+            }
+
+            @Override
+            public String getSearchUrl() {
+                return action.getUrlName();
+            }
+
+            @Override
+            public String getSearchIcon() {
+                return action.getIconFileName();
+            }
+
+            @Override
+            public SearchIndex getSearchIndex() {
+                return SearchIndex.EMPTY;
+            }
+        }));
+
         builder.add(new CollectionSearchIndex<TopLevelItem>() {
                     @Override
                     protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
@@ -3299,11 +3318,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (cfg.exists()) {
             // reset some data that may not exist in the disk file
             // so that we can take a proper compensation action later.
+            String originalPrimaryView = primaryView;
+            List<View> originalViews = new ArrayList<>(views);
             primaryView = null;
             views.clear();
-
-            // load from disk
-            cfg.unmarshal(Jenkins.this);
+            try {
+                // load from disk
+                cfg.unmarshal(Jenkins.this);
+            } catch (IOException | RuntimeException x) {
+                primaryView = originalPrimaryView;
+                views.clear();
+                views.addAll(originalViews);
+                throw x;
+            }
         }
         // initialize views by inserting the default view if necessary
         // this is both for clean Jenkins and for backward compatibility.

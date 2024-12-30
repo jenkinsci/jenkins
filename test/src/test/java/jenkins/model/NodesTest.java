@@ -287,6 +287,7 @@ public class NodesTest {
 
         @Override
         protected void onCreated(@NonNull Node node) {
+            node.getRootDir();
             created.add(node.getNodeName());
         }
 

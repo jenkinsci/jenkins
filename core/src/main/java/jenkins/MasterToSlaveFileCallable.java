@@ -1,26 +1,16 @@
 package jenkins;
 
 import hudson.FilePath.FileCallable;
-import hudson.remoting.VirtualChannel;
-import java.io.File;
-import jenkins.security.Roles;
-import jenkins.slaves.RemotingVersionInfo;
-import org.jenkinsci.remoting.RoleChecker;
+import jenkins.agents.ControllerToAgentFileCallable;
 
 /**
- * {@link FileCallable}s that are meant to be only used on the master.
- *
- * Note that the logic within {@link #invoke(File, VirtualChannel)} should use API of a minimum supported Remoting version.
- * See {@link RemotingVersionInfo#getMinimumSupportedVersion()}.
- *
+ * {@link FileCallable}s that could run on an agent.
+ * For new code, implement {@link ControllerToAgentFileCallable}
+ * which has the advantage that it can be used on {@code record}s.
  * @since 1.587 / 1.580.1
- * @param <T> the return type; note that this must either be defined in your plugin or included in the stock JEP-200 whitelist
+ * @param <T> the return type
  */
-public abstract class MasterToSlaveFileCallable<T> implements FileCallable<T> {
-    @Override
-    public void checkRoles(RoleChecker checker) throws SecurityException {
-        checker.check(this, Roles.SLAVE);
-    }
+public abstract class MasterToSlaveFileCallable<T> implements ControllerToAgentFileCallable<T> {
 
     private static final long serialVersionUID = 1L;
 }

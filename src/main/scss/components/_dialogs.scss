@@ -87,6 +87,12 @@ $jenkins-dialog-padding: 1.3rem;
   }
 }
 
+@keyframes jenkins-dialog-backdrop-animate-out {
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes jenkins-dialog-animate-in {
   from {
     scale: 85%;

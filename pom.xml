@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.125</version>
+    <version>1.127</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.484</revision>
+    <revision>2.492</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-10-29T13:43:58Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-12-19T15:05:15Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3273.v4cfe589b_fd83</remoting.version>
+    <remoting.version>3283.v92c105e0f819</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -97,8 +97,8 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.30</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.2</winstone.version>
-    <node.version>20.18.0</node.version>
+    <winstone.version>8.4</winstone.version>
+    <node.version>20.18.1</node.version>
   </properties>
 
   <!--
@@ -281,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.20.0</version>
+              <version>10.21.1</version>
             </dependency>
           </dependencies>
           <executions>
@@ -517,6 +517,18 @@ THE SOFTWARE.
                 <configuration>
                   <arguments>yarn lint:ci</arguments>
                   <skip>${yarn.lint.skip}</skip>
+                </configuration>
+              </execution>
+              <execution>
+                <id>prettier</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>yarn exec prettier --check .</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                  <testFailureIgnore>false</testFailureIgnore>
                 </configuration>
               </execution>
             </executions>

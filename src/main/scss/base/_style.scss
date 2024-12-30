@@ -372,6 +372,8 @@ pre.console {
   border-radius: 6px;
   z-index: 0;
 
+  --section-padding: 0.8rem;
+
   &::before {
     content: "";
     position: absolute;
@@ -388,6 +390,24 @@ pre.console {
 
   p:last-of-type {
     margin-bottom: 0;
+  }
+
+  // add spacing above headings except for when its the first element in the help
+  // the need for this is caused by p:last-of-type setting margin-bottom to 0
+  // unfortunately because of the varied markup I wasn't able to find a way to avoid this
+  h1:not(:first-child),
+  .h1:not(:first-child),
+  h2:not(:first-child),
+  .h2:not(:first-child),
+  h3:not(:first-child),
+  .h3:not(:first-child),
+  h4:not(:first-child),
+  .h4:not(:first-child),
+  h5:not(:first-child),
+  .h5:not(:first-child),
+  h6:not(:first-child),
+  .h6:not(:first-child) {
+    margin-top: var(--section-padding);
   }
 }
 

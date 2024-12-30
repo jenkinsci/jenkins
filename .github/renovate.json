@@ -10,6 +10,7 @@
   "postUpdateOptions": [
     "yarnDedupeHighest"
   ],
+  "ignoreDeps": ["softprops/action-gh-release"],
   "packageRules": [
     {
       "matchDatasources": [
@@ -69,16 +70,6 @@
       "enabled": false,
       "matchPackageNames": [
         "org.fusesource.jansi:jansi"
-      ]
-    },
-    {
-      "description": "Depends on commons-lang3 which is in progress for removal from core. See: https://issues.jenkins.io/browse/JENKINS-73355",
-      "matchManagers": [
-        "maven"
-      ],
-      "enabled": false,
-      "matchPackageNames": [
-        "org.apache.commons:commons-compress"
       ]
     },
     {
