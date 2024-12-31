@@ -36,7 +36,7 @@ import hudson.remoting.Capability;
 import hudson.remoting.ChannelBuilder;
 import hudson.remoting.ChunkHeader;
 import hudson.remoting.Engine;
-import hudson.slaves.SlaveComputer;
+import hudson.agents.AgentComputer;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
@@ -48,8 +48,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.slaves.JnlpAgentReceiver;
-import jenkins.slaves.RemotingVersionInfo;
+import jenkins.agents.JnlpAgentReceiver;
+import jenkins.agents.RemotingVersionInfo;
 import jenkins.websocket.WebSocketSession;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
@@ -108,7 +108,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         Capability remoteCapability = Capability.fromASCII(remoteCapabilityStr);
         LOGGER.fine(() -> "received " + remoteCapability);
         rsp.setHeader(Capability.KEY, new Capability().toASCII());
-        if (!SlaveComputer.ALLOW_UNSUPPORTED_REMOTING_VERSIONS) {
+        if (!AgentComputer.ALLOW_UNSUPPORTED_REMOTING_VERSIONS) {
             rsp.setHeader(Engine.REMOTING_MINIMUM_VERSION_HEADER, RemotingVersionInfo.getMinimumSupportedVersion().toString());
         }
         rsp.setHeader(Engine.WEBSOCKET_COOKIE_HEADER, cookie);

@@ -44,14 +44,14 @@ import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.model.TaskListener;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.RetentionStrategy;
-import hudson.slaves.SlaveComputer;
+import hudson.agents.ComputerLauncher;
+import hudson.agents.RetentionStrategy;
+import hudson.agents.AgentComputer;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Shell;
 import java.io.File;
@@ -107,9 +107,9 @@ public class SimpleBuildWrapperTest {
         Assume.assumeFalse(Functions.isWindows());
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new WrapperWithEnvOverrideExpand());
-        SpecialEnvSlave slave = new SpecialEnvSlave(tmp.getRoot(), r.createComputerLauncher(null));
-        r.jenkins.addNode(slave);
-        p.setAssignedNode(slave);
+        SpecialEnvAgent agent = new SpecialEnvAgent(tmp.getRoot(), r.createComputerLauncher(null));
+        r.jenkins.addNode(agent);
+        p.setAssignedNode(agent);
         JDK jdk = new JDK("test", "/opt/jdk");
         r.jenkins.getJDKs().add(jdk);
         p.setJDK(jdk);
@@ -138,9 +138,9 @@ public class SimpleBuildWrapperTest {
         }
     }
 
-    private static class SpecialEnvSlave extends Slave {
-        SpecialEnvSlave(File remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
-            super("special", "SpecialEnvSlave", remoteFS.getAbsolutePath(), 1, Mode.NORMAL, "", launcher, RetentionStrategy.NOOP, Collections.emptyList());
+    private static class SpecialEnvAgent extends Agent {
+        SpecialEnvAgent(File remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
+            super("special", "SpecialEnvAgent", remoteFS.getAbsolutePath(), 1, Mode.NORMAL, "", launcher, RetentionStrategy.NOOP, Collections.emptyList());
         }
 
         @Override public Computer createComputer() {
@@ -148,9 +148,9 @@ public class SimpleBuildWrapperTest {
         }
     }
 
-    private static class SpecialEnvComputer extends SlaveComputer {
-        SpecialEnvComputer(SpecialEnvSlave slave) {
-            super(slave);
+    private static class SpecialEnvComputer extends AgentComputer {
+        SpecialEnvComputer(SpecialEnvAgent agent) {
+            super(agent);
         }
 
         @Override public EnvVars getEnvironment() throws IOException, InterruptedException {

@@ -41,7 +41,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import hudson.util.OneShotEvent;
 import java.io.IOException;
 import jenkins.model.Jenkins;
@@ -70,7 +70,7 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeShouldFailWithoutComputerConnectPermission() throws Exception {
-        j.createSlave("aNode", "", null);
+        j.createAgent("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -90,122 +90,122 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeShouldSucceed() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent agent = j.createAgent("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        if (slave.toComputer().isConnecting()) {
+        if (agent.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
-            slave.toComputer().waitUntilOnline();
+            agent.toComputer().waitUntilOnline();
         }
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
     }
 
     @Test public void onlineNodeShouldSucceedOnOnlineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        if (slave.toComputer().isConnecting()) {
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        if (agent.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
-            slave.toComputer().waitUntilOnline();
+            agent.toComputer().waitUntilOnline();
         }
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
     }
 
     @Test public void onlineNodeShouldSucceedOnOfflineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        if (slave.toComputer().isConnecting()) {
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        if (agent.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
-            slave.toComputer().waitUntilOnline();
+            agent.toComputer().waitUntilOnline();
         }
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        slave.toComputer().setTemporarilyOffline(true);
-        slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
+        agent.toComputer().setTemporarilyOffline(true);
+        agent.toComputer().waitUntilOffline();
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        if (slave.toComputer().isConnecting()) {
+        if (agent.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
-            slave.toComputer().waitUntilOnline();
+            agent.toComputer().waitUntilOnline();
         }
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
     }
 
     @Test public void onlineNodeShouldSucceedOnDisconnectedNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        if (slave.toComputer().isConnecting()) {
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        if (agent.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
-            slave.toComputer().waitUntilOnline();
+            agent.toComputer().waitUntilOnline();
         }
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        slave.toComputer().disconnect();
-        slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
+        agent.toComputer().disconnect();
+        agent.toComputer().waitUntilOffline();
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        if (slave.toComputer().isConnecting()) {
+        if (agent.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
-            slave.toComputer().waitUntilOnline();
+            agent.toComputer().waitUntilOnline();
         }
-        assertThat(slave.toComputer().isOnline(), equalTo(false));
+        assertThat(agent.toComputer().isOnline(), equalTo(false));
     }
 
     @Test public void onlineNodeShouldSucceedOnDisconnectingNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        if (slave.toComputer().isConnecting()) {
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        if (agent.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
-            slave.toComputer().waitUntilOnline();
+            agent.toComputer().waitUntilOnline();
         }
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        slave.toComputer().disconnect();
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
+        agent.toComputer().disconnect();
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        if (slave.toComputer().isConnecting()) {
+        if (agent.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
-            slave.toComputer().waitUntilOnline();
+            agent.toComputer().waitUntilOnline();
         }
-        assertThat(slave.toComputer().isOnline(), equalTo(false));
+        assertThat(agent.toComputer().isOnline(), equalTo(false));
     }
 
     @Test public void onlineNodeShouldSucceedOnBuildingOfflineNode() throws Exception {
         final OneShotEvent finish = new OneShotEvent();
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        if (!slave.toComputer().isOnline()) {
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        if (!agent.toComputer().isOnline()) {
             System.out.println("Waiting until going online is in progress...");
-            slave.toComputer().waitUntilOnline();
+            agent.toComputer().waitUntilOnline();
         }
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.setAssignedNode(slave);
+        project.setAssignedNode(agent);
         final FreeStyleBuild build = startBlockingAndFinishingBuild(project, finish);
 
-        slave.toComputer().setTemporarilyOffline(true);
-        slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
+        agent.toComputer().setTemporarilyOffline(true);
+        agent.toComputer().waitUntilOffline();
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        if (slave.toComputer().isConnecting()) {
+        if (agent.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
-            slave.toComputer().waitUntilOnline();
+            agent.toComputer().waitUntilOnline();
         }
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
         assertThat(build.isBuilding(), equalTo(true));
 
         finish.signal();
@@ -215,34 +215,34 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeManyShouldSucceed() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        DumbSlave slave3 = j.createSlave("aNode3", "", null);
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
+        DumbAgent agent3 = j.createAgent("aNode3", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode3");
         assertThat(result, succeededSilently());
-        if (slave1.toComputer().isConnecting()) {
+        if (agent1.toComputer().isConnecting()) {
             System.out.println("Waiting until aNode1 going online is in progress...");
-            slave1.toComputer().waitUntilOnline();
+            agent1.toComputer().waitUntilOnline();
         }
-        if (slave2.toComputer().isConnecting()) {
+        if (agent2.toComputer().isConnecting()) {
             System.out.println("Waiting until aNode2 going online is in progress...");
-            slave2.toComputer().waitUntilOnline();
+            agent2.toComputer().waitUntilOnline();
         }
-        if (slave3.toComputer().isConnecting()) {
+        if (agent3.toComputer().isConnecting()) {
             System.out.println("Waiting until aNode3 going online is in progress...");
-            slave3.toComputer().waitUntilOnline();
+            agent3.toComputer().waitUntilOnline();
         }
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave3.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent3.toComputer().isOnline(), equalTo(true));
     }
 
     @Test public void onlineNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
@@ -251,36 +251,36 @@ public class OnlineNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such agent \"never_created\" exists. Did you mean \"aNode1\"?"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
-        if (slave1.toComputer().isConnecting()) {
+        if (agent1.toComputer().isConnecting()) {
             System.out.println("Waiting until aNode1 going online is in progress...");
-            slave1.toComputer().waitUntilOnline();
+            agent1.toComputer().waitUntilOnline();
         }
-        if (slave2.toComputer().isConnecting()) {
+        if (agent2.toComputer().isConnecting()) {
             System.out.println("Waiting until aNode2 going online is in progress...");
-            slave2.toComputer().waitUntilOnline();
+            agent2.toComputer().waitUntilOnline();
         }
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
     }
 
     @Test public void onlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode1");
         assertThat(result, succeededSilently());
-        if (slave1.toComputer().isConnecting()) {
+        if (agent1.toComputer().isConnecting()) {
             System.out.println("Waiting until aNode1 going online is in progress...");
-            slave1.toComputer().waitUntilOnline();
+            agent1.toComputer().waitUntilOnline();
         }
-        if (slave2.toComputer().isConnecting()) {
+        if (agent2.toComputer().isConnecting()) {
             System.out.println("Waiting until aNode2 going online is in progress...");
-            slave2.toComputer().waitUntilOnline();
+            agent2.toComputer().waitUntilOnline();
         }
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
     }
 
     @Test public void onlineNodeShouldSucceedOnMaster() {

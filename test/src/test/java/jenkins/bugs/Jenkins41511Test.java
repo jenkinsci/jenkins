@@ -11,8 +11,8 @@ public class Jenkins41511Test {
 
     @BeforeClass
     public static void setUpClass() {
-        System.setProperty(Jenkins.class.getName() + ".slaveAgentPort", "10000");
-        System.setProperty(Jenkins.class.getName() + ".slaveAgentPortEnforce", "true");
+        System.setProperty(Jenkins.class.getName() + ".agentAgentPort", "10000");
+        System.setProperty(Jenkins.class.getName() + ".agentAgentPortEnforce", "true");
     }
 
     @Rule

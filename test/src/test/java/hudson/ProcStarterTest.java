@@ -59,7 +59,7 @@ public class ProcStarterTest {
     public void testNonInitializedEnvsNPE() throws Exception {
         // Create nodes and other test stuff
         rule.jenkins.setNumExecutors(0);
-        rule.createSlave();
+        rule.createAgent();
 
         // Create a job with test build wrappers
         FreeStyleProject project = rule.createFreeStyleProject();
@@ -74,7 +74,7 @@ public class ProcStarterTest {
     @Issue("JENKINS-36277")
     public void testNonExistingPwd() throws Exception {
         rule.jenkins.setNumExecutors(0);
-        rule.createSlave();
+        rule.createAgent();
 
         FreeStyleProject project = rule.createFreeStyleProject();
         project.getBuildersList().add(new EchoBuilder());

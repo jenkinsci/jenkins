@@ -27,7 +27,7 @@ package jenkins.security;
 import static org.junit.Assert.assertEquals;
 
 import hudson.FilePath;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import hudson.util.DirScanner;
 import java.io.OutputStream;
 import org.junit.Before;
@@ -40,11 +40,11 @@ public class FilePathSecureTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    private DumbSlave s;
+    private DumbAgent s;
     private FilePath root, remote;
 
     @Before public void init() throws Exception {
-        s = r.createOnlineSlave();
+        s = r.createOnlineAgent();
         root = r.jenkins.getRootPath();
         remote = s.getRootPath();
         // to see the difference: DefaultFilePathFilter.BYPASS = true;

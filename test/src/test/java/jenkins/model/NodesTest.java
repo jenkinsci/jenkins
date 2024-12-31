@@ -45,10 +45,10 @@ import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.Node;
 import hudson.model.Saveable;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.model.listeners.SaveableListener;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.DumbSlave;
+import hudson.agents.ComputerLauncher;
+import hudson.agents.DumbAgent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -84,7 +84,7 @@ public class NodesTest {
     @Test
     @Issue("JENKINS-50599")
     public void addNodeShouldFailAtomicallyWhenReplacingNode() throws Exception {
-        Node oldNode = r.createSlave("foo", "", null);
+        Node oldNode = r.createAgent("foo", "", null);
         r.jenkins.addNode(oldNode);
         InvalidNode newNode = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
         IOException e = assertThrows(
@@ -100,9 +100,9 @@ public class NodesTest {
 
     @Test
     public void addNodeShouldReplaceExistingNode() throws Exception {
-        Node oldNode = r.createSlave("foo", "", null);
+        Node oldNode = r.createAgent("foo", "", null);
         r.jenkins.addNode(oldNode);
-        Node newNode = r.createSlave("foo", "", null);
+        Node newNode = r.createAgent("foo", "", null);
         r.jenkins.addNode(newNode);
         assertThat(r.jenkins.getNode("foo"), sameInstance(newNode));
         ListenerImpl l = ExtensionList.lookupSingleton(ListenerImpl.class);
@@ -149,8 +149,8 @@ public class NodesTest {
     @Test
     @Issue("JENKINS-56403")
     public void replaceNodeShouldRemoveOldNode() throws Exception {
-        Node oldNode = r.createSlave("foo", "", null);
-        Node newNode = r.createSlave("foo-new", "", null);
+        Node oldNode = r.createAgent("foo", "", null);
+        Node newNode = r.createAgent("foo-new", "", null);
         r.jenkins.addNode(oldNode);
         r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
         r.jenkins.getNodesObject().load();
@@ -160,15 +160,15 @@ public class NodesTest {
     @Test
     @Issue("JENKINS-56403")
     public void replaceNodeShouldNotRemoveIdenticalOldNode() throws Exception {
-        Node oldNode = r.createSlave("foo", "", null);
-        Node newNode = r.createSlave("foo", "", null);
+        Node oldNode = r.createAgent("foo", "", null);
+        Node newNode = r.createAgent("foo", "", null);
         r.jenkins.addNode(oldNode);
         r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
         r.jenkins.getNodesObject().load();
         assertNotNull(r.jenkins.getNode("foo"));
     }
 
-    private static class InvalidNode extends Slave {
+    private static class InvalidNode extends Agent {
         // JEP-200 whitelist changes prevent this field (and thus instances of this class) from being serialized.
         private ClassLoader cl = InvalidNode.class.getClassLoader();
 
@@ -182,7 +182,7 @@ public class NodesTest {
     public void cannotCreateNodeWithTrailingDot_withoutOtherNode() throws Exception {
         assertThat(r.jenkins.getNodes(), hasSize(0));
 
-        DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
+        DumbAgent node = new DumbAgent("nodeA.", "temp", r.createComputerLauncher(null));
         Failure e = assertThrows(
                 "Adding the node should have thrown an exception during checkGoodName",
                 Failure.class,
@@ -196,10 +196,10 @@ public class NodesTest {
     @Issue("SECURITY-2424")
     public void cannotCreateNodeWithTrailingDot_withExistingNode() throws Exception {
         assertThat(r.jenkins.getNodes(), hasSize(0));
-        r.createSlave("nodeA", "", null);
+        r.createAgent("nodeA", "", null);
         assertThat(r.jenkins.getNodes(), hasSize(1));
 
-        DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
+        DumbAgent node = new DumbAgent("nodeA.", "temp", r.createComputerLauncher(null));
         Failure e = assertThrows(
                 "Adding the node should have thrown an exception during checkGoodName",
                 Failure.class,
@@ -218,7 +218,7 @@ public class NodesTest {
         try {
             assertThat(r.jenkins.getNodes(), hasSize(0));
 
-            DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
+            DumbAgent node = new DumbAgent("nodeA.", "temp", r.createComputerLauncher(null));
             r.jenkins.addNode(node);
 
             assertThat(r.jenkins.getNodes(), hasSize(1));
@@ -248,24 +248,24 @@ public class NodesTest {
 
     @Test
     public void listenersCalledOnSetNodes() throws URISyntaxException, IOException, Descriptor.FormException {
-        var agentA = new DumbSlave("nodeA", "temp", r.createComputerLauncher(null));
-        var agentB = new DumbSlave("nodeB", "temp", r.createComputerLauncher(null));
-        var agentA2 = new DumbSlave("nodeA", "temp2", r.createComputerLauncher(null));
+        var agentA = new DumbAgent("nodeA", "temp", r.createComputerLauncher(null));
+        var agentB = new DumbAgent("nodeB", "temp", r.createComputerLauncher(null));
+        var agentA2 = new DumbAgent("nodeA", "temp2", r.createComputerLauncher(null));
         Jenkins.get().setNodes(List.of(agentA, agentB));
         assertThat(CheckSetNodes.created, containsInAnyOrder("nodeA", "nodeB"));
         assertThat(CheckSetNodes.updated, empty());
         assertThat(CheckSetNodes.deleted, empty());
         Jenkins.get().setNodes(List.of(agentA2));
         assertThat(CheckSetNodes.created, containsInAnyOrder("nodeA", "nodeB"));
-        assertThat(CheckSetNodes.updated, contains(new DumbSlaveNameAndRemoteFSMatcher(new DumbSlavePair(agentA, agentA2))));
+        assertThat(CheckSetNodes.updated, contains(new DumbAgentNameAndRemoteFSMatcher(new DumbAgentPair(agentA, agentA2))));
         assertThat(CheckSetNodes.deleted, contains("nodeB"));
         Jenkins.get().setNodes(List.of());
         assertThat(CheckSetNodes.created, containsInAnyOrder("nodeA", "nodeB"));
-        assertThat(CheckSetNodes.updated, contains(new DumbSlaveNameAndRemoteFSMatcher(new DumbSlavePair(agentA, agentA2))));
+        assertThat(CheckSetNodes.updated, contains(new DumbAgentNameAndRemoteFSMatcher(new DumbAgentPair(agentA, agentA2))));
         assertThat(CheckSetNodes.deleted, containsInAnyOrder("nodeA", "nodeB"));
     }
 
-    private record DumbSlavePair(DumbSlave oldNode, DumbSlave newNode) {
+    private record DumbAgentPair(DumbAgent oldNode, DumbAgent newNode) {
         @Override
         public String toString() {
             return "NodePair{" +
@@ -274,7 +274,7 @@ public class NodesTest {
                     '}';
         }
 
-        private String toStringNode(DumbSlave node) {
+        private String toStringNode(DumbAgent node) {
             return "(name=" + node.getNodeName() + ",remoteFS=" + node.getRemoteFS() + ")";
         }
     }
@@ -282,7 +282,7 @@ public class NodesTest {
     @TestExtension("listenersCalledOnSetNodes")
     public static class CheckSetNodes extends NodeListener {
         private static final List<String> created = new ArrayList<>();
-        private static final List<DumbSlavePair> updated = new ArrayList<>();
+        private static final List<DumbAgentPair> updated = new ArrayList<>();
         private static final List<String> deleted = new ArrayList<>();
 
         @Override
@@ -293,8 +293,8 @@ public class NodesTest {
 
         @Override
         protected void onUpdated(@NonNull Node oldOne, @NonNull Node newOne) {
-            if (oldOne instanceof DumbSlave oldDumbSlave && newOne instanceof DumbSlave newDumbSlave) {
-                updated.add(new DumbSlavePair(oldDumbSlave, newDumbSlave));
+            if (oldOne instanceof DumbAgent oldDumbAgent && newOne instanceof DumbAgent newDumbAgent) {
+                updated.add(new DumbAgentPair(oldDumbAgent, newDumbAgent));
             }
         }
 
@@ -304,19 +304,19 @@ public class NodesTest {
         }
     }
 
-    private static class DumbSlaveNameAndRemoteFSMatcher extends TypeSafeMatcher<DumbSlavePair> {
-        private final DumbSlavePair expected;
+    private static class DumbAgentNameAndRemoteFSMatcher extends TypeSafeMatcher<DumbAgentPair> {
+        private final DumbAgentPair expected;
 
-        public DumbSlaveNameAndRemoteFSMatcher(DumbSlavePair expected) {
+        public DumbAgentNameAndRemoteFSMatcher(DumbAgentPair expected) {
             this.expected = expected;
         }
 
         @Override
-        protected boolean matchesSafely(DumbSlavePair dumbSlavePair) {
-            return expected.oldNode.getNodeName().equals(dumbSlavePair.oldNode.getNodeName())
-                    && expected.oldNode.getRemoteFS().equals(dumbSlavePair.oldNode.getRemoteFS())
-                    && expected.newNode.getNodeName().equals(dumbSlavePair.newNode.getNodeName())
-                    && expected.newNode.getRemoteFS().equals(dumbSlavePair.newNode.getRemoteFS());
+        protected boolean matchesSafely(DumbAgentPair dumbAgentPair) {
+            return expected.oldNode.getNodeName().equals(dumbAgentPair.oldNode.getNodeName())
+                    && expected.oldNode.getRemoteFS().equals(dumbAgentPair.oldNode.getRemoteFS())
+                    && expected.newNode.getNodeName().equals(dumbAgentPair.newNode.getNodeName())
+                    && expected.newNode.getRemoteFS().equals(dumbAgentPair.newNode.getRemoteFS());
         }
 
         @Override

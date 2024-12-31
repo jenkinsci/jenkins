@@ -25,7 +25,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
-import hudson.slaves.NodeSpecific;
+import hudson.agents.NodeSpecific;
 
 /**
  * Represents any concept that can be adapted for a certain environment.

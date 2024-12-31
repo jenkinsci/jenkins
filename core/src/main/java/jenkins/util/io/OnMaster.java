@@ -22,7 +22,7 @@ public interface OnMaster {
 //    class ChannelConfiguratorImpl extends ChannelConfigurator {
 //        @Override
 //        public void onChannelBuilding(ChannelBuilder builder, @Nullable Object context) {
-//            if (context instanceof SlaveComputer) {
+//            if (context instanceof AgentComputer) {
 //                builder.withClassFilter(new ClassFilterImpl(builder.getClassFilter(), OnMaster.class.getName, ...));
 //            }
 //        }

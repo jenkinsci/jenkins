@@ -26,7 +26,7 @@
     </hudson.model.AllView>
   </views>
   <primaryView>All</primaryView>
-  <slaveAgentPort>0</slaveAgentPort>
+  <agentAgentPort>0</agentAgentPort>
   <label></label>
   <nodeProperties/>
   <globalNodeProperties/>

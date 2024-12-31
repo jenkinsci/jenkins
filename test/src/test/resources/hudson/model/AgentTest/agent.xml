@@ -1,0 +1,11 @@
+<agent>
+  <name>NAME</name>
+  <description>some text</description>
+  <remoteFS>/tmp</remoteFS>
+  <numExecutors>1</numExecutors>
+  <mode>NORMAL</mode>
+  <retentionStrategy class="hudson.agents.RetentionStrategy$Always"/>
+  <launcher class="hudson.agents.JNLPLauncher"/>
+  <label></label>
+  <nodeProperties/>
+</agent>

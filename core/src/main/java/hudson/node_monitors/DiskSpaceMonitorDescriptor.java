@@ -37,7 +37,7 @@ import java.text.ParseException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.MasterToAgentFileCallable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -280,7 +280,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         private static final long serialVersionUID = 2L;
     }
 
-    protected static final class GetUsableSpace extends MasterToSlaveFileCallable<DiskSpace> {
+    protected static final class GetUsableSpace extends MasterToAgentFileCallable<DiskSpace> {
         public GetUsableSpace() {}
 
         @Override

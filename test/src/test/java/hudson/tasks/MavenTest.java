@@ -41,7 +41,7 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.PasswordParameterDefinition;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
-import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.agents.EnvironmentVariablesNodeProperty;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.MavenInstaller;
 import hudson.tools.InstallSourceProperty;

@@ -28,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.slaves.WorkspaceList;
+import hudson.agents.WorkspaceList;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import org.junit.Rule;

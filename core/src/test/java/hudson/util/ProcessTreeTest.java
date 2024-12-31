@@ -10,7 +10,7 @@ import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTree.ProcessCallable;
 import java.io.IOException;
 import java.io.Serializable;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public class ProcessTreeTest {
         t.p.act(new ProcessCallableImpl());
     }
 
-    private static class MyCallable extends MasterToSlaveCallable<Tag, IOException> implements Serializable {
+    private static class MyCallable extends MasterToAgentCallable<Tag, IOException> implements Serializable {
         @Override
         public Tag call() {
             Tag t = new Tag();

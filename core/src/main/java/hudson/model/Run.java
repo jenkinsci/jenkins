@@ -122,7 +122,7 @@ import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
@@ -1115,7 +1115,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return !getArtifactsUpTo(1).isEmpty();
     }
 
-    private static final class AddArtifacts extends MasterToSlaveCallable<SerializableArtifactList, IOException> {
+    private static final class AddArtifacts extends MasterToAgentCallable<SerializableArtifactList, IOException> {
         private static final long serialVersionUID = 1L;
         private final VirtualFile root;
         private final int artifactsNumber;

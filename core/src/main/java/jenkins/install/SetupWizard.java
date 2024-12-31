@@ -173,7 +173,7 @@ public class SetupWizard extends PageDecorator {
                     jenkins.setAuthorizationStrategy(authStrategy);
 
                     // Disable jnlp by default, but honor system properties
-                    jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName() + ".slaveAgentPort", -1));
+                    jenkins.setAgentPort(SystemProperties.getInteger(Jenkins.class.getName() + ".AgentPort", -1));
 
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());

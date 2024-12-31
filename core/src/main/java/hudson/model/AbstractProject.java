@@ -63,8 +63,8 @@ import hudson.scm.SCMRevisionState;
 import hudson.scm.SCMS;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.Permission;
-import hudson.slaves.Cloud;
-import hudson.slaves.WorkspaceList;
+import hudson.agents.Cloud;
+import hudson.agents.WorkspaceList;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildTrigger;
@@ -1461,7 +1461,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         builton_node_gone,
         builton_node_no_executors,
         all_suitable_nodes_are_offline,
-        use_ondemand_slave
+        use_ondemand_agent
     }
 
     /**
@@ -1500,7 +1500,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
         if (isAllSuitableNodesOffline(build)) {
             Collection<Cloud> applicableClouds = label == null ? Jenkins.get().clouds : label.getClouds();
-            return applicableClouds.isEmpty() ? WorkspaceOfflineReason.all_suitable_nodes_are_offline : WorkspaceOfflineReason.use_ondemand_slave;
+            return applicableClouds.isEmpty() ? WorkspaceOfflineReason.all_suitable_nodes_are_offline : WorkspaceOfflineReason.use_ondemand_agent;
         }
 
         if (ws == null || !ws.exists()) {
@@ -1846,7 +1846,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         else
             scmCheckoutStrategy = null;
 
-        if (json.optBoolean("hasSlaveAffinity", json.has("label"))) {
+        if (json.optBoolean("hasAgentAffinity", json.has("label"))) {
             assignedNode = Util.fixEmptyAndTrim(json.optString("label"));
         } else if (req.hasParameter("_.assignedLabelString")) {
             // Workaround for JENKINS-25372 while plugin is being updated.

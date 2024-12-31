@@ -3,8 +3,8 @@ package hudson.model.labels;
 import static org.junit.Assert.assertTrue;
 
 import hudson.model.Label;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.JNLPLauncher;
+import hudson.agents.DumbAgent;
+import hudson.agents.JNLPLauncher;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +46,7 @@ public class LabelBenchmarkTest {
         public static class StateImpl extends JmhBenchmarkState {
             @Override
             public void setup() throws Exception {
-                DumbSlave test = new DumbSlave("test", "/tmp/slave", new JNLPLauncher());
+                DumbAgent test = new DumbAgent("test", "/tmp/agent", new JNLPLauncher());
                 test.setLabelString("a b c");
                 getJenkins().addNode(test);
             }

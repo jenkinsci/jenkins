@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 
 import hudson.model.AdministrativeMonitor;
 import hudson.model.ProjectTest;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -47,7 +47,7 @@ public class ControllerExecutorsAgentsTest {
 
     @Test
     public void testControllerExecutorsZero() throws Exception {
-        Slave agent = j.createSlave();
+        Agent agent = j.createAgent();
         j.jenkins.setNumExecutors(0);
         ControllerExecutorsAgents monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(ControllerExecutorsAgents.class);
         assertFalse(monitor.isActivated());
@@ -55,7 +55,7 @@ public class ControllerExecutorsAgentsTest {
 
     @Test
     public void testHasAgent() throws Exception {
-        Slave agent = j.createSlave();
+        Agent agent = j.createAgent();
         ControllerExecutorsAgents monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(ControllerExecutorsAgents.class);
         assertTrue(monitor.isActivated());
     }

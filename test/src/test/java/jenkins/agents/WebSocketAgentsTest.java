@@ -29,16 +29,16 @@ import static org.junit.Assert.assertNotNull;
 
 import hudson.Functions;
 import hudson.model.FreeStyleProject;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.remoting.Engine;
-import hudson.slaves.SlaveComputer;
+import hudson.agents.AgentComputer;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.security.SlaveToMasterCallable;
+import jenkins.security.AgentToMasterCallable;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,21 +64,21 @@ public class WebSocketAgentsTest {
 
     @Rule
     public LoggerRule logging = new LoggerRule().
-        record(Slave.class, Level.FINE).
-        record(SlaveComputer.class, Level.FINEST).
+        record(Agent.class, Level.FINE).
+        record(AgentComputer.class, Level.FINEST).
         record(WebSocketAgents.class, Level.FINEST).
         record(Engine.class, Level.FINEST);
 
     /**
      * Verify basic functionality of an agent in {@code -webSocket} mode.
      * Requires {@code remoting} to have been {@code mvn install}ed.
-     * Does not show {@code FINE} or lower agent logs ({@link JenkinsRule#showAgentLogs(Slave, LoggerRule)} cannot be used here).
-     * Related to {@link hudson.slaves.JNLPLauncherTest} (also see closer to {@link hudson.bugs.JnlpAccessWithSecuredHudsonTest}).
+     * Does not show {@code FINE} or lower agent logs ({@link JenkinsRule#showAgentLogs(Agent, LoggerRule)} cannot be used here).
+     * Related to {@link hudson.agents.JNLPLauncherTest} (also see closer to {@link hudson.bugs.JnlpAccessWithSecuredHudsonTest}).
      * @see hudson.remoting.Launcher
      */
     @Test
     public void smokes() throws Exception {
-        Slave s = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().secret().webSocket().build());
+        Agent s = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().secret().webSocket().build());
         try {
             assertEquals("response", s.getChannel().call(new DummyTask()));
             assertNotNull(s.getChannel().call(new FatTask()));
@@ -92,14 +92,14 @@ public class WebSocketAgentsTest {
         }
     }
 
-    private static class DummyTask extends SlaveToMasterCallable<String, RuntimeException> {
+    private static class DummyTask extends AgentToMasterCallable<String, RuntimeException> {
         @Override
         public String call() {
             return "response";
         }
     }
 
-    private static class FatTask extends SlaveToMasterCallable<String, RuntimeException> {
+    private static class FatTask extends AgentToMasterCallable<String, RuntimeException> {
         private byte[] payload;
 
         private FatTask() {

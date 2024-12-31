@@ -158,7 +158,7 @@ public class HudsonTest {
      * Configure link from "/computer/(built-in)/" should work.
      */
     @Test
-    @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
+    @Email("http://www.nabble.com/Master-agent-refactor-td21361880.html")
     public void computerConfigureLink() throws Exception {
         HtmlPage page = j.createWebClient().goTo("computer/(built-in)/configure");
         j.submit(page.getFormByName("config"));
@@ -168,7 +168,7 @@ public class HudsonTest {
      * Configure link from "/computer/(built-in)/" should work.
      */
     @Test
-    @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
+    @Email("http://www.nabble.com/Master-agent-refactor-td21361880.html")
     public void deleteHudsonComputer() throws Exception {
         WebClient wc = j.createWebClient();
         HtmlPage page = wc.goTo("computer/(built-in)/");

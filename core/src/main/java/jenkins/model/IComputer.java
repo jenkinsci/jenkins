@@ -75,7 +75,7 @@ public interface IComputer extends AccessControlled, IconSpec {
      * scheduling that does not overlap with being offline.
      *
      * @return {@code true} if the computer is accepting tasks
-     * @see hudson.slaves.RetentionStrategy#isAcceptingTasks(Computer)
+     * @see hudson.agents.RetentionStrategy#isAcceptingTasks(Computer)
      * @see hudson.model.Node#isAcceptingTasks()
      */
     boolean isAcceptingTasks();

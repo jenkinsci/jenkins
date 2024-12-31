@@ -28,7 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.Node;
-import hudson.slaves.Cloud;
+import hudson.agents.Cloud;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;

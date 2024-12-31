@@ -45,13 +45,13 @@ import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
-import hudson.slaves.Cloud;
-import hudson.slaves.ComputerListener;
-import hudson.slaves.EphemeralNode;
-import hudson.slaves.NodeDescriptor;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.NodePropertyDescriptor;
-import hudson.slaves.OfflineCause;
+import hudson.agents.Cloud;
+import hudson.agents.ComputerListener;
+import hudson.agents.EphemeralNode;
+import hudson.agents.NodeDescriptor;
+import hudson.agents.NodeProperty;
+import hudson.agents.NodePropertyDescriptor;
+import hudson.agents.OfflineCause;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
@@ -85,7 +85,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.springframework.security.core.Authentication;
 
 /**
- * Base type of Jenkins agents (although in practice, you probably extend {@link Slave} to define a new agent type).
+ * Base type of Jenkins agents (although in practice, you probably extend {@link Agent} to define a new agent type).
  *
  * <p>
  * As a special case, {@link Jenkins} extends from here.

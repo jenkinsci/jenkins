@@ -42,7 +42,7 @@ import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
 import hudson.os.WindowsUtil;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.WorkspaceList;
+import hudson.agents.WorkspaceList;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

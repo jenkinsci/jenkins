@@ -41,7 +41,7 @@ import hudson.model.Run;
 import hudson.model.RunMap;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
@@ -81,7 +81,7 @@ public class BuildTimeTrendTest {
     @Test
     public void withAbstractJob_OnAgentNode() throws Exception {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
-        DumbSlave agent = j.createSlave();
+        DumbAgent agent = j.createAgent();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
@@ -101,7 +101,7 @@ public class BuildTimeTrendTest {
     @Test
     public void withAbstractJob_OnBoth() throws Exception {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
-        DumbSlave agent = j.createSlave();
+        DumbAgent agent = j.createAgent();
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setAssignedNode(j.jenkins);
@@ -156,7 +156,7 @@ public class BuildTimeTrendTest {
     public void withNonAbstractJob_withAgents() throws Exception {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         // just to trigger data-is-distributed-build-enabled = true
-        j.createSlave();
+        j.createAgent();
 
         // Before the correction, if there was an agent and the build was not inheriting from AbstractBuild, we got
         // Uncaught TypeError: Cannot read property 'escapeHTML' of undefined

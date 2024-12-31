@@ -22,7 +22,7 @@ public class Jenkins67105Test {
     @Test
     public void arrayListMultimap() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        p.setAssignedNode(r.createSlave());
+        p.setAssignedNode(r.createAgent());
         p.getBuildersList().add(new GuavaBuilder(new ArrayListMultimapCallable()));
         r.buildAndAssertSuccess(p);
     }
@@ -31,15 +31,15 @@ public class Jenkins67105Test {
     @Test
     public void hashMultimap() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        p.setAssignedNode(r.createSlave());
+        p.setAssignedNode(r.createAgent());
         p.getBuildersList().add(new GuavaBuilder(new HashMultimapCallable()));
         r.buildAndAssertSuccess(p);
     }
 
     public static class GuavaBuilder extends Builder {
-        private final MasterToSlaveCallable<?, RuntimeException> callable;
+        private final MasterToAgentCallable<?, RuntimeException> callable;
 
-        public GuavaBuilder(MasterToSlaveCallable<?, RuntimeException> callable) {
+        public GuavaBuilder(MasterToAgentCallable<?, RuntimeException> callable) {
             this.callable = callable;
         }
 
@@ -52,7 +52,7 @@ public class Jenkins67105Test {
     }
 
     private static class ArrayListMultimapCallable
-            extends MasterToSlaveCallable<Multimap<?, ?>, RuntimeException> {
+            extends MasterToAgentCallable<Multimap<?, ?>, RuntimeException> {
         @Override
         public Multimap<?, ?> call() throws RuntimeException {
             return ArrayListMultimap.create();
@@ -60,7 +60,7 @@ public class Jenkins67105Test {
     }
 
     private static class HashMultimapCallable
-            extends MasterToSlaveCallable<Multimap<?, ?>, RuntimeException> {
+            extends MasterToAgentCallable<Multimap<?, ?>, RuntimeException> {
         @Override
         public Multimap<?, ?> call() throws RuntimeException {
             return HashMultimap.create();

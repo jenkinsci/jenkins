@@ -5,7 +5,7 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.model.TaskListener;
-import hudson.slaves.ComputerListener;
+import hudson.agents.ComputerListener;
 import hudson.util.Futures;
 import java.io.IOException;
 import java.util.concurrent.Future;

@@ -14,7 +14,7 @@ public class MasterBuildConfigurationTest {
 
     @Test
     @Issue("JENKINS-23966")
-    public void retainMasterLabelWhenNoSlaveDefined() throws Exception {
+    public void retainMasterLabelWhenNoAgentDefined() throws Exception {
         Jenkins jenkins = j.getInstance();
 
         assertEquals("Test is for controller with no agent", 1, jenkins.getComputers().length);

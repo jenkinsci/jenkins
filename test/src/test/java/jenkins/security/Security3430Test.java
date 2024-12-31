@@ -16,7 +16,7 @@ import hudson.ExtensionList;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
-import hudson.slaves.SlaveComputer;
+import hudson.agents.AgentComputer;
 import hudson.util.RingBufferLogHandler;
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +32,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import jenkins.bouncycastle.api.InstallBouncyCastleJCAProvider;
 import jenkins.security.s2m.JarURLValidatorImpl;
-import jenkins.slaves.RemotingVersionInfo;
+import jenkins.agents.RemotingVersionInfo;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Description;
@@ -99,14 +99,14 @@ public class Security3430Test {
             // would be helpful to have an option for a specific agent JAR:
             var opts = InboundAgentRule.Options.newBuilder().name(name).skipStart().build();
             agents.createAgent(jj, opts);
-            agents.start(new InboundAgentRule.AgentArguments(jj.getUrl() + "computer/" + name + "/slave-agent.jnlp", jar, jj.runRemotely(Security3430Test::getJnlpMac, name), 1, List.of()), opts);
+            agents.start(new InboundAgentRule.AgentArguments(jj.getUrl() + "computer/" + name + "/agent-agent.jnlp", jar, jj.runRemotely(Security3430Test::getJnlpMac, name), 1, List.of()), opts);
         } else {
             agents.createAgent(jj, InboundAgentRule.Options.newBuilder().name(name).build());
         }
     }
 
     private static String getJnlpMac(JenkinsRule r, String name) throws Throwable {
-        return ((SlaveComputer) r.jenkins.getComputer(name)).getJnlpMac();
+        return ((AgentComputer) r.jenkins.getComputer(name)).getJnlpMac();
     }
 
     // This is quite artificial, but demonstrating that without JarURLValidatorImpl we do not allow any calls from the agent:
@@ -127,8 +127,8 @@ public class Security3430Test {
         final List<LogRecord> logRecords = logHandler.getView();
 
         final Computer computer = j.jenkins.getComputer(agentName);
-        assertThat(computer, instanceOf(SlaveComputer.class));
-        SlaveComputer agent = (SlaveComputer) computer;
+        assertThat(computer, instanceOf(AgentComputer.class));
+        AgentComputer agent = (AgentComputer) computer;
         j.waitOnline(agent.getNode());
         final Channel channel = agent.getChannel();
         if (expectedRemotingVersion != null) {
@@ -245,14 +245,14 @@ public class Security3430Test {
         }
     }
 
-    private static class AgentVersionCallable extends MasterToSlaveCallable<String, Exception> {
+    private static class AgentVersionCallable extends MasterToAgentCallable<String, Exception> {
         @Override
         public String call() throws Exception {
             return Launcher.VERSION;
         }
     }
 
-    private static class ConfirmBouncyCastleLibrary extends MasterToSlaveCallable<Void, Exception> {
+    private static class ConfirmBouncyCastleLibrary extends MasterToAgentCallable<Void, Exception> {
         @Override
         public Void call() throws Exception {
             assertNotNull(Security.getProvider("BC"));
@@ -260,7 +260,7 @@ public class Security3430Test {
         }
     }
 
-    private static class Exploit extends MasterToSlaveCallable<Void, Exception> {
+    private static class Exploit extends MasterToAgentCallable<Void, Exception> {
         private final URL controllerFilePath;
         private final String expectedContent;
 

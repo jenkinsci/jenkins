@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.is;
 
 import hudson.model.Label;
 import hudson.model.Node;
-import hudson.slaves.Cloud;
+import hudson.agents.Cloud;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Rule;
@@ -21,7 +21,7 @@ public class LabelAtomTest {
 
     @Test
     public void selfLabel() throws Exception {
-        j.createSlave("node", "label", null);
+        j.createAgent("node", "label", null);
         Label self = new LabelAtom("node");
         assertThat(self.isSelfLabel(), is(true));
         Label label = new LabelAtom("label");
@@ -32,9 +32,9 @@ public class LabelAtomTest {
 
     @Test
     public void getNodes() throws Exception {
-        Node n1 = j.createSlave("n1", "label", null);
-        Node n2 = j.createSlave("n2", "label label2", null);
-        Node n3 = j.createSlave("n3", "label2", null);
+        Node n1 = j.createAgent("n1", "label", null);
+        Node n2 = j.createAgent("n2", "label label2", null);
+        Node n3 = j.createAgent("n3", "label2", null);
         Label l = j.jenkins.getLabel("label");
         Label l2 = j.jenkins.getLabel("label2");
         Label l3 = j.jenkins.getLabel("label3");
@@ -61,7 +61,7 @@ public class LabelAtomTest {
         Label l = new LabelAtom("label");
         assertThat(l.isEmpty(), is(true));
         l = new LabelAtom("label");
-        j.createSlave("node", "label", null);
+        j.createAgent("node", "label", null);
         assertThat(l.isEmpty(), is(false));
         Label l2 = new LabelAtom("label2");
         Cloud test = new TestCloud("test", "label2");

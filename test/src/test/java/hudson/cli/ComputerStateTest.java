@@ -36,9 +36,9 @@ import static org.junit.Assert.assertTrue;
 
 import hudson.cli.CLICommandInvoker.Result;
 import hudson.model.Computer;
-import hudson.model.Slave;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause;
+import hudson.model.Agent;
+import hudson.agents.DumbAgent;
+import hudson.agents.OfflineCause;
 import jenkins.model.Jenkins;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.html.HtmlPage;
@@ -58,49 +58,49 @@ public class ComputerStateTest {
     public void connect() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, "connect-node");
 
-        Slave slave = j.createSlave();
-        assertTrue(slave.toComputer().isOffline());
+        Agent agent = j.createAgent();
+        assertTrue(agent.toComputer().isOffline());
 
         Result result = command.authorizedTo(Jenkins.READ, Computer.CONNECT)
-                .invokeWithArgs(slave.getNodeName())
+                .invokeWithArgs(agent.getNodeName())
         ;
 
         assertThat(result, succeededSilently());
-        slave.toComputer().waitUntilOnline();
-        assertTrue(slave.toComputer().isOnline());
+        agent.toComputer().waitUntilOnline();
+        assertTrue(agent.toComputer().isOnline());
     }
 
     @Test
     public void online() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, "online-node");
 
-        Slave slave = j.createSlave();
-        assertTrue(slave.toComputer().isOffline());
+        Agent agent = j.createAgent();
+        assertTrue(agent.toComputer().isOffline());
 
         Result result = command.authorizedTo(Jenkins.READ, Computer.CONNECT)
-                .invokeWithArgs(slave.getNodeName())
+                .invokeWithArgs(agent.getNodeName())
         ;
 
         assertThat(result, succeededSilently());
-        slave.toComputer().waitUntilOnline();
-        assertTrue(slave.toComputer().isOnline());
+        agent.toComputer().waitUntilOnline();
+        assertTrue(agent.toComputer().isOnline());
     }
 
     @Test
     public void disconnect() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, "disconnect-node");
 
-        Slave slave = j.createOnlineSlave();
-        assertTrue(slave.toComputer().isOnline());
+        Agent agent = j.createOnlineAgent();
+        assertTrue(agent.toComputer().isOnline());
 
         Result result = command.authorizedTo(Jenkins.READ, Computer.DISCONNECT)
-                .invokeWithArgs(slave.getNodeName(), "-m", "Custom cause message")
+                .invokeWithArgs(agent.getNodeName(), "-m", "Custom cause message")
         ;
 
         assertThat(result, succeededSilently());
-        assertTrue(slave.toComputer().isOffline());
+        assertTrue(agent.toComputer().isOffline());
 
-        OfflineCause.UserCause cause = (OfflineCause.UserCause) slave.toComputer().getOfflineCause();
+        OfflineCause.UserCause cause = (OfflineCause.UserCause) agent.toComputer().getOfflineCause();
         assertThat(cause.toString(), endsWith("Custom cause message"));
         assertThat(cause.getUser(), equalTo(command.user()));
     }
@@ -109,58 +109,58 @@ public class ComputerStateTest {
     public void offline() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, "offline-node");
 
-        Slave slave = j.createOnlineSlave();
-        assertTrue(slave.toComputer().isOnline());
+        Agent agent = j.createOnlineAgent();
+        assertTrue(agent.toComputer().isOnline());
 
         Result result = command.authorizedTo(Jenkins.READ, Computer.DISCONNECT)
-                .invokeWithArgs(slave.getNodeName(), "-m", "Custom cause message")
+                .invokeWithArgs(agent.getNodeName(), "-m", "Custom cause message")
         ;
 
         assertThat(result, succeededSilently());
-        assertTrue(slave.toComputer().isOffline());
+        assertTrue(agent.toComputer().isOffline());
 
-        OfflineCause.UserCause cause = (OfflineCause.UserCause) slave.toComputer().getOfflineCause();
+        OfflineCause.UserCause cause = (OfflineCause.UserCause) agent.toComputer().getOfflineCause();
         assertThat(cause.toString(), endsWith("Custom cause message"));
         assertThat(cause.getUser(), equalTo(command.user()));
     }
 
     @Test
     public void testUiForConnected() throws Exception {
-        DumbSlave slave = j.createOnlineSlave();
-        Computer computer = slave.toComputer();
+        DumbAgent agent = j.createOnlineAgent();
+        Computer computer = agent.toComputer();
 
         WebClient wc = j.createWebClient();
-        assertConnected(wc, slave);
+        assertConnected(wc, agent);
 
         computer.setTemporarilyOffline(true, null);
         assertTrue(computer.isTemporarilyOffline());
-        assertConnected(wc, slave);
+        assertConnected(wc, agent);
 
-        slave.toComputer().disconnect(null);
+        agent.toComputer().disconnect(null);
 
-        HtmlPage page = wc.getPage(slave);
+        HtmlPage page = wc.getPage(agent);
 
         assertLinkDoesNotExist(page, "Disconnect");
 
         assertLinkDoesNotExist(page, "Script Console");
-        HtmlPage script = wc.getPage(slave, "script");
+        HtmlPage script = wc.getPage(agent, "script");
         assertThat(script.getByXPath("//form[@action='script']"), empty());
 
         assertLinkDoesNotExist(page, "System Information");
-        HtmlPage info = wc.getPage(slave, "systemInfo");
+        HtmlPage info = wc.getPage(agent, "systemInfo");
         assertThat(info.asNormalizedText(), not(containsString("Environment Variables")));
     }
 
-    private void assertConnected(WebClient wc, DumbSlave slave) throws Exception {
-        HtmlPage main = wc.getPage(slave);
+    private void assertConnected(WebClient wc, DumbAgent agent) throws Exception {
+        HtmlPage main = wc.getPage(agent);
         main.getAnchorByText("Disconnect");
 
         main.getAnchorByText("Script Console");
-        HtmlPage script = wc.getPage(slave, "script");
+        HtmlPage script = wc.getPage(agent, "script");
         assertThat(script.getByXPath("//form[@action='script']"), not(empty()));
 
         main.getAnchorByText("System Information");
-        HtmlPage info = wc.getPage(slave, "systemInfo");
+        HtmlPage info = wc.getPage(agent, "systemInfo");
         assertThat(info.asNormalizedText(), containsString("Environment Variables"));
     }
 

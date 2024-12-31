@@ -1,0 +1,78 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Config page
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div class="jenkins-section">
+    <f:entry title="${%Description}" help="/help/system-config/master-agent/description.html">
+      <f:textarea name="nodeDescription" value="${it.nodeDescription}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+    </f:entry>
+  </div>
+
+  <f:entry title="${%Number of executors}" field="numExecutors">
+    <f:number clazz="positive-number-required" min="1" step="1" default="1"/>
+  </f:entry>
+
+  <f:entry title="${%Remote root directory}" field="remoteFS">
+    <f:textbox />
+  </f:entry>
+
+  <f:entry title="${%Labels}" field="labelString">
+    <f:textbox />
+  </f:entry>
+
+  <f:agent-mode name="mode" node="${it}" />
+
+  <!-- TODO: should be packaged as a tag -->
+  <j:set var="itDescriptor" value="${descriptor}"/>
+  <f:dropdownList name="agent.launcher" title="${%Launch method}"
+                  help="${descriptor.getHelpFile('launcher')}">
+    <j:forEach var="d" items="${descriptor.computerLauncherDescriptors(it)}">
+      <f:dropdownListBlock value="${d.clazz.name}" name="${d.displayName}"
+                           selected="${it.launcher.descriptor==d}"
+                           title="${d.displayName}">
+        <j:set var="descriptor" value="${d}"/>
+        <j:set var="instance"
+               value="${it.launcher.descriptor==d ? it.launcher : null}"/>
+        <f:class-entry descriptor="${d}" />
+        <st:include from="${d}" page="${d.configPage}" optional="true"/>
+      </f:dropdownListBlock>
+    </j:forEach>
+  </f:dropdownList>
+
+  <!-- pointless to show this if there's only one option, which is the default -->
+  <j:set var="retentionStrategies" value="${descriptor.retentionStrategyDescriptors(it)}"/>
+  <j:if test="${retentionStrategies.size() gt 1}">
+    <f:dropdownDescriptorSelector title="${%Availability}" field="retentionStrategy" descriptors="${retentionStrategies}"/>
+  </j:if>
+
+  <f:descriptorList title="${%Node Properties}"
+                    descriptors="${descriptor.nodePropertyDescriptors(it)}"
+                    field="nodeProperties" />
+
+</j:jelly>

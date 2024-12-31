@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.is;
 
 import hudson.model.Node;
 import java.io.IOException;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -18,11 +18,11 @@ public class JenkinsJVMRealTest {
     @Test
     public void isJenkinsJVM() throws Throwable {
         assertThat(new IsJenkinsJVM().call(), is(true));
-        Node slave = j.createOnlineSlave();
-        assertThat(slave.getChannel().call(new IsJenkinsJVM()), is(false));
+        Node agent = j.createOnlineAgent();
+        assertThat(agent.getChannel().call(new IsJenkinsJVM()), is(false));
     }
 
-    public static class IsJenkinsJVM extends MasterToSlaveCallable<Boolean, IOException> {
+    public static class IsJenkinsJVM extends MasterToAgentCallable<Boolean, IOException> {
 
         @Override
         public Boolean call() throws IOException {

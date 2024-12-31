@@ -36,7 +36,7 @@ import hudson.remoting.VirtualChannel;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.MasterToAgentFileCallable;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -133,7 +133,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         }
     }
 
-    protected static final class GetTempSpace extends MasterToSlaveFileCallable<DiskSpace> {
+    protected static final class GetTempSpace extends MasterToAgentFileCallable<DiskSpace> {
         @Override
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
                 // if the disk is really filled up we can't even create a single file,

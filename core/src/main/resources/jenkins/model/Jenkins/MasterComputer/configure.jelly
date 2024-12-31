@@ -38,7 +38,7 @@ THE SOFTWARE.
         <j:set var="descriptor" value="${instance.descriptor}" />
 
         <!-- Currently not editable
-        <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
+        <f:entry title="${%Description}" help="/help/system-config/master-agent/description.html">
           <f:textbox field="nodeDescription" />
         </f:entry>
         -->
@@ -51,7 +51,7 @@ THE SOFTWARE.
           <f:textbox />
         </f:entry>
 
-        <f:slave-mode name="builtin.mode" node="${it.node}"/>
+        <f:agent-mode name="builtin.mode" node="${it.node}"/>
 
         <f:descriptorList title="${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
 

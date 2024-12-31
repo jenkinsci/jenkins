@@ -6,8 +6,8 @@ import hudson.ExtensionPoint;
 import hudson.Proc;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
-import hudson.slaves.Channels;
-import hudson.slaves.SlaveComputer;
+import hudson.agents.Channels;
+import hudson.agents.AgentComputer;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 
@@ -31,10 +31,10 @@ public abstract class ChannelConfigurator implements ExtensionPoint {
      *      Possible known values include:
      *
      *      <dl>
-     *          <dt>{@link SlaveComputer}
+     *          <dt>{@link AgentComputer}
      *          <dd>When a channel is being established to talk to a agent.
      *          <dt>{@link Proc}
-     *          <dd>When {@link Channels#forProcess(String, ExecutorService, Process, OutputStream)} or overloads are used without a contextual {@link SlaveComputer}.
+     *          <dd>When {@link Channels#forProcess(String, ExecutorService, Process, OutputStream)} or overloads are used without a contextual {@link AgentComputer}.
      *      </dl>
      */
     public void onChannelBuilding(ChannelBuilder builder, @Nullable Object context) {}

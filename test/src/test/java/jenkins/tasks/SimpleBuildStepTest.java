@@ -8,7 +8,7 @@ import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Run;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
@@ -27,7 +27,7 @@ public class SimpleBuildStepTest {
 
         @Override
         public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher, @NonNull TaskListener listener) throws InterruptedException, IOException {
-            // Check that the environment we get includes values from the slave
+            // Check that the environment we get includes values from the agent
             Assert.assertEquals("JENKINS-29144", env.get("TICKET"));
             // And that parameters appear too
             Assert.assertEquals("WORLD", env.get("HELLO"));
@@ -53,9 +53,9 @@ public class SimpleBuildStepTest {
     public void builderReceivesEnvVars() throws Exception {
         final FreeStyleProject p = this.r.createFreeStyleProject("JENKINS-29144");
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("HELLO", "WORLD")));
-        final Slave slave = r.createOnlineSlave(null, new EnvVars("TICKET", "JENKINS-29144"));
-        r.jenkins.addNode(slave);
-        p.setAssignedNode(slave);
+        final Agent agent = r.createOnlineAgent(null, new EnvVars("TICKET", "JENKINS-29144"));
+        r.jenkins.addNode(agent);
+        p.setAssignedNode(agent);
         final Builder bs = new StepThatGetsEnvironmentContents();
         p.getBuildersList().add(bs);
         r.buildAndAssertSuccess(p);

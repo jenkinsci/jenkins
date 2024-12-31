@@ -55,7 +55,7 @@ import hudson.model.SimpleParameterDefinition;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.TopLevelItem;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
@@ -226,9 +226,9 @@ public class BuildCommandTest {
     @Issue("JENKINS-15094")
     @Test
     public void executorsAliveOnParameterWithNullDefaultValue() throws Exception {
-        DumbSlave slave = j.createSlave();
+        DumbAgent agent = j.createAgent();
         FreeStyleProject project = j.createFreeStyleProject("foo");
-        project.setAssignedNode(slave);
+        project.setAssignedNode(agent);
 
         // Create test parameter with Null default value
         NullDefaultValueParameterDefinition nullDefaultDefinition = new NullDefaultValueParameterDefinition();
@@ -244,7 +244,7 @@ public class BuildCommandTest {
 
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
+                .until(() -> agent.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
 
         // Create CLI & run command
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
@@ -259,7 +259,7 @@ public class BuildCommandTest {
         // Check executors health after a timeout
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
+                .until(() -> agent.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
     }
 
     public static final class NullDefaultValueParameterDefinition extends SimpleParameterDefinition {

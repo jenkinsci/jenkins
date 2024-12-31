@@ -36,7 +36,7 @@ import static org.junit.Assert.assertEquals;
 import hudson.model.Computer;
 import hudson.model.Messages;
 import hudson.model.Node;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,7 +57,7 @@ public class UpdateNodeCommandTest {
 
     @Test public void updateNodeShouldFailWithoutComputerConfigurePermission() throws Exception {
 
-        j.createSlave("MyAgent", null, null);
+        j.createAgent("MyAgent", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -71,7 +71,7 @@ public class UpdateNodeCommandTest {
 
     @Test public void updateNodeShouldModifyNodeConfiguration() throws Exception {
 
-        j.createSlave("MyAgent", null, null);
+        j.createAgent("MyAgent", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONFIGURE, Jenkins.READ)
@@ -83,9 +83,9 @@ public class UpdateNodeCommandTest {
 
         assertThat("An agent with old name should not exist", j.jenkins.getNode("MyAgent"), nullValue());
 
-        final Node updatedSlave = j.jenkins.getNode("AgentFromXML");
-        assertThat(updatedSlave.getNodeName(), equalTo("AgentFromXML"));
-        assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        final Node updatedAgent = j.jenkins.getNode("AgentFromXML");
+        assertThat(updatedAgent.getNodeName(), equalTo("AgentFromXML"));
+        assertThat(updatedAgent.getNumExecutors(), equalTo(42));
     }
 
     @Test public void updateNodeShouldFailIfNodeDoesNotExist() {
@@ -126,7 +126,7 @@ public class UpdateNodeCommandTest {
     @Issue("SECURITY-2021")
     public void updateNodeShouldFailForDotDot() throws Exception {
         String okName = "MyNode";
-        Slave node = j.createSlave(okName, null, null);
+        Agent node = j.createAgent(okName, null, null);
         // currently <dummy>, but doing so will be a bit more future-proof
         String defaultDescription = node.getNodeDescription();
 

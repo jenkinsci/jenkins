@@ -70,8 +70,8 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.security.SparseACL;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause;
+import hudson.agents.DumbAgent;
+import hudson.agents.OfflineCause;
 import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
@@ -388,13 +388,13 @@ public class QueueTest {
     }
 
     @Issue("JENKINS-24519")
-    @Test public void flyweightTasksBlockedBySlave() throws Exception {
-        Label label = Label.get("myslave");
+    @Test public void flyweightTasksBlockedByAgent() throws Exception {
+        Label label = Label.get("myagent");
         AtomicInteger cnt = new AtomicInteger();
         TestFlyweightTask task = new TestFlyweightTask(cnt, label);
         r.jenkins.getQueue().schedule2(task, 0);
         r.jenkins.getQueue().maintain();
-        r.createSlave(label);
+        r.createAgent(label);
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
         assertNotNull(task.exec);
@@ -429,9 +429,9 @@ public class QueueTest {
     @Issue("JENKINS-27256")
     @Test public void inQueueTaskLookupByAPI() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        Label label = Label.get("unknown-slave");
+        Label label = Label.get("unknown-agent");
 
-        // Give the project an "unknown-slave" label, forcing it to
+        // Give the project an "unknown-agent" label, forcing it to
         // stay in the queue after we schedule it, allowing us to query it.
         p.setAssignedLabel(label);
         p.scheduleBuild2(0);
@@ -767,15 +767,15 @@ public class QueueTest {
 
 
     /**
-     * Make sure that the slave assignment honors the permissions.
+     * Make sure that the agent assignment honors the permissions.
      *
      * We do this test by letting a build run twice to determine its natural home,
      * and then introduce a security restriction to prohibit that.
      */
-    @Test public void permissionSensitiveSlaveAllocations() throws Exception {
+    @Test public void permissionSensitiveAgentAllocations() throws Exception {
         r.jenkins.setNumExecutors(0); // restrict builds to those agents
-        DumbSlave s1 = r.createSlave();
-        DumbSlave s2 = r.createSlave();
+        DumbAgent s1 = r.createAgent();
+        DumbAgent s2 = r.createAgent();
 
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator().authenticate(p.getFullName(), alice));
@@ -883,14 +883,14 @@ public class QueueTest {
     }
 
     @Test public void cancelInQueue() throws Exception {
-        // parepare an offline slave.
-        DumbSlave slave = r.createOnlineSlave();
-        assertFalse(slave.toComputer().isOffline());
-        slave.toComputer().disconnect(null).get();
-        assertTrue(slave.toComputer().isOffline());
+        // parepare an offline agent.
+        DumbAgent agent = r.createOnlineAgent();
+        assertFalse(agent.toComputer().isOffline());
+        agent.toComputer().disconnect(null).get();
+        assertTrue(agent.toComputer().isOffline());
 
         FreeStyleProject p = r.createFreeStyleProject();
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
 
         QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(0);
         assertThrows("Should time out (as the agent is offline)", TimeoutException.class, () -> f.get(3, TimeUnit.SECONDS));
@@ -1161,7 +1161,7 @@ public class QueueTest {
 
     @Test
     public void flyweightsRunOnMasterIfPossible() throws Exception {
-        r.createOnlineSlave();
+        r.createOnlineAgent();
         r.jenkins.setNumExecutors(0);
         List<TestFlyweightTask> tasks = new ArrayList<>();
         Queue q = r.jenkins.getQueue();
@@ -1179,7 +1179,7 @@ public class QueueTest {
 
     @Test
     public void flyweightsRunOnAgentIfNecessary() throws Exception {
-        r.createOnlineSlave();
+        r.createOnlineAgent();
         r.jenkins.setNumExecutors(0);
         r.jenkins.toComputer().setTemporarilyOffline(true, new OfflineCause.UserCause(null, null));
         List<TestFlyweightTask> tasks = new ArrayList<>();

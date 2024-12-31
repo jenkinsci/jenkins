@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.FakeLauncher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.PretendSlave;
+import org.jvnet.hudson.test.PretendAgent;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -52,7 +52,7 @@ public class ShellTest {
         Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         // TODO: define a FakeLauncher implementation with easymock so that this kind of assertions can be simplified.
-        PretendSlave s = rule.createPretendSlave(p -> {
+        PretendAgent s = rule.createPretendAgent(p -> {
             // test the command line argument.
             List<String> cmds = p.cmds();
             rule.assertStringContains("/bin/sh", cmds.get(0));
@@ -98,11 +98,11 @@ public class ShellTest {
     }
 
     private void nonZeroExitCodeShouldMakeBuildUnstable(int exitCode) throws Exception {
-        PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(exitCode));
+        PretendAgent agent = rule.createPretendAgent(new ReturnCodeFakeLauncher(exitCode));
 
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", exitCode));
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
         rule.buildAndAssertStatus(Result.UNSTABLE, p);
     }
 
@@ -116,18 +116,18 @@ public class ShellTest {
     }
 
     private void nonZeroExitCodeShouldBreakTheBuildByDefault(int exitCode) throws Exception {
-        PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(exitCode));
+        PretendAgent agent = rule.createPretendAgent(new ReturnCodeFakeLauncher(exitCode));
 
         FreeStyleProject p;
 
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", null));
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
         rule.buildAndAssertStatus(Result.FAILURE, p);
 
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", 0));
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
         rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
@@ -142,13 +142,13 @@ public class ShellTest {
     }
 
     private void nonZeroExitCodeShouldBreakTheBuildIfNotMatching(int exitCode) throws Exception {
-        PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(exitCode));
+        PretendAgent agent = rule.createPretendAgent(new ReturnCodeFakeLauncher(exitCode));
 
         final int notMatchingExitCode = 44;
 
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", notMatchingExitCode));
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
         rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
@@ -166,11 +166,11 @@ public class ShellTest {
     public void unixExitCodes0ShouldNeverMakeTheBuildUnstable() throws Exception {
         assumeFalse(Functions.isWindows());
 
-        PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(0));
+        PretendAgent agent = rule.createPretendAgent(new ReturnCodeFakeLauncher(0));
         for (Integer unstableReturn : new Integer [] {null, 0, 1}) {
             FreeStyleProject p = rule.createFreeStyleProject();
             p.getBuildersList().add(createNewShell("", unstableReturn));
-            p.setAssignedNode(slave);
+            p.setAssignedNode(agent);
             rule.buildAndAssertSuccess(p);
         }
     }

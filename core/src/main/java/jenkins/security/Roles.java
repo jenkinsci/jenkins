@@ -28,7 +28,7 @@ public class Roles {
      * the master (as opposed to ones that do not have that information, which gets
      * {@link Role#UNKNOWN})
      */
-    public static final Role SLAVE = new Role("slave");
+    public static final Role SLAVE = new Role("agent");
 
     private Roles() {}
 }

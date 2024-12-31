@@ -50,10 +50,10 @@ import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
-import hudson.slaves.ComputerListener;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.OfflineCause;
+import hudson.agents.ComputerListener;
+import hudson.agents.DumbAgent;
+import hudson.agents.NodeProperty;
+import hudson.agents.OfflineCause;
 import hudson.util.TagCloud;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -93,7 +93,7 @@ public class NodeTest {
 
     @Test
     public void testSetTemporaryOfflineCause() throws Exception {
-        Node node = j.createOnlineSlave();
+        Node node = j.createOnlineAgent();
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(j.jenkins.getLabel(node.getDisplayName()));
         OfflineCause cause = new OfflineCause.ByCLI("message");
@@ -112,7 +112,7 @@ public class NodeTest {
 
     @Test
     public void testOfflineCause() throws Exception {
-        Node node = j.createOnlineSlave();
+        Node node = j.createOnlineAgent();
         Computer computer = node.toComputer();
         OfflineCause.UserCause cause;
 
@@ -140,7 +140,7 @@ public class NodeTest {
 
     @Test
     public void testOfflineCauseAsAnonymous() throws Exception {
-        Node node = j.createOnlineSlave();
+        Node node = j.createOnlineAgent();
         final Computer computer = node.toComputer();
         OfflineCause.UserCause cause;
         try (ACLContext ctxt = ACL.as2(Jenkins.ANONYMOUS2)) {
@@ -166,7 +166,7 @@ public class NodeTest {
 
     @Test
     public void testGetLabelCloud() throws Exception {
-        Node node = j.createOnlineSlave();
+        Node node = j.createOnlineAgent();
         node.setLabelString("label1 label2");
         FreeStyleProject project = j.createFreeStyleProject();
         final Label label = j.jenkins.getLabel("label1");
@@ -185,7 +185,7 @@ public class NodeTest {
 
     @Test
     public void testGetAssignedLabels() throws Exception {
-        Node node = j.createOnlineSlave();
+        Node node = j.createOnlineAgent();
         node.setLabelString("label1 label2");
         LabelAtom notContained = j.jenkins.getLabelAtom("notContained");
         addDynamicLabel = true;
@@ -198,7 +198,7 @@ public class NodeTest {
 
     @Test
     public void testCanTake() throws Exception {
-        Slave node = j.createOnlineSlave();
+        Agent node = j.createOnlineAgent();
         node.setLabelString("label1 label2");
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(j.jenkins.getLabel("label1"));
@@ -237,8 +237,8 @@ public class NodeTest {
 
     @Test
     public void testCreatePath() throws Exception {
-        Slave node = j.createOnlineSlave();
-        Node node2 = j.createSlave();
+        Agent node = j.createOnlineAgent();
+        Node node2 = j.createAgent();
         String absolutePath = node.remoteFS;
         FilePath path = node.createPath(absolutePath);
         assertNotNull("Path should be created.", path);
@@ -250,7 +250,7 @@ public class NodeTest {
 
     @Test
     public void testHasPermission() throws Exception {
-        Node node = j.createOnlineSlave();
+        Node node = j.createOnlineAgent();
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
@@ -271,9 +271,9 @@ public class NodeTest {
 
     @Test
     public void testGetChannel() throws Exception {
-        Slave agent = j.createOnlineSlave();
-        Node nodeOffline = j.createSlave();
-        Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
+        Agent agent = j.createOnlineAgent();
+        Node nodeOffline = j.createAgent();
+        Node node = new DumbAgent("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
         assertNull("Channel of node should be null because node has not assigned computer.", node.getChannel());
         assertNull("Channel of node should be null because assigned computer is offline.", nodeOffline.getChannel());
         assertNotNull("Channel of node should not be null.", agent.getChannel());
@@ -281,15 +281,15 @@ public class NodeTest {
 
     @Test
     public void testToComputer() throws Exception {
-        Slave agent = j.createOnlineSlave();
-        Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
+        Agent agent = j.createOnlineAgent();
+        Node node = new DumbAgent("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
         assertNull("Agent which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
         assertNotNull("Agent which is added into Jenkins list nodes should have assigned computer.", agent.toComputer());
     }
 
     @Issue("JENKINS-27188")
     @Test public void envPropertiesImmutable() throws Exception {
-        Slave agent = j.createSlave();
+        Agent agent = j.createAgent();
 
         String propertyKey = "JENKINS-27188";
         EnvVars envVars = agent.getComputer().getEnvironment();
@@ -306,7 +306,7 @@ public class NodeTest {
     @Issue("JENKINS-26391")
     @Test
     public void testGetAssignedLabelWithLabelOrExpression() throws Exception {
-        Node node = j.createOnlineSlave();
+        Node node = j.createOnlineAgent();
         node.setLabelString("label1 label2");
 
         FreeStyleProject project = j.createFreeStyleProject();
@@ -320,7 +320,7 @@ public class NodeTest {
     @Issue("JENKINS-26391")
     @Test
     public void testGetAssignedLabelWithLabelAndExpression() throws Exception {
-        Node node = j.createOnlineSlave();
+        Node node = j.createOnlineAgent();
         node.setLabelString("label1 label2");
 
         FreeStyleProject project = j.createFreeStyleProject();
@@ -334,10 +334,10 @@ public class NodeTest {
     @Issue("JENKINS-26391")
     @Test
     public void testGetAssignedLabelWithBothAndOrExpression() throws Exception {
-        Node n1 = j.createOnlineSlave();
-        Node n2 = j.createOnlineSlave();
-        Node n3 = j.createOnlineSlave();
-        Node n4 = j.createOnlineSlave();
+        Node n1 = j.createOnlineAgent();
+        Node n2 = j.createOnlineAgent();
+        Node n3 = j.createOnlineAgent();
+        Node n4 = j.createOnlineAgent();
 
         n1.setLabelString("label1 label2 label3");
         n2.setLabelString("label1");
@@ -370,7 +370,7 @@ public class NodeTest {
     @Issue("JENKINS-26391")
     @Test
     public void testGetAssignedLabelWithSpaceOnly() throws Exception {
-        Node n = j.createOnlineSlave();
+        Node n = j.createOnlineAgent();
         n.setLabelString("label1 label2");
 
         FreeStyleProject p = j.createFreeStyleProject();

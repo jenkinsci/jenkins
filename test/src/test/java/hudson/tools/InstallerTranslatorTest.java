@@ -31,9 +31,9 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
 import hudson.model.Node;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.JNLPLauncher;
-import hudson.slaves.RetentionStrategy;
+import hudson.agents.DumbAgent;
+import hudson.agents.JNLPLauncher;
+import hudson.agents.RetentionStrategy;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.StreamTaskListener;
@@ -52,7 +52,7 @@ public class InstallerTranslatorTest {
 
     @Issue("JENKINS-23517")
     @Test public void offlineNodeForJDK() throws Exception {
-        Node slave = new DumbSlave("disconnected-slave", null, "/wherever", "1", Node.Mode.NORMAL, null, new JNLPLauncher(), RetentionStrategy.NOOP, Collections.emptyList());
+        Node agent = new DumbAgent("disconnected-agent", null, "/wherever", "1", Node.Mode.NORMAL, null, new JNLPLauncher(), RetentionStrategy.NOOP, Collections.emptyList());
         String globalDefaultLocation = "/usr/lib/jdk";
         JDK jdk = new JDK("my-jdk", globalDefaultLocation, List.of(new InstallSourceProperty(List.of(new CommandInstaller(null, "irrelevant", "/opt/jdk")))));
         r.jenkins.getJDKs().add(jdk);
@@ -60,14 +60,14 @@ public class InstallerTranslatorTest {
         p.setJDK(jdk);
         StreamTaskListener listener = new StreamTaskListener(System.out, Charset.defaultCharset());
         String javaHomeProp = "JAVA_HOME"; // cf. JDK.buildEnvVars
-        assertEquals(globalDefaultLocation, p.getEnvironment(slave, listener).get(javaHomeProp));
-        String slaveDefaultLocation = "/System/JDK";
-        slave.getNodeProperties().add(new ToolLocationNodeProperty(new ToolLocationNodeProperty.ToolLocation((ToolDescriptor) jdk.getDescriptor(), jdk.getName(), slaveDefaultLocation)));
-        assertEquals(slaveDefaultLocation, p.getEnvironment(slave, listener).get(javaHomeProp));
+        assertEquals(globalDefaultLocation, p.getEnvironment(agent, listener).get(javaHomeProp));
+        String agentDefaultLocation = "/System/JDK";
+        agent.getNodeProperties().add(new ToolLocationNodeProperty(new ToolLocationNodeProperty.ToolLocation((ToolDescriptor) jdk.getDescriptor(), jdk.getName(), agentDefaultLocation)));
+        assertEquals(agentDefaultLocation, p.getEnvironment(agent, listener).get(javaHomeProp));
     }
 
     @Issue("JENKINS-17667")
-    @Test public void multipleSlavesAndTools() throws Exception {
+    @Test public void multipleAgentsAndTools() throws Exception {
         String jdk1Path = Functions.isWindows() ? "C:\\jdk1" : "/opt/jdk1";
         String jdk2Path = Functions.isWindows() ? "C:\\jdk2" : "/opt/jdk2";
         JDK jdk1 = new JDK(
@@ -89,7 +89,7 @@ public class InstallerTranslatorTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setJDK(jdk1);
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo %JAVA_HOME%") : new Shell("echo $JAVA_HOME"));
-        p.setAssignedNode(r.createSlave());
+        p.setAssignedNode(r.createAgent());
         FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
         r.assertLogContains("installed jdk1", b1);
         r.assertLogContains(jdk1Path, b1);
@@ -101,7 +101,7 @@ public class InstallerTranslatorTest {
         // An installer is run for every build, and it is up to a CommandInstaller configuration to do any up-to-date check.
         r.assertLogContains("installed jdk2", b3);
         r.assertLogContains(jdk2Path, b3);
-        p.setAssignedNode(r.createSlave());
+        p.setAssignedNode(r.createAgent());
         FreeStyleBuild b4 = r.buildAndAssertSuccess(p);
         r.assertLogContains("installed jdk2", b4);
         r.assertLogContains(jdk2Path, b4);

@@ -39,7 +39,7 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -64,16 +64,16 @@ public class Security637Test {
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_handler_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
-                DumbSlave slave = j.createOnlineSlave(null, new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED"));
-                String unsafeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("https://www.google.com/")));
+                DumbAgent agent = j.createOnlineAgent(null, new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED"));
+                String unsafeHandlerClassName = agent.getChannel().call(new URLHandlerCallable(new URL("https://www.google.com/")));
                 assertThat(unsafeHandlerClassName, containsString("SafeURLStreamHandler"));
 
-                String safeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("file", null, -1, "", null)));
+                String safeHandlerClassName = agent.getChannel().call(new URLHandlerCallable(new URL("file", null, -1, "", null)));
                 assertThat(safeHandlerClassName, not(containsString("SafeURLStreamHandler")));
         });
     }
 
-    private static class URLHandlerCallable extends MasterToSlaveCallable<String, Exception> {
+    private static class URLHandlerCallable extends MasterToAgentCallable<String, Exception> {
         private URL url;
 
         URLHandlerCallable(URL url) {
@@ -107,19 +107,19 @@ public class Security637Test {
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_urlBuiltInAgent_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
-                DumbSlave slave = j.createOnlineSlave();
+                DumbAgent agent = j.createOnlineAgent();
 
                 // we bypass the standard equals method that resolve the hostname
                 assertThat(
-                        slave.getChannel().call(new URLBuilderCallable("https://jenkins.io")),
+                        agent.getChannel().call(new URLBuilderCallable("https://jenkins.io")),
                         not(equalTo(
-                                slave.getChannel().call(new URLBuilderCallable("https://www.jenkins.io"))
+                                agent.getChannel().call(new URLBuilderCallable("https://www.jenkins.io"))
                         ))
                 );
         });
     }
 
-    private static class URLBuilderCallable extends MasterToSlaveCallable<URL, Exception> {
+    private static class URLBuilderCallable extends MasterToAgentCallable<URL, Exception> {
         private String url;
 
         URLBuilderCallable(String url) {
@@ -137,13 +137,13 @@ public class Security637Test {
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_urlBuiltInMaster_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
-                DumbSlave slave = j.createOnlineSlave();
+                DumbAgent agent = j.createOnlineAgent();
 
                 // we bypass the standard equals method that resolve the hostname
                 assertThat(
-                        slave.getChannel().call(new URLTransferCallable(new URL("https://jenkins.io"))),
+                        agent.getChannel().call(new URLTransferCallable(new URL("https://jenkins.io"))),
                         not(equalTo(
-                                slave.getChannel().call(new URLTransferCallable(new URL("https://www.jenkins.io")))
+                                agent.getChannel().call(new URLTransferCallable(new URL("https://www.jenkins.io")))
                         ))
                 );
 
@@ -156,7 +156,7 @@ public class Security637Test {
     }
 
     // the URL is serialized / deserialized twice, master => agent and then agent => master
-    private static class URLTransferCallable extends MasterToSlaveCallable<URL, Exception> {
+    private static class URLTransferCallable extends MasterToAgentCallable<URL, Exception> {
         private URL url;
 
         URLTransferCallable(URL url) {

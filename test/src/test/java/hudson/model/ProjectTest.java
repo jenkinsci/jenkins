@@ -59,10 +59,10 @@ import hudson.security.ACLContext;
 import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.slaves.Cloud;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.slaves.NodeProvisioner;
+import hudson.agents.Cloud;
+import hudson.agents.DumbAgent;
+import hudson.agents.EnvironmentVariablesNodeProperty;
+import hudson.agents.NodeProvisioner;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
@@ -165,10 +165,10 @@ public class ProjectTest {
     @Test
     public void testGetEnvironment() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
-        Slave slave = j.createOnlineSlave();
+        Agent agent = j.createOnlineAgent();
         EnvironmentVariablesNodeProperty.Entry entry = new EnvironmentVariablesNodeProperty.Entry("jdk", "some_java");
-        slave.getNodeProperties().add(new EnvironmentVariablesNodeProperty(entry));
-        EnvVars var = p.getEnvironment(slave, TaskListener.NULL);
+        agent.getNodeProperties().add(new EnvironmentVariablesNodeProperty(entry));
+        EnvVars var = p.getEnvironment(agent, TaskListener.NULL);
         assertEquals("Environment should have set jdk.", "some_java", var.get("jdk"));
     }
 
@@ -184,23 +184,23 @@ public class ProjectTest {
     public void testGetAssignedLabel() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setAssignedLabel(j.jenkins.getSelfLabel());
-        Slave slave = j.createOnlineSlave();
+        Agent agent = j.createOnlineAgent();
         assertEquals("Project should have Jenkins's self label.", j.jenkins.getSelfLabel(), p.getAssignedLabel());
         p.setAssignedLabel(null);
         assertNull("Project should not have any label.", p.getAssignedLabel());
-        p.setAssignedLabel(slave.getSelfLabel());
-        assertEquals("Project should have self label of slave", slave.getSelfLabel(), p.getAssignedLabel());
+        p.setAssignedLabel(agent.getSelfLabel());
+        assertEquals("Project should have self label of agent", agent.getSelfLabel(), p.getAssignedLabel());
     }
 
     @Test
     public void testGetAssignedLabelString() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
-        Slave slave = j.createOnlineSlave();
+        Agent agent = j.createOnlineAgent();
         assertNull("Project should not have any label.", p.getAssignedLabelString());
         p.setAssignedLabel(j.jenkins.getSelfLabel());
         assertNull("Project should return null, because assigned label is Jenkins.", p.getAssignedLabelString());
-        p.setAssignedLabel(slave.getSelfLabel());
-        assertEquals("Project should return name of slave.", slave.getSelfLabel().name, p.getAssignedLabelString());
+        p.setAssignedLabel(agent.getSelfLabel());
+        assertEquals("Project should return name of agent.", agent.getSelfLabel().name, p.getAssignedLabelString());
     }
 
 
@@ -455,16 +455,16 @@ public class ProjectTest {
     public void testCheckout() throws Exception {
         SCM scm = new NullSCM();
         FreeStyleProject p = j.createFreeStyleProject("project");
-        Slave slave = j.createOnlineSlave();
+        Agent agent = j.createOnlineAgent();
         AbstractBuild build = p.createExecutable();
-        FilePath ws = slave.getWorkspaceFor(p);
+        FilePath ws = agent.getWorkspaceFor(p);
         assertNotNull(ws);
-        FilePath path = slave.toComputer().getWorkspaceList().allocate(ws, build).path;
+        FilePath path = agent.toComputer().getWorkspaceList().allocate(ws, build).path;
         build.setWorkspace(path);
         BuildListener listener = new StreamBuildListener(TaskListener.NULL.getLogger(), Charset.defaultCharset());
-        assertTrue("Project with null smc should perform checkout without problems.", p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(), "changelog.xml")));
+        assertTrue("Project with null smc should perform checkout without problems.", p.checkout(build, new RemoteLauncher(listener, agent.getChannel(), true), listener, new File(build.getRootDir(), "changelog.xml")));
         p.setScm(scm);
-        assertTrue("Project should perform checkout without problems.", p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(), "changelog.xml")));
+        assertTrue("Project should perform checkout without problems.", p.checkout(build, new RemoteLauncher(listener, agent.getChannel(), true), listener, new File(build.getRootDir(), "changelog.xml")));
     }
 
     @Ignore("randomly failed: Project should have polling result no change expected:<NONE> but was:<INCOMPARABLE>")
@@ -611,8 +611,8 @@ public class ProjectTest {
         auth.add(Item.BUILD, user.getId());
         auth.add(Item.WIPEOUT, user.getId());
         auth.add(Jenkins.READ, user.getId());
-        Slave slave = j.createOnlineSlave();
-        project.setAssignedLabel(slave.getSelfLabel());
+        Agent agent = j.createOnlineAgent();
+        project.setAssignedLabel(agent.getSelfLabel());
         String cmd = "echo hello > change.log";
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile(cmd) : new Shell(cmd));
         j.buildAndAssertSuccess(project);
@@ -687,7 +687,7 @@ public class ProjectTest {
     }
 
     /**
-     * Job is un-restricted (no nabel), this is submitted to queue, which spawns an on demand slave
+     * Job is un-restricted (no nabel), this is submitted to queue, which spawns an on demand agent
      */
     @Test
     public void testJobSubmittedShouldSpawnCloud() throws Exception {
@@ -717,15 +717,15 @@ public class ProjectTest {
     }
 
     /**
-     * Job is restricted, but label can not be provided by any cloud, only normal agents. Then job will not submit, because no slave is available.
+     * Job is restricted, but label can not be provided by any cloud, only normal agents. Then job will not submit, because no agent is available.
      */
     @Test
     public void testUnrestrictedJobNoLabelByCloudNoQueue() throws Exception {
         assertTrue(j.jenkins.clouds.isEmpty());
-        //Create slave. (Online)
-        Slave s1 = j.createOnlineSlave();
+        //Create agent. (Online)
+        Agent s1 = j.createOnlineAgent();
 
-        //Create a project, and bind the job to the created slave
+        //Create a project, and bind the job to the created agent
         FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-noqueue");
         proj.setAssignedLabel(s1.getSelfLabel());
 
@@ -735,9 +735,9 @@ public class ProjectTest {
 
         j.buildAndAssertSuccess(proj);
 
-        //Now create another slave. And restrict the job to that slave. The slave is offline, leaving the job with no assignable nodes.
+        //Now create another agent. And restrict the job to that agent. The agent is offline, leaving the job with no assignable nodes.
         //We tell our mock SCM to return that it has got changes. But since there are no agents, we get the desired result.
-        Slave s2 = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().skipStart().build());
+        Agent s2 = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().skipStart().build());
         proj.setAssignedLabel(s2.getSelfLabel());
         requiresWorkspaceScm.hasChange = true;
 
@@ -761,10 +761,10 @@ public class ProjectTest {
     }
 
     /**
-     * Job is restricted. Label is on slave that can be started in cloud. Job is submitted to queue, which spawns an on demand slave.
+     * Job is restricted. Label is on agent that can be started in cloud. Job is submitted to queue, which spawns an on demand agent.
      */
     @Test
-    public void testRestrictedLabelOnSlaveYesQueue() throws Exception {
+    public void testRestrictedLabelOnAgentYesQueue() throws Exception {
         FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-yesqueue");
         RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
         proj.setScm(requiresWorkspaceScm);
@@ -964,7 +964,7 @@ public class ProjectTest {
         private final transient JenkinsRule caller;
 
         /**
-         * Configurable delay between the {@link Cloud#provision(Label,int)} and the actual launch of a slave,
+         * Configurable delay between the {@link Cloud#provision(Label,int)} and the actual launch of a agent,
          * to emulate a real cloud that takes some time for provisioning a new system.
          *
          * <p>
@@ -1027,19 +1027,19 @@ public class ProjectTest {
 
             @Override
             public Node call() throws Exception {
-                // simulate the delay in provisioning a new slave,
+                // simulate the delay in provisioning a new agent,
                 // since it's normally some async operation.
                 Thread.sleep(time);
 
-                System.out.println("launching slave");
-                DumbSlave slave = caller.createSlave(label);
-                computer = slave.toComputer();
+                System.out.println("launching agent");
+                DumbAgent agent = caller.createAgent(label);
+                computer = agent.toComputer();
                 computer.connect(false).get();
                 synchronized (ProjectTest.DummyCloudImpl2.this) {
                     System.out.println(computer.getName() + " launch" + (computer.isOnline() ? "ed successfully" : " failed"));
                     System.out.println(computer.getLog());
                 }
-                return slave;
+                return agent;
             }
         }
 

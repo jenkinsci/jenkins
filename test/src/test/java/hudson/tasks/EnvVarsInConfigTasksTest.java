@@ -7,7 +7,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
 import hudson.model.Result;
 import hudson.model.labels.LabelAtom;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import hudson.tasks.Maven.MavenInstallation;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -22,8 +22,8 @@ import org.jvnet.hudson.test.ToolInstallations;
 public class EnvVarsInConfigTasksTest {
     public static final String DUMMY_LOCATION_VARNAME = "TOOLS_DUMMY_LOCATION";
 
-    private DumbSlave agentEnv = null;
-    private DumbSlave agentRegular = null;
+    private DumbAgent agentEnv = null;
+    private DumbAgent agentRegular = null;
 
     @ClassRule
     public static BuildWatcher buildWatcher = new BuildWatcher();
@@ -49,8 +49,8 @@ public class EnvVarsInConfigTasksTest {
 
         // create agents
         EnvVars additionalEnv = new EnvVars(DUMMY_LOCATION_VARNAME, "");
-        agentEnv = j.createSlave(new LabelAtom("agentEnv"), additionalEnv);
-        agentRegular = j.createSlave(new LabelAtom("agentRegular"));
+        agentEnv = j.createAgent(new LabelAtom("agentEnv"), additionalEnv);
+        agentRegular = j.createAgent(new LabelAtom("agentRegular"));
     }
 
     private String withVariable(String s) {

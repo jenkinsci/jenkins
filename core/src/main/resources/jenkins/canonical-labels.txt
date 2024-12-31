@@ -2,4 +2,4 @@
 # If these labels were changed in plugins now, they would not show localized strings in old core versions.
 # See https://github.com/jenkinsci/jenkins/pull/6151
 library api-plugin
-slaves agent
+agents agent

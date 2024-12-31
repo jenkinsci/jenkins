@@ -66,7 +66,7 @@ public interface IOfflineCause {
     @NonNull
     default String getReason() {
         // fetch the localized string for "Disconnected By"
-        String gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("", "");
+        String gsub_base = hudson.agents.Messages.AgentComputer_DisconnectedBy("", "");
         // regex to remove commented reason base string
         String gsub1 = "^" + gsub_base + "[\\w\\W]* \\: ";
         // regex to remove non-commented reason base string

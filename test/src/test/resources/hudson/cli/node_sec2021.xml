@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<slave>
+<agent>
   <name>../</name>
   <description>Payload from XML</description>
   <remoteFS>/user/hudson/workspace</remoteFS>
   <numExecutors>42</numExecutors>
   <mode>NORMAL</mode>
-  <retentionStrategy class="hudson.slaves.RetentionStrategy$1">
+  <retentionStrategy class="hudson.agents.RetentionStrategy$1">
     <DESCRIPTOR>
       <outer-class reference="../.."/>
     </DESCRIPTOR>
   </retentionStrategy>
-  <launcher class="hudson.slaves.JNLPLauncher"/>
+  <launcher class="hudson.agents.JNLPLauncher"/>
   <label></label>
   <nodeProperties/>
   <userId>SYSTEM</userId>
-</slave>
+</agent>

@@ -26,7 +26,7 @@ package jenkins.agents;
 
 import hudson.remoting.Callable;
 import jenkins.security.Roles;
-import jenkins.slaves.RemotingVersionInfo;
+import jenkins.agents.RemotingVersionInfo;
 import org.jenkinsci.remoting.RoleChecker;
 
 /**

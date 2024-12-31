@@ -8,4 +8,4 @@ f.entry(title:_("# of executors"), field:"numExecutors") {
 f.entry(title:_("Labels"),field:"labelString") {
     f.textbox()
 }
-f.slave_mode(name:"builtin.mode",node:app)
+f.agent_mode(name:"builtin.mode",node:app)

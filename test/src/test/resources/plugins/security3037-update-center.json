@@ -42,7 +42,7 @@ updateCenter.post(
       "labels": [
         "cli<img src=x onerror=alert(1)>",
         "misc",
-        "slaves",
+        "agents",
         "trigger"
       ],
       "name": "workflow-aggregator<img src=x onerror=alert(1)>",

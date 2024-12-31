@@ -28,7 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import hudson.ExtensionList;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.remoting.SocketChannelStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -41,8 +41,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import jenkins.AgentProtocol;
-import jenkins.security.SlaveToMasterCallable;
-import jenkins.slaves.JnlpSlaveAgentProtocol4;
+import jenkins.security.AgentToMasterCallable;
+import jenkins.agents.JnlpAgentAgentProtocol4;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol4ProxyHandler;
 import org.junit.Rule;
@@ -67,7 +67,7 @@ public final class JnlpProtocol4ProxyHandlerTest {
     @Test
     public void smokes() throws Exception {
         // withLogger(JnlpProtocol4ProxyHandler.class, Level.FINE) pointless since log dumper is set up after these messages are printed
-        Slave s = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().secret().build());
+        Agent s = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().secret().build());
         try {
             assertThat(s.getChannel().call(new DummyTask()), is("response"));
             s.toComputer().getLogText().writeLogTo(0, System.out);
@@ -77,7 +77,7 @@ public final class JnlpProtocol4ProxyHandlerTest {
         assertThat(ExtensionList.lookupSingleton(Handler.class).connections, is(Map.of(s.getNodeName(), 1)));
     }
 
-    private static class DummyTask extends SlaveToMasterCallable<String, RuntimeException> {
+    private static class DummyTask extends AgentToMasterCallable<String, RuntimeException> {
         @Override
         public String call() {
             return "response";
@@ -112,7 +112,7 @@ public final class JnlpProtocol4ProxyHandlerTest {
             connections.merge(nodeName, 1, Integer::sum);
             // Do nothing special (handle with default protocol):
             var protocol = new DataInputStream(SocketChannelStream.in(socket)).readUTF();
-            var delegate = ExtensionList.lookupSingleton(JnlpSlaveAgentProtocol4.class);
+            var delegate = ExtensionList.lookupSingleton(JnlpAgentAgentProtocol4.class);
             if (!protocol.equals("Protocol:" + delegate.getName())) {
                 throw new IOException("Unexpected protocol header: " + protocol);
             }

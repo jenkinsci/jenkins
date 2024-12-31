@@ -25,11 +25,11 @@
 package hudson.model;
 
 import hudson.ExtensionPoint;
-import hudson.slaves.SlaveComputer;
+import hudson.agents.AgentComputer;
 
 /**
  * A listener for task related events from executors.
- * A {@link Computer#getRetentionStrategy} or {@link SlaveComputer#getLauncher} may implement this interface.
+ * A {@link Computer#getRetentionStrategy} or {@link AgentComputer#getLauncher} may implement this interface.
  * Or you may create an implementation as an extension (since 2.318).
 * @author Stephen Connolly
 * @since 1.312

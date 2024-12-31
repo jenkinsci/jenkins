@@ -76,8 +76,8 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.get().getMarkupFormatter();
     }
 
-    public int getSlaveAgentPort() {
-        return Jenkins.get().getSlaveAgentPort();
+    public int getAgentPort() {
+        return Jenkins.get().getAgentPort();
     }
 
     /**
@@ -85,8 +85,8 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
      * @return true if the inbound agent port is enforced on this instance.
      */
     @Restricted(NoExternalUse.class)
-    public boolean isSlaveAgentPortEnforced() {
-        return Jenkins.get().isSlaveAgentPortEnforced();
+    public boolean isAgentPortEnforced() {
+        return Jenkins.get().isAgentPortEnforced();
     }
 
     public boolean isDisableRememberMe() {
@@ -134,11 +134,11 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         }
 
         // Agent settings
-        if (!isSlaveAgentPortEnforced()) {
+        if (!isAgentPortEnforced()) {
             try {
-                j.setSlaveAgentPort(new ServerTcpPort(json.getJSONObject("slaveAgentPort")).getPort());
+                j.setAgentPort(new ServerTcpPort(json.getJSONObject("AgentPort")).getPort());
             } catch (IOException e) {
-                throw new FormException(e, "slaveAgentPortType");
+                throw new FormException(e, "AgentPortType");
             }
         }
 

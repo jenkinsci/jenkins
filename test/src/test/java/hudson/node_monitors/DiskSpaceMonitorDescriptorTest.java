@@ -5,8 +5,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.SlaveComputer;
+import hudson.agents.DumbAgent;
+import hudson.agents.AgentComputer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -27,11 +27,11 @@ public class DiskSpaceMonitorDescriptorTest {
     @Test
     @Issue("JENKINS-3381")
     public void remoteDiskSpaceUsage() throws Exception {
-        DumbSlave s = j.createSlave();
-        SlaveComputer c = s.getComputer();
+        DumbAgent s = j.createAgent();
+        AgentComputer c = s.getComputer();
         c.connect(false).get(); // wait until it's connected
         if (c.isOffline())
-            fail("Slave failed to go online: " + c.getLog());
+            fail("Agent failed to go online: " + c.getLog());
 
         DiskSpace du = TemporarySpaceMonitor.DESCRIPTOR.monitor(c);
         du.toHtml();

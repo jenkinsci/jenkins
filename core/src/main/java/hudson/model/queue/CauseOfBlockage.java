@@ -8,7 +8,7 @@ import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.Queue.Task;
 import hudson.model.TaskListener;
-import hudson.slaves.Cloud;
+import hudson.agents.Cloud;
 import java.util.Objects;
 import org.jvnet.localizer.Localizable;
 

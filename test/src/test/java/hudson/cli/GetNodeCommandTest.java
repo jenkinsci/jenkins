@@ -56,7 +56,7 @@ public class GetNodeCommandTest {
         // JENKINS-65578 workaround
         Computer.EXTENDED_READ.enabled = false;
 
-        j.createSlave("MyAgent", null, null);
+        j.createAgent("MyAgent", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -70,7 +70,7 @@ public class GetNodeCommandTest {
 
     @Test public void getNodeShouldYieldConfigXml() throws Exception {
 
-        j.createSlave("MyAgent", null, null);
+        j.createAgent("MyAgent", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.EXTENDED_READ, Jenkins.READ)

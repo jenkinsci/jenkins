@@ -27,7 +27,7 @@ package hudson.bugs;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.model.User;
 import hudson.remoting.Channel;
 import java.io.File;
@@ -97,16 +97,16 @@ public class JnlpAccessWithSecuredHudsonTest {
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     @Test
     public void serviceUsingDirectSecret() throws Exception {
-        Slave slave = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().name("test").secret().build());
+        Agent agent = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().name("test").secret().build());
         try {
             r.createWebClient().goTo("computer/test/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
-            Channel channel = slave.getComputer().getChannel();
+            Channel channel = agent.getComputer().getChannel();
             assertFalse("SECURITY-206", channel.isRemoteClassLoadingAllowed());
             r.jenkins.getExtensionList(AdminWhitelistRule.class).get(AdminWhitelistRule.class).setMasterKillSwitch(false);
             final File f = new File(r.jenkins.getRootDir(), "config.xml");
             assertTrue(f.exists());
         } finally {
-            inboundAgents.stop(r, slave.getNodeName());
+            inboundAgents.stop(r, agent.getNodeName());
         }
     }
 

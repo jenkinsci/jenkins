@@ -12,8 +12,8 @@ import static org.junit.Assert.fail;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause;
+import hudson.agents.DumbAgent;
+import hudson.agents.OfflineCause;
 import hudson.util.OneShotEvent;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -103,9 +103,9 @@ public class ExecutorTest {
 
     @Test
     public void disconnectCause() throws Exception {
-        DumbSlave slave = j.createOnlineSlave();
+        DumbAgent agent = j.createOnlineAgent();
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
 
         FreeStyleBuild b = startBlockingBuild(p);
         User johnny = User.getOrCreateByIdOrFullName("Johnny");
@@ -124,13 +124,13 @@ public class ExecutorTest {
     @Issue("SECURITY-611")
     @Test
     public void apiPermissions() throws Exception {
-        DumbSlave slave = new DumbSlave("slave", j.jenkins.getRootDir().getAbsolutePath(), j.createComputerLauncher(null));
-        slave.setNumExecutors(2);
-        j.jenkins.addNode(slave);
+        DumbAgent agent = new DumbAgent("agent", j.jenkins.getRootDir().getAbsolutePath(), j.createComputerLauncher(null));
+        agent.setNumExecutors(2);
+        j.jenkins.addNode(agent);
         FreeStyleProject publicProject = j.createFreeStyleProject("public-project");
-        publicProject.setAssignedNode(slave);
+        publicProject.setAssignedNode(agent);
         FreeStyleProject secretProject = j.createFreeStyleProject("secret-project");
-        secretProject.setAssignedNode(slave);
+        secretProject.setAssignedNode(agent);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.READ).everywhere().toEveryone().
@@ -142,13 +142,13 @@ public class ExecutorTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.withBasicCredentials("has-security-clearance");
-        String api = wc.goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
+        String api = wc.goTo(agent.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, allOf(containsString("public-project"), containsString("secret-project")));
 
         wc = j.createWebClient();
         wc.withBasicCredentials("regular-joe");
-        api = wc.goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
+        api = wc.goTo(agent.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, allOf(containsString("public-project"), not(containsString("secret-project"))));
 
@@ -161,9 +161,9 @@ public class ExecutorTest {
     @Test
     @Issue("SECURITY-2120")
     public void disconnectCause_WithoutTrace() throws Exception {
-        DumbSlave slave = j.createOnlineSlave();
+        DumbAgent agent = j.createOnlineAgent();
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
 
         FreeStyleBuild b = startBlockingBuild(p);
 

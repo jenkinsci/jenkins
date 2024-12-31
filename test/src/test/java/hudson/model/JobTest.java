@@ -38,7 +38,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
-import hudson.slaves.RetentionStrategy;
+import hudson.agents.RetentionStrategy;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
@@ -543,7 +543,7 @@ public class JobTest {
      * This special class was created just to avoid running the test on unix only
      * as the only limitation is the file path, if we change only the name, the XSS is possible also under windows
      */
-    static class NameChangingNode extends Slave {
+    static class NameChangingNode extends Agent {
         private String virtualName;
 
         NameChangingNode(JenkinsRule j, String name) throws Exception {

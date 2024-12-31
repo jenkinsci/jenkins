@@ -29,7 +29,7 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.model.Descriptor;
-import hudson.slaves.OfflineCause;
+import hudson.agents.OfflineCause;
 import hudson.triggers.SafeTimerTask;
 import java.io.IOException;
 import java.util.Collections;

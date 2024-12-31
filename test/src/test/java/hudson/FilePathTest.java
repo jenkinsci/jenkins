@@ -52,7 +52,7 @@ public class FilePathTest {
     @Issue("JENKINS-50237")
     @Test
     public void listGlob() throws Exception {
-        for (Node n : new Node[] {r.jenkins, r.createOnlineSlave()}) {
+        for (Node n : new Node[] {r.jenkins, r.createOnlineAgent()}) {
             FilePath d = n.getRootPath().child("globbing");
             FilePath exists = d.child("dir/exists");
             exists.write("", null);

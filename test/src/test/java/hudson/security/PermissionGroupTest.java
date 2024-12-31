@@ -42,7 +42,7 @@ public class PermissionGroupTest {
     /**
      * "Overall" permission group should be always the first.
      */
-    @Email("http://jenkins-ci.361315.n4.nabble.com/Master-slave-refactor-tp391495.html")
+    @Email("http://jenkins-ci.361315.n4.nabble.com/Master-agent-refactor-tp391495.html")
     @Test public void order() {
         assertSame(Jenkins.PERMISSIONS, PermissionGroup.getAll().get(0));
     }

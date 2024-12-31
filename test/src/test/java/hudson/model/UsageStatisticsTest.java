@@ -73,7 +73,7 @@ public class UsageStatisticsTest {
      */
     @Test
     public void roundtrip() throws Exception {
-        j.createOnlineSlave();
+        j.createOnlineAgent();
         warmUpNodeMonitorCache();
 
         // key pair for testing

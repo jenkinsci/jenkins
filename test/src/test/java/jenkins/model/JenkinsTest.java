@@ -58,7 +58,7 @@ import hudson.model.Node;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.Saveable;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.model.TaskListener;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
@@ -66,9 +66,9 @@ import hudson.model.listeners.SaveableListener;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.slaves.ComputerListener;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause;
+import hudson.agents.ComputerListener;
+import hudson.agents.DumbAgent;
+import hudson.agents.OfflineCause;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.VersionNumber;
@@ -539,10 +539,10 @@ public class JenkinsTest {
 
     @Test
     public void runScriptOnOfflineComputer() throws Exception {
-        DumbSlave slave = j.createSlave(true);
-        j.disconnectSlave(slave);
+        DumbAgent agent = j.createAgent(true);
+        j.disconnectAgent(agent);
 
-        URL url = new URL(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");
+        URL url = new URL(j.getURL(), "computer/" + agent.getNodeName() + "/scriptText?script=println(42)");
 
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
@@ -598,11 +598,11 @@ public class JenkinsTest {
 
     @Test
     public void getComputers() throws Exception {
-        List<Slave> agents = new ArrayList<>();
+        List<Agent> agents = new ArrayList<>();
         for (String n : List.of("zestful", "bilking", "grouchiest")) {
-            agents.add(j.createSlave(n, null, null));
+            agents.add(j.createAgent(n, null, null));
         }
-        for (Slave agent : agents) {
+        for (Agent agent : agents) {
             j.waitOnline(agent);
         }
         assertThat(Stream.of(j.jenkins.getComputers()).map(Computer::getName).toArray(String[]::new),
@@ -671,7 +671,7 @@ public class JenkinsTest {
     @Issue("JENKINS-68055")
     @Test
     public void testTrimLabelsRetainsLabelExpressions() throws Exception {
-        Node n = j.createOnlineSlave();
+        Node n = j.createOnlineAgent();
         n.setLabelString("test expression");
 
         FreeStyleProject f = j.createFreeStyleProject();

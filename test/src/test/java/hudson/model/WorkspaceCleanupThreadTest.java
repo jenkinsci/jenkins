@@ -32,14 +32,14 @@ import static org.junit.Assert.assertTrue;
 import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.NullSCM;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.WorkspaceList;
+import hudson.agents.DumbAgent;
+import hudson.agents.WorkspaceList;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.MasterToAgentFileCallable;
 import jenkins.model.Jenkins;
 import org.junit.Assume;
 import org.junit.Rule;
@@ -56,17 +56,17 @@ public class WorkspaceCleanupThreadTest {
 
     @Rule public LoggerRule logs = new LoggerRule().record(WorkspaceCleanupThread.class, Level.ALL);
 
-    @Test public void cleanUpSlaves() throws Exception {
+    @Test public void cleanUpAgents() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
 
-        FilePath ws1 = createOldWorkspaceOn(r.createOnlineSlave(), p);
+        FilePath ws1 = createOldWorkspaceOn(r.createOnlineAgent(), p);
 
         p.setAssignedNode(r.jenkins);
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
         assertEquals(r.jenkins, b.getBuiltOn());
         FilePath ws2 = b.getWorkspace();
 
-        FilePath ws3 = createOldWorkspaceOn(r.createOnlineSlave(), p);
+        FilePath ws3 = createOldWorkspaceOn(r.createOnlineAgent(), p);
 
         performCleanup();
 
@@ -81,7 +81,7 @@ public class WorkspaceCleanupThreadTest {
 
         FilePath ws1 = createOldWorkspaceOn(r.jenkins, p);
 
-        DumbSlave s = r.createOnlineSlave();
+        DumbAgent s = r.createOnlineAgent();
         FilePath ws2 = createOldWorkspaceOn(s, p);
         assertEquals(s, p.getLastBuiltOn());
 
@@ -97,9 +97,9 @@ public class WorkspaceCleanupThreadTest {
         FreeStyleProject p1 = d.createProject(FreeStyleProject.class, "p");
         FilePath ws1 = createOldWorkspaceOn(r.jenkins, p1);
 
-        DumbSlave s1 = r.createOnlineSlave();
+        DumbAgent s1 = r.createOnlineAgent();
         FilePath ws2 = createOldWorkspaceOn(s1, p1);
-        DumbSlave s2 = r.createOnlineSlave();
+        DumbAgent s2 = r.createOnlineAgent();
         FilePath ws3 = createOldWorkspaceOn(s2, p1);
         assertEquals(s2, p1.getLastBuiltOn());
 
@@ -121,7 +121,7 @@ public class WorkspaceCleanupThreadTest {
         FreeStyleProject p = r.createFreeStyleProject();
 
         FilePath ws = createOldWorkspaceOn(r.jenkins, p);
-        createOldWorkspaceOn(r.createOnlineSlave(), p);
+        createOldWorkspaceOn(r.createOnlineAgent(), p);
 
         performCleanup();
 
@@ -136,7 +136,7 @@ public class WorkspaceCleanupThreadTest {
     @Test public void removeOnlyWhatIsOldEnough() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         FilePath ws = createOldWorkspaceOn(r.jenkins, p);
-        createOldWorkspaceOn(r.createOnlineSlave(), p);
+        createOldWorkspaceOn(r.createOnlineAgent(), p);
 
         long twoDaysOld = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(2);
         ws.act(new Touch(twoDaysOld));
@@ -162,7 +162,7 @@ public class WorkspaceCleanupThreadTest {
     @Test public void vetoByScm() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         FilePath ws = createOldWorkspaceOn(r.jenkins, p);
-        createOldWorkspaceOn(r.createOnlineSlave(), p);
+        createOldWorkspaceOn(r.createOnlineAgent(), p);
 
         p.setScm(new VetoSCM(false));
         performCleanup();
@@ -183,7 +183,7 @@ public class WorkspaceCleanupThreadTest {
         FilePath tmp = WorkspaceList.tempDir(ws);
         tmp.child("stuff").write("content", null);
         tmp.act(new Touch(0));
-        createOldWorkspaceOn(r.createOnlineSlave(), p);
+        createOldWorkspaceOn(r.createOnlineAgent(), p);
         performCleanup();
         assertFalse(ws.exists());
         assertFalse("temporary directory should be cleaned up as well", tmp.exists());
@@ -204,10 +204,10 @@ public class WorkspaceCleanupThreadTest {
         assertFalse("libs directory should be cleaned up as well", libsWs.exists());
     }
 
-    private FilePath createOldWorkspaceOn(Node slave, FreeStyleProject p) throws Exception {
-        p.setAssignedNode(slave);
+    private FilePath createOldWorkspaceOn(Node agent, FreeStyleProject p) throws Exception {
+        p.setAssignedNode(agent);
         FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
-        assertEquals(slave, b1.getBuiltOn());
+        assertEquals(agent, b1.getBuiltOn());
         FilePath ws = b1.getWorkspace();
         assertNotNull(ws);
         ws.act(new Touch(0));
@@ -240,7 +240,7 @@ public class WorkspaceCleanupThreadTest {
         }
     }
 
-    private static final class Touch extends MasterToSlaveFileCallable<Void> {
+    private static final class Touch extends MasterToAgentFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         private final long time;
 

@@ -32,7 +32,7 @@ import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Task;
-import hudson.slaves.Cloud;
+import hudson.agents.Cloud;
 
 /**
  * Vetos the execution of a task on a node

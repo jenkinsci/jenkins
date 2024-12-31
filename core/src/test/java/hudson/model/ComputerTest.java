@@ -28,14 +28,14 @@ public class ComputerTest {
         try {
             dir.delete();
             dir.mkdirs();
-            dir.child("slave-abc.log").touch(0);
-            dir.child("slave-def.log.5").touch(0);
+            dir.child("agent-abc.log").touch(0);
+            dir.child("agent-def.log.5").touch(0);
 
             Computer.relocateOldLogs(d);
 
             assertEquals(1, dir.list().size()); // asserting later that this one child is the logs/ directory
-            assertTrue(dir.child("logs/slaves/abc/slave.log").exists());
-            assertTrue(dir.child("logs/slaves/def/slave.log.5").exists());
+            assertTrue(dir.child("logs/agents/abc/agent.log").exists());
+            assertTrue(dir.child("logs/agents/def/agent.log.5").exists());
         } finally {
             dir.deleteRecursive();
         }

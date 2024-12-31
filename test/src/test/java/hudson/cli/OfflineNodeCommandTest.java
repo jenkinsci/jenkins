@@ -36,9 +36,9 @@ import static org.hamcrest.Matchers.not;
 import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Slave;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause;
+import hudson.model.Agent;
+import hudson.agents.DumbAgent;
+import hudson.agents.OfflineCause;
 import hudson.util.OneShotEvent;
 import jenkins.model.Jenkins;
 import org.junit.Before;
@@ -72,7 +72,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldFailWithoutComputerDisconnectPermission() throws Exception {
-        j.createSlave("aNode", "", null);
+        j.createAgent("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -96,140 +96,140 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnOnlineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(false));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().waitUntilOnline();
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(false));
+        assertThat(agent.toComputer().getOfflineCause(), equalTo(null));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent.toComputer().getOfflineCause()).message, equalTo(null));
     }
 
     @Test
     public void offlineNodeShouldSucceedOnOfflineNode() throws Exception {
-        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().name("aNode").skipStart().build());
-        slave.toComputer().setTemporarilyOffline(true, null);
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.LegacyOfflineCause.class));
+        Agent agent = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().name("aNode").skipStart().build());
+        agent.toComputer().setTemporarilyOffline(true, null);
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), instanceOf(OfflineCause.LegacyOfflineCause.class));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent.toComputer().getOfflineCause()).message, equalTo(null));
     }
 
     @Test
     public void offlineNodeShouldSucceedOnDisconnectedNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
-        slave.toComputer().disconnect();
-        slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOnline(), equalTo(false));
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(false));
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().waitUntilOnline();
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), equalTo(null));
+        agent.toComputer().disconnect();
+        agent.toComputer().waitUntilOffline();
+        assertThat(agent.toComputer().isOnline(), equalTo(false));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(false));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOnline(), equalTo(false));
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertThat(agent.toComputer().isOnline(), equalTo(false));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent.toComputer().getOfflineCause()).message, equalTo(null));
     }
 
     @Test
     public void offlineNodeShouldSucceedOnOnlineNodeWithCause() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(false));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().waitUntilOnline();
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(false));
+        assertThat(agent.toComputer().getOfflineCause(), equalTo(null));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent.toComputer().getOfflineCause()).message, equalTo("aCause"));
     }
 
     @Test
     public void offlineNodeShouldSucceedOnOfflineNodeWithCause() throws Exception {
-        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().name("aNode").skipStart().build());
-        slave.toComputer().setTemporarilyOffline(true, null);
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.LegacyOfflineCause.class));
+        Agent agent = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().name("aNode").skipStart().build());
+        agent.toComputer().setTemporarilyOffline(true, null);
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), instanceOf(OfflineCause.LegacyOfflineCause.class));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent.toComputer().getOfflineCause()).message, equalTo("aCause"));
     }
 
     @Test
     public void offlineNodeShouldSucceedOnDisconnectedNodeWithCause() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
-        slave.toComputer().disconnect();
-        slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOnline(), equalTo(false));
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(false));
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().waitUntilOnline();
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), equalTo(null));
+        agent.toComputer().disconnect();
+        agent.toComputer().waitUntilOffline();
+        assertThat(agent.toComputer().isOnline(), equalTo(false));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(false));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOnline(), equalTo(false));
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertThat(agent.toComputer().isOnline(), equalTo(false));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent.toComputer().getOfflineCause()).message, equalTo("aCause"));
     }
 
     @Test
     public void offlineNodeShouldSucceedOnBuildingNode() throws Exception {
         final OneShotEvent finish = new OneShotEvent();
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().waitUntilOnline();
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().waitUntilOnline();
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.setAssignedNode(slave);
+        project.setAssignedNode(agent);
         final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        agent.toComputer().waitUntilOffline();
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent.toComputer().getOfflineCause()).message, equalTo(null));
         assertThat(build.isBuilding(), equalTo(true));
 
         finish.signal();
@@ -241,21 +241,21 @@ public class OfflineNodeCommandTest {
     @Test
     public void offlineNodeShouldSucceedOnBuildingNodeWithCause() throws Exception {
         final OneShotEvent finish = new OneShotEvent();
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().waitUntilOnline();
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().waitUntilOnline();
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.setAssignedNode(slave);
+        project.setAssignedNode(agent);
         final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode", "-m", "aCause");
         assertThat(result, succeededSilently());
-        slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        agent.toComputer().waitUntilOffline();
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isTemporarilyOffline(), equalTo(true));
+        assertThat(agent.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent.toComputer().getOfflineCause()).message, equalTo("aCause"));
         assertThat(build.isBuilding(), equalTo(true));
 
         finish.signal();
@@ -266,74 +266,74 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeManyShouldSucceed() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        DumbSlave slave3 = j.createSlave("aNode3", "", null);
-        slave1.toComputer().waitUntilOnline();
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
-        slave2.toComputer().waitUntilOnline();
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), equalTo(null));
-        slave3.toComputer().waitUntilOnline();
-        assertThat(slave3.toComputer().isOnline(), equalTo(true));
-        assertThat(slave3.toComputer().getOfflineCause(), equalTo(null));
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
+        DumbAgent agent3 = j.createAgent("aNode3", "", null);
+        agent1.toComputer().waitUntilOnline();
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), equalTo(null));
+        agent2.toComputer().waitUntilOnline();
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), equalTo(null));
+        agent3.toComputer().waitUntilOnline();
+        assertThat(agent3.toComputer().isOnline(), equalTo(true));
+        assertThat(agent3.toComputer().getOfflineCause(), equalTo(null));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode3");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo(null));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo(null));
-        assertThat(slave3.toComputer().isOffline(), equalTo(true));
-        assertThat(slave3.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave3.toComputer().getOfflineCause()).message, equalTo(null));
+        assertThat(agent1.toComputer().isOffline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent1.toComputer().getOfflineCause()).message, equalTo(null));
+        assertThat(agent2.toComputer().isOffline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent2.toComputer().getOfflineCause()).message, equalTo(null));
+        assertThat(agent3.toComputer().isOffline(), equalTo(true));
+        assertThat(agent3.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent3.toComputer().getOfflineCause()).message, equalTo(null));
     }
 
     @Test
     public void offlineNodeManyShouldSucceedWithCause() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        DumbSlave slave3 = j.createSlave("aNode3", "", null);
-        slave1.toComputer().waitUntilOnline();
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
-        slave2.toComputer().waitUntilOnline();
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), equalTo(null));
-        slave3.toComputer().waitUntilOnline();
-        assertThat(slave3.toComputer().isOnline(), equalTo(true));
-        assertThat(slave3.toComputer().getOfflineCause(), equalTo(null));
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
+        DumbAgent agent3 = j.createAgent("aNode3", "", null);
+        agent1.toComputer().waitUntilOnline();
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), equalTo(null));
+        agent2.toComputer().waitUntilOnline();
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), equalTo(null));
+        agent3.toComputer().waitUntilOnline();
+        assertThat(agent3.toComputer().isOnline(), equalTo(true));
+        assertThat(agent3.toComputer().getOfflineCause(), equalTo(null));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode3", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave3.toComputer().isOffline(), equalTo(true));
-        assertThat(slave3.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave3.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertThat(agent1.toComputer().isOffline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent1.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertThat(agent2.toComputer().isOffline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent2.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertThat(agent3.toComputer().isOffline(), equalTo(true));
+        assertThat(agent3.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent3.toComputer().getOfflineCause()).message, equalTo("aCause"));
     }
 
     @Test
     public void offlineNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        slave1.toComputer().waitUntilOnline();
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
-        slave2.toComputer().waitUntilOnline();
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), equalTo(null));
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
+        agent1.toComputer().waitUntilOnline();
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), equalTo(null));
+        agent2.toComputer().waitUntilOnline();
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), equalTo(null));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -342,24 +342,24 @@ public class OfflineNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such agent \"never_created\" exists. Did you mean \"aNode1\"?"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo(null));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo(null));
+        assertThat(agent1.toComputer().isOffline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent1.toComputer().getOfflineCause()).message, equalTo(null));
+        assertThat(agent2.toComputer().isOffline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent2.toComputer().getOfflineCause()).message, equalTo(null));
     }
 
     @Test
     public void offlineNodeManyShouldFailIfANodeDoesNotExistWithCause() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        slave1.toComputer().waitUntilOnline();
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
-        slave2.toComputer().waitUntilOnline();
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), equalTo(null));
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
+        agent1.toComputer().waitUntilOnline();
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), equalTo(null));
+        agent2.toComputer().waitUntilOnline();
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), equalTo(null));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -368,58 +368,58 @@ public class OfflineNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such agent \"never_created\" exists. Did you mean \"aNode1\"?"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertThat(agent1.toComputer().isOffline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent1.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertThat(agent2.toComputer().isOffline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent2.toComputer().getOfflineCause()).message, equalTo("aCause"));
     }
 
     @Test
     public void offlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        slave1.toComputer().waitUntilOnline();
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
-        slave2.toComputer().waitUntilOnline();
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), equalTo(null));
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
+        agent1.toComputer().waitUntilOnline();
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), equalTo(null));
+        agent2.toComputer().waitUntilOnline();
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), equalTo(null));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode1");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo(null));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo(null));
+        assertThat(agent1.toComputer().isOffline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent1.toComputer().getOfflineCause()).message, equalTo(null));
+        assertThat(agent2.toComputer().isOffline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent2.toComputer().getOfflineCause()).message, equalTo(null));
     }
 
     @Test
     public void offlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwiceWithCause() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        slave1.toComputer().waitUntilOnline();
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
-        slave2.toComputer().waitUntilOnline();
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), equalTo(null));
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
+        agent1.toComputer().waitUntilOnline();
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), equalTo(null));
+        agent2.toComputer().waitUntilOnline();
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), equalTo(null));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode1", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertThat(agent1.toComputer().isOffline(), equalTo(true));
+        assertThat(agent1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent1.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertThat(agent2.toComputer().isOffline(), equalTo(true));
+        assertThat(agent2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
+        assertThat(((OfflineCause.ByCLI) agent2.toComputer().getOfflineCause()).message, equalTo("aCause"));
     }
 
     @Test

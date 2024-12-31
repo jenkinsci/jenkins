@@ -53,14 +53,14 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
-import hudson.slaves.AbstractCloudSlave;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.ComputerListener;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.OfflineCause;
-import hudson.slaves.OfflineCause.ByCLI;
-import hudson.slaves.RetentionStrategy;
-import hudson.slaves.WorkspaceList;
+import hudson.agents.AbstractCloudAgent;
+import hudson.agents.ComputerLauncher;
+import hudson.agents.ComputerListener;
+import hudson.agents.NodeProperty;
+import hudson.agents.OfflineCause;
+import hudson.agents.OfflineCause.ByCLI;
+import hudson.agents.RetentionStrategy;
+import hudson.agents.WorkspaceList;
 import hudson.triggers.SafeTimerTask;
 import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
@@ -111,7 +111,7 @@ import jenkins.model.IComputer;
 import jenkins.model.IDisplayExecutor;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingExecutorService;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.ErrorLoggingExecutorService;
@@ -216,7 +216,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * This method captures the information of a request to terminate a computer instance. Method is public as
-     * it needs to be called from {@link AbstractCloudSlave} and {@link jenkins.model.Nodes}. In general you should
+     * it needs to be called from {@link AbstractCloudAgent} and {@link jenkins.model.Nodes}. In general you should
      * not need to call this method directly, however if implementing a custom node type or a different path
      * for removing nodes, it may make sense to call this method in order to capture the originating request.
      *
@@ -303,7 +303,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see #relocateOldLogs()
      */
     public @NonNull File getLogFile() {
-        return new File(getLogDir(), "slave.log");
+        return new File(getLogDir(), "agent.log");
     }
 
     /**
@@ -314,7 +314,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.613
      */
     protected @NonNull File getLogDir() {
-        File dir = new File(SafeTimerTask.getLogsRoot(), "slaves/" + nodeName);
+        File dir = new File(SafeTimerTask.getLogsRoot(), "agents/" + nodeName);
         synchronized (logDirLock) {
             try {
                 IOUtils.mkdirs(dir);
@@ -402,7 +402,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * If {@link #getChannel()}==null, attempts to relaunch the agent.
      */
-    public abstract void doLaunchSlaveAgent(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException;
+    public abstract void doLaunchAgent(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException;
 
     /**
      * @deprecated since 2009-01-06.  Use {@link #connect(boolean)}
@@ -413,7 +413,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Do the same as {@link #doLaunchSlaveAgent(StaplerRequest2, StaplerResponse2)}
+     * Do the same as {@link #doLaunchAgent(StaplerRequest2, StaplerResponse2)}
      * but outside the context of serving a request.
      *
      * <p>
@@ -786,7 +786,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     protected void setNode(Node node) {
         assert node != null;
-        if (node instanceof Slave)
+        if (node instanceof Agent)
             this.nodeName = node.getNodeName();
         else
             this.nodeName = null;
@@ -1292,7 +1292,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         oneOffExecutors.remove(e);
     }
 
-    private static class ListPossibleNames extends MasterToSlaveCallable<List<String>, IOException> {
+    private static class ListPossibleNames extends MasterToAgentCallable<List<String>, IOException> {
         /**
          * In the normal case we would use {@link Computer} as the logger's name, however to
          * do that we would have to send the {@link Computer} class over to the remote classloader
@@ -1335,7 +1335,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         private static final long serialVersionUID = 1L;
     }
 
-    private static class GetFallbackName extends MasterToSlaveCallable<String, IOException> {
+    private static class GetFallbackName extends MasterToAgentCallable<String, IOException> {
         @Override
         public String call() throws IOException {
             return SystemProperties.getString("host.name");
@@ -1440,7 +1440,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
-    private static final class DumpExportTableTask extends MasterToSlaveCallable<String, IOException> {
+    private static final class DumpExportTableTask extends MasterToAgentCallable<String, IOException> {
         @Override
         public String call() throws IOException {
             final Channel ch = getChannelOrFail();
@@ -1488,12 +1488,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
         if (!proposedName.equals(nodeName)
                 && Jenkins.get().getNode(proposedName) != null) {
-            throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
+            throw new FormException(Messages.ComputerSet_AgentAlreadyExists(proposedName), "name");
         }
 
         String nExecutors = req.getSubmittedForm().getString("numExecutors");
         if (nExecutors == null || nExecutors.isBlank() || Integer.parseInt(nExecutors) <= 0) {
-            throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
+            throw new FormException(Messages.Agent_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 
         Node result = node.reconfigure(req, req.getSubmittedForm());
@@ -1644,8 +1644,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             List<String> names = ComputerSet.getComputerNames();
             String adv = EditDistance.findNearest(name, names);
             throw new IllegalArgumentException(adv == null ?
-                    hudson.model.Messages.Computer_NoSuchSlaveExistsWithoutAdvice(name) :
-                    hudson.model.Messages.Computer_NoSuchSlaveExists(name, adv));
+                    hudson.model.Messages.Computer_NoSuchAgentExistsWithoutAdvice(name) :
+                    hudson.model.Messages.Computer_NoSuchAgentExists(name, adv));
         }
         return item;
     }
@@ -1653,26 +1653,26 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Relocate log files in the old location to the new location.
      *
-     * Files were used to be $JENKINS_ROOT/slave-NAME.log (and .1, .2, ...)
-     * but now they are at $JENKINS_ROOT/logs/slaves/NAME/slave.log (and .1, .2, ...)
+     * Files were used to be $JENKINS_ROOT/agent-NAME.log (and .1, .2, ...)
+     * but now they are at $JENKINS_ROOT/logs/agents/NAME/agent.log (and .1, .2, ...)
      *
      * @see #getLogFile()
      */
-    // TODO(terminology) migrate from slaves/ to agents/
+    // TODO(terminology) migrate from agents/ to agents/
     @Initializer
     public static void relocateOldLogs() {
         relocateOldLogs(Jenkins.get().getRootDir());
     }
 
     /*package*/ static void relocateOldLogs(File dir) {
-        final Pattern logfile = Pattern.compile("slave-(.*)\\.log(\\.[0-9]+)?");
+        final Pattern logfile = Pattern.compile("agent-(.*)\\.log(\\.[0-9]+)?");
         File[] logfiles = dir.listFiles((dir1, name) -> logfile.matcher(name).matches());
         if (logfiles == null)     return;
 
         for (File f : logfiles) {
             Matcher m = logfile.matcher(f.getName());
             if (m.matches()) {
-                File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
+                File newLocation = new File(dir, "logs/agents/" + m.group(1) + "/agent.log" + Util.fixNull(m.group(2)));
                 try {
                     Util.createDirectories(newLocation.getParentFile().toPath());
                     Files.move(f.toPath(), newLocation.toPath(), StandardCopyOption.REPLACE_EXISTING);

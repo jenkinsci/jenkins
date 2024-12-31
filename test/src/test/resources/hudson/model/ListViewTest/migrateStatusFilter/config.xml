@@ -49,7 +49,7 @@
     </listView>
   </views>
   <primaryView>all</primaryView>
-  <slaveAgentPort>0</slaveAgentPort>
+  <agentAgentPort>0</agentAgentPort>
   <label></label>
   <crumbIssuer class="hudson.security.csrf.DefaultCrumbIssuer">
     <excludeClientIPFromCrumb>false</excludeClientIPFromCrumb>

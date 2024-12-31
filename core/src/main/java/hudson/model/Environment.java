@@ -27,7 +27,7 @@ package hudson.model;
 import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.listeners.RunListener;
-import hudson.slaves.NodeProperty;
+import hudson.agents.NodeProperty;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import java.io.IOException;

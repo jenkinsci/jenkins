@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <!--
-  2nd page in the "new slave" page for displaying the entire configuration entries for the selected job type.
+  2nd page in the "new agent" page for displaying the entire configuration entries for the selected job type.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"

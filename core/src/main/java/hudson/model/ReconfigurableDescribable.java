@@ -28,7 +28,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
-import hudson.slaves.NodeProperty;
+import hudson.agents.NodeProperty;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;

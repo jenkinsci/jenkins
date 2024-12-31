@@ -35,7 +35,7 @@ import hudson.Platform;
 import hudson.PluginManager;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.listeners.ItemListener;
-import hudson.slaves.ComputerListener;
+import hudson.agents.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormValidation;
 import io.jenkins.servlet.ServletContextWrapper;
@@ -66,7 +66,7 @@ public class Hudson extends Jenkins {
     private final transient CopyOnWriteList<ItemListener> itemListeners = ExtensionListView.createCopyOnWriteList(ItemListener.class);
 
     /**
-    * List of registered {@link hudson.slaves.ComputerListener}s.
+    * List of registered {@link hudson.agents.ComputerListener}s.
      * @deprecated as of 1.286
      */
     @Deprecated
@@ -139,10 +139,10 @@ public class Hudson extends Jenkins {
      *      Use {@link #getNode(String)}. Since 1.252.
      */
     @Deprecated
-    public Slave getSlave(String name) {
+    public Agent getAgent(String name) {
         Node n = getNode(name);
-        if (n instanceof Slave)
-            return (Slave) n;
+        if (n instanceof Agent)
+            return (Agent) n;
         return null;
     }
 
@@ -151,7 +151,7 @@ public class Hudson extends Jenkins {
      *      Use {@link #getNodes()}. Since 1.252.
      */
     @Deprecated
-    public List<Slave> getSlaves() {
+    public List<Agent> getAgents() {
         return (List) getNodes();
     }
 
@@ -162,8 +162,8 @@ public class Hudson extends Jenkins {
      *      Use {@link #setNodes(List)}. Since 1.252.
      */
     @Deprecated
-    public void setSlaves(List<Slave> slaves) throws IOException {
-        setNodes(slaves);
+    public void setAgents(List<Agent> agents) throws IOException {
+        setNodes(agents);
     }
 
     /**

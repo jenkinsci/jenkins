@@ -33,7 +33,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
 import hudson.model.Computer;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -54,7 +54,7 @@ public class ConnectNodeCommandTest {
     }
 
     @Test public void connectNodeShouldFailWithoutComputerConnectPermission() throws Exception {
-        j.createSlave("aNode", "", null);
+        j.createAgent("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -76,78 +76,78 @@ public class ConnectNodeCommandTest {
     }
 
     @Test public void connectNodeShouldSucceed() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent agent = j.createAgent("aNode", "", null);
 
         CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
 
         result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
 
-        slave.toComputer().disconnect();
-        slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOnline(), equalTo(false));
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
+        agent.toComputer().disconnect();
+        agent.toComputer().waitUntilOffline();
+        assertThat(agent.toComputer().isOnline(), equalTo(false));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
 
         result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
     }
 
     @Test public void connectNodeShouldSucceedWithForce() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().connect(false).get(); // avoid a race condition in the test
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().connect(false).get(); // avoid a race condition in the test
 
         CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("-f", "aNode");
-        assertThat(slave.toComputer().getLog(), result, succeededSilently());
-        assertThat(slave.toComputer().getLog(), slave.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().getLog(), result, succeededSilently());
+        assertThat(agent.toComputer().getLog(), agent.toComputer().isOnline(), equalTo(true));
 
         result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("-f", "aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
 
-        slave.toComputer().disconnect();
-        slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOnline(), equalTo(false));
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
+        agent.toComputer().disconnect();
+        agent.toComputer().waitUntilOffline();
+        assertThat(agent.toComputer().isOnline(), equalTo(false));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
 
         result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("-f", "aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
+        assertThat(agent.toComputer().isOnline(), equalTo(true));
     }
 
     @Test public void connectNodeManyShouldSucceed() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        DumbSlave slave3 = j.createSlave("aNode3", "", null);
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
+        DumbAgent agent3 = j.createAgent("aNode3", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode3");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave3.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent3.toComputer().isOnline(), equalTo(true));
     }
 
 
     @Test public void connectNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
@@ -156,20 +156,20 @@ public class ConnectNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such agent \"never_created\" exists. Did you mean \"aNode1\"?"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
     }
 
     @Test public void connectNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent agent1 = j.createAgent("aNode1", "", null);
+        DumbAgent agent2 = j.createAgent("aNode2", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode1");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
+        assertThat(agent1.toComputer().isOnline(), equalTo(true));
+        assertThat(agent2.toComputer().isOnline(), equalTo(true));
     }
 
     @Test public void connectNodeShouldSucceedOnMaster() {

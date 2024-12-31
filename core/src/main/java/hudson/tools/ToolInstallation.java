@@ -40,7 +40,7 @@ import hudson.model.Node;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
-import hudson.slaves.NodeSpecific;
+import hudson.agents.NodeSpecific;
 import hudson.util.DescribableList;
 import hudson.util.XStream2;
 import java.io.IOException;

@@ -128,7 +128,7 @@
     <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
     <Class name="jenkins.model.Jenkins"/>
     <Or>
-      <Field name="tcpSlaveAgentListener"/>
+      <Field name="tcpAgentListener"/>
       <Field name="proxy"/>
       <Field name="VERSION"/>
       <Field name="CHANGELOG_URL"/>
@@ -151,7 +151,7 @@
   </Match>
   <Match>
     <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
-    <Class name="hudson.slaves.JNLPLauncher"/>
+    <Class name="hudson.agents.JNLPLauncher"/>
     <Field name="tunnel"/>
   </Match>
   <Match>
@@ -199,7 +199,7 @@
           <Class name="hudson.Launcher$LocalLauncher"/>
           <Class name="hudson.Launcher$RemoteChannelLaunchCallable"/>
           <Class name="hudson.os.WindowsUtil"/>
-          <Class name="jenkins.slaves.restarter.WinswSlaveRestarter"/>
+          <Class name="jenkins.agents.restarter.WinswAgentRestarter"/>
         </Or>
       </And>
       <And>
@@ -215,7 +215,7 @@
           <Class name="hudson.model.Run$ArtifactList"/>
           <Class name="hudson.model.Run$SerializableArtifactList"/>
           <Class name="hudson.search.Search$SearchResultImpl"/>
-          <Class name="hudson.slaves.NodeList"/>
+          <Class name="hudson.agents.NodeList"/>
         </Or>
       </And>
       <And>
@@ -279,7 +279,7 @@
           <Class name="hudson.model.ResultTrend"/>
           <Class name="hudson.model.Run"/>
           <Class name="hudson.model.RunParameterValue"/>
-          <Class name="hudson.model.Slave"/>
+          <Class name="hudson.model.Agent"/>
           <Class name="hudson.model.TopLevelItemDescriptor"/>
           <Class name="hudson.model.UpdateCenter$HudsonDowngradeJob"/>
           <Class name="hudson.model.UpdateCenter$HudsonUpgradeJob"/>
@@ -294,7 +294,7 @@
           <Class name="hudson.tasks.BuildTrigger"/>
           <Class name="hudson.tasks.Maven"/>
           <Class name="hudson.tasks.Maven$MavenInstallation"/>
-          <Class name="hudson.TcpSlaveAgentListener$TcpSlaveAgentListenerRescheduler"/>
+          <Class name="hudson.TcpAgentListener$TcpAgentListenerRescheduler"/>
           <Class name="hudson.tools.DownloadFromUrlInstaller$DescriptorImpl"/>
           <Class name="hudson.tools.ToolInstallation"/>
           <Class name="hudson.triggers.SCMTrigger$DescriptorImpl"/>
@@ -311,7 +311,7 @@
           <Class name="jenkins.mvn.SettingsPathHelper"/>
           <Class name="jenkins.security.CustomClassFilter$Contributed"/>
           <Class name="jenkins.security.ResourceDomainConfiguration"/>
-          <Class name="jenkins.slaves.DefaultJnlpSlaveReceiver"/>
+          <Class name="jenkins.agents.DefaultJnlpAgentReceiver"/>
           <Class name="jenkins.util.VirtualFile$FilePathVF"/>
           <Class name="jenkins.util.VirtualFile$FileVF"/>
         </Or>
@@ -370,7 +370,7 @@
           <Class name="hudson.Plugin"/>
           <Class name="hudson.PluginManager"/>
           <Class name="hudson.PluginWrapper"/>
-          <Class name="hudson.slaves.SlaveComputer$AbsolutePath"/>
+          <Class name="hudson.agents.AgentComputer$AbsolutePath"/>
           <Class name="hudson.tasks.Fingerprinter$FindRecords"/>
           <Class name="hudson.tasks.Maven$DecideDefaultMavenCommand"/>
           <Class name="hudson.tasks.Maven$MavenInstallation"/>
@@ -404,7 +404,7 @@
           <Class name="jenkins.security.s2m.ConfigDirectory"/>
           <Class name="jenkins.security.stapler.StaplerDispatchValidator$ValidatorCache"/>
           <Class name="jenkins.security.stapler.StaticRoutingDecisionProvider"/>
-          <Class name="jenkins.slaves.restarter.UnixSlaveRestarter"/>
+          <Class name="jenkins.agents.restarter.UnixAgentRestarter"/>
           <Class name="jenkins.SoloFilePathFilter"/>
           <Class name="jenkins.util.groovy.GroovyHookScript"/>
           <Class name="jenkins.util.io.FileBoolean"/>
@@ -435,8 +435,8 @@
           <Class name="hudson.security.BasicAuthenticationFilter"/>
           <Class name="hudson.security.FederatedLoginService$UnclaimedIdentityException"/>
           <Class name="hudson.security.HudsonPrivateSecurityRealm"/>
-          <Class name="hudson.slaves.NodeDescriptor"/>
-          <Class name="hudson.slaves.SlaveComputer"/>
+          <Class name="hudson.agents.NodeDescriptor"/>
+          <Class name="hudson.agents.AgentComputer"/>
           <Class name="hudson.util.DoubleLaunchChecker"/>
           <Class name="hudson.util.ErrorObject"/>
           <Class name="hudson.util.HudsonIsLoading"/>
@@ -446,7 +446,7 @@
           <Class name="jenkins.management.AdministrativeMonitorsApi"/>
           <Class name="jenkins.model.Jenkins"/>
           <Class name="jenkins.model.ParameterizedJobMixIn"/>
-          <Class name="jenkins.slaves.EncryptedSlaveAgentJnlpFile"/>
+          <Class name="jenkins.agents.EncryptedAgentJnlpFile"/>
         </Or>
       </And>
       <And>
@@ -463,11 +463,11 @@
       </And>
       <And>
         <Bug pattern="UNENCRYPTED_SERVER_SOCKET"/>
-        <Class name="hudson.slaves.Channels"/>
+        <Class name="hudson.agents.Channels"/>
       </And>
       <And>
         <Bug pattern="UNENCRYPTED_SOCKET"/>
-        <Class name="hudson.TcpSlaveAgentListener"/>
+        <Class name="hudson.TcpAgentListener"/>
       </And>
       <And>
         <Bug pattern="URLCONNECTION_SSRF_FD"/>
@@ -476,7 +476,7 @@
           <Class name="hudson.FilePath$Unpack"/>
           <Class name="hudson.Main"/>
           <Class name="hudson.model.Descriptor"/>
-          <Class name="hudson.model.Slave$JnlpJar"/>
+          <Class name="hudson.model.Agent$JnlpJar"/>
           <Class name="hudson.PluginManager"/>
           <Class name="hudson.PluginWrapper"/>
           <Class name="hudson.ProxyConfiguration"/>
@@ -485,7 +485,7 @@
       </And>
       <And>
         <Bug pattern="UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR"/>
-        <Class name="hudson.slaves.SlaveComputer"/>
+        <Class name="hudson.agents.AgentComputer"/>
       </And>
       <And>
         <Bug pattern="XSS_SERVLET"/>

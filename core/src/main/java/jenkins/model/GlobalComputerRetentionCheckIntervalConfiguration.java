@@ -16,7 +16,7 @@ import org.kohsuke.stapler.StaplerRequest;
 @Extension(ordinal = 401) @Symbol("computerRetentionCheckInterval")
 public class GlobalComputerRetentionCheckIntervalConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     /**
-     * For {@link hudson.slaves.ComputerRetentionWork#getRecurrencePeriod()}
+     * For {@link hudson.agents.ComputerRetentionWork#getRecurrencePeriod()}
      */
     private int computerRetentionCheckInterval = 60;
 

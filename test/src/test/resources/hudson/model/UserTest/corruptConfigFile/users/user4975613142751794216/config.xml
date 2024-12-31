@@ -32,7 +32,7 @@
     </hudson.model.AllView>
   </views>
   <primaryView>all</primaryView>
-  <slaveAgentPort>-1</slaveAgentPort>
+  <agentAgentPort>-1</agentAgentPort>
   <label></label>
   <crumbIssuer class="hudson.security.csrf.DefaultCrumbIssuer">
     <excludeClientIPFromCrumb>false</excludeClientIPFromCrumb>

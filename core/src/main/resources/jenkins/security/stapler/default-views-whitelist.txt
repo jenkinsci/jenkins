@@ -14,8 +14,8 @@ com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.actions.manual.Manu
 # This works experimentally even without this entry, but probably only because of buffer size, so be safe
 hudson.plugins.depgraph_view.AbstractDependencyGraphAction jsplumb
 
-# https://plugins.jenkins.io/multi-slave-config-plugin
-com.sonyericsson.hudson.plugins.multislaveconfigplugin.NodeManageLink slavefilter
+# https://plugins.jenkins.io/multi-agent-config-plugin
+com.sonyericsson.hudson.plugins.multiagentconfigplugin.NodeManageLink agentfilter
 
 # https://plugins.jenkins.io/coverity
 jenkins.plugins.coverity.CheckConfig$DescriptorImpl checkConfig

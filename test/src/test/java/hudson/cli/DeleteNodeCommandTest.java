@@ -54,7 +54,7 @@ public class DeleteNodeCommandTest {
 
     @Test public void deleteNodeShouldFailWithoutNodeDeletePermission() throws Exception {
 
-        j.createSlave("aNode", "", null);
+        j.createAgent("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -68,7 +68,7 @@ public class DeleteNodeCommandTest {
 
     @Test public void deleteNodeShouldSucceed() throws Exception {
 
-        j.createSlave("aNode", "", null);
+        j.createAgent("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DELETE, Jenkins.READ)
@@ -93,9 +93,9 @@ public class DeleteNodeCommandTest {
 
     @Test public void deleteNodeManyShouldSucceed() throws Exception {
 
-        j.createSlave("aNode1", "", null);
-        j.createSlave("aNode2", "", null);
-        j.createSlave("aNode3", "", null);
+        j.createAgent("aNode1", "", null);
+        j.createAgent("aNode2", "", null);
+        j.createAgent("aNode3", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DELETE, Jenkins.READ)
@@ -109,8 +109,8 @@ public class DeleteNodeCommandTest {
 
     @Test public void deleteNodeManyShouldFailIfFirstNodeDoesNotExist() throws Exception {
 
-        j.createSlave("aNode1", "", null);
-        j.createSlave("aNode2", "", null);
+        j.createAgent("aNode1", "", null);
+        j.createAgent("aNode2", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DELETE, Jenkins.READ)
@@ -128,8 +128,8 @@ public class DeleteNodeCommandTest {
 
     @Test public void deleteNodeManyShouldFailIfMiddleNodeDoesNotExist() throws Exception {
 
-        j.createSlave("aNode1", "", null);
-        j.createSlave("aNode2", "", null);
+        j.createAgent("aNode1", "", null);
+        j.createAgent("aNode2", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DELETE, Jenkins.READ)
@@ -147,8 +147,8 @@ public class DeleteNodeCommandTest {
 
     @Test public void deleteNodeManyShouldFailIfLastNodeDoesNotExist() throws Exception {
 
-        j.createSlave("aNode1", "", null);
-        j.createSlave("aNode2", "", null);
+        j.createAgent("aNode1", "", null);
+        j.createAgent("aNode2", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DELETE, Jenkins.READ)
@@ -166,8 +166,8 @@ public class DeleteNodeCommandTest {
 
     @Test public void deleteNodeManyShouldFailIfMoreNodesDoNotExist() throws Exception {
 
-        j.createSlave("aNode1", "", null);
-        j.createSlave("aNode2", "", null);
+        j.createAgent("aNode1", "", null);
+        j.createAgent("aNode2", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DELETE, Jenkins.READ)
@@ -187,8 +187,8 @@ public class DeleteNodeCommandTest {
 
     @Test public void deleteNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
 
-        j.createSlave("aNode1", "", null);
-        j.createSlave("aNode2", "", null);
+        j.createAgent("aNode1", "", null);
+        j.createAgent("aNode2", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DELETE, Jenkins.READ)

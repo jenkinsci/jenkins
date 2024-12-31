@@ -31,7 +31,7 @@ THE SOFTWARE.
 <l:layout title="Log" permission="${app.SYSTEM_READ}" type="one-column">
   <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
   <l:main-panel>
-    <j:set var="noLogs" value="${it.logRecords.isEmpty() and it.slaveLogRecords.isEmpty()}" />
+    <j:set var="noLogs" value="${it.logRecords.isEmpty() and it.agentLogRecords.isEmpty()}" />
 
     <l:app-bar title="${it.displayName}">
       <l:isAdmin>
@@ -71,7 +71,7 @@ THE SOFTWARE.
     </j:if>
 
     <t:logRecords logRecords="${it.logRecords}"/>
-    <j:forEach var="entry" items="${it.slaveLogRecords.entrySet()}">
+    <j:forEach var="entry" items="${it.agentLogRecords.entrySet()}">
       <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>
       <t:logRecords logRecords="${entry.value}"/>
     </j:forEach>

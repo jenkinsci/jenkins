@@ -10,7 +10,7 @@ public class PluginLabelUtilTest {
     @Test
     public void testCanonicalLabels() {
         JSONArray labels = new JSONArray();
-        labels.add("slaves");
+        labels.add("agents");
         labels.add("api-plugin");
         labels.add("library");
         assertArrayEquals(new String[]{"agent", "api-plugin"},

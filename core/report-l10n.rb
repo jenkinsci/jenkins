@@ -149,7 +149,7 @@ chn|||Chinook jargon|chinook, jargon
 cho|||Choctaw|choctaw
 chp|||Chipewyan; Dene Suline|chipewyan
 chr|||Cherokee|cherokee
-chu||cu|Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic|slavon d'église; vieux slave; slavon liturgique; vieux bulgare
+chu||cu|Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic|slavon d'église; vieux agent; slavon liturgique; vieux bulgare
 chv||cv|Chuvash|tchouvache
 chy|||Cheyenne|cheyenne
 cmc|||Chamic languages|chames, langues
@@ -170,7 +170,7 @@ dan||da|Danish|danois
 dar|||Dargwa|dargwa
 day|||Land Dayak languages|dayak, langues
 del|||Delaware|delaware
-den|||Slave (Athapascan)|esclave (athapascan)
+den|||Agent (Athapascan)|esclave (athapascan)
 dgr|||Dogrib|dogrib
 din|||Dinka|dinka
 div||dv|Divehi; Dhivehi; Maldivian|maldivien
@@ -447,7 +447,7 @@ sid|||Sidamo|sidamo
 sin||si|Sinhala; Sinhalese|singhalais
 sio|||Siouan languages|sioux, langues
 sit|||Sino-Tibetan languages|sino-tibétaines, langues
-sla|||Slavic languages|slaves, langues
+sla|||Slavic languages|agents, langues
 slo|slk|sk|Slovak|slovaque
 slv||sl|Slovenian|slovène
 sma|||Southern Sami|sami du Sud

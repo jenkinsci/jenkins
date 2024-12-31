@@ -53,7 +53,7 @@ import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import jenkins.model.Jenkins;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import jenkins.util.ScriptListener;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -80,7 +80,7 @@ public final class RemotingDiagnostics {
         return channel.call(new GetSystemProperties());
     }
 
-    private static final class GetSystemProperties extends MasterToSlaveCallable<Map<Object, Object>, RuntimeException> {
+    private static final class GetSystemProperties extends MasterToAgentCallable<Map<Object, Object>, RuntimeException> {
         @Override
         public Map<Object, Object> call() {
             return new TreeMap<>(System.getProperties());
@@ -101,7 +101,7 @@ public final class RemotingDiagnostics {
         return channel.callAsync(new GetThreadDump());
     }
 
-    private static final class GetThreadDump extends MasterToSlaveCallable<Map<String, String>, RuntimeException> {
+    private static final class GetThreadDump extends MasterToAgentCallable<Map<String, String>, RuntimeException> {
         @Override
         public Map<String, String> call() {
             Map<String, String> r = new LinkedHashMap<>();
@@ -127,7 +127,7 @@ public final class RemotingDiagnostics {
         return output;
     }
 
-    private static final class Script extends MasterToSlaveCallable<String, RuntimeException> implements DelegatingCallable<String, RuntimeException> {
+    private static final class Script extends MasterToAgentCallable<String, RuntimeException> implements DelegatingCallable<String, RuntimeException> {
         private final String script;
         private transient ClassLoader cl;
 
@@ -177,7 +177,7 @@ public final class RemotingDiagnostics {
         return channel.call(new GetHeapDump());
     }
 
-    private static class GetHeapDump extends MasterToSlaveCallable<FilePath, IOException> {
+    private static class GetHeapDump extends MasterToAgentCallable<FilePath, IOException> {
             @Override
             public FilePath call() throws IOException {
                 final File hprof = File.createTempFile("hudson-heapdump", ".hprof");

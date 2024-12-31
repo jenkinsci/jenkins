@@ -11,15 +11,15 @@
     </jdk>
   </jdks>
   <clouds/>
-  <slaves>
-    <slave>
-      <name>slave</name>
+  <agents>
+    <agent>
+      <name>agent</name>
       <description></description>
       <remoteFS>c:\temp\hudson</remoteFS>
       <numExecutors>1</numExecutors>
       <mode>NORMAL</mode>
-      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
-      <launcher class="hudson.slaves.JNLPLauncher"/>
+      <retentionStrategy class="hudson.agents.RetentionStrategy$Always"/>
+      <launcher class="hudson.agents.JNLPLauncher"/>
       <label></label>
       <nodeProperties>
         <hudson.tools.ToolLocationNodeProperty>
@@ -42,8 +42,8 @@
           </locations>
         </hudson.tools.ToolLocationNodeProperty>
       </nodeProperties>
-    </slave>
-  </slaves>
+    </agent>
+  </agents>
   <quietPeriod>5</quietPeriod>
   <views>
     <hudson.model.AllView>
@@ -52,7 +52,7 @@
     </hudson.model.AllView>
   </views>
   <primaryView>Alle</primaryView>
-  <slaveAgentPort>0</slaveAgentPort>
+  <agentAgentPort>0</agentAgentPort>
   <label></label>
   <nodeProperties/>
   <disabledAdministrativeMonitors/>

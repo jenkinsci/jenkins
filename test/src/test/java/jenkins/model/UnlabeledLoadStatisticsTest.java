@@ -33,7 +33,7 @@ import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.StringParameterValue;
 import hudson.model.labels.LabelAtom;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,8 +65,8 @@ public class UnlabeledLoadStatisticsTest {
 
         // Disable builds by default, create an agent to prevent assigning of "built-in" labels
         j.jenkins.setNumExecutors(0);
-        DumbSlave slave = j.createOnlineSlave(new LabelAtom("testLabel"));
-        slave.setMode(Node.Mode.EXCLUSIVE);
+        DumbAgent agent = j.createOnlineAgent(new LabelAtom("testLabel"));
+        agent.setMode(Node.Mode.EXCLUSIVE);
 
         // Init project
         FreeStyleProject unlabeledProject = j.createFreeStyleProject("UnlabeledProject");

@@ -46,8 +46,8 @@ import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.remoting.Channel;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause;
+import hudson.agents.DumbAgent;
+import hudson.agents.OfflineCause;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
@@ -85,17 +85,17 @@ public class ComputerTest {
 
     @Test
     public void discardLogsAfterDeletion() throws Exception {
-        DumbSlave delete = j.createOnlineSlave(Jenkins.get().getLabelAtom("delete"));
-        DumbSlave keep = j.createOnlineSlave(Jenkins.get().getLabelAtom("keep"));
+        DumbAgent delete = j.createOnlineAgent(Jenkins.get().getLabelAtom("delete"));
+        DumbAgent keep = j.createOnlineAgent(Jenkins.get().getLabelAtom("keep"));
         File logFile = delete.toComputer().getLogFile();
         assertTrue(logFile.exists());
 
         Jenkins.get().removeNode(delete);
 
-        assertFalse("Slave log should be deleted", logFile.exists());
-        assertFalse("Slave log directory should be deleted", logFile.getParentFile().exists());
+        assertFalse("Agent log should be deleted", logFile.exists());
+        assertFalse("Agent log directory should be deleted", logFile.getParentFile().exists());
 
-        assertTrue("Slave log should be kept", keep.toComputer().getLogFile().exists());
+        assertTrue("Agent log should be kept", keep.toComputer().getLogFile().exists());
     }
 
     /**
@@ -106,8 +106,8 @@ public class ComputerTest {
     public void testProhibitRenameOverExistingNode() throws Exception {
         final String NOTE = "Rename node to name of another node should fail.";
 
-        Node nodeA = j.createSlave("nodeA", null, null);
-        Node nodeB = j.createSlave("nodeB", null, null);
+        Node nodeA = j.createAgent("nodeA", null, null);
+        Node nodeB = j.createAgent("nodeB", null, null);
 
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
@@ -122,15 +122,15 @@ public class ComputerTest {
 
     @Test
     public void doNotShowUserDetailsInOfflineCause() throws Exception {
-        DumbSlave slave = j.createOnlineSlave();
-        final Computer computer = slave.toComputer();
+        DumbAgent agent = j.createOnlineAgent();
+        final Computer computer = agent.toComputer();
         computer.setTemporarilyOffline(true, new OfflineCause.UserCause(User.getOrCreateByIdOrFullName("username"), "msg"));
         verifyOfflineCause(computer);
     }
 
     @Test
     public void offlineCauseRemainsAfterTemporaryCauseRemoved() throws Exception {
-        var agent = j.createSlave();
+        var agent = j.createAgent();
         var computer = agent.toComputer();
         var initialOfflineCause = new OfflineCause.UserCause(User.getOrCreateByIdOrFullName("username"), "Initial cause");
         computer.setOfflineCause(initialOfflineCause);
@@ -144,7 +144,7 @@ public class ComputerTest {
 
     @Test
     public void computerIconDependsOnOfflineCause() throws Exception {
-        var agent = j.createSlave();
+        var agent = j.createAgent();
         var computer = agent.toComputer();
         assertThat(computer.getIcon(), equalTo("symbol-computer-offline"));
         var cause = new OfflineCause.IdleOfflineCause();
@@ -170,7 +170,7 @@ public class ComputerTest {
     @Issue("JENKINS-42969")
     @Test
     public void addAction() throws Exception {
-        Computer c = j.createSlave().toComputer();
+        Computer c = j.createAgent().toComputer();
         class A extends InvisibleAction {}
 
         assertEquals(0, c.getActions(A.class).size());
@@ -182,7 +182,7 @@ public class ComputerTest {
 
     @Test
     public void tiedJobs() throws Exception {
-        DumbSlave s = j.createOnlineSlave();
+        DumbAgent s = j.createOnlineAgent();
         Label l = s.getSelfLabel();
         Computer c = s.toComputer();
         FreeStyleProject p = j.createFreeStyleProject();
@@ -218,7 +218,7 @@ public class ComputerTest {
                 .to(CONFIGURATOR);
         j.jenkins.setAuthorizationStrategy(mas);
 
-        Computer computer = j.createSlave().toComputer();
+        Computer computer = j.createAgent().toComputer();
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login(CONFIGURATOR);
@@ -253,7 +253,7 @@ public class ComputerTest {
 
     @Test
     public void testTerminatedNodeStatusPageDoesNotShowTrace() throws Exception {
-        DumbSlave agent = j.createOnlineSlave();
+        DumbAgent agent = j.createOnlineAgent();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
@@ -274,7 +274,7 @@ public class ComputerTest {
 
     @Test
     public void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
-        DumbSlave agent = j.createOnlineSlave();
+        DumbAgent agent = j.createOnlineAgent();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
@@ -296,7 +296,7 @@ public class ComputerTest {
     @Test
     public void computersCollected() throws Exception {
         assumeThat("Seems to crash the test JVM at least in CI", Functions.isWindows(), is(false));
-        DumbSlave agent = j.createOnlineSlave();
+        DumbAgent agent = j.createOnlineAgent();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
         j.buildAndAssertSuccess(p);

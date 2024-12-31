@@ -33,8 +33,8 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 
 import hudson.cli.CLICommandInvoker;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause;
+import hudson.agents.DumbAgent;
+import hudson.agents.OfflineCause;
 import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
 import jenkins.widgets.ExecutorsWidget;
@@ -61,7 +61,7 @@ public class ComputerSetTest {
     @Issue("JENKINS-2821")
     public void pageRendering() throws Exception {
         WebClient client = j.createWebClient();
-        j.createSlave();
+        j.createAgent();
         client.goTo("computer");
     }
 
@@ -77,7 +77,7 @@ public class ComputerSetTest {
 
     @Test
     public void nodeOfflineCli() throws Exception {
-        DumbSlave s = j.createSlave();
+        DumbAgent s = j.createAgent();
 
         assertThat(new CLICommandInvoker(j, "wait-node-offline").invokeWithArgs("xxx"), CLICommandInvoker.Matcher.failedWith(/* IllegalArgumentException from NodeOptionHandler */ 3));
         assertThat(new CLICommandInvoker(j, "wait-node-online").invokeWithArgs(s.getNodeName()), CLICommandInvoker.Matcher.succeededSilently());
@@ -90,9 +90,9 @@ public class ComputerSetTest {
     @Test
     public void getComputerNames() throws Exception {
         assertThat(ComputerSet.getComputerNames(), is(empty()));
-        j.createSlave("anAnotherNode", "", null);
+        j.createAgent("anAnotherNode", "", null);
         assertThat(ComputerSet.getComputerNames(), contains("anAnotherNode"));
-        j.createSlave("aNode", "", null);
+        j.createAgent("aNode", "", null);
         assertThat(ComputerSet.getComputerNames(), contains("aNode", "anAnotherNode"));
     }
 
@@ -140,7 +140,7 @@ public class ComputerSetTest {
     @Test
     @Issue("SECURITY-2120")
     public void testTerminatedNodeStatusPageDoesNotShowTrace() throws Exception {
-        DumbSlave agent = j.createOnlineSlave();
+        DumbAgent agent = j.createOnlineAgent();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
@@ -162,7 +162,7 @@ public class ComputerSetTest {
     @Test
     @Issue("SECURITY-2120")
     public void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
-        DumbSlave agent = j.createOnlineSlave();
+        DumbAgent agent = j.createOnlineAgent();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 

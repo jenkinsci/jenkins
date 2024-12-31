@@ -47,9 +47,9 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,7 +58,7 @@ import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.MasterToAgentFileCallable;
 import jenkins.model.StandardArtifactManager;
 import jenkins.util.VirtualFile;
 import org.hamcrest.Matchers;
@@ -165,7 +165,7 @@ public class ArtifactArchiverTest {
     @Test
     @Issue("JENKINS-71700")
     public void testFileMaskNoMatchesFoundExceptionOnAgent() throws Exception {
-        Slave agent = j.createOnlineSlave();
+        Agent agent = j.createOnlineAgent();
         hudson.FilePath.VALIDATE_ANT_FILE_MASK_BOUND = 1;
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedNode(agent);
@@ -403,7 +403,7 @@ public class ArtifactArchiverTest {
         final String filename = "large";
         final long size = 10L * 1024L * 1024L * 1024L; // 10 GB
 
-        Slave agent = j.createOnlineSlave();
+        Agent agent = j.createOnlineAgent();
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedNode(agent);
         project.getBuildersList().add(new TestBuilder() {
@@ -484,7 +484,7 @@ public class ArtifactArchiverTest {
         assumeFalse(Functions.isWindows()); // No permission support
 
         final String FILENAME = "myfile";
-        DumbSlave slave = j.createOnlineSlave(Label.get("target"));
+        DumbAgent agent = j.createOnlineAgent(Label.get("target"));
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
@@ -496,7 +496,7 @@ public class ArtifactArchiverTest {
             }
         });
         p.getPublishersList().add(new ArtifactArchiver(FILENAME));
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
 
         FreeStyleBuild build = j.buildAndAssertStatus(Result.FAILURE, p);
         assumeFalse(FILENAME + " should not be readable by " + System.getProperty("user.name"), new File(build.getWorkspace().child(FILENAME).getRemote()).canRead());
@@ -552,7 +552,7 @@ public class ArtifactArchiverTest {
         assertEquals("8", artifact.getLength());
     }
 
-    private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
+    private static class RemoveReadPermission extends MasterToAgentFileCallable<Object> {
         @Override
         public Object invoke(File f, VirtualChannel channel) throws IOException {
             assertTrue(f.createNewFile());

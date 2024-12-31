@@ -30,7 +30,7 @@ import hudson.console.HyperlinkNote;
 import hudson.model.TaskListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -60,11 +60,11 @@ public class LogTaskListenerTest {
     @Test
     public void serialization() throws Exception {
         TaskListener l = new LogTaskListener(Logger.getLogger("LogTaskListenerTest"), Level.INFO);
-        r.createOnlineSlave().getChannel().call(new Log(l));
+        r.createOnlineAgent().getChannel().call(new Log(l));
         assertEquals("[from agent]", logging.getMessages().toString());
     }
 
-    private static final class Log extends MasterToSlaveCallable<Void, RuntimeException> {
+    private static final class Log extends MasterToAgentCallable<Void, RuntimeException> {
 
         private final TaskListener l;
 

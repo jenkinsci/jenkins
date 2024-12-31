@@ -39,7 +39,7 @@ public class JenkinsReloadConfigurationTest {
 
     @Test
     public void reloadAgentConfig() throws Exception {
-        Node node = j.createSlave("an_agent", "oldLabel", null);
+        Node node = j.createAgent("an_agent", "oldLabel", null);
 
         modifyNode(node);
 

@@ -38,7 +38,7 @@ import hudson.remoting.Launcher;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
-import hudson.slaves.Channels;
+import hudson.agents.Channels;
 import hudson.util.ArgumentListBuilder;
 import java.io.File;
 import java.io.IOException;

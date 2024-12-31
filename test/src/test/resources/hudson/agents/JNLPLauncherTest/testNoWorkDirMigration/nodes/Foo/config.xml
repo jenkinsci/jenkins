@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<agent>
+  <name>Foo</name>
+  <description></description>
+  <remoteFS>/myfs/jenkins/agent</remoteFS>
+  <numExecutors>1</numExecutors>
+  <mode>NORMAL</mode>
+  <retentionStrategy class="hudson.agents.RetentionStrategy$Always"/>
+  <launcher class="hudson.agents.JNLPLauncher">
+    <!-- No WorkDir settings  -->
+  </launcher>
+  <label>foo bar</label>
+  <nodeProperties/>
+</agent>

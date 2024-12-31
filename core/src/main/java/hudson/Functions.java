@@ -55,7 +55,7 @@ import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.PasswordParameterDefinition;
 import hudson.model.Run;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.model.TimeZoneProperty;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
@@ -72,12 +72,12 @@ import hudson.security.Permission;
 import hudson.security.SecurityRealm;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.security.csrf.CrumbIssuer;
-import hudson.slaves.Cloud;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.JNLPLauncher;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.NodePropertyDescriptor;
-import hudson.slaves.RetentionStrategy;
+import hudson.agents.Cloud;
+import hudson.agents.ComputerLauncher;
+import hudson.agents.JNLPLauncher;
+import hudson.agents.NodeProperty;
+import hudson.agents.NodePropertyDescriptor;
+import hudson.agents.RetentionStrategy;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -1088,7 +1088,7 @@ public class Functions {
 
     /**
      * @since 2.12
-     * @deprecated replaced by {@link Slave.SlaveDescriptor#computerLauncherDescriptors(Slave)}
+     * @deprecated replaced by {@link Agent.AgentDescriptor#computerLauncherDescriptors(Agent)}
      */
     @Deprecated
     @Restricted(DoNotUse.class)
@@ -1099,7 +1099,7 @@ public class Functions {
 
     /**
      * @since 2.12
-     * @deprecated replaced by {@link Slave.SlaveDescriptor#retentionStrategyDescriptors(Slave)}
+     * @deprecated replaced by {@link Agent.AgentDescriptor#retentionStrategyDescriptors(Agent)}
      */
     @Deprecated
     @Restricted(DoNotUse.class)
@@ -1125,7 +1125,7 @@ public class Functions {
     }
 
     /**
-     * @deprecated replaced by {@link Slave.SlaveDescriptor#nodePropertyDescriptors(Slave)}
+     * @deprecated replaced by {@link Agent.AgentDescriptor#nodePropertyDescriptors(Agent)}
      * @since 2.12
      */
     @Deprecated

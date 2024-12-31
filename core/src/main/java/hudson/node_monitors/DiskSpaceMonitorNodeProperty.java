@@ -3,8 +3,8 @@ package hudson.node_monitors;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Node;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.NodePropertyDescriptor;
+import hudson.agents.NodeProperty;
+import hudson.agents.NodePropertyDescriptor;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 

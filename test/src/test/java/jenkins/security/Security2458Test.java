@@ -29,16 +29,16 @@ public class Security2458Test {
     @Test
     public void rejectBadCallable() throws Throwable {
         // If the role check is empty, fail
-        assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(r.createOnlineSlave().getChannel()).call(new CallableCaller(new BadCallable())));
+        assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(r.createOnlineAgent().getChannel()).call(new CallableCaller(new BadCallable())));
 
         // If it performs a no-op check, fail. This used to work when required role checks were introduced, but later prohibited.
-        assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(r.createOnlineSlave().getChannel()).call(new CallableCaller(new EvilCallable())));
+        assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(r.createOnlineAgent().getChannel()).call(new CallableCaller(new EvilCallable())));
 
         // Explicit role check.
-        Objects.requireNonNull(r.createOnlineSlave().getChannel()).call(new CallableCaller(new GoodCallable()));
+        Objects.requireNonNull(r.createOnlineAgent().getChannel()).call(new CallableCaller(new GoodCallable()));
     }
 
-    private static class CallableCaller extends MasterToSlaveCallable<Object, Throwable> {
+    private static class CallableCaller extends MasterToAgentCallable<Object, Throwable> {
         private final Callable<?, ?> callable;
 
         CallableCaller(Callable<?, ?> callable) {

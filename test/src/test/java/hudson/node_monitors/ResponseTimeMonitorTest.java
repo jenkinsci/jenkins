@@ -6,11 +6,11 @@ import static org.junit.Assert.assertNull;
 
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.model.User;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause;
-import hudson.slaves.SlaveComputer;
+import hudson.agents.DumbAgent;
+import hudson.agents.OfflineCause;
+import hudson.agents.AgentComputer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.InboundAgentRule;
@@ -34,8 +34,8 @@ public class ResponseTimeMonitorTest {
     @Test
     @Issue("JENKINS-20272")
     public void skipOfflineAgent() throws Exception {
-        DumbSlave s = j.createSlave();
-        SlaveComputer c = s.getComputer();
+        DumbAgent s = j.createAgent();
+        AgentComputer c = s.getComputer();
         c.connect(false).get(); // wait until it's connected
 
         // Try as temporarily offline first.
@@ -44,7 +44,7 @@ public class ResponseTimeMonitorTest {
 
         // Now try as actually disconnected.
         c.setTemporarilyOffline(false, null);
-        j.disconnectSlave(s);
+        j.disconnectAgent(s);
         assertNull(ResponseTimeMonitor.DESCRIPTOR.monitor(c));
 
         // Now reconnect and make sure we get a non-null response.
@@ -55,8 +55,8 @@ public class ResponseTimeMonitorTest {
 
     @Test
     public void doNotDisconnectBeforeLaunched() throws Exception {
-        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().skipStart().build());
-        Computer c = slave.toComputer();
+        Agent agent = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().skipStart().build());
+        Computer c = agent.toComputer();
         assertNotNull(c);
         OfflineCause originalOfflineCause = c.getOfflineCause();
         assertNotNull(originalOfflineCause);

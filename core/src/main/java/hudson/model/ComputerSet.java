@@ -38,7 +38,7 @@ import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.node_monitors.NodeMonitor;
-import hudson.slaves.NodeDescriptor;
+import hudson.agents.NodeDescriptor;
 import hudson.triggers.SafeTimerTask;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
@@ -175,7 +175,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * Gets all the agent names.
      */
-    public List<String> get_slaveNames() {
+    public List<String> get_agentNames() {
         return new AbstractList<>() {
             final List<Node> nodes = Jenkins.get().getNodes();
 
@@ -285,9 +285,9 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             Node src = app.getNode(from);
             if (src == null) {
                 if (Util.fixEmpty(from) == null) {
-                    throw new Failure(Messages.ComputerSet_SpecifySlaveToCopy());
+                    throw new Failure(Messages.ComputerSet_SpecifyAgentToCopy());
                 } else {
-                    throw new Failure(Messages.ComputerSet_NoSuchSlave(from));
+                    throw new Failure(Messages.ComputerSet_NoSuchAgent(from));
                 }
             }
 
@@ -350,7 +350,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         Jenkins.checkGoodName(name);
 
         if (Jenkins.get().getNode(name) != null)
-            throw new Failure(Messages.ComputerSet_SlaveAlreadyExists(name));
+            throw new Failure(Messages.ComputerSet_AgentAlreadyExists(name));
 
         // looks good
         return name;

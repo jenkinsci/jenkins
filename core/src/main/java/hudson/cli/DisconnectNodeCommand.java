@@ -77,8 +77,8 @@ public class DisconnectNodeCommand extends CLICommand {
                     }
                     String adv = EditDistance.findNearest(node_s, names);
                     throw new IllegalArgumentException(adv == null ?
-                            hudson.model.Messages.Computer_NoSuchSlaveExistsWithoutAdvice(node_s) :
-                            hudson.model.Messages.Computer_NoSuchSlaveExists(node_s, adv));
+                            hudson.model.Messages.Computer_NoSuchAgentExistsWithoutAdvice(node_s) :
+                            hudson.model.Messages.Computer_NoSuchAgentExists(node_s, adv));
                 }
 
                 computer.cliDisconnect(cause);

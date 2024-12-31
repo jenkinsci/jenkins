@@ -31,7 +31,7 @@ import hudson.Functions;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
 import hudson.model.labels.LabelAtom;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Maven.MavenInstallation;
@@ -47,7 +47,7 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 /**
  * This class tests that environment variables from node properties are applied,
- * and that the priority is maintained: parameters > slave node properties >
+ * and that the priority is maintained: parameters > agent node properties >
  * master node properties
  */
 public class ToolLocationNodePropertyTest {
@@ -57,7 +57,7 @@ public class ToolLocationNodePropertyTest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    private DumbSlave slave;
+    private DumbAgent agent;
     private FreeStyleProject project;
 
     @Test
@@ -73,16 +73,16 @@ public class ToolLocationNodePropertyTest {
                 new ToolLocationNodeProperty.ToolLocation(jdkDescriptor, "jdk", "foobar"),
                 new ToolLocationNodeProperty.ToolLocation(mavenDescriptor, "maven", "barzot"),
                 new ToolLocationNodeProperty.ToolLocation(antDescriptor, "ant", "zotfoo"));
-        slave.getNodeProperties().add(property);
+        agent.getNodeProperties().add(property);
 
         WebClient webClient = j.createWebClient();
-        HtmlPage page = webClient.getPage(slave, "configure");
+        HtmlPage page = webClient.getPage(agent, "configure");
         HtmlForm form = page.getFormByName("config");
         j.submit(form);
 
-        assertEquals(1, slave.getNodeProperties().toList().size());
+        assertEquals(1, agent.getNodeProperties().toList().size());
 
-        ToolLocationNodeProperty prop = slave.getNodeProperties().get(ToolLocationNodeProperty.class);
+        ToolLocationNodeProperty prop = agent.getNodeProperties().get(ToolLocationNodeProperty.class);
         assertEquals(3, prop.getLocations().size());
 
         ToolLocationNodeProperty.ToolLocation location = prop.getLocations().get(0);
@@ -116,8 +116,8 @@ public class ToolLocationNodePropertyTest {
         // so empty path breaks the test.
         env.put("PATH", "/bin:/usr/bin");
         env.put("M2_HOME", "empty");
-        slave = j.createSlave(new LabelAtom("slave"), env);
+        agent = j.createAgent(new LabelAtom("agent"), env);
         project = j.createFreeStyleProject();
-        project.setAssignedLabel(slave.getSelfLabel());
+        project.setAssignedLabel(agent.getSelfLabel());
     }
 }

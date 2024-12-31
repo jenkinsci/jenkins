@@ -57,7 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.agents.ControllerToAgentCallable;
 import jenkins.model.Jenkins;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterRuleWrapper;
 import jenkins.tasks.filters.EnvVarsFilterableBuilder;
@@ -1152,7 +1152,7 @@ public abstract class Launcher {
             return "RemoteLauncher[" + getChannel() + "]";
         }
 
-        private static final class KillTask extends MasterToSlaveCallable<Void, RuntimeException> {
+        private static final class KillTask extends MasterToAgentCallable<Void, RuntimeException> {
             private final Map<String, String> modelEnvVars;
 
             KillTask(Map<String, String> modelEnvVars) {
@@ -1402,7 +1402,7 @@ public abstract class Launcher {
         }
     }
 
-    private static class RemoteChannelLaunchCallable extends MasterToSlaveCallable<OutputStream, IOException> {
+    private static class RemoteChannelLaunchCallable extends MasterToAgentCallable<OutputStream, IOException> {
         @NonNull
         private final String[] cmd;
         @NonNull

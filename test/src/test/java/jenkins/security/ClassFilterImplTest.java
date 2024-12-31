@@ -78,7 +78,7 @@ public class ClassFilterImplTest {
     public void controllerToAgentBypassesWhitelist() throws Exception {
         assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
-        p.setAssignedNode(r.createSlave());
+        p.setAssignedNode(r.createAgent());
         p.getBuildersList().add(new M2SBuilder());
         r.assertLogContains("sent {}", r.buildAndAssertSuccess(p));
     }
@@ -100,7 +100,7 @@ public class ClassFilterImplTest {
         }
     }
 
-    private static class M2S extends MasterToSlaveCallable<String, RuntimeException> {
+    private static class M2S extends MasterToAgentCallable<String, RuntimeException> {
         private final LinkedListMultimap<?, ?> obj = LinkedListMultimap.create();
 
         @Override
@@ -115,7 +115,7 @@ public class ClassFilterImplTest {
     public void agentToControllerRequiresWhitelist() throws Exception {
         assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
-        p.setAssignedNode(r.createSlave());
+        p.setAssignedNode(r.createAgent());
         p.getBuildersList().add(new S2MBuilder());
         r.buildAndAssertStatus(Result.FAILURE, p);
     }
@@ -137,7 +137,7 @@ public class ClassFilterImplTest {
         }
     }
 
-    private static class S2M extends MasterToSlaveCallable<LinkedListMultimap<?, ?>, RuntimeException> {
+    private static class S2M extends MasterToAgentCallable<LinkedListMultimap<?, ?>, RuntimeException> {
         @Override
         public LinkedListMultimap<?, ?> call() throws RuntimeException {
             return LinkedListMultimap.create();

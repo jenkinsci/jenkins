@@ -1,8 +1,8 @@
 package jenkins.model;
 
 import hudson.Extension;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.NodePropertyDescriptor;
+import hudson.agents.NodeProperty;
+import hudson.agents.NodePropertyDescriptor;
 import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;

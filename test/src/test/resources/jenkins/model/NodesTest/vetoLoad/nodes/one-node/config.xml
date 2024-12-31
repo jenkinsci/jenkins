@@ -1,12 +1,12 @@
 <?xml version='1.1' encoding='UTF-8'?>
-<slave>
+<agent>
   <name>one-node</name>
   <description></description>
   <remoteFS>/tmp</remoteFS>
   <numExecutors>1</numExecutors>
   <mode>NORMAL</mode>
-  <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
-  <launcher class="hudson.slaves.JNLPLauncher">
+  <retentionStrategy class="hudson.agents.RetentionStrategy$Always"/>
+  <launcher class="hudson.agents.JNLPLauncher">
     <workDirSettings>
       <disabled>false</disabled>
       <internalDir>remoting</internalDir>
@@ -16,4 +16,4 @@
   </launcher>
   <label>one-node</label>
   <nodeProperties/>
-</slave>
+</agent>

@@ -15,8 +15,8 @@ import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.SubTask;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.RetentionStrategy;
+import hudson.agents.DumbAgent;
+import hudson.agents.RetentionStrategy;
 import java.io.IOException;
 import java.util.Collections;
 import org.junit.After;
@@ -57,7 +57,7 @@ public class LabelLoadStatisticsQueueLengthTest {
     public void createNodeWithLabels() throws IOException, FormException {
         // Node with this test's labels is required in order for the labels to
         // be considered valid.
-        DumbSlave node = new DumbSlave(
+        DumbAgent node = new DumbAgent(
                 LabelLoadStatisticsQueueLengthTest.class.getSimpleName(), "",
                 "", "1", Mode.NORMAL, LABEL_STRING + " " + ALT_LABEL_STRING,
                 null, RetentionStrategy.NOOP,

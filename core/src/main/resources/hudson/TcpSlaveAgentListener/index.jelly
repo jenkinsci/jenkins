@@ -29,21 +29,21 @@ THE SOFTWARE.
     Publicize the TCP port number for inbound agents so that they know where to connect.
     Keep the legacy header for better backward compatibility
   -->
-  <st:header name="X-Hudson-JNLP-Port" value="${app.tcpSlaveAgentListener.advertisedPort}" />
-  <st:header name="X-Jenkins-JNLP-Port" value="${app.tcpSlaveAgentListener.advertisedPort}" />
+  <st:header name="X-Hudson-JNLP-Port" value="${app.tcpAgentListener.advertisedPort}" />
+  <st:header name="X-Jenkins-JNLP-Port" value="${app.tcpAgentListener.advertisedPort}" />
   <!--
     if the host name is overridden, advertise that as well
   -->
-  <st:header name="X-Jenkins-JNLP-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}" />
+  <st:header name="X-Jenkins-JNLP-Host" value="${app.tcpAgentListener.CLI_HOST_NAME}" />
   <!-- publish the instance identity so that agents can verify match from discovery -->
-  <st:header name="X-Instance-Identity" value="${app.tcpSlaveAgentListener.identityPublicKey}" />
+  <st:header name="X-Instance-Identity" value="${app.tcpAgentListener.identityPublicKey}" />
   <!-- reduce the number of client connection attempts during protocol negotiation -->
-  <st:header name="X-Jenkins-Agent-Protocols" value="${app.tcpSlaveAgentListener.agentProtocolNames}"/>
+  <st:header name="X-Jenkins-Agent-Protocols" value="${app.tcpAgentListener.agentProtocolNames}"/>
   <!-- publish minimum supported version of remoting agent -->
-  <j:getStatic var="allowUnsupportedRemotingVersions" className="hudson.slaves.SlaveComputer" field="ALLOW_UNSUPPORTED_REMOTING_VERSIONS"/>
+  <j:getStatic var="allowUnsupportedRemotingVersions" className="hudson.agents.AgentComputer" field="ALLOW_UNSUPPORTED_REMOTING_VERSIONS"/>
   <j:if test="${!allowUnsupportedRemotingVersions}">
     <j:getStatic var="rmvh" className="hudson.remoting.Engine" field="REMOTING_MINIMUM_VERSION_HEADER"/>
-    <st:header name="${rmvh}" value="${app.tcpSlaveAgentListener.remotingMinimumVersion}"/>
+    <st:header name="${rmvh}" value="${app.tcpAgentListener.remotingMinimumVersion}"/>
   </j:if>
 
   Jenkins

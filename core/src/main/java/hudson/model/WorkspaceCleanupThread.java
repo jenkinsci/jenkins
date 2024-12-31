@@ -34,7 +34,7 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.WorkspaceList;
+import hudson.agents.WorkspaceList;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -45,7 +45,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.MasterToAgentFileCallable;
 import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
 import jenkins.util.SystemProperties;
@@ -139,7 +139,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         return true;
     }
 
-    private static class CleanupOldWorkspaces extends MasterToSlaveFileCallable<Void> {
+    private static class CleanupOldWorkspaces extends MasterToAgentFileCallable<Void> {
 
         private final int retentionInDays;
 

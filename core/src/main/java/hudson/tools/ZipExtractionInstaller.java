@@ -45,7 +45,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Path;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.MasterToAgentFileCallable;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -153,7 +153,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
      * Sets execute permission on all files, since unzip etc. might not do this.
      * Hackish, is there a better way?
      */
-    static class ChmodRecAPlusX extends MasterToSlaveFileCallable<Void> {
+    static class ChmodRecAPlusX extends MasterToAgentFileCallable<Void> {
         private static final long serialVersionUID = 1L;
 
         @Override

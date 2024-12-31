@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<slave>
-    <temporaryOfflineCause class="hudson.slaves.OfflineCause$UserCause">
+<agent>
+    <temporaryOfflineCause class="hudson.agents.OfflineCause$UserCause">
         <timestamp>1479196265920</timestamp>
         <description>
             <holder>
-                <owner>hudson.slaves.Messages</owner>
+                <owner>hudson.agents.Messages</owner>
             </holder>
-            <key>SlaveComputer.DisconnectedBy</key>
+            <key>AgentComputer.DisconnectedBy</key>
             <args>
                 <string>username</string>
                 <string> : msg</string>
@@ -44,7 +44,7 @@
     <remoteFS>...</remoteFS>
     <numExecutors>1</numExecutors>
     <mode>NORMAL</mode>
-    <retentionStrategy class="hudson.slaves.RetentionStrategy$2">
+    <retentionStrategy class="hudson.agents.RetentionStrategy$2">
         <DESCRIPTOR>
             <outer-class reference="../.."/>
         </DESCRIPTOR>
@@ -53,4 +53,4 @@
     <label></label>
     <nodeProperties/>
     <userId>SYSTEM</userId>
-</slave>
+</agent>

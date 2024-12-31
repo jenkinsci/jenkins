@@ -27,12 +27,12 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
-import hudson.slaves.WorkspaceList;
+import hudson.agents.WorkspaceList;
 
 /**
  * Allows to access a workspace as an alternative to online build node.
  * <p>
- * Primary use case is {@link hudson.slaves.Cloud} implementations that don't keep the agent
+ * Primary use case is {@link hudson.agents.Cloud} implementations that don't keep the agent
  * online to browse workspace, but maintain a copy of node workspace on the controller.
  *
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>

@@ -47,10 +47,10 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.NullChangeLogParser;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.OfflineCause;
-import hudson.slaves.WorkspaceList;
-import hudson.slaves.WorkspaceList.Lease;
+import hudson.agents.NodeProperty;
+import hudson.agents.OfflineCause;
+import hudson.agents.WorkspaceList;
+import hudson.agents.WorkspaceList.Lease;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildTrigger;
@@ -205,7 +205,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
     }
 
     /**
-     * Returns a {@link Slave} on which this build was done.
+     * Returns a {@link Agent} on which this build was done.
      *
      * @return
      *      null, for example if the agent that this build run no longer exists.

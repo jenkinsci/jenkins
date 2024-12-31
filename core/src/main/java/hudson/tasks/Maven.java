@@ -42,7 +42,7 @@ import hudson.model.Node;
 import hudson.model.PersistentDescriptor;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.NodeSpecific;
+import hudson.agents.NodeSpecific;
 import hudson.tasks._maven.MavenConsoleAnnotator;
 import hudson.tools.DownloadFromUrlInstaller;
 import hudson.tools.ToolDescriptor;
@@ -69,12 +69,12 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.MasterToAgentFileCallable;
 import jenkins.model.Jenkins;
 import jenkins.mvn.GlobalMavenConfig;
 import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -248,7 +248,7 @@ public class Maven extends Builder {
      * Looks for {@code pom.xlm} or {@code project.xml} to determine the maven executable
      * name.
      */
-    private static final class DecideDefaultMavenCommand extends MasterToSlaveFileCallable<String> {
+    private static final class DecideDefaultMavenCommand extends MasterToAgentFileCallable<String> {
         private static final long serialVersionUID = -2327576423452215146L;
         // command line arguments.
         private final String arguments;
@@ -577,7 +577,7 @@ public class Maven extends Builder {
 
         }
 
-        private static class GetMavenVersion extends MasterToSlaveCallable<String, IOException> {
+        private static class GetMavenVersion extends MasterToAgentCallable<String, IOException> {
             private final String home;
 
             GetMavenVersion(String home) {
@@ -621,7 +621,7 @@ public class Maven extends Builder {
             return launcher.getChannel().call(new GetExecutable(getHome()));
         }
 
-        private static class GetExecutable extends MasterToSlaveCallable<String, IOException> {
+        private static class GetExecutable extends MasterToAgentCallable<String, IOException> {
             private final String rawHome;
 
             GetExecutable(String rawHome) {

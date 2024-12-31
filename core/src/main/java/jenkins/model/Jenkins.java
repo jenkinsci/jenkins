@@ -68,7 +68,7 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.RestrictedSince;
-import hudson.TcpSlaveAgentListener;
+import hudson.TcpAgentListener;
 import hudson.Util;
 import hudson.WebAppMain;
 import hudson.XmlFile;
@@ -127,7 +127,7 @@ import hudson.model.Queue;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
@@ -166,16 +166,16 @@ import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
-import hudson.slaves.Cloud;
-import hudson.slaves.ComputerListener;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.NodeDescriptor;
-import hudson.slaves.NodeList;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.NodePropertyDescriptor;
-import hudson.slaves.NodeProvisioner;
-import hudson.slaves.OfflineCause;
-import hudson.slaves.RetentionStrategy;
+import hudson.agents.Cloud;
+import hudson.agents.ComputerListener;
+import hudson.agents.DumbAgent;
+import hudson.agents.NodeDescriptor;
+import hudson.agents.NodeList;
+import hudson.agents.NodeProperty;
+import hudson.agents.NodePropertyDescriptor;
+import hudson.agents.NodeProvisioner;
+import hudson.agents.OfflineCause;
+import hudson.agents.RetentionStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
@@ -279,7 +279,7 @@ import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.SecurityListener;
@@ -289,7 +289,7 @@ import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.security.stapler.StaplerFilteredActionListener;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.security.stapler.TypedFilter;
-import jenkins.slaves.WorkspaceLocator;
+import jenkins.agents.WorkspaceLocator;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
@@ -580,7 +580,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @deprecated in favour of {@link Nodes}
      */
     @Deprecated
-    protected transient volatile NodeList slaves;
+    protected transient volatile NodeList agents;
 
     /**
      * The holder of the set of installed cluster nodes.
@@ -633,9 +633,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public final transient PluginManager pluginManager;
 
-    public transient volatile TcpSlaveAgentListener tcpSlaveAgentListener;
+    public transient volatile TcpAgentListener tcpAgentListener;
 
-    private final transient Object tcpSlaveAgentListenerLock = new Object();
+    private final transient Object tcpAgentListenerLock = new Object();
 
     /**
      * List of registered {@link SCMListener}s.
@@ -646,16 +646,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * TCP agent port.
      * 0 for random, -1 to disable.
      */
-    private int slaveAgentPort = getSlaveAgentPortInitialValue(0);
+    private int AgentPort = getAgentPortInitialValue(0);
 
-    private static int getSlaveAgentPortInitialValue(int def) {
-        return SystemProperties.getInteger(Jenkins.class.getName() + ".slaveAgentPort", def);
+    private static int getAgentPortInitialValue(int def) {
+        return SystemProperties.getInteger(Jenkins.class.getName() + ".AgentPort", def);
     }
 
     /**
-     * If -Djenkins.model.Jenkins.slaveAgentPort is defined, enforce it on every start instead of only the first one.
+     * If -Djenkins.model.Jenkins.AgentPort is defined, enforce it on every start instead of only the first one.
      */
-    private static final boolean SLAVE_AGENT_PORT_ENFORCE = SystemProperties.getBoolean(Jenkins.class.getName() + ".slaveAgentPortEnforce", false);
+    private static final boolean SLAVE_AGENT_PORT_ENFORCE = SystemProperties.getBoolean(Jenkins.class.getName() + ".AgentPortEnforce", false);
 
     /**
      * Whitespace-separated labels assigned to the built-in node as a {@link Node}.
@@ -998,7 +998,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 System.exit(0);
             save();
 
-            launchTcpSlaveAgentListener();
+            launchTcpAgentListener();
 
             Timer.get().scheduleAtFixedRate(new SafeTimerTask() {
                 @Override
@@ -1054,7 +1054,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             jdks = new ArrayList<>();
         }
         if (SLAVE_AGENT_PORT_ENFORCE) {
-            slaveAgentPort = getSlaveAgentPortInitialValue(slaveAgentPort);
+            AgentPort = getAgentPortInitialValue(AgentPort);
         }
 
         // no longer persisted
@@ -1180,8 +1180,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
 
-    public TcpSlaveAgentListener getTcpSlaveAgentListener() {
-        return tcpSlaveAgentListener;
+    public TcpAgentListener getTcpAgentListener() {
+        return tcpAgentListener;
     }
 
     /**
@@ -1194,14 +1194,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @Exported
-    public int getSlaveAgentPort() {
-        return slaveAgentPort;
+    public int getAgentPort() {
+        return AgentPort;
     }
 
     /**
      * @since 2.24
      */
-    public boolean isSlaveAgentPortEnforced() {
+    public boolean isAgentPortEnforced() {
         return Jenkins.SLAVE_AGENT_PORT_ENFORCE;
     }
 
@@ -1209,17 +1209,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param port
      *      0 to indicate random available TCP port. -1 to disable this service.
      */
-    public void setSlaveAgentPort(int port) throws IOException {
+    public void setAgentPort(int port) throws IOException {
         if (SLAVE_AGENT_PORT_ENFORCE) {
-            LOGGER.log(Level.WARNING, "setSlaveAgentPort({0}) call ignored because system property {1} is true", new String[] { Integer.toString(port), Jenkins.class.getName() + ".slaveAgentPortEnforce" });
+            LOGGER.log(Level.WARNING, "setAgentPort({0}) call ignored because system property {1} is true", new String[] { Integer.toString(port), Jenkins.class.getName() + ".AgentPortEnforce" });
         } else {
-            forceSetSlaveAgentPort(port);
+            forceSetAgentPort(port);
         }
     }
 
-    private void forceSetSlaveAgentPort(int port) throws IOException {
-        this.slaveAgentPort = port;
-        launchTcpSlaveAgentListener();
+    private void forceSetAgentPort(int port) throws IOException {
+        this.AgentPort = port;
+        launchTcpAgentListener();
     }
 
     /**
@@ -1241,17 +1241,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         LOGGER.log(Level.WARNING, null, new IllegalStateException("Jenkins.agentProtocols no longer configurable"));
     }
 
-    private void launchTcpSlaveAgentListener() throws IOException {
-        synchronized (tcpSlaveAgentListenerLock) {
+    private void launchTcpAgentListener() throws IOException {
+        synchronized (tcpAgentListenerLock) {
             // shutdown previous agent if the port has changed
-            if (tcpSlaveAgentListener != null && tcpSlaveAgentListener.configuredPort != slaveAgentPort) {
-                tcpSlaveAgentListener.shutdown();
-                tcpSlaveAgentListener = null;
+            if (tcpAgentListener != null && tcpAgentListener.configuredPort != AgentPort) {
+                tcpAgentListener.shutdown();
+                tcpAgentListener = null;
             }
-            if (slaveAgentPort != -1 && tcpSlaveAgentListener == null) {
+            if (AgentPort != -1 && tcpAgentListener == null) {
                 final String administrativeMonitorId = getClass().getName() + ".tcpBind";
                 try {
-                    tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+                    tcpAgentListener = new TcpAgentListener(AgentPort);
                     // remove previous monitor in case of previous error
                     AdministrativeMonitor toBeRemoved = null;
                     ExtensionList<AdministrativeMonitor> all = AdministrativeMonitor.all();
@@ -1263,7 +1263,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     }
                     all.remove(toBeRemoved);
                 } catch (BindException e) {
-                    LOGGER.log(Level.WARNING, String.format("Failed to listen to incoming agent connections through port %s. Change the port number", slaveAgentPort), e);
+                    LOGGER.log(Level.WARNING, String.format("Failed to listen to incoming agent connections through port %s. Change the port number", AgentPort), e);
                     new AdministrativeError(administrativeMonitorId,
                             "Failed to listen to incoming agent connections",
                             "Failed to listen to incoming agent connections. <a href='configureSecurity'>Change the inbound TCP port number</a> to solve the problem.", e);
@@ -1274,34 +1274,34 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Extension
     @Restricted(NoExternalUse.class)
-    public static class EnforceSlaveAgentPortAdministrativeMonitor extends AdministrativeMonitor {
+    public static class EnforceAgentPortAdministrativeMonitor extends AdministrativeMonitor {
         @Inject
         Jenkins j;
 
         @Override
         public String getDisplayName() {
-            return jenkins.model.Messages.EnforceSlaveAgentPortAdministrativeMonitor_displayName();
+            return jenkins.model.Messages._EnforceAgentPortAdministrativeMonitor_displayName().toString();
         }
 
         public String getSystemPropertyName() {
-            return Jenkins.class.getName() + ".slaveAgentPort";
+            return Jenkins.class.getName() + ".AgentPort";
         }
 
         public int getExpectedPort() {
-            int slaveAgentPort = j.slaveAgentPort;
-            return Jenkins.getSlaveAgentPortInitialValue(slaveAgentPort);
+            int AgentPort = j.AgentPort;
+            return Jenkins.getAgentPortInitialValue(AgentPort);
         }
 
         @RequirePOST
         public void doAct(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
-            j.forceSetSlaveAgentPort(getExpectedPort());
+            j.forceSetAgentPort(getExpectedPort());
             rsp.sendRedirect2(req.getContextPath() + "/manage");
         }
 
         @Override
         public boolean isActivated() {
-            int slaveAgentPort = Jenkins.get().slaveAgentPort;
-            return SLAVE_AGENT_PORT_ENFORCE && slaveAgentPort != Jenkins.getSlaveAgentPortInitialValue(slaveAgentPort);
+            int AgentPort = Jenkins.get().AgentPort;
+            return SLAVE_AGENT_PORT_ENFORCE && AgentPort != Jenkins.getAgentPortInitialValue(AgentPort);
         }
     }
 
@@ -2624,7 +2624,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new ClockDifferenceCallable();
     }
 
-    private static class ClockDifferenceCallable extends MasterToSlaveCallable<ClockDifference, IOException> {
+    private static class ClockDifferenceCallable extends MasterToAgentCallable<ClockDifference, IOException> {
         @Override
         public ClockDifference call() throws IOException {
             return new ClockDifference(0);
@@ -3444,9 +3444,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run(Reactor session) throws Exception {
                 load();
                 // if we are loading old data that doesn't have this field
-                if (slaves != null && !slaves.isEmpty() && nodes.isLegacy()) {
-                    nodes.setNodes(slaves);
-                    slaves = null;
+                if (agents != null && !agents.isEmpty() && nodes.isLegacy()) {
+                    nodes.setNodes(agents);
+                    agents = null;
                 } else {
                     nodes.load();
                 }
@@ -3491,9 +3491,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 rebuildDependencyGraph();
 
                 { // recompute label objects - populates the labels mapping.
-                    for (Node slave : nodes.getNodes())
+                    for (Node agent : nodes.getNodes())
                         // Note that not all labels are visible until the agents have connected.
-                        slave.getAssignedLabels();
+                        agent.getAssignedLabels();
                     getAssignedLabels();
                 }
 
@@ -3621,7 +3621,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             _cleanUpShutdownTimer(errors);
 
-            _cleanUpShutdownTcpSlaveAgent(errors);
+            _cleanUpShutdownTcpAgent(errors);
 
             _cleanUpShutdownPluginManager(errors);
 
@@ -3826,11 +3826,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
-    private void _cleanUpShutdownTcpSlaveAgent(List<Throwable> errors) {
-        if (tcpSlaveAgentListener != null) {
+    private void _cleanUpShutdownTcpAgent(List<Throwable> errors) {
+        if (tcpAgentListener != null) {
             LOGGER.log(FINE, "Shutting down TCP/IP agent listener");
             try {
-                tcpSlaveAgentListener.shutdown();
+                tcpAgentListener.shutdown();
             } catch (OutOfMemoryError e) {
                 // we should just propagate this, no point trying to log
                 throw e;
@@ -4376,12 +4376,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Serves jar files for inbound agents.
      */
-    public Slave.JnlpJar getJnlpJars(String fileName) {
-        return new Slave.JnlpJar(fileName);
+    public Agent.JnlpJar getJnlpJars(String fileName) {
+        return new Agent.JnlpJar(fileName);
     }
 
-    public Slave.JnlpJar doJnlpJars(StaplerRequest2 req) {
-        return new Slave.JnlpJar(req.getRestOfPath().substring(1));
+    public Agent.JnlpJar doJnlpJars(StaplerRequest2 req) {
+        return new Agent.JnlpJar(req.getRestOfPath().substring(1));
     }
 
     /**
@@ -5255,8 +5255,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }
 
-        // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
-        if ((isAgentJnlpPath(restOfPath, "jenkins") || isAgentJnlpPath(restOfPath, "slave"))
+        // TODO AgentComputer.doAgentJnlp; there should be an annotation to request unprotected access
+        if ((isAgentJnlpPath(restOfPath, "jenkins") || isAgentJnlpPath(restOfPath, "agent"))
             && "true".equals(Stapler.getCurrentRequest2().getParameter("encrypt"))) {
             return false;
         }
@@ -5500,7 +5500,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         @Override
         @RequirePOST
-        public void doLaunchSlaveAgent(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        public void doLaunchAgent(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
             // this computer never returns null from channel, so
             // this method shall never be invoked.
             rsp.sendError(SC_NOT_FOUND);
@@ -5859,7 +5859,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         "error", // AbstractModelObject/error.jelly
         "oops", // .jelly
         "signup", // #doSignup
-        "tcpSlaveAgentListener", // #getTcpSlaveAgentListener
+        "tcpAgentListener", // #getTcpAgentListener
         "federatedLoginService", // #getFederatedLoginService
         "securityRealm" // #getSecurityRealm
     ));
@@ -5903,7 +5903,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             XSTREAM = XSTREAM2 = new XStream2();
 
             XSTREAM.alias("jenkins", Jenkins.class);
-            XSTREAM.alias("slave", DumbSlave.class);
+            XSTREAM.alias("agent", DumbAgent.class);
             XSTREAM.alias("jdk", JDK.class);
             // for backward compatibility with <1.75, recognize the tag name "view" as well.
             XSTREAM.alias("view", ListView.class);

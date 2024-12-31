@@ -73,7 +73,7 @@
     "category": "Distributed Builds",
     "plugins": [
       { "name": "matrix-project" },
-      { "name": "ssh-slaves", "suggested": true }
+      { "name": "ssh-agents", "suggested": true }
     ]
   },
   {

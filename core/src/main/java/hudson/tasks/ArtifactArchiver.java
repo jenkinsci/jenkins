@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.MasterToAgentFileCallable;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
@@ -292,7 +292,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
     }
 
-    private static final class ListFiles extends MasterToSlaveFileCallable<Map<String, String>> {
+    private static final class ListFiles extends MasterToAgentFileCallable<Map<String, String>> {
         private static final long serialVersionUID = 1;
         private final String includes, excludes;
         private final boolean defaultExcludes;

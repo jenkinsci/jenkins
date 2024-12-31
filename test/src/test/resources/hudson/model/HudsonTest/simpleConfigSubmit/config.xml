@@ -38,8 +38,8 @@ THE SOFTWARE.
       <javaHome>/tmp</javaHome>
     </jdk>
   </jdks>
-  <slaves/>
+  <agents/>
   <quietPeriod>5</quietPeriod>
-  <slaveAgentPort>0</slaveAgentPort>
+  <agentAgentPort>0</agentAgentPort>
   <secretKey>0b5165d9bd5c32b84a685eadc52b5c976d82e6c0baf83c3677cd12464cf755db</secretKey>
 </hudson>

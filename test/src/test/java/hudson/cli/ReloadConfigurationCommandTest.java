@@ -92,12 +92,12 @@ public class ReloadConfigurationCommandTest {
     }
 
     @Test
-    public void reloadSlaveConfig() throws Exception {
-        Node node = j.createSlave("a_slave", "oldLabel", null);
+    public void reloadAgentConfig() throws Exception {
+        Node node = j.createAgent("a_agent", "oldLabel", null);
 
         modifyNode(node);
 
-        node = j.jenkins.getNode("a_slave");
+        node = j.jenkins.getNode("a_agent");
         assertThat(node.getLabelString(), equalTo("newLabel"));
     }
 

@@ -61,7 +61,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import jenkins.model.Jenkins;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.ResourceDomainRootAction;
 import jenkins.util.SystemProperties;
@@ -428,7 +428,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
-    private static final class IsAbsolute extends MasterToSlaveCallable<Boolean, IOException> {
+    private static final class IsAbsolute extends MasterToAgentCallable<Boolean, IOException> {
         private final String fragment;
 
         IsAbsolute(String fragment) {
@@ -761,7 +761,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
-    private static final class BuildChildPaths extends MasterToSlaveCallable<BuildChildPathsResult, IOException> {
+    private static final class BuildChildPaths extends MasterToAgentCallable<BuildChildPathsResult, IOException> {
         private final VirtualFile cur;
         private final Locale locale;
         private final OpenOption[] openOptions;

@@ -28,7 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.slaves.NodeSpecific;
+import hudson.agents.NodeSpecific;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolInstaller;

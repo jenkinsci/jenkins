@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
 
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -69,9 +69,9 @@ public class WaitNodeOfflineCommandTest {
 
     @Test
     public void waitNodeOfflineShouldSucceedOnOfflineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().setTemporarilyOffline(true);
-        while (!slave.toComputer().isOffline()) {
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().setTemporarilyOffline(true);
+        while (!agent.toComputer().isOffline()) {
             Thread.sleep(100);
         }
 
@@ -79,26 +79,26 @@ public class WaitNodeOfflineCommandTest {
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
     }
 
     @Test
     public void waitNodeOfflineShouldSucceedOnGoingOfflineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().setTemporarilyOffline(true);
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().setTemporarilyOffline(true);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
     }
 
     @Test
     public void waitNodeOfflineShouldSucceedOnDisconnectedNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().disconnect();
-        while (!slave.toComputer().isOffline()) {
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().disconnect();
+        while (!agent.toComputer().isOffline()) {
             Thread.sleep(100);
         }
 
@@ -106,25 +106,25 @@ public class WaitNodeOfflineCommandTest {
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
     }
 
     @Test
     public void waitNodeOfflineShouldSucceedOnDisconnectingNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().disconnect();
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().disconnect();
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
+        assertThat(agent.toComputer().isOffline(), equalTo(true));
     }
 
     @Test
     public void waitNodeOfflineShouldTimeoutOnOnlineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().waitUntilOnline();
+        DumbAgent agent = j.createAgent("aNode", "", null);
+        agent.toComputer().waitUntilOnline();
         boolean timeoutOccurred = false;
 
         FutureTask task = new FutureTask(() -> {

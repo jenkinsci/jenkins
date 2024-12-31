@@ -35,7 +35,7 @@ import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Proc;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.StringWriter;
@@ -66,13 +66,13 @@ public class ArgumentListBuilder2Test {
      * Makes sure {@link RemoteLauncher} properly masks arguments.
      */
     @Test
-    @Email("http://n4.nabble.com/Password-masking-when-running-commands-on-a-slave-tp1753033p1753033.html")
-    public void slaveMask() throws Exception {
+    @Email("http://n4.nabble.com/Password-masking-when-running-commands-on-a-agent-tp1753033p1753033.html")
+    public void agentMask() throws Exception {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add("java");
         args.addMasked("-version");
 
-        Slave s = j.createOnlineSlave();
+        Agent s = j.createOnlineAgent();
         j.showAgentLogs(s, logging);
 
         StringWriter out = new StringWriter();

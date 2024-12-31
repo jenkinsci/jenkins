@@ -35,7 +35,7 @@ public class NodeListenerTest {
 
     @Test
     public void crud() throws Exception {
-        Node agent = j.createSlave();
+        Node agent = j.createAgent();
         String xml = cli(new GetNodeCommand()).invokeWithArgs(agent.getNodeName()).stdout();
         cli(new UpdateNodeCommand()).withStdin(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset()))).invokeWithArgs(agent.getNodeName());
         cli(new DeleteNodeCommand()).invokeWithArgs(agent.getNodeName());

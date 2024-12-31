@@ -43,7 +43,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.logging.Logger;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 
 /**
  * Environment variables.
@@ -437,7 +437,7 @@ public class EnvVars extends TreeMap<String, String> {
         return channel.call(new GetEnvVars());
     }
 
-    private static final class GetEnvVars extends MasterToSlaveCallable<EnvVars, RuntimeException> {
+    private static final class GetEnvVars extends MasterToAgentCallable<EnvVars, RuntimeException> {
         @Override
         public EnvVars call() {
             return new EnvVars(EnvVars.masterEnvVars);

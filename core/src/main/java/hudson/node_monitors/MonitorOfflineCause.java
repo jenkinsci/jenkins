@@ -25,7 +25,7 @@
 package hudson.node_monitors;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.slaves.OfflineCause;
+import hudson.agents.OfflineCause;
 
 /**
  * Offline cause to denote it was node monitor what put computer offline.

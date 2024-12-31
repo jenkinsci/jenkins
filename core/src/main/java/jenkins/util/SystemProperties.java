@@ -33,7 +33,7 @@ import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
-import hudson.slaves.ComputerListener;
+import hudson.agents.ComputerListener;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import jenkins.util.io.OnMaster;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -139,7 +139,7 @@ public class SystemProperties {
             channel.call(new CopySystemProperties());
         }
 
-        private static final class CopySystemProperties extends MasterToSlaveCallable<Void, RuntimeException> {
+        private static final class CopySystemProperties extends MasterToAgentCallable<Void, RuntimeException> {
             private static final long serialVersionUID = 1;
             private final Map<String, String> snapshot;
 

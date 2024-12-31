@@ -42,7 +42,7 @@ import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.ComputerListener;
+import hudson.agents.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
@@ -75,7 +75,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import jenkins.util.MemoryReductionUtil;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
@@ -374,7 +374,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
         }
     }
 
-    private static final class SetLevel extends MasterToSlaveCallable<Void, Error> {
+    private static final class SetLevel extends MasterToAgentCallable<Void, Error> {
         /** known loggers (kept per agent), to avoid GC */
         @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<>();
         private final String name;
@@ -586,7 +586,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
      * @return a map (sorted by display name) from computer to (nonempty) list of log records
      * @since 1.519
      */
-    public Map<Computer, List<LogRecord>> getSlaveLogRecords() {
+    public Map<Computer, List<LogRecord>> getAgentLogRecords() {
         Map<Computer, List<LogRecord>> result = new TreeMap<>(new Comparator<>() {
             final Collator COLL = Collator.getInstance();
 

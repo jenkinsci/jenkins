@@ -41,7 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
 import net.sf.json.JSONObject;
@@ -247,7 +247,7 @@ public class Shell extends CommandInterpreter {
             return FormValidation.validateExecutable(value);
         }
 
-        private static final class Shellinterpreter extends MasterToSlaveCallable<String, IOException> {
+        private static final class Shellinterpreter extends MasterToAgentCallable<String, IOException> {
 
             private static final long serialVersionUID = 1L;
 

@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
 import hudson.security.ACL;
 import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletOutputStream;
@@ -67,7 +67,7 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.FakeLauncher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.PretendSlave;
+import org.jvnet.hudson.test.PretendAgent;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
@@ -96,7 +96,7 @@ public class ComputerConfigDotXmlTest {
     public void setUp() throws Exception {
 
         mocks = MockitoAnnotations.openMocks(this);
-        computer = spy(rule.createSlave().toComputer());
+        computer = spy(rule.createAgent().toComputer());
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
         oldSecurityContext = ACL.impersonate2(User.getOrCreateByIdOrFullName("user").impersonate2());
     }
@@ -143,7 +143,7 @@ public class ComputerConfigDotXmlTest {
 
         final String out = outputStream.toString();
         assertThat(out, startsWith("<?xml version=\"1.1\" encoding=\"UTF-8\"?>"));
-        assertThat(out, containsString("<name>slave0</name>"));
+        assertThat(out, containsString("<name>agent0</name>"));
         assertThat(out, containsString("<mode>NORMAL</mode>"));
     }
 
@@ -160,9 +160,9 @@ public class ComputerConfigDotXmlTest {
 
         computer.doConfigDotXml(req, rsp);
 
-        final Node updatedSlave = rule.jenkins.getNode("AgentFromXML");
-        assertThat(updatedSlave.getNodeName(), equalTo("AgentFromXML"));
-        assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        final Node updatedAgent = rule.jenkins.getNode("AgentFromXML");
+        assertThat(updatedAgent.getNodeName(), equalTo("AgentFromXML"));
+        assertThat(updatedAgent.getNumExecutors(), equalTo(42));
     }
 
     @Test
@@ -186,7 +186,7 @@ public class ComputerConfigDotXmlTest {
     @Issue("SECURITY-1721")
     @Test
     public void cannotChangeNodeType() throws Exception {
-        PretendSlave agent = rule.createPretendSlave(p -> new FakeLauncher.FinishedProc(0));
+        PretendAgent agent = rule.createPretendAgent(p -> new FakeLauncher.FinishedProc(0));
         String name = agent.getNodeName();
         assertThat(name, is(not(emptyOrNullString())));
         Computer computer = agent.toComputer();
@@ -196,20 +196,20 @@ public class ComputerConfigDotXmlTest {
         WebRequest req = new WebRequest(wc.createCrumbedUrl(String.format("%s/config.xml", computer.getUrl())), HttpMethod.POST);
         req.setAdditionalHeader("Content-Type", "application/xml");
         // to ensure maximum compatibility of payload, we'll serialize a real one with the same name
-        DumbSlave mole = new DumbSlave(name, temporaryFolder.newFolder().getPath(), rule.createComputerLauncher(null));
+        DumbAgent mole = new DumbAgent(name, temporaryFolder.newFolder().getPath(), rule.createComputerLauncher(null));
         req.setRequestBody(Jenkins.XSTREAM.toXML(mole));
         WebResponse response = wc.getPage(req).getWebResponse();
         assertThat(response.getStatusCode(), is(400));
 
         // verify node hasn't been transformed into a different type
         Node node = rule.jenkins.getNode(name);
-        assertThat(node, instanceOf(PretendSlave.class));
+        assertThat(node, instanceOf(PretendAgent.class));
     }
 
     @Issue("SECURITY-2021")
     @Test
     public void nodeNameReferencesParentDir() throws Exception {
-        Computer computer = rule.createSlave("anything", null).toComputer();
+        Computer computer = rule.createAgent("anything", null).toComputer();
 
         JenkinsRule.WebClient wc = rule.createWebClient();
         WebRequest req = new WebRequest(wc.createCrumbedUrl(String.format("%s/config.xml", computer.getUrl())), HttpMethod.POST);
@@ -225,9 +225,9 @@ public class ComputerConfigDotXmlTest {
     }
 
     private static final String VALID_XML_BAD_NAME_XML =
-            "<slave>\n" +
+            "<agent>\n" +
                     "  <name>../</name>\n" +
-                    "</slave>";
+                    "</agent>";
 
     private OutputStream captureOutput() throws IOException {
 

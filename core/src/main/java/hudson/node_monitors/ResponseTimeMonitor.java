@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
@@ -103,7 +103,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         }
     }
 
-    private static final class Step1 extends MasterToSlaveCallable<Data, IOException> {
+    private static final class Step1 extends MasterToAgentCallable<Data, IOException> {
         private Data cur;
 
         private Step1(Data cur) {
@@ -123,7 +123,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         private static final long serialVersionUID = 1L;
     }
 
-    private static final class Step2 extends MasterToSlaveCallable<Step3, IOException> {
+    private static final class Step2 extends MasterToAgentCallable<Step3, IOException> {
         private final Data cur;
         private final long start = System.currentTimeMillis();
 

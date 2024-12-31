@@ -28,7 +28,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import hudson.slaves.NodeSpecific;
+import hudson.agents.NodeSpecific;
 import java.io.File;
 import java.io.IOException;
 

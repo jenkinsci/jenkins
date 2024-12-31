@@ -41,8 +41,8 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.RetentionStrategy;
+import hudson.agents.DumbAgent;
+import hudson.agents.RetentionStrategy;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Set;
@@ -71,9 +71,9 @@ public class LabelExpressionTest {
      */
     @Test
     public void queueBehavior1() throws Exception {
-        DumbSlave w32 = j.createSlave("win 32bit", null);
-        DumbSlave w64 = j.createSlave("win 64bit", null);
-        j.createSlave("linux 32bit", null);
+        DumbAgent w32 = j.createAgent("win 32bit", null);
+        DumbAgent w64 = j.createAgent("win 64bit", null);
+        j.createAgent("linux 32bit", null);
 
         final SequenceLock seq = new SequenceLock();
 
@@ -123,7 +123,7 @@ public class LabelExpressionTest {
      */
     @Test
     public void queueBehavior2() throws Exception {
-        DumbSlave s = j.createSlave("win", null);
+        DumbAgent s = j.createAgent("win", null);
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -145,7 +145,7 @@ public class LabelExpressionTest {
      */
     @Test
     public void setLabelString() throws Exception {
-        DumbSlave s = j.createSlave("foo", "", null);
+        DumbAgent s = j.createAgent("foo", "", null);
 
         assertSame("", s.getLabelString());
 
@@ -209,11 +209,11 @@ public class LabelExpressionTest {
     @Test
     public void dataCompatibilityWithHostNameWithWhitespace() throws Exception {
         assumeFalse("Windows can't have paths with colons, skipping", Functions.isWindows());
-        DumbSlave slave = new DumbSlave("abc def (xyz) test", tempFolder.newFolder().getPath(), j.createComputerLauncher(null));
-        slave.setRetentionStrategy(RetentionStrategy.NOOP);
-        slave.setNodeDescription("dummy");
-        slave.setNodeProperties(Collections.emptyList());
-        j.jenkins.addNode(slave);
+        DumbAgent agent = new DumbAgent("abc def (xyz) test", tempFolder.newFolder().getPath(), j.createComputerLauncher(null));
+        agent.setRetentionStrategy(RetentionStrategy.NOOP);
+        agent.setNodeDescription("dummy");
+        agent.setNodeProperties(Collections.emptyList());
+        j.jenkins.addNode(agent);
 
 
         FreeStyleProject p = j.createFreeStyleProject();
@@ -356,7 +356,7 @@ public class LabelExpressionTest {
     public void formValidation() throws Exception {
         j.executeOnServer(() -> {
             Label l = j.jenkins.getLabel("foo");
-            DumbSlave s = j.createSlave(l);
+            DumbAgent s = j.createAgent(l);
             String msg = LabelExpression.validate("goo").renderHtml();
             assertTrue(msg.contains("foo"));
             assertTrue(msg.contains("goo"));

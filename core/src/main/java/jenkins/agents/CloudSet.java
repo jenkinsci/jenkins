@@ -34,7 +34,7 @@ import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.RootAction;
 import hudson.model.UpdateCenter;
-import hudson.slaves.Cloud;
+import hudson.agents.Cloud;
 import hudson.util.FormValidation;
 import jakarta.servlet.ServletException;
 import java.io.IOException;

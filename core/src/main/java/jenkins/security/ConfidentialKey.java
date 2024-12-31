@@ -5,7 +5,7 @@ import hudson.scm.SCM;
 import hudson.tasks.Builder;
 import hudson.util.Secret;
 import java.io.IOException;
-import jenkins.slaves.JnlpAgentReceiver;
+import jenkins.agents.JnlpAgentReceiver;
 
 /**
  * Confidential information that gets stored as a singleton in Jenkins, mostly some random token value.

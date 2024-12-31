@@ -10,8 +10,8 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.NodeProperty;
+import hudson.agents.DumbAgent;
+import hudson.agents.NodeProperty;
 import java.util.logging.Level;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,11 +38,11 @@ public class MaintainCanTakeStrengtheningTest {
     @Test
     public void testExceptionOnNodeProperty() throws Exception {
         // A node throwing the exception because of the canTake method of the attached FaultyNodeProperty
-        DumbSlave faultyAgent = r.createOnlineSlave(Label.get("faulty"));
+        DumbAgent faultyAgent = r.createOnlineAgent(Label.get("faulty"));
         faultyAgent.getNodeProperties().add(new FaultyNodeProperty());
 
         // A good agent
-        r.createOnlineSlave(Label.get("good"));
+        r.createOnlineAgent(Label.get("good"));
 
         // Only the good ones will be run and the latest doesn't get hung because of the second
         FreeStyleBuild good1 = scheduleBuild("good1", "good").waitForStart();

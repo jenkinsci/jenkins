@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
@@ -122,7 +122,7 @@ public class LogRecorderManagerTest {
     }
 
     @Issue({"JENKINS-18274", "JENKINS-63458"})
-    @Test public void loggingOnSlaves() throws Exception {
+    @Test public void loggingOnAgents() throws Exception {
         // TODO could also go through WebClient to assert that the config UI works
         LogRecorderManager mgr = j.jenkins.getLog();
         LogRecorder r1 = new LogRecorder("r1");
@@ -131,7 +131,7 @@ public class LogRecorderManagerTest {
         r1.getLoggers().add(t);
         r1.save();
         t.enable();
-        Computer c = j.createOnlineSlave().toComputer();
+        Computer c = j.createOnlineAgent().toComputer();
         assertNotNull(c);
         t = new LogRecorder.Target("ns2", Level.FINER);
         r1.getLoggers().add(t);
@@ -158,10 +158,10 @@ public class LogRecorderManagerTest {
         assertEquals(show(recs), 6, recs.size());
         // Would of course prefer to get "msg #5 1.0 2.0 'OK?'" but all attempts to fix this have ended in disaster (JENKINS-63458):
         assertEquals("msg #5 {0,number,0.0} {1,number,0.0} ''OK?''", new SimpleFormatter().formatMessage(recs.get(1)));
-        recs = r1.getSlaveLogRecords().get(c);
+        recs = r1.getAgentLogRecords().get(c);
         assertNotNull(recs);
         assertEquals(show(recs), 3, recs.size());
-        recs = r2.getSlaveLogRecords().get(c);
+        recs = r2.getAgentLogRecords().get(c);
         assertNotNull(recs);
         assertEquals(show(recs), 1, recs.size());
         String text = j.createWebClient().goTo("log/r1/").asNormalizedText();
@@ -238,7 +238,7 @@ public class LogRecorderManagerTest {
         }
     }
 
-    private static final class Log extends MasterToSlaveCallable<Boolean, Error> {
+    private static final class Log extends MasterToAgentCallable<Boolean, Error> {
         private final Level level;
         private final String logger;
         private final String message;
@@ -266,7 +266,7 @@ public class LogRecorderManagerTest {
         }
     }
 
-    private static final class LambdaLog extends MasterToSlaveCallable<Boolean, Error> {
+    private static final class LambdaLog extends MasterToAgentCallable<Boolean, Error> {
         private final Level level;
         private final String logger;
 

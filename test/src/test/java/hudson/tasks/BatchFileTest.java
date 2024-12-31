@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.FakeLauncher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.PretendSlave;
+import org.jvnet.hudson.test.PretendAgent;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -62,11 +62,11 @@ public class BatchFileTest {
     }
 
     private void nonZeroErrorlevelShouldMakeBuildUnstable(int exitCode) throws Exception {
-        PretendSlave slave = rule.createPretendSlave(new BatchFileTest.ReturnCodeFakeLauncher(exitCode));
+        PretendAgent agent = rule.createPretendAgent(new BatchFileTest.ReturnCodeFakeLauncher(exitCode));
 
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", exitCode));
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
         rule.buildAndAssertStatus(Result.UNSTABLE, p);
     }
 
@@ -80,18 +80,18 @@ public class BatchFileTest {
     }
 
     private void nonZeroErrorlevelShouldBreakTheBuildByDefault(int exitCode) throws Exception {
-        PretendSlave slave = rule.createPretendSlave(new BatchFileTest.ReturnCodeFakeLauncher(exitCode));
+        PretendAgent agent = rule.createPretendAgent(new BatchFileTest.ReturnCodeFakeLauncher(exitCode));
 
         FreeStyleProject p;
 
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", null));
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
         rule.buildAndAssertStatus(Result.FAILURE, p);
 
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", 0));
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
         rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
@@ -105,13 +105,13 @@ public class BatchFileTest {
     }
 
     private void nonZeroErrorlevelShouldBreakTheBuildIfNotMatching(int exitCode) throws Exception {
-        PretendSlave slave = rule.createPretendSlave(new BatchFileTest.ReturnCodeFakeLauncher(exitCode));
+        PretendAgent agent = rule.createPretendAgent(new BatchFileTest.ReturnCodeFakeLauncher(exitCode));
 
         final int notMatchingExitCode = 44;
 
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", notMatchingExitCode));
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
         rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
@@ -129,11 +129,11 @@ public class BatchFileTest {
     public void windowsErrorlevel0ShouldNeverMakeTheBuildUnstable() throws Exception {
         assumeTrue(Functions.isWindows());
 
-        PretendSlave slave = rule.createPretendSlave(new BatchFileTest.ReturnCodeFakeLauncher(0));
+        PretendAgent agent = rule.createPretendAgent(new BatchFileTest.ReturnCodeFakeLauncher(0));
         for (Integer unstableReturn : new Integer [] {null, 0, 1}) {
             FreeStyleProject p = rule.createFreeStyleProject();
             p.getBuildersList().add(createNewBatchTask("", unstableReturn));
-            p.setAssignedNode(slave);
+            p.setAssignedNode(agent);
             rule.buildAndAssertSuccess(p);
         }
     }

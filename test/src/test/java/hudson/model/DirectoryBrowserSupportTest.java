@@ -46,7 +46,7 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.slaves.WorkspaceList;
+import hudson.agents.WorkspaceList;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;

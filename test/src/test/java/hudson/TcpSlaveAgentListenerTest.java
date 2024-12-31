@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
-public class TcpSlaveAgentListenerTest {
+public class TcpAgentAgentListenerTest {
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
@@ -25,19 +25,19 @@ public class TcpSlaveAgentListenerTest {
         WebClient wc = r.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 
-        r.getInstance().setSlaveAgentPort(-1);
-        wc.assertFails("tcpSlaveAgentListener", HttpURLConnection.HTTP_NOT_FOUND);
+        r.getInstance().setAgentAgentPort(-1);
+        wc.assertFails("tcpAgentAgentListener", HttpURLConnection.HTTP_NOT_FOUND);
 
-        r.getInstance().setSlaveAgentPort(0);
-        Page p = wc.goTo("tcpSlaveAgentListener", "text/plain");
+        r.getInstance().setAgentAgentPort(0);
+        Page p = wc.goTo("tcpAgentAgentListener", "text/plain");
         assertEquals(HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
         assertThat(p.getWebResponse().getResponseHeaderValue("X-Instance-Identity"), notNullValue());
     }
 
     @Test
     public void diagnostics() throws Exception {
-        r.getInstance().setSlaveAgentPort(0);
-        int p = r.jenkins.getTcpSlaveAgentListener().getPort();
+        r.getInstance().setAgentAgentPort(0);
+        int p = r.jenkins.getTcpAgentAgentListener().getPort();
         WebClient wc = r.createWebClient();
 
         TextPage text = wc.getPage(new URI("http://localhost:" + p + "/").toURL());

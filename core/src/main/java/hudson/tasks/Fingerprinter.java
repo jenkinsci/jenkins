@@ -62,7 +62,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.MasterToAgentFileCallable;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
@@ -275,7 +275,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         private static final long serialVersionUID = 1L;
     }
 
-    private static final class FindRecords extends MasterToSlaveFileCallable<List<Record>> {
+    private static final class FindRecords extends MasterToAgentFileCallable<List<Record>> {
 
         private final String targets;
         private final String excludes;

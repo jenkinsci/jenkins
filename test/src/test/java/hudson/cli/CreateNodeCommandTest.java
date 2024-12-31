@@ -36,7 +36,7 @@ import static org.junit.Assert.assertEquals;
 import hudson.model.Computer;
 import hudson.model.Messages;
 import hudson.model.Node;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import jenkins.model.Jenkins;
@@ -80,7 +80,7 @@ public class CreateNodeCommandTest {
 
         assertThat(result, succeededSilently());
 
-        final Slave updated = (Slave) j.jenkins.getNode("AgentFromXML");
+        final Agent updated = (Agent) j.jenkins.getNode("AgentFromXML");
         assertThat(updated.getNodeName(), equalTo("AgentFromXML"));
         assertThat(updated.getNumExecutors(), equalTo(42));
     }
@@ -97,14 +97,14 @@ public class CreateNodeCommandTest {
 
         assertThat("An agent with original name should not exist", j.jenkins.getNode("AgentFromXml"), nullValue());
 
-        final Slave updated = (Slave) j.jenkins.getNode("CustomAgentName");
+        final Agent updated = (Agent) j.jenkins.getNode("CustomAgentName");
         assertThat(updated.getNodeName(), equalTo("CustomAgentName"));
         assertThat(updated.getNumExecutors(), equalTo(42));
     }
 
     @Test public void createNodeSpecifyingDifferentNameExplicitly() throws Exception {
 
-        final Node original = j.createSlave("AgentFromXml", null, null);
+        final Node original = j.createAgent("AgentFromXml", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CREATE, Jenkins.READ)
@@ -116,14 +116,14 @@ public class CreateNodeCommandTest {
 
         assertThat("An agent with original name should be left untouched", j.jenkins.getNode("AgentFromXml"), equalTo(original));
 
-        final Slave updated = (Slave) j.jenkins.getNode("CustomAgentName");
+        final Agent updated = (Agent) j.jenkins.getNode("CustomAgentName");
         assertThat(updated.getNodeName(), equalTo("CustomAgentName"));
         assertThat(updated.getNumExecutors(), equalTo(42));
     }
 
     @Test public void createNodeShouldFailIfNodeAlreadyExist() throws Exception {
 
-        j.createSlave("AgentFromXML", null, null);
+        j.createAgent("AgentFromXML", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CREATE, Jenkins.READ)
@@ -138,7 +138,7 @@ public class CreateNodeCommandTest {
 
     @Test public void createNodeShouldFailIfNodeAlreadyExistWhenNameSpecifiedExplicitly() throws Exception {
 
-        j.createSlave("ExistingAgent", null, null);
+        j.createAgent("ExistingAgent", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CREATE, Jenkins.READ)
@@ -176,7 +176,7 @@ public class CreateNodeCommandTest {
         int nodeListSizeBefore = j.jenkins.getNodes().size();
 
         CLICommandInvoker.Result result = command
-                .withStdin(new ByteArrayInputStream("<slave/>".getBytes(StandardCharsets.UTF_8)))
+                .withStdin(new ByteArrayInputStream("<agent/>".getBytes(StandardCharsets.UTF_8)))
                 .invokeWithArgs("nodeA.")
                 ;
 
@@ -193,11 +193,11 @@ public class CreateNodeCommandTest {
     public void cannotCreateNodeWithTrailingDot_withExistingNode() {
         int nodeListSizeBefore = j.jenkins.getNodes().size();
 
-        assertThat(command.withStdin(new ByteArrayInputStream("<slave/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("nodeA"), succeededSilently());
+        assertThat(command.withStdin(new ByteArrayInputStream("<agent/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("nodeA"), succeededSilently());
         assertEquals(nodeListSizeBefore + 1, j.jenkins.getNodes().size());
 
         CLICommandInvoker.Result result = command
-                .withStdin(new ByteArrayInputStream("<slave/>".getBytes(StandardCharsets.UTF_8)))
+                .withStdin(new ByteArrayInputStream("<agent/>".getBytes(StandardCharsets.UTF_8)))
                 .invokeWithArgs("nodeA.")
                 ;
 
@@ -218,11 +218,11 @@ public class CreateNodeCommandTest {
         try {
             int nodeListSizeBefore = j.jenkins.getNodes().size();
 
-            assertThat(command.withStdin(new ByteArrayInputStream("<slave/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("nodeA"), succeededSilently());
+            assertThat(command.withStdin(new ByteArrayInputStream("<agent/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("nodeA"), succeededSilently());
             assertEquals(nodeListSizeBefore + 1, j.jenkins.getNodes().size());
 
             CLICommandInvoker.Result result = command
-                    .withStdin(new ByteArrayInputStream("<slave/>".getBytes(StandardCharsets.UTF_8)))
+                    .withStdin(new ByteArrayInputStream("<agent/>".getBytes(StandardCharsets.UTF_8)))
                     .invokeWithArgs("nodeA.")
                     ;
 

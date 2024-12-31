@@ -6,8 +6,8 @@ import static org.junit.Assert.assertNotNull;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Descriptor;
-import hudson.model.Slave;
-import hudson.slaves.ComputerLauncher;
+import hudson.model.Agent;
+import hudson.agents.ComputerLauncher;
 import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,8 +17,8 @@ public class NodesRestartTest {
     @Rule
     public JenkinsSessionRule s = new JenkinsSessionRule();
 
-    // The point of this implementation is to override readResolve so that Slave#readResolve doesn't get called.
-    public static class DummyAgent extends Slave {
+    // The point of this implementation is to override readResolve so that Agent#readResolve doesn't get called.
+    public static class DummyAgent extends Agent {
         public DummyAgent(@NonNull String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
             super(name, remoteFS, launcher);
         }

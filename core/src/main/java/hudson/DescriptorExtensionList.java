@@ -31,7 +31,7 @@ import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
 import hudson.model.ViewDescriptor;
-import hudson.slaves.NodeDescriptor;
+import hudson.agents.NodeDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators.FlattenIterator;

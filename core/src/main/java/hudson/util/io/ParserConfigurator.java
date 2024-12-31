@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import jenkins.model.Jenkins;
-import jenkins.security.SlaveToMasterCallable;
+import jenkins.security.AgentToMasterCallable;
 import org.dom4j.io.SAXReader;
 
 /**
@@ -87,7 +87,7 @@ public abstract class ParserConfigurator implements ExtensionPoint, Serializable
             pc.configure(reader, context);
     }
 
-    private static class GetParserConfigurators extends SlaveToMasterCallable<Collection<ParserConfigurator>, IOException> {
+    private static class GetParserConfigurators extends AgentToMasterCallable<Collection<ParserConfigurator>, IOException> {
         private static final long serialVersionUID = -2178106894481500733L;
 
         @Override

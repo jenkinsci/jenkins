@@ -200,7 +200,7 @@ public class CLIActionTest {
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.addView(new AllView("v1"));
-        j.jenkins.addNode(j.createSlave("n1", null, null));
+        j.jenkins.addNode(j.createAgent("n1", null, null));
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN));
         // No anonymous read access
         assertExitCode(6, false, jar, "get-view", "v1");

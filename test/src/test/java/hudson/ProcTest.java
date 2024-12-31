@@ -10,7 +10,7 @@ import hudson.Launcher.RemoteLauncher.ProcImpl;
 import hudson.model.TaskListener;
 import hudson.remoting.Pipe;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import hudson.util.IOUtils;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
@@ -18,7 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -38,7 +38,7 @@ public class ProcTest {
      */
     @Test
     public void remoteProcOutputSync() throws Exception {
-        VirtualChannel ch = createSlaveChannel();
+        VirtualChannel ch = createAgentChannel();
 
         // keep the pipe fairly busy
         final Pipe p = Pipe.createRemoteToLocal();
@@ -70,8 +70,8 @@ public class ProcTest {
         ch.close();
     }
 
-    private VirtualChannel createSlaveChannel() throws Exception {
-        DumbSlave s = j.createSlave();
+    private VirtualChannel createAgentChannel() throws Exception {
+        DumbAgent s = j.createAgent();
         s.toComputer().connect(false).get();
         VirtualChannel ch = null;
         while (ch == null) {
@@ -81,7 +81,7 @@ public class ProcTest {
         return ch;
     }
 
-    private static class ChannelFiller extends MasterToSlaveCallable<Void, IOException> {
+    private static class ChannelFiller extends MasterToAgentCallable<Void, IOException> {
         private final OutputStream o;
 
         private ChannelFiller(OutputStream o) {
@@ -108,7 +108,7 @@ public class ProcTest {
         assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
         doIoPumpingTest(new RemoteLauncher(
                 new StreamTaskListener(System.out, Charset.defaultCharset()),
-                createSlaveChannel(), true));
+                createAgentChannel(), true));
     }
 
     private void doIoPumpingTest(Launcher l) throws IOException, InterruptedException {

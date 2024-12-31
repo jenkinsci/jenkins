@@ -38,7 +38,7 @@ import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.User;
 import hudson.model.View;
-import hudson.slaves.Cloud;
+import hudson.agents.Cloud;
 import hudson.util.DescriptorList;
 import java.io.Serializable;
 import java.util.Collection;

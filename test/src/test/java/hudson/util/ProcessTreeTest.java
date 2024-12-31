@@ -14,7 +14,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.tasks.Maven;
 import hudson.tasks.Shell;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
@@ -148,7 +148,7 @@ public class ProcessTreeTest {
 
     @Test
     @Issue("JENKINS-9104")
-    public void considersKillingVetosOnSlave() throws Exception {
+    public void considersKillingVetosOnAgent() throws Exception {
         // on some platforms where we fail to list any processes, this test will
         // just not work
         assumeTrue(ProcessTree.get() != ProcessTree.DEFAULT);
@@ -164,7 +164,7 @@ public class ProcessTreeTest {
         }
 
         // Create an agent so we can tell it to kill the process
-        Slave s = j.createSlave();
+        Agent s = j.createAgent();
         s.toComputer().connect(false).get();
 
         // Start the process
@@ -177,7 +177,7 @@ public class ProcessTreeTest {
         assertThrows("Process should have been excluded from the killing", IllegalThreadStateException.class, () -> process.exitValue());
     }
 
-    @TestExtension({"considersKillingVetos", "considersKillingVetosOnSlave"})
+    @TestExtension({"considersKillingVetos", "considersKillingVetosOnAgent"})
     public static class VetoAllKilling extends ProcessKillingVeto {
         @Override
         public VetoCause vetoProcessKilling(@NonNull IOSProcess p) {

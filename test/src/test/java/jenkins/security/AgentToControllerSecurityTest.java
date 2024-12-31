@@ -15,8 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Objects;
-import jenkins.MasterToSlaveFileCallable;
-import jenkins.SlaveToMasterFileCallable;
+import jenkins.MasterToAgentFileCallable;
+import jenkins.AgentToMasterFileCallable;
 import jenkins.agents.AgentComputerUtil;
 import jenkins.security.s2m.CallableDirectionChecker;
 import jenkins.util.JenkinsJVM;
@@ -36,11 +36,11 @@ public class AgentToControllerSecurityTest {
 
     @Test
     public void testLegacyCallable() {
-        final SecurityException securityException = assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new CallLegacyCallableCallable()));
+        final SecurityException securityException = assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(j.createOnlineAgent().getChannel()).call(new CallLegacyCallableCallable()));
         assertThat(securityException.getMessage(), containsString("Sending jenkins.security.AgentToControllerSecurityTest$LegacyCallable from agent to controller is prohibited"));
     }
 
-    private static class CallLegacyCallableCallable extends MasterToSlaveCallable<Void, Exception> {
+    private static class CallLegacyCallableCallable extends MasterToAgentCallable<Void, Exception> {
         @Override
         public Void call() throws Exception {
             Objects.requireNonNull(AgentComputerUtil.getChannelToController()).call(new LegacyCallable());
@@ -65,11 +65,11 @@ public class AgentToControllerSecurityTest {
 
     @Test
     public void testFilePaths() {
-        final SecurityException securityException = assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new AccessControllerFilePathCallable()));
+        final SecurityException securityException = assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(j.createOnlineAgent().getChannel()).call(new AccessControllerFilePathCallable()));
         assertThat(securityException.getMessage(), containsString("Sending hudson.FilePath$ReadLink from agent to controller is prohibited"));
     }
 
-    private static class AccessControllerFilePathCallable extends MasterToSlaveCallable<Void, Exception> {
+    private static class AccessControllerFilePathCallable extends MasterToAgentCallable<Void, Exception> {
         @Override
         public Void call() throws Exception {
             new FilePath(AgentComputerUtil.getChannelToController(), "foo").readLink();
@@ -77,14 +77,14 @@ public class AgentToControllerSecurityTest {
         }
     }
 
-    // ----- Agent to controller access is still possible using SlaveToMaster[File]Callable
+    // ----- Agent to controller access is still possible using AgentToMaster[File]Callable
 
     @Test
     public void testAgentToControllerFileCallable() throws Exception {
-        Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new InvokeAgentToControllerCallables());
+        Objects.requireNonNull(j.createOnlineAgent().getChannel()).call(new InvokeAgentToControllerCallables());
     }
 
-    private static class InvokeAgentToControllerCallables extends MasterToSlaveCallable<Void, Exception> {
+    private static class InvokeAgentToControllerCallables extends MasterToAgentCallable<Void, Exception> {
         @Override
         public Void call() throws Exception {
             assertFalse(JenkinsJVM.isJenkinsJVM());
@@ -96,7 +96,7 @@ public class AgentToControllerSecurityTest {
         }
     }
 
-    private static class A2CFileCallable extends SlaveToMasterFileCallable<Void> {
+    private static class A2CFileCallable extends AgentToMasterFileCallable<Void> {
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             assertTrue(JenkinsJVM.isJenkinsJVM());
@@ -104,7 +104,7 @@ public class AgentToControllerSecurityTest {
         }
     }
 
-    private static class A2CCallable extends SlaveToMasterCallable<Void, Exception> {
+    private static class A2CCallable extends AgentToMasterCallable<Void, Exception> {
         @Override
         public Void call() throws Exception {
             assertTrue(JenkinsJVM.isJenkinsJVM());
@@ -117,32 +117,32 @@ public class AgentToControllerSecurityTest {
     public void ensureBypass() throws Exception {
         CallableDirectionChecker.BYPASS = true;
         try {
-            Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new InvokeControllerToAgentCallables());
+            Objects.requireNonNull(j.createOnlineAgent().getChannel()).call(new InvokeControllerToAgentCallables());
         } finally {
             CallableDirectionChecker.BYPASS = false;
         }
     }
 
-    private static class InvokeControllerToAgentCallables extends MasterToSlaveCallable<Void, Exception> {
+    private static class InvokeControllerToAgentCallables extends MasterToAgentCallable<Void, Exception> {
         @Override
         public Void call() throws Exception {
             assertFalse(JenkinsJVM.isJenkinsJVM());
             final VirtualChannel channelToController = AgentComputerUtil.getChannelToController();
             assertNotNull(channelToController);
-            channelToController.call(new NoopMasterToSlaveCallable());
-            new FilePath(channelToController, "foo").act(new NoopMasterToSlaveFileCallable());
+            channelToController.call(new NoopMasterToAgentCallable());
+            new FilePath(channelToController, "foo").act(new NoopMasterToAgentFileCallable());
             return null;
         }
     }
 
-    private static class NoopMasterToSlaveCallable extends MasterToSlaveCallable<Void, Exception> {
+    private static class NoopMasterToAgentCallable extends MasterToAgentCallable<Void, Exception> {
         @Override
         public Void call() throws Exception {
             return null;
         }
     }
 
-    private static class NoopMasterToSlaveFileCallable extends MasterToSlaveFileCallable<Void> {
+    private static class NoopMasterToAgentFileCallable extends MasterToAgentFileCallable<Void> {
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return null;
@@ -155,10 +155,10 @@ public class AgentToControllerSecurityTest {
     @Issue("JENKINS-67189")
     public void controllerToControllerTest() throws Exception {
         // Send a callable to the agent, which sends a callable to the controller, which invokes a method of a local FilePath
-        Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new BackToControllerCallable());
+        Objects.requireNonNull(j.createOnlineAgent().getChannel()).call(new BackToControllerCallable());
     }
 
-    private static class BackToControllerCallable extends MasterToSlaveCallable<String, Exception> {
+    private static class BackToControllerCallable extends MasterToAgentCallable<String, Exception> {
         @Override
         public String call() throws Exception {
             assertFalse(JenkinsJVM.isJenkinsJVM());
@@ -167,7 +167,7 @@ public class AgentToControllerSecurityTest {
     }
 
     // Used for both agent-to-agent and controller-to-controller, so make it S2MC
-    private static class LocalFileOpCallable extends SlaveToMasterCallable<String, Exception> {
+    private static class LocalFileOpCallable extends AgentToMasterCallable<String, Exception> {
         private final boolean executesOnJenkinsJVM;
 
         LocalFileOpCallable(boolean executesOnJenkinsJVM) {
@@ -185,7 +185,7 @@ public class AgentToControllerSecurityTest {
     @Test
     @Issue("JENKINS-67189") // but this test works even in 2.319 because no agent side filtering
     public void agentToAgentTest() throws Exception {
-        Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new LocalFileOpCallable(false));
+        Objects.requireNonNull(j.createOnlineAgent().getChannel()).call(new LocalFileOpCallable(false));
     }
 
     // ----- Utility methods

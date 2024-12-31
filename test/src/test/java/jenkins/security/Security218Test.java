@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThrows;
 
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Level;
@@ -36,8 +36,8 @@ public class Security218Test implements Serializable {
      * This test is for regular static agent
      */
     @Test
-    public void dumbSlave() throws Exception {
-        check(j.createOnlineSlave());
+    public void dumbAgent() throws Exception {
+        check(j.createOnlineAgent());
     }
 
     /**
@@ -46,8 +46,8 @@ public class Security218Test implements Serializable {
      * This test is for JNLP agent
      */
     @Test
-    public void jnlpSlave() throws Exception {
-        DumbSlave a = (DumbSlave) inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().secret().build());
+    public void jnlpAgent() throws Exception {
+        DumbAgent a = (DumbAgent) inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().secret().build());
         try {
             j.createWebClient().goTo("computer/" + a.getNodeName() + "/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
             check(a);
@@ -61,7 +61,7 @@ public class Security218Test implements Serializable {
      * returns a malicious response.
      */
     @SuppressWarnings("ConstantConditions")
-    private void check(DumbSlave s) {
+    private void check(DumbAgent s) {
         IOException e = assertThrows(
                 "Expected the connection to die",
                 IOException.class,
@@ -69,7 +69,7 @@ public class Security218Test implements Serializable {
         assertThat(e.getMessage(), containsString(MethodClosure.class.getName()));
     }
 
-    private static class EvilReturnValue extends MasterToSlaveCallable<Object, RuntimeException> {
+    private static class EvilReturnValue extends MasterToAgentCallable<Object, RuntimeException> {
         @Override
         public Object call() {
             return new MethodClosure("oops", "trim");

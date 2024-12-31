@@ -4,7 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import hudson.model.Computer;
 import hudson.model.Run;
-import hudson.slaves.SlaveComputer;
+import hudson.agents.AgentComputer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
@@ -25,8 +25,8 @@ public class ConsoleLogFilterTest {
      * Checks
      */
     @Issue("JENKINS-30777")
-    @Test public void decorateSlaveLog() throws Exception {
-        SlaveComputer c = r.createSlave().getComputer();
+    @Test public void decorateAgentLog() throws Exception {
+        AgentComputer c = r.createAgent().getComputer();
         c.connect(false).get();
         assertTrue(c.getLog().contains("[[" + c.getName() + "]] "));
     }

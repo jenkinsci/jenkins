@@ -62,9 +62,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.MasterToAgentFileCallable;
 import jenkins.model.ArtifactManager;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.AbstractFileSet;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
@@ -310,7 +310,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         return false;
     }
 
-    private static final class CollectFiles extends MasterToSlaveCallable<Collection<String>, IOException> {
+    private static final class CollectFiles extends MasterToAgentCallable<Collection<String>, IOException> {
         private static final long serialVersionUID = 1;
         private final VirtualFile root;
 
@@ -1151,7 +1151,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         }
     }
 
-    private static final class Scanner extends MasterToSlaveFileCallable<List<String>> {
+    private static final class Scanner extends MasterToAgentFileCallable<List<String>> {
         private final String includes, excludes;
         private final boolean useDefaultExcludes;
         private final String verificationRoot;
@@ -1187,7 +1187,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     }
 
-    private static final class Readable extends MasterToSlaveFileCallable<Boolean> {
+    private static final class Readable extends MasterToAgentFileCallable<Boolean> {
         @Override public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return f.canRead();
         }

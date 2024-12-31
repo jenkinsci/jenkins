@@ -52,7 +52,7 @@ import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.security.AccessControlled;
-import hudson.slaves.WorkspaceList;
+import hudson.agents.WorkspaceList;
 import hudson.tasks.ArtifactArchiver;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.DirScanner;
@@ -123,10 +123,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.MasterToAgentFileCallable;
 import jenkins.agents.ControllerToAgentFileCallable;
 import jenkins.model.Jenkins;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.MasterToAgentCallable;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
@@ -291,7 +291,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             // shouldn't need this replace, but better safe than sorry
             return base.remote + '/' + rel.replace('\\', '/');
         } else {
-            // need this replace, see Slave.getWorkspaceFor and AbstractItem.getFullName, nested jobs on Windows
+            // need this replace, see Agent.getWorkspaceFor and AbstractItem.getFullName, nested jobs on Windows
             // agents will always have a rel containing at least one '/' character. JENKINS-13649
             return base.remote + '\\' + rel.replace('/', '\\');
         }
@@ -556,7 +556,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private static class UnzipRemote extends MasterToSlaveFileCallable<Void> {
+    private static class UnzipRemote extends MasterToAgentFileCallable<Void> {
         private final RemoteInputStream in;
 
         UnzipRemote(RemoteInputStream in) {
@@ -572,7 +572,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
     }
 
-    private static class UnzipLocal extends MasterToSlaveFileCallable<Void> {
+    private static class UnzipLocal extends MasterToAgentFileCallable<Void> {
 
         private final FilePath filePath;
 
@@ -613,7 +613,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private static class UntarRemote extends MasterToSlaveFileCallable<Void> {
+    private static class UntarRemote extends MasterToAgentFileCallable<Void> {
         private final TarCompression compression;
         private final RemoteInputStream in;
         private final String name;
@@ -633,7 +633,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
     }
 
-    private static class UntarLocal extends MasterToSlaveFileCallable<Void> {
+    private static class UntarLocal extends MasterToAgentFileCallable<Void> {
         private final TarCompression compression;
         private final FilePath filePath;
 
@@ -664,7 +664,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         act(new UnzipFrom(in));
     }
 
-    private static class UnzipFrom extends MasterToSlaveFileCallable<Void> {
+    private static class UnzipFrom extends MasterToAgentFileCallable<Void> {
         private final InputStream in;
 
         UnzipFrom(InputStream in) {
@@ -735,7 +735,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return new FilePath(channel, act(new Absolutize()));
     }
 
-    private static class Absolutize extends MasterToSlaveFileCallable<String> {
+    private static class Absolutize extends MasterToAgentFileCallable<String> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -748,7 +748,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new HasSymlink(verificationRoot == null ? null : verificationRoot.remote, openOptions));
     }
 
-    private static class HasSymlink extends MasterToSlaveFileCallable<Boolean> {
+    private static class HasSymlink extends MasterToAgentFileCallable<Boolean> {
         private static final long serialVersionUID = 1L;
         private final String verificationRoot;
         private OpenOption[] openOptions;
@@ -799,7 +799,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         act(new SymlinkTo(target, listener));
     }
 
-    private static class SymlinkTo extends MasterToSlaveFileCallable<Void> {
+    private static class SymlinkTo extends MasterToAgentFileCallable<Void> {
         private final String target;
         private final TaskListener listener;
 
@@ -828,7 +828,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new ReadLink());
     }
 
-    private static class ReadLink extends MasterToSlaveFileCallable<String> {
+    private static class ReadLink extends MasterToAgentFileCallable<String> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -902,7 +902,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private static class UntarFrom extends MasterToSlaveFileCallable<Void> {
+    private static class UntarFrom extends MasterToAgentFileCallable<Void> {
         private final TarCompression compression;
         private final InputStream in;
 
@@ -1079,7 +1079,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     // this reads from arbitrary URL
-    private static final class Unpack extends MasterToSlaveFileCallable<Void> {
+    private static final class Unpack extends MasterToAgentFileCallable<Void> {
         private final URL archive;
 
         Unpack(URL archive) {
@@ -1345,7 +1345,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new ToURI());
     }
 
-    private static class ToURI extends MasterToSlaveFileCallable<URI> {
+    private static class ToURI extends MasterToAgentFileCallable<URI> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1389,7 +1389,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private static class Mkdirs extends MasterToSlaveFileCallable<Boolean> {
+    private static class Mkdirs extends MasterToAgentFileCallable<Boolean> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1416,7 +1416,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Deletes all suffixed directories that are separated by {@link WorkspaceList#COMBINATOR}, including all its contents recursively.
      */
-    private static class DeleteSuffixesRecursive extends MasterToSlaveFileCallable<Void> {
+    private static class DeleteSuffixesRecursive extends MasterToAgentFileCallable<Void> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1449,7 +1449,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         act(new DeleteRecursive());
     }
 
-    private static class DeleteRecursive extends MasterToSlaveFileCallable<Void> {
+    private static class DeleteRecursive extends MasterToAgentFileCallable<Void> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1466,7 +1466,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         act(new DeleteContents());
     }
 
-    private static class DeleteContents extends MasterToSlaveFileCallable<Void> {
+    private static class DeleteContents extends MasterToAgentFileCallable<Void> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1572,7 +1572,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private static class CreateTempFile extends MasterToSlaveFileCallable<String> {
+    private static class CreateTempFile extends MasterToAgentFileCallable<String> {
         private final String prefix;
         private final String suffix;
 
@@ -1640,7 +1640,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private static class CreateTextTempFile extends MasterToSlaveFileCallable<String> {
+    private static class CreateTextTempFile extends MasterToAgentFileCallable<String> {
         private static final long serialVersionUID = 1L;
         private final boolean inThisDirectory;
         private final String prefix;
@@ -1705,7 +1705,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private static class CreateTempDir extends MasterToSlaveFileCallable<String> {
+    private static class CreateTempDir extends MasterToAgentFileCallable<String> {
         private final String name;
 
         CreateTempDir(String name) {
@@ -1744,7 +1744,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return true;
     }
 
-    private static class Delete extends MasterToSlaveFileCallable<Void> {
+    private static class Delete extends MasterToAgentFileCallable<Void> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1761,7 +1761,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new Exists());
     }
 
-    private static class Exists extends MasterToSlaveFileCallable<Boolean> {
+    private static class Exists extends MasterToAgentFileCallable<Boolean> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1781,7 +1781,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new LastModified());
     }
 
-    private static class LastModified extends MasterToSlaveFileCallable<Long> {
+    private static class LastModified extends MasterToAgentFileCallable<Long> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1799,7 +1799,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         act(new Touch(timestamp));
     }
 
-    private static class Touch extends MasterToSlaveFileCallable<Void> {
+    private static class Touch extends MasterToAgentFileCallable<Void> {
         private final long timestamp;
 
         Touch(long timestamp) {
@@ -1827,7 +1827,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private static class SetLastModified extends MasterToSlaveFileCallable<String> {
+    private static class SetLastModified extends MasterToAgentFileCallable<String> {
         private final long timestamp;
 
         SetLastModified(long timestamp) {
@@ -1858,7 +1858,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new IsDirectory());
     }
 
-    private static class IsDirectory extends MasterToSlaveFileCallable<Boolean> {
+    private static class IsDirectory extends MasterToAgentFileCallable<Boolean> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1876,7 +1876,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new Length());
     }
 
-    private static class Length extends MasterToSlaveFileCallable<Long> {
+    private static class Length extends MasterToAgentFileCallable<Long> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1893,7 +1893,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new GetFreeDiskSpace());
     }
 
-    private static class GetFreeDiskSpace extends MasterToSlaveFileCallable<Long> {
+    private static class GetFreeDiskSpace extends MasterToAgentFileCallable<Long> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1910,7 +1910,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new GetTotalDiskSpace());
     }
 
-    private static class GetTotalDiskSpace extends MasterToSlaveFileCallable<Long> {
+    private static class GetTotalDiskSpace extends MasterToAgentFileCallable<Long> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1927,7 +1927,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new GetUsableDiskSpace());
     }
 
-    private static class GetUsableDiskSpace extends MasterToSlaveFileCallable<Long> {
+    private static class GetUsableDiskSpace extends MasterToAgentFileCallable<Long> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -1961,7 +1961,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         act(new Chmod(mask));
     }
 
-    private static class Chmod extends MasterToSlaveFileCallable<Void> {
+    private static class Chmod extends MasterToAgentFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         private final int mask;
 
@@ -2003,7 +2003,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new Mode());
     }
 
-    private static class Mode extends MasterToSlaveFileCallable<Integer> {
+    private static class Mode extends MasterToAgentFileCallable<Integer> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -2075,7 +2075,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new ListFilter(filter), (filter != null ? filter : this).getClass().getClassLoader());
     }
 
-    private static class ListFilter extends MasterToSlaveFileCallable<List<FilePath>> {
+    private static class ListFilter extends MasterToAgentFileCallable<List<FilePath>> {
         private final FileFilter filter;
 
         ListFilter(FileFilter filter) {
@@ -2145,7 +2145,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new ListGlob(includes, excludes, defaultExcludes));
     }
 
-    private static class ListGlob extends MasterToSlaveFileCallable<FilePath[]> {
+    private static class ListGlob extends MasterToAgentFileCallable<FilePath[]> {
         private final String includes;
         private final String excludes;
         private final boolean defaultExcludes;
@@ -2359,7 +2359,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return false;
     }
 
-    private static class Read extends MasterToSlaveFileCallable<Void> {
+    private static class Read extends MasterToAgentFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         private final Pipe p;
         private String verificationRoot;
@@ -2427,7 +2427,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return new java.util.zip.GZIPInputStream(p.getIn());
     }
 
-    private static class OffsetPipeSecureFileCallable extends MasterToSlaveFileCallable<Void> {
+    private static class OffsetPipeSecureFileCallable extends MasterToAgentFileCallable<Void> {
         private static final long serialVersionUID = 1L;
 
         private Pipe p;
@@ -2461,7 +2461,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new ReadToString());
     }
 
-    private static class ReadToString extends MasterToSlaveFileCallable<String> {
+    private static class ReadToString extends MasterToAgentFileCallable<String> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -2492,7 +2492,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new WritePipe());
     }
 
-    private static class WritePipe extends MasterToSlaveFileCallable<OutputStream> {
+    private static class WritePipe extends MasterToAgentFileCallable<OutputStream> {
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -2514,7 +2514,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         act(new Write(encoding, content));
     }
 
-    private static class Write extends MasterToSlaveFileCallable<Void> {
+    private static class Write extends MasterToAgentFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         private final String encoding;
         private final String content;
@@ -2543,7 +2543,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new Digest());
     }
 
-    private static class Digest extends MasterToSlaveFileCallable<String> {
+    private static class Digest extends MasterToAgentFileCallable<String> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -2563,7 +2563,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         act(new RenameTo(target));
     }
 
-    private static class RenameTo extends MasterToSlaveFileCallable<Void> {
+    private static class RenameTo extends MasterToAgentFileCallable<Void> {
         private final FilePath target;
 
         RenameTo(FilePath target) {
@@ -2591,7 +2591,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         act(new MoveAllChildrenTo(target));
     }
 
-    private static class MoveAllChildrenTo extends MasterToSlaveFileCallable<Void> {
+    private static class MoveAllChildrenTo extends MasterToAgentFileCallable<Void> {
         private final FilePath target;
 
         MoveAllChildrenTo(FilePath target) {
@@ -2650,7 +2650,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         target.setLastModifiedIfPossible(lastModified());
     }
 
-    private static class CopyToWithPermission extends MasterToSlaveFileCallable<Void> {
+    private static class CopyToWithPermission extends MasterToAgentFileCallable<Void> {
         private final FilePath target;
 
         CopyToWithPermission(FilePath target) {
@@ -2680,7 +2680,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         syncIO();
     }
 
-    private static class CopyTo extends MasterToSlaveFileCallable<Void> {
+    private static class CopyTo extends MasterToAgentFileCallable<Void> {
         private static final long serialVersionUID = 4088559042349254141L;
         private final OutputStream out;
 
@@ -2862,7 +2862,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 ;
     }
 
-    private static class CopyRecursiveLocal extends MasterToSlaveFileCallable<Integer> {
+    private static class CopyRecursiveLocal extends MasterToAgentFileCallable<Integer> {
         private final FilePath target;
         private final DirScanner scanner;
 
@@ -2939,7 +2939,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private static class ReadFromTar extends MasterToSlaveFileCallable<Void> {
+    private static class ReadFromTar extends MasterToAgentFileCallable<Void> {
         private final Pipe pipe;
         private final String description;
         private final TarCompression compression;
@@ -2965,7 +2965,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private static class WriteToTar extends MasterToSlaveFileCallable<Integer> {
+    private static class WriteToTar extends MasterToAgentFileCallable<Integer> {
         private final DirScanner scanner;
         private final Pipe pipe;
         private final TarCompression compression;
@@ -2986,7 +2986,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    private static class CopyRecursiveRemoteToLocal extends MasterToSlaveFileCallable<Integer> {
+    private static class CopyRecursiveRemoteToLocal extends MasterToAgentFileCallable<Integer> {
         private static final long serialVersionUID = 1L;
         private final Pipe pipe;
         private final DirScanner scanner;
@@ -3099,7 +3099,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return new RemoteLauncher(listener, channel, channel.call(new IsUnix()));
     }
 
-    private static final class IsUnix extends MasterToSlaveCallable<Boolean, IOException> {
+    private static final class IsUnix extends MasterToAgentCallable<Boolean, IOException> {
         @Override
         @NonNull
         public Boolean call() throws IOException {
@@ -3186,7 +3186,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new ValidateAntFileMask(fileMasks, caseSensitive, bound));
     }
 
-    private static class ValidateAntFileMask extends MasterToSlaveFileCallable<String> {
+    private static class ValidateAntFileMask extends MasterToAgentFileCallable<String> {
         private final String fileMasks;
         private final boolean caseSensitive;
         private final int bound;
@@ -3638,7 +3638,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return ch.call(new GetHomeDirectory());
     }
 
-    private static class GetHomeDirectory extends MasterToSlaveCallable<FilePath, IOException> {
+    private static class GetHomeDirectory extends MasterToAgentCallable<FilePath, IOException> {
         @Override
         public FilePath call() throws IOException {
             return new FilePath(new File(System.getProperty("user.home")));
@@ -3746,7 +3746,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new IsDescendant(potentialChildRelativePath));
     }
 
-    private static class IsDescendant extends MasterToSlaveFileCallable<Boolean> {
+    private static class IsDescendant extends MasterToAgentFileCallable<Boolean> {
         private static final long serialVersionUID = 1L;
         private String potentialChildRelativePath;
 

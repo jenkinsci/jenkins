@@ -10,7 +10,7 @@ import hudson.model.Computer;
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
-import hudson.slaves.Cloud;
+import hudson.agents.Cloud;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.net.URI;

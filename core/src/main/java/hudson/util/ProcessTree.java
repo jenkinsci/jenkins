@@ -71,7 +71,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.agents.AgentComputerUtil;
-import jenkins.security.SlaveToMasterCallable;
+import jenkins.security.AgentToMasterCallable;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.jvnet.winp.WinProcess;
@@ -206,7 +206,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         return killers;
     }
 
-    private static class ListAll extends SlaveToMasterCallable<List<ProcessKiller>, IOException> {
+    private static class ListAll extends AgentToMasterCallable<List<ProcessKiller>, IOException> {
         @Override
         public List<ProcessKiller> call() throws IOException {
             return new ArrayList<>(ProcessKiller.all());
@@ -364,7 +364,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             return new SerializedProcess(pid);
         }
 
-        private class CheckVetoes extends SlaveToMasterCallable<String, IOException> {
+        private class CheckVetoes extends AgentToMasterCallable<String, IOException> {
             private IOSProcess process;
 
             CheckVetoes(IOSProcess processToCheck) {
@@ -480,7 +480,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         return DEFAULT;
     }
 
-    private static class DoVetoersExist extends SlaveToMasterCallable<Boolean, IOException> {
+    private static class DoVetoersExist extends AgentToMasterCallable<Boolean, IOException> {
         @Override
         public Boolean call() throws IOException {
             return !ProcessKillingVeto.all().isEmpty();

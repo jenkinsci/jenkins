@@ -40,7 +40,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
 import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -96,7 +96,7 @@ public class LauncherTest {
     public void overwriteSystemEnvVars() throws Exception {
         Map<String, String> env = new HashMap<>();
         env.put("jenkins_19926", "original value");
-        Slave slave = rule.createSlave(new EnvVars(env));
+        Agent agent = rule.createAgent(new EnvVars(env));
 
         FreeStyleProject project = rule.createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("jenkins_19926", "${jenkins_19926} and new value")));
@@ -105,7 +105,7 @@ public class LauncherTest {
                 : new Shell("echo ${jenkins_19926}")
         ;
         project.getBuildersList().add(script);
-        project.setAssignedNode(slave.getComputer().getNode());
+        project.setAssignedNode(agent.getComputer().getNode());
 
         FreeStyleBuild build = rule.buildAndAssertSuccess(project);
 
@@ -114,7 +114,7 @@ public class LauncherTest {
 
     @Issue("JENKINS-23027")
     @Test public void quiet() throws Exception {
-        Slave s = rule.createSlave();
+        Agent s = rule.createAgent();
         boolean windows = Functions.isWindows();
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(windows ? new BatchFile("echo printed text") : new Shell("echo printed text"));
@@ -188,7 +188,7 @@ public class LauncherTest {
     @Test public void remotable() throws Exception {
         try (var baos = new ByteArrayOutputStream()) {
             var listener = new RemotableBuildListener(new StreamTaskListener(baos, StandardCharsets.UTF_8));
-            Launcher.ProcStarter ps = rule.createOnlineSlave().createLauncher(listener).launch();
+            Launcher.ProcStarter ps = rule.createOnlineAgent().createLauncher(listener).launch();
             if (Functions.isWindows()) {
                 ps.cmds("cmd", "/c", "echo", "hello");
             } else {
@@ -196,8 +196,8 @@ public class LauncherTest {
             }
             assertEquals(0, ps.stdout(listener).join());
             assertThat(baos.toString(StandardCharsets.UTF_8).replace("\r\n", "\n"),
-                containsString("[master → slave0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
-                               "[master → slave0] hello"));
+                containsString("[master → agent0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
+                               "[master → agent0] hello"));
         }
     }
 
@@ -241,7 +241,7 @@ public class LauncherTest {
     @Issue("JENKINS-52729")
     @Test public void multipleStdioCalls() throws Exception {
         Node master = rule.jenkins;
-        Node agent = rule.createOnlineSlave();
+        Node agent = rule.createOnlineAgent();
         for (Node node : new Node[] {master, agent}) {
             assertMultipleStdioCalls("first TaskListener then OutputStream", node, false, (ps, os1, os2, os2Listener) -> {
                 ps.stdout(os2Listener).stdout(os1);

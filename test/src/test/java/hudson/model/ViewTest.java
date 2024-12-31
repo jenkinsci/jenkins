@@ -54,7 +54,7 @@ import hudson.model.Node.Mode;
 import hudson.model.Queue.Task;
 import hudson.security.ACL;
 import hudson.security.AccessDeniedException3;
-import hudson.slaves.DumbSlave;
+import hudson.agents.DumbAgent;
 import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
 import hudson.views.ViewsTabBar;
@@ -309,18 +309,18 @@ public class ViewTest {
         view2.filterQueue = true;
 
         FreeStyleProject inView1 = j.createFreeStyleProject("in-view1");
-        inView1.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
+        inView1.setAssignedLabel(j.jenkins.getLabelAtom("without-any-agent"));
         view1.add(inView1);
 
         MatrixProject inView2 = j.jenkins.createProject(MatrixProject.class, "in-view2");
-        inView2.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
+        inView2.setAssignedLabel(j.jenkins.getLabelAtom("without-any-agent"));
         view2.add(inView2);
 
         FreeStyleProject notInView = j.createFreeStyleProject("not-in-view");
-        notInView.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
+        notInView.setAssignedLabel(j.jenkins.getLabelAtom("without-any-agent"));
 
         FreeStyleProject inBothViews = j.createFreeStyleProject("in-both-views");
-        inBothViews.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
+        inBothViews.setAssignedLabel(j.jenkins.getLabelAtom("without-any-agent"));
         view1.add(inBothViews);
         view2.add(inBothViews);
 
@@ -370,11 +370,11 @@ public class ViewTest {
         view2.filterExecutors = true;
         view3.filterExecutors = true;
 
-        Slave slave0 = j.createOnlineSlave(j.jenkins.getLabel("label0"));
-        Slave slave1 = j.createOnlineSlave(j.jenkins.getLabel("label1"));
-        Slave slave2 = j.createOnlineSlave(j.jenkins.getLabel("label2"));
-        Slave slave3 = j.createOnlineSlave(j.jenkins.getLabel("label0"));
-        Slave slave4 = j.createOnlineSlave(j.jenkins.getLabel("label4"));
+        Agent agent0 = j.createOnlineAgent(j.jenkins.getLabel("label0"));
+        Agent agent1 = j.createOnlineAgent(j.jenkins.getLabel("label1"));
+        Agent agent2 = j.createOnlineAgent(j.jenkins.getLabel("label2"));
+        Agent agent3 = j.createOnlineAgent(j.jenkins.getLabel("label0"));
+        Agent agent4 = j.createOnlineAgent(j.jenkins.getLabel("label4"));
 
         FreeStyleProject freestyleJob = j.createFreeStyleProject("free");
         view1.add(freestyleJob);
@@ -395,15 +395,15 @@ public class ViewTest {
         foreignJob.setAssignedLabel(j.jenkins.getLabel("label0||label1"));
 
         // contains all agents having labels associated with freestyleJob or matrixJob
-        assertContainsNodes(view1, slave0, slave1, slave2, slave3);
-        assertNotContainsNodes(view1, slave4);
+        assertContainsNodes(view1, agent0, agent1, agent2, agent3);
+        assertNotContainsNodes(view1, agent4);
 
         // contains all agents having labels associated with foreignJob
-        assertContainsNodes(view2, slave0, slave1, slave3);
-        assertNotContainsNodes(view2, slave2, slave4);
+        assertContainsNodes(view2, agent0, agent1, agent3);
+        assertNotContainsNodes(view2, agent2, agent4);
 
-        // contains all slaves as it contains noLabelJob that can run everywhere
-        assertContainsNodes(view3, slave0, slave1, slave2, slave3, slave4);
+        // contains all agents as it contains noLabelJob that can run everywhere
+        assertContainsNodes(view3, agent0, agent1, agent2, agent3, agent4);
     }
 
     @Test
@@ -412,35 +412,35 @@ public class ViewTest {
         ListView view = listView("aView");
         view.filterExecutors = true;
 
-        DumbSlave dedicatedSlave = j.createOnlineSlave();
-        dedicatedSlave.setMode(Mode.EXCLUSIVE);
+        DumbAgent dedicatedAgent = j.createOnlineAgent();
+        dedicatedAgent.setMode(Mode.EXCLUSIVE);
         view.add(j.createFreeStyleProject());
 
         FreeStyleProject tiedJob = j.createFreeStyleProject();
-        tiedJob.setAssignedNode(dedicatedSlave);
+        tiedJob.setAssignedNode(dedicatedAgent);
         view.add(tiedJob);
 
-        DumbSlave notIncludedSlave = j.createOnlineSlave();
-        notIncludedSlave.setMode(Mode.EXCLUSIVE);
+        DumbAgent notIncludedAgent = j.createOnlineAgent();
+        notIncludedAgent.setMode(Mode.EXCLUSIVE);
 
-        assertContainsNodes(view, j.jenkins, dedicatedSlave);
-        assertNotContainsNodes(view, notIncludedSlave);
+        assertContainsNodes(view, j.jenkins, dedicatedAgent);
+        assertNotContainsNodes(view, notIncludedAgent);
     }
 
-    private void assertContainsNodes(View view, Node... slaves) {
-        for (Node slave : slaves) {
+    private void assertContainsNodes(View view, Node... agents) {
+        for (Node agent : agents) {
             assertTrue(
-                    "Filtered executors for " + view.getDisplayName() + " should contain " + slave.getDisplayName(),
-                    view.getComputers().contains(slave.toComputer())
+                    "Filtered executors for " + view.getDisplayName() + " should contain " + agent.getDisplayName(),
+                    view.getComputers().contains(agent.toComputer())
             );
         }
     }
 
-    private void assertNotContainsNodes(View view, Node... slaves) {
-        for (Node slave : slaves) {
+    private void assertNotContainsNodes(View view, Node... agents) {
+        for (Node agent : agents) {
             assertFalse(
-                    "Filtered executors for " + view.getDisplayName() + " should not contain " + slave.getDisplayName(),
-                    view.getComputers().contains(slave.toComputer())
+                    "Filtered executors for " + view.getDisplayName() + " should not contain " + agent.getDisplayName(),
+                    view.getComputers().contains(agent.toComputer())
             );
         }
     }

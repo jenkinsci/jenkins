@@ -37,14 +37,14 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
             }
 
             f.section(title: _("Agents")) {
-                f.entry(title: _("TCP port for inbound agents"), field: "slaveAgentPort") {
-                    if (my.slaveAgentPortEnforced) {
-                        if (my.slaveAgentPort == -1) {
-                            text(_("slaveAgentPortEnforcedDisabled"))
-                        } else if (my.slaveAgentPort == 0) {
-                            text(_("slaveAgentPortEnforcedRandom"))
+                f.entry(title: _("TCP port for inbound agents"), field: "AgentPort") {
+                    if (my.AgentPortEnforced) {
+                        if (my.AgentPort == -1) {
+                            text(_("AgentPortEnforcedDisabled"))
+                        } else if (my.AgentPort == 0) {
+                            text(_("AgentPortEnforcedRandom"))
                         } else {
-                            text(_("slaveAgentPortEnforced", my.slaveAgentPort))
+                            text(_("AgentPortEnforced", my.AgentPort))
                         }
                     } else {
                         f.serverTcpPort()
