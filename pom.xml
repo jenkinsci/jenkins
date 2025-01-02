@@ -281,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.21.0</version>
+              <version>10.21.1</version>
             </dependency>
           </dependencies>
           <executions>
@@ -517,6 +517,18 @@ THE SOFTWARE.
                 <configuration>
                   <arguments>yarn lint:ci</arguments>
                   <skip>${yarn.lint.skip}</skip>
+                </configuration>
+              </execution>
+              <execution>
+                <id>prettier</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>yarn exec prettier --check .</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                  <testFailureIgnore>false</testFailureIgnore>
                 </configuration>
               </execution>
             </executions>
