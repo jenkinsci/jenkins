@@ -194,7 +194,8 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * encoding is ASCII compatible.
      */
     public void encodeTo(Writer out) throws IOException {
-        out.write(new String(encodeToBytes().toByteArray(), StandardCharsets.UTF_8));
+        String writeUTF8 = new String(encodeToBytes().toByteArray(), StandardCharsets.UTF_8);
+        out.write(writeUTF8);
     }
 
     private ByteArrayOutputStream encodeToBytes() throws IOException {
