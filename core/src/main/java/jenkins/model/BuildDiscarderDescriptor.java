@@ -2,6 +2,7 @@ package jenkins.model;
 
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
+import hudson.security.Permission;
 
 /**
  * {@link Descriptor} for {@link BuildDiscarder}.
@@ -22,4 +23,10 @@ public abstract class BuildDiscarderDescriptor extends Descriptor<BuildDiscarder
     public static DescriptorExtensionList<BuildDiscarder, BuildDiscarderDescriptor> all() {
         return Jenkins.get().getDescriptorList(BuildDiscarder.class);
     }
+
+    @Override
+    public Permission getRequiredGlobalConfigPagePermission() {
+        return Jenkins.MANAGE;
+    }
+
 }
