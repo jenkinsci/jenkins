@@ -10,7 +10,9 @@ Behaviour.specify(
     let onFinishEvent = holder.getAttribute("data-on-finish-event");
     let errorMessage = holder.getAttribute("data-error-message");
 
-    var scroller = new AutoScroller(holder.closest(".progressive-text-container") || document.body);
+    var scroller = new AutoScroller(
+      holder.closest(".progressive-text-container") || document.body,
+    );
     /*
   fetches the latest update from the server
   @param e
