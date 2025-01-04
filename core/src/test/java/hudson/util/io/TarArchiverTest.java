@@ -129,7 +129,7 @@ public class TarArchiverTest {
         }
     }
 
-    @Ignore("TODO fails to add empty directories to archive")
+    //@Ignore("TODO fails to add empty directories to archive")
     @Issue("JENKINS-73837")
     @Test
     public void emptyDirectory() throws Exception {

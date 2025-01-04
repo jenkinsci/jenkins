@@ -146,6 +146,12 @@ public abstract class DirScanner implements Serializable {
                     File file = new File(dir, f);
                     scanSingle(file, f, visitor);
                 }
+                for (String d : ds.getIncludedDirectories()) {
+                    if (!d.isEmpty()) {
+                        File directory = new File(dir, d);
+                        scanSingle(directory, d, visitor);
+                    }
+                }
             }
         }
 
