@@ -54,6 +54,7 @@ import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.PasswordParameterDefinition;
+import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.model.TimeZoneProperty;
@@ -1991,6 +1992,17 @@ public class Functions {
     public static @CheckForNull String getConsoleUrl(WithConsoleUrl withConsoleUrl) {
         String consoleUrl = withConsoleUrl.getConsoleUrl();
         return consoleUrl != null ? Stapler.getCurrentRequest().getContextPath() + '/' + consoleUrl : null;
+    }
+
+    public static @CheckForNull ConsoleUrlProvider getConsoleProvider(Queue.Executable executable) {
+        if (executable == null) {
+            return null;
+        } else if (executable instanceof Run) {
+            return ConsoleUrlProvider.getProvider((Run<?, ?>) executable);
+        } else {
+            // Handles cases such as PlaceholderExecutable for Pipeline node steps.
+            return getConsoleProvider(executable.getParentExecutable());
+        }
     }
 
     /**

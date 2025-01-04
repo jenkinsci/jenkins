@@ -2030,10 +2030,14 @@ function AutoScroller(scrollContainer) {
     scrollToBottom: function () {
       var scrollDiv = this.scrollContainer;
       var currentHeight = this.getCurrentHeight();
-      if (document.documentElement) {
-        document.documentElement.scrollTop = currentHeight;
+
+      if (scrollDiv === document.body) {
+        window.scrollTo({
+          top: currentHeight,
+        });
+      } else {
+        scrollDiv.scrollTop = currentHeight;
       }
-      scrollDiv.scrollTop = currentHeight;
     },
   };
 }

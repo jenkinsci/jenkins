@@ -43,6 +43,11 @@ THE SOFTWARE.
         <t:editableDescription permission="${it.UPDATE}" hideButton="true"/>
       </div>
 
+      <l:userExperimentalFlag var="showConsoleWidget" flagClassName="jenkins.model.experimentalflags.ConsoleWidgetUserExperimentalFlag" />
+      <j:if test="${showConsoleWidget}">
+        <st:include page="console.jelly" from="${h.getConsoleProvider(it)}" optional="true" />
+      </j:if>
+
       <div style="float:right; z-index: 1; position:relative; margin-left: 1em">
         <div style="margin-top:1em">
           ${%startedAgo(it.timestampString)}
