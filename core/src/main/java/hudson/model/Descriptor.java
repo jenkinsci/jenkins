@@ -24,7 +24,6 @@
 
 package hudson.model;
 
-import static hudson.util.QuotedStringTokenizer.quote;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -474,6 +473,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
         Method method = ReflectionUtils.getPublicMethodNamed(getClass(), methodName);
         if (method == null)
             return;    // no auto-completion
+
+        // build query parameter line by figuring out what should be submitted
+        List<String> depends = buildFillDependencies(method, new ArrayList<>());
+        if (!depends.isEmpty()) {
+            attributes.put("fillDependsOn", String.join(" ", depends));
+        }
 
         attributes.put("autoCompleteUrl", String.format("%s/%s/autoComplete%s", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
     }
@@ -1306,7 +1311,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
         @Override
         public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
             if (FormApply.isApply(req)) {
-                FormApply.applyResponse("notificationBar.show(" + quote(getMessage()) + ",notificationBar.ERROR)")
+                FormApply.showNotification(getMessage(), FormApply.NotificationType.ERROR)
                         .generateResponse(req, rsp, node);
             } else {
                 // for now, we can't really use the field name that caused the problem.

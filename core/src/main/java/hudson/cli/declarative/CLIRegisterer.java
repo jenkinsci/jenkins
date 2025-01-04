@@ -131,7 +131,6 @@ public class CLIRegisterer extends ExtensionFinder {
 
                         private CmdLineParser bindMethod(List<MethodBinder> binders) {
 
-                            registerOptionHandlers();
                             ParserProperties properties = ParserProperties.defaults().withAtSyntax(ALLOW_AT_SYNTAX);
                             CmdLineParser parser = new CmdLineParser(null, properties);
 

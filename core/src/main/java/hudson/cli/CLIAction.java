@@ -119,11 +119,25 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
     }
 
     /**
+     * Unlike {@link HttpResponses#errorWithoutStack} this sends the message in a header rather than the body.
+     * (Currently the WebSocket CLI is unable to process the body in an error message.)
+     */
+    private static HttpResponse statusWithExplanation(int code, String errorMessage) {
+        return new HttpResponse() {
+            @Override
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) {
+                rsp.setStatus(code);
+                rsp.setHeader("X-CLI-Error", errorMessage);
+            }
+        };
+    }
+
+    /**
      * WebSocket endpoint.
      */
     public HttpResponse doWs(StaplerRequest2 req) {
         if (!WebSockets.isSupported()) {
-            return HttpResponses.notFound();
+            return statusWithExplanation(HttpServletResponse.SC_NOT_FOUND, "WebSocket is not supported in this servlet container (try the built-in Jetty instead)");
         }
         if (ALLOW_WEBSOCKET == null) {
             final String actualOrigin = req.getHeader("Origin");
@@ -141,10 +155,10 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
             if (actualOrigin == null || !actualOrigin.equals(expectedOrigin)) {
                 LOGGER.log(Level.FINE, () -> "Rejecting origin: " + actualOrigin + "; expected was from request: " + expectedOrigin);
-                return HttpResponses.forbidden();
+                return statusWithExplanation(HttpServletResponse.SC_FORBIDDEN, "Unexpected request origin (check your reverse proxy settings)");
             }
         } else if (!ALLOW_WEBSOCKET) {
-            return HttpResponses.forbidden();
+            return statusWithExplanation(HttpServletResponse.SC_FORBIDDEN, "WebSocket support for CLI disabled for this controller");
         }
         Authentication authentication = Jenkins.getAuthentication2();
         return WebSockets.upgrade(new WebSocketSession() {

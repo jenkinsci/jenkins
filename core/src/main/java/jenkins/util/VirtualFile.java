@@ -60,6 +60,8 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
 import jenkins.security.MasterToSlaveCallable;
@@ -68,8 +70,6 @@ import org.apache.tools.ant.types.AbstractFileSet;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.apache.tools.ant.types.selectors.TokenizedPath;
 import org.apache.tools.ant.types.selectors.TokenizedPattern;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -374,8 +374,8 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         }
 
         Collection<String> files = list(includes, excludes, useDefaultExcludes, openOptions);
-        try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
-            zos.setEncoding(Charset.defaultCharset().displayName()); // TODO JENKINS-20663 make this overridable via query parameter
+        // TODO JENKINS-20663 make encoding overridable via query parameter
+        try (ZipOutputStream zos = new ZipOutputStream(outputStream, Charset.defaultCharset())) {
 
             for (String relativePath : files) {
                 VirtualFile virtualFile = this.child(relativePath);

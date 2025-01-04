@@ -31,9 +31,9 @@ $semantics: (
 :root,
 .app-theme-picker__picker[data-theme="none"] {
   // Font related properties
-  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu,
-    cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen,
+    ubuntu, cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-family-mono: ui-monospace, sfmono-regular, sf mono, jetbrainsmono,
     consolas, monospace;
   --font-size-base: 1rem; // 16px
@@ -198,6 +198,19 @@ $semantics: (
   --link-text-decoration--hover: underline;
   --link-text-decoration--active: underline;
   --link-font-weight: 450;
+
+  // Command Palette
+  --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5)
+    saturate(1.4) blur(20px);
+  --command-palette-inset-shadow: inset 0 0 2px 2px rgba(255, 255, 255, 0.1);
+
+  ::backdrop {
+    --command-palette-backdrop-background: radial-gradient(
+      farthest-corner at 50% 30vh,
+      rgba(0, 0, 0, 0.3),
+      rgba(0, 0, 0, 0.1)
+    );
+  }
 
   // Tooltips
   --tooltip-backdrop-filter: saturate(2) blur(20px);

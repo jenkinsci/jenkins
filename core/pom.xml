@@ -287,17 +287,6 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-      <exclusions>
-        <!-- Only needed for Pack200UnpackerAdapter, which we do not use -->
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
       <artifactId>commons-fileupload2-core</artifactId>
     </dependency>
     <dependency>

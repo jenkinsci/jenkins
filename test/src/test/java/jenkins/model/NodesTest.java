@@ -25,7 +25,10 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -47,6 +50,11 @@ import hudson.model.listeners.SaveableListener;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -55,7 +63,6 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 public class NodesTest {
-
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
@@ -239,4 +246,82 @@ public class NodesTest {
         }
     }
 
+    @Test
+    public void listenersCalledOnSetNodes() throws URISyntaxException, IOException, Descriptor.FormException {
+        var agentA = new DumbSlave("nodeA", "temp", r.createComputerLauncher(null));
+        var agentB = new DumbSlave("nodeB", "temp", r.createComputerLauncher(null));
+        var agentA2 = new DumbSlave("nodeA", "temp2", r.createComputerLauncher(null));
+        Jenkins.get().setNodes(List.of(agentA, agentB));
+        assertThat(CheckSetNodes.created, containsInAnyOrder("nodeA", "nodeB"));
+        assertThat(CheckSetNodes.updated, empty());
+        assertThat(CheckSetNodes.deleted, empty());
+        Jenkins.get().setNodes(List.of(agentA2));
+        assertThat(CheckSetNodes.created, containsInAnyOrder("nodeA", "nodeB"));
+        assertThat(CheckSetNodes.updated, contains(new DumbSlaveNameAndRemoteFSMatcher(new DumbSlavePair(agentA, agentA2))));
+        assertThat(CheckSetNodes.deleted, contains("nodeB"));
+        Jenkins.get().setNodes(List.of());
+        assertThat(CheckSetNodes.created, containsInAnyOrder("nodeA", "nodeB"));
+        assertThat(CheckSetNodes.updated, contains(new DumbSlaveNameAndRemoteFSMatcher(new DumbSlavePair(agentA, agentA2))));
+        assertThat(CheckSetNodes.deleted, containsInAnyOrder("nodeA", "nodeB"));
+    }
+
+    private record DumbSlavePair(DumbSlave oldNode, DumbSlave newNode) {
+        @Override
+        public String toString() {
+            return "NodePair{" +
+                    "oldNode=" + toStringNode(oldNode) +
+                    ", newNode=" + toStringNode(newNode) +
+                    '}';
+        }
+
+        private String toStringNode(DumbSlave node) {
+            return "(name=" + node.getNodeName() + ",remoteFS=" + node.getRemoteFS() + ")";
+        }
+    }
+
+    @TestExtension("listenersCalledOnSetNodes")
+    public static class CheckSetNodes extends NodeListener {
+        private static final List<String> created = new ArrayList<>();
+        private static final List<DumbSlavePair> updated = new ArrayList<>();
+        private static final List<String> deleted = new ArrayList<>();
+
+        @Override
+        protected void onCreated(@NonNull Node node) {
+            node.getRootDir();
+            created.add(node.getNodeName());
+        }
+
+        @Override
+        protected void onUpdated(@NonNull Node oldOne, @NonNull Node newOne) {
+            if (oldOne instanceof DumbSlave oldDumbSlave && newOne instanceof DumbSlave newDumbSlave) {
+                updated.add(new DumbSlavePair(oldDumbSlave, newDumbSlave));
+            }
+        }
+
+        @Override
+        protected void onDeleted(@NonNull Node node) {
+            deleted.add(node.getNodeName());
+        }
+    }
+
+    private static class DumbSlaveNameAndRemoteFSMatcher extends TypeSafeMatcher<DumbSlavePair> {
+        private final DumbSlavePair expected;
+
+        public DumbSlaveNameAndRemoteFSMatcher(DumbSlavePair expected) {
+            this.expected = expected;
+        }
+
+        @Override
+        protected boolean matchesSafely(DumbSlavePair dumbSlavePair) {
+            return expected.oldNode.getNodeName().equals(dumbSlavePair.oldNode.getNodeName())
+                    && expected.oldNode.getRemoteFS().equals(dumbSlavePair.oldNode.getRemoteFS())
+                    && expected.newNode.getNodeName().equals(dumbSlavePair.newNode.getNodeName())
+                    && expected.newNode.getRemoteFS().equals(dumbSlavePair.newNode.getRemoteFS());
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("NodePair(").appendValue(expected).appendText(")");
+        }
+    }
 }
