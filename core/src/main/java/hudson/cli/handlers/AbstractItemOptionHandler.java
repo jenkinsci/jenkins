@@ -24,18 +24,18 @@
 
 package hudson.cli.handlers;
 
+import hudson.cli.declarative.OptionHandlerExtension;
 import hudson.model.AbstractItem;
-import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Setter;
 
 /**
  * Refers to an {@link AbstractItem} by name.
  * @since 1.538
  */
-@MetaInfServices(OptionHandler.class) public class AbstractItemOptionHandler extends GenericItemOptionHandler<AbstractItem> {
+@OptionHandlerExtension
+public class AbstractItemOptionHandler extends GenericItemOptionHandler<AbstractItem> {
 
     public AbstractItemOptionHandler(CmdLineParser parser, OptionDef option, Setter<AbstractItem> setter) {
         super(parser, option, setter);
