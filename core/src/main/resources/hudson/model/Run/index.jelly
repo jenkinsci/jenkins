@@ -45,7 +45,7 @@ THE SOFTWARE.
 
       <l:userExperimentalFlag var="showConsoleWidget" flagClassName="jenkins.model.experimentalflags.ConsoleWidgetUserExperimentalFlag" />
       <j:if test="${showConsoleWidget}">
-        <st:include page="console.jelly" from="${h.getConsoleProvider(it)}" optional="true" />
+        <st:include page="console.jelly" from="${h.getConsoleProviderFor(it)}" optional="true" />
       </j:if>
 
       <div style="float:right; z-index: 1; position:relative; margin-left: 1em">
