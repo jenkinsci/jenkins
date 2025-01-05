@@ -46,7 +46,7 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <mina-sshd-api.version>2.14.0-136.v4d2b_0853615e</mina-sshd-api.version>
+    <mina-sshd-api.version>2.14.0-138.v6341ee58e1df</mina-sshd-api.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
     <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
 
@@ -365,7 +365,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>5.5.1-4</version>
+                  <version>5.5.1-5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -432,7 +432,7 @@ THE SOFTWARE.
                   <!-- detached after 2.16 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>bouncycastle-api</artifactId>
-                  <version>2.30.1.78.1-248.ve27176eb_46cb_</version>
+                  <version>2.30.1.79-254.vfdb_814e7791e</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
