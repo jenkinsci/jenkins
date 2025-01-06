@@ -53,11 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.apache.commons.discovery.ResourceClassIterator;
-import org.apache.commons.discovery.ResourceNameIterator;
-import org.apache.commons.discovery.resource.ClassLoaders;
-import org.apache.commons.discovery.resource.classes.DiscoverClasses;
-import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
@@ -572,20 +567,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
-            }
-
-            // Register OptionHandlers through META-INF/services and Commons Discovery
-            ClassLoaders cls = new ClassLoaders();
-            cls.put(j.getPluginManager().uberClassLoader);
-            ResourceNameIterator servicesIter =
-                new DiscoverServiceNames(cls).findResourceNames(OptionHandler.class.getName());
-            final ResourceClassIterator itr =
-                new DiscoverClasses(cls).findResourceClasses(servicesIter);
-
-            while (itr.hasNext()) {
-                Class h = itr.nextResourceClass().loadClass();
-                Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
-                CmdLineParser.registerHandler(c, h);
             }
         }
     }
