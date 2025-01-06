@@ -109,3 +109,57 @@
     height: 2rem !important;
   }
 }
+
+.bottom-sticker-inner {
+  position: relative;
+  padding: 1em var(--section-padding);
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--background);
+    opacity: 0;
+    z-index: -1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -30px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(#556, 0.075) 110%);
+    max-width: 100%;
+    height: 30px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    mask-image: linear-gradient(
+                    to right,
+                    transparent,
+                    white var(--section-padding),
+                    white calc(100% - var(--section-padding)),
+                    transparent
+    );
+    pointer-events: none;
+  }
+
+  &--stuck {
+    .bottom-sticker-inner {
+      backdrop-filter: blur(15px);
+
+      &::before {
+        opacity: 0.75 !important;
+
+        @supports not (backdrop-filter: blur(15px)) {
+          opacity: 1 !important;
+        }
+      }
+
+      &::after {
+        opacity: 1 !important;
+      }
+    }
+  }
+}
