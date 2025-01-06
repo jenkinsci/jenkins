@@ -561,7 +561,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         if (j != null) { // only when running on the controller
             // Register OptionHandlers through META-INF/services/annotations and Annotation Indexer
             try {
-                for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.get().pluginManager.uberClassLoader, Class.class)) {
+                for (Class c : Index.list(OptionHandlerExtension.class, j.getPluginManager().uberClassLoader, Class.class)) {
                     Type t = Types.getBaseClass(c, OptionHandler.class);
                     CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t, 0)), c);
                 }
