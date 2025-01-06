@@ -136,11 +136,11 @@
     opacity: 0;
     transition: var(--standard-transition);
     mask-image: linear-gradient(
-                    to right,
-                    transparent,
-                    white var(--section-padding),
-                    white calc(100% - var(--section-padding)),
-                    transparent
+      to right,
+      transparent,
+      white var(--section-padding),
+      white calc(100% - var(--section-padding)),
+      transparent
     );
     pointer-events: none;
   }
