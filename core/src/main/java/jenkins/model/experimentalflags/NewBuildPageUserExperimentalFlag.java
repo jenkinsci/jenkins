@@ -44,6 +44,6 @@ public class NewBuildPageUserExperimentalFlag extends BooleanUserExperimentalFla
     @Nullable
     @Override
     public String getShortDescription() {
-        return "Enables a revamped build page. This is a work in progress.";
+        return "Enables a revamped build page. This feature is still a work in progress, so some things might not work perfectly yet.";
     }
 }
