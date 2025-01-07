@@ -31,6 +31,7 @@ complete {
     "commons-net:*",
     "commons-cli:*",
     "*:commons-jelly",
+    "org.jenkins-ci:commons-jelly-tags-fmt",
     "org.jvnet.hudson:commons-jelly-tags-define",
     "slide:slide-webdavlib"
   ]) {
