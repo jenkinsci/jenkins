@@ -31,19 +31,19 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Extension
 @Restricted(NoExternalUse.class)
-public class ConsoleWidgetUserExperimentalFlag extends BooleanUserExperimentalFlag {
-    public ConsoleWidgetUserExperimentalFlag() {
-        super("console-widget.flag");
+public class NewBuildPageUserExperimentalFlag extends BooleanUserExperimentalFlag {
+    public NewBuildPageUserExperimentalFlag() {
+        super("new-build-page.flag");
     }
 
     @Override
     public String getDisplayName() {
-        return "Show Console Output on build pages";
+        return "New build page";
     }
 
     @Nullable
     @Override
     public String getShortDescription() {
-        return "Shows the Console Output as a widget on build pages.";
+        return "Enables a revamped build page. This is a work in progress.";
     }
 }

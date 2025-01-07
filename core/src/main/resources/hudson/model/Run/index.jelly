@@ -43,8 +43,8 @@ THE SOFTWARE.
         <t:editableDescription permission="${it.UPDATE}" hideButton="true"/>
       </div>
 
-      <l:userExperimentalFlag var="showConsoleWidget" flagClassName="jenkins.model.experimentalflags.ConsoleWidgetUserExperimentalFlag" />
-      <j:if test="${showConsoleWidget}">
+      <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
+      <j:if test="${newBuildPage}">
         <st:include page="console.jelly" from="${h.getConsoleProviderFor(it)}" optional="true" />
       </j:if>
 
