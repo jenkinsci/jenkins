@@ -39,9 +39,10 @@ THE SOFTWARE.
 
   <properties>
     <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
-    <!-- TODO https://github.com/jenkinsci/stapler/pull/622/checks -->
-    <stapler.version>1939.v0750b_2e6f5b_d</stapler.version>
     <groovy.version>2.4.21</groovy.version>
+    <jelly.version>1.1-jenkins-20250107</jelly.version>
+    <!-- TODO https://github.com/jenkinsci/stapler/pull/622 -->
+    <stapler.version>1941.va_0b_2934ecb_68</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -120,7 +121,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.17.1</version>
+        <version>1.17.2</version>
       </dependency>
       <dependency>
         <groupId>commons-collections</groupId>
@@ -131,11 +132,6 @@ THE SOFTWARE.
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.18.0</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-jelly</groupId>
-        <artifactId>commons-jelly-tags-fmt</artifactId>
-        <version>1.0</version>
       </dependency>
       <dependency>
         <groupId>commons-jelly</groupId>
@@ -250,6 +246,11 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
+        <artifactId>commons-jelly-tags-fmt</artifactId>
+        <version>${jelly.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
         <artifactId>commons-jexl</artifactId>
         <version>1.1-jenkins-20111212</version>
       </dependency>
@@ -291,7 +292,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.hudson</groupId>
         <artifactId>commons-jelly-tags-define</artifactId>
-        <version>1.1-jenkins-20241115</version>
+        <version>${jelly.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
