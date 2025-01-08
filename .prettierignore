@@ -9,7 +9,6 @@ node/
 
 # libraries / external deps / generated files
 src/main/js/plugin-setup-wizard/bootstrap-detached.js
-war/src/main/webapp/scripts/yui
 war/src/main/webapp/jsbundles/
 src/main/scss/_bootstrap.scss
 

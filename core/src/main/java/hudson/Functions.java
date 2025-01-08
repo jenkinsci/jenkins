@@ -662,17 +662,12 @@ public class Functions {
     }
 
     /**
-     * Gets the suffix to use for YUI JavaScript.
+     * @deprecated yui has been removed, do not call this
      */
+    @Deprecated(forRemoval = true, since = "TODO")
     public static String getYuiSuffix() {
-        return DEBUG_YUI ? "debug" : "min";
+        return "min";
     }
-
-    /**
-     * Set to true if you need to use the debug version of YUI.
-     */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static boolean DEBUG_YUI = SystemProperties.getBoolean("debug.YUI");
 
     /**
      * Creates a sub map by using the given range (both ends inclusive).
