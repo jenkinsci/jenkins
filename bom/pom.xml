@@ -133,11 +133,6 @@ THE SOFTWARE.
         <version>2.18.0</version>
       </dependency>
       <dependency>
-        <groupId>commons-jelly</groupId>
-        <artifactId>commons-jelly-tags-xml</artifactId>
-        <version>1.1</version>
-      </dependency>
-      <dependency>
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
         <version>2.6</version>
@@ -245,7 +240,17 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
+        <artifactId>commons-jelly</artifactId>
+        <version>${jelly.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
         <artifactId>commons-jelly-tags-fmt</artifactId>
+        <version>${jelly.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>commons-jelly-tags-xml</artifactId>
         <version>${jelly.version}</version>
       </dependency>
       <dependency>
