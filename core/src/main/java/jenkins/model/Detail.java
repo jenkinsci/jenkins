@@ -1,8 +1,19 @@
 package jenkins.model;
 
 import hudson.model.ModelObject;
+import hudson.model.Run;
 
 public abstract class Detail implements ModelObject {
+
+    private final Run<?, ?> object;
+
+    public Detail(Run<?, ?> object) {
+        this.object = object;
+    }
+
+    protected Run<?, ?> getObject() {
+        return object;
+    }
 
     /**
      * {@inheritDoc}

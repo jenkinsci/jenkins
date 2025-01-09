@@ -1,5 +1,6 @@
 package hudson.model.details;
 
+import hudson.model.Run;
 import jenkins.model.Detail;
 
 /**
@@ -7,6 +8,10 @@ import jenkins.model.Detail;
  * @implNote This will render Jelly, hence the fields return null
  */
 public class TimestampDetail extends Detail {
+
+    public TimestampDetail(Run<?, ?> run) {
+        super(run);
+    }
 
     @Override
     public String getIconFileName() {

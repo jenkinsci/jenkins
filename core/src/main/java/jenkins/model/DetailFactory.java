@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2024 Jan Faracik
+ * Copyright 2025 Jan Faracik
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

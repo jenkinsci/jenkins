@@ -2597,10 +2597,11 @@ public class Functions {
      */
     @Restricted(NoExternalUse.class)
     public static Map<Group, List<Detail>> getDetailsFor(Run<?, ?> object) {
+    public static Map<Group, List<Detail>> getDetailsFor(Run<?, ?> run) {
         List<Detail> details = new ArrayList<>();
 
         for (DetailFactory<Run> taf : DetailFactory.factoriesFor(Run.class)) {
-            details.addAll(taf.createFor(object));
+            details.addAll(taf.createFor(run));
         }
 
         Map<Group, List<Detail>> orderedMap = new TreeMap<>(Comparator.comparingInt(Group::getOrder));
