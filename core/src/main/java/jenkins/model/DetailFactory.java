@@ -30,9 +30,16 @@ import hudson.ExtensionPoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import hudson.model.Actionable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+/**
+ * Allows you to add multiple details to a Run at once.
+ * @param <T> the type of object to add to; typically an {@link Actionable} subtype
+ * @since TODO
+ */
 public abstract class DetailFactory<T> implements ExtensionPoint {
 
     public abstract Class<T> type();
@@ -42,7 +49,7 @@ public abstract class DetailFactory<T> implements ExtensionPoint {
     @Restricted(NoExternalUse.class)
     public static <T> Iterable<DetailFactory<T>> factoriesFor(Class<T> type) {
         List<DetailFactory<T>> result = new ArrayList<>();
-        for (DetailFactory wf : ExtensionList.lookup(DetailFactory.class)) {
+        for (DetailFactory<T> wf : ExtensionList.lookup(DetailFactory.class)) {
             if (wf.type().isAssignableFrom(type)) {
                 result.add(wf);
             }
