@@ -16,6 +16,7 @@ public class DetailGroup {
 
     public static DetailGroup GENERAL = of(Integer.MAX_VALUE);
 
+    // TODO - expose this yay or nay?
     private static DetailGroup of(int customOrder) {
         return new DetailGroup(customOrder);
     }
