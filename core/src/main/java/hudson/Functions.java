@@ -47,6 +47,7 @@ import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.JobPropertyDescriptor;
+import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.PageDecorator;
@@ -2607,5 +2608,10 @@ public class Functions {
         }
 
         return MessageFormat.format(format, args);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static ManagementLink getManagementLink(@NonNull String className) {
+        return ManagementLink.all().getDynamic(className);
     }
 }
