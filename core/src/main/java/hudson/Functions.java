@@ -664,6 +664,8 @@ public class Functions {
     /**
      * No longer used, to be removed after enough plugins have adopted a version of the test harness with
      * <a href="https://github.com/jenkinsci/jenkins-test-harness/pull/874">jenkins-test-harness/pull/874</a> in it.
+     *
+     * @deprecated removed without replacement
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     @Deprecated(forRemoval = true, since = "TODO")
