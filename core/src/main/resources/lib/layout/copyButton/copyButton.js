@@ -18,8 +18,10 @@ Behaviour.specify(
         navigator.clipboard
           .writeText(text)
           .then(() => {
-            // Show the completion message
-            hoverNotification(copyButton.getAttribute("message"), copyButton);
+            copyButton.classList.add("cecilia");
+            setTimeout(() => {
+              copyButton.classList.remove("cecilia");
+            }, 2000);
           })
           .catch(() => {
             hoverNotification(
