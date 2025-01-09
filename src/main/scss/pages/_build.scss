@@ -1,9 +1,108 @@
+@use "../base/breakpoints";
+
 .build-caption-progress-container {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: nowrap;
   gap: 10px;
+}
+
+.build-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: calc(var(--section-padding) / 2);
+
+  .jenkins-card {
+    margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
+    height: 100%;
+  }
+
+  & > .jenkins-card:last-of-type {
+    grid-column: span 2;
+  }
+}
+
+.losangeles {
+  border: 2px solid red;
+  grid-column: span 2;
+}
+
+.app-build__clock {
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  scale: 0.75;
+
+  &__hours,
+  &__minutes {
+    position: absolute;
+    inset: 0;
+    border-radius: 100%;
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 11px;
+      left: 11px;
+      width: 2px;
+      background: currentColor;
+      border-radius: 2px;
+    }
+  }
+
+  &__hours {
+    rotate: var(--hours);
+
+    &::after {
+      height: 6px;
+    }
+  }
+
+  &__minutes {
+    rotate: var(--minutes);
+
+    &::after {
+      height: 8px;
+    }
+  }
+
+  &::after {
+    position: absolute;
+    content: "";
+    inset: 0;
+    border-radius: 100%;
+    border: 2px solid currentColor;
+  }
+}
+
+.app-build__started-at {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-content: start;
+  perspective: 1000px;
+
+  &__front,
+  &__back {
+    justify-self: start;
+    grid-area: 1 / 1;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    transition: 1s cubic-bezier(0, 0.68, 0.5, 1.5);
+  }
+
+  &__back {
+    transform: rotateX(180deg);
+  }
+
+  &.app-build__started-at--flipped &__front {
+    transform: rotateX(-180deg);
+  }
+
+  &.app-build__started-at--flipped &__back {
+    transform: rotateX(0deg);
+  }
 }
 
 .app-console-output-widget {

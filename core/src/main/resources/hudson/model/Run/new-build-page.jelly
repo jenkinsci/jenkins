@@ -24,12 +24,14 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout title="${it.fullDisplayName}">
     <st:include page="sidepanel.jelly" />
 
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
+      <script src="${resURL}/jsbundles/pages/job.js" type="text/javascript" defer="true" />
+
       <j:set var="controls">
         <t:editDescriptionButton permission="${it.UPDATE}"/>
         <l:hasPermission permission="${it.UPDATE}">
@@ -37,42 +39,51 @@ THE SOFTWARE.
         </l:hasPermission>
       </j:set>
 
-      <t:buildCaption controls="${controls}">${it.displayName} (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</t:buildCaption>
+      <t:buildCaption controls="${controls}">${it.displayName}</t:buildCaption>
 
       <div>
         <t:editableDescription permission="${it.UPDATE}" hideButton="true"/>
       </div>
 
-      <st:include page="console.jelly" from="${h.getConsoleProviderFor(it)}" optional="true" />
+      <div class="build-grid">
+        <st:include page="console.jelly" from="${h.getConsoleProviderFor(it)}" optional="true" />
+        <l:card title="${%Details}">
+          <div class="jenkins-card__details">
+            <j:forEach var="group" items="${h.getDetailsFor(it)}" indexVar="index">
+              <j:if test="${index gt 0}">
+                <hr />
+              </j:if>
+              <j:forEach var="detail" items="${group.value}">
+                <st:include page="detail.jelly" from="${detail}" optional="true">
+                  <div class="jenkins-card__details__item">
+                    <div class="jenkins-card__details__item__icon">
+                      <l:icon src="${detail.iconFileName}" />
+                    </div>
+                    ${detail.displayName}
+                  </div>
+                </st:include>
+              </j:forEach>
+            </j:forEach>
+          </div>
+        </l:card>
 
-      <div style="float:right; z-index: 1; position:relative; margin-left: 1em">
-        <div style="margin-top:1em">
-          ${%startedAgo(it.timestampString)}
-        </div>
-        <div>
-          <j:if test="${it.building}">
-            ${%beingExecuted(it.executor.timestampString)}
-          </j:if>
-          <j:if test="${!it.building}">
-            ${%Took} <a href="${rootURL}/${it.parent.url}buildTimeTrend">${it.durationString}</a>
-          </j:if>
-          <st:include page="details.jelly" optional="true" />
-        </div>
+        <l:card title="Summary">
+          <div>
+            <table>
+              <t:artifactList build="${it}" caption="${%Build Artifacts}" permission="${it.ARTIFACTS}" />
+
+              <!-- give actions a chance to contribute summary item -->
+              <j:forEach var="a" items="${it.allActions}">
+                <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+              </j:forEach>
+
+              <st:include page="summary.jelly" optional="true" />
+            </table>
+
+            <st:include page="main.jelly" optional="true" />
+          </div>
+        </l:card>
       </div>
-
-      <table>
-        <t:artifactList build="${it}" caption="${%Build Artifacts}"
-                        permission="${it.ARTIFACTS}" />
-
-        <!-- give actions a chance to contribute summary item -->
-        <j:forEach var="a" items="${it.allActions}">
-          <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
-        </j:forEach>
-
-        <st:include page="summary.jelly" optional="true" />
-      </table>
-
-      <st:include page="main.jelly" optional="true" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

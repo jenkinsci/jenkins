@@ -161,8 +161,11 @@ import java.util.stream.Collectors;
 import jenkins.console.ConsoleUrlProvider;
 import jenkins.console.DefaultConsoleUrlProvider;
 import jenkins.console.WithConsoleUrl;
+import jenkins.model.Detail;
+import jenkins.model.DetailFactory;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
+import jenkins.model.Group;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -2587,6 +2590,31 @@ public class Functions {
     @Restricted(NoExternalUse.class)
     public static String generateItemId() {
         return String.valueOf(Math.floor(Math.random() * 3000));
+    }
+
+    /**
+     * Returns a grouped list of Detail objects for the given run
+     */
+    @Restricted(NoExternalUse.class)
+    public static Map<Group, List<Detail>> getDetailsFor(Run<?, ?> object) {
+        List<Detail> details = new ArrayList<>();
+
+        for (DetailFactory<Run> taf : DetailFactory.factoriesFor(Run.class)) {
+            details.addAll(taf.createFor(object));
+        }
+
+        Map<Group, List<Detail>> orderedMap = new TreeMap<>(Comparator.comparingInt(Group::getOrder));
+
+        for (Detail detail : details) {
+            orderedMap.computeIfAbsent(detail.getGroup(), k -> new ArrayList<>()).add(detail);
+        }
+
+        for (Map.Entry<Group, List<Detail>> entry : orderedMap.entrySet()) {
+            List<Detail> detailList = entry.getValue();
+            detailList.sort(Comparator.comparingInt(Detail::getOrder));
+        }
+
+        return orderedMap;
     }
 
     @Restricted(NoExternalUse.class)
