@@ -1,3 +1,5 @@
+@use "../base/breakpoints";
+
 .jenkins-search-container {
   position: relative;
 }
@@ -182,8 +184,13 @@
   &--app-bar {
     --search-bar-height: 3rem;
 
-    max-width: 50vw;
+    width: 100%;
     margin-block: -6px;
+
+    /* stylelint-disable-next-line media-query-no-invalid */
+    @media (min-width: breakpoints.$tablet-breakpoint) {
+      max-width: 50vw;
+    }
 
     .jenkins-keyboard-shortcut {
       right: 0.8125rem;
