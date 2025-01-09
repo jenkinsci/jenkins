@@ -165,7 +165,7 @@ import jenkins.model.Detail;
 import jenkins.model.DetailFactory;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
-import jenkins.model.Group;
+import jenkins.model.DetailGroup;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -2596,20 +2596,20 @@ public class Functions {
      * Returns a grouped list of Detail objects for the given Run
      */
     @Restricted(NoExternalUse.class)
-    public static Map<Group, List<Detail>> getDetailsFor(Run<?, ?> run) {
+    public static Map<DetailGroup, List<Detail>> getDetailsFor(Run<?, ?> run) {
         List<Detail> details = new ArrayList<>();
 
         for (DetailFactory<Run> df : DetailFactory.factoriesFor(Run.class)) {
             details.addAll(df.createFor(run));
         }
 
-        Map<Group, List<Detail>> orderedMap = new TreeMap<>(Comparator.comparingInt(Group::getOrder));
+        Map<DetailGroup, List<Detail>> orderedMap = new TreeMap<>(Comparator.comparingInt(DetailGroup::getOrder));
 
         for (Detail detail : details) {
             orderedMap.computeIfAbsent(detail.getGroup(), k -> new ArrayList<>()).add(detail);
         }
 
-        for (Map.Entry<Group, List<Detail>> entry : orderedMap.entrySet()) {
+        for (Map.Entry<DetailGroup, List<Detail>> entry : orderedMap.entrySet()) {
             List<Detail> detailList = entry.getValue();
             detailList.sort(Comparator.comparingInt(Detail::getOrder));
         }

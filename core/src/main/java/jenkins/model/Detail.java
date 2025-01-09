@@ -46,8 +46,8 @@ public abstract class Detail implements ModelObject, IconSpec {
     /**
      * @return the grouping of the detail
      */
-    public Group getGroup() {
-        return Group.GENERAL;
+    public DetailGroup getGroup() {
+        return DetailGroup.GENERAL;
     }
 
     /**
