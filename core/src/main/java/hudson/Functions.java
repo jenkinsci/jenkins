@@ -662,14 +662,6 @@ public class Functions {
     }
 
     /**
-     * @deprecated yui has been removed, do not call this
-     */
-    @Deprecated(forRemoval = true, since = "TODO")
-    public static String getYuiSuffix() {
-        return "min";
-    }
-
-    /**
      * Creates a sub map by using the given range (both ends inclusive).
      */
     public static <V> SortedMap<Integer, V> filter(SortedMap<Integer, V> map, String from, String to) {
