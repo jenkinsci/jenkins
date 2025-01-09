@@ -27,11 +27,11 @@ package jenkins.model;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.model.Actionable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import hudson.model.Actionable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -40,14 +40,14 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @param <T> the type of object to add to; typically an {@link Actionable} subtype
  * @since TODO
  */
-public abstract class DetailFactory<T> implements ExtensionPoint {
+public abstract class DetailFactory<T extends Actionable> implements ExtensionPoint {
 
     public abstract Class<T> type();
 
     public abstract @NonNull Collection<? extends Detail> createFor(@NonNull T target);
 
     @Restricted(NoExternalUse.class)
-    public static <T> Iterable<DetailFactory<T>> factoriesFor(Class<T> type) {
+    public static <T extends Actionable> Iterable<DetailFactory<T>> factoriesFor(Class<T> type) {
         List<DetailFactory<T>> result = new ArrayList<>();
         for (DetailFactory<T> wf : ExtensionList.lookup(DetailFactory.class)) {
             if (wf.type().isAssignableFrom(type)) {

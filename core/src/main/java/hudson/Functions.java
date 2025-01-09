@@ -36,6 +36,7 @@ import hudson.console.ConsoleAnnotatorFactory;
 import hudson.init.InitMilestone;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -2593,14 +2594,14 @@ public class Functions {
     }
 
     /**
-     * Returns a grouped list of Detail objects for the given Run
+     * Returns a grouped list of Detail objects for the given Actionable object
      */
     @Restricted(NoExternalUse.class)
-    public static Map<DetailGroup, List<Detail>> getDetailsFor(Run<?, ?> run) {
+    public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object) {
         List<Detail> details = new ArrayList<>();
 
-        for (DetailFactory<Run> df : DetailFactory.factoriesFor(Run.class)) {
-            details.addAll(df.createFor(run));
+        for (DetailFactory taf : DetailFactory.factoriesFor(object.getClass())) {
+            details.addAll(taf.createFor(object));
         }
 
         Map<DetailGroup, List<Detail>> orderedMap = new TreeMap<>(Comparator.comparingInt(DetailGroup::getOrder));
