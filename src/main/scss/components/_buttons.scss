@@ -24,7 +24,6 @@
   min-height: 2.25rem;
   white-space: nowrap;
   gap: 1ch;
-  transition: var(--standard-transition);
 
   &::before {
     background: var(--button-background);
@@ -218,7 +217,11 @@
       height: 0.875rem;
       border: 0.1rem solid currentColor;
       border-radius: 0.2rem;
-      transition: var(--standard-transition);
+      transition:
+        translate var(--standard-transition),
+        scale var(--standard-transition),
+        opacity var(--standard-transition),
+        filter var(--standard-transition);
       grid-area: 1 / 1;
     }
 
@@ -240,6 +243,8 @@
   }
 
   &--copied {
+    color: var(--success-color) !important;
+
     --button-background: color-mix(
       in sRGB,
       var(--success-color) 10%,
