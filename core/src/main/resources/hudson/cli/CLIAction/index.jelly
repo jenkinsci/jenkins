@@ -24,36 +24,59 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout permission="${app.READ}">
-    <st:include page="sidepanel.jelly" it="${app}"/>
+  <l:layout title="${%Jenkins CLI}" permission="${app.READ}" type="one-column">
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-    <l:main-panel>
-      <l:app-bar title="${%Jenkins CLI}" />
-      <p class="jenkins-description">
-        ${%blurb(rootURL)}
-      </p>
-      <j:set var="commandArgs" value="help"/>
-      <st:include page="example.jelly"/>
 
-      <h2>${%Available Commands}</h2>
-      <table class="jenkins-table sortable">
-        <thead>
-          <tr>
-            <th initialSortDir="down">${%Name}</th>
-            <th>${%Description}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <j:forEach items="${h.getCLICommands()}" var="command">
+    <l:main-panel>
+      <l:app-bar title="${%Jenkins CLI}">
+        <t:help href="https://www.jenkins.io/redirect/cli" />
+      </l:app-bar>
+
+      <div class="jenkins-page-description">
+        ${%description}
+      </div>
+
+      <f:section title="${%Getting started}">
+        <ol class="instructions">
+          <li>
+            <div class="instructions__label">
+              Download the Jenkins CLI
+            </div>
+            <a class="jenkins-button jenkins-button--primary" href="${rootURL}/jnlpJars/jenkins-cli.jar">
+              <l:icon src="symbol-download" />
+              jenkins-cli.jar
+            </a>
+          </li>
+          <li>
+            <p class="instructions__label">
+              ${%blurb(rootURL)}
+            </p>
+            <j:set var="commandArgs" value="help"/>
+            <st:include page="example.jelly"/>
+          </li>
+        </ol>
+      </f:section>
+
+      <f:section title="${%Available Commands}">
+        <table class="jenkins-table sortable">
+          <thead>
             <tr>
-              <td>
-                <a href="command/${command.name}" class="jenkins-table__link">${command.name}</a>
-              </td>
-              <td>${command.shortDescription}</td>
+              <th initialSortDir="down">${%Name}</th>
+              <th>${%Description}</th>
             </tr>
-          </j:forEach>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <j:forEach items="${h.getCLICommands()}" var="command">
+              <tr>
+                <td>
+                  <a href="command/${command.name}" class="jenkins-table__link">${command.name}</a>
+                </td>
+                <td>${command.shortDescription}</td>
+              </tr>
+            </j:forEach>
+          </tbody>
+        </table>
+      </f:section>
     </l:main-panel>
   </l:layout>
 </j:jelly>

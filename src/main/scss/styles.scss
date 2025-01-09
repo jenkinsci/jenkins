@@ -3,3 +3,52 @@
 @use "components";
 @use "form";
 @use "pages";
+
+.jenkins-page-description {
+  font-size: 0.9375rem;
+  color: var(--text-color-secondary);
+  margin: calc(var(--section-padding) * -0.25) 0 var(--section-padding) 0;
+}
+
+.instructions {
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  gap: var(--section-padding);
+  counter-reset: section;
+
+  li {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 0.5rem;
+    padding-left: 3rem;
+    padding-top: 0.35rem;
+
+    .instructions__label {
+      font-weight: 450;
+      margin: 0;
+    }
+
+    &::before {
+      counter-increment: section;
+      content: counters(section, "");
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      top: 0;
+      left: 0;
+      background: var(--text-color);
+      width: 2rem;
+      height: 2rem;
+      color: var(--background);
+      border-radius: 100px;
+      text-align: center;
+      font-weight: 450;
+    }
+  }
+}

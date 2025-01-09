@@ -288,6 +288,7 @@ $semantics: (
 
   // Form
   --section-padding: 1.625rem;
+  --vertical-padding: calc(var(--section-padding) * 0.75);
   --input-color: color-mix(
     in sRGB,
     var(--text-color-secondary) 1.5%,
@@ -321,7 +322,7 @@ $semantics: (
   --form-input-border-radius: 0.625rem;
   --form-input-glow: 0 0 0 10px transparent;
   --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);
-  --pre-background: rgb(0 0 0 / 0.05);
+  --pre-background: var(--button-background);
   --pre-color: var(--text-color);
   --selection-color: rgb(2 76 182 / 0.3);
 
@@ -363,6 +364,9 @@ $semantics: (
   --success: var(--green); // Use var(--success-color) instead
   --danger: var(--red); // Use var(--destructive-color) instead
   --warning: var(--orange); // Use var(--warning-color) instead
+
+  // Border
+  --jenkins-border: 1.5px solid color-mix(in srgb, var(--text-color-secondary) 9%, transparent);
 
   // Colors
   @each $key, $value in $colors {

@@ -150,8 +150,8 @@ pre {
   white-space: pre-wrap;
   word-wrap: break-word;
   margin: 0 0 var(--section-padding);
-  padding: 0.8rem 1rem;
-  border-radius: 10px;
+  padding: 0.8rem 1.1rem;
+  border-radius: var(--form-input-border-radius);
   background-color: var(--pre-background);
   color: var(--pre-color);
   font-family: var(--font-family-mono);
