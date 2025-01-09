@@ -12,14 +12,4 @@ public class TimestampDetail extends Detail {
     public TimestampDetail(Run<?, ?> run) {
         super(run);
     }
-
-    @Override
-    public String getIconFileName() {
-        return null;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return null;
-    }
 }

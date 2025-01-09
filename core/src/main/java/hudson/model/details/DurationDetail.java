@@ -12,14 +12,4 @@ public class DurationDetail extends Detail {
     public DurationDetail(Run<?, ?> run) {
         super(run);
     }
-
-    @Override
-    public String getIconFileName() {
-        return null;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return null;
-    }
 }

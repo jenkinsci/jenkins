@@ -2599,8 +2599,8 @@ public class Functions {
     public static Map<Group, List<Detail>> getDetailsFor(Run<?, ?> run) {
         List<Detail> details = new ArrayList<>();
 
-        for (DetailFactory<Run> taf : DetailFactory.factoriesFor(Run.class)) {
-            details.addAll(taf.createFor(run));
+        for (DetailFactory<Run> df : DetailFactory.factoriesFor(Run.class)) {
+            details.addAll(df.createFor(run));
         }
 
         Map<Group, List<Detail>> orderedMap = new TreeMap<>(Comparator.comparingInt(Group::getOrder));

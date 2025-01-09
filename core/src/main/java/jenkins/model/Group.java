@@ -14,7 +14,7 @@ public class Group {
 
     public static Group SCM = of(0);
 
-    public static Group GENERIC = of(Integer.MAX_VALUE);
+    public static Group GENERAL = of(Integer.MAX_VALUE);
 
     public static Group of(int customOrder) {
         return new Group(customOrder);

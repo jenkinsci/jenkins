@@ -1,9 +1,22 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.ModelObject;
 import hudson.model.Run;
+import org.jenkins.ui.icon.IconSpec;
 
-public abstract class Detail implements ModelObject {
+/**
+ * {@link Detail} represents a piece of information about a {@link Run}.
+ * Such information could include:
+ * <ul>
+ *  <li>the date and time the run started</li>
+ *  <li>the amount of time the run took to complete</li>
+ *  <li>SCM information for the build</li>
+ *  <li>who kicked the build off</li>
+ * </ul>
+ * @since TODO
+ */
+public abstract class Detail implements ModelObject, IconSpec {
 
     private final Run<?, ?> object;
 
@@ -18,19 +31,23 @@ public abstract class Detail implements ModelObject {
     /**
      * {@inheritDoc}
      */
-    public abstract String getIconFileName();
+    public @Nullable String getIconClassName() {
+        return null;
+    }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public abstract String getDisplayName();
+    public @Nullable String getDisplayName() {
+        return null;
+    }
 
     /**
      * @return the grouping of the detail
      */
     public Group getGroup() {
-        return Group.GENERIC;
+        return Group.GENERAL;
     }
 
     /**
