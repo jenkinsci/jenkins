@@ -2593,7 +2593,7 @@ public class Functions {
     }
 
     /**
-     * Returns a grouped list of Detail objects for the given run
+     * Returns a grouped list of Detail objects for the given Run
      */
     @Restricted(NoExternalUse.class)
     public static Map<Group, List<Detail>> getDetailsFor(Run<?, ?> run) {
