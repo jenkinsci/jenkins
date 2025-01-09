@@ -2596,7 +2596,6 @@ public class Functions {
      * Returns a grouped list of Detail objects for the given run
      */
     @Restricted(NoExternalUse.class)
-    public static Map<Group, List<Detail>> getDetailsFor(Run<?, ?> object) {
     public static Map<Group, List<Detail>> getDetailsFor(Run<?, ?> run) {
         List<Detail> details = new ArrayList<>();
 
