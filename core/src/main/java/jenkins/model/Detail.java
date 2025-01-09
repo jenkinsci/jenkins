@@ -11,7 +11,7 @@ public abstract class Detail implements ModelObject {
         this.object = object;
     }
 
-    protected Run<?, ?> getObject() {
+    public Run<?, ?> getObject() {
         return object;
     }
 

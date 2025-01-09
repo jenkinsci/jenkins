@@ -24,21 +24,22 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <j:set var="object" value="${it.object}" />
   <div class="jenkins-card__details__item">
     <div class="jenkins-card__details__item__icon">
       <l:icon src="symbol-timer" />
     </div>
     <div>
       <j:choose>
-        <j:when test="${it.building}">
-          ${%beingExecuted(it.executor.timestampString)}
+        <j:when test="${object.building}">
+          ${%beingExecuted(object.executor.timestampString)}
         </j:when>
         <j:otherwise>
-          ${%Took} ${it.durationString}
+          ${%Took} ${object.durationString}
         </j:otherwise>
       </j:choose>
-      <j:if test="${!empty(app.nodes) or (it.builtOnStr != null and it.builtOnStr != '')}">
-        ${%on} <t:node value="${it.builtOn}" valueStr="${it.builtOnStr}"/>
+      <j:if test="${!empty(app.nodes) or (object.builtOnStr != null and object.builtOnStr != '')}">
+        ${%on} <t:node value="${object.builtOn}" valueStr="${object.builtOnStr}"/>
       </j:if>
       <st:include page="details.jelly" optional="true" />
     </div>

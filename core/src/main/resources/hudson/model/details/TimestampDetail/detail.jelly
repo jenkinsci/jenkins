@@ -24,10 +24,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:i="jelly:fmt">
+  <j:set var="object" value="${it.getObject()}" />
   <div class="jenkins-card__details__item">
-    <j:set var="minutes" value="${360 * (it.timestamp.time.minutes / 60)}" />
-    <i:formatDate var="hours" value="${it.timestamp.time}" pattern="h" />
-    <j:set var="hours" value="${360 * (hours / 12) + (30 * (it.timestamp.time.minutes / 60))}" />
+    <j:set var="minutes" value="${360 * (object.timestamp.time.minutes / 60)}" />
+    <i:formatDate var="hours" value="${object.timestamp.time}" pattern="h" />
+    <j:set var="hours" value="${360 * (hours / 12) + (30 * (object.timestamp.time.minutes / 60))}" />
 
     <div class="jenkins-card__details__item__icon">
       <div class="app-build__clock" style="--hours: ${hours}deg; --minutes: ${minutes}deg">
@@ -39,10 +40,10 @@ THE SOFTWARE.
     <button aria-live="polite" id="button-started-at">
       <div class="app-build__started-at">
         <div class="app-build__started-at__front" aria-hidden="false">
-          ${%startedAgo(it.timestampString)}
+          ${%startedAgo(object.timestampString)}
         </div>
         <div class="app-build__started-at__back" aria-hidden="true">
-          Started <i:formatDate value="${it.timestamp.time}" type="both" dateStyle="long" timeStyle="medium" />
+          Started <i:formatDate value="${object.timestamp.time}" type="both" dateStyle="long" timeStyle="medium" />
         </div>
       </div>
     </button>

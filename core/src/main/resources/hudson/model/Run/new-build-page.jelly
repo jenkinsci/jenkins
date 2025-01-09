@@ -54,7 +54,7 @@ THE SOFTWARE.
                 <hr />
               </j:if>
               <j:forEach var="detail" items="${group.value}">
-                <st:include page="detail.jelly" from="${detail}" optional="true">
+                <st:include page="detail.jelly" it="${detail}" optional="true">
                   <div class="jenkins-card__details__item">
                     <div class="jenkins-card__details__item__icon">
                       <l:icon src="${detail.iconFileName}" />
