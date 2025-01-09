@@ -65,15 +65,6 @@
   padding: 0 1rem;
   gap: 1.5rem;
 
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border: var(--jenkins-border);
-    pointer-events: none;
-    border-radius: inherit;
-  }
-
   .jenkins-copy-button {
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;

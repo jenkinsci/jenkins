@@ -365,9 +365,6 @@ $semantics: (
   --danger: var(--red); // Use var(--destructive-color) instead
   --warning: var(--orange); // Use var(--warning-color) instead
 
-  // Border
-  --jenkins-border: 1.5px solid color-mix(in srgb, var(--text-color-secondary) 9%, transparent);
-
   // Colors
   @each $key, $value in $colors {
     --#{$key}: #{$value};
