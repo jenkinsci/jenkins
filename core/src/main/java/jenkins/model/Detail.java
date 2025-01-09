@@ -1,6 +1,7 @@
 package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.model.Actionable;
 import hudson.model.ModelObject;
 import hudson.model.Run;
 import org.jenkins.ui.icon.IconSpec;
@@ -18,13 +19,13 @@ import org.jenkins.ui.icon.IconSpec;
  */
 public abstract class Detail implements ModelObject, IconSpec {
 
-    private final Run<?, ?> object;
+    private final Actionable object;
 
-    public Detail(Run<?, ?> object) {
+    public Detail(Actionable object) {
         this.object = object;
     }
 
-    public Run<?, ?> getObject() {
+    public Actionable getObject() {
         return object;
     }
 
