@@ -25,9 +25,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
-    Remove this tag, YUI has been removed from Jenkins
+    Do not use this tag, YUI has been removed from Jenkins
     <st:attribute name="module" deprecated="true">
-      Remove this tag, YUI has been removed from Jenkins
+      Do not use this tag, YUI has been removed from Jenkins
     </st:attribute>
   </st:documentation>
 </j:jelly>
