@@ -37,9 +37,9 @@ THE SOFTWARE.
       </div>
 
       <f:section title="${%Getting started}">
-        <ol class="instructions">
+        <ol class="jenkins-instructions">
           <li>
-            <div class="instructions__label">
+            <div class="jenkins-instructions__label">
               Download the Jenkins CLI:
             </div>
             <a class="jenkins-button jenkins-button--primary" href="${rootURL}/jnlpJars/jenkins-cli.jar">
@@ -48,7 +48,7 @@ THE SOFTWARE.
             </a>
           </li>
           <li>
-            <p class="instructions__label">
+            <p class="jenkins-instructions__label">
               ${%blurb(rootURL)}:
             </p>
             <j:set var="commandArgs" value="help"/>
