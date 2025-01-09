@@ -239,7 +239,7 @@
     }
   }
 
-  &.cecilia {
+  &--copied {
     --button-background: color-mix(in srgb, var(--success-color) 10%, transparent);
     --button-background--hover: var(--button-background);
     --button-background--active: var(--button-background);

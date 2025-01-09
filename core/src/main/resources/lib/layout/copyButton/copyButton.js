@@ -18,9 +18,9 @@ Behaviour.specify(
         navigator.clipboard
           .writeText(text)
           .then(() => {
-            copyButton.classList.add("cecilia");
+            copyButton.classList.add("jenkins-copy-button--copied");
             setTimeout(() => {
-              copyButton.classList.remove("cecilia");
+              copyButton.classList.remove("jenkins-copy-button--copied");
             }, 2000);
           })
           .catch(() => {
