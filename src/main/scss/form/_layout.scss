@@ -58,16 +58,30 @@
 
 .jenkins-quote {
   position: relative;
-  display: flex;
-  line-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--button-background);
+  border-radius: var(--form-input-border-radius);
+  padding: 0 1rem;
+  gap: 1.5rem;
 
-  &::before {
+  &::after {
     content: "";
-    position: relative;
-    width: 2px;
-    background: var(--input-border);
-    margin-right: 1rem;
-    border-radius: 2px;
+    position: absolute;
+    inset: 0;
+    border: var(--jenkins-border);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .jenkins-copy-button {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    margin-right: -0.75rem;
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: calc(var(--form-input-border-radius) - 0.25rem);
   }
 
   &--monospace {

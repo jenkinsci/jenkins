@@ -40,7 +40,7 @@ THE SOFTWARE.
         <ol class="instructions">
           <li>
             <div class="instructions__label">
-              Download the Jenkins CLI
+              Download the Jenkins CLI:
             </div>
             <a class="jenkins-button jenkins-button--primary" href="${rootURL}/jnlpJars/jenkins-cli.jar">
               <l:icon src="symbol-download" />
@@ -49,7 +49,7 @@ THE SOFTWARE.
           </li>
           <li>
             <p class="instructions__label">
-              ${%blurb(rootURL)}
+              ${%blurb(rootURL)}:
             </p>
             <j:set var="commandArgs" value="help"/>
             <st:include page="example.jelly"/>
