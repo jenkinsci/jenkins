@@ -45,7 +45,7 @@ THE SOFTWARE.
         <t:editableDescription permission="${it.UPDATE}" hideButton="true"/>
       </div>
 
-      <div class="build-grid">
+      <div class="app-build__grid">
         <st:include page="console.jelly" from="${h.getConsoleProviderFor(it)}" optional="true" />
         <l:card title="${%Details}">
           <div class="jenkins-card__details">

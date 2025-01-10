@@ -8,24 +8,82 @@
   gap: 10px;
 }
 
-.build-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
+.app-build__grid {
   gap: calc(var(--section-padding) / 2);
+  margin-bottom: var(--section-padding);
 
   .jenkins-card {
     margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
-    height: 100%;
   }
 
-  & > .jenkins-card:last-of-type {
-    grid-column: span 2;
+  @media (width < 1000px) {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: 1fr 1fr;
   }
-}
 
-.losangeles {
-  border: 2px solid red;
-  grid-column: span 2;
+  @media (width >= 1000px) {
+    display: grid;
+    justify-content: stretch;
+    grid-template-columns: 1fr 1fr;
+    margin-top: calc(var(--section-padding) * -0.25);
+
+    .jenkins-card {
+      height: 340px;
+      overflow: clip;
+      margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
+
+      &:first-of-type {
+        grid-column: span 2;
+      }
+
+      &:last-of-type {
+        grid-column: span 2;
+      }
+    }
+  }
+
+  @media (width >= 1300px) {
+    grid-template-columns: 1fr 1fr 1fr;
+
+    .jenkins-card {
+      &:first-of-type {
+        grid-column: span 2;
+      }
+
+      &:last-of-type {
+        grid-column: span 3;
+      }
+    }
+  }
+
+  @media (width >= 1600px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+
+    .jenkins-card {
+      &:first-of-type {
+        grid-column: span 3;
+      }
+
+      &:last-of-type {
+        grid-column: span 4;
+      }
+    }
+  }
+
+  @media (width >= 1900px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+
+    .jenkins-card {
+      &:first-of-type {
+        grid-column: span 3;
+      }
+
+      &:last-of-type {
+        grid-column: span 5;
+      }
+    }
+  }
 }
 
 .app-build__clock {
