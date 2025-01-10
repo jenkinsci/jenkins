@@ -1,5 +1,8 @@
 package jenkins.model;
 
+/**
+ * Represents a group for categorizing {@link Detail}, each with an associated order.
+ */
 public class DetailGroup {
 
     private final int order;
