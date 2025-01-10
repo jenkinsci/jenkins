@@ -24,9 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:invokeStatic var="managementLink" className="hudson.Functions" method="getManagementLink">
-    <j:arg value="jenkins.management.CliLink" />
-  </j:invokeStatic>
+  <j:new var="managementLink" className="jenkins.management.CliLink" />
 
   <l:layout title="${managementLink.displayName}" permission="${app.READ}" type="one-column">
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
