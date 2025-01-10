@@ -45,6 +45,13 @@ public abstract class Detail implements ModelObject, IconSpec {
     }
 
     /**
+     * Returns true if this detail is applicable to the given Actionable object
+     */
+    public boolean isApplicable() {
+        return true;
+    }
+
+    /**
      * @return the grouping of the detail
      */
     public DetailGroup getGroup() {

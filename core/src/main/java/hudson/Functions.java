@@ -2607,7 +2607,9 @@ public class Functions {
         Map<DetailGroup, List<Detail>> orderedMap = new TreeMap<>(Comparator.comparingInt(DetailGroup::getOrder));
 
         for (Detail detail : details) {
-            orderedMap.computeIfAbsent(detail.getGroup(), k -> new ArrayList<>()).add(detail);
+            if (detail.isApplicable()) {
+                orderedMap.computeIfAbsent(detail.getGroup(), k -> new ArrayList<>()).add(detail);
+            }
         }
 
         for (Map.Entry<DetailGroup, List<Detail>> entry : orderedMap.entrySet()) {
