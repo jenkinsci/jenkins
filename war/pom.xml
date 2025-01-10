@@ -152,6 +152,7 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci:annotation-indexer</exclude>
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
                     <exclude>org.jenkins-ci:commons-jelly-tags-fmt</exclude>
+                    <exclude>org.jenkins-ci:commons-jelly-tags-xml</exclude>
                     <exclude>org.jenkins-ci:crypto-util</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>

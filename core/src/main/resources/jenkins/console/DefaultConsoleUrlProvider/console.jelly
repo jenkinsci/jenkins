@@ -1,0 +1,14 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <j:set var="controls">
+    <a href="consoleText" download="${it.displayName}.txt" tooltip="${%Download}" class="jenkins-card__reveal">
+      <l:icon src="symbol-download" />
+    </a>
+  </j:set>
+
+  <l:card title="${%Console Output}" expandable="console" controls="${controls}">
+    <div class="app-console-output-widget progressive-text-container">
+      <st:include page="console-log.jelly" />
+    </div>
+  </l:card>
+</j:jelly>
