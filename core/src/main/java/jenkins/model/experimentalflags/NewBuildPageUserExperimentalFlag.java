@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2025, Jan Faracik
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,32 +22,28 @@
  * THE SOFTWARE.
  */
 
-package hudson.cli.handlers;
+package jenkins.model.experimentalflags;
 
-import hudson.cli.declarative.OptionHandlerExtension;
-import hudson.model.AbstractProject;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.Setter;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Extension;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-/**
- * Refer to {@link AbstractProject} by its name.
- *
- * @author Kohsuke Kawaguchi
- */
-@OptionHandlerExtension
-@SuppressWarnings("rawtypes")
-public class AbstractProjectOptionHandler extends GenericItemOptionHandler<AbstractProject> {
-    public AbstractProjectOptionHandler(CmdLineParser parser, OptionDef option, Setter<AbstractProject> setter) {
-        super(parser, option, setter);
-    }
-
-    @Override protected Class<AbstractProject> type() {
-        return AbstractProject.class;
+@Extension
+@Restricted(NoExternalUse.class)
+public class NewBuildPageUserExperimentalFlag extends BooleanUserExperimentalFlag {
+    public NewBuildPageUserExperimentalFlag() {
+        super("new-build-page.flag");
     }
 
     @Override
-    public String getDefaultMetaVariable() {
-        return "JOB";
+    public String getDisplayName() {
+        return "New build page";
+    }
+
+    @Nullable
+    @Override
+    public String getShortDescription() {
+        return "Enables a revamped build page. This feature is still a work in progress, so some things might not work perfectly yet.";
     }
 }

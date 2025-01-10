@@ -151,6 +151,8 @@ THE SOFTWARE.
                     <exclude>com.infradna.tool:bridge-method-annotation</exclude>
                     <exclude>org.jenkins-ci:annotation-indexer</exclude>
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
+                    <exclude>org.jenkins-ci:commons-jelly-tags-fmt</exclude>
+                    <exclude>org.jenkins-ci:commons-jelly-tags-xml</exclude>
                     <exclude>org.jenkins-ci:crypto-util</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
@@ -551,7 +553,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>json-api</artifactId>
-                  <version>20240303-101.v7a_8666713110</version>
+                  <version>20241224-119.va_dca_a_b_ea_7da_5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

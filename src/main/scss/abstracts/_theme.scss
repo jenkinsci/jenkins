@@ -47,12 +47,12 @@ $semantics: (
 
   // Color palette
   --very-light-grey: #f8f8f8;
-  --light-grey: hsl(240, 20%, 96.5%);
+  --light-grey: hsl(240 20% 96.5%);
   --medium-grey: #9ba7af;
   --dark-grey: #4d545d;
 
   // branding
-  --secondary: rgb(96, 125, 159);
+  --secondary: rgb(96 125 159);
   --focus-input-border: var(--accent-color);
   --focus-input-glow: color-mix(in sRGB, var(--accent-color) 15%, transparent);
 
@@ -82,14 +82,14 @@ $semantics: (
   --search-input-color: var(--brand-link-color);
   --search-bg: var(--white);
   --search-box-completion-bg: var(--primary-hover);
-  --search-box-shadow: 0 1px 7px 0 rgba(0, 0, 0, 0.3);
+  --search-box-shadow: 0 1px 7px 0 rgb(0 0 0 / 0.3);
   --header-bg-classic: #000;
   --header-link-bg-classic-hover: #404040;
   --header-link-bg-classic-active: #404040;
   --header-item-border-radius: 4px;
 
   // Breadcrumbs bar
-  --breadcrumbs-bar-background: hsla(240, 20%, 96.5%, 0.8);
+  --breadcrumbs-bar-background: hsl(240 20% 96.5% / 0.8);
 
   // Alert call outs
   --alert-success-text-color: var(--success-color);
@@ -202,35 +202,34 @@ $semantics: (
   // Command Palette
   --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5)
     saturate(1.4) blur(20px);
-  --command-palette-inset-shadow: inset 0 0 2px 2px rgba(255, 255, 255, 0.1);
+  --command-palette-inset-shadow: inset 0 0 2px 2px rgb(255 255 255 / 0.1);
 
   ::backdrop {
     --command-palette-backdrop-background: radial-gradient(
       farthest-corner at 50% 30vh,
-      rgba(0, 0, 0, 0.3),
-      rgba(0, 0, 0, 0.1)
+      rgb(0 0 0 / 0.3),
+      rgb(0 0 0 / 0.1)
     );
   }
 
   // Tooltips
   --tooltip-backdrop-filter: saturate(2) blur(20px);
   --tooltip-color: var(--text-color);
-  --tooltip-box-shadow: 0 0 8px 2px rgba(0, 0, 30, 0.05),
-    0 0 1px 1px rgba(0, 0, 20, 0.025), 0 10px 20px rgba(0, 0, 20, 0.15);
+  --tooltip-box-shadow: 0 0 8px 2px rgb(0 0 30 / 0.05),
+    0 0 1px 1px rgb(0 0 20 / 0.025), 0 10px 20px rgb(0 0 20 / 0.15);
 
   // Dropdowns
   --dropdown-backdrop-filter: saturate(1.5) blur(20px);
-  --dropdown-box-shadow: 0 10px 30px rgba(0, 0, 20, 0.2),
-    0 2px 10px rgba(0, 0, 20, 0.05), inset 0 -1px 2px rgba(255, 255, 255, 0.025);
+  --dropdown-box-shadow: 0 10px 30px rgb(0 0 20 / 0.2),
+    0 2px 10px rgb(0 0 20 / 0.05), inset 0 -1px 2px rgb(255 255 255 / 0.025);
 
   // Dialogs
   ::backdrop {
-    --dialog-backdrop-background: hsla(240, 10%, 20%, 0.8);
+    --dialog-backdrop-background: hsl(240 10% 20% / 0.8);
   }
 
-  --dialog-box-shadow: 0 10px 40px rgba(0, 0, 20, 0.15),
-    0 2px 15px rgba(0, 0, 20, 0.05),
-    inset 0 0 2px 2px rgba(255, 255, 255, 0.025);
+  --dialog-box-shadow: 0 10px 40px rgb(0 0 20 / 0.15),
+    0 2px 15px rgb(0 0 20 / 0.05), inset 0 0 2px 2px rgb(255 255 255 / 0.025);
 
   // Dark link
   --link-dark-color: var(--text-color);
@@ -257,18 +256,18 @@ $semantics: (
   --card-background: var(--background);
   --card-background--hover: transparent;
   --card-background--active: transparent;
-  --card-border-color: hsla(240, 25%, 75%, 0.25);
-  --card-border-color--hover: hsla(240, 25%, 75%, 0.5);
-  --card-border-color--active: hsla(240, 25%, 75%, 0.75);
+  --card-border-color: hsl(240 25% 75% / 0.25);
+  --card-border-color--hover: hsl(240 25% 75% / 0.5);
+  --card-border-color--active: hsl(240 25% 75% / 0.75);
   --card-border-width: 2px;
 
   // Tab bar
   --tabs-background: var(--panel-header-bg-color);
   --tabs-item-background: transparent;
   --tabs-item-foreground: var(--text-color);
-  --tabs-item-background--hover: rgba(0, 0, 0, 0.05);
+  --tabs-item-background--hover: rgb(0 0 0 / 0.05);
   --tabs-item-foreground--hover: var(--text-color);
-  --tabs-item-background--active: rgba(0, 0, 0, 0.1);
+  --tabs-item-background--active: rgb(0 0 0 / 0.1);
   --tabs-item-foreground--active: var(--text-color);
   --tabs-item-background--selected: white;
   --tabs-item-foreground--selected: var(--link-color);
@@ -322,9 +321,9 @@ $semantics: (
   --form-input-border-radius: 0.625rem;
   --form-input-glow: 0 0 0 10px transparent;
   --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);
-  --pre-background: rgba(0, 0, 0, 0.05);
+  --pre-background: rgb(0 0 0 / 0.05);
   --pre-color: var(--text-color);
-  --selection-color: rgba(2, 76, 182, 0.3);
+  --selection-color: rgb(2 76 182 / 0.3);
 
   // Animations
   --standard-transition: 0.3s ease;
@@ -334,13 +333,13 @@ $semantics: (
   --menu-text-color: black;
   --menu-bg-color: var(--white);
   --menu-selected-color: #b3d4ff;
-  --menu-box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  --menu-box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);
 
   // Deprecated - Add form widget / configure job
   --light-bg-color: #eee;
-  --light-bg-color--hover: rgba(255, 255, 255, 0.65);
+  --light-bg-color--hover: rgb(255 255 255 / 0.65);
   --add-item-btn-decorator-border-color: #acb;
-  --add-item-btn-decorator-bg-color: rgba(245, 249, 239, 0.75);
+  --add-item-btn-decorator-bg-color: rgb(245 249 239 / 0.75);
 
   // Plugin manager
   --plugin-manager-bg-color-already-upgraded: var(--light-grey);
@@ -349,15 +348,15 @@ $semantics: (
   --auto-complete-bg-color--prehighlight: #b3d4ff;
 
   // Default button
-  --button-background: hsla(240, 25%, 75%, 0.1);
-  --button-background--hover: hsla(240, 25%, 75%, 0.175);
-  --button-background--active: hsla(240, 25%, 75%, 0.25);
-  --button-box-shadow--focus: hsla(240, 25%, 75%, 0.1);
+  --button-background: hsl(240 25% 75% / 0.1);
+  --button-background--hover: hsl(240 25% 75% / 0.175);
+  --button-background--active: hsl(240 25% 75% / 0.25);
+  --button-box-shadow--focus: hsl(240 25% 75% / 0.1);
 
   // Variables for sidebar items, card items
-  --item-background--hover: hsla(240, 25%, 75%, 0.15);
-  --item-background--active: hsla(240, 25%, 75%, 0.225);
-  --item-box-shadow--focus: hsla(240, 25%, 75%, 0.105);
+  --item-background--hover: hsl(240 25% 75% / 0.15);
+  --item-background--active: hsl(240 25% 75% / 0.225);
+  --item-box-shadow--focus: hsl(240 25% 75% / 0.105);
 
   // Deprecated
   --primary: var(--accent-color); // Use var(--accent-color) instead

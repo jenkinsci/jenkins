@@ -209,7 +209,7 @@ pre.console {
   width: 100%;
   border-radius: 3px;
   border: 1px solid var(--input-border);
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.075);
   padding: 6px;
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -285,65 +285,6 @@ pre.console {
   ); /* it needs to occupy the entire width or else the underlying content will see through */
 
   z-index: 998; /* behind top-sticker */
-}
-
-.bottom-sticker-inner {
-  position: relative;
-  padding: 1em var(--section-padding);
-  z-index: 0;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--background);
-    opacity: 0;
-    z-index: -1;
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: -30px;
-    left: 0;
-    right: 0;
-    background: linear-gradient(rgba(black, 0), rgba(#556, 0.075) 110%);
-    max-width: 100%;
-    height: 30px;
-    opacity: 0;
-    transition: var(--standard-transition);
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      white var(--section-padding),
-      white calc(100% - var(--section-padding)),
-      transparent
-    );
-    pointer-events: none;
-  }
-
-  &--stuck {
-    .bottom-sticker-inner {
-      backdrop-filter: blur(15px);
-
-      &::before {
-        opacity: 0.75 !important;
-
-        @supports not (backdrop-filter: blur(15px)) {
-          opacity: 1 !important;
-        }
-      }
-
-      &::after {
-        opacity: 1 !important;
-      }
-    }
-  }
-
-  .yui-button {
-    margin-left: 0;
-    margin-right: 0.5rem;
-  }
 }
 
 .icon16x16 {

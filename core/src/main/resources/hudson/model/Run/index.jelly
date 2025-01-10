@@ -25,53 +25,62 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt">
-  <l:layout title="${it.fullDisplayName}">
-    <st:include page="sidepanel.jelly" />
+  <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
 
-    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-    <l:main-panel>
-      <j:set var="controls">
-        <t:editDescriptionButton permission="${it.UPDATE}"/>
-        <l:hasPermission permission="${it.UPDATE}">
-          <st:include page="logKeep.jelly" />
-        </l:hasPermission>
-      </j:set>
+  <j:choose>
+    <j:when test="${newBuildPage}">
+      <st:include page="new-build-page.jelly" />
+    </j:when>
+    <j:otherwise>
+      <l:layout title="${it.fullDisplayName}">
+        <st:include page="sidepanel.jelly" />
 
-      <t:buildCaption controls="${controls}">${it.displayName} (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</t:buildCaption>
+        <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
+        <l:main-panel>
+          <j:set var="controls">
+            <t:editDescriptionButton permission="${it.UPDATE}"/>
+            <l:hasPermission permission="${it.UPDATE}">
+              <st:include page="logKeep.jelly" />
+            </l:hasPermission>
+          </j:set>
 
-      <div>
-        <t:editableDescription permission="${it.UPDATE}" hideButton="true"/>
-      </div>
+          <t:buildCaption controls="${controls}">${it.displayName} (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</t:buildCaption>
 
-      <div style="float:right; z-index: 1; position:relative; margin-left: 1em">
-        <div style="margin-top:1em">
-          ${%startedAgo(it.timestampString)}
-        </div>
-        <div>
-          <j:if test="${it.building}">
-            ${%beingExecuted(it.executor.timestampString)}
-          </j:if>
-          <j:if test="${!it.building}">
-            ${%Took} <a href="${rootURL}/${it.parent.url}buildTimeTrend">${it.durationString}</a>
-          </j:if>
-          <st:include page="details.jelly" optional="true" />
-        </div>
-      </div>
+          <div>
+            <t:editableDescription permission="${it.UPDATE}" hideButton="true"/>
+          </div>
+
+          <div style="float:right; z-index: 1; position:relative; margin-left: 1em">
+            <div style="margin-top:1em">
+              ${%startedAgo(it.timestampString)}
+            </div>
+            <div>
+              <j:if test="${it.building}">
+                ${%beingExecuted(it.executor.timestampString)}
+              </j:if>
+              <j:if test="${!it.building}">
+                ${%Took} <a href="${rootURL}/${it.parent.url}buildTimeTrend">${it.durationString}</a>
+              </j:if>
+              <st:include page="details.jelly" optional="true" />
+            </div>
+          </div>
 
 
-      <table>
-        <t:artifactList build="${it}" caption="${%Build Artifacts}"
-          permission="${it.ARTIFACTS}" />
+          <table>
+            <t:artifactList build="${it}" caption="${%Build Artifacts}"
+                            permission="${it.ARTIFACTS}" />
 
-        <!-- give actions a chance to contribute summary item -->
-        <j:forEach var="a" items="${it.allActions}">
-          <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
-        </j:forEach>
+            <!-- give actions a chance to contribute summary item -->
+            <j:forEach var="a" items="${it.allActions}">
+              <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+            </j:forEach>
 
-        <st:include page="summary.jelly" optional="true" />
-      </table>
+            <st:include page="summary.jelly" optional="true" />
+          </table>
 
-      <st:include page="main.jelly" optional="true" />
-    </l:main-panel>
-  </l:layout>
+          <st:include page="main.jelly" optional="true" />
+        </l:main-panel>
+      </l:layout>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
