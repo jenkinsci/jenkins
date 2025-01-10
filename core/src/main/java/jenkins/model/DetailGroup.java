@@ -12,14 +12,9 @@ public class DetailGroup {
         this.order = order;
     }
 
-    public static DetailGroup SCM = of(0);
+    public static DetailGroup SCM = new DetailGroup(0);
 
-    public static DetailGroup GENERAL = of(Integer.MAX_VALUE);
-
-    // TODO - expose this yay or nay?
-    private static DetailGroup of(int customOrder) {
-        return new DetailGroup(customOrder);
-    }
+    public static DetailGroup GENERAL = new DetailGroup(Integer.MAX_VALUE);
 
     public int getOrder() {
         return order;
