@@ -143,6 +143,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
@@ -158,6 +159,7 @@ import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import jenkins.console.ConsoleUrlProvider;
+import jenkins.console.DefaultConsoleUrlProvider;
 import jenkins.console.WithConsoleUrl;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
@@ -1991,6 +1993,14 @@ public class Functions {
     public static @CheckForNull String getConsoleUrl(WithConsoleUrl withConsoleUrl) {
         String consoleUrl = withConsoleUrl.getConsoleUrl();
         return consoleUrl != null ? Stapler.getCurrentRequest().getContextPath() + '/' + consoleUrl : null;
+    }
+
+    /**
+     * @param run the run
+     * @return the Console Provider for the given run, if null, the default Console Provider
+     */
+    public static ConsoleUrlProvider getConsoleProviderFor(Run<?, ?> run) {
+        return Optional.ofNullable(ConsoleUrlProvider.getProvider(run)).orElse(new DefaultConsoleUrlProvider());
     }
 
     /**
