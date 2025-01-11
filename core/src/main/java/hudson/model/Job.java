@@ -864,7 +864,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Gets the youngest build #m that satisfies {@code n&lt;=m}.
+     * Gets the oldest build #m that satisfies {@code m ≥ n}.
      *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
@@ -879,7 +879,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Gets the latest build #m that satisfies {@code m&lt;=n}.
+     * Gets the newest build #m that satisfies {@code m ≤ n}.
      *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
@@ -988,7 +988,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     protected abstract void removeRun(RunT run);
 
     /**
-     * Returns the last build.
+     * Returns the newest build.
      * @see LazyBuildMixIn#getLastBuild
      */
     @Exported
