@@ -124,7 +124,7 @@
       font-weight: 450;
       font-size: 0.875rem;
       margin: 0;
-      padding: 0.75rem 0.75rem 0.5rem;
+      padding: 0.5rem 0.625rem;
       color: var(--text-color-secondary);
 
       &:not(:first-of-type) {
@@ -150,7 +150,7 @@
       align-items: center;
       justify-content: flex-start;
       background: transparent;
-      padding: 0.75rem;
+      padding: 0.625rem;
       border-radius: 0.5rem;
       cursor: pointer;
       color: var(--text-color) !important;
