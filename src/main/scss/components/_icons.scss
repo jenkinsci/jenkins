@@ -68,7 +68,7 @@
 
 .icon-aborted,
 .icon-aborted-anime {
-  @include status-icon-color(var(--black));
+  @include status-icon-color(var(--light-orange));
 }
 
 .icon-disabled,
