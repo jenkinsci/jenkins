@@ -18,8 +18,10 @@ Behaviour.specify(
         navigator.clipboard
           .writeText(text)
           .then(() => {
-            // Show the completion message
-            hoverNotification(copyButton.getAttribute("message"), copyButton);
+            copyButton.classList.add("jenkins-copy-button--copied");
+            setTimeout(() => {
+              copyButton.classList.remove("jenkins-copy-button--copied");
+            }, 2000);
           })
           .catch(() => {
             hoverNotification(
