@@ -131,25 +131,4 @@ $icon-size: 1.375rem;
       color: var(--text-color);
     }
   }
-
-  button {
-    appearance: none;
-    border: none;
-    outline: none;
-    background: none;
-    margin: 0;
-    padding: 0;
-    transition: var(--standard-transition);
-    transform-origin: left center;
-    cursor: pointer;
-
-    &:hover {
-      opacity: 0.8;
-    }
-
-    &:active {
-      transform: scale(0.95);
-      opacity: 0.6;
-    }
-  }
 }
