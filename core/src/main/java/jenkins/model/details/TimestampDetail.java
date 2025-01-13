@@ -1,4 +1,4 @@
-package hudson.model.details;
+package jenkins.model.details;
 
 import hudson.model.Run;
 import jenkins.model.Detail;
