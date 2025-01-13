@@ -146,7 +146,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
         int r = new LocalLauncher(task).launch().cmds(executable, "restart!")
                 .stdout(task).pwd(home).join();
         if (r != 0)
-            throw new IOException(baos.encodeToBytes().toString(StandardCharsets.UTF_8));
+            throw new IOException(baos.toString(StandardCharsets.UTF_8));
     }
 
     private static File getBaseDir() {
