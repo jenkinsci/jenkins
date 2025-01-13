@@ -5,7 +5,6 @@ import jenkins.model.Detail;
 
 /**
  * Displays the start time of the given run
- * @implNote This renders Jelly
  */
 public class TimestampDetail extends Detail {
 
