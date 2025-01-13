@@ -5,7 +5,7 @@ import jenkins.model.Detail;
 
 /**
  * Displays the start time of the given run
- * @implNote This will render Jelly, hence the fields return null
+ * @implNote This renders Jelly
  */
 public class TimestampDetail extends Detail {
 
