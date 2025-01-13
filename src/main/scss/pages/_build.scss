@@ -142,34 +142,6 @@
   }
 }
 
-.app-build__started-at {
-  display: grid;
-  grid-template-columns: 1fr;
-  justify-content: start;
-  perspective: 1000px;
-
-  &__front,
-  &__back {
-    justify-self: start;
-    grid-area: 1 / 1;
-    backface-visibility: hidden;
-    transform-style: preserve-3d;
-    transition: 1s cubic-bezier(0, 0.68, 0.5, 1.5);
-  }
-
-  &__back {
-    transform: rotateX(180deg);
-  }
-
-  &.app-build__started-at--flipped &__front {
-    transform: rotateX(-180deg);
-  }
-
-  &.app-build__started-at--flipped &__back {
-    transform: rotateX(0deg);
-  }
-}
-
 .app-console-output-widget {
   overflow-y: auto;
   margin: 0 -1rem -1rem;
