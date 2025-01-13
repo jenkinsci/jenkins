@@ -96,6 +96,7 @@ $icon-size: 1.375rem;
   }
 
   hr {
+    align-self: stretch;
     border: none;
     border-top: var(--card-border-width) solid var(--text-color-secondary);
     opacity: 0.1;
@@ -106,6 +107,7 @@ $icon-size: 1.375rem;
 .jenkins-card__details {
   display: flex;
   flex-direction: column;
+  align-items: start;
   gap: 0.75rem;
 }
 
