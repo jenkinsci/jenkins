@@ -97,9 +97,9 @@ $icon-size: 1.375rem;
 
   hr {
     border: none;
-    border-top: 2px solid var(--text-color-secondary);
+    border-top: var(--card-border-width) solid var(--text-color-secondary);
     opacity: 0.1;
-    margin: 0 calc((1rem - 4px) * -1);
+    margin: 0 calc(-1rem + var(--card-border-width));
   }
 }
 
