@@ -181,16 +181,6 @@
     - If it is not a false positive, fix the bug, then remove the exclusion from this section.
    -->
   <Match>
-    <And>
-      <Bug pattern="DM_DEFAULT_ENCODING"/>
-      <Or>
-        <Class name="hudson.console.ConsoleNote"/>
-        <Class name="hudson.lifecycle.WindowsServiceLifecycle"/>
-        <Class name="hudson.util.TextFile"/>
-      </Or>
-    </And>
-  </Match>
-  <Match>
     <Confidence value="2"/>
     <Or>
       <And>
