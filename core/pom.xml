@@ -167,44 +167,6 @@ THE SOFTWARE.
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-jelly</groupId>
-      <artifactId>commons-jelly-tags-fmt</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-jelly</groupId>
-      <artifactId>commons-jelly-tags-xml</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-jelly</groupId>
-          <artifactId>commons-jelly</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-jelly</groupId>
-          <artifactId>commons-jelly-tags-junit</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-jexl</groupId>
-          <artifactId>commons-jexl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xalan</groupId>
-          <artifactId>xalan</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xerces</groupId>
-          <artifactId>xercesImpl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <!-- Jenkins doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
@@ -309,6 +271,24 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>commons-jelly-tags-fmt</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>commons-jelly-tags-xml</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>jaxen</groupId>
+          <artifactId>jaxen</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.dom4j</groupId>
+          <artifactId>dom4j</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>

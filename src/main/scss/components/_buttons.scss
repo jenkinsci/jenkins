@@ -24,7 +24,6 @@
   min-height: 2.25rem;
   white-space: nowrap;
   gap: 1ch;
-  transition: var(--standard-transition);
 
   &::before {
     background: var(--button-background);
@@ -162,7 +161,7 @@
 .jenkins-buttons-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
 
   &--invert {
     justify-content: flex-end;
@@ -170,36 +169,64 @@
 
   &--equal-width {
     .jenkins-button {
-      min-width: 5.625rem;
+      min-width: 6.5rem;
     }
   }
 
   &--equal-width {
-    min-width: 5.625rem;
+    min-width: 6.5rem;
+  }
+
+  @media (width <= 600px) {
+    justify-content: stretch;
+
+    .jenkins-button {
+      flex-grow: 1;
+    }
   }
 }
 
 .jenkins-copy-button {
   .jenkins-copy-button__icon {
     position: relative;
-    width: 0.9rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    place-items: center;
+    width: 1.125rem;
     height: 1.125rem;
     transition: var(--standard-transition);
+
+    svg {
+      grid-area: 1 / 1;
+      scale: -0.5;
+      opacity: 0;
+      transition: var(--elastic-transition);
+      filter: blur(2px);
+      color: var(--success-color);
+
+      * {
+        stroke-width: 40px;
+      }
+    }
 
     &::before,
     &::after {
       content: "";
-      position: absolute;
-      width: 75%;
-      height: 75%;
+      position: relative;
+      width: 0.6875rem;
+      height: 0.875rem;
       border: 0.1rem solid currentColor;
       border-radius: 0.2rem;
-      transition: var(--standard-transition);
+      transition:
+        translate var(--standard-transition),
+        scale var(--standard-transition),
+        opacity var(--standard-transition),
+        filter var(--standard-transition);
+      grid-area: 1 / 1;
     }
 
     &::before {
-      top: 4%;
-      left: 1%;
+      translate: -16% -10%;
       clip-path: polygon(
         100% 0,
         100% 22.5%,
@@ -211,19 +238,45 @@
     }
 
     &::after {
-      bottom: 4%;
-      right: 1%;
+      translate: 16% 10%;
+    }
+  }
+
+  &--copied {
+    color: var(--success-color) !important;
+
+    --button-background: color-mix(
+      in sRGB,
+      var(--success-color) 10%,
+      transparent
+    );
+    --button-background--hover: var(--button-background);
+    --button-background--active: var(--button-background);
+
+    .jenkins-copy-button__icon {
+      &::before,
+      &::after {
+        scale: 1.25;
+        opacity: 0;
+        filter: blur(1px);
+      }
+
+      svg {
+        scale: 1.25;
+        opacity: 1;
+        filter: blur(0);
+      }
     }
   }
 
   &:hover {
     .jenkins-copy-button__icon {
       &::before {
-        transform: translate(7%, 4.5%);
+        translate: -11% -8%;
       }
 
       &::after {
-        transform: translate(-7%, -4.5%);
+        translate: 11% 8%;
       }
     }
   }
