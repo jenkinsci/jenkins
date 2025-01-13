@@ -670,23 +670,6 @@ table.progress-bar.red td.progress-bar-done {
   }
 }
 
-/* ========================= YUI dialog ========================= */
-
-/* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
- to the latest YUI will fix this? */
-.dialog .hd {
-  margin: 0 !important;
-  font-size: var(--font-size-xs) !important;
-}
-
-.dialog .bd {
-  margin: 0 !important;
-}
-
-.dialog .ft {
-  margin: 0 !important;
-}
-
 /* ========================= tags/labels ================== */
 // Used in core/src/main/java/hudson/util/TagCloud.java#getClassName
 
