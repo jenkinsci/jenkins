@@ -24,7 +24,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:x="jelly:xml">
   <l:layout title="${it.fullDisplayName}">
     <st:include page="sidepanel.jelly" />
 
@@ -55,12 +55,14 @@ THE SOFTWARE.
               </j:if>
               <j:forEach var="detail" items="${group.value}">
                 <st:include page="detail.jelly" it="${detail}" optional="true">
-                  <div class="jenkins-card__details__item">
+                  <x:element name="${detail.url != null ? 'a' : 'div'}">
+                    <x:attribute name="class">jenkins-card__details__item</x:attribute>
+                    <x:attribute name="href">${detail.url}</x:attribute>
                     <div class="jenkins-card__details__item__icon">
                       <l:icon src="${detail.iconClassName}" />
                     </div>
                     ${detail.displayName}
-                  </div>
+                  </x:element>
                 </st:include>
               </j:forEach>
             </j:forEach>

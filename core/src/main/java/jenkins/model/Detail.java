@@ -45,6 +45,13 @@ public abstract class Detail implements ModelObject, IconSpec {
     }
 
     /**
+     * Optional URL for the {@link Detail}
+     */
+    public @Nullable String getUrl() {
+        return null;
+    }
+
+    /**
      * Returns true if this detail is applicable to the given Actionable object
      */
     public boolean isApplicable() {
