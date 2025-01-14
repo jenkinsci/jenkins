@@ -45,7 +45,8 @@ public abstract class Detail implements ModelObject, IconSpec {
     }
 
     /**
-     * Optional URL for the {@link Detail}
+     * Optional URL for the {@link Detail}.
+     * If provided the detail element will be a link instead of plain text.
      */
     public @Nullable String getUrl() {
         return null;
