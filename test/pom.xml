@@ -123,7 +123,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1336.vee415d95c521</version>
+        <version>1358.vfb_5780da_64cb_</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -134,7 +134,7 @@ THE SOFTWARE.
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>936.v9fa_77211ca_e1</version>
+        <version>943.v8b_0d01a_7b_a_08</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
