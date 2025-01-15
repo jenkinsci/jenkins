@@ -1,4 +1,4 @@
-package jenkins.model;
+package jenkins.model.details;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Actionable;
@@ -48,7 +48,7 @@ public abstract class Detail implements ModelObject, IconSpec {
      * Optional URL for the {@link Detail}.
      * If provided the detail element will be a link instead of plain text.
      */
-    public @Nullable String getUrl() {
+    public @Nullable String getLink() {
         return null;
     }
 
@@ -56,7 +56,7 @@ public abstract class Detail implements ModelObject, IconSpec {
      * @return the grouping of the detail
      */
     public DetailGroup getGroup() {
-        return DetailGroup.GENERAL;
+        return GeneralDetailGroup.get();
     }
 
     /**

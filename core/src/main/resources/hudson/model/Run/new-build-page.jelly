@@ -55,9 +55,9 @@ THE SOFTWARE.
               </j:if>
               <j:forEach var="detail" items="${group.value}">
                 <st:include page="detail.jelly" it="${detail}" optional="true">
-                  <x:element name="${detail.url != null ? 'a' : 'div'}">
+                  <x:element name="${detail.link != null ? 'a' : 'div'}">
                     <x:attribute name="class">jenkins-card__details__item</x:attribute>
-                    <x:attribute name="href">${detail.url}</x:attribute>
+                    <x:attribute name="href">${detail.link}</x:attribute>
                     <div class="jenkins-card__details__item__icon">
                       <l:icon src="${detail.iconClassName}" />
                     </div>

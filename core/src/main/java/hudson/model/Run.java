@@ -116,13 +116,13 @@ import jenkins.model.ArtifactManager;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.BuildDiscarder;
-import jenkins.model.Detail;
-import jenkins.model.DetailFactory;
 import jenkins.model.HistoricalBuild;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DurationDetail;
 import jenkins.model.details.TimestampDetail;
 import jenkins.model.lazy.BuildReference;
@@ -2683,7 +2683,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             return Run.class;
         }
 
-        @NonNull @Override public Collection<? extends Detail> createFor(@NonNull Run target) {
+        @NonNull @Override public List<? extends Detail> createFor(@NonNull Run target) {
             return List.of(new TimestampDetail(target), new DurationDetail(target));
         }
     }
