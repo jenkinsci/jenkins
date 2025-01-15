@@ -213,7 +213,12 @@ public class ClassicPluginStrategy implements PluginStrategy {
         if (paths.isEmpty()) {
             LOGGER.info("No classpaths found for plugin " + archive.getName());
         }
-
+        File uninstalledFile = new File(archive.getPath() + ".uninstalled");
+        if (uninstalledFile.exists()) {
+            if (!uninstalledFile.delete()) {
+                LOGGER.warning("Failed to delete plugin uninstall file " + uninstalledFile);
+            }
+        }
         // compute dependencies
         List<PluginWrapper.Dependency> dependencies = new ArrayList<>();
         List<PluginWrapper.Dependency> optionalDependencies = new ArrayList<>();
