@@ -116,7 +116,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
                 .collect(Collectors.toList());
     }
 
-    private Collection<AdministrativeMonitor> getAllActiveAdministrativeMonitors() {
+    protected Collection<AdministrativeMonitor> getAllActiveAdministrativeMonitors() {
         Collection<AdministrativeMonitor> active = new ArrayList<>();
         for (AdministrativeMonitor am : Jenkins.get().getActiveAdministrativeMonitors()) {
             if (am instanceof ReverseProxySetupMonitor) {
