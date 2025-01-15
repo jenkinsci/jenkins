@@ -12,7 +12,7 @@ f.entry(title: _('Unprotected URLs')) {
     }
     ul {
         for (def action : Jenkins.get().getActions().sort { x, y -> x.getUrlName() <=> y.getUrlName() }) {
-            if (action instanceof UnprotectedRootAction) {
+            if (action instanceof UnprotectedRootAction && action.getUrlName() != null) {
                 li {
                     a(href: '../' + action.getUrlName(), rel: 'noopener noreferrer', target: '_blank') {
                         code {
