@@ -2,18 +2,19 @@
 @use "../base/breakpoints";
 
 $colors: (
-  "blue": #006fe6,
-  "brown": #a2845e,
-  "cyan": #32ade6,
-  "green": #1ea64b,
-  "indigo": #5856d6,
-  "orange": #fe820a,
-  "pink": #fb0f45,
-  "purple": #af52de,
-  "red": #e6001f,
-  "yellow": #ffb31a,
+  "blue": oklch(55% 0.2308 256.91),
+  "brown": oklch(60% 0.0941 72.67),
+  "cyan": oklch(60% 0.1497 234.48),
+  "green": oklch(70% 0.2155 150),
+  "indigo": oklch(60% 0.191 278.34),
+  "orange": oklch(70% 0.2001 50.74),
+  "pink": oklch(60% 0.2601 12.28),
+  "purple": oklch(60% 0.2308 314.6),
+  "red": oklch(60% 0.2671 30),
+  "yellow": oklch(80% 0.17 76),
+  "teal": oklch(60% 0.1122 216.72),
   "white": #fff,
-  "black": #14141f,
+  "black": oklch(from var(--accent-color) 2% 0.075 h),
 );
 
 $semantics: (
@@ -52,7 +53,7 @@ $semantics: (
   --dark-grey: #4d545d;
 
   // branding
-  --secondary: rgb(96 125 159);
+  --secondary: oklch(from var(--black) 60% c h);
   --focus-input-border: var(--accent-color);
   --focus-input-glow: color-mix(in sRGB, var(--accent-color) 15%, transparent);
 
@@ -83,13 +84,15 @@ $semantics: (
   --search-bg: var(--white);
   --search-box-completion-bg: var(--primary-hover);
   --search-box-shadow: 0 1px 7px 0 rgb(0 0 0 / 0.3);
-  --header-bg-classic: #000;
+  --header-bg-classic: var(--black);
   --header-link-bg-classic-hover: #404040;
   --header-link-bg-classic-active: #404040;
   --header-item-border-radius: 4px;
 
   // Breadcrumbs bar
-  --breadcrumbs-bar-background: hsl(240 20% 96.5% / 0.8);
+  --breadcrumbs-bar-background: oklch(
+    from var(--text-color) 96.8% 0.005 h / 0.8
+  );
 
   // Alert call outs
   --alert-success-text-color: var(--success-color);
@@ -170,7 +173,7 @@ $semantics: (
   --btn-link-bg--active: var(--light-grey);
 
   // Table
-  --table-background: var(--panel-header-bg-color);
+  --table-background: oklch(from var(--text-color-secondary) l c h / 0.1);
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
@@ -256,13 +259,17 @@ $semantics: (
   --card-background: var(--background);
   --card-background--hover: transparent;
   --card-background--active: transparent;
-  --card-border-color: hsl(240 25% 75% / 0.25);
-  --card-border-color--hover: hsl(240 25% 75% / 0.5);
-  --card-border-color--active: hsl(240 25% 75% / 0.75);
+  --card-border-color: oklch(from var(--text-color-secondary) l c h / 0.15);
+  --card-border-color--hover: oklch(
+    from var(--text-color-secondary) l c h / 0.3
+  );
+  --card-border-color--active: oklch(
+    from var(--text-color-secondary) l c h / 0.5
+  );
   --card-border-width: 2px;
 
   // Tab bar
-  --tabs-background: var(--panel-header-bg-color);
+  --tabs-background: oklch(from var(--text-color-secondary) l c h / 0.1);
   --tabs-item-background: transparent;
   --tabs-item-foreground: var(--text-color);
   --tabs-item-background--hover: rgb(0 0 0 / 0.05);
@@ -323,7 +330,7 @@ $semantics: (
   --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);
   --pre-background: rgb(0 0 0 / 0.05);
   --pre-color: var(--text-color);
-  --selection-color: rgb(2 76 182 / 0.3);
+  --selection-color: oklch(from var(--accent-color) l c h / 0.2);
 
   // Animations
   --standard-transition: 0.3s ease;
@@ -348,15 +355,23 @@ $semantics: (
   --auto-complete-bg-color--prehighlight: #b3d4ff;
 
   // Default button
-  --button-background: hsl(240 25% 75% / 0.1);
-  --button-background--hover: hsl(240 25% 75% / 0.175);
-  --button-background--active: hsl(240 25% 75% / 0.25);
-  --button-box-shadow--focus: hsl(240 25% 75% / 0.1);
+  --button-background: oklch(from var(--text-color-secondary) l c h / 0.075);
+  --button-background--hover: oklch(
+    from var(--text-color-secondary) l c h / 0.125
+  );
+  --button-background--active: oklch(
+    from var(--text-color-secondary) l c h / 0.175
+  );
+  --button-box-shadow--focus: oklch(
+    from var(--text-color-secondary) l c h / 0.1
+  );
 
   // Variables for sidebar items, card items
-  --item-background--hover: hsl(240 25% 75% / 0.15);
-  --item-background--active: hsl(240 25% 75% / 0.225);
-  --item-box-shadow--focus: hsl(240 25% 75% / 0.105);
+  --item-background--hover: oklch(from var(--text-color-secondary) l c h / 0.1);
+  --item-background--active: oklch(
+    from var(--text-color-secondary) l c h / 0.15
+  );
+  --item-box-shadow--focus: oklch(from var(--text-color-secondary) l c h / 0.1);
 
   // Deprecated
   --primary: var(--accent-color); // Use var(--accent-color) instead
@@ -369,8 +384,8 @@ $semantics: (
     --#{$key}: #{$value};
 
     @if $key != "black" and $key != "white" {
-      --light-#{$key}: #{lighten($value, 20%)};
-      --dark-#{$key}: #{darken($value, 20%)};
+      --light-#{$key}: #{color.adjust($value, $lightness: 20%)};
+      --dark-#{$key}: #{color.adjust($value, $lightness: -20%)};
     }
   }
 
