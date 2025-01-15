@@ -26,7 +26,7 @@ package jenkins.util;
 
 import static org.junit.Assert.assertEquals;
 
-import hudson.cli.FullDuplexHttpStream;
+import hudson.cli.HttpUploadDownloadStream;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.security.csrf.CrumbExclusion;
@@ -56,12 +56,12 @@ public class FullDuplexHttpServiceTest {
     public JenkinsRule r = new JenkinsRule();
 
     @Rule
-    public LoggerRule logging = new LoggerRule().record(FullDuplexHttpService.class, Level.FINE).record(FullDuplexHttpStream.class, Level.FINE);
+    public LoggerRule logging = new LoggerRule().record(FullDuplexHttpService.class, Level.FINE).record(HttpUploadDownloadStream.class, Level.FINE);
 
     @Test
     public void smokes() throws Exception {
         logging.record("org.eclipse.jetty", Level.ALL);
-        FullDuplexHttpStream con = new FullDuplexHttpStream(r.getURL(), "test/", null);
+        HttpUploadDownloadStream con = new HttpUploadDownloadStream(r.getURL(), "test/", null);
         InputStream is = con.getInputStream();
         OutputStream os = con.getOutputStream();
         os.write(33);
