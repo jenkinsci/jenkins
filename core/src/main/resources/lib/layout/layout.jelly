@@ -157,6 +157,11 @@ THE SOFTWARE.
       <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
       <a href="#skip2content" class="jenkins-skip-link">Skip to content</a>
 
+      <j:set var="breadcrumbs">
+        <j:set var="mode" value="breadcrumbs" />
+        <d:invokeBody />
+      </j:set>
+
       <l:pageHeader title="${%title}"
                     logoAlt="${%jenkinshead.alt}"
                     searchPlaceholder="${%search}"
