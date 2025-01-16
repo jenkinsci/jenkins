@@ -248,7 +248,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>840.v812f627cb_578</version>
+      <version>845.vffd7fa_f27555</version>
       <scope>test</scope>
     </dependency>
     <dependency>
