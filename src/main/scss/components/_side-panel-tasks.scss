@@ -10,7 +10,6 @@ $background-outset: 0.7rem;
   margin: var(--section-padding);
   gap: 0.125rem;
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media (min-width: breakpoints.$tablet-breakpoint) {
     margin-right: calc($background-outset);
   }
