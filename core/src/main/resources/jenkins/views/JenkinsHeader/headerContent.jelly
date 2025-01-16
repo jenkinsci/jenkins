@@ -1,7 +1,10 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:d="jelly:define">
     <header id="page-header" class="page-header">
-      <l:breadcrumbBar />
+      <l:breadcrumbBar>
+        <j:set var="mode" value="breadcrumbs" />
+        <d:invokeBody/>
+      </l:breadcrumbBar>
 
       <div class="page-header__actions">
         <h:searchbox/>
