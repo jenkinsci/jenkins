@@ -110,6 +110,22 @@
   }
 }
 
+.bottom-sticker,
+#bottom-sticker {
+  position: sticky;
+
+  // This has to be set to -1px so that IntersectionObserver can add the
+  // &--stuck class when the element is stuck to the bottom of the screen
+  // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
+  bottom: -1px;
+  margin-left: calc(var(--section-padding) * -1);
+  width: calc(
+          100% + calc(var(--section-padding) * 2)
+  ); /* it needs to occupy the entire width or else the underlying content will see through */
+
+  z-index: 998; /* behind top-sticker */
+}
+
 .bottom-sticker-inner {
   position: relative;
   padding: 1em var(--section-padding);
