@@ -162,11 +162,6 @@ THE SOFTWARE.
                     searchPlaceholder="${%search}"
                     searchHelpUrl="${%searchBox.url}"
                     logout="${%logout}"/>
-
-      <l:breadcrumbBar>
-        <j:set var="mode" value="breadcrumbs" />
-        <d:invokeBody/>
-      </l:breadcrumbBar>
     </j:if>
 
     <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">

@@ -15,6 +15,7 @@
     </j:set>
 
     <button id="button-open-command-palette"
+            class="jenkins-button jenkins-button--tertiary"
             data-html-tooltip="${commandPaletteTooltip}"
             data-keyboard-shortcut="CMD+K"
             data-search-url="${rootURL + '/search/suggest'}"

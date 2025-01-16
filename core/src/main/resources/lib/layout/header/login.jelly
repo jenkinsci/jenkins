@@ -1,37 +1,62 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <div class="login page-header__hyperlinks">
-    <div id="visible-am-insertion" class="page-header__am-wrapper" />
-    <div id="visible-sec-am-insertion" class="page-header__am-wrapper" />
-
-    <!-- user icon and login/logout links; only show if authentication is enabled and we're not handling a servlet error -->
-    <j:if test="${app.useSecurity}">
-      <j:choose>
-        <j:when test="${!h.isAnonymous()}">
-          <j:invokeStatic var="user" className="hudson.model.User" method="current" />
-          <j:choose>
-            <j:when test="${user.fullName == null || user.fullName.trim().isEmpty()}">
-              <j:set var="userName" value="${user.id}"/>
-            </j:when>
-            <j:otherwise>
-              <j:set var="userName" value="${user.fullName}"/>
-            </j:otherwise>
-          </j:choose>
-          <a href="${rootURL}/${user.url}" class="model-link">
-            <l:icon src="symbol-person-circle" class="icon-md"/>
-            <span class="hidden-xs hidden-sm">${userName}</span>
-          </a>
-          <j:if test="${app.securityRealm.canLogOut()}">
-            <a href="${rootURL}/logout">
-              <l:icon src="symbol-log-out" class="icon-md" />
-              <span class="hidden-xs hidden-sm">${logout}</span>
-            </a>
-          </j:if>
-        </j:when>
-        <j:otherwise>
-          <st:include it="${app.securityRealm}" page="loginLink.jelly" />
-        </j:otherwise>
-      </j:choose>
+  <j:forEach var="action" items="${app.actions}">
+    <j:if test="${action.iconFileName != null}">
+      <a href="${h.getActionUrl(app.url, action)}" class="jenkins-button jenkins-button--tertiary" tooltip="${action.displayName}">
+        <l:icon src="${action.iconFileName}" />
+      </a>
     </j:if>
-  </div>
+  </j:forEach>
+
+  <!-- user icon and login/logout links; only show if authentication is enabled and we're not handling a servlet error -->
+  <j:if test="${app.useSecurity}">
+    <j:choose>
+      <j:when test="${!h.isAnonymous()}">
+        <j:invokeStatic var="user" className="hudson.model.User" method="current" />
+        <j:choose>
+          <j:when test="${user.fullName == null || user.fullName.trim().isEmpty()}">
+            <j:set var="userName" value="${user.id}"/>
+          </j:when>
+          <j:otherwise>
+            <j:set var="userName" value="${user.fullName}"/>
+          </j:otherwise>
+        </j:choose>
+
+        <j:set var="dropdown">
+          <div style="display: flex; flex-direction: column; margin: 0 -0.4rem">
+            <a class="jenkins-dropdown__item" href="${rootURL}/${user.url}">
+              <div class="jenkins-dropdown__item__icon">
+                <l:icon src="symbol-person-circle" />
+              </div>
+              ${userName}
+            </a>
+            <a class="jenkins-dropdown__item" href="${rootURL}/${user.url}/account">
+              <div class="jenkins-dropdown__item__icon">
+                <l:icon src="symbol-settings" />
+              </div>
+              Configure
+            </a>
+            <div class="jenkins-dropdown__separator" />
+            <a class="jenkins-dropdown__item" href="${rootURL}/logout">
+              <div class="jenkins-dropdown__item__icon">
+                <div class="jenkins-dropdown__item__icon">
+                  <l:icon src="symbol-log-out" />
+                </div>
+              </div>
+              Sign out
+            </a>
+          </div>
+        </j:set>
+
+        <a href="${rootURL}/${user.url}" class="jenkins-button jenkins-button--tertiary"
+           data-tippy-placement="bottom-end"
+           data-html-tooltip="${dropdown}" data-tooltip-interactive="true">
+          <l:icon src="symbol-person-circle" />
+        </a>
+      </j:when>
+      <j:otherwise>
+        <st:include it="${app.securityRealm}" page="loginLink.jelly" />
+      </j:otherwise>
+    </j:choose>
+  </j:if>
 </j:jelly>

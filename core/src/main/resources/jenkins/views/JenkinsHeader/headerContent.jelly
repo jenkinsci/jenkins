@@ -1,8 +1,10 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header">
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout">
     <header id="page-header" class="page-header">
-      <h:logo/>
-      <h:searchbox/>
-      <h:login/>
+      <l:breadcrumbBar />
+      <div class="page-header__actions">
+        <h:searchbox/>
+        <h:login/>
+      </div>
     </header>
 </j:jelly>
