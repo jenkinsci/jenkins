@@ -1,9 +1,31 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
     <header id="page-header" class="page-header">
       <l:breadcrumbBar />
+
       <div class="page-header__actions">
         <h:searchbox/>
+
+        <l:overflowButton clazz="jenkins-button--tertiary jenkins-mobile-show">
+          <j:forEach var="action" items="${app.actions}">
+            <j:if test="${action.iconFileName != null}">
+              <dd:item href="${h.getActionUrl(app.url, action)}"
+                       icon="${action.iconFileName}"
+                       text="${action.displayName}" />
+            </j:if>
+          </j:forEach>
+        </l:overflowButton>
+
+        <div class="jenkins-!-display-contents jenkins-mobile-hide">
+          <j:forEach var="action" items="${app.actions}">
+            <j:if test="${action.iconFileName != null}">
+              <a href="${h.getActionUrl(app.url, action)}" class="jenkins-button jenkins-button--tertiary" tooltip="${action.displayName}">
+                <l:icon src="${action.iconFileName}" />
+              </a>
+            </j:if>
+          </j:forEach>
+        </div>
+
         <h:login/>
       </div>
     </header>

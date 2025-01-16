@@ -1,13 +1,5 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <j:forEach var="action" items="${app.actions}">
-    <j:if test="${action.iconFileName != null}">
-      <a href="${h.getActionUrl(app.url, action)}" class="jenkins-button jenkins-button--tertiary" tooltip="${action.displayName}">
-        <l:icon src="${action.iconFileName}" />
-      </a>
-    </j:if>
-  </j:forEach>
-
   <!-- user icon and login/logout links; only show if authentication is enabled and we're not handling a servlet error -->
   <j:if test="${app.useSecurity}">
     <j:choose>
