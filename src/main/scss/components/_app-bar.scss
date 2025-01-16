@@ -51,10 +51,10 @@
 
   &--sticky {
     position: sticky;
-    top: 40px;
+    top: 45px;
     padding-top: var(--section-padding);
     margin-top: calc(var(--section-padding) * -1);
-    z-index: 2;
+    z-index: 21;
 
     &::before,
     &::after {
