@@ -13,8 +13,8 @@
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
   margin-bottom: calc(var(--section-padding) * -1);
-  padding: calc(var(--section-padding) / 1.65) var(--section-padding);
-  min-height: 70px;
+  padding: 0 var(--section-padding);
+  min-height: 8rem;
 
   &::before {
     content: "";
