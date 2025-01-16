@@ -32,7 +32,7 @@
     "css-loader": "7.1.2",
     "css-minimizer-webpack-plugin": "7.0.0",
     "eslint": "9.18.0",
-    "eslint-config-prettier": "9.1.0",
+    "eslint-config-prettier": "10.0.1",
     "eslint-formatter-checkstyle": "8.40.0",
     "globals": "15.14.0",
     "handlebars-loader": "1.7.3",
