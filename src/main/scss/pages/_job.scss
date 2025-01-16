@@ -94,7 +94,7 @@
 }
 
 .app-builds-container__item {
-  @include mixins.item();
+  @include mixins.item;
 
   display: grid;
   grid-template-columns: auto 1fr auto;

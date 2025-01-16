@@ -275,6 +275,7 @@ pre.console {
 .bottom-sticker,
 #bottom-sticker {
   position: sticky;
+
   // This has to be set to -1px so that IntersectionObserver can add the
   // &--stuck class when the element is stuck to the bottom of the screen
   // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
