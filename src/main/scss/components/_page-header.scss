@@ -15,17 +15,10 @@
   margin-bottom: calc(var(--section-padding) * -1);
   padding: 0 var(--section-padding);
   min-height: 4.375rem;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    backdrop-filter: blur(var(--background-blur));
-    background: color-mix(in srgb, var(--background) var(--background-opacity), transparent);
-    border-bottom: 1.5px solid color-mix(in srgb, var(--text-color-secondary) var(--border-opacity), transparent);
-    z-index: -1;
-    background-clip: padding-box;
-  }
+  backdrop-filter: blur(var(--background-blur));
+  background: color-mix(in srgb, var(--header-background) var(--background-opacity), transparent);
+  border-bottom: 1.5px solid color-mix(in srgb, var(--text-color-secondary) var(--border-opacity), transparent);
+  background-clip: padding-box;
 
   #jenkins-head-icon {
     height: 2rem;

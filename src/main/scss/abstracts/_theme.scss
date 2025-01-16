@@ -76,18 +76,7 @@ $semantics: (
   --background: var(--white);
 
   // Header
-  --brand-link-color: var(--secondary);
-  --header-link-color: var(--white);
-  --header-link-color-active: #f5f5f5;
-  --header-search-border: var(--white);
-  --search-input-color: var(--brand-link-color);
-  --search-bg: var(--white);
-  --search-box-completion-bg: var(--primary-hover);
-  --search-box-shadow: 0 1px 7px 0 rgb(0 0 0 / 0.3);
-  --header-bg-classic: var(--black);
-  --header-link-bg-classic-hover: #404040;
-  --header-link-bg-classic-active: #404040;
-  --header-item-border-radius: 4px;
+  --header-background: var(--background);
 
   // Breadcrumbs bar
   --breadcrumbs-bar-background: oklch(

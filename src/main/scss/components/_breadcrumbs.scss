@@ -4,7 +4,6 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  overflow-x: auto;
 
   &__list {
     display: contents;
@@ -27,6 +26,18 @@
         font-family: "Georgia";
         font-weight: 600;
         font-size: 1.125rem;
+
+        // Increase the hit-box for the Jenkins logo for Fitts’s Law
+        a {
+          &::before {
+            content: "";
+            position: absolute;
+            top: -30px;
+            left: -100px;
+            bottom: -18px;
+            right: -15px;
+          }
+        }
       }
 
       & > a {
