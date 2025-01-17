@@ -136,7 +136,7 @@
 
   input {
     padding: 0.6rem 0.75rem;
-    border-radius: 0.66rem;
+    border-radius: var(--form-input-border-radius);
     font-size: 0.95rem;
 
     @media (width <= 600px) {
@@ -171,7 +171,7 @@
       position: absolute;
       inset: calc(50% + 1px) 0;
       height: 2px;
-      border-radius: 10px;
+      border-radius: var(--form-input-border-radius);
       background-color: var(--input-border);
     }
 

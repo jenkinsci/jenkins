@@ -151,7 +151,7 @@ pre {
   word-wrap: break-word;
   margin: 0 0 var(--section-padding);
   padding: 0.8rem 1rem;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   background-color: var(--pre-background);
   color: var(--pre-color);
   font-family: var(--font-family-mono);
@@ -253,7 +253,7 @@ pre.console {
 
 .changeset-message {
   padding: 0.8rem 1rem;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   background-color: var(--pre-background);
 
   pre {
@@ -386,7 +386,7 @@ img.icon-help {
 .comboBoxList {
   overflow-y: scroll;
   color: var(--text-color);
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   box-shadow: 0 10px 20px rgba(black, 0.15);
   margin-top: 8px;
   margin-left: 3px;
@@ -407,7 +407,7 @@ img.icon-help {
     position: absolute;
     inset: 0;
     background: var(--text-color);
-    border-radius: 10px;
+    border-radius: var(--form-input-border-radius);
     opacity: 0;
     transition: var(--standard-transition);
     z-index: -1;
@@ -683,7 +683,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-container {
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   overflow: hidden;
   margin-bottom: var(--section-padding);
 

@@ -182,7 +182,7 @@
       bottom: 6px;
       width: 2px;
       background: var(--text-color-secondary);
-      border-radius: 10px;
+      border-radius: var(--form-input-border-radius);
       opacity: 0.3;
     }
   }

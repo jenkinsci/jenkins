@@ -199,7 +199,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      border-radius: 10px;
+      border-radius: var(--form-input-border-radius);
       z-index: -1;
       backdrop-filter: blur(20px);
       box-shadow: 0 0 var(--section-padding) var(--background);
@@ -261,8 +261,8 @@
     align-items: center;
     gap: 0.7rem;
     padding: 0.5rem 0.7rem;
-    font-size: 0.875rem;
-    border-radius: 10px;
+    font-size: var(--font-size-sm);
+    border-radius: var(--form-input-border-radius);
     color: var(--text-color);
     font-weight: 500;
     text-decoration: none;
@@ -291,7 +291,7 @@
       content: "";
       inset: 0;
       z-index: -1;
-      border-radius: 10px;
+      border-radius: var(--form-input-border-radius);
       transition: var(--standard-transition);
       pointer-events: none;
     }

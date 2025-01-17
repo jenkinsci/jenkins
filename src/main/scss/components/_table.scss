@@ -39,7 +39,7 @@
         padding-bottom: calc((var(--table-padding) * 0.9) + 2px);
         padding-left: 1.6rem;
         font-weight: 500;
-        font-size: 0.875rem;
+        font-size: var(--font-size-sm);
 
         &[align="center"] {
           text-align: center;

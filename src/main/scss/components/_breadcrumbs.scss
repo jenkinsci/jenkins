@@ -26,7 +26,7 @@
       justify-content: center;
       color: var(--text-color);
       font-weight: 500;
-      font-size: 0.875rem;
+      font-size: var(--font-size-sm);
       padding: 0.2rem 0.4rem;
 
       & > a {
