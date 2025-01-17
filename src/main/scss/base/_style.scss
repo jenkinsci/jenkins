@@ -275,6 +275,7 @@ pre.console {
 .bottom-sticker,
 #bottom-sticker {
   position: sticky;
+
   // This has to be set to -1px so that IntersectionObserver can add the
   // &--stuck class when the element is stuck to the bottom of the screen
   // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
@@ -668,23 +669,6 @@ table.progress-bar.red td.progress-bar-done {
   to {
     transform: rotate(0deg);
   }
-}
-
-/* ========================= YUI dialog ========================= */
-
-/* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
- to the latest YUI will fix this? */
-.dialog .hd {
-  margin: 0 !important;
-  font-size: var(--font-size-xs) !important;
-}
-
-.dialog .bd {
-  margin: 0 !important;
-}
-
-.dialog .ft {
-  margin: 0 !important;
 }
 
 /* ========================= tags/labels ================== */

@@ -5,11 +5,6 @@
   padding: var(--section-padding) 0 0 0;
   max-width: 1800px;
 
-  &:first-of-type {
-    border-top: none;
-    padding-top: 0;
-  }
-
   &:last-child {
     padding-bottom: 0;
   }
