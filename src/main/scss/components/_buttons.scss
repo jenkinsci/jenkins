@@ -74,6 +74,12 @@
   }
 }
 
+.jenkins-button--tertiary {
+  &::before {
+    background: transparent;
+  }
+}
+
 .jenkins-button--outline {
   color: var(--color, var(--text-color-secondary)) !important;
 
@@ -120,6 +126,7 @@
 
   &::before {
     --button-background: currentColor;
+
     background: currentColor !important;
     opacity: 0.1;
   }
@@ -144,36 +151,6 @@
       &::after {
         box-shadow: 0 0 0 0.33rem currentColor;
         opacity: 0.1;
-      }
-    }
-  }
-}
-
-.jenkins-button--outline[class*="color"] {
-  color: var(--color) !important;
-  border: 2px solid var(--color);
-
-  &::before {
-    background: var(--color) !important;
-  }
-
-  &:not(:disabled) {
-    &:hover {
-      border: 2px solid var(--background) !important;
-      color: var(--background) !important;
-      background: var(--color) !important;
-      opacity: 0.8;
-    }
-
-    &:active,
-    &:focus-visible {
-      &::before {
-        opacity: 0.8;
-      }
-
-      &::after {
-        box-shadow: 0 0 0 0.33rem var(--background);
-        opacity: 0.2;
       }
     }
   }
