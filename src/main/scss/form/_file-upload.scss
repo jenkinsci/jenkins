@@ -37,7 +37,7 @@
     font-size: 0.8rem;
     font-weight: 500;
     color: var(--text-color);
-    border-radius: 0.66rem;
+    border-radius: var(--form-input-border-radius);
     cursor: pointer;
     min-height: 36px;
     white-space: nowrap;
