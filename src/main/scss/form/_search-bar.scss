@@ -10,7 +10,7 @@
   position: relative;
 
   &__input {
-    padding: 0 .5rem 0 calc(var(--search-bar-height) * 0.9);
+    padding: 0 .25rem 0 calc(var(--search-bar-height) * 0.9);
     height: var(--search-bar-height);
 
     &::placeholder {
