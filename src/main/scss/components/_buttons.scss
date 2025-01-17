@@ -75,38 +75,40 @@
 }
 
 .jenkins-button--outline {
-  color: var(--text-color) !important;
-  border: 2px solid var(--text-color);
-  font-weight: bold;
-  font-size: var(--font-size-xs);
+  color: var(--color, var(--text-color-secondary)) !important;
 
-  &::before {
-    background: transparent !important;
-  }
+  --button-background--hover: color-mix(
+    in sRGB,
+    var(--color, var(--text-color-secondary)) 15%,
+    transparent
+  );
+  --button-background--active: color-mix(
+    in sRGB,
+    var(--color, var(--text-color-secondary)) 20%,
+    transparent
+  );
+  --button-box-shadow--focus: color-mix(
+    in sRGB,
+    var(--color, var(--text-color-secondary)) 10%,
+    transparent
+  );
 
-  &:not(:disabled) {
-    &:hover {
-      border: 2px solid var(--accent-color) !important;
-      color: var(--accent-color) !important;
-    }
-
-    &:active,
-    &:focus-visible {
-      &::before {
-        opacity: 0.8;
-      }
-
-      &::after {
-        box-shadow: 0 0 0 0.33rem var(--accent-color);
-        opacity: 0.2;
-      }
-    }
-  }
-}
-
-.jenkins-button--tertiary {
   &::before {
     background: transparent;
+    border: 2px solid var(--color, var(--text-color-secondary));
+    opacity: 1 !important;
+  }
+
+  &:hover {
+    &::before {
+      background: var(--button-background--hover) !important;
+    }
+  }
+
+  &:active {
+    &::before {
+      background: var(--button-background--active) !important;
+    }
   }
 }
 
@@ -117,6 +119,7 @@
   color: var(--color) !important;
 
   &::before {
+    --button-background: currentColor;
     background: currentColor !important;
     opacity: 0.1;
   }
