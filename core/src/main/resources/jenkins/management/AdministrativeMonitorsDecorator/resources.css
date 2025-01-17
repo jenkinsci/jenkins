@@ -29,7 +29,7 @@
 
   color: #fff;
   background-color: var(--warning-color);
-  font-weight: 500;
+  font-weight: var(--bold-weight);
   font-size: var(--font-size-xs);
 
   border-radius: 16px;

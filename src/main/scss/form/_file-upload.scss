@@ -35,7 +35,7 @@
     }
 
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
     color: var(--text-color);
     border-radius: 0.66rem;
     cursor: pointer;

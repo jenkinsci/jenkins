@@ -36,7 +36,7 @@
     .input-validation-message {
       color: var(--error-color);
       padding-top: 2px;
-      font-weight: 500;
+      font-weight: var(--font-bold-weight);
     }
 
     .input-message-disabled {
@@ -201,7 +201,7 @@
     label {
       display: block;
       font-size: var(--font-size-sm);
-      font-weight: 500;
+      font-weight: var(--font-bold-weight);
       color: var(--text-color);
       cursor: pointer;
 

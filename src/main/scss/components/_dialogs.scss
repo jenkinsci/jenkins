@@ -18,7 +18,7 @@ $jenkins-dialog-padding: 1.3rem;
 
   &__title {
     font-size: 1.125rem;
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
     padding: 0 $jenkins-dialog-padding;
     color: var(--text-color);
   }
@@ -56,7 +56,7 @@ $jenkins-dialog-padding: 1.3rem;
 
   &__subtitle {
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
     color: var(--text-color-secondary);
     padding: 0;
     margin: 0 0 1rem;
