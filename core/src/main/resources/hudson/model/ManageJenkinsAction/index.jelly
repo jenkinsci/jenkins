@@ -28,11 +28,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
-    <j:if test="${taskTags==null}">
-      <st:include page="sidepanel.jelly" it="${app}" />
-      <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-    </j:if>
-
     <l:main-panel>
       <l:app-bar title="${%Manage Jenkins}">
         <l:search-bar placeholder="${%Search settings}" id="settings-search-bar" />
@@ -50,7 +45,6 @@ THE SOFTWARE.
       <j:forEach var="category" items="${app.categorizedManagementLinks.entrySet()}">
         <section class="jenkins-section jenkins-section--bottom-padding">
           <h2 class="jenkins-section__title">${category.key.label}</h2>
-          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.addHeader(category.key.label) : null}
           <div class="jenkins-section__items">
           <j:forEach var="m" items="${category.value}">
             <j:if test="${m.iconFileName != null}">
@@ -61,7 +55,6 @@ THE SOFTWARE.
               <j:set var="iconXml">
                 <l:icon src="${m.iconFileName}" />
               </j:set>
-              ${taskTags!=null and attrs.contextMenu!='false' ? it.addContextMenuItem(taskTags, m.urlName, iconSrc, iconXml, m.displayName, m.requiresPOST, m.requiresConfirmation, m.badge, sure) : null}
               <j:choose>
                 <j:when test="${m.requiresConfirmation}">
                   <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%sure}" title="${m.displayName}">

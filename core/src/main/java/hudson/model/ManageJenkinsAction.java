@@ -105,6 +105,8 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
             return null;
         }
 
+        // TODO - should this include plugin updates?
+
         int size = activeAdministrativeMonitors.size();
         String suffix = size > 1 ? "notifications" : "notification";
 
