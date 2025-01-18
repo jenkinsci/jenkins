@@ -1,5 +1,5 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:st="jelly:stapler">
     <header id="page-header" class="page-header">
       <l:breadcrumbBar>
         <j:out value="${breadcrumbs}" />
@@ -24,25 +24,28 @@
           <j:forEach var="action" items="${app.actions}">
             <j:if test="${action.iconFileName != null}">
 
-              <j:if test="${action.badge != null}">
-                <j:set var="tooltip" scope="parent">
+              <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.url)}" />
+              <j:set var="tooltip">
+                <st:include it="${action}" page="jumplist.jelly" optional="true" />
+              </j:set>
+
+              <j:if test="${tooltip.length() == 0}">
+                <j:set var="tooltip">
                   <div style="text-align: center;">${action.displayName}</div>
-                  <div style="text-align: center; color: var(--text-color-secondary)">${action.badge.tooltip}</div>
+                  <j:if test="${action.badge != null}">
+                    <div style="text-align: center; color: var(--text-color-secondary)">${action.badge.tooltip}</div>
+                  </j:if>
                 </j:set>
               </j:if>
 
               <a href="${h.getActionUrl(app.url, action)}"
-                 class="jenkins-button jenkins-button--tertiary"
-                 tooltip="${action.displayName}"
+                 class="jenkins-button jenkins-button--tertiary ${isCurrent ? 'jenkins-button--active' : null}"
                  data-html-tooltip="${tooltip}">
                 <l:icon src="${action.iconFileName}" />
                 <j:if test="${action.badge != null}">
                   <span class="jenkins-badge jenkins-!-${action.badge.severity}-color" />
                 </j:if>
               </a>
-
-              <!-- Unsure if we need this-->
-              <j:set var="tooltip" />
             </j:if>
           </j:forEach>
         </div>
