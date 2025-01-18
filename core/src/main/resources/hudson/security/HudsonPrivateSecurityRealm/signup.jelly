@@ -42,7 +42,7 @@ THE SOFTWARE.
     <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
     <html lang="${request.getLocale().toLanguageTag()}">
       <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
-        <title>${%Register} [Jenkins]</title>
+        <title>${%Register} - Jenkins</title>
         <!-- we do not want bots on this page -->
         <meta name="ROBOTS" content="NOFOLLOW"/>
         <!-- mobile friendly layout -->

@@ -190,7 +190,7 @@ public class SearchTest {
 
         // make sure we've fetched the testSearchByDisplayName project page
         String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+        assertTrue(contents.contains(String.format("<title>%s - Jenkins</title>", displayName)));
         assertFalse(contents.contains(otherDisplayName));
     }
 
