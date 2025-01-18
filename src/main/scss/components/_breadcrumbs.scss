@@ -4,31 +4,22 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
+  overflow-y: hidden;
+  overflow-x: auto;
 
   &__list {
     display: contents;
-    list-style-type: none;
-
-    & > * {
-      flex-shrink: 0;
-    }
 
     &-item {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 500;
-      font-size: 14px;
-      padding: 0;
+      display: contents;
 
       &:first-of-type {
-        font-family: "Georgia";
-        font-weight: 600;
-        font-size: 1.125rem;
-
-        // Increase the hit-box for the Jenkins logo for Fitts’s Law
         a {
+          font-family: "Georgia";
+          font-weight: 600;
+          font-size: 1.125rem;
+
+          // Increase the hit-box for the Jenkins logo for Fitts’s Law
           &::before {
             content: "";
             position: absolute;
@@ -40,41 +31,41 @@
         }
       }
 
-      & > a {
+      & > a, span {
+        position: relative;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 1rem;
-        font-weight: inherit;
-        font-size: inherit;
+        font-weight: 500;
+        font-size: var(--font-size-sm);
         margin: 0;
         padding: 0;
         color: inherit;
         text-decoration: none;
-        margin-right: 0 !important;
-        transition: opacity var(--standard-transition);
+        text-wrap: nowrap;
+        flex-shrink: 0;
 
-        &:hover {
-          opacity: 0.75;
-        }
+        &:link {
+          transition: opacity var(--standard-transition);
 
-        &:active {
-          opacity: 0.5;
+          &:hover {
+            opacity: 0.75;
+          }
+
+          &:active {
+            opacity: 0.5;
+          }
         }
       }
-    }
 
-    // '>' separator between two items
-    .children,
-    .separator {
-      position: relative;
-      width: 1rem;
-      height: 1.25rem;
-
+      // '/' separator between two items
       &::after {
         content: "";
-        position: absolute;
-        inset: 0;
+        position: relative;
+        width: 1rem;
+        height: 1.25rem;
+        flex-shrink: 0;
         transition: var(--standard-transition);
         background: var(--text-color-secondary);
         mask-size: contain;
@@ -84,11 +75,11 @@
         opacity: 0.2;
         scale: 1.1;
       }
-    }
 
-    .separator, .children {
       &:last-of-type {
-        display: none;
+        &::after {
+          display: none;
+        }
       }
     }
   }

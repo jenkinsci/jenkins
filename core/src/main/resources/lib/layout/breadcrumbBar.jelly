@@ -59,7 +59,6 @@ THE SOFTWARE.
                             hasMenu="${h.isModelWithContextMenu(anc.object)}" />
             </j:otherwise>
           </j:choose>
-          <li class="separator" />
         </j:if>
       </j:forEach>
 
