@@ -63,7 +63,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Copies the artifacts into an archive directory.
@@ -367,7 +367,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
 
         @Override
-        public ArtifactArchiver newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public ArtifactArchiver newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             return req.bindJSON(ArtifactArchiver.class, formData);
         }
 
@@ -389,7 +389,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                             if (bd instanceof LogRotator) {
                                 LogRotator lr = (LogRotator) bd;
                                 if (lr.getArtifactNumToKeep() == -1) {
-                                    p.setBuildDiscarder(new LogRotator(lr.getDaysToKeep(), lr.getNumToKeep(), lr.getArtifactDaysToKeep(), 1));
+                                    LogRotator newLr = new LogRotator(lr.getDaysToKeep(), lr.getNumToKeep(), lr.getArtifactDaysToKeep(), 1);
+                                    newLr.setRemoveLastBuild(lr.isRemoveLastBuild());
+                                    p.setBuildDiscarder(newLr);
                                 } else {
                                     LOG.log(Level.WARNING, "will not clobber artifactNumToKeep={0} in {1}", new Object[] {lr.getArtifactNumToKeep(), p});
                                 }

@@ -1,0 +1,129 @@
+@use "sass:color";
+@use "sass:string";
+
+.jenkins-notification {
+  position: fixed;
+  left: 1.2rem;
+  bottom: 1.2rem;
+  min-width: 321px;
+  max-width: min(600px, #{string.unquote("calc(100vw - 2.4rem)")});
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-gap: 1.5ch;
+  padding: 0.8rem;
+  border-radius: 10px;
+  font-weight: 500;
+  line-height: 1.66;
+  color: var(--text-color);
+  box-shadow:
+    0 0 1px 1px rgba(color.adjust(#024cb6, $lightness: -50%), 0.075),
+    0 10px 30px rgba(color.adjust(#024cb6, $lightness: -50%), 0.25),
+    0 0 30px 5px var(--background);
+  will-change: opacity, transform;
+  z-index: 999;
+  cursor: pointer;
+  transition: filter var(--standard-transition);
+  backdrop-filter: brightness(2) blur(30px);
+
+  svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+    background: var(--background);
+    opacity: 0.3;
+  }
+
+  @supports not (backdrop-filter: blur(15px)) {
+    &::after {
+      opacity: 0.9;
+    }
+  }
+
+  &:hover {
+    filter: brightness(0.95);
+  }
+
+  &:active {
+    filter: brightness(0.9);
+  }
+}
+
+.jenkins-notification--success {
+  color: var(--background);
+
+  &::after {
+    background-color: var(--success-color);
+    opacity: 1;
+  }
+}
+
+.jenkins-notification--warning {
+  color: var(--background);
+
+  &::after {
+    background-color: var(--warning-color);
+    opacity: 1;
+  }
+}
+
+.jenkins-notification--error {
+  color: var(--background);
+
+  &::after {
+    background-color: var(--error-color);
+    opacity: 1;
+  }
+}
+
+.jenkins-notification--visible {
+  animation: show-notification var(--elastic-transition) 1 normal forwards;
+
+  & > * {
+    animation: show-notification-icon var(--elastic-transition) 1 normal
+      forwards;
+  }
+}
+
+.jenkins-notification--hidden {
+  animation: hide-notification 150ms ease-in 1 normal forwards;
+}
+
+@keyframes show-notification {
+  from {
+    opacity: 0;
+    transform: translateY(1.2rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+  }
+}
+
+@keyframes show-notification-icon {
+  from {
+    opacity: 0;
+    transform: translateY(0.3rem);
+  }
+}
+
+@keyframes hide-notification {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+    visibility: hidden;
+  }
+}

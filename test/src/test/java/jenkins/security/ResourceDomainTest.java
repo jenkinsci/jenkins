@@ -56,6 +56,34 @@ public class ResourceDomainTest {
     }
 
     @Test
+    public void groupPermissionsWork() throws Exception {
+        final JenkinsRule.DummySecurityRealm securityRealm = j.createDummySecurityRealm();
+        securityRealm.addGroups("alice", "admins");
+        j.jenkins.setSecurityRealm(securityRealm);
+        MockAuthorizationStrategy a = new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("admins");
+        j.jenkins.setAuthorizationStrategy(a);
+
+        JenkinsRule.WebClient webClient = j.createWebClient().login("alice");
+
+        { // DBS directory listing is shown as always
+            Page page = webClient.goTo("userContent");
+            Assert.assertEquals("successful request", 200, page.getWebResponse().getStatusCode());
+            Assert.assertTrue("still on the original URL", page.getUrl().toString().contains("/userContent"));
+            Assert.assertTrue("web page", page.isHtmlPage());
+            Assert.assertTrue("complex web page", page.getWebResponse().getContentAsString().contains("javascript"));
+        }
+        { // DBS on primary domain forwards to second domain when trying to access a file URL
+            webClient.setRedirectEnabled(true);
+            Page page = webClient.goTo("userContent/readme.txt", "text/plain");
+            final String resourceResponseUrl = page.getUrl().toString();
+            Assert.assertEquals("resource response success", 200, page.getWebResponse().getStatusCode());
+            Assert.assertNull("no CSP headers", page.getWebResponse().getResponseHeaderValue("Content-Security-Policy"));
+            Assert.assertTrue("Served from resource domain", resourceResponseUrl.contains(RESOURCE_DOMAIN));
+            Assert.assertTrue("Served from resource action", resourceResponseUrl.contains("static-files"));
+        }
+    }
+
+    @Test
     public void secondDomainBasics() throws Exception {
         JenkinsRule.WebClient webClient = j.createWebClient();
 
@@ -399,7 +427,7 @@ public class ResourceDomainTest {
     }
 
     @Test
-    public void authenticatedCannotAccessResourceDomain() throws Exception {
+    public void authenticatedCannotAccessResourceDomainUnlessAllowedBySystemProperty() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         final MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
         authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().to("admin").grant(Jenkins.READ).everywhere().toEveryone();
@@ -415,6 +443,14 @@ public class ResourceDomainTest {
         }
         try (JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("admin")) {
             assertThat(assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(resourceUrl))).getStatusCode(), is(400));
+        }
+
+        ResourceDomainRootAction.ALLOW_AUTHENTICATED_USER = true;
+        try (JenkinsRule.WebClient wc = j.createWebClient().withBasicApiToken("admin")) {
+            assertThat(wc.getPage(new URL(resourceUrl)).getWebResponse().getStatusCode(), is(200));
+        }
+        try (JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("admin")) {
+            assertThat(wc.getPage(new URL(resourceUrl)).getWebResponse().getStatusCode(), is(200));
         }
     }
 }

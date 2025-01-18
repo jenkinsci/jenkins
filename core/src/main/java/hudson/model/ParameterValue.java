@@ -43,14 +43,14 @@ import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * A value for a parameter in a build.
  *
- * Created by {@link ParameterDefinition#createValue(StaplerRequest, JSONObject)} for
+ * Created by {@link ParameterDefinition#createValue(StaplerRequest2, JSONObject)} for
  * a particular build (although this 'owner' build object is passed in for every method
  * call as a parameter so that the parameter won't have to persist it.)
  *
@@ -240,7 +240,7 @@ public abstract class ParameterValue implements Serializable {
      * @deprecated since 2008-09-20.
      *    parameter definition may change any time. So if you find yourself
      *    in need of accessing the information from {@link ParameterDefinition},
-     *    instead copy them in {@link ParameterDefinition#createValue(StaplerRequest, JSONObject)}
+     *    instead copy them in {@link ParameterDefinition#createValue(StaplerRequest2, JSONObject)}
      *    into {@link ParameterValue}.
      */
     @Deprecated

@@ -32,6 +32,7 @@ THE SOFTWARE.
   <f:breadcrumb-config-outline title="${%System}" />
 
   <l:main-panel>
+    <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
     <l:app-bar title="${%System}" />
 
     <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
@@ -42,11 +43,10 @@ THE SOFTWARE.
       <f:entry title="${%Home directory}" description="${%By default, Jenkins stores all of its data in this directory on the file system}" help="/help/system-config/homeDirectory.html">
         <div class="jenkins-quote jenkins-quote--monospace">
           ${it.rootDir}
-          <l:copyButton tooltip="${%Copy home directory}" text="${it.rootDir}" iconOnly="true" clazz="jenkins-!-margin-left-1" />
+          <l:copyButton tooltip="${%Copy home directory}" text="${it.rootDir}" iconOnly="true" />
         </div>
       </f:entry>
       <f:entry title="${%System Message}" description="${%This message will be displayed at the top of the Jenkins main page. This can be useful for posting notifications to your users}">
-        <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}" />
         <f:textarea name="system_message" value="${it.systemMessage}" disabled="${readOnlyMode?'true':null}" readonly="${readOnlyMode?'true':null}"
                     codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
       </f:entry>
@@ -60,17 +60,9 @@ THE SOFTWARE.
           <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
         </f:rowSet>
       </j:forEach>
-
-      <l:hasAdministerOrManage>
-        <f:bottomButtonBar>
-          <f:submit value="${%Save}" />
-          <f:apply />
-        </f:bottomButtonBar>
-      </l:hasAdministerOrManage>
+      <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
+      <f:saveApplyBar/>
     </f:form>
-    <l:hasAdministerOrManage>
-      <st:adjunct includes="lib.form.confirm" />
-    </l:hasAdministerOrManage>
   </l:main-panel>
 </l:layout>
 </j:jelly>

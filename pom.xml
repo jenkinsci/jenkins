@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.119</version>
+    <version>1.128</version>
     <relativePath />
   </parent>
 
@@ -52,8 +52,7 @@ THE SOFTWARE.
   <modules>
     <module>bom</module>
     <module>websocket/spi</module>
-    <module>websocket/jetty10</module>
-    <module>websocket/jetty12-ee8</module>
+    <module>websocket/jetty12-ee9</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -74,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.473</revision>
+    <revision>2.494</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-08-13T13:50:51Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-01-14T13:40:38Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -88,17 +87,18 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3261.v9c670a_4748a_9</remoting.version>
+    <remoting.version>3283.v92c105e0f819</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
-    <access-modifier.version>1.33</access-modifier.version>
+    <access-modifier.version>1.34</access-modifier.version>
     <antlr.version>4.13.2</antlr.version>
-    <bridge-method-injector.version>1.29</bridge-method-injector.version>
+    <bridge-method-injector.version>1.30</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
-    <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>7.0</winstone.version>
+    <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
+    <winstone.version>8.4</winstone.version>
+    <node.version>20.18.1</node.version>
   </properties>
 
   <!--
@@ -140,7 +140,6 @@ THE SOFTWARE.
           <artifactId>maven-compiler-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
-            <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
             <compilerArgs>
               <!--
@@ -175,7 +174,7 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <artifactId>maven-jarsigner-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.1.0</version>
           <configuration>
             <!--
               during the development, debug profile will cause
@@ -282,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.17.0</version>
+              <version>10.21.1</version>
             </dependency>
           </dependencies>
           <executions>
@@ -416,6 +415,159 @@ THE SOFTWARE.
       <properties>
         <changelog.url>https://www.jenkins.io/changelog-stable</changelog.url>
       </properties>
+    </profile>
+    <profile>
+      <id>yarn-execution</id>
+      <activation>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.1</version>
+            <executions>
+              <execution>
+                <id>install node and corepack</id>
+                <goals>
+                  <goal>install-node-and-corepack</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <nodeVersion>v${node.version}</nodeVersion>
+                  <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-dist/</nodeDownloadRoot>
+                </configuration>
+              </execution>
+              <execution>
+                <id>yarn install</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <arguments>yarn install</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>yarn build</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <arguments>yarn build</arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>.yarn</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>node</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>node_modules</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>war/src/main/webapp/jsbundles</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+              </filesets>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>yarn-ci-lint</id>
+      <activation>
+        <property>
+          <name>env.CI</name>
+        </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.1</version>
+            <executions>
+              <execution>
+                <id>yarn lint:ci</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>yarn lint:ci</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                </configuration>
+              </execution>
+              <execution>
+                <id>prettier</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>yarn exec prettier --check .</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                  <testFailureIgnore>false</testFailureIgnore>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>yarn-lint</id>
+      <activation>
+        <property>
+          <name>!env.CI</name>
+        </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.1</version>
+            <executions>
+              <execution>
+                <id>yarn lint</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>yarn lint</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

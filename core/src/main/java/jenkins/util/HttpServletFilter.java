@@ -29,17 +29,18 @@ import hudson.ExtensionPoint;
 import hudson.init.Initializer;
 import hudson.security.csrf.CrumbExclusion;
 import hudson.util.PluginServletFilter;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.CompatibleFilter;
 
 /**
  * More convenient and declarative way to use {@link PluginServletFilter}.
@@ -63,7 +64,7 @@ public interface HttpServletFilter extends ExtensionPoint {
     @Restricted(DoNotUse.class)
     @Initializer
     static void register() throws ServletException {
-        PluginServletFilter.addFilter(new Filter() {
+        PluginServletFilter.addFilter(new CompatibleFilter() {
             @Override
             public void doFilter(ServletRequest req, ServletResponse rsp, FilterChain chain) throws IOException, ServletException {
                 if (req instanceof HttpServletRequest && rsp instanceof HttpServletResponse) {

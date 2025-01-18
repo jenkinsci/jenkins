@@ -44,12 +44,7 @@ THE SOFTWARE.
           </f:rowSet>
         </j:forEach>
 
-        <l:hasAdministerOrManage>
-          <f:bottomButtonBar>
-            <f:submit value="${%Save}" />
-            <f:apply />
-          </f:bottomButtonBar>
-        </l:hasAdministerOrManage>
+        <f:saveApplyBar/>
       </f:form>
 
       <l:hasAdministerOrManage>

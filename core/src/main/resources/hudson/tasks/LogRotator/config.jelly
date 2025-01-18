@@ -41,5 +41,9 @@ THE SOFTWARE.
              description="${%if not empty, only up to this number of builds have their artifacts retained}" field="artifactNumToKeepStr">
       <f:number clazz="positive-number" min="1" step="1" />
     </f:entry>
+    <f:entry title="${%Remove last build}"
+             field="removeLastBuild">
+      <f:booleanRadio />
+    </f:entry>
   </f:advanced>
 </j:jelly>

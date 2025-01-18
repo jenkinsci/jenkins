@@ -1,0 +1,79 @@
+.tabBarFrame {
+  position: relative;
+}
+
+.tabBar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  background: var(--tabs-background);
+  border-radius: var(--tabs-border-radius);
+  padding: 2px;
+  margin-bottom: var(--section-padding);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: var(--card-border-width) solid var(--tabs-border-color);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .tab {
+    float: left;
+  }
+}
+
+.tabBar .tab a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  text-decoration: none;
+  margin: 2px;
+  padding: 0.4rem 1.2rem;
+  border-radius: 100px;
+  background: var(--tabs-item-background);
+  color: var(--tabs-item-foreground);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: var(--standard-transition);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--tabs-item-background--hover);
+    color: var(--tabs-item-foreground--hover);
+  }
+
+  &:active,
+  &:focus {
+    outline: none;
+    background: var(--tabs-item-background--active);
+    color: var(--tabs-item-foreground--active);
+  }
+}
+
+.tabBar .tab .addTab svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.tabBar .tab [type="radio"] {
+  display: none;
+}
+
+.tabBar .tab.active a {
+  background: var(--tabs-item-background--selected);
+  color: var(--tabs-item-foreground--selected);
+  z-index: 2;
+  cursor: default;
+}
+
+.jenkins-tab-pane__title {
+  font-size: 1.6rem;
+  margin: 2.2rem 0 1.4rem;
+  padding: 0;
+}

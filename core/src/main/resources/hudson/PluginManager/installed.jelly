@@ -71,7 +71,7 @@ THE SOFTWARE.
 
       <j:choose>
         <j:when test="${noPlugins}">
-          <l:notice icon="symbol-plugins" text="${%No plugins installed}" />
+          <l:notice icon="symbol-plugins" title="${%No plugins installed}" />
         </j:when>
         <j:otherwise>
           <table id="plugins" class="jenkins-table sortable">
@@ -99,6 +99,13 @@ THE SOFTWARE.
                         </span>
                       </a>
                     </div>
+                    <j:if test="${p.hasMandatoryDependencies()}">
+                      <div class="dependency-list">
+                        <j:forEach var="dependency" items="${p.mandatoryDependencies}">
+                          <span data-plugin-id="${dependency.shortName}" />
+                        </j:forEach>
+                      </div>
+                    </j:if>
                     <div class="jenkins-!-margin-top-1">
                       <j:set var="indexPage" value="${p.indexPage.toString()}"/>
                       <j:set var="excerpt"
@@ -170,56 +177,52 @@ THE SOFTWARE.
                   <l:isAdmin>
                     <td class="jenkins-table__cell--tight">
                       <div class="jenkins-table__cell__button-wrapper">
-                        <j:if test="${p.downgradable}">
-                          <form method="post"
-                                class="jenkins-buttons-row"
-                                action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
-                            <button class="jenkins-button jenkins-button--tertiary jenkins-!-color-orange"
-                                    style="padding: 0.5rem"
-                                    tooltip="${%downgradeTo(p.backupVersion)}">
-                              <l:icon src="symbol-downgrade-circle"/>
-                              <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">
-                                ${p.backupVersion}
-                              </span>
-                            </button>
-                          </form>
-                        </j:if>
+                          <j:if test="${p.downgradable}">
+                            <form method="post"
+                                  class="jenkins-buttons-row"
+                                  action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
+                              <button class="jenkins-button jenkins-button--tertiary jenkins-!-color-orange"
+                                      style="padding: 0.5rem"
+                                      tooltip="${%downgradeTo(p.backupVersion)}">
+                                <l:icon src="symbol-downgrade-circle"/>
+                                <span
+                                    style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">
+                                  ${p.backupVersion}
+                                </span>
+                              </button>
+                            </form>
+                          </j:if>
                       </div>
                     </td>
-                    <td class="jenkins-table__cell--tight uninstall">
-                      <div class="jenkins-table__cell__button-wrapper">
-                        <j:choose>
-                          <j:when test="${p.isDeleted()}">
-                            <p>${%Uninstallation pending}</p>
-                          </j:when>
-                          <j:otherwise>
-                            <j:if test="${p.hasMandatoryDependents() or p.hasImpliedDependents()}">
-                              <div class="dependent-list">
-                                <j:forEach var="dependent" items="${p.mandatoryDependents}">
-                                  <span data-plugin-id="${dependent}"></span>
-                                </j:forEach>
-                                <j:set var="impliedDependents" value="${p.impliedDependents}"/>
-                                <j:choose>
-                                  <j:when test="${impliedDependents.size() lt 15}">
-                                    <j:forEach var="dependent" items="${impliedDependents}">
-                                      <span data-plugin-id="${dependent}"></span>
-                                    </j:forEach>
-                                  </j:when>
-                                  <j:otherwise>
-                                    <p>
-                                      ${%detached-many-dependents(impliedDependents.size())}
-                                    </p>
-                                  </j:otherwise>
-                                </j:choose>
-                              </div>
-                            </j:if>
-                            <j:if test="${p.hasMandatoryDependencies()}">
-                              <div class="dependency-list">
-                                <j:forEach var="dependency" items="${p.mandatoryDependencies}">
-                                  <span data-plugin-id="${dependency.shortName}"></span>
-                                </j:forEach>
-                              </div>
-                            </j:if>
+                  </l:isAdmin>
+                  <td class="jenkins-table__cell--tight uninstall ${readOnlyMode and !p.isDeleted() ? 'jenkins-hidden' : ''}">
+                    <div class="jenkins-table__cell__button-wrapper">
+                      <j:choose>
+                        <j:when test="${p.isDeleted()}">
+                          <p>${%Uninstallation pending}</p>
+                        </j:when>
+                        <j:otherwise>
+                          <j:if test="${p.hasMandatoryDependents() or p.hasImpliedDependents()}">
+                            <div class="dependent-list">
+                              <j:forEach var="dependent" items="${p.mandatoryDependents}">
+                                <span data-plugin-id="${dependent}" />
+                              </j:forEach>
+                              <j:set var="impliedDependents" value="${p.impliedDependents}"/>
+                              <j:choose>
+                                <j:when test="${impliedDependents.size() lt 15}">
+                                  <j:forEach var="dependent" items="${impliedDependents}">
+                                    <span data-plugin-id="${dependent}" />
+                                  </j:forEach>
+                                </j:when>
+                                <j:otherwise>
+                                  <p>
+                                    ${%detached-many-dependents(impliedDependents.size())}
+                                  </p>
+                                </j:otherwise>
+                              </j:choose>
+                            </div>
+                          </j:if>
+                          <l:isAdmin>
                             <button data-action="uninstall"
                                     type="button"
                                     class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
@@ -228,11 +231,11 @@ THE SOFTWARE.
                                     data-message="${%uninstall-title(p.updateInfo.displayName ?: p.displayName)}">
                               <l:icon src="symbol-close-circle"/>
                             </button>
-                          </j:otherwise>
-                        </j:choose>
-                      </div>
-                    </td>
-                  </l:isAdmin>
+                          </l:isAdmin>
+                        </j:otherwise>
+                      </j:choose>
+                    </div>
+                  </td>
                 </tr>
               </j:forEach>
               <!-- failed ones -->

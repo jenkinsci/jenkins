@@ -53,7 +53,7 @@ THE SOFTWARE.
 
         <j:choose>
           <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
-            <l:notice icon="symbol-plugins" text="${%No plugins installed}" />
+            <l:notice icon="symbol-plugins" title="${%No plugins installed}" />
           </j:when>
           <j:otherwise>
             <table class="jenkins-table sortable">

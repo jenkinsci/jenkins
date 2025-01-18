@@ -24,7 +24,7 @@
 
 package hudson.security;
 
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -47,6 +47,15 @@ import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
@@ -67,15 +76,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import jenkins.model.Jenkins;
 import jenkins.security.FIPS140;
 import jenkins.security.SecurityListener;
@@ -85,14 +85,15 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -236,10 +237,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Override
     public HttpResponse commenceSignup(final FederatedIdentity identity) {
         // store the identity in the session so that we can use this later
-        Stapler.getCurrentRequest().getSession().setAttribute(FEDERATED_IDENTITY_SESSION_KEY, identity);
+        Stapler.getCurrentRequest2().getSession().setAttribute(FEDERATED_IDENTITY_SESSION_KEY, identity);
         return new ForwardToView(this, "signupWithFederatedIdentity.jelly") {
             @Override
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
                 SignupInfo si = new SignupInfo(identity);
                 si.errorMessage = Messages.HudsonPrivateSecurityRealm_WouldYouLikeToSignUp(identity.getPronoun(), identity.getIdentifier());
                 req.setAttribute("data", si);
@@ -253,7 +254,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * with {@link #commenceSignup}.
      */
     @RequirePOST
-    public User doCreateAccountWithFederatedIdentity(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public User doCreateAccountWithFederatedIdentity(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         User u = _doCreateAccount(req, rsp, "signupWithFederatedIdentity.jelly");
         if (u != null)
             ((FederatedIdentity) req.getSession().getAttribute(FEDERATED_IDENTITY_SESSION_KEY)).addTo(u);
@@ -266,11 +267,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates an user account. Used for self-registration.
      */
     @RequirePOST
-    public User doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public User doCreateAccount(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         return _doCreateAccount(req, rsp, "signup.jelly");
     }
 
-    private User _doCreateAccount(StaplerRequest req, StaplerResponse rsp, String formView) throws ServletException, IOException {
+    private User _doCreateAccount(StaplerRequest2 req, StaplerResponse2 rsp, String formView) throws ServletException, IOException {
         if (!allowsSignup())
             throw HttpResponses.errorWithoutStack(SC_UNAUTHORIZED, "User sign up is prohibited");
 
@@ -287,7 +288,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Lets the current user silently login as the given user and report back accordingly.
      */
-    private void loginAndTakeBack(StaplerRequest req, StaplerResponse rsp, User u) throws ServletException, IOException {
+    private void loginAndTakeBack(StaplerRequest2 req, StaplerResponse2 rsp, User u) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         if (session != null) {
             // avoid session fixation
@@ -309,11 +310,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Creates a user account. Used by admins.
      *
-     * This version behaves differently from {@link #doCreateAccount(StaplerRequest, StaplerResponse)} in that
+     * This version behaves differently from {@link #doCreateAccount(StaplerRequest2, StaplerResponse2)} in that
      * this is someone creating another user.
      */
     @RequirePOST
-    public void doCreateAccountByAdmin(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doCreateAccountByAdmin(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         createAccountByAdmin(req, rsp, "addUser.jelly", "."); // send the user back to the listing page on success
     }
 
@@ -321,7 +322,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates a user account. Requires {@link Jenkins#ADMINISTER}
      */
     @Restricted(NoExternalUse.class)
-    public User createAccountByAdmin(StaplerRequest req, StaplerResponse rsp, String addUserView, String successView) throws IOException, ServletException {
+    public User createAccountByAdmin(StaplerRequest2 req, StaplerResponse2 rsp, String addUserView, String successView) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
         User u = createAccount(req, rsp, false, addUserView);
         if (u != null && successView != null) {
@@ -340,7 +341,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * @throws AccountCreationFailedException if account creation failed due to invalid form input
      */
     @Restricted(NoExternalUse.class)
-    public User createAccountFromSetupWizard(StaplerRequest req) throws IOException, AccountCreationFailedException {
+    public User createAccountFromSetupWizard(StaplerRequest2 req) throws IOException, AccountCreationFailedException {
         checkPermission(Jenkins.ADMINISTER);
         SignupInfo si = validateAccountCreationForm(req, false);
         if (!si.errors.isEmpty()) {
@@ -366,7 +367,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This can be run by anyone, but only to create the very first user account.
      */
     @RequirePOST
-    public void doCreateFirstAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doCreateFirstAccount(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         if (hasSomeUser()) {
             rsp.sendError(SC_UNAUTHORIZED, "First user was already created");
             return;
@@ -400,7 +401,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      *      null if failed. The browser is already redirected to retry by the time this method returns.
      *      a valid {@link User} object if the user creation was successful.
      */
-    private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean validateCaptcha, String formView) throws ServletException, IOException {
+    private User createAccount(StaplerRequest2 req, StaplerResponse2 rsp, boolean validateCaptcha, String formView) throws ServletException, IOException {
         SignupInfo si = validateAccountCreationForm(req, validateCaptcha);
 
         if (!si.errors.isEmpty()) {
@@ -416,11 +417,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * @param req              the request to process
      * @param validateCaptcha  whether to attempt to validate a captcha in the request
      *
-     * @return a {@link SignupInfo#SignupInfo(StaplerRequest) SignupInfo from given request}, with {@link
+     * @return a {@link SignupInfo#SignupInfo(StaplerRequest2) SignupInfo from given request}, with {@link
      * SignupInfo#errors} containing errors (keyed by field name), if any of the supported fields are invalid
      */
     @SuppressFBWarnings(value = "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", justification = "written to by Stapler")
-    private SignupInfo validateAccountCreationForm(StaplerRequest req, boolean validateCaptcha) {
+    private SignupInfo validateAccountCreationForm(StaplerRequest2 req, boolean validateCaptcha) {
         // form field validation
         // this pattern needs to be generalized and moved to stapler
         SignupInfo si = new SignupInfo(req);
@@ -632,7 +633,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public SignupInfo() {
         }
 
-        public SignupInfo(StaplerRequest req) {
+        public SignupInfo(StaplerRequest2 req) {
             req.bindParameters(this);
         }
 
@@ -707,7 +708,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         public String getProtectedPassword() {
             // put session Id in it to prevent a replay attack.
-            return Protector.protect(Stapler.getCurrentRequest().getSession().getId() + ':' + getPassword());
+            return Protector.protect(Stapler.getCurrentRequest2().getSession().getId() + ':' + getPassword());
         }
 
         public String getUsername() {
@@ -825,7 +826,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             }
 
             @Override
-            public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            public Details newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
                 if (req == null) {
                     // Should never happen, see newInstance() Javadoc
                     throw new FormException("Stapler request is missing in the call", "staplerRequest");
@@ -836,6 +837,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 if (pwd == null || pwd2 == null) {
                     // one of the fields is empty
                     throw new FormException("Please confirm the password by typing it twice", "user.password2");
+                }
+
+                if (FIPS140.useCompliantAlgorithms() && pwd.length() < FIPS_PASSWORD_LENGTH) {
+                     throw new FormException(Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid(), "user.password");
                 }
 
                 // will be null if it wasn't encrypted
@@ -858,7 +863,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 }
 
                 if (data != null) {
-                    String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
+                    String prefix = Stapler.getCurrentRequest2().getSession().getId() + ':';
                     if (data.startsWith(prefix)) {
                         return Details.fromHashedPassword(data.substring(prefix.length()));
                     }
@@ -1153,7 +1158,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    private static final Filter CREATE_FIRST_USER_FILTER = new Filter() {
+    private static final Filter CREATE_FIRST_USER_FILTER = new CompatibleFilter() {
         @Override
         public void init(FilterConfig config) throws ServletException {
         }
