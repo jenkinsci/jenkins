@@ -3,7 +3,7 @@
   <div style="display: flex; flex-direction: column; margin: 0 -0.4rem">
     <a class="jenkins-dropdown__item" href="${rootURL}/${it.user.url}">
       <div class="jenkins-dropdown__item__icon">
-        <l:icon src="symbol-person-circle" />
+        <l:icon src="${it.iconFileName}" />
       </div>
       ${it.user.fullName}
     </a>
@@ -11,7 +11,7 @@
       <div class="jenkins-dropdown__item__icon">
         <l:icon src="symbol-settings" />
       </div>
-      Configure
+      ${%Configure}
     </a>
     <div class="jenkins-dropdown__separator" />
     <a class="jenkins-dropdown__item" href="${rootURL}/logout">
@@ -20,7 +20,7 @@
           <l:icon src="symbol-log-out" />
         </div>
       </div>
-      Sign out
+      ${%Sign out}
     </a>
   </div>
 </j:jelly>

@@ -66,7 +66,7 @@ function init() {
           icon: Symbols.HELP,
           type: "symbol",
           label: i18n.dataset.getHelp,
-          url: headerCommandPaletteButton.dataset.searchHelpUrl,
+          url: document.querySelector("body").dataset.searchHelpUrl,
           isExternal: true,
         }),
       ]);
