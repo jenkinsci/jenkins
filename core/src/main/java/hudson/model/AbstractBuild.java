@@ -62,6 +62,8 @@ import hudson.util.AdaptedIterator;
 import hudson.util.HttpResponses;
 import hudson.util.Iterators;
 import hudson.util.VariableResolver;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -81,7 +83,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -275,7 +276,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      */
     @Deprecated(since = "2.364")
     public String getUpUrl() {
-        return Functions.getNearestAncestorUrl(Stapler.getCurrentRequest(), getParent()) + '/';
+        return Functions.getNearestAncestorUrl(Stapler.getCurrentRequest2(), getParent()) + '/';
     }
 
     /**
@@ -607,8 +608,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
             final Node currentNode = getCurrentNode();
             Launcher l = currentNode.createLauncher(listener);
 
-            if (project instanceof BuildableItemWithBuildWrappers) {
-                BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+            if (project instanceof BuildableItemWithBuildWrappers biwbw) {
                 for (BuildWrapper bw : biwbw.getBuildWrappersList())
                     l = bw.decorateLauncher(AbstractBuild.this, l, listener);
             }
@@ -1392,8 +1392,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      */
     @Deprecated
     @RequirePOST // #doStop() should be preferred, but better to be safe
-    public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doStop().generateResponse(req, rsp, this);
+    public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doStop().generateResponse(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), this);
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
     }
 
     /**

@@ -120,12 +120,7 @@ THE SOFTWARE.
                   <a href="${m.urlName}">
                     <div class="jenkins-section__item__icon" aria-hidden="true">
                       <l:icon src="${m.iconFileName}" class="icon" />
-                      <j:set var="badge" value="${m.badge}"/>
-                      <j:if test="${badge != null}">
-                        <div tooltip="${badge.tooltip}" class="jenkins-section__item__icon__badge alert-${badge.severity}">
-                          ${badge.text}
-                        </div>
-                      </j:if>
+                      <l:badge badge="${m.badge}" class="jenkins-section__item__icon__badge"/>
                     </div>
                     <dl>
                       <dt>${m.displayName}</dt>

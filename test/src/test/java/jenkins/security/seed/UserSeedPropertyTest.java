@@ -256,7 +256,7 @@ public class UserSeedPropertyTest {
         User alice = User.getById(ALICE, false);
         assertNotNull(alice);
 
-        HtmlPage htmlPage = wc.goTo(alice.getUrl() + "/configure");
+        HtmlPage htmlPage = wc.goTo(alice.getUrl() + "/security/");
         htmlPage.getDocumentElement().getOneHtmlElementByAttribute("div", "class", "user-seed-panel");
     }
 
@@ -280,7 +280,7 @@ public class UserSeedPropertyTest {
             User alice = User.getById(ALICE, false);
             assertNotNull(alice);
 
-            HtmlPage htmlPage = wc.goTo(alice.getUrl() + "/configure");
+            HtmlPage htmlPage = wc.goTo(alice.getUrl() + "/security/");
             assertThrows("Seed section should not be displayed", ElementNotFoundException.class, () -> htmlPage.getDocumentElement().getOneHtmlElementByAttribute("div", "class", "user-seed-panel"));
         }
         finally {

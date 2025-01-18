@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
@@ -33,8 +34,8 @@ import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue;
 import hudson.model.StringParameterDefinition;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.URL;
-import javax.servlet.http.HttpServletResponse;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
@@ -43,6 +44,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+
 
 /**
  * Tests of {@link ParameterizedJobMixIn}.
@@ -90,11 +92,12 @@ public class ParameterizedJobMixInTest {
         webClient.getPage(webClient.addCrumb(new WebRequest(new URL(j.getURL(), project.getUrl() + "build"), HttpMethod.POST)));
         long triggerTime = System.currentTimeMillis();
 
-        Queue.Item item = Jenkins.get().getQueue().getItem(1);
-        assertThat(item, instanceOf(Queue.WaitingItem.class));
-        assertThat(item.task, instanceOf(FreeStyleProject.class));
+        Queue.Item[] items = Jenkins.get().getQueue().getItems();
+        assertThat(items, arrayWithSize(1));
+        assertThat(items[0], instanceOf(Queue.WaitingItem.class));
+        assertThat(items[0].task, instanceOf(FreeStyleProject.class));
 
-        Queue.WaitingItem waitingItem = (Queue.WaitingItem) item;
+        Queue.WaitingItem waitingItem = (Queue.WaitingItem) items[0];
         Assert.assertTrue(waitingItem.timestamp.getTimeInMillis() - triggerTime > 45000);
 
         Jenkins.get().getQueue().doCancelItem(1);

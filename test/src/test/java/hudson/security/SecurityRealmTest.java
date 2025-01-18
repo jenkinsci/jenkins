@@ -152,10 +152,10 @@ public class SecurityRealmTest {
         j.jenkins.setSecurityRealm(osr);
         j.executeOnServer(() -> {
             assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS));
-            assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS2));
+            assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest2(), Jenkins.ANONYMOUS2));
             osr.special = true;
             assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS));
-            assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS2));
+            assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest2(), Jenkins.ANONYMOUS2));
             return null;
         });
     }

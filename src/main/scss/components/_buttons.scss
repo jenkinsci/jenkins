@@ -1,0 +1,382 @@
+@use "../abstracts/mixins";
+
+.jenkins-button {
+  --item-background--hover: var(--button-background--hover);
+  --item-background--active: var(--button-background--active);
+  --item-box-shadow--focus: var(--button-box-shadow--focus);
+
+  @include mixins.item;
+
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  outline: none;
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.875rem;
+  text-decoration: none !important;
+  background: transparent;
+  color: var(--text-color) !important;
+  border-radius: 0.66rem;
+  cursor: pointer;
+  min-height: 2.25rem;
+  white-space: nowrap;
+  gap: 1ch;
+
+  &::before {
+    background: var(--button-background);
+  }
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    filter: saturate(0.6);
+    cursor: not-allowed;
+  }
+}
+
+.jenkins-button--primary {
+  color: var(--button-color--primary) !important;
+
+  &::before {
+    background: var(--accent-color) !important;
+  }
+
+  &::after {
+    box-shadow: 0 0 0 0.66rem var(--accent-color);
+    opacity: 0;
+  }
+
+  &:not(:disabled) {
+    &:hover {
+      &::before {
+        opacity: 0.9;
+      }
+    }
+
+    &:active,
+    &:focus-visible {
+      &::before {
+        opacity: 0.8;
+      }
+
+      &::after {
+        box-shadow: 0 0 0 0.33rem var(--accent-color);
+        opacity: 0.2;
+      }
+    }
+  }
+}
+
+.jenkins-button--tertiary {
+  &::before {
+    background: transparent;
+  }
+}
+
+// Support for custom colors
+// Modifier classes must include 'color' in name to work
+.jenkins-button[class*="color"] {
+  background: transparent;
+  color: var(--color) !important;
+
+  &::before {
+    background: currentColor !important;
+    opacity: 0.1;
+  }
+
+  &::after {
+    box-shadow: 0 0 0 0.66rem currentColor;
+    opacity: 0;
+  }
+
+  &:not(:disabled) {
+    &:hover {
+      &::before {
+        opacity: 0.15;
+      }
+    }
+
+    &:active {
+      &::before {
+        opacity: 0.2;
+      }
+
+      &::after {
+        box-shadow: 0 0 0 0.33rem currentColor;
+        opacity: 0.1;
+      }
+    }
+  }
+}
+
+.jenkins-button--primary[class*="color"] {
+  background: transparent;
+  color: var(--background) !important;
+
+  &::before {
+    background: var(--color) !important;
+    opacity: 1;
+  }
+
+  &::after {
+    box-shadow: 0 0 0 0.66rem var(--color);
+    opacity: 0;
+  }
+
+  &:not(:disabled) {
+    &:hover {
+      &::before {
+        opacity: 0.9;
+      }
+    }
+
+    &:active,
+    &:focus-visible {
+      &::before {
+        opacity: 0.8;
+      }
+
+      &::after {
+        box-shadow: 0 0 0 0.33rem var(--color);
+        opacity: 0.3;
+      }
+    }
+  }
+}
+
+.jenkins-button--tertiary[class*="color"] {
+  &::before {
+    opacity: 0;
+  }
+}
+
+// Additional button related classes
+.jenkins-buttons-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  &--invert {
+    justify-content: flex-end;
+  }
+
+  &--equal-width {
+    .jenkins-button {
+      min-width: 6.5rem;
+    }
+  }
+
+  &--equal-width {
+    min-width: 6.5rem;
+  }
+
+  @media (width <= 600px) {
+    justify-content: stretch;
+
+    .jenkins-button {
+      flex-grow: 1;
+    }
+  }
+}
+
+.jenkins-copy-button {
+  .jenkins-copy-button__icon {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    place-items: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    transition: var(--standard-transition);
+
+    svg {
+      grid-area: 1 / 1;
+      scale: -0.5;
+      opacity: 0;
+      transition: var(--elastic-transition);
+      filter: blur(2px);
+      color: var(--success-color);
+
+      * {
+        stroke-width: 40px;
+      }
+    }
+
+    &::before,
+    &::after {
+      content: "";
+      position: relative;
+      width: 0.6875rem;
+      height: 0.875rem;
+      border: 0.1rem solid currentColor;
+      border-radius: 0.2rem;
+      transition:
+        translate var(--standard-transition),
+        scale var(--standard-transition),
+        opacity var(--standard-transition),
+        filter var(--standard-transition);
+      grid-area: 1 / 1;
+    }
+
+    &::before {
+      translate: -16% -10%;
+      clip-path: polygon(
+        100% 0,
+        100% 22.5%,
+        22.5% 22.5%,
+        32.5% 100%,
+        0 100%,
+        0 0
+      );
+    }
+
+    &::after {
+      translate: 16% 10%;
+    }
+  }
+
+  &--copied {
+    color: var(--success-color) !important;
+
+    --button-background: color-mix(
+      in sRGB,
+      var(--success-color) 10%,
+      transparent
+    );
+    --button-background--hover: var(--button-background);
+    --button-background--active: var(--button-background);
+
+    .jenkins-copy-button__icon {
+      &::before,
+      &::after {
+        scale: 1.25;
+        opacity: 0;
+        filter: blur(1px);
+      }
+
+      svg {
+        scale: 1.25;
+        opacity: 1;
+        filter: blur(0);
+      }
+    }
+  }
+
+  &:hover {
+    .jenkins-copy-button__icon {
+      &::before {
+        translate: -11% -8%;
+      }
+
+      &::after {
+        translate: 11% 8%;
+      }
+    }
+  }
+
+  &:active {
+    .jenkins-copy-button__icon {
+      transform: scale(0.85);
+    }
+  }
+}
+
+.jenkins-validate-button__container {
+  &__status {
+    .validation-error-area {
+      min-height: 36px !important;
+    }
+  }
+
+  .validation-error-area--visible {
+    margin-top: 0;
+    margin-bottom: 0.625rem;
+  }
+
+  & > .jenkins-button {
+    float: right;
+  }
+}
+
+.advanced-button,
+.hetero-list-add {
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    transition: var(--standard-transition);
+  }
+
+  &:not([data-expanded="true"]) {
+    &:active {
+      svg {
+        translate: 0 0.125rem;
+      }
+    }
+  }
+
+  &[data-expanded="true"] {
+    svg {
+      rotate: 180deg;
+    }
+  }
+}
+
+$jenkins-split-button-border-radius: 0.2rem;
+
+.jenkins-split-button {
+  display: flex;
+  gap: 1px;
+
+  & > :first-child {
+    border-top-right-radius: $jenkins-split-button-border-radius;
+    border-bottom-right-radius: $jenkins-split-button-border-radius;
+  }
+
+  & > .jenkins-button:last-of-type {
+    padding: 0 5px;
+    border-top-left-radius: $jenkins-split-button-border-radius;
+    border-bottom-left-radius: $jenkins-split-button-border-radius;
+
+    svg {
+      width: 0.8rem;
+      height: 0.8rem;
+    }
+  }
+}
+
+.stop-button-link {
+  --item-background--hover: color-mix(in sRGB, var(--red) 20%, transparent);
+  --item-background--active: color-mix(in sRGB, var(--red) 25%, transparent);
+  --item-box-shadow--focus: transparent;
+
+  @include mixins.item;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+
+  &::before {
+    background: color-mix(in sRGB, var(--red) 15%, transparent);
+  }
+
+  svg {
+    width: 87.5%;
+    height: 87.5%;
+    color: var(--red);
+
+    * {
+      stroke-width: 40px;
+    }
+  }
+}

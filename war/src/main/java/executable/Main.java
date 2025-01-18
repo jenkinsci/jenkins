@@ -40,8 +40,8 @@ import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -76,8 +76,7 @@ public class Main {
      * This list must remain synchronized with the one in {@code
      * JavaVersionRecommendationAdminMonitor}.
      */
-    private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS =
-            new TreeSet<>(Arrays.asList(11, 17, 21));
+    private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS = new TreeSet<>(List.of(17, 21));
 
     /**
      * Sets custom session cookie name.
@@ -109,16 +108,15 @@ public class Main {
             // Great!
         } else if (releaseVersion >= SUPPORTED_JAVA_VERSIONS.first()) {
             if (enableFutureJava) {
-                System.err.println(
-                        String.format(
-                                "Running with Java %d from %s, which is not fully supported. "
-                                        + "Continuing because %s is set. "
-                                        + "Supported Java versions are: %s. "
-                                        + "See https://jenkins.io/redirect/java-support/ for more information.",
-                                releaseVersion,
-                                System.getProperty("java.home"),
-                                ENABLE_FUTURE_JAVA_CLI_SWITCH,
-                                SUPPORTED_JAVA_VERSIONS));
+                System.err.printf(
+                        "Running with Java %d from %s, which is not fully supported. "
+                                + "Continuing because %s is set. "
+                                + "Supported Java versions are: %s. "
+                                + "See https://jenkins.io/redirect/java-support/ for more information.%n",
+                        releaseVersion,
+                        System.getProperty("java.home"),
+                        ENABLE_FUTURE_JAVA_CLI_SWITCH,
+                        SUPPORTED_JAVA_VERSIONS);
             } else if (releaseVersion > SUPPORTED_JAVA_VERSIONS.last()) {
                 throw new UnsupportedClassVersionError(
                         String.format(
@@ -153,25 +151,6 @@ public class Main {
     }
 
     /**
-     * Get the release version of the current JVM.
-     *
-     * @return The release version of the current JVM; e.g., 8, 11, or 17.
-     * @throws NumberFormatException If the release version could not be parsed.
-     */
-    private static int getReleaseVersion() {
-        String version = System.getProperty("java.specification.version");
-        version = version.trim();
-        if (version.startsWith("1.")) {
-            String[] split = version.split("\\.");
-            if (split.length != 2) {
-                throw new NumberFormatException("Invalid Java specification version: " + version);
-            }
-            version = split[1];
-        }
-        return Integer.parseInt(version);
-    }
-
-    /**
      * Returns true if the Java runtime version check should not be done, and any version allowed.
      *
      * @see #ENABLE_FUTURE_JAVA_CLI_SWITCH
@@ -195,7 +174,7 @@ public class Main {
             justification = "User provided values for running the program")
     public static void main(String[] args) throws IllegalAccessException {
         try {
-            verifyJavaVersion(getReleaseVersion(), isFutureJavaEnabled(args));
+            verifyJavaVersion(Runtime.version().feature(), isFutureJavaEnabled(args));
         } catch (UnsupportedClassVersionError e) {
             System.err.println(e.getMessage());
             System.err.println("See https://jenkins.io/redirect/java-support/ for more information.");
@@ -206,12 +185,17 @@ public class Main {
         //to achieve this use --paramsFromStdIn
         if (hasArgument("--paramsFromStdIn", args)) {
             System.out.println("--paramsFromStdIn detected. Parameters are going to be read from stdin. Other parameters passed directly will be ignored.");
-            String argsInStdIn = readStringNonBlocking(System.in, 131072).trim();
+            String argsInStdIn;
+            try {
+                argsInStdIn = new String(System.in.readNBytes(131072), StandardCharsets.UTF_8).trim();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
             args = argsInStdIn.split(" +");
         }
         // If someone just wants to know the version, print it out as soon as possible, with no extraneous file or webroot info.
         // This makes it easier to grab the version from a script
-        final List<String> arguments = new ArrayList<>(Arrays.asList(args));
+        final List<String> arguments = new ArrayList<>(List.of(args));
         if (arguments.contains("--version")) {
             System.out.println(getVersion("?"));
             return;
@@ -282,7 +266,7 @@ public class Main {
         // locate the Winstone launcher
         ClassLoader cl;
         try {
-            cl = new URLClassLoader(new URL[] {tmpJar.toURI().toURL()});
+            cl = new URLClassLoader("Jenkins Main ClassLoader", new URL[] {tmpJar.toURI().toURL()}, ClassLoader.getSystemClassLoader());
         } catch (MalformedURLException e) {
             throw new UncheckedIOException(e);
         }
@@ -365,24 +349,6 @@ public class Main {
         }
     }
 
-    /**
-     * Reads up to maxRead bytes from InputStream if available into a String
-     *
-     * @param in input stream to be read
-     * @param maxToRead maximum number of bytes to read from the in
-     * @return a String read from in
-     */
-    private static String readStringNonBlocking(InputStream in, int maxToRead) {
-        byte[] buffer;
-        try {
-            buffer = new byte[Math.min(in.available(), maxToRead)];
-            in.read(buffer);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        return new String(buffer);
-    }
-
     private static void trimOffOurOptions(List<String> arguments) {
         arguments.removeIf(arg -> arg.startsWith("--extractedFilesFolder")
                 || arg.startsWith("--pluginroot") || arg.startsWith(ENABLE_FUTURE_JAVA_CLI_SWITCH));
@@ -443,19 +409,11 @@ public class Main {
         myself.deleteOnExit();
         try (InputStream is = Main.class.getProtectionDomain().getCodeSource().getLocation().openStream();
              OutputStream os = new FileOutputStream(myself)) {
-            copyStream(is, os);
+            is.transferTo(os);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
         return myself;
-    }
-
-    private static void copyStream(InputStream in, OutputStream out) throws IOException {
-        byte[] buf = new byte[8192];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
     }
 
     /**
@@ -477,7 +435,7 @@ public class Main {
             throw new UncheckedIOException("Jenkins failed to create a temporary file in " + tmpdir + ": " + e, e);
         }
         try (InputStream is = res.openStream(); OutputStream os = new FileOutputStream(tmp)) {
-            copyStream(is, os);
+            is.transferTo(os);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -524,7 +482,7 @@ public class Main {
 
     /**
      * Determines the home directory for Jenkins.
-     *
+     * <p>
      * People makes configuration mistakes, so we are trying to be nice
      * with those by doing {@link String#trim()}.
      */

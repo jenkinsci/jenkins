@@ -26,6 +26,7 @@ package hudson.cli;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -51,17 +52,14 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.apache.commons.discovery.ResourceClassIterator;
-import org.apache.commons.discovery.ResourceNameIterator;
-import org.apache.commons.discovery.resource.ClassLoaders;
-import org.apache.commons.discovery.resource.classes.DiscoverClasses;
-import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
+import jenkins.util.SystemProperties;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.ParserProperties;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -107,6 +105,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 @LegacyInstancesAreScopedToHudson
 public abstract class CLICommand implements ExtensionPoint, Cloneable {
+
+    /**
+     * Boolean values to either allow or disallow parsing of @-prefixes.
+     * If a command line value starts with @, it is interpreted as being a file, loaded,
+     * and interpreted as if the file content would have been passed to the command line
+     */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    @Restricted(NoExternalUse.class)
+    public static boolean ALLOW_AT_SYNTAX = SystemProperties.getBoolean(CLICommand.class.getName() + ".allowAtSyntax");
+
     /**
      * Connected to stdout and stderr of the CLI agent that initiated the session.
      * IOW, if you write to these streams, the person who launched the CLI command
@@ -229,7 +237,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.stdout = stdout;
         this.stderr = stderr;
         this.locale = locale;
-        registerOptionHandlers();
         CmdLineParser p = getCmdLineParser();
 
         // add options from the authenticator
@@ -307,7 +314,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @since 1.538
      */
     protected CmdLineParser getCmdLineParser() {
-        return new CmdLineParser(this);
+        ParserProperties properties = ParserProperties.defaults().withAtSyntax(ALLOW_AT_SYNTAX);
+        return new CmdLineParser(this, properties);
     }
 
     /**
@@ -514,20 +522,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     /**
-     * Auto-discovers {@link OptionHandler}s and add them to the given command line parser.
-     */
-    protected void registerOptionHandlers() {
-        try {
-            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.get().pluginManager.uberClassLoader, Class.class)) {
-                Type t = Types.getBaseClass(c, OptionHandler.class);
-                CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t, 0)), c);
-            }
-        } catch (IOException e) {
-            throw new Error(e);
-        }
-    }
-
-    /**
      * Returns all the registered {@link CLICommand}s.
      */
     public static ExtensionList<CLICommand> all() {
@@ -563,20 +557,16 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     static {
         // register option handlers that are defined
-        ClassLoaders cls = new ClassLoaders();
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) { // only when running on the controller
-            cls.put(j.getPluginManager().uberClassLoader);
-
-            ResourceNameIterator servicesIter =
-                new DiscoverServiceNames(cls).findResourceNames(OptionHandler.class.getName());
-            final ResourceClassIterator itr =
-                new DiscoverClasses(cls).findResourceClasses(servicesIter);
-
-            while (itr.hasNext()) {
-                Class h = itr.nextResourceClass().loadClass();
-                Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
-                CmdLineParser.registerHandler(c, h);
+            // Register OptionHandlers through META-INF/services/annotations and Annotation Indexer
+            try {
+                for (Class c : Index.list(OptionHandlerExtension.class, j.getPluginManager().uberClassLoader, Class.class)) {
+                    Type t = Types.getBaseClass(c, OptionHandler.class);
+                    CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t, 0)), c);
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
         }
     }

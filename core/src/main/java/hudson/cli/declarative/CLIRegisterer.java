@@ -59,6 +59,7 @@ import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.ParserProperties;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -130,8 +131,8 @@ public class CLIRegisterer extends ExtensionFinder {
 
                         private CmdLineParser bindMethod(List<MethodBinder> binders) {
 
-                            registerOptionHandlers();
-                            CmdLineParser parser = new CmdLineParser(null);
+                            ParserProperties properties = ParserProperties.defaults().withAtSyntax(ALLOW_AT_SYNTAX);
+                            CmdLineParser parser = new CmdLineParser(null, properties);
 
                             //  build up the call sequence
                             Stack<Method> chains = new Stack<>();

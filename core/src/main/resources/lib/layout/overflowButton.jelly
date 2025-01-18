@@ -40,6 +40,8 @@ THE SOFTWARE.
     <st:attribute name="id">
       Optional ID for the button
     </st:attribute>
+
+    Displays a button which when clicked displays a dropdown of the component's children
   </st:documentation>
 
   <button class="jenkins-button ${attrs.clazz}"

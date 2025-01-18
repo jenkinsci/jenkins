@@ -26,10 +26,19 @@ THE SOFTWARE.
   Render build histories. 
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:set target="${it}" property="nextBuildNumberToFetch" value="${it.nextBuildNumber}"/>
-  <!-- build history -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:i="jelly:fmt">
+  <j:set target="${it}" property="nextBuildNumberToFetch" value="${it.nextBuildNumber}" />
+  <j:invokeStatic className="java.time.LocalDate" method="now" var="now" />
+
   <j:forEach var="pageEntry" items="${it.runs}">
+    <i:formatDate value="${pageEntry.entry.timestamp.time}" var="date" type="date" dateStyle="long" />
+    <i:formatDate value="${pageEntry.entry.timestamp.time}" var="simpleDate" type="date" pattern="YYYY-MM-dd" />
+
+    <j:if test="${pastDate != date}">
+      <span class="app-builds-container__heading">${simpleDate == now ? "%Today" : date}</span>
+      <j:set var="pastDate" value="${date}" />
+    </j:if>
+
     <st:include page="/hudson/widgets/HistoryWidget/entry.jelly" />
   </j:forEach>
 </j:jelly>

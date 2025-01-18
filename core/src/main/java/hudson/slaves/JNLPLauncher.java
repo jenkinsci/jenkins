@@ -39,7 +39,6 @@ import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -53,11 +52,11 @@ import org.kohsuke.stapler.DataBoundSetter;
  * @author Stephen Connolly
  * @author Kohsuke Kawaguchi
 */
+@SuppressWarnings("deprecation") // see comments about CasC
 public class JNLPLauncher extends ComputerLauncher {
     /**
      * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
      */
-    @DataBoundSetter
     @CheckForNull
     public String tunnel;
 
@@ -67,11 +66,9 @@ public class JNLPLauncher extends ComputerLauncher {
     @Deprecated
     public final transient String vmargs = null;
 
-    @Deprecated
     @NonNull
     private RemotingWorkDirSettings workDirSettings = RemotingWorkDirSettings.getEnabledDefaults();
 
-    @Deprecated
     private boolean webSocket;
 
     /**
@@ -131,7 +128,9 @@ public class JNLPLauncher extends ComputerLauncher {
         return this;
     }
 
-    @Deprecated
+    /**
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
+     */
     public RemotingWorkDirSettings getWorkDirSettings() {
         return workDirSettings;
     }
@@ -149,7 +148,9 @@ public class JNLPLauncher extends ComputerLauncher {
         return false;
     }
 
-    @Deprecated
+    /**
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
+     */
     public boolean isWebSocket() {
         return webSocket;
     }
@@ -160,6 +161,21 @@ public class JNLPLauncher extends ComputerLauncher {
     @DataBoundSetter
     public void setWebSocket(boolean webSocket) {
         this.webSocket = webSocket;
+    }
+
+    /**
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
+     */
+    public String getTunnel() {
+        return tunnel;
+    }
+
+    /**
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
+     */
+    @DataBoundSetter
+    public void setTunnel(String tunnel) {
+        this.tunnel = Util.fixEmptyAndTrim(tunnel);
     }
 
     @Override
@@ -197,9 +213,7 @@ public class JNLPLauncher extends ComputerLauncher {
         sb.append("-name ");
         sb.append(computerName);
         sb.append(' ');
-        if (isWebSocket()) {
-            sb.append("-webSocket ");
-        }
+        sb.append("-webSocket ");
         if (tunnel != null) {
             sb.append(" -tunnel ");
             sb.append(tunnel);
@@ -212,8 +226,8 @@ public class JNLPLauncher extends ComputerLauncher {
      * {@link Jenkins#checkGoodName(String)} saves us from most troublesome characters, but we still have to deal with
      * spaces and therefore with double quotes and backticks.
      */
-    private static String escapeUnix(String input) {
-        if (StringUtils.isAlphanumeric(input)) {
+    private static String escapeUnix(@NonNull String input) {
+        if (!input.isEmpty() && input.chars().allMatch(Character::isLetterOrDigit)) {
             return input;
         }
         Escaper escaper =
@@ -225,8 +239,8 @@ public class JNLPLauncher extends ComputerLauncher {
      * {@link Jenkins#checkGoodName(String)} saves us from most troublesome characters, but we still have to deal with
      * spaces and therefore with double quotes.
      */
-    private static String escapeWindows(String input) {
-        if (StringUtils.isAlphanumeric(input)) {
+    private static String escapeWindows(@NonNull String input) {
+        if (!input.isEmpty() && input.chars().allMatch(Character::isLetterOrDigit)) {
             return input;
         }
         Escaper escaper = Escapers.builder().addEscape('"', "\\\"").build();

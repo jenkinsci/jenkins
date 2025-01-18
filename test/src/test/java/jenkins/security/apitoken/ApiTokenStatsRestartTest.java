@@ -103,7 +103,7 @@ public class ApiTokenStatsRestartTest {
                    WebClient restWc = j.createWebClient().withBasicCredentials(u.getId(), tokenValue.get());
                    checkUserIsConnected(restWc, u.getId());
 
-                   HtmlPage config = wc.goTo(u.getUrl() + "/configure");
+                   HtmlPage config = wc.goTo(u.getUrl() + "/security/");
                    assertEquals(200, config.getWebResponse().getStatusCode());
                    assertThat(config.getWebResponse().getContentAsString(), containsString(tokenUuid.get()));
                    assertThat(config.getWebResponse().getContentAsString(), containsString(tokenName));
@@ -113,7 +113,7 @@ public class ApiTokenStatsRestartTest {
                        restWc.goToXml("whoAmI/api/xml");
                    }
 
-                   HtmlPage configWithStats = wc.goTo(u.getUrl() + "/configure");
+                   HtmlPage configWithStats = wc.goTo(u.getUrl() + "/security/");
                    assertEquals(200, configWithStats.getWebResponse().getStatusCode());
                    HtmlSpan useCounterSpan = configWithStats.getDocumentElement().getOneHtmlElementByAttribute("span", "class", "token-use-counter");
                    assertThat(useCounterSpan.getTextContent(), containsString("" + NUM_CALL_WITH_TOKEN));
@@ -131,7 +131,7 @@ public class ApiTokenStatsRestartTest {
                 WebClient wc = j.createWebClient().login(u.getId());
                 checkUserIsConnected(wc, u.getId());
 
-                HtmlPage config = wc.goTo(u.getUrl() + "/configure");
+                HtmlPage config = wc.goTo(u.getUrl() + "/security/");
                 assertEquals(200, config.getWebResponse().getStatusCode());
                 assertThat(config.getWebResponse().getContentAsString(), containsString(tokenUuid.get()));
                 assertThat(config.getWebResponse().getContentAsString(), containsString(TOKEN_NAME));
@@ -144,7 +144,7 @@ public class ApiTokenStatsRestartTest {
                 WebClient restWc = j.createWebClient().withBasicCredentials(u.getId(), tokenValue.get());
                 checkUserIsNotConnected(restWc);
 
-                HtmlPage configWithoutToken = wc.goTo(u.getUrl() + "/configure");
+                HtmlPage configWithoutToken = wc.goTo(u.getUrl() + "/security/");
                 assertEquals(200, configWithoutToken.getWebResponse().getStatusCode());
                 assertThat(configWithoutToken.getWebResponse().getContentAsString(), not(containsString(tokenUuid.get())));
                 assertThat(configWithoutToken.getWebResponse().getContentAsString(), not(containsString(TOKEN_NAME)));

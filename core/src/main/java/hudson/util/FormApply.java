@@ -24,11 +24,14 @@
 
 package hudson.util;
 
+import hudson.Functions;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
-import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponses.HttpResponseException;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Server-side code related to the {@code <f:apply>} button.
@@ -47,10 +50,10 @@ public class FormApply {
     public static HttpResponseException success(final String destination) {
         return new HttpResponseException() {
             @Override
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
                 if (isApply(req)) {
                     // if the submission is via 'apply', show a response in the notification bar
-                    applyResponse("notificationBar.show('" + Messages.HttpResponses_Saved() + "',notificationBar.SUCCESS)")
+                    showNotification(Messages.HttpResponses_Saved(), NotificationType.SUCCESS)
                             .generateResponse(req, rsp, node);
                 } else {
                     rsp.sendRedirect(destination);
@@ -61,9 +64,20 @@ public class FormApply {
 
     /**
      * Is this submission from the "apply" button?
+     *
+     * @since 2.475
      */
-    public static boolean isApply(StaplerRequest req) {
+    public static boolean isApply(StaplerRequest2 req) {
         return Boolean.parseBoolean(req.getParameter("core:apply"));
+    }
+
+
+    /**
+     * @deprecated use {@link #isApply(StaplerRequest2)}
+     */
+    @Deprecated
+    public static boolean isApply(StaplerRequest req) {
+        return isApply(StaplerRequest.toStaplerRequest2(req));
     }
 
     /**
@@ -71,11 +85,14 @@ public class FormApply {
      * <p>
      * When the response HTML includes a JavaScript function in a pre-determined name, that function gets executed.
      * This method generates such a response from JavaScript text.
+     *
+     * @deprecated use {@link #showNotification(String, NotificationType)} instead, which is CSP compatible version
      */
+    @Deprecated
     public static HttpResponseException applyResponse(final String script) {
         return new HttpResponseException() {
             @Override
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
                 rsp.setContentType("text/html;charset=UTF-8");
                 rsp.getWriter().println("<html><body><script>" +
                         "window.applyCompletionHandler = function (w) {" +
@@ -86,5 +103,37 @@ public class FormApply {
                         "</script></body></html>");
             }
         };
+    }
+
+    /**
+     * Generates the response for the asynchronous background form submission (AKA the Apply button),
+     * that will show a notification of certain type and with provided message.
+     *
+     * @param message a message to display in the popup. Only plain text is supported.
+     * @param notificationType type of notification. See {@link NotificationType} for supported types. Defines the notification
+     *                         color and the icon that will be shown.
+     *
+     * @since 2.482
+     */
+    public static HttpResponseException showNotification(final String message, final NotificationType notificationType) {
+        return new HttpResponseException() {
+            @Override
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException {
+                rsp.setContentType("text/html;charset=UTF-8");
+                rsp.getWriter().println("<script id='form-apply-data-holder' data-message='" + Functions.htmlAttributeEscape(message) + "' " +
+                        "data-notification-type='" + notificationType + "' " +
+                        "src='" + req.getContextPath() + Jenkins.RESOURCE_PATH + "/scripts/apply.js" + "'></script>");
+            }
+        };
+    }
+
+
+    /**
+     * Corresponds to types declared in <a href="https://github.com/jenkinsci/jenkins/blob/74610e024a6b8fd8feccdc51b8f7741aa6c30e3b/war/src/main/js/components/notifications/index.js#L13-L25">index.js</a>
+     */
+    public enum NotificationType {
+        SUCCESS,
+        WARNING,
+        ERROR
     }
 }

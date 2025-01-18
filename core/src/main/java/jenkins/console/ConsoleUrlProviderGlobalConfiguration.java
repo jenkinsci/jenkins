@@ -43,12 +43,12 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Allows administrators to activate and sort {@link ConsoleUrlProvider} extensions to set defaults for all users.
  * @see ConsoleUrlProviderUserProperty
- * @since TODO
+ * @since 2.433
  */
 @Extension
 @Symbol("consoleUrlProvider")
@@ -79,7 +79,7 @@ public class ConsoleUrlProviderGlobalConfiguration extends GlobalConfiguration {
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         // We have to null out providers before data binding to allow all providers to be deleted in the config UI.
         // We use a BulkChange to avoid double saves in other cases.
         try (BulkChange bc = new BulkChange(this)) {

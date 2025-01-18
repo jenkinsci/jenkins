@@ -1,7 +1,5 @@
 package jenkins.install;
 
-import static org.apache.commons.lang.StringUtils.defaultIfBlank;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -25,6 +23,16 @@ import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.PluginServletFilter;
 import hudson.util.VersionNumber;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpRetryException;
@@ -45,16 +53,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.ApiTokenProperty;
@@ -68,10 +66,11 @@ import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -334,7 +333,7 @@ public class SetupWizard extends PageDecorator {
      */
     @POST
     @Restricted(NoExternalUse.class)
-    public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public HttpResponse doCreateAdminUser(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         Jenkins j = Jenkins.get();
 
         j.checkPermission(Jenkins.ADMINISTER);
@@ -418,7 +417,7 @@ public class SetupWizard extends PageDecorator {
 
     @POST
     @Restricted(NoExternalUse.class)
-    public HttpResponse doConfigureInstance(StaplerRequest req, @QueryParameter String rootUrl) {
+    public HttpResponse doConfigureInstance(StaplerRequest2 req, @QueryParameter String rootUrl) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         Map<String, String> errors = new HashMap<>();
@@ -486,7 +485,11 @@ public class SetupWizard extends PageDecorator {
         File state = getUpdateStateFile();
         if (state.exists()) {
             try {
-                from = new VersionNumber(defaultIfBlank(Files.readString(Util.fileToPath(state), StandardCharsets.UTF_8), "1.0").trim());
+                String version = Files.readString(Util.fileToPath(state), StandardCharsets.UTF_8);
+                if (version == null || version.isBlank()) {
+                    version = "1.0";
+                }
+                from = new VersionNumber(version.trim());
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "Cannot read the current version file", ex);
                 return null;
@@ -553,8 +556,7 @@ public class SetupWizard extends PageDecorator {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONArray initialPluginList = null;
         updateSiteList: for (UpdateSite updateSite : Jenkins.get().getUpdateCenter().getSiteList()) {
-            String updateCenterJsonUrl = updateSite.getUrl();
-            String suggestedPluginUrl = updateCenterJsonUrl.replace("/update-center.json", "/platform-plugins.json");
+            String suggestedPluginUrl = updateSite.getSuggestedPluginsUrl();
             VersionNumber version = Jenkins.getVersion();
             if (version != null && (suggestedPluginUrl.startsWith("https://") || suggestedPluginUrl.startsWith("http://"))) {
                 // Allow remote update site to distinguish based on the current version
@@ -755,7 +757,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * This filter will validate that the security token is provided
      */
-    private final Filter FORCE_SETUP_WIZARD_FILTER = new Filter() {
+    private final Filter FORCE_SETUP_WIZARD_FILTER = new CompatibleFilter() {
         @Override
         public void init(FilterConfig cfg) throws ServletException {
         }

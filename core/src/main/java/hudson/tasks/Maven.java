@@ -76,12 +76,11 @@ import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Build by using Maven.
@@ -331,13 +330,13 @@ public class Maven extends Builder {
 
             if (!S_PATTERN.matcher(targets).find()) { // check the given target/goals do not contain settings parameter already
                 String settingsPath = SettingsProvider.getSettingsRemotePath(getSettings(), build, listener);
-                if (StringUtils.isNotBlank(settingsPath)) {
+                if (settingsPath != null && !settingsPath.isBlank()) {
                     args.add("-s", settingsPath);
                 }
             }
             if (!GS_PATTERN.matcher(targets).find()) {
                 String settingsPath = GlobalSettingsProvider.getSettingsRemotePath(getGlobalSettings(), build, listener);
-                if (StringUtils.isNotBlank(settingsPath)) {
+                if (settingsPath != null && !settingsPath.isBlank()) {
                     args.add("-gs", settingsPath);
                 }
             }
@@ -480,7 +479,7 @@ public class Maven extends Builder {
         }
 
         @Override
-        public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public Builder newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             if (req == null) {
                 // This state is prohibited according to the Javadoc of the super method.
                 throw new FormException("Maven Build Step new instance method is called for null Stapler request. "

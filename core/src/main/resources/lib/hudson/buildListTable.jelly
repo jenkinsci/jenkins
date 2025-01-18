@@ -37,6 +37,12 @@ THE SOFTWARE.
     <l:icon src="symbol-status-nobuilt" id="nobuilt" />
     <l:icon src="symbol-status-aborted" id="aborted" />
     <l:icon src="symbol-status-disabled" id="disabled" />
+    <l:icon src="symbol-status-blue-anime" id="blue-anime" />
+    <l:icon src="symbol-status-yellow-anime" id="yellow-anime" />
+    <l:icon src="symbol-status-red-anime" id="red-anime" />
+    <l:icon src="symbol-status-nobuilt-anime" id="nobuilt-anime" />
+    <l:icon src="symbol-status-aborted-anime" id="aborted-anime" />
+    <l:icon src="symbol-status-disabled-anime" id="disabled-anime" />
     <l:icon src="symbol-terminal" id="console" />
   </template>
 

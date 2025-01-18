@@ -91,7 +91,7 @@ public class ApiTokenStatsTest {
         WebClient restWc = j.createWebClient().withBasicCredentials(u.getId(), tokenValue);
         checkUserIsConnected(restWc, u.getId());
 
-        HtmlPage config = wc.goTo(u.getUrl() + "/configure");
+        HtmlPage config = wc.goTo(u.getUrl() + "/security/");
         assertEquals(200, config.getWebResponse().getStatusCode());
         assertThat(config.getWebResponse().getContentAsString(), containsString(tokenUuid));
         assertThat(config.getWebResponse().getContentAsString(), containsString(tokenName));
@@ -102,7 +102,7 @@ public class ApiTokenStatsTest {
             restWc.goToXml("whoAmI/api/xml");
         }
 
-        HtmlPage configWithStats = wc.goTo(u.getUrl() + "/configure");
+        HtmlPage configWithStats = wc.goTo(u.getUrl() + "/security/");
         assertEquals(200, configWithStats.getWebResponse().getStatusCode());
         HtmlSpan useCounterSpan = configWithStats.getDocumentElement().getOneHtmlElementByAttribute("span", "class", "token-use-counter");
         assertThat(useCounterSpan.getTextContent(), containsString("" + NUM_CALL_WITH_TOKEN));
@@ -112,7 +112,7 @@ public class ApiTokenStatsTest {
         // token is no more valid
         checkUserIsNotConnected(restWc);
 
-        HtmlPage configWithoutToken = wc.goTo(u.getUrl() + "/configure");
+        HtmlPage configWithoutToken = wc.goTo(u.getUrl() + "/security/");
         assertEquals(200, configWithoutToken.getWebResponse().getStatusCode());
         assertThat(configWithoutToken.getWebResponse().getContentAsString(), not(containsString(tokenUuid)));
         assertThat(configWithoutToken.getWebResponse().getContentAsString(), not(containsString(tokenName)));

@@ -160,7 +160,7 @@ public class RetrierTest {
                             throw new IndexOutOfBoundsException("Exception allowed considered as failure");
                         },
                         // check the result and return true (boolean primitive type) if success
-                        (currentAttempt, result) -> result == null ? false : result,
+                        (currentAttempt, result) -> result != null && result,
                         //name of the action
                         ACTION
                 )

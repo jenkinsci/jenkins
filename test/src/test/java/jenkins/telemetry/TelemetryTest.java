@@ -15,11 +15,14 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
@@ -27,10 +30,6 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
@@ -40,8 +39,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 public class TelemetryTest {
     @Rule
@@ -203,7 +202,7 @@ public class TelemetryTest {
         @NonNull
         @Override
         public LocalDate getStart() {
-            return LocalDate.now().plus(1, ChronoUnit.DAYS);
+            return LocalDate.now().plusDays(1);
         }
 
         @NonNull
@@ -243,7 +242,7 @@ public class TelemetryTest {
         @NonNull
         @Override
         public LocalDate getEnd() {
-            return LocalDate.now().minus(1, ChronoUnit.DAYS);
+            return LocalDate.now().minusDays(1);
         }
 
         @NonNull
@@ -305,7 +304,7 @@ public class TelemetryTest {
 
     @TestExtension
     public static class TelemetryReceiver implements UnprotectedRootAction {
-        public void doEvents(StaplerRequest request, StaplerResponse response) throws IOException {
+        public void doEvents(StaplerRequest2 request, StaplerResponse2 response) throws IOException {
             StringWriter sw = new StringWriter();
             IOUtils.copy(request.getInputStream(), sw, StandardCharsets.UTF_8);
             JSONObject json = JSONObject.fromObject(sw.toString());

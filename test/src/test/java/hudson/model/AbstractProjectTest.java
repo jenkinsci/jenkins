@@ -245,12 +245,7 @@ public class AbstractProjectTest {
                 };
             }
         });
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                p.pollSCMChanges(StreamTaskListener.fromStdout());
-            }
-        };
+        Thread t = new Thread(() -> p.poll(StreamTaskListener.fromStdout()));
         try {
             t.start();
             Future<FreeStyleBuild> f = p.scheduleBuild2(0);
@@ -668,6 +663,9 @@ public class AbstractProjectTest {
         for (String p : projects) {
             JSONObject o = new JSONObject();
             o.put("name", p);
+            o.put("url", JSONObject.fromObject(null));
+            o.put("icon", JSONObject.fromObject(null));
+            o.put("type", "symbol");
             expected.add(o);
         }
         assertThat(suggestions.containsAll(expected), is(true));

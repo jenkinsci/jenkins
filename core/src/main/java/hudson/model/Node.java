@@ -29,15 +29,17 @@ import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Extension;
+import hudson.BulkChange;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
+import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
@@ -45,6 +47,7 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.EphemeralNode;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
@@ -53,6 +56,7 @@ import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
 import hudson.util.TagCloud;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -63,6 +67,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.model.Nodes;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -73,6 +79,7 @@ import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.springframework.security.core.Authentication;
@@ -96,7 +103,7 @@ import org.springframework.security.core.Authentication;
  * @see Computer
  */
 @ExportedBean
-public abstract class Node extends AbstractModelObject implements ReconfigurableDescribable<Node>, ExtensionPoint, AccessControlled, OnMaster, Saveable {
+public abstract class Node extends AbstractModelObject implements ReconfigurableDescribable<Node>, ExtensionPoint, AccessControlled, OnMaster, PersistenceRoot {
 
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
@@ -109,6 +116,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * is saved once.
      */
     protected transient volatile boolean holdOffLaunchUntilSave;
+
+    private transient Nodes parent;
 
     @Override
     public String getDisplayName() {
@@ -133,16 +142,18 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      */
     @Override
     public void save() throws IOException {
-        // this should be a no-op unless this node instance is the node instance in Jenkins' list of nodes
-        // thus where Jenkins.get() == null there is no list of nodes, so we do a no-op
-        // Nodes.updateNode(n) will only persist the node record if the node instance is in the list of nodes
-        // so either path results in the same behaviour: the node instance is only saved if it is in the list of nodes
-        // for all other cases we do not know where to persist the node record and hence we follow the default
-        // no-op of a Saveable.NOOP
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins != null) {
-            jenkins.updateNode(this);
+        if (parent == null) return;
+        if (this instanceof EphemeralNode) {
+            Util.deleteRecursive(getRootDir());
+            return;
         }
+        if (BulkChange.contains(this))   return;
+        getConfigFile().write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
+    }
+
+    protected XmlFile getConfigFile() {
+        return parent.getConfigFile(this);
     }
 
     /**
@@ -248,25 +259,19 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return true;
     }
 
-    /**
-     * Let Nodes be aware of the lifecycle of their own {@link Computer}.
-     */
-    @Extension
-    public static class InternalComputerListener extends ComputerListener {
-        @Override
-        public void onOnline(Computer c, TaskListener listener) {
-            Node node = c.getNode();
-
-            // At startup, we need to restore any previously in-effect temp offline cause.
-            // We wait until the computer is started rather than getting the data to it sooner
-            // so that the normal computer start up processing works as expected.
-            if (node != null && node.temporaryOfflineCause != null && node.temporaryOfflineCause != c.getOfflineCause()) {
-                c.setTemporarilyOffline(true, node.temporaryOfflineCause);
-            }
-        }
+    public void onLoad(Nodes parent, String name) {
+        this.parent = parent;
+        setNodeName(name);
     }
 
-    private OfflineCause temporaryOfflineCause;
+    /**
+     * @return true if this node has a temporary offline cause set.
+     */
+    boolean isTemporarilyOffline() {
+        return temporaryOfflineCause != null;
+    }
+
+    private volatile OfflineCause temporaryOfflineCause;
 
     /**
      * Enable a {@link Computer} to inform its node when it is taken
@@ -277,6 +282,11 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             if (temporaryOfflineCause != cause) {
                 temporaryOfflineCause = cause;
                 save();
+            }
+            if (temporaryOfflineCause != null) {
+                Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(toComputer(), temporaryOfflineCause));
+            } else {
+                Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOnline(toComputer()));
             }
         } catch (java.io.IOException e) {
             LOGGER.warning("Unable to complete save, temporary offline status will not be persisted: " + e.getMessage());
@@ -546,7 +556,24 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     @Override
+    public Node reconfigure(@NonNull final StaplerRequest2 req, JSONObject form) throws FormException {
+        if (Util.isOverridden(Node.class, getClass(), "reconfigure", StaplerRequest.class, JSONObject.class)) {
+            return reconfigure(StaplerRequest.fromStaplerRequest2(req), form);
+        } else {
+            return reconfigureImpl(req, form);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #reconfigure(StaplerRequest2, JSONObject)}
+     */
+    @Deprecated
+    @Override
     public Node reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws FormException {
+        return reconfigureImpl(StaplerRequest.toStaplerRequest2(req), form);
+    }
+
+    private Node reconfigureImpl(@NonNull final StaplerRequest2 req, JSONObject form) throws FormException {
         if (form == null)     return null;
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
@@ -629,4 +656,16 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         }
     }
 
+    @Override
+    public File getRootDir() {
+        return getParent().getRootDirFor(this);
+    }
+
+    @NonNull
+    private Nodes getParent() {
+        if (parent == null) {
+            throw new IllegalStateException("no parent set on " + getClass().getName() + "[" + getNodeName() + "]");
+        }
+        return parent;
+    }
 }

@@ -1,0 +1,41 @@
+name: Run update-since-todo.py
+
+on:
+  schedule:
+    - cron: "0 16 * * THU"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  since_updater:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'jenkinsci' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run update-since-todo.py
+        run: |
+          body=$(./update-since-todo.py)
+
+          {
+            echo 'PROGRESS<<EOF'
+            echo "${body}"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+        id: run_script
+        shell: bash
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc84ffff1f # v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Fill in since annotations
+          title: Fill in since annotations
+          body: ${{ steps.run_script.outputs.PROGRESS }}
+          base: master
+          labels: skip-changelog
+          branch: actions/update-since-todo
+          delete-branch: true

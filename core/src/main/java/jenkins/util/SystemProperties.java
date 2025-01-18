@@ -34,6 +34,9 @@ import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.slaves.ComputerListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,12 +45,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.io.OnMaster;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -102,7 +101,7 @@ public class SystemProperties {
         public void contextInitialized(ServletContextEvent event) {
             ServletContext theContext = event.getServletContext();
             handler = key -> {
-                if (StringUtils.isNotBlank(key)) {
+                if (key != null && !key.isBlank()) {
                     try {
                         return theContext.getInitParameter(key);
                     } catch (SecurityException ex) {

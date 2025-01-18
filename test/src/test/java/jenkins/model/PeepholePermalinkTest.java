@@ -82,7 +82,7 @@ public class PeepholePermalinkTest {
     }
 
     private void assertStorage(String id, Job<?, ?> job, Run<?, ?> build) throws Exception {
-        assertThat(Files.readAllLines(PeepholePermalink.storageFor(job.getBuildDir()).toPath(), StandardCharsets.UTF_8),
+        assertThat(Files.readAllLines(PeepholePermalink.DefaultCache.storageFor(job.getBuildDir()).toPath(), StandardCharsets.UTF_8),
             hasItem(id + " " + (build == null ? -1 : build.getNumber())));
     }
 

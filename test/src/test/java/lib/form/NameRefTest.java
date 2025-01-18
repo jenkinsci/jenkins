@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Tests the handling of @nameRef in the form tree.
@@ -50,7 +50,7 @@ public class NameRefTest {
 
     public static class JenkinsRuleWithJelly extends JenkinsRule {
 
-        public HttpResponse doSubmitTest1(StaplerRequest req) throws Exception {
+        public HttpResponse doSubmitTest1(StaplerRequest2 req) throws Exception {
             JSONObject f = req.getSubmittedForm();
             f.remove("Submit");
             System.out.println(f);

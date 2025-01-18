@@ -6,6 +6,7 @@ Behaviour.specify("a.task-link-no-confirm", "task-link", 0, function (el) {
   let post = el.dataset.taskPost;
   let callback = el.dataset.callback;
   let success = el.dataset.taskSuccess;
+  let failure = el.dataset.taskFailure;
   let href = el.href;
 
   if (callback !== undefined) {
@@ -20,8 +21,13 @@ Behaviour.specify("a.task-link-no-confirm", "task-link", 0, function (el) {
       fetch(href, {
         method: "post",
         headers: crumb.wrap({}),
+      }).then((rsp) => {
+        if (rsp.ok) {
+          notificationBar(success, notificationBar.SUCCESS);
+        } else {
+          notificationBar(failure, notificationBar.ERROR);
+        }
       });
-      hoverNotification(success, el.parentNode);
       ev.preventDefault();
     };
   }

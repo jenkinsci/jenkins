@@ -58,7 +58,7 @@ public class DependencyRunner implements Runnable {
             // Get all top-level projects
             LOGGER.fine("assembling top level projects");
             for (AbstractProject p : Jenkins.get().allItems(AbstractProject.class))
-                if (p.getUpstreamProjects().size() == 0) {
+                if (p.getUpstreamProjects().isEmpty()) {
                     LOGGER.fine("adding top level project " + p.getName());
                     topLevelProjects.add(p);
                 } else {

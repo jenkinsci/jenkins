@@ -83,7 +83,6 @@ import jenkins.util.SystemProperties;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -193,7 +192,7 @@ public class UpdateSite {
     @Deprecated
     public @CheckForNull Future<FormValidation> updateDirectly(final boolean signatureCheck) {
         if (! getDataFile().exists() || isDue()) {
-            return Jenkins.get().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
+            return Jenkins.get().getUpdateCenter().updateService.submit(new Callable<>() {
                 @Override public FormValidation call() throws Exception {
                     return updateDirectlyNow(signatureCheck);
                 }
@@ -218,7 +217,7 @@ public class UpdateSite {
         return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8))), signatureCheck);
     }
 
-    private FormValidation updateData(String json, boolean signatureCheck)
+    protected FormValidation updateData(String json, boolean signatureCheck)
             throws IOException {
 
         dataTimestamp = System.currentTimeMillis();
@@ -493,6 +492,17 @@ public class UpdateSite {
         return url;
     }
 
+    /**
+     *
+     * @return the URL used by {@link jenkins.install.SetupWizard} for suggested plugins to install at setup time
+     * @since 2.446
+     */
+    @Exported
+    public String getSuggestedPluginsUrl() {
+        String updateCenterJsonUrl = getUrl();
+        return updateCenterJsonUrl.replace("/update-center.json", "/platform-plugins.json");
+    }
+
 
     /**
      * URL which exposes the metadata location in a specific update site.
@@ -528,14 +538,17 @@ public class UpdateSite {
 
     /**
      * Is this the legacy default update center site?
-     * @deprecated
-     *      Will be removed, currently returns always false.
-     * @since 2.343
+     * @since 1.357
      */
-    @Deprecated
     @Restricted(NoExternalUse.class)
     public boolean isLegacyDefault() {
-        return false;
+        return isJenkinsCI();
+    }
+
+    private boolean isJenkinsCI() {
+        return url != null
+                && UpdateCenter.PREDEFINED_UPDATE_SITE_ID.equals(id)
+                && url.startsWith("http://updates.jenkins-ci.org/");
     }
 
     /**
@@ -1288,7 +1301,11 @@ public class UpdateSite {
                 displayName = title;
             else
                 displayName = name;
-            return StringUtils.removeStart(displayName, "Jenkins ");
+            String removePrefix = "Jenkins ";
+            if (displayName != null && displayName.startsWith(removePrefix)) {
+                return displayName.substring(removePrefix.length());
+            }
+            return displayName;
         }
 
         /**
@@ -1561,7 +1578,7 @@ public class UpdateSite {
          */
         @Restricted(DoNotUse.class)
         public boolean hasWarnings() {
-            return getWarnings().size() > 0;
+            return !getWarnings().isEmpty();
         }
 
         /**

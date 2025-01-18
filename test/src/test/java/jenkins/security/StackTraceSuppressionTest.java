@@ -161,7 +161,7 @@ public class StackTraceSuppressionTest {
     }
 
     private void checBaseResponseContent(String content) {
-        assertThat(content, containsString("A problem occurred while processing the request."));
+        assertThat(content, containsString("A problem occurred while processing the request"));
         assertThat(content, containsString("Logging ID="));
         assertThat(content, containsString("Oops!"));
     }

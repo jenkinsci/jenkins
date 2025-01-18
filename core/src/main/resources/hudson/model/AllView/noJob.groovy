@@ -81,7 +81,7 @@ div {
             // we're in a folder
 
             section(class: "empty-state-section") {
-                h2(_("This folder is empty"), class: "h4")
+                h2(_("thisFolderIsEmpty"), class: "h4")
 
                 ul(class: "empty-state-section-list") {
                     li(class: "content-block") {

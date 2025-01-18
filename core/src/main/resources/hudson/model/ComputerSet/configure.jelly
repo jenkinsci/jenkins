@@ -42,16 +42,11 @@ THE SOFTWARE.
       <f:form method="post" action="configSubmit" name="config">
         <f:descriptorList title="${%Preventive Node Monitoring}"
                           descriptors="${it.nodeMonitorDescriptors}"
-                          instances="${it.nonIgnoredMonitors}" />
+                          instances="${it.monitors}"
+                          forceRowSet="true"/>
 
-        <l:hasAdministerOrManage>
-          <f:bottomButtonBar>
-            <f:submit value="${%Save}" />
-            <f:apply />
-          </f:bottomButtonBar>
-        </l:hasAdministerOrManage>
+        <f:saveApplyBar/>
       </f:form>
-      <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>
   </l:layout>
 </j:jelly>
