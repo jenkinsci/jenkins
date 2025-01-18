@@ -27,6 +27,10 @@ package hudson.model;
 import hudson.Extension;
 import hudson.Util;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import jenkins.management.AdministrativeMonitorsDecorator;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -40,7 +44,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 
 /**
- * Adds the "Manage Jenkins" link to the top page.
+ * Adds the "Manage Jenkins" link to the navigation bar.
  *
  * @author Kohsuke Kawaguchi
  */
