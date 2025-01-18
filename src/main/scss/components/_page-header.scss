@@ -7,13 +7,12 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--section-padding);
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
   margin-bottom: calc(var(--section-padding) * -1);
-  padding: 0 var(--section-padding);
   min-height: 4.375rem;
   backdrop-filter: blur(var(--background-blur));
   background: color-mix(in srgb, var(--header-background) var(--background-opacity), transparent);
@@ -30,6 +29,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    padding-right: var(--section-padding);
 
     .jenkins-button {
       min-width: 2.375rem;

@@ -6,6 +6,7 @@
   gap: 0.625rem;
   overflow-y: hidden;
   overflow-x: auto;
+  padding-left: var(--section-padding);
 
   &__list {
     display: contents;
@@ -45,17 +46,27 @@
         text-decoration: none;
         text-wrap: nowrap;
         flex-shrink: 0;
+      }
 
-        &:link {
-          transition: opacity var(--standard-transition);
+      & > a {
+        @include mixins.item;
 
-          &:hover {
-            opacity: 0.75;
-          }
+        --item-background--hover: transparent;
+        --item-background--active: transparent;
+        --item-box-shadow--focus: transparent;
 
-          &:active {
-            opacity: 0.5;
-          }
+        transition: opacity var(--standard-transition);
+
+        &::before, &::after {
+          inset: -2px -6px;
+        }
+
+        &:hover {
+          opacity: 0.75;
+        }
+
+        &:active {
+          opacity: 0.5;
         }
       }
 
