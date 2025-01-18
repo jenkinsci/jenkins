@@ -1,5 +1,5 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
     <header id="page-header" class="page-header">
       <l:breadcrumbBar>
         <j:out value="${breadcrumbs}" />
@@ -23,6 +23,7 @@
             <j:if test="${action.iconFileName != null}">
               <a href="${h.getActionUrl(app.url, action)}" class="jenkins-button jenkins-button--tertiary" tooltip="${action.displayName}">
                 <l:icon src="${action.iconFileName}" />
+                <l:badge badge="${action.badge}" />
               </a>
             </j:if>
           </j:forEach>

@@ -23,49 +23,49 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <j:set var="activeMonitors" value="${it.getMonitorsToDisplay()}"/>
+<!--    <j:set var="activeMonitors" value="${it.getMonitorsToDisplay()}"/>-->
 
-    <j:if test="${activeMonitors != null and activeMonitors.size() > 0}">
-        <st:adjunct includes="jenkins.management.AdministrativeMonitorsDecorator.resources"/>
+<!--    <j:if test="${activeMonitors != null and activeMonitors.size() > 0}">-->
+<!--        <st:adjunct includes="jenkins.management.AdministrativeMonitorsDecorator.resources"/>-->
 
-        <j:set var="activeNonSecurityAM" value="${it.filterNonSecurityAdministrativeMonitors(activeMonitors)}" />
-        <j:set var="activeNonSecurityAMCount" value="${activeNonSecurityAM.size()}" />
-        <j:set var="activeSecurityAM" value="${it.filterSecurityAdministrativeMonitors(activeMonitors)}" />
-        <j:set var="activeSecurityAMCount" value="${activeSecurityAM.size()}" />
+<!--        <j:set var="activeNonSecurityAM" value="${it.filterNonSecurityAdministrativeMonitors(activeMonitors)}" />-->
+<!--        <j:set var="activeNonSecurityAMCount" value="${activeNonSecurityAM.size()}" />-->
+<!--        <j:set var="activeSecurityAM" value="${it.filterSecurityAdministrativeMonitors(activeMonitors)}" />-->
+<!--        <j:set var="activeSecurityAMCount" value="${activeSecurityAM.size()}" />-->
 
-        <div id="visible-am-container" class="am-container">
-            <j:if test="${activeNonSecurityAMCount > 0}">
-                <a id="visible-am-button"
-                   class="am-button"
-                   href="#"
-                   data-href="${rootURL}/administrativeMonitorsApi/nonSecurityPopupContent"
-                   title="${%tooltip(activeNonSecurityAMCount)}">
-                    <l:icon src="symbol-notifications" class="icon-md"/>
-                    <div class="am-monitor__indicator-mobile"/>
-                    <span class="am-monitor__count">
-                        ${activeNonSecurityAMCount}
-                    </span>
-                </a>
-                <div id="visible-am-list" class="am-list">
-                </div>
-            </j:if>
-        </div>
-        <div id="visible-sec-am-container" class="am-container">
-            <j:if test="${activeSecurityAMCount > 0}">
-                <a id="visible-sec-am-button"
-                   class="am-button security-am"
-                   href="#"
-                   data-href="${rootURL}/administrativeMonitorsApi/securityPopupContent"
-                   title="${%tooltipSec(activeSecurityAMCount)}">
-                    <l:icon src="symbol-shield-warning" class="icon-md"/>
-                    <div class="am-monitor__indicator-mobile"/>
-                    <span class="am-monitor__count">
-                        ${activeSecurityAMCount}
-                    </span>
-                </a>
-                <div id="visible-sec-am-list" class="am-list">
-                </div>
-            </j:if>
-        </div>
-    </j:if>
+<!--        <div id="visible-am-container" class="am-container">-->
+<!--            <j:if test="${activeNonSecurityAMCount > 0}">-->
+<!--                <a id="visible-am-button"-->
+<!--                   class="am-button"-->
+<!--                   href="#"-->
+<!--                   data-href="${rootURL}/administrativeMonitorsApi/nonSecurityPopupContent"-->
+<!--                   title="${%tooltip(activeNonSecurityAMCount)}">-->
+<!--                    <l:icon src="symbol-notifications" class="icon-md"/>-->
+<!--                    <div class="am-monitor__indicator-mobile"/>-->
+<!--                    <span class="am-monitor__count">-->
+<!--                        ${activeNonSecurityAMCount}-->
+<!--                    </span>-->
+<!--                </a>-->
+<!--                <div id="visible-am-list" class="am-list">-->
+<!--                </div>-->
+<!--            </j:if>-->
+<!--        </div>-->
+<!--        <div id="visible-sec-am-container" class="am-container">-->
+<!--            <j:if test="${activeSecurityAMCount > 0}">-->
+<!--                <a id="visible-sec-am-button"-->
+<!--                   class="am-button security-am"-->
+<!--                   href="#"-->
+<!--                   data-href="${rootURL}/administrativeMonitorsApi/securityPopupContent"-->
+<!--                   title="${%tooltipSec(activeSecurityAMCount)}">-->
+<!--                    <l:icon src="symbol-shield-warning" class="icon-md"/>-->
+<!--                    <div class="am-monitor__indicator-mobile"/>-->
+<!--                    <span class="am-monitor__count">-->
+<!--                        ${activeSecurityAMCount}-->
+<!--                    </span>-->
+<!--                </a>-->
+<!--                <div id="visible-sec-am-list" class="am-list">-->
+<!--                </div>-->
+<!--            </j:if>-->
+<!--        </div>-->
+<!--    </j:if>-->
 </j:jelly>

@@ -27,6 +27,10 @@ package hudson.model;
 import hudson.Extension;
 import hudson.Util;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import jenkins.management.AdministrativeMonitorsDecorator;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -87,5 +91,24 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
         }
         // If neither is the case, rewrite the relative URL to point to inside the /manage/ URL space
         menu.add("manage/" + url, icon, iconXml, text, post, requiresConfirmation, badge, message);
+    }
+
+    @Override
+    public Badge getBadge() {
+        Jenkins jenkins = Jenkins.get();
+        AdministrativeMonitorsDecorator decorator = jenkins.getExtensionList(PageDecorator.class)
+                .get(AdministrativeMonitorsDecorator.class);
+        Collection<AdministrativeMonitor> activeAdministrativeMonitors = Optional.ofNullable(decorator.getMonitorsToDisplay()).orElse(Collections.emptyList());
+        boolean anySecurity = activeAdministrativeMonitors.stream().anyMatch(AdministrativeMonitor::isSecurity);
+
+        if (activeAdministrativeMonitors.isEmpty()) {
+            return null;
+        }
+
+        String suffix = activeAdministrativeMonitors.size() > 1 ? "notifications" : "notification";
+
+        return new Badge(String.valueOf(activeAdministrativeMonitors.size()),
+                activeAdministrativeMonitors.size() + " " + suffix,
+                anySecurity ? Badge.Severity.DANGER : Badge.Severity.WARNING);
     }
 }
