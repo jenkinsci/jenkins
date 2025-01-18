@@ -87,7 +87,8 @@
 
   &:not(:disabled) {
     &:hover,
-    &:focus-visible {
+    &:focus-visible,
+    &[aria-describedby]{
       &::before {
         background-color: var(--item-background--hover);
       }
