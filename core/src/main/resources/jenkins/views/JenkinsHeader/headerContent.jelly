@@ -23,8 +23,7 @@
         <div class="jenkins-!-display-contents jenkins-mobile-hide">
           <j:forEach var="action" items="${app.actions}">
             <j:if test="${action.iconFileName != null}">
-
-              <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.url)}" />
+              <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
               <j:set var="tooltip">
                 <st:include it="${action}" page="jumplist.jelly" optional="true" />
               </j:set>
@@ -39,7 +38,7 @@
               </j:if>
 
               <a href="${h.getActionUrl(app.url, action)}"
-                 class="jenkins-button jenkins-button--tertiary ${isCurrent ? 'jenkins-button--active' : null}"
+                 class="jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'}"
                  data-html-tooltip="${tooltip}">
                 <l:icon src="${action.iconFileName}" />
                 <j:if test="${action.badge != null}">

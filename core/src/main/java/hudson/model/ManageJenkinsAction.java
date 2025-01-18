@@ -25,6 +25,7 @@
 package hudson.model;
 
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Util;
 import java.io.IOException;
 import jenkins.management.Badge;
@@ -103,7 +104,12 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
 //        }
 
         // TODO - should this include plugin updates?
-        return new PluginsLink().getBadge();
+        return ManagementLink.all()
+                .stream()
+                .filter(e -> e.getClass().equals(PluginsLink.class))
+                .findFirst()
+                .map(ManagementLink::getBadge)
+                .orElse(null);
 
 //        int size = activeAdministrativeMonitors.size();
 //        String suffix = size > 1 ? "notifications" : "notification";
