@@ -1,6 +1,5 @@
 module.exports = {
-  extends: "stylelint-config-standard",
-  customSyntax: "postcss-scss",
+  extends: "stylelint-config-standard-scss",
   ignoreFiles: ["src/main/scss/_bootstrap.scss"],
   rules: {
     "no-descending-specificity": null,
@@ -14,23 +13,8 @@ module.exports = {
       },
     ],
     "property-no-vendor-prefix": null,
-    "at-rule-no-unknown": [
-      true,
-      {
-        ignoreAtRules: [
-          "function",
-          "if",
-          "each",
-          "include",
-          "mixin",
-          "for",
-          "use",
-        ],
-      },
-    ],
     "alpha-value-notation": "number",
     "number-max-precision": 5,
-    "function-no-unknown": null,
     "no-duplicate-selectors": null,
     "hue-degree-notation": "number",
   },

@@ -72,21 +72,6 @@
   cursor: default;
 }
 
-.tabBarBaseline {
-  border-top: var(--tab-baseline-width) solid var(--tab-baseline-color);
-  z-index: 1;
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-
-  /* Baseline is hidden by default.  See next rule fo adding visibility. */
-  display: var(--tab-baseline-default-display, none);
-}
-
-.tabBarFrame.showBaseline .tabBarBaseline {
-  display: block;
-}
-
 .jenkins-tab-pane__title {
   font-size: 1.6rem;
   margin: 2.2rem 0 1.4rem;
