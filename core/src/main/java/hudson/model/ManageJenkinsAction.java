@@ -27,10 +27,6 @@ package hudson.model;
 import hudson.Extension;
 import hudson.Util;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
-import jenkins.management.AdministrativeMonitorsDecorator;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -105,10 +101,11 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
             return null;
         }
 
-        String suffix = activeAdministrativeMonitors.size() > 1 ? "notifications" : "notification";
+        int size = activeAdministrativeMonitors.size();
+        String suffix = size > 1 ? "notifications" : "notification";
 
-        return new Badge(String.valueOf(activeAdministrativeMonitors.size()),
-                activeAdministrativeMonitors.size() + " " + suffix,
+        return new Badge(String.valueOf(size),
+                size + " " + suffix,
                 anySecurity ? Badge.Severity.DANGER : Badge.Severity.WARNING);
     }
 }

@@ -21,10 +21,26 @@
         <div class="jenkins-!-display-contents jenkins-mobile-hide">
           <j:forEach var="action" items="${app.actions}">
             <j:if test="${action.iconFileName != null}">
-              <a href="${h.getActionUrl(app.url, action)}" class="jenkins-button jenkins-button--tertiary" tooltip="${action.displayName}">
+
+              <j:if test="${action.badge != null}">
+                <j:set var="tooltip" scope="parent">
+                  <div style="text-align: center;">${action.displayName}</div>
+                  <div style="text-align: center; color: var(--text-color-secondary)">${action.badge.tooltip}</div>
+                </j:set>
+              </j:if>
+
+              <a href="${h.getActionUrl(app.url, action)}"
+                 class="jenkins-button jenkins-button--tertiary"
+                 tooltip="${action.displayName}"
+                 data-html-tooltip="${tooltip}">
                 <l:icon src="${action.iconFileName}" />
-                <l:badge badge="${action.badge}" />
+                <j:if test="${action.badge != null}">
+                  <span class="jenkins-badge jenkins-!-${action.badge.severity}-color" />
+                </j:if>
               </a>
+
+              <!-- Unsure if we need this-->
+              <j:set var="tooltip" />
             </j:if>
           </j:forEach>
         </div>
