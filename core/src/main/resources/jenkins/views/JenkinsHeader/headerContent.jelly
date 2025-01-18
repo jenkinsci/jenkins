@@ -18,6 +18,8 @@
           </j:forEach>
         </l:overflowButton>
 
+<!--      TODO -  Need to implement active state-->
+
         <div class="jenkins-!-display-contents jenkins-mobile-hide">
           <j:forEach var="action" items="${app.actions}">
             <j:if test="${action.iconFileName != null}">
