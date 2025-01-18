@@ -301,7 +301,8 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return Jenkins.get().getMyViewsTabBar();
     }
 
-    @Extension @Symbol("myView")
+    // TODO - Do we want this?
+    @Symbol("myView")
     public static class GlobalAction implements RootAction {
 
         @Override

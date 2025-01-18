@@ -25,7 +25,6 @@
 package hudson.model;
 
 import hudson.Extension;
-import hudson.Functions;
 import hudson.Util;
 import java.io.IOException;
 import jenkins.management.Badge;

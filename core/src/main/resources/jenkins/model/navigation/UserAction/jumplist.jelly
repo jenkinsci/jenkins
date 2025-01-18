@@ -1,0 +1,26 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <div style="display: flex; flex-direction: column; margin: 0 -0.4rem">
+    <a class="jenkins-dropdown__item" href="${rootURL}/${it.user.url}">
+      <div class="jenkins-dropdown__item__icon">
+        <l:icon src="symbol-person-circle" />
+      </div>
+      ${it.user.fullName}
+    </a>
+    <a class="jenkins-dropdown__item" href="${rootURL}/${it.user.url}/account">
+      <div class="jenkins-dropdown__item__icon">
+        <l:icon src="symbol-settings" />
+      </div>
+      Configure
+    </a>
+    <div class="jenkins-dropdown__separator" />
+    <a class="jenkins-dropdown__item" href="${rootURL}/logout">
+      <div class="jenkins-dropdown__item__icon">
+        <div class="jenkins-dropdown__item__icon">
+          <l:icon src="symbol-log-out" />
+        </div>
+      </div>
+      Sign out
+    </a>
+  </div>
+</j:jelly>
