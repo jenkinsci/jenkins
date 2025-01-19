@@ -8,10 +8,15 @@ const TOOLTIP_BASE = {
   popperOptions: {
     modifiers: [
       {
-        name: 'preventOverflow',
+        name: "preventOverflow",
         options: {
-          boundary: 'viewport',
-          padding: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--section-padding')) * 16
+          boundary: "viewport",
+          padding:
+            parseFloat(
+              getComputedStyle(document.documentElement).getPropertyValue(
+                "--section-padding",
+              ),
+            ) * 16,
         },
       },
     ],

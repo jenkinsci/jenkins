@@ -4,8 +4,7 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  overflow-y: hidden;
-  overflow-x: auto;
+  overflow: auto hidden;
   padding-left: var(--section-padding);
 
   &__list {
@@ -16,7 +15,7 @@
 
       &:first-of-type {
         a {
-          font-family: "Georgia";
+          font-family: Georgia;
           font-weight: 600;
           font-size: 1.125rem;
 
@@ -24,15 +23,13 @@
           &::before {
             content: "";
             position: absolute;
-            top: -30px;
-            left: -100px;
-            bottom: -18px;
-            right: -15px;
+            inset: -30px -15px -18px -100px;
           }
         }
       }
 
-      & > a, span {
+      & > a,
+      span {
         position: relative;
         display: inline-flex;
         align-items: center;
@@ -57,7 +54,8 @@
 
         transition: opacity var(--standard-transition);
 
-        &::before, &::after {
+        &::before,
+        &::after {
           inset: -2px -6px;
         }
 
