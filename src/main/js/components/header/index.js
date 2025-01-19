@@ -9,7 +9,10 @@ function init() {
       "--background-blur",
       Math.min(40, window.scrollY) + "px",
     );
-    if (!document.querySelector(".jenkins-search--app-bar")) {
+    if (
+      !document.querySelector(".jenkins-search--app-bar") &&
+      !document.querySelector(".app-page-body__sidebar--sticky")
+    ) {
       navigation.style.setProperty(
         "--border-opacity",
         Math.min(10, window.scrollY) + "%",

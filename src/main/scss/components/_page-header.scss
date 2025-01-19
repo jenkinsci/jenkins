@@ -13,21 +13,26 @@
   gap: var(--section-padding);
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
-  margin-bottom: calc(var(--section-padding) * -1);
   min-height: 4.375rem;
-  backdrop-filter: blur(var(--background-blur));
-  background: color-mix(
-    in sRGB,
-    var(--header-background) var(--background-opacity),
-    transparent
-  );
-  border-bottom: 1.5px solid
-    color-mix(
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(var(--background-blur));
+    background: color-mix(
       in sRGB,
-      var(--text-color-secondary) var(--border-opacity),
+      var(--header-background) var(--background-opacity),
       transparent
     );
-  background-clip: padding-box;
+    border-bottom: 1.5px solid
+      color-mix(
+        in sRGB,
+        var(--text-color-secondary) var(--border-opacity),
+        transparent
+      );
+    background-clip: padding-box;
+  }
 
   #jenkins-head-icon {
     height: 2rem;
@@ -60,10 +65,11 @@
       }
     }
   }
+}
 
-  // TODO - Might not need this
-  .page-header__am-wrapper,
-  .page-header__hyperlinks {
-    display: contents;
+body:has(.jenkins-app-bar--sticky) {
+  .page-header::before {
+    bottom: -4rem;
+    mask-image: linear-gradient(black 50%, transparent);
   }
 }

@@ -36,8 +36,9 @@
   @media (min-width: breakpoints.$tablet-breakpoint) {
     &--sticky {
       position: sticky;
-      top: 44px;
+      top: 70px;
       align-self: flex-start;
+      z-index: 21; // todo - reset this
     }
   }
 }
@@ -53,7 +54,8 @@
 }
 
 #main-panel {
-  padding: var(--section-padding);
+  padding: 0 var(--section-padding) var(--section-padding)
+    var(--section-padding);
   display: inline-block;
   width: 100%;
 }
