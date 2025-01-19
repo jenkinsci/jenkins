@@ -44,7 +44,7 @@ public class UserAction implements RootAction {
             return null;
         }
 
-        return getAvatar(User.current(), "48x48");
+        return getAvatar(User.current(), "96x96");
     }
 
     @Override

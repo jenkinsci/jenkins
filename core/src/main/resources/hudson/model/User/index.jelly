@@ -30,9 +30,7 @@ THE SOFTWARE.
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content jenkins-build-caption" data-status-url="${rootURL}/${it.url}statusIcon">
           <h1>
-            <span class="icon-lg">
-              <l:icon src="${h.getUserAvatar(it, '48x48')}"/>
-            </span>
+            <l:icon src="${h.getUserAvatar(it, '96x96')}" class="icon-lg" />
             ${it.fullName}
           </h1>
         </div>
