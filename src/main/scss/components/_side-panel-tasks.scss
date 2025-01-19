@@ -31,9 +31,7 @@ $background-outset: 0.7rem;
   }
 
   & > #tasks > .jenkins-search-container {
-    margin-left: -$background-outset;
-    margin-right: -$background-outset;
-    margin-bottom: calc(var(--section-padding) / 2);
+    margin: calc(var(--section-padding) * -0.5) -$background-outset calc(var(--section-padding) / 2);
 
     .jenkins-search__icon {
       width: 2.8rem;
@@ -44,10 +42,6 @@ $background-outset: 0.7rem;
       padding-left: 2.8rem;
     }
   }
-}
-
-#side-panel .jenkins-search__results-container--visible .task-link {
-  opacity: 0.3;
 }
 
 #tasks .task {
