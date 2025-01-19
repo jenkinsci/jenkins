@@ -45,7 +45,7 @@ import org.kohsuke.stapler.StaplerResponse2;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal = 100) @Symbol("manageJenkins")
+@Extension(ordinal = 998) @Symbol("manageJenkins")
 public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelObjectWithContextMenu {
     @Override
     public String getIconFileName() {
