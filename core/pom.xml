@@ -350,10 +350,6 @@ THE SOFTWARE.
       <artifactId>windows-package-checker</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke.jinterop</groupId>
-      <artifactId>j-interop</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
       <optional>true</optional>
