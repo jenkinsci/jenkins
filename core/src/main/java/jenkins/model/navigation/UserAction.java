@@ -49,11 +49,19 @@ public class UserAction implements RootAction {
 
     @Override
     public String getDisplayName() {
+        if (User.current() == null) {
+            return null;
+        }
+
         return User.current().getFullName();
     }
 
     @Override
     public String getUrlName() {
+        if (User.current() == null) {
+            return null;
+        }
+
         return User.current().getUrl();
     }
 
