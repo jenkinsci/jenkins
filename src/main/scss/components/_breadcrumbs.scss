@@ -25,7 +25,7 @@
       align-items: center;
       justify-content: center;
       color: var(--text-color);
-      font-weight: 500;
+      font-weight: normal;
       font-size: 0.875rem;
       padding: 0.2rem 0.4rem;
 
@@ -309,32 +309,5 @@
         }
       }
     }
-  }
-}
-
-// TODO: Remove when YUI dropdowns are removed
-
-#breadcrumb-menu .header {
-  font-weight: bold;
-  font-size: 0.875rem;
-  pointer-events: none;
-}
-
-#breadcrumb-menu .separator {
-  position: relative;
-  display: block !important;
-  color: transparent;
-  overflow: hidden;
-  width: 100%;
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: 9px;
-    left: -50vw;
-    right: -50vw;
-    background: var(--text-color);
-    height: 2px;
-    opacity: 0.1;
   }
 }

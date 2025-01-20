@@ -36,7 +36,7 @@
     font-size: 0.75rem;
     color: var(--text-color-secondary);
     margin-top: 10px;
-    font-weight: 450;
+    font-weight: var(--font-bold-weight);
     margin-bottom: 4px;
   }
 
@@ -126,7 +126,7 @@
       color: var(--text-color);
       gap: 0.5rem;
       text-decoration: none;
-      font-weight: 450;
+      font-weight: var(--font-bold-weight);
       flex-grow: 1;
       padding: 0.45rem 0 0;
       word-break: normal;

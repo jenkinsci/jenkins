@@ -38,7 +38,7 @@
   border-radius: 100px;
   background: var(--tabs-item-background);
   color: var(--tabs-item-foreground);
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
   font-size: 0.875rem;
   transition: var(--standard-transition);
   cursor: pointer;
@@ -70,21 +70,6 @@
   color: var(--tabs-item-foreground--selected);
   z-index: 2;
   cursor: default;
-}
-
-.tabBarBaseline {
-  border-top: var(--tab-baseline-width) solid var(--tab-baseline-color);
-  z-index: 1;
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-
-  /* Baseline is hidden by default.  See next rule fo adding visibility. */
-  display: var(--tab-baseline-default-display, none);
-}
-
-.tabBarFrame.showBaseline .tabBarBaseline {
-  display: block;
 }
 
 .jenkins-tab-pane__title {
