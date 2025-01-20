@@ -170,7 +170,7 @@
   gap: 0.45rem;
   margin-left: 0.4rem;
   font-size: 0.8rem;
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
   cursor: default;
 
   svg {
@@ -198,7 +198,7 @@
     padding-top: 0.35rem;
 
     .jenkins-instructions__label {
-      font-weight: 450;
+      font-weight: var(--font-bold-weight);
       margin: 0;
     }
 
@@ -217,7 +217,7 @@
       color: var(--background);
       border-radius: 100px;
       text-align: center;
-      font-weight: 450;
+      font-weight: var(--font-bold-weight);
     }
   }
 }

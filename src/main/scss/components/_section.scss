@@ -26,7 +26,7 @@
 .jenkins-section__title {
   margin: 0 0 var(--section-padding) 0;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 }
 
 .jenkins-section__description {
@@ -109,14 +109,14 @@
 
   dt {
     font-size: 0.9375rem;
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
     margin: 0.1rem 0 0.2rem;
     color: var(--text-color);
   }
 
   dd {
     color: var(--text-color-secondary);
-    font-weight: 450;
+    font-weight: normal;
     line-height: 1.6;
     margin: 0 0.66rem 0 0;
     font-size: 0.9375rem;
