@@ -29,7 +29,7 @@ THE SOFTWARE.
     <l:main-panel>
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content jenkins-build-caption">
-          <l:icon src="${h.getUserAvatar(it, '96x96')}" />
+          <l:icon src="${h.getUserAvatar(it, '96x96')}" class="jenkins-avatar" />
           <h1>
             ${it.fullName}
           </h1>
