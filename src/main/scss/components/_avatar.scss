@@ -1,0 +1,8 @@
+.jenkins-avatar {
+  &[src] {
+    border-radius: 100px;
+    outline: 1px solid color-mix(in sRGB, var(--text-color) 10%, transparent);
+    background: color-mix(in sRGB, var(--text-color) 5%, transparent);
+    outline-offset: -1px;
+  }
+}

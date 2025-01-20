@@ -28,9 +28,9 @@ THE SOFTWARE.
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
       <div class="jenkins-app-bar">
-        <div class="jenkins-app-bar__content jenkins-build-caption" data-status-url="${rootURL}/${it.url}statusIcon">
+        <div class="jenkins-app-bar__content jenkins-build-caption">
+          <l:icon src="${h.getUserAvatar(it, '96x96')}" class="jenkins-avatar" />
           <h1>
-            <l:icon src="${h.getUserAvatar(it, '96x96')}" class="icon-lg" />
             ${it.fullName}
           </h1>
         </div>
