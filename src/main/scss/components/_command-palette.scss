@@ -180,6 +180,13 @@
           width: 1.25rem;
           height: 1.25rem;
         }
+
+        &[src] {
+          border-radius: 100px;
+          outline: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
+          background: color-mix(in srgb, var(--text-color) 5%, transparent);
+          outline-offset: -1px;
+        }
       }
 
       &__description {

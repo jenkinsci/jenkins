@@ -108,6 +108,15 @@
     width: 2rem !important;
     height: 2rem !important;
   }
+
+  img {
+    width: 2.375rem;
+    height: 2.375rem;
+    border-radius: 100px;
+    outline: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
+    background: color-mix(in srgb, var(--text-color) 5%, transparent);
+    outline-offset: -1px;
+  }
 }
 
 .bottom-sticker,
