@@ -118,15 +118,22 @@
   }
 }
 
+.jenkins-button[class*="color"] .jenkins-button--outline {
+  &::before {
+    --button-background: currentColor;
+
+    background: transparent !important;
+    opacity: 0.1;
+  }
+}
+
 // Support for custom colors
 // Modifier classes must include 'color' in name to work
-.jenkins-button[class*="color"] {
+.jenkins-button[class*="color"] :not(.jenkins-button--outline) {
   background: transparent;
   color: var(--color) !important;
 
   &::before {
-    --button-background: currentColor;
-
     background: currentColor !important;
     opacity: 0.1;
   }
