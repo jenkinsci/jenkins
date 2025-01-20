@@ -109,7 +109,7 @@ THE SOFTWARE.
     ${h.checkPermission(it,permission)}
     ${h.checkAnyPermission(it, permissions)}
 
-    <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
+    <title>${h.appendIfNotNull(title, ' - Jenkins', 'Jenkins')}</title>
 
     <link rel="stylesheet" href="${resURL}/jsbundles/styles.css" type="text/css" />
     <j:if test="${attrs.nogrid==null or attrs.nogrid.equals(false)}">

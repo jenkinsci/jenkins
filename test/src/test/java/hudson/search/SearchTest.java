@@ -115,7 +115,7 @@ public class SearchTest {
 
         // make sure we've fetched the testSearchByDisplayName project page
         String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
+        assertTrue(contents.contains(String.format("<title>%s - Jenkins</title>", projectName)));
     }
 
     @Issue("JENKINS-24433")
@@ -162,7 +162,7 @@ public class SearchTest {
 
         // make sure we've fetched the testSearchByDisplayName project page
         String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+        assertTrue(contents.contains(String.format("<title>%s - Jenkins</title>", displayName)));
     }
 
     @Test
@@ -190,7 +190,7 @@ public class SearchTest {
 
         // make sure we've fetched the testSearchByDisplayName project page
         String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+        assertTrue(contents.contains(String.format("<title>%s - Jenkins</title>", displayName)));
         assertFalse(contents.contains(otherDisplayName));
     }
 
