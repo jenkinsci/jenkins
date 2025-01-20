@@ -188,7 +188,7 @@ pre.console {
 }
 
 .setting-name {
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
   margin-bottom: 0.5rem;
   white-space: nowrap;
 }
@@ -400,7 +400,7 @@ img.icon-help {
   position: relative;
   padding: 0.5rem 0.8rem;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 
   &::before {
     content: "";

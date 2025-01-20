@@ -13,7 +13,7 @@ $card-padding: 1rem;
     padding: 0 $card-padding;
     height: 50px;
     font-size: var(--font-size-sm) !important;
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
     width: 100%;
     z-index: 1;
   }

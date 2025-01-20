@@ -119,18 +119,18 @@
 .app-about-heading {
   font-weight: 600;
   font-family: Georgia, serif;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   margin-bottom: 0.5rem !important;
 }
 
 .app-about-version {
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
   color: var(--text-color-secondary);
   margin: 0;
 }
 
 .app-about-paragraph {
-  font-size: 1.125rem;
+  font-size: 1rem;
   margin-bottom: var(--section-padding);
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 }
