@@ -148,7 +148,7 @@
     display: block;
     font-size: 0.95rem;
     margin-bottom: 0.5rem;
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
   }
 
   button {
@@ -180,7 +180,7 @@
 
       z-index: 1;
       padding: 0 0.2rem;
-      font-weight: 500;
+      font-weight: var(--font-bold-weight);
       font-size: 0.95rem;
       margin: 0;
       color: var(--link-color);
@@ -263,7 +263,7 @@
 .app-sign-in-register__error {
   font-size: 0.95rem;
   color: var(--error-color);
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 
   &:empty {
     display: none;

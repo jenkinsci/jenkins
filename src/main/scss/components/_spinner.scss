@@ -3,7 +3,7 @@
   display: inline-flex;
   align-items: center;
   font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
   margin: 0;
 
   &::before,

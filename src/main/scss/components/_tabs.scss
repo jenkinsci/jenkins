@@ -38,7 +38,7 @@
   border-radius: 100px;
   background: var(--tabs-item-background);
   color: var(--tabs-item-foreground);
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
   font-size: var(--font-size-sm);
   transition: var(--standard-transition);
   cursor: pointer;

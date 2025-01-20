@@ -120,7 +120,7 @@
     padding: 0.5rem;
 
     &__heading {
-      font-weight: 500;
+      font-weight: var(--font-bold-weight);
       font-size: var(--font-size-sm);
       margin: 0;
       padding: 0.75rem 0.75rem 0.625rem;
