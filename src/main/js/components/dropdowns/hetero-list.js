@@ -151,7 +151,6 @@ function generateButtons() {
             }
             Behaviour.applySubtree(nc, true);
             ensureVisible(nc);
-            nc.classList.remove("fade-in");
             layoutUpdateCallback.call();
           },
           true,

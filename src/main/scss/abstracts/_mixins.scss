@@ -61,6 +61,10 @@
   z-index: 0;
   text-decoration: none !important;
   border-radius: 0.66rem;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: transparent;
 
   &::before,
   &::after {
@@ -74,7 +78,7 @@
   }
 
   &::before {
-    background-color: transparent;
+    background-color: var(--item-background);
   }
 
   &::after {
