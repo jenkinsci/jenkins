@@ -23,13 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
-         version="3.1"
-         metadata-complete="true">
-  <display-name>Jenkins v${project.version}</display-name>
-  <description>Build management system</description>
+<web-fragment xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-fragment_3_1.xsd"
+              version="3.1">
+  <name>jenkins</name>
 
   <servlet>
     <servlet-name>Stapler</servlet-name>
@@ -97,13 +95,13 @@ THE SOFTWARE.
 	Cache-Control: no-cache for any files behind the security-constraint
 	below.  So if Hudson is on a public server, and you want to only allow
 	authorized users to access it, you may want to pay attention to this.
-	
+
 	See: http://www.nabble.com/No-browser-caching-with-Hudson- -tf4601857.html
-  
+
   <filter>
     <filter-name>change-headers-filter</filter-name>
     <filter-class>hudson.ResponseHeaderFilter</filter-class>
-    <!- The value listed here is for 24 hours.  Increase or decrease as you see 
+    <!- The value listed here is for 24 hours.  Increase or decrease as you see
     fit.  Value is in seconds. Make sure to keep the public option ->
     <init-param>
       <param-name>Cache-Control</param-name>
@@ -205,7 +203,7 @@ THE SOFTWARE.
       <role-name>**</role-name>
     </auth-constraint>
   </security-constraint>
-  
+
   <!-- Disable TRACE method with security constraint (copied from jetty/webdefaults.xml) -->
   <security-constraint>
     <web-resource-collection>
@@ -215,13 +213,13 @@ THE SOFTWARE.
     </web-resource-collection>
     <auth-constraint />
   </security-constraint>
-  
+
   <security-constraint>
     <web-resource-collection>
       <web-resource-name>other</web-resource-name>
       <url-pattern>/*</url-pattern>
     </web-resource-collection>
-    <!-- no security constraint --> 
+    <!-- no security constraint -->
   </security-constraint>
 
   <login-config>
@@ -278,4 +276,4 @@ THE SOFTWARE.
     </cookie-config>
     <!-- Tracking mode is managed by WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP -->
   </session-config>
-</web-app>
+</web-fragment>
