@@ -117,10 +117,6 @@ THE SOFTWARE.
       <version>${bridge-method-injector.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.sun.solaris</groupId>
-      <artifactId>embedded_su4j</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
       <exclusions>
