@@ -39,7 +39,7 @@
   background: var(--tabs-item-background);
   color: var(--tabs-item-foreground);
   font-weight: var(--font-bold-weight);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   transition: var(--standard-transition);
   cursor: pointer;
 

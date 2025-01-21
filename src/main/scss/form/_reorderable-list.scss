@@ -4,7 +4,7 @@
   position: relative;
   border: 2px dashed var(--input-border);
   padding: 1rem;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   margin-bottom: 1rem;
   margin-top: 1rem;
   transition:
