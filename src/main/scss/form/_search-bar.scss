@@ -167,7 +167,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      border-radius: 10px;
+      border-radius: var(--form-input-border-radius);
       z-index: -1;
       backdrop-filter: blur(20px);
       box-shadow: 0 0 var(--section-padding) var(--background);
@@ -230,5 +230,5 @@
   margin: 2rem;
   padding: 0;
   color: var(--text-color-secondary);
-  font-weight: 450;
+  font-weight: var(--font-bold-weight);
 }
