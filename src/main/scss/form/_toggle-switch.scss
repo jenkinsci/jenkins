@@ -69,6 +69,13 @@
 
       &:active,
       &:focus {
+        &::before {
+          box-shadow:
+            inset 0 0 0 1.5px
+              color-mix(in sRGB, var(--text-color-secondary) 9%, transparent),
+            var(--form-input-glow--focus);
+        }
+
         &::after {
           left: 20px;
           width: 25px;
@@ -101,6 +108,7 @@
   cursor: pointer;
   line-height: 30px;
   font-weight: var(--form-label-font-weight);
+  user-select: none;
 
   &::before {
     display: inline-block;
@@ -113,8 +121,9 @@
     transition: var(--standard-transition);
     margin-right: 1rem;
     box-shadow:
-      inset 0 0 0 1px rgb(0 0 0 / 0.05),
-      0 0 0 10px transparent;
+      inset 0 0 0 1.5px
+        color-mix(in sRGB, var(--text-color-secondary) 9%, transparent),
+      var(--form-input-glow);
   }
 
   &::after {
@@ -132,7 +141,8 @@
     mask-position: center;
     border-radius: 100px;
     transition: var(--standard-transition);
-    box-shadow: 0 1px 0 rgb(0 0 0 / 0.1);
+    box-shadow: 0 0 0 1.5px
+      color-mix(in sRGB, var(--text-color-secondary) 9%, transparent);
   }
 
   &:hover::before {
@@ -143,8 +153,10 @@
   &:focus {
     &::before {
       box-shadow:
-        inset 0 0 0 1px rgb(0 0 0 / 0.05),
-        0 0 0 5px var(--focus-input-glow);
+        inset 0 0 0 1.5px
+          color-mix(in sRGB, var(--text-color-secondary) 9%, transparent),
+        0 0 0 4px
+          color-mix(in sRGB, var(--text-color-secondary) 25%, transparent);
     }
 
     &::after {

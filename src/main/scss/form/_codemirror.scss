@@ -1,7 +1,7 @@
 .CodeMirror {
   display: block;
   background: var(--input-color);
-  border: 2px solid var(--input-border);
+  border: var(--jenkins-border-width) solid var(--input-border);
   border-radius: var(--form-input-border-radius);
   width: 100%;
   box-shadow: var(--form-input-glow);
