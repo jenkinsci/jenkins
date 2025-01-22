@@ -48,8 +48,7 @@
   }
 
   .CodeMirror-gutter-text {
-    padding: var(--form-input-padding) calc(var(--form-input-padding) * 0.5)
-      var(--form-input-padding) var(--form-input-padding);
+    padding: 0.5rem calc(0.625rem * 0.5) 0.625rem 0.5rem;
     color: var(--text-color-secondary);
   }
 }

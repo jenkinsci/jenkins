@@ -5,6 +5,7 @@
   padding: var(--form-input-padding);
   border-radius: var(--form-input-border-radius);
   width: 100%;
+  min-height: 2.375rem;
   box-shadow: var(--form-input-glow);
 
   // Set height transition to 0s as vertical resizing has a delay/lag otherwise
