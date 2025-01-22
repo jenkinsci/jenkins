@@ -87,6 +87,10 @@
 
     input {
       background: transparent !important;
+
+      --input-border: transparent;
+      --input-border-hover: transparent;
+
       border-radius: inherit;
 
       &::before,
