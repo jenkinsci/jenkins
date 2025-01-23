@@ -1,16 +1,10 @@
 import { createElementFromHtml } from "@/util/dom";
 
-var getItems = function () {
-  return fetch("itemCategories?depth=3&iconStyle=icon-xlg")
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok " + response.statusText);
-      }
-      return response.json();
-    });
+const getItems = function () {
+  return fetch("itemCategories?depth=3&iconStyle=icon-xlg").then((response) =>  response.json())
 };
 
-var jRoot = document.querySelector("head").getAttribute("data-rooturl");
+const jRoot = document.querySelector("head").getAttribute("data-rooturl");
 
 document.addEventListener("DOMContentLoaded", () => {
   getItems().then((data) => {
@@ -73,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function enableSubmit(status) {
       var btn = document.querySelector(".bottom-sticker-inner button[type=submit]");
-      console.log(status)
 
       if (status === true) {
         btn.removeAttribute("disabled");
@@ -267,7 +260,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!isItemNameEmpty()) {
         var itemName = document.querySelector('#createItem input[name="name"]').value;
 
-        // TODO
         fetch(`checkJobName?value=${encodeURIComponent(itemName)}`).then(response => {
           response.text().then((data) => {
             var message = parseResponseFromCheckJobName(data);
@@ -337,14 +329,14 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
         if (!getFieldValidationStatus("name")) {
           activateValidationMessage("#itemname-required", ".add-item-name");
-          document.querySelector('input[name="name"][type="text"]', "#createItem").focus();
+          document.querySelector( '#createItem input[name="name"][type="text"]').focus();
         } else {
           if (
             !getFieldValidationStatus("items") &&
             !getFieldValidationStatus("from")
           ) {
             activateValidationMessage("#itemtype-required", ".add-item-name");
-            document.querySelector('input[name="name"][type="text"]', "#createItem").focus();
+            document.querySelector('#createItem input[name="name"][type="text"]').focus();
           }
         }
       }
