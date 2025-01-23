@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       cleanValidationMessages(context);
       document.querySelector(messageId).classList.remove("input-message-disabled");
-      enableSubmit(false);
+      enableSubmit();
     }
 
     function cleanValidationMessages(context) {
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (getFormValidationStatus()) {
         btn.removeAttribute("disabled");
       } else {
-        btn.setAttribute("disabled", "asdasd");
+        btn.setAttribute("disabled", "true");
       }
     }
 
@@ -164,12 +164,8 @@ document.addEventListener("DOMContentLoaded", () => {
         item.classList.add("active");
 
         setFieldValidationStatus("items", true);
-        if (!getFieldValidationStatus("name")) {
-          document.querySelector('#createItem input[name="name"][type="text"]').focus();
-        } else {
-          if (getFormValidationStatus()) {
-            enableSubmit(true);
-          }
+        if (getFieldValidationStatus("name")) {
+          enableSubmit();
         }
       }
 
@@ -248,7 +244,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Render all categories
     var $categories = document.querySelector("div.categories");
     data.categories.forEach((elem) => {
-      // TODO
       $categories.append(drawCategory(elem));
     });
 
@@ -272,17 +267,15 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
               cleanValidationMessages(".add-item-name");
               setFieldValidationStatus("name", true);
-              if (getFormValidationStatus()) {
-                enableSubmit(true);
-              }
+              enableSubmit();
             }
           });
         })
       } else {
-        enableSubmit(false);
         setFieldValidationStatus("name", false);
         cleanValidationMessages(".add-item-name");
         activateValidationMessage("#itemname-required", ".add-item-name");
+        enableSubmit();
       }
     }
 
@@ -315,9 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           }, 400);
         } else {
-          if (getFormValidationStatus()) {
-            enableSubmit(true);
-          }
+          enableSubmit();
         }
       }
     }
@@ -345,6 +336,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Disable the submit button
-    enableSubmit(false);
+    enableSubmit();
   });
 });
