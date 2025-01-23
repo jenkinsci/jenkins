@@ -1,9 +1,50 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <!-- user icon and login/logout links; only show if authentication is enabled and we're not handling a servlet error -->
-  <j:if test="${app.useSecurity}">
-    <j:if test="${h.isAnonymous()}">
-      <st:include it="${app.securityRealm}" page="loginLink.jelly" />
-    </j:if>
-  </j:if>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:userExperimentalFlag var="newHeader" flagClassName="jenkins.model.experimentalflags.NewHeaderUserExperimentalFlag" />
+  <j:choose>
+    <j:when test="${!newHeader}">
+      <div class="login page-header__hyperlinks">
+        <div id="visible-am-insertion" class="page-header__am-wrapper" />
+        <div id="visible-sec-am-insertion" class="page-header__am-wrapper" />
+
+        <!-- user icon and login/logout links; only show if authentication is enabled and we're not handling a servlet error -->
+        <j:if test="${app.useSecurity}">
+          <j:choose>
+            <j:when test="${!h.isAnonymous()}">
+              <j:invokeStatic var="user" className="hudson.model.User" method="current" />
+              <j:choose>
+                <j:when test="${user.fullName == null || user.fullName.trim().isEmpty()}">
+                  <j:set var="userName" value="${user.id}"/>
+                </j:when>
+                <j:otherwise>
+                  <j:set var="userName" value="${user.fullName}"/>
+                </j:otherwise>
+              </j:choose>
+              <a href="${rootURL}/${user.url}" class="model-link">
+                <l:icon src="symbol-person-circle" class="icon-md"/>
+                <span class="hidden-xs hidden-sm">${userName}</span>
+              </a>
+              <j:if test="${app.securityRealm.canLogOut()}">
+                <a href="${rootURL}/logout">
+                  <l:icon src="symbol-log-out" class="icon-md" />
+                  <span class="hidden-xs hidden-sm">${logout}</span>
+                </a>
+              </j:if>
+            </j:when>
+            <j:otherwise>
+              <st:include it="${app.securityRealm}" page="loginLink.jelly" />
+            </j:otherwise>
+          </j:choose>
+        </j:if>
+      </div>
+    </j:when>
+    <j:otherwise>
+      <!-- user icon and login/logout links; only show if authentication is enabled and we're not handling a servlet error -->
+      <j:if test="${app.useSecurity}">
+        <j:if test="${h.isAnonymous()}">
+          <st:include it="${app.securityRealm}" page="loginLink.jelly" />
+        </j:if>
+      </j:if>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

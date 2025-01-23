@@ -1,0 +1,85 @@
+@use "../abstracts/mixins";
+
+.jenkins-header {
+  --background-opacity: 0%;
+  --background-blur: 0;
+  --border-opacity: 0%;
+
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--section-padding);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  min-height: 4.375rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(var(--background-blur));
+    background: color-mix(
+      in sRGB,
+      var(--header-background) var(--background-opacity),
+      transparent
+    );
+    border-bottom: 1.5px solid
+      color-mix(
+        in sRGB,
+        var(--text-color-secondary) var(--border-opacity),
+        transparent
+      );
+    background-clip: padding-box;
+  }
+
+  #jenkins-head-icon {
+    height: 2rem;
+    margin-left: 0.15rem;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding-right: var(--section-padding);
+
+    .jenkins-button {
+      min-width: 2.375rem;
+      min-height: 2.375rem;
+      padding: 0.5rem;
+
+      svg {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+
+      img {
+        border-radius: 100px;
+        width: 1.375rem;
+        height: 1.375rem;
+        outline: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
+        background: color-mix(in srgb, var(--text-color) 5%, transparent);
+        outline-offset: -1px;
+      }
+
+      .jenkins-badge {
+        position: absolute;
+        top: calc(16%);
+        right: calc(16%);
+        min-width: 5px;
+        min-height: 5px;
+        padding: 0;
+      }
+    }
+  }
+}
+
+body:has(.jenkins-app-bar--sticky) {
+  .jenkins-header::before {
+    bottom: -4rem;
+    mask-image: linear-gradient(black 50%, transparent);
+  }
+}

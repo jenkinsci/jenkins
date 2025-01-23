@@ -3,12 +3,14 @@
 @use "avatar";
 @use "badges";
 @use "breadcrumbs";
+@use "breadcrumbs-new"; // Experimental
 @use "buttons";
 @use "cards";
 @use "command-palette";
 @use "content-blocks";
 @use "dialogs";
 @use "dropdowns";
+@use "header"; // Experimental
 @use "icons";
 @use "notice";
 @use "notifications";

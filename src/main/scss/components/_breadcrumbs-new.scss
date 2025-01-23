@@ -1,0 +1,95 @@
+@use "../abstracts/mixins";
+
+.jenkins-header__breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  overflow: auto hidden;
+  padding-left: var(--section-padding);
+
+  &__list {
+    display: contents;
+
+    &-item {
+      display: contents;
+
+      &:first-of-type {
+        a {
+          font-family: Georgia, serif;
+          font-weight: 600;
+          font-size: 1.125rem;
+
+          // Increase the hit-box for the Jenkins logo for Fitts’s Law
+          &::before {
+            content: "";
+            position: absolute;
+            inset: -30px -15px -18px -100px;
+          }
+        }
+      }
+
+      & > a,
+      span {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        font-weight: 500;
+        font-size: var(--font-size-sm);
+        margin: 0;
+        padding: 0;
+        color: inherit;
+        text-decoration: none;
+        text-wrap: nowrap;
+        flex-shrink: 0;
+      }
+
+      & > a {
+        @include mixins.item;
+
+        --item-background--hover: transparent;
+        --item-background--active: transparent;
+        --item-box-shadow--focus: transparent;
+
+        transition: opacity var(--standard-transition);
+
+        &::before,
+        &::after {
+          inset: -2px -6px;
+        }
+
+        &:hover {
+          opacity: 0.7;
+        }
+
+        &:active {
+          opacity: 0.4;
+        }
+      }
+
+      // '/' separator between two items
+      &::after {
+        content: "";
+        position: relative;
+        width: 1rem;
+        height: 1.25rem;
+        flex-shrink: 0;
+        transition: var(--standard-transition);
+        background: var(--text-color-secondary);
+        mask-size: contain;
+        mask-position: center;
+        mask-repeat: no-repeat;
+        mask-image: url("data:image/svg+xml,%3Csvg width='10' height='20' viewBox='0 0 10 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 18L8 2' stroke='black' stroke-width='1.5px' stroke-linecap='round'/%3E%3C/svg%3E%0A");
+        opacity: 0.2;
+        scale: 1.1;
+      }
+
+      &:last-of-type {
+        &::after {
+          display: none;
+        }
+      }
+    }
+  }
+}

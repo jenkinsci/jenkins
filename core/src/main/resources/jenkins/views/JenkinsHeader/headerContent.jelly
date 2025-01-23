@@ -1,63 +1,8 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header">
     <header id="page-header" class="page-header">
-      <l:breadcrumbBar>
-        <j:out value="${breadcrumbs}" />
-      </l:breadcrumbBar>
-
-      <div class="page-header__actions">
-        <l:overflowButton clazz="jenkins-button--tertiary jenkins-mobile-show">
-          <j:forEach var="action" items="${it.actions}">
-            <j:if test="${action.iconFileName != null}">
-              <dd:item href="${h.getActionUrl(app.url, action)}"
-                       icon="${action.iconFileName}"
-                       text="${action.displayName}" />
-            </j:if>
-          </j:forEach>
-        </l:overflowButton>
-
-        <div class="jenkins-!-display-contents jenkins-mobile-hide">
-          <j:forEach var="action" items="${it.actions}">
-            <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
-
-            <j:set var="tooltip">
-              <j:set var="interactive" value="true" />
-              <st:include it="${action}" page="jumplist.jelly" optional="true" />
-            </j:set>
-
-            <j:if test="${tooltip.length() == 0}">
-              <j:set var="interactive" value="false" />
-              <j:set var="tooltip">
-                <st:include it="${action}" page="tooltip.jelly" optional="true" />
-              </j:set>
-            </j:if>
-
-            <j:if test="${tooltip.length() == 0}">
-              <j:set var="tooltip">
-                <div style="text-align: center;">${action.displayName}</div>
-                <j:if test="${action.badge != null}">
-                  <div style="text-align: center; color: var(--text-color-secondary)">${action.badge.tooltip}</div>
-                </j:if>
-              </j:set>
-            </j:if>
-
-            <x:element name="${action.urlName == null ? 'button' : 'a'}">
-              <x:attribute name="id">root-action-${action.class.simpleName}</x:attribute>
-              <x:attribute name="href">${h.getActionUrl(app.url, action)}</x:attribute>
-              <x:attribute name="data-html-tooltip" escapeText="false"><j:out value="${tooltip}" /></x:attribute>
-              <x:attribute name="data-tooltip-interactive">${interactive}</x:attribute>
-              <x:attribute name="draggable">false</x:attribute>
-              <x:attribute name="class">jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'}</x:attribute>
-              <l:icon src="${action.iconFileName}" />
-              <span class="jenkins-visually-hidden">${action.displayName}</span>
-              <j:if test="${action.badge != null}">
-                <span class="jenkins-badge jenkins-!-${action.badge.severity}-color" />
-              </j:if>
-            </x:element>
-          </j:forEach>
-        </div>
-
-        <h:login/>
-      </div>
+      <h:logo/>
+      <h:searchbox/>
+      <h:login/>
     </header>
 </j:jelly>

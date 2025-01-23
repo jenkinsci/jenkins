@@ -169,6 +169,14 @@ THE SOFTWARE.
                     searchPlaceholder="${%search}"
                     searchHelpUrl="${%searchBox.url}"
                     logout="${%logout}"/>
+
+      <l:userExperimentalFlag var="newHeader" flagClassName="jenkins.model.experimentalflags.NewHeaderUserExperimentalFlag" />
+      <j:if test="${!newHeader}">
+        <l:breadcrumbBar>
+          <j:set var="mode" value="breadcrumbs" />
+          <d:invokeBody/>
+        </l:breadcrumbBar>
+      </j:if>
     </j:if>
 
     <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">

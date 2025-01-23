@@ -42,19 +42,41 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <j:if test="${mode=='breadcrumbs'}">
-    <j:set var="hasLink" value="${attrs.href != null}" />
-    <li id="${attrs.id}" class="jenkins-breadcrumbs__list-item" aria-current="${hasLink ? null : 'page'}">
-      <j:choose>
-        <j:when test="${!hasLink}">
-          <span>${attrs.title}</span>
-        </j:when>
-        <j:otherwise>
-          <a href="${attrs.href}">
-            ${attrs.title}
-          </a>
-        </j:otherwise>
-      </j:choose>
-    </li>
-  </j:if>
+  <l:userExperimentalFlag var="newHeader" flagClassName="jenkins.model.experimentalflags.NewHeaderUserExperimentalFlag" />
+  <j:choose>
+    <j:when test="${!newHeader}">
+      <j:if test="${mode=='breadcrumbs'}">
+        <j:set var="hasLink" value="${attrs.href != null}" />
+        <li id="${attrs.id}" class="jenkins-breadcrumbs__list-item" aria-current="${hasLink ? null : 'page'}">
+          <j:choose>
+            <j:when test="${!hasLink}">
+              ${attrs.title}
+            </j:when>
+            <j:otherwise>
+              <a href="${attrs.href}" class="${attrs.hasMenu ? 'model-link' : ''}">
+                ${attrs.title}
+              </a>
+            </j:otherwise>
+          </j:choose>
+        </li>
+      </j:if>
+    </j:when>
+    <j:otherwise>
+      <j:if test="${mode=='breadcrumbs'}">
+        <j:set var="hasLink" value="${attrs.href != null}" />
+        <li id="${attrs.id}" class="jenkins-header__breadcrumbs__list-item" aria-current="${hasLink ? null : 'page'}">
+          <j:choose>
+            <j:when test="${!hasLink}">
+              <span>${attrs.title}</span>
+            </j:when>
+            <j:otherwise>
+              <a href="${attrs.href}">
+                ${attrs.title}
+              </a>
+            </j:otherwise>
+          </j:choose>
+        </li>
+      </j:if>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

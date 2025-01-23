@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:h="/lib/layout/header">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
   <st:documentation> <![CDATA[
     Generates the bar that shows breadcrumbs, along with its associated dynamic behaviours.
     This tag is used by l:layout and not expected to be used by anyone else,
@@ -44,19 +44,18 @@ THE SOFTWARE.
       <j:forEach var="anc" items="${request.ancestors}" indexVar="index">
         <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
           <j:set var="mode" value="breadcrumbs" />
-
+          <l:breadcrumb title="${anc.object == app ? '%Dashboard' : anc.object.displayName}"
+                        href="${anc.url}/"
+                        hasMenu="${h.isModelWithContextMenu(anc.object)}" />
           <j:choose>
-            <j:when test="${anc.object == app}">
-              <li class="jenkins-breadcrumbs__list-item" aria-current="page">
-                <a href="${rootURL}">
-                  <h:logo />
-                </a>
+            <j:when test="${h.isModelWithChildren(anc.object)}">
+              <li class="children" data-href="${anc.url}/">
+                <!-- shows '>' for rendering children -->
               </li>
             </j:when>
             <j:otherwise>
-              <l:breadcrumb title="${anc.object.displayName}"
-                            href="${anc.url}/"
-                            hasMenu="${h.isModelWithContextMenu(anc.object)}" />
+              <li class="separator">
+              </li>
             </j:otherwise>
           </j:choose>
         </j:if>
