@@ -74,16 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
     function enableSubmit(status) {
       var btn = document.querySelector(".bottom-sticker-inner button[type=submit]");
       console.log(status)
+
       if (status === true) {
-        if (btn.classList.contains("disabled")) {
-          btn.classList.remove("disabled");
-          btn.setAttribute("disabled", false);
-        }
+        btn.removeAttribute("disabled");
       } else {
-        if (!btn.classList.contains("disabled")) {
-          btn.classList.add("disabled");
-          btn.setAttribute("disabled", true);
-        }
+        btn.setAttribute("disabled", "asdasd");
       }
     }
 
@@ -101,8 +96,9 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelector(".categories").querySelector('li[role="radio"]').setAttribute("aria-checked", "false");
       document.querySelector('#createItem input[type="radio"][name="mode"]')
         .removeAttribute("checked");
-      // TODO - figure out why this doesnt work
-      // document.querySelector(".categories .active").classList.remove("active");
+      document.querySelectorAll(".categories .active").forEach((item) => {
+        item.classList.remove("active");
+      });
       setFieldValidationStatus("items", false);
     }
 
