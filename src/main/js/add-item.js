@@ -1,25 +1,39 @@
-import $ from "jquery";
+// import $ from "jquery";
+
+import { createElementFromHtml } from "@/util/dom";
 
 var getItems = function () {
-  var d = $.Deferred();
-  $.get("itemCategories?depth=3&iconStyle=icon-xlg").done(function (data) {
-    d.resolve(data);
-  });
-  return d.promise();
+  return fetch("itemCategories?depth=3&iconStyle=icon-xlg")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok " + response.statusText);
+      }
+      return response.json();
+    });
 };
 
-var jRoot = $("head").attr("data-rooturl");
+var jRoot = document.querySelector("head").getAttribute("data-rooturl");
 
-$.when(getItems()).done(function (data) {
-  $(function () {
+document.addEventListener("DOMContentLoaded", () => {
+  getItems().then((data) => {
     //////////////////////////
     // helper functions...
 
+    // function parseResponseFromCheckJobName(data) {
+    //   var html = $.parseHTML(data);
+    //   var element = html[0];
+    //   if (element !== undefined) {
+    //     return document.querySelector(element).text();
+    //   }
+    //   return undefined;
+    // }
+
     function parseResponseFromCheckJobName(data) {
-      var html = $.parseHTML(data);
-      var element = html[0];
-      if (element !== undefined) {
-        return $(element).text();
+      var parser = new DOMParser();
+      var html = parser.parseFromString(data, "text/html");
+      var element = html.body.firstChild;
+      if (element) {
+        return element.textContent;
       }
       return undefined;
     }
@@ -38,39 +52,39 @@ $.when(getItems()).done(function (data) {
     }
 
     function getCopyFromValue() {
-      return $('input[type="text"][name="from"]', "#createItem").val();
+      return document.querySelector('input[type="text"][name="from"]', "#createItem").val();
     }
 
     function isItemNameEmpty() {
-      var itemName = $('input[name="name"]', "#createItem").val();
+      var itemName = document.querySelector('input[name="name"]', "#createItem").val();
       return itemName === "" ? true : false;
     }
 
     function getFieldValidationStatus(fieldId) {
-      return $("#" + fieldId).data("valid");
+      return document.querySelector("#" + fieldId).data("valid");
     }
 
     function setFieldValidationStatus(fieldId, status) {
-      $("#" + fieldId).data("valid", status);
+      document.querySelector("#" + fieldId).data("valid", status);
     }
 
     function activateValidationMessage(messageId, context, message) {
       if (message !== undefined && message !== "") {
-        $(messageId, context).text("» " + message);
+        document.querySelector(context + " " + messageId).text("» " + message);
       }
       cleanValidationMessages(context);
-      $(messageId).removeClass("input-message-disabled");
+      document.querySelector(messageId).classList.remove("input-message-disabled");
       enableSubmit(false);
     }
 
     function cleanValidationMessages(context) {
-      $(context)
-        .find(".input-validation-message")
-        .addClass("input-message-disabled");
+      document.querySelector(context)
+        .querySelector(".input-validation-message")
+        .classList.add("input-message-disabled");
     }
 
     function enableSubmit(status) {
-      var btn = $(".bottom-sticker-inner button[type=submit]");
+      var btn = document.querySelector(".bottom-sticker-inner button[type=submit]");
       if (status === true) {
         if (btn.hasClass("disabled")) {
           btn.removeClass("disabled");
@@ -95,19 +109,19 @@ $.when(getItems()).done(function (data) {
     }
 
     function cleanItemSelection() {
-      $(".categories").find('li[role="radio"]').attr("aria-checked", "false");
-      $("#createItem")
+      document.querySelector(".categories").find('li[role="radio"]').attr("aria-checked", "false");
+      document.querySelector("#createItem")
         .find('input[type="radio"][name="mode"]')
         .removeAttr("checked");
-      $(".categories").find(".active").removeClass("active");
+      document.querySelector(".categories").find(".active").removeClass("active");
       setFieldValidationStatus("items", false);
     }
 
     function cleanCopyFromOption() {
-      $("#createItem")
+      document.querySelector("#createItem")
         .find('input[type="radio"][value="copy"]')
         .removeAttr("checked");
-      $('input[type="text"][name="from"]', "#createItem").val("");
+      document.querySelector('input[type="text"][name="from"]', "#createItem").val("");
       setFieldValidationStatus("from", false);
     }
 
@@ -115,16 +129,15 @@ $.when(getItems()).done(function (data) {
     // Draw functions
 
     function drawCategory(category) {
-      var $category = $("<div/>")
-        .addClass("category")
+      var $category = createElementFromHtml("<div class='category' />")
         .attr("id", "j-add-item-type-" + cleanClassName(category.id));
-      var $items = $("<ul/>").addClass("j-item-options");
-      var $catHeader = $('<div class="header" />');
+      var $items = createElementFromHtml(`<ul class="j-item-options" />`);
+      var $catHeader = createElementFromHtml(`<div class="header" />`);
       var title = "<h2>" + category.name + "</h2>";
       var description = "<p>" + category.description + "</p>";
 
       // Add items
-      $.each(category.items, function (i, elem) {
+      category.items.forEach((i, elem) => {
         $items.append(drawItem(elem));
       });
 
@@ -169,13 +182,17 @@ $.when(getItems()).done(function (data) {
         cleanCopyFromOption();
         cleanItemSelection();
 
-        $(this).attr("aria-checked", "true");
-        $(this).find('input[type="radio"][name="mode"]').prop("checked", true);
-        $(this).addClass("active");
+        // $(this).attr("aria-checked", "true");
+        // $(this).find('input[type="radio"][name="mode"]').prop("checked", true);
+        // $(this).addClass("active");
+
+        item.setAttribute("aria-checked", "true");
+        radio.checked = true;
+        item.classList.add("active");
 
         setFieldValidationStatus("items", true);
         if (!getFieldValidationStatus("name")) {
-          $('input[name="name"][type="text"]', "#createItem").focus();
+          document.querySelector('input[name="name"][type="text"]', "#createItem").focus();
         } else {
           if (getFormValidationStatus()) {
             enableSubmit(true);
@@ -253,22 +270,24 @@ $.when(getItems()).done(function (data) {
     }
 
     // The main panel content is hidden by default via an inline style. We're ready to remove that now.
-    $("#add-item-panel").removeAttr("style");
+    document.querySelector("#add-item-panel").removeAttr("style");
 
     // Render all categories
-    var $categories = $("div.categories");
-    $.each(data.categories, function (i, elem) {
+    var $categories = document.querySelector("div.categories");
+    data.categories.forEach((i, elem) => {
       drawCategory(elem).appendTo($categories);
     });
 
     // Focus
-    $("#add-item-panel").find("#name").focus();
+    document.querySelector("#add-item-panel").find("#name").focus();
 
     // Init NameField
-    $('input[name="name"]', "#createItem").on("blur input", function () {
+    document.querySelector('input[name="name"]', "#createItem").on("blur input", function () {
       if (!isItemNameEmpty()) {
-        var itemName = $('input[name="name"]', "#createItem").val();
-        $.get("checkJobName", { value: itemName }).done(function (data) {
+        var itemName = document.querySelector('input[name="name"]', "#createItem").val();
+
+        // TODO
+        fetch(`checkJobName?value=${encodeURIComponent(itemName)}`).then(data => {
           var message = parseResponseFromCheckJobName(data);
           if (message !== "") {
             activateValidationMessage(
@@ -293,26 +312,26 @@ $.when(getItems()).done(function (data) {
     });
 
     // Init CopyFromField
-    $('input[name="from"]', "#createItem").on("blur input", function () {
+    document.querySelector('input[name="from"]', "#createItem").on("blur input", function () {
       if (getCopyFromValue() === "") {
-        $("#createItem")
+        document.querySelector("#createItem")
           .find('input[type="radio"][value="copy"]')
           .removeAttr("checked");
       } else {
         cleanItemSelection();
-        $("#createItem")
+        document.querySelector("#createItem")
           .find('input[type="radio"][value="copy"]')
           .prop("checked", true);
         setFieldValidationStatus("from", true);
         if (!getFieldValidationStatus("name")) {
           activateValidationMessage("#itemname-required", ".add-item-name");
           setTimeout(function () {
-            var parentName = $('input[name="from"]', "#createItem").val();
-            $.get("job/" + parentName + "/api/json?tree=name").done(
-              function (data) {
+            var parentName = document.querySelector('input[name="from"]', "#createItem").val();
+
+            fetch("job/" + parentName + "/api/json?tree=name").then(data => {
                 if (data.name === parentName) {
                   //if "name" is invalid, but "from" is a valid job, then switch focus to "name"
-                  $('input[name="name"][type="text"]', "#createItem").focus();
+                  document.querySelector('input[name="name"][type="text"]', "#createItem").focus();
                 }
               },
             );
@@ -326,19 +345,19 @@ $.when(getItems()).done(function (data) {
     });
 
     // Client-side validation
-    $("#createItem").submit(function (event) {
+    document.querySelector("#createItem").submit(function (event) {
       if (!getFormValidationStatus()) {
         event.preventDefault();
         if (!getFieldValidationStatus("name")) {
           activateValidationMessage("#itemname-required", ".add-item-name");
-          $('input[name="name"][type="text"]', "#createItem").focus();
+          document.querySelector('input[name="name"][type="text"]', "#createItem").focus();
         } else {
           if (
             !getFieldValidationStatus("items") &&
             !getFieldValidationStatus("from")
           ) {
             activateValidationMessage("#itemtype-required", ".add-item-name");
-            $('input[name="name"][type="text"]', "#createItem").focus();
+            document.querySelector('input[name="name"][type="text"]', "#createItem").focus();
           }
         }
       }
