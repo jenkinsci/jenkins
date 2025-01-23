@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getFieldValidationStatus(fieldId) {
-      return document.querySelector("#" + fieldId).dataset.valid = "true";
+      return document.querySelector("#" + fieldId).dataset.valid === "true";
     }
 
     function setFieldValidationStatus(fieldId, status) {
@@ -65,10 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
         .classList.add("input-message-disabled");
     }
 
-    function enableSubmit(status) {
+    function enableSubmit() {
       var btn = document.querySelector(".bottom-sticker-inner button[type=submit]");
 
-      if (status === true) {
+      if (getFormValidationStatus()) {
         btn.removeAttribute("disabled");
       } else {
         btn.setAttribute("disabled", "asdasd");
