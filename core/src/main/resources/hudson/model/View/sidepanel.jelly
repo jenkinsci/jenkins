@@ -60,7 +60,7 @@ THE SOFTWARE.
       <st:include page="sidepanel2.jelly" optional="true"/>
 
       <st:include page="tasks-bottom.jelly" it="${it.owner}" optional="true" />
-      
+
       <l:userExperimentalFlag var="newHeader" flagClassName="jenkins.model.experimentalflags.NewHeaderUserExperimentalFlag" />
       <j:if test="${!newHeader}">
         <t:actions />
