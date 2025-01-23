@@ -67,13 +67,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function cleanValidationMessages(context) {
-      document.querySelector(context)
-        .querySelector(".input-validation-message")
+      document.querySelector(context + " .input-validation-message")
         .classList.add("input-message-disabled");
     }
 
     function enableSubmit(status) {
       var btn = document.querySelector(".bottom-sticker-inner button[type=submit]");
+      console.log(status)
       if (status === true) {
         if (btn.classList.contains("disabled")) {
           btn.classList.remove("disabled");
@@ -101,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelector(".categories").querySelector('li[role="radio"]').setAttribute("aria-checked", "false");
       document.querySelector('#createItem input[type="radio"][name="mode"]')
         .removeAttribute("checked");
+      // TODO - figure out why this doesnt work
       // document.querySelector(".categories .active").classList.remove("active");
       setFieldValidationStatus("items", false);
     }
@@ -168,10 +169,6 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         cleanCopyFromOption();
         cleanItemSelection();
-
-        // $(this).attr("aria-checked", "true");
-        // $(this).find('input[type="radio"][name="mode"]').prop("checked", true);
-        // $(this).addClass("active");
 
         item.setAttribute("aria-checked", "true");
         radio.checked = true;
@@ -339,23 +336,23 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector('#createItem input[name="from"]').addEventListener("input", copyFromFieldEvent);
 
     // Client-side validation
-    // document.querySelector("#createItem").submit(function (event) {
-    //   if (!getFormValidationStatus()) {
-    //     event.preventDefault();
-    //     if (!getFieldValidationStatus("name")) {
-    //       activateValidationMessage("#itemname-required", ".add-item-name");
-    //       document.querySelector('input[name="name"][type="text"]', "#createItem").focus();
-    //     } else {
-    //       if (
-    //         !getFieldValidationStatus("items") &&
-    //         !getFieldValidationStatus("from")
-    //       ) {
-    //         activateValidationMessage("#itemtype-required", ".add-item-name");
-    //         document.querySelector('input[name="name"][type="text"]', "#createItem").focus();
-    //       }
-    //     }
-    //   }
-    // });
+    document.querySelector("#createItem").addEventListener("submit", function (event) {
+      if (!getFormValidationStatus()) {
+        event.preventDefault();
+        if (!getFieldValidationStatus("name")) {
+          activateValidationMessage("#itemname-required", ".add-item-name");
+          document.querySelector('input[name="name"][type="text"]', "#createItem").focus();
+        } else {
+          if (
+            !getFieldValidationStatus("items") &&
+            !getFieldValidationStatus("from")
+          ) {
+            activateValidationMessage("#itemtype-required", ".add-item-name");
+            document.querySelector('input[name="name"][type="text"]', "#createItem").focus();
+          }
+        }
+      }
+    });
 
     // Disable the submit button
     enableSubmit(false);
