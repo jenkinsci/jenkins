@@ -1,28 +1,5 @@
 @use "../base/breakpoints";
 
-/* --------------- header --------------- */
-
-#page-header .logo {
-  margin-left: 1.2rem;
-  display: inline-flex;
-  align-items: center;
-  position: relative;
-  height: 100%;
-  width: 100%;
-}
-
-#jenkins-home-link {
-  position: relative;
-}
-
-#jenkins-head-icon {
-  height: 2.5rem;
-}
-
-#jenkins-name-icon {
-  margin-left: 0.25rem;
-}
-
 /* -------------------------------------- */
 
 .app-page-body {

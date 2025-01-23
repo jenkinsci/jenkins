@@ -7,6 +7,27 @@
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
   background-color: var(--header-bg-classic);
+
+  .logo {
+    margin-left: 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    height: 100%;
+    width: 100%;
+  }
+
+  #jenkins-home-link {
+    position: relative;
+  }
+
+  #jenkins-head-icon {
+    height: 2.5rem;
+  }
+
+  #jenkins-name-icon {
+    margin-left: 0.25rem;
+  }
 }
 
 .page-header > * {

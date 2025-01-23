@@ -26,7 +26,6 @@ package jenkins.model.navigation;
 
 import hudson.Extension;
 import hudson.model.RootAction;
-import hudson.model.User;
 import jenkins.model.experimentalflags.UserExperimentalFlag;
 
 /**
