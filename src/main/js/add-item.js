@@ -304,11 +304,13 @@ document.addEventListener("DOMContentLoaded", () => {
           setTimeout(function () {
             var parentName = document.querySelector('#createItem input[name="from"]').value;
 
-            fetch("job/" + parentName + "/api/json?tree=name").then(data => {
-                if (data.name === parentName) {
-                  //if "name" is invalid, but "from" is a valid job, then switch focus to "name"
-                  document.querySelector('#createItem input[name="name"][type="text"]').focus();
-                }
+            fetch("job/" + parentName + "/api/json?tree=name").then(response => {
+              response.json().then((data) => {
+                  if (data.name === parentName) {
+                    //if "name" is invalid, but "from" is a valid job, then switch focus to "name"
+                    document.querySelector('#createItem input[name="name"][type="text"]').focus();
+                  }
+                })
               },
             );
           }, 400);
