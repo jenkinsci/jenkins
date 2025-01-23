@@ -20,7 +20,7 @@
       </div>
     </j:when>
     <j:otherwise>
-      <img id="jenkins-head-icon" src="${imagesURL}/svgs/logo.svg" alt="${logoAlt}" />
+      <img id="jenkins-head-icon" src="${imagesURL}/svgs/logo.svg" aria-hidden="true" />
       Jenkins
     </j:otherwise>
   </j:choose>
