@@ -60,6 +60,11 @@ THE SOFTWARE.
       <st:include page="sidepanel2.jelly" optional="true"/>
 
       <st:include page="tasks-bottom.jelly" it="${it.owner}" optional="true" />
+      
+      <l:userExperimentalFlag var="newHeader" flagClassName="jenkins.model.experimentalflags.NewHeaderUserExperimentalFlag" />
+      <j:if test="${!newHeader}">
+        <t:actions />
+      </j:if>
     </l:tasks>
     <j:forEach var="w" items="${it.widgets}">
       <j:set var="view" value="${it}" /><!-- expose the view that's rendering this sidepanel to the widget -->
