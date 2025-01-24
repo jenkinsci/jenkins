@@ -42,7 +42,7 @@ $background-outset: 0.7rem;
     }
 
     .jenkins-search__input {
-      padding-left: 2.8rem;
+      padding-left: 2.6rem;
     }
   }
 }
@@ -66,7 +66,7 @@ $background-outset: 0.7rem;
   width: 100%;
   cursor: pointer;
   font-weight: normal !important;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-color) !important;
   background: transparent;
   outline: none;

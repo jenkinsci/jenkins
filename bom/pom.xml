@@ -92,11 +92,6 @@ THE SOFTWARE.
         <version>33.4.0-jre</version>
       </dependency>
       <dependency>
-        <groupId>com.sun.solaris</groupId>
-        <artifactId>embedded_su4j</artifactId>
-        <version>1.1</version>
-      </dependency>
-      <dependency>
         <groupId>com.sun.xml.txw2</groupId>
         <artifactId>txw2</artifactId>
         <version>20110809</version>
@@ -130,11 +125,6 @@ THE SOFTWARE.
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
         <version>2.6</version>
-      </dependency>
-      <dependency>
-        <groupId>io.jenkins.stapler</groupId>
-        <artifactId>jenkins-stapler-support</artifactId>
-        <version>1.1</version>
       </dependency>
       <dependency>
         <groupId>jakarta.servlet</groupId>
