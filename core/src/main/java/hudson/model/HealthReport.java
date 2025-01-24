@@ -368,5 +368,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
                 hr.iconClassName = iconIMGToClassMap.get(hr.iconUrl);
             }
         }
+
+        private static final long serialVersionUID = 1L;
     }
 }
