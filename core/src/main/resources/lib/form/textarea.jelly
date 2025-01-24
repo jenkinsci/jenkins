@@ -83,21 +83,18 @@ THE SOFTWARE.
   <j:if test="${attrs['previewEndpoint']!=null || attrs['codemirror-mode']!=null}">
     <st:adjunct includes="lib.form.textarea.textarea"/>
   </j:if>
-  <j:if test="${attrs['codemirror-mode']!=null}">
-    <st:adjunct includes="
-        org.kohsuke.stapler.codemirror.mode.${attrs['codemirror-mode']}.${attrs['codemirror-mode']},
-        org.kohsuke.stapler.codemirror.theme.default"/>
-  </j:if>
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <f:possibleReadOnlyField>
-      <textarea id="${attrs.id}" style="${attrs.style}"
+      <textarea id="${attrs.id}"
+                style="${attrs.style}"
                 name ="${name}"
-                class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
+                class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs.class}"
                 checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" checkMethod="${attrs.checkMethod}"
                 rows="${h.determineRows(value)}"
                 readonly="${attrs.readonly}"
-                codemirror-mode="${attrs['codemirror-mode']}"
-                codemirror-config="${attrs['codemirror-config']}">
+                data-type="${attrs['codemirror-mode'] != null ? 'jenkins-code-editor' : null}"
+                data-code-language="${attrs['codemirror-mode']}"
+                data-code-options="${attrs['codemirror-config']}">
         <j:if test="${value != null &amp;&amp; !empty(value.toString()) &amp;&amp; (value.toString().codePointAt(0) == 10 || value.toString().codePointAt(0) == 13)}"><j:whitespace>&#10;</j:whitespace></j:if>
         <st:out value="${value}" />
       </textarea>

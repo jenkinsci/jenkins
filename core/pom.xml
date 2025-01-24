@@ -356,10 +356,6 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-adjunct-codemirror</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
       <exclusions>
         <exclusion>

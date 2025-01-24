@@ -324,11 +324,6 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>stapler-adjunct-codemirror</artifactId>
-        <version>1.3</version>
-      </dependency>
-      <dependency>
-        <groupId>org.kohsuke.stapler</groupId>
         <artifactId>stapler-groovy</artifactId>
         <version>${stapler.version}</version>
       </dependency>
