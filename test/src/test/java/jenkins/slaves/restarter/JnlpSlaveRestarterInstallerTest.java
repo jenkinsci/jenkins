@@ -58,24 +58,24 @@ public class JnlpSlaveRestarterInstallerTest {
     @Issue("JENKINS-19055")
     @Test
     public void tcpReconnection() throws Throwable {
-        // TODO Enable when test is reliable on Windows
+        // TODO Enable when test is reliable on Windows agents of ci.jenkins.io
         // When builds switched from ACI containers to virtual machines, this test consistently failed
         // When the test is run on local Windows computers, it passes
         // Disable the test on ci.jenkins.io and friends when running Windows
         // Do not disable for Windows developers generally
-        assumeFalse(Functions.isWindows() && JENKINS_URL.contains("ci.jenkins.io"));
+        assumeFalse("TODO: Test fails on Windows VM", Functions.isWindows() && System.getenv("CI") != null);
         reconnection(false);
     }
 
     @Issue("JENKINS-66446")
     @Test
     public void webSocketReconnection() throws Throwable {
-        // TODO Enable when test is reliable on Windows
+        // TODO Enable when test is reliable on Windows agents of ci.jenkins.io
         // When builds switched from ACI containers to virtual machines, this test consistently failed
         // When the test is run on local Windows computers, it passes
         // Disable the test on ci.jenkins.io and friends when running Windows
         // Do not disable for Windows developers generally
-        assumeFalse(Functions.isWindows() && JENKINS_URL.contains("ci.jenkins.io"));
+        assumeFalse("TODO: Test fails on Windows VM", Functions.isWindows() && System.getenv("CI") != null);
         reconnection(true);
     }
 
