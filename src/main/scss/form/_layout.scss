@@ -1,3 +1,5 @@
+@use "../abstracts/mixins";
+
 .jenkins-form {
   max-width: var(--form-item-max-width);
 }
@@ -70,6 +72,8 @@
   align-items: center;
   background-color: var(--button-background);
   border-radius: var(--form-input-border-radius);
+  outline: var(--jenkins-border--subtle);
+  outline-offset: calc(var(--jenkins-border-width) * -1);
   padding: 0 1rem;
   gap: 1.5rem;
 
@@ -89,12 +93,14 @@
 }
 
 .jenkins-help-button {
-  position: relative;
+  @include mixins.item;
+
+  --item-background: var(--button-background);
+
   display: inline-flex;
   justify-content: center;
   align-items: center;
   margin-left: 1ch;
-  color: var(--text-color) !important;
   border-radius: 100%;
 
   span {
@@ -109,47 +115,6 @@
     mask-size: 45% 45%;
     mask-position: center;
     mask-repeat: no-repeat;
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--text-color-secondary);
-    opacity: 0.1;
-    border-radius: inherit;
-    transition: var(--standard-transition);
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border: 1px solid
-      color-mix(in sRGB, var(--text-color-secondary), transparent);
-    box-shadow: var(--form-input-glow);
-    border-radius: inherit;
-    opacity: 0.1;
-    transition: var(--standard-transition);
-  }
-
-  &:hover {
-    &::before {
-      opacity: 0.2;
-    }
-  }
-
-  &:active,
-  &:focus {
-    outline: none;
-
-    &::before {
-      opacity: 0.3;
-    }
-
-    &::after {
-      box-shadow: 0 0 0 5px var(--text-color);
-    }
   }
 }
 
@@ -170,7 +135,6 @@
   gap: 0.45rem;
   margin-left: 0.4rem;
   font-size: 0.8rem;
-  font-weight: var(--font-bold-weight);
   cursor: default;
 
   svg {

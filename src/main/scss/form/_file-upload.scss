@@ -24,7 +24,6 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: none;
     outline: none;
     margin: 0 1rem 0 0;
     padding: 0.5rem 0.85rem 0.5rem 2.5rem;
@@ -34,7 +33,7 @@
       padding: 0.5rem 0.85rem;
     }
 
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
     font-weight: normal;
     color: var(--text-color);
     border-radius: var(--form-input-border-radius);
@@ -43,7 +42,8 @@
     white-space: nowrap;
     background: var(--button-background);
     transition: var(--standard-transition);
-    box-shadow: 0 0 0 10px transparent;
+    box-shadow: var(--form-input-glow);
+    border: var(--jenkins-border--subtle);
 
     &:hover {
       background: var(--button-background--hover);
@@ -51,7 +51,7 @@
 
     &:active {
       background: var(--button-background--active);
-      box-shadow: 0 0 0 5px var(--button-box-shadow--focus);
+      box-shadow: 0 0 0 4px var(--button-box-shadow--focus);
     }
   }
 

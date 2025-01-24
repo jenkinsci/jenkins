@@ -19,7 +19,8 @@
   &::before {
     position: relative;
     margin-right: 0.5lh;
-    opacity: 0.2;
+    opacity: 0.3;
+    border-color: var(--text-color-secondary);
   }
 
   &::after {

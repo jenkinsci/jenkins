@@ -12,7 +12,7 @@
   outline: none;
   border: none;
   box-shadow:
-    0 0 0 10px transparent,
+    var(--form-input-glow),
     inset 0 0 0 0.125rem var(--input-border);
   border-radius: 6px;
   transition: var(--standard-transition);
@@ -21,14 +21,14 @@
 
   &:hover {
     box-shadow:
-      0 0 0 10px transparent,
+      var(--form-input-glow),
       inset 0 0 0 0.3125rem var(--input-border-hover);
   }
 
   &:active,
   &:focus {
     box-shadow:
-      0 0 0 5px var(--focus-input-glow),
+      0 0 0 4px var(--focus-input-glow),
       inset 0 0 0 0.3125rem var(--focus-input-border);
   }
 
@@ -61,19 +61,19 @@
 
   &--all {
     box-shadow:
-      0 0 0 10px transparent,
+      var(--form-input-glow),
       inset 0 0 0 0.6875rem var(--focus-input-border);
 
     &:hover {
       box-shadow:
-        0 0 0 10px transparent,
+        var(--form-input-glow),
         inset 0 0 0 1.375rem var(--focus-input-border);
     }
 
     &:active,
     &:focus {
       box-shadow:
-        0 0 0 5px var(--focus-input-glow),
+        0 0 0 4px var(--focus-input-glow),
         inset 0 0 0 1.375rem var(--focus-input-border);
     }
 

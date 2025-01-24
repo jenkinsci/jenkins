@@ -152,6 +152,7 @@ pre {
   margin: 0 0 var(--section-padding);
   padding: 0.8rem 1rem;
   border-radius: var(--form-input-border-radius);
+  border: var(--jenkins-border--subtle);
   background-color: var(--pre-background);
   color: var(--pre-color);
   font-family: var(--font-family-mono);
@@ -290,20 +291,12 @@ pre.console {
   padding: 1rem;
   margin: 1rem 0;
   word-break: break-word;
-  border-radius: 6px;
+  border-radius: var(--form-input-border-radius);
+  background-color: var(--button-background);
+  border: var(--jenkins-border--subtle);
   z-index: 0;
 
   --section-padding: 0.8rem;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--text-color);
-    opacity: 0.05;
-    z-index: -1;
-    border-radius: inherit;
-  }
 
   p:first-of-type {
     margin-top: 0;
@@ -536,7 +529,7 @@ table.fingerprint-in-build td {
     top: 0;
     left: 10px;
     bottom: 0;
-    width: 2px;
+    width: var(--jenkins-border-width);
     background: var(--input-border);
     border-radius: 2px;
     transition: var(--standard-transition);
