@@ -94,8 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function cleanItemSelection() {
       document
-        .querySelector(".categories")
-        .querySelector('li[role="radio"]')
+        .querySelector('.categories li[role="radio"]')
         .setAttribute("aria-checked", "false");
       document
         .querySelector('#createItem input[type="radio"][name="mode"]')
