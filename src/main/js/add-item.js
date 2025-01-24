@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function isItemNameEmpty() {
       var itemName = document.querySelector('#createItem input[name="name"]').value;
-      return itemName === "";
+      return itemName.trim() === "";
     }
 
     function getFieldValidationStatus(fieldId) {
@@ -57,22 +57,18 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       cleanValidationMessages(context);
       document.querySelector(messageId).classList.remove("input-message-disabled");
-      enableSubmit();
+      refreshSubmitButtonState();
     }
 
     function cleanValidationMessages(context) {
-      document.querySelector(context + " .input-validation-message")
-        .classList.add("input-message-disabled");
+      document.querySelectorAll(context + " .input-validation-message").forEach((element) =>
+        element.classList.add("input-message-disabled")
+     )
     }
 
-    function enableSubmit() {
-      var btn = document.querySelector(".bottom-sticker-inner button[type=submit]");
-
-      if (getFormValidationStatus()) {
-        btn.removeAttribute("disabled");
-      } else {
-        btn.setAttribute("disabled", "true");
-      }
+    function refreshSubmitButtonState() {
+      const submitButton = document.querySelector(".bottom-sticker-inner button[type=submit]");
+      submitButton.disabled = !getFormValidationStatus();
     }
 
     function getFormValidationStatus() {
@@ -165,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setFieldValidationStatus("items", true);
         if (getFieldValidationStatus("name")) {
-          enableSubmit();
+          refreshSubmitButtonState();
         }
       }
 
@@ -251,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#add-item-panel #name").focus();
 
     // Init NameField
-    function handleEvent() {
+    function nameFieldEvent() {
       if (!isItemNameEmpty()) {
         var itemName = document.querySelector('#createItem input[name="name"]').value;
 
@@ -267,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
               cleanValidationMessages(".add-item-name");
               setFieldValidationStatus("name", true);
-              enableSubmit();
+              refreshSubmitButtonState();
             }
           });
         })
@@ -275,12 +271,12 @@ document.addEventListener("DOMContentLoaded", () => {
         setFieldValidationStatus("name", false);
         cleanValidationMessages(".add-item-name");
         activateValidationMessage("#itemname-required", ".add-item-name");
-        enableSubmit();
+        refreshSubmitButtonState();
       }
     }
 
-    document.querySelector('#createItem input[name="name"]').addEventListener("blur", handleEvent);
-    document.querySelector('#createItem input[name="name"]').addEventListener("input", handleEvent);
+    document.querySelector('#createItem input[name="name"]').addEventListener("blur", nameFieldEvent);
+    document.querySelector('#createItem input[name="name"]').addEventListener("input", nameFieldEvent);
 
     // Init CopyFromField
     function copyFromFieldEvent() {
@@ -308,7 +304,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           }, 400);
         } else {
-          enableSubmit();
+          refreshSubmitButtonState();
         }
       }
     }
@@ -321,7 +317,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!getFormValidationStatus()) {
         event.preventDefault();
         if (!getFieldValidationStatus("name")) {
-          activateValidationMessage("#itemname-required", ".add-item-name");
+          activateValidationMessage("#" +
+            "", ".add-item-name");
           document.querySelector( '#createItem input[name="name"][type="text"]').focus();
         } else {
           if (
@@ -336,6 +333,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Disable the submit button
-    enableSubmit();
+    refreshSubmitButtonState();
   });
 });
