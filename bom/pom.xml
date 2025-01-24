@@ -132,11 +132,6 @@ THE SOFTWARE.
         <version>2.6</version>
       </dependency>
       <dependency>
-        <groupId>io.jenkins.stapler</groupId>
-        <artifactId>jenkins-stapler-support</artifactId>
-        <version>1.1</version>
-      </dependency>
-      <dependency>
         <groupId>jakarta.servlet</groupId>
         <artifactId>jakarta.servlet-api</artifactId>
         <version>5.0.0</version>
