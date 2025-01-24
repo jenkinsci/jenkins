@@ -106,9 +106,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function cleanCopyFromOption() {
-      document
-        .querySelector('#createItem input[type="radio"][value="copy"]')
-        .removeAttribute("checked");
+      const copyRadio = document.querySelector(
+        '#createItem input[type="radio"][value="copy"]',
+      );
+      if (copyRadio) {
+        copyRadio.removeAttribute("checked");
+      }
       document.querySelector(
         '#createItem input[type="text"][name="from"]',
       ).value = "";
