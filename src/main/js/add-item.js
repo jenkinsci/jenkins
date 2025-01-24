@@ -1,7 +1,9 @@
 import { createElementFromHtml } from "@/util/dom";
 
 const getItems = function () {
-  return fetch("itemCategories?depth=3&iconStyle=icon-xlg").then((response) =>  response.json())
+  return fetch("itemCategories?depth=3&iconStyle=icon-xlg").then((response) =>
+    response.json(),
+  );
 };
 
 const jRoot = document.querySelector("head").getAttribute("data-rooturl");
@@ -35,11 +37,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getCopyFromValue() {
-      return document.querySelector('#createItem input[type="text"][name="from"]').value;
+      return document.querySelector(
+        '#createItem input[type="text"][name="from"]',
+      ).value;
     }
 
     function isItemNameEmpty() {
-      var itemName = document.querySelector('#createItem input[name="name"]').value;
+      var itemName = document.querySelector(
+        '#createItem input[name="name"]',
+      ).value;
       return itemName.trim() === "";
     }
 
@@ -53,21 +59,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function activateValidationMessage(messageId, context, message) {
       if (message !== undefined && message !== "") {
-        document.querySelector(context + " " + messageId).textContent = "» " + message;
+        document.querySelector(context + " " + messageId).textContent =
+          "» " + message;
       }
       cleanValidationMessages(context);
-      document.querySelector(messageId).classList.remove("input-message-disabled");
+      document
+        .querySelector(messageId)
+        .classList.remove("input-message-disabled");
       refreshSubmitButtonState();
     }
 
     function cleanValidationMessages(context) {
-      document.querySelectorAll(context + " .input-validation-message").forEach((element) =>
-        element.classList.add("input-message-disabled")
-     )
+      document
+        .querySelectorAll(context + " .input-validation-message")
+        .forEach((element) => element.classList.add("input-message-disabled"));
     }
 
     function refreshSubmitButtonState() {
-      const submitButton = document.querySelector(".bottom-sticker-inner button[type=submit]");
+      const submitButton = document.querySelector(
+        ".bottom-sticker-inner button[type=submit]",
+      );
       submitButton.disabled = !getFormValidationStatus();
     }
 
@@ -82,8 +93,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function cleanItemSelection() {
-      document.querySelector(".categories").querySelector('li[role="radio"]').setAttribute("aria-checked", "false");
-      document.querySelector('#createItem input[type="radio"][name="mode"]')
+      document
+        .querySelector(".categories")
+        .querySelector('li[role="radio"]')
+        .setAttribute("aria-checked", "false");
+      document
+        .querySelector('#createItem input[type="radio"][name="mode"]')
         .removeAttribute("checked");
       document.querySelectorAll(".categories .active").forEach((item) => {
         item.classList.remove("active");
@@ -92,9 +107,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function cleanCopyFromOption() {
-      document.querySelector('#createItem input[type="radio"][value="copy"]')
+      document
+        .querySelector('#createItem input[type="radio"][value="copy"]')
         .removeAttribute("checked");
-      document.querySelector('#createItem input[type="text"][name="from"]').value = "";
+      document.querySelector(
+        '#createItem input[type="text"][name="from"]',
+      ).value = "";
       setFieldValidationStatus("from", false);
     }
 
@@ -103,7 +121,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function drawCategory(category) {
       var $category = createElementFromHtml("<div class='category' />");
-      $category.setAttribute("id", "j-add-item-type-" + cleanClassName(category.id));
+      $category.setAttribute(
+        "id",
+        "j-add-item-type-" + cleanClassName(category.id),
+      );
       var $items = createElementFromHtml(`<ul class="j-item-options" />`);
       var $catHeader = createElementFromHtml(`<div class="header" />`);
       var title = "<h2>" + category.name + "</h2>";
@@ -249,24 +270,28 @@ document.addEventListener("DOMContentLoaded", () => {
     // Init NameField
     function nameFieldEvent() {
       if (!isItemNameEmpty()) {
-        var itemName = document.querySelector('#createItem input[name="name"]').value;
+        var itemName = document.querySelector(
+          '#createItem input[name="name"]',
+        ).value;
 
-        fetch(`checkJobName?value=${encodeURIComponent(itemName)}`).then(response => {
-          response.text().then((data) => {
-            var message = parseResponseFromCheckJobName(data);
-            if (message !== "") {
-              activateValidationMessage(
-                "#itemname-invalid",
-                ".add-item-name",
-                message,
-              );
-            } else {
-              cleanValidationMessages(".add-item-name");
-              setFieldValidationStatus("name", true);
-              refreshSubmitButtonState();
-            }
-          });
-        })
+        fetch(`checkJobName?value=${encodeURIComponent(itemName)}`).then(
+          (response) => {
+            response.text().then((data) => {
+              var message = parseResponseFromCheckJobName(data);
+              if (message !== "") {
+                activateValidationMessage(
+                  "#itemname-invalid",
+                  ".add-item-name",
+                  message,
+                );
+              } else {
+                cleanValidationMessages(".add-item-name");
+                setFieldValidationStatus("name", true);
+                refreshSubmitButtonState();
+              }
+            });
+          },
+        );
       } else {
         setFieldValidationStatus("name", false);
         cleanValidationMessages(".add-item-name");
@@ -275,31 +300,44 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    document.querySelector('#createItem input[name="name"]').addEventListener("blur", nameFieldEvent);
-    document.querySelector('#createItem input[name="name"]').addEventListener("input", nameFieldEvent);
+    document
+      .querySelector('#createItem input[name="name"]')
+      .addEventListener("blur", nameFieldEvent);
+    document
+      .querySelector('#createItem input[name="name"]')
+      .addEventListener("input", nameFieldEvent);
 
     // Init CopyFromField
     function copyFromFieldEvent() {
       if (getCopyFromValue() === "") {
-        document.querySelector('#createItem input[type="radio"][value="copy"]')
+        document
+          .querySelector('#createItem input[type="radio"][value="copy"]')
           .removeAttribute("checked");
       } else {
         cleanItemSelection();
-        document.querySelector('#createItem input[type="radio"][value="copy"]')
+        document
+          .querySelector('#createItem input[type="radio"][value="copy"]')
           .setAttribute("checked", true);
         setFieldValidationStatus("from", true);
         if (!getFieldValidationStatus("name")) {
           activateValidationMessage("#itemname-required", ".add-item-name");
           setTimeout(function () {
-            var parentName = document.querySelector('#createItem input[name="from"]').value;
+            var parentName = document.querySelector(
+              '#createItem input[name="from"]',
+            ).value;
 
-            fetch("job/" + parentName + "/api/json?tree=name").then(response => {
-              response.json().then((data) => {
+            fetch("job/" + parentName + "/api/json?tree=name").then(
+              (response) => {
+                response.json().then((data) => {
                   if (data.name === parentName) {
                     //if "name" is invalid, but "from" is a valid job, then switch focus to "name"
-                    document.querySelector('#createItem input[name="name"][type="text"]').focus();
+                    document
+                      .querySelector(
+                        '#createItem input[name="name"][type="text"]',
+                      )
+                      .focus();
                   }
-                })
+                });
               },
             );
           }, 400);
@@ -309,28 +347,37 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    document.querySelector('#createItem input[name="from"]').addEventListener("blur", copyFromFieldEvent);
-    document.querySelector('#createItem input[name="from"]').addEventListener("input", copyFromFieldEvent);
+    document
+      .querySelector('#createItem input[name="from"]')
+      .addEventListener("blur", copyFromFieldEvent);
+    document
+      .querySelector('#createItem input[name="from"]')
+      .addEventListener("input", copyFromFieldEvent);
 
     // Client-side validation
-    document.querySelector("#createItem").addEventListener("submit", function (event) {
-      if (!getFormValidationStatus()) {
-        event.preventDefault();
-        if (!getFieldValidationStatus("name")) {
-          activateValidationMessage("#" +
-            "", ".add-item-name");
-          document.querySelector( '#createItem input[name="name"][type="text"]').focus();
-        } else {
-          if (
-            !getFieldValidationStatus("items") &&
-            !getFieldValidationStatus("from")
-          ) {
-            activateValidationMessage("#itemtype-required", ".add-item-name");
-            document.querySelector('#createItem input[name="name"][type="text"]').focus();
+    document
+      .querySelector("#createItem")
+      .addEventListener("submit", function (event) {
+        if (!getFormValidationStatus()) {
+          event.preventDefault();
+          if (!getFieldValidationStatus("name")) {
+            activateValidationMessage("#" + "", ".add-item-name");
+            document
+              .querySelector('#createItem input[name="name"][type="text"]')
+              .focus();
+          } else {
+            if (
+              !getFieldValidationStatus("items") &&
+              !getFieldValidationStatus("from")
+            ) {
+              activateValidationMessage("#itemtype-required", ".add-item-name");
+              document
+                .querySelector('#createItem input[name="name"][type="text"]')
+                .focus();
+            }
           }
         }
-      }
-    });
+      });
 
     // Disable the submit button
     refreshSubmitButtonState();
