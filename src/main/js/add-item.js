@@ -4,8 +4,6 @@ const nameInput = document.querySelector(`#createItem input[name="name"]`);
 const copyFromInput = document.querySelector(`#createItem input[name="from"]`);
 const copyRadio = document.querySelector(`#createItem input[value="copy"]`);
 
-console.log(nameInput, copyFromInput, copyRadio);
-
 const getItems = function () {
   return fetch("itemCategories?depth=3&iconStyle=icon-xlg").then((response) =>
     response.json(),
