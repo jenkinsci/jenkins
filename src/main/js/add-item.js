@@ -1,5 +1,11 @@
 import { createElementFromHtml } from "@/util/dom";
 
+const nameInput = document.querySelector(`#createItem input[name="name"]`);
+const copyFromInput = document.querySelector(`#createItem input[name="from"]`);
+const copyRadio = document.querySelector(`#createItem input[value="copy"]`);
+
+console.log(nameInput, copyFromInput, copyRadio);
+
 const getItems = function () {
   return fetch("itemCategories?depth=3&iconStyle=icon-xlg").then((response) =>
     response.json(),
@@ -37,15 +43,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getCopyFromValue() {
-      return document.querySelector(
-        '#createItem input[type="text"][name="from"]',
-      ).value;
+      return copyFromInput.value;
     }
 
     function isItemNameEmpty() {
-      var itemName = document.querySelector(
-        '#createItem input[name="name"]',
-      ).value;
+      var itemName = nameInput.value;
       return itemName.trim() === "";
     }
 
@@ -106,15 +108,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function cleanCopyFromOption() {
-      const copyRadio = document.querySelector(
-        '#createItem input[type="radio"][value="copy"]',
-      );
-      if (copyRadio) {
-        copyRadio.removeAttribute("checked");
-      }
-      document.querySelector(
-        '#createItem input[type="text"][name="from"]',
-      ).value = "";
+      copyRadio.removeAttribute("checked");
+      copyFromInput.value = "";
       setFieldValidationStatus("from", false);
     }
 
@@ -272,9 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Init NameField
     function nameFieldEvent() {
       if (!isItemNameEmpty()) {
-        var itemName = document.querySelector(
-          '#createItem input[name="name"]',
-        ).value;
+        var itemName = nameInput.value;
 
         fetch(`checkJobName?value=${encodeURIComponent(itemName)}`).then(
           (response) => {
@@ -302,42 +295,28 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    document
-      .querySelector('#createItem input[name="name"]')
-      .addEventListener("blur", nameFieldEvent);
-    document
-      .querySelector('#createItem input[name="name"]')
-      .addEventListener("input", nameFieldEvent);
+    nameInput.addEventListener("blur", nameFieldEvent);
+    nameInput.addEventListener("input", nameFieldEvent);
 
     // Init CopyFromField
     function copyFromFieldEvent() {
       if (getCopyFromValue() === "") {
-        document
-          .querySelector('#createItem input[type="radio"][value="copy"]')
-          .removeAttribute("checked");
+        copyRadio.removeAttribute("checked");
       } else {
         cleanItemSelection();
-        document
-          .querySelector('#createItem input[type="radio"][value="copy"]')
-          .setAttribute("checked", true);
+        copyRadio.setAttribute("checked", true);
         setFieldValidationStatus("from", true);
         if (!getFieldValidationStatus("name")) {
           activateValidationMessage("#itemname-required", ".add-item-name");
           setTimeout(function () {
-            var parentName = document.querySelector(
-              '#createItem input[name="from"]',
-            ).value;
+            var parentName = copyFromInput.value;
 
             fetch("job/" + parentName + "/api/json?tree=name").then(
               (response) => {
                 response.json().then((data) => {
                   if (data.name === parentName) {
                     //if "name" is invalid, but "from" is a valid job, then switch focus to "name"
-                    document
-                      .querySelector(
-                        '#createItem input[name="name"][type="text"]',
-                      )
-                      .focus();
+                    nameInput.focus();
                   }
                 });
               },
@@ -349,12 +328,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    document
-      .querySelector('#createItem input[name="from"]')
-      .addEventListener("blur", copyFromFieldEvent);
-    document
-      .querySelector('#createItem input[name="from"]')
-      .addEventListener("input", copyFromFieldEvent);
+    copyFromInput.addEventListener("blur", copyFromFieldEvent);
+    copyFromInput.addEventListener("input", copyFromFieldEvent);
 
     // Client-side validation
     document
@@ -364,18 +339,14 @@ document.addEventListener("DOMContentLoaded", () => {
           event.preventDefault();
           if (!getFieldValidationStatus("name")) {
             activateValidationMessage("#" + "", ".add-item-name");
-            document
-              .querySelector('#createItem input[name="name"][type="text"]')
-              .focus();
+            nameInput.focus();
           } else {
             if (
               !getFieldValidationStatus("items") &&
               !getFieldValidationStatus("from")
             ) {
               activateValidationMessage("#itemtype-required", ".add-item-name");
-              document
-                .querySelector('#createItem input[name="name"][type="text"]')
-                .focus();
+              nameInput.focus();
             }
           }
         }
