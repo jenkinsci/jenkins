@@ -52,11 +52,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getFieldValidationStatus(fieldId) {
-      return document.querySelector("#" + fieldId).dataset.valid === "true";
+      return document.querySelector("#" + fieldId)?.dataset.valid === "true";
     }
 
     function setFieldValidationStatus(fieldId, status) {
-      document.querySelector("#" + fieldId).dataset.valid = status;
+      const element = document.querySelector("#" + fieldId);
+      if (element) {
+        element.dataset.valid = status;
+      }
     }
 
     function activateValidationMessage(messageId, context, message) {
@@ -108,8 +111,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function cleanCopyFromOption() {
-      copyRadio.removeAttribute("checked");
-      copyFromInput.value = "";
+      copyRadio?.removeAttribute("checked");
+      if (copyFromInput) {
+        copyFromInput.value = "";
+      }
       setFieldValidationStatus("from", false);
     }
 
@@ -328,8 +333,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    copyFromInput.addEventListener("blur", copyFromFieldEvent);
-    copyFromInput.addEventListener("input", copyFromFieldEvent);
+    copyFromInput?.addEventListener("blur", copyFromFieldEvent);
+    copyFromInput?.addEventListener("input", copyFromFieldEvent);
 
     // Client-side validation
     document
@@ -338,7 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!getFormValidationStatus()) {
           event.preventDefault();
           if (!getFieldValidationStatus("name")) {
-            activateValidationMessage("#" + "", ".add-item-name");
+            activateValidationMessage("#itemname-required", ".add-item-name");
             nameInput.focus();
           } else {
             if (
