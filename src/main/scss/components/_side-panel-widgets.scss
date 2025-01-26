@@ -28,7 +28,7 @@
 #side-panel .pane-header-title {
   display: inline-block;
   flex: 1;
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 
   & > div {
     font-weight: normal;

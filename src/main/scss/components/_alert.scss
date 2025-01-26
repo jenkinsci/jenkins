@@ -4,10 +4,10 @@
   padding: 15px;
   margin-bottom: 20px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
 
   strong {
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
   }
 
   a {

@@ -123,18 +123,18 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1358.vfb_5780da_64cb_</version>
+        <version>1363.v03f731255494</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-step-api</artifactId>
-        <version>678.v3ee58b_469476</version>
+        <version>686.v603d058a_e148</version>
       </dependency>
       <dependency>
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>943.v8b_0d01a_7b_a_08</version>
+        <version>944.v5a_859593b_98a_</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -178,7 +178,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2380.vc51ea_a_cf2711</version>
+      <version>2389.va_b_3a_21a_c00ed</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -344,7 +344,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>353.v3b_c47f293f54</version>
+                  <version>354.v87d9d5804b_c1</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>

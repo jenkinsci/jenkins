@@ -87,6 +87,10 @@
 
     input {
       background: transparent !important;
+
+      --input-border: transparent;
+      --input-border-hover: transparent;
+
       border-radius: inherit;
 
       &::before,
@@ -120,8 +124,8 @@
     padding: 0.5rem;
 
     &__heading {
-      font-weight: 500;
-      font-size: 0.875rem;
+      font-weight: var(--font-bold-weight);
+      font-size: var(--font-size-sm);
       margin: 0;
       padding: 0.75rem 0.75rem 0.625rem;
       color: var(--text-color-secondary);
@@ -180,6 +184,14 @@
           width: 1.25rem;
           height: 1.25rem;
         }
+
+        &[src] {
+          border-radius: 100px;
+          outline: 1px solid
+            color-mix(in sRGB, var(--text-color) 10%, transparent);
+          background: color-mix(in sRGB, var(--text-color) 5%, transparent);
+          outline-offset: -1px;
+        }
       }
 
       &__description {
@@ -199,7 +211,7 @@
   }
 
   &__info {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     margin: 0;
     padding: 0 14px;
     line-height: 46px;

@@ -40,6 +40,7 @@ $semantics: (
   --font-size-sm: 0.875rem; // 14px
   --font-size-xs: 0.75rem; // 12px
   --font-size-monospace: 1em;
+  --font-bold-weight: 450;
 
   // Line height
   --line-height-base: 1.5;
@@ -152,7 +153,7 @@ $semantics: (
   --link-text-decoration: none;
   --link-text-decoration--hover: underline;
   --link-text-decoration--active: underline;
-  --link-font-weight: 450;
+  --link-font-weight: var(--font-bold-weight);
 
   // Command Palette
   --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5)
@@ -194,7 +195,7 @@ $semantics: (
   --link-dark-text-decoration: none;
   --link-dark-text-decoration--hover: underline;
   --link-dark-text-decoration--active: underline;
-  --link-dark-font-weight: 500;
+  --link-dark-font-weight: var(--font-bold-weight);
 
   // Pane
   --pane-border-width: 1px;
@@ -266,7 +267,7 @@ $semantics: (
     --form-item-max-width--small: 100%;
   }
 
-  --form-label-font-weight: 450;
+  --form-label-font-weight: var(--font-bold-weight);
   --form-input-padding: 0.625rem;
   --form-input-border-radius: 0.625rem;
   --form-input-glow: 0 0 0 10px transparent;

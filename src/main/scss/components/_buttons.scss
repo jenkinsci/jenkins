@@ -15,11 +15,11 @@
   outline: none;
   margin: 0;
   padding: 0.5rem 0.9rem;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
+  font-weight: normal;
   text-decoration: none !important;
   background: transparent;
   color: var(--text-color) !important;
-  border-radius: 0.66rem;
   cursor: pointer;
   min-height: 2.25rem;
   white-space: nowrap;

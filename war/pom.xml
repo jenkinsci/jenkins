@@ -46,7 +46,7 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <mina-sshd-api.version>2.14.0-138.v6341ee58e1df</mina-sshd-api.version>
+    <mina-sshd-api.version>2.14.0-143.v2b_362fc39576</mina-sshd-api.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
     <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
 
@@ -323,7 +323,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1358.vfb_5780da_64cb_</version>
+                  <version>1363.v03f731255494</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -352,7 +352,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>943.v8b_0d01a_7b_a_08</version>
+                  <version>944.v5a_859593b_98a_</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -413,7 +413,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, plugin-util-api, workflow-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>678.v3ee58b_469476</version>
+                  <version>686.v603d058a_e148</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -441,14 +441,14 @@ THE SOFTWARE.
                   <!-- detached after 2.86 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>116.vd85919c54a_d6</version>
+                  <version>118.v72741845c17a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.112 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jdk-tool</artifactId>
-                  <version>80.v8a_dee33ed6f0</version>
+                  <version>83.v417146707a_3d</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

@@ -1,8 +1,9 @@
 $jenkins-dialog-padding: 1.3rem;
 
 .jenkins-dialog {
-  border-radius: 0.6rem;
+  border-radius: var(--form-input-border-radius);
   border: none;
+  background-color: var(--card-background);
   box-shadow: var(--dialog-box-shadow);
   animation: jenkins-dialog-animate-in 0.25s cubic-bezier(0, 0.68, 0.5, 1.5);
   overflow: hidden;
@@ -10,6 +11,7 @@ $jenkins-dialog-padding: 1.3rem;
   display: flex;
   flex-direction: column;
   gap: $jenkins-dialog-padding;
+  outline: none;
 
   &::backdrop {
     background: var(--dialog-backdrop-background);
@@ -18,7 +20,7 @@ $jenkins-dialog-padding: 1.3rem;
 
   &__title {
     font-size: 1.125rem;
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
     padding: 0 $jenkins-dialog-padding;
     color: var(--text-color);
   }
@@ -48,15 +50,13 @@ $jenkins-dialog-padding: 1.3rem;
     flex-direction: row-reverse;
 
     .jenkins-button {
-      font-size: 0.9rem;
-      padding: 0.7rem 0.6rem;
       min-width: 100px;
     }
   }
 
   &__subtitle {
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
     color: var(--text-color-secondary);
     padding: 0;
     margin: 0 0 1rem;
@@ -68,16 +68,7 @@ $jenkins-dialog-padding: 1.3rem;
     right: $jenkins-dialog-padding - 0.5rem;
     aspect-ratio: 1;
     padding: 0;
-
-    &::before,
-    &::after {
-      border-radius: 100%;
-      outline: none;
-    }
-
-    &::after {
-      backdrop-filter: contrast(0.9) blur(5px);
-    }
+    border-radius: 100%;
   }
 }
 

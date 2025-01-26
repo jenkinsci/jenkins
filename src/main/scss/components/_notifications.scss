@@ -11,8 +11,8 @@
   grid-template-columns: auto 1fr;
   grid-gap: 1.5ch;
   padding: 0.8rem;
-  border-radius: 10px;
-  font-weight: 500;
+  border-radius: var(--form-input-border-radius);
+  font-weight: var(--font-bold-weight);
   line-height: 1.66;
   color: var(--text-color);
   box-shadow:

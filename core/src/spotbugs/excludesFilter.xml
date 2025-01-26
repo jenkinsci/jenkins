@@ -342,7 +342,6 @@
           <Class name="hudson.Launcher$RemoteChannelLaunchCallable"/>
           <Class name="hudson.Launcher$RemoteLaunchCallable"/>
           <Class name="hudson.lifecycle.Lifecycle"/>
-          <Class name="hudson.lifecycle.WindowsInstallerLink"/>
           <Class name="hudson.lifecycle.WindowsServiceLifecycle"/>
           <Class name="hudson.LocalPluginManager"/>
           <Class name="hudson.logging.LogRecorder"/>
