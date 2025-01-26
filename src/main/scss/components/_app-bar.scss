@@ -124,7 +124,7 @@
     top: -30px;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(#556, 0.075) 110%);
+    background: linear-gradient(transparent, var(--bottom-app-bar-shadow) 110%);
     max-width: 100%;
     height: 30px;
     opacity: 0;

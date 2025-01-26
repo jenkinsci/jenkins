@@ -46,7 +46,7 @@
       }
 
       & > a {
-        @include mixins.item;
+        @include mixins.item($border: false);
 
         --item-background--hover: transparent;
         --item-background--active: transparent;

@@ -1,9 +1,10 @@
 @use "../abstracts/mixins";
 
-$dropdown-padding: 0.4rem;
+$dropdown-border-radius: 1rem;
+$dropdown-padding: 0.375rem;
 
 .tippy-box[data-theme~="dropdown"] {
-  border-radius: 15px;
+  border-radius: $dropdown-border-radius;
   box-shadow: var(--dropdown-box-shadow);
   outline: none !important;
   background: color-mix(in sRGB, var(--background) 85%, transparent);
@@ -76,22 +77,15 @@ $dropdown-padding: 0.4rem;
 
   &__separator {
     position: relative;
-    height: 0.125rem;
+    height: var(--jenkins-border-width);
     margin: $dropdown-padding calc($dropdown-padding * -1);
     border: none;
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-color: var(--text-color-secondary);
-      opacity: 0.1;
-    }
+    background-color: var(--jenkins-border-color);
   }
 
   &__heading {
     color: var(--text-color-secondary) !important;
-    margin: $dropdown-padding 0.55rem;
+    margin: $dropdown-padding 0.65rem;
     font-size: 0.8125rem;
     font-weight: var(--font-bold-weight);
     opacity: 0.8;
@@ -123,7 +117,7 @@ $dropdown-padding: 0.4rem;
     --item-background--active: var(--button-background--active);
     --item-box-shadow--focus: var(--button-box-shadow--focus);
 
-    @include mixins.item;
+    @include mixins.item($border: false);
 
     appearance: none;
     display: inline-flex;
@@ -138,7 +132,7 @@ $dropdown-padding: 0.4rem;
     text-decoration: none !important;
     background: transparent;
     color: var(--text-color) !important;
-    border-radius: 0.66rem;
+    border-radius: calc($dropdown-border-radius - $dropdown-padding);
     cursor: pointer;
     min-height: 36px;
     white-space: nowrap;
@@ -230,14 +224,25 @@ $dropdown-padding: 0.4rem;
 
   &:hover {
     .jenkins-dropdown__item--selected {
-      background: transparent;
+      &::before {
+        opacity: 0;
+      }
     }
   }
 }
 
 .jenkins-dropdown__item--selected {
-  background: var(--item-background--hover);
-  animation: pulse 1s ease-in-out forwards;
+  &::before {
+    background: var(--item-background--hover);
+    border: var(--jenkins-border--subtle) !important;
+    animation: pulse 1s ease-in-out forwards;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 1 !important;
+    }
+  }
 
   @keyframes pulse {
     50% {
