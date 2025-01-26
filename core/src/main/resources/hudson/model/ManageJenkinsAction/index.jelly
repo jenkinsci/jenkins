@@ -47,6 +47,35 @@ THE SOFTWARE.
         <st:include page="downgrade.jelly" it="${app}" />
       </section>
 
+      <div>
+        <div>JSON</div>
+        <f:textarea codemirror-mode="json" />
+        <div>Java</div>
+        <f:textarea codemirror-mode="java" />
+        <div>Javascript</div>
+        <f:textarea codemirror-mode="javascript" />
+        <div>XML</div>
+        <f:textarea codemirror-mode="xml" />
+        <div>HTML</div>
+        <f:textarea codemirror-mode="html" />
+        <div>Groovy</div>
+        <f:textarea codemirror-mode="groovy" />
+        <div>Shell</div>
+        <f:textarea codemirror-mode="shell" />
+        <div>parameter-separator-plugin - src/main/resources/jenkins/plugins/parameter_separator/ParameterSeparatorDefinition/global.jelly</div>
+        <f:textarea codemirror-mode="css" />
+        <div>templating-engine-plugin - src/main/resources/org/boozallen/plugins/jte/init/governance/config/ConsoleDefaultPipelineTemplate/config.jelly</div>
+        <f:textarea codemirror-mode="clike" />
+        <div>workflow-cps-plugin - plugin/src/main/resources/org/jenkinsci/plugins/workflow/cps/replay/ReplayAction/diff.jelly</div>
+        <f:textarea value="${it.diff}" readonly="true" codemirror-mode="diff" />
+        <div>aws-codebuild-plugin · src/main/resources/CodeBuilder/config.jelly</div>
+        <f:textarea codemirror-mode="yaml" />
+        <div>r-plugin · src/main/resources/org/biouno/r/R/config.jelly</div>
+        <f:textarea codemirror-mode="r" />
+        <div>machine-learning-plugin - src/main/resources/io/jenkins/plugins/ml/IPythonBuilder/config.jelly</div>
+        <f:textarea codemirror-mode="python" />
+      </div>
+
       <j:forEach var="category" items="${app.categorizedManagementLinks.entrySet()}">
         <section class="jenkins-section jenkins-section--bottom-padding">
           <h2 class="jenkins-section__title">${category.key.label}</h2>

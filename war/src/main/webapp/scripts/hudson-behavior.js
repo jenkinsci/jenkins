@@ -1152,22 +1152,22 @@ function helpButtonOnClick() {
   return false;
 }
 
-function isCommandKey(event) {
-  return event.key === "Meta";
-}
-function isReturnKeyDown() {
-  return event.type == "keydown" && event.key === "Enter";
-}
-function getParentForm(element) {
-  if (element == null) {
-    throw "not found a parent form";
-  }
-  if (element instanceof HTMLFormElement) {
-    return element;
-  }
-
-  return getParentForm(element.parentNode);
-}
+// function isCommandKey(event) {
+//   return event.key === "Meta";
+// }
+// function isReturnKeyDown() {
+//   return event.type == "keydown" && event.key === "Enter";
+// }
+// function getParentForm(element) {
+//   if (element == null) {
+//     throw "not found a parent form";
+//   }
+//   if (element instanceof HTMLFormElement) {
+//     return element;
+//   }
+//
+//   return getParentForm(element.parentNode);
+// }
 
 // figure out the corresponding end marker
 function findEnd(e) {
@@ -1349,49 +1349,6 @@ function rowvgStartEachRow(recursive, f) {
   Behaviour.specify("A.help-button", "a-help-button", ++p, function (e) {
     e.onclick = helpButtonOnClick;
     e.tabIndex = 9999; // make help link unnavigable from keyboard
-  });
-
-  // Script Console : settings and shortcut key
-  Behaviour.specify("TEXTAREA.script", "textarea-script", ++p, function (e) {
-    (function () {
-      var cmdKeyDown = false;
-      var mode = e.getAttribute("script-mode") || "text/x-groovy";
-
-      // eslint-disable-next-line no-unused-vars
-      var w = CodeMirror.fromTextArea(e, {
-        mode: mode,
-        lineNumbers: true,
-        matchBrackets: true,
-        onKeyEvent: function (editor, event) {
-          function saveAndSubmit() {
-            editor.save();
-            getParentForm(e).submit();
-            event.stop();
-          }
-
-          // Mac (Command + Enter)
-          if (navigator.userAgent.indexOf("Mac") > -1) {
-            if (event.type == "keydown" && isCommandKey(event)) {
-              cmdKeyDown = true;
-            }
-            if (event.type == "keyup" && isCommandKey(event)) {
-              cmdKeyDown = false;
-            }
-            if (cmdKeyDown && isReturnKeyDown()) {
-              saveAndSubmit();
-              return true;
-            }
-
-            // Windows, Linux (Ctrl + Enter)
-          } else {
-            if (event.ctrlKey && isReturnKeyDown()) {
-              saveAndSubmit();
-              return true;
-            }
-          }
-        },
-      }).getWrapperElement();
-    })();
   });
 
   // deferred client-side clickable map.

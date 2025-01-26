@@ -53,6 +53,13 @@
     "webpack-remove-empty-scripts": "1.0.4"
   },
   "dependencies": {
+    "@codemirror/language": "6.10.8",
+    "@codemirror/language-data": "6.5.1",
+    "@codemirror/state": "6.5.1",
+    "@codemirror/view": "6.36.2",
+    "@lezer/common": "1.2.3",
+    "@lezer/highlight": "1.2.1",
+    "codemirror": "6.0.1",
     "handlebars": "4.7.8",
     "hotkeys-js": "3.12.2",
     "jquery": "3.7.1",
