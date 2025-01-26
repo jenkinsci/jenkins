@@ -197,7 +197,7 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
      * name, and expected value for each of the resource files used by
      * the test.
      *
-     * @param simplifyExpectedValue if true, then the expected value
+     * @param simplify if true, then the expected value
      * is simplified by replacing ' ' with '-', by replacing '/' with
      * '-', and by removing '(' and ')'.
      * @return arguments for ParameterizedTest, resource file name,
