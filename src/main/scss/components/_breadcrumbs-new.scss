@@ -57,6 +57,7 @@
         &::before,
         &::after {
           inset: -2px -6px;
+          border: none;
         }
 
         &:hover {
