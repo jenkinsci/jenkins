@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <div style="display: flex; flex-direction: column; margin: 0 -0.4rem">
+  <div class="jenkins-dropdown">
     <a class="jenkins-dropdown__item" href="${rootURL}/${it.user.url}">
       <div class="jenkins-dropdown__item__icon">
         <l:icon src="${it.iconFileName}" />

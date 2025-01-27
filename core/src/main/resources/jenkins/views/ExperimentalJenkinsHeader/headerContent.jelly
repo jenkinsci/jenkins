@@ -70,6 +70,7 @@
               <x:attribute name="href">${h.getActionUrl(app.url, action)}</x:attribute>
               <x:attribute name="data-html-tooltip" escapeText="false"><j:out value="${tooltip}" /></x:attribute>
               <x:attribute name="data-tooltip-interactive">${interactive}</x:attribute>
+              <x:attribute name="data-tippy-theme">${interactive ? 'dropdown' : 'tooltip'}</x:attribute>
               <x:attribute name="draggable">false</x:attribute>
               <x:attribute name="class">jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'}</x:attribute>
               <l:icon src="${action.iconFileName}" />
