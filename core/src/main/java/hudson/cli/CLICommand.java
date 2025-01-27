@@ -53,11 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.apache.commons.discovery.ResourceClassIterator;
-import org.apache.commons.discovery.ResourceNameIterator;
-import org.apache.commons.discovery.resource.ClassLoaders;
-import org.apache.commons.discovery.resource.classes.DiscoverClasses;
-import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
@@ -242,7 +237,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.stdout = stdout;
         this.stderr = stderr;
         this.locale = locale;
-        registerOptionHandlers();
         CmdLineParser p = getCmdLineParser();
 
         // add options from the authenticator
@@ -528,20 +522,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     /**
-     * Auto-discovers {@link OptionHandler}s and add them to the given command line parser.
-     */
-    protected void registerOptionHandlers() {
-        try {
-            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.get().pluginManager.uberClassLoader, Class.class)) {
-                Type t = Types.getBaseClass(c, OptionHandler.class);
-                CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t, 0)), c);
-            }
-        } catch (IOException e) {
-            throw new Error(e);
-        }
-    }
-
-    /**
      * Returns all the registered {@link CLICommand}s.
      */
     public static ExtensionList<CLICommand> all() {
@@ -577,20 +557,16 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     static {
         // register option handlers that are defined
-        ClassLoaders cls = new ClassLoaders();
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) { // only when running on the controller
-            cls.put(j.getPluginManager().uberClassLoader);
-
-            ResourceNameIterator servicesIter =
-                new DiscoverServiceNames(cls).findResourceNames(OptionHandler.class.getName());
-            final ResourceClassIterator itr =
-                new DiscoverClasses(cls).findResourceClasses(servicesIter);
-
-            while (itr.hasNext()) {
-                Class h = itr.nextResourceClass().loadClass();
-                Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
-                CmdLineParser.registerHandler(c, h);
+            // Register OptionHandlers through META-INF/services/annotations and Annotation Indexer
+            try {
+                for (Class c : Index.list(OptionHandlerExtension.class, j.getPluginManager().uberClassLoader, Class.class)) {
+                    Type t = Types.getBaseClass(c, OptionHandler.class);
+                    CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t, 0)), c);
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
         }
     }

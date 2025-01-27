@@ -57,7 +57,7 @@ $min-button-size: 36px;
       justify-content: center;
       aspect-ratio: 1;
       height: $min-button-size;
-      border-radius: 10px;
+      border-radius: var(--form-input-border-radius);
       font-weight: var(--btn-link-font-weight);
       font-size: var(--btn-font-size);
       background: var(--button-background--hover);
@@ -121,7 +121,7 @@ $min-button-size: 36px;
 
     &__label {
       color: var(--link-color);
-      font-weight: 500;
+      font-weight: var(--font-bold-weight);
       margin: 0;
       font-size: 1rem;
     }
