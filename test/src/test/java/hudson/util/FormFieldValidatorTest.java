@@ -185,7 +185,7 @@ public class FormFieldValidatorTest {
         private Secret populatedPassword = Secret.fromString("secret!");
         private String textarea;
         private Secret emptySecretTextarea;
-        private Secret populatedSecretTextarea = Secret.fromString("sensitive!");;
+        private Secret populatedSecretTextarea = Secret.fromString("sensitive!");
 
         @DataBoundConstructor
         public ValidatingDescribable() {

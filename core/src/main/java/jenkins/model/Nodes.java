@@ -113,7 +113,7 @@ public class Nodes implements PersistenceRoot {
      * @throws IOException if the new list of nodes could not be persisted.
      */
     public void setNodes(final @NonNull Collection<? extends Node> nodes) throws IOException {
-        Map<String,Node> toRemove = new HashMap<>();
+        Map<String, Node> toRemove = new HashMap<>();
         Queue.withLock(() -> {
             toRemove.putAll(Nodes.this.nodes);
             for (var node : nodes) {

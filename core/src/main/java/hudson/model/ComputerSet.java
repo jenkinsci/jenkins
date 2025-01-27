@@ -115,8 +115,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     /**
-     * @deprecated Use {@link #getComputers()} instead.
      * @return All {@link Computer} instances managed by this set.
+     * @deprecated Use {@link #getComputers()} instead.
      */
     @Deprecated(since = "2.480")
     public Computer[] get_all() {
