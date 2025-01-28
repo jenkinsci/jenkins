@@ -113,11 +113,13 @@ public class Nodes implements PersistenceRoot {
      * @throws IOException if the new list of nodes could not be persisted.
      */
     public void setNodes(final @NonNull Collection<? extends Node> nodes) throws IOException {
-        Map<String,Node> toRemove = new HashMap<>();
+        Map<String, Node> toRemove = new HashMap<>();
         Queue.withLock(() -> {
             toRemove.putAll(Nodes.this.nodes);
             for (var node : nodes) {
                 final var name = node.getNodeName();
+                Nodes.this.nodes.put(name, node);
+                node.onLoad(Nodes.this, name);
                 var oldNode = toRemove.get(name);
                 if (oldNode != null) {
                     NodeListener.fireOnUpdated(oldNode, node);
@@ -125,8 +127,6 @@ public class Nodes implements PersistenceRoot {
                 } else {
                     NodeListener.fireOnCreated(node);
                 }
-                Nodes.this.nodes.put(name, node);
-                node.onLoad(Nodes.this, name);
             }
             Nodes.this.nodes.keySet().removeAll(toRemove.keySet());
             jenkins.updateComputerList();

@@ -35,6 +35,7 @@ import java.util.concurrent.Future;
 import jenkins.agents.IOfflineCause;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -44,7 +45,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since 2.480
  */
 @Restricted(Beta.class)
-public interface IComputer extends AccessControlled {
+public interface IComputer extends AccessControlled, IconSpec {
     /**
      * Returns {@link Node#getNodeName() the name of the node}.
      */
@@ -184,6 +185,7 @@ public interface IComputer extends AccessControlled {
      * Returns the number of {@link IExecutor}s that are doing some work right now.
      */
     int countBusy();
+
     /**
      * Returns the current size of the executor pool for this computer.
      */
@@ -193,6 +195,7 @@ public interface IComputer extends AccessControlled {
      * @return true if the computer is online.
      */
     boolean isOnline();
+
     /**
      * @return the number of {@link IExecutor}s that are idle right now.
      */

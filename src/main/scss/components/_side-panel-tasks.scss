@@ -10,7 +10,6 @@ $background-outset: 0.7rem;
   margin: var(--section-padding);
   gap: 0.125rem;
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media (min-width: breakpoints.$tablet-breakpoint) {
     margin-right: calc($background-outset);
   }
@@ -43,7 +42,7 @@ $background-outset: 0.7rem;
     }
 
     .jenkins-search__input {
-      padding-left: 2.8rem;
+      padding-left: 2.6rem;
     }
   }
 }
@@ -66,8 +65,8 @@ $background-outset: 0.7rem;
   gap: 0.65rem;
   width: 100%;
   cursor: pointer;
-  font-weight: 450 !important;
-  font-size: 0.875rem;
+  font-weight: normal !important;
+  font-size: var(--font-size-sm);
   color: var(--text-color) !important;
   background: transparent;
   outline: none;

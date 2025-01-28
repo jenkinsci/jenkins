@@ -53,7 +53,7 @@ THE SOFTWARE.
     <!-- real deal starting here -->
     <html lang="${request.getLocale().toLanguageTag()}">
       <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
-        <title>${%signIn} [Jenkins]</title>
+        <title>${%signIn} - Jenkins</title>
         <!-- we do not want bots on this page -->
         <meta name="ROBOTS" content="NOFOLLOW" />
         <!-- mobile friendly layout -->

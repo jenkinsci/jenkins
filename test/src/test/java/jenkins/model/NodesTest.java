@@ -287,6 +287,7 @@ public class NodesTest {
 
         @Override
         protected void onCreated(@NonNull Node node) {
+            node.getRootDir();
             created.add(node.getNodeName());
         }
 
@@ -306,7 +307,7 @@ public class NodesTest {
     private static class DumbSlaveNameAndRemoteFSMatcher extends TypeSafeMatcher<DumbSlavePair> {
         private final DumbSlavePair expected;
 
-        public DumbSlaveNameAndRemoteFSMatcher(DumbSlavePair expected) {
+        DumbSlaveNameAndRemoteFSMatcher(DumbSlavePair expected) {
             this.expected = expected;
         }
 

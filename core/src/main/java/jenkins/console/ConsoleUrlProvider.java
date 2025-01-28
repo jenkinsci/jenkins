@@ -83,11 +83,7 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
         return Stapler.getCurrentRequest().getContextPath() + '/' + run.getConsoleUrl();
     }
 
-    /**
-     * Looks up the {@link #getConsoleUrl} value from the first provider to offer one.
-     * @since 2.476
-     */
-    static @NonNull String consoleUrlOf(Run<?, ?> run) {
+    static List<ConsoleUrlProvider> all() {
         final List<ConsoleUrlProvider> providers = new ArrayList<>();
         User currentUser = User.current();
         if (currentUser != null) {
@@ -105,8 +101,20 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
         if (globalProviders != null) {
             providers.addAll(globalProviders);
         }
+        return providers;
+    }
+
+    static ConsoleUrlProvider getProvider(Run<?, ?> run) {
+        return all().stream().filter(provider -> provider.getConsoleUrl(run) != null).findFirst().orElse(null);
+    }
+
+    /**
+     * Looks up the {@link #getConsoleUrl} value from the first provider to offer one.
+     * @since 2.476
+     */
+    static @NonNull String consoleUrlOf(Run<?, ?> run) {
         String url = null;
-        for (ConsoleUrlProvider provider : providers) {
+        for (ConsoleUrlProvider provider : all()) {
             try {
                 String tempUrl = provider.getConsoleUrl(run);
                 if (tempUrl != null) {

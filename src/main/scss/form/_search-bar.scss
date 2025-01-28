@@ -1,3 +1,5 @@
+@use "../base/breakpoints";
+
 .jenkins-search-container {
   position: relative;
 }
@@ -8,19 +10,7 @@
   position: relative;
 
   &__input {
-    appearance: none;
-    background: var(--item-background--hover);
-    border: none;
-    outline: none;
-    border-radius: 0.625rem;
-    width: 100%;
-    margin: 0;
-    padding: 0 0.5rem 0 var(--search-bar-height);
-    line-height: 1;
-    box-shadow:
-      0 0 0 2px transparent,
-      0 0 0 12px transparent;
-    transition: var(--standard-transition);
+    padding: 0 0.25rem 0 calc(var(--search-bar-height) * 0.9);
     height: var(--search-bar-height);
 
     &::placeholder {
@@ -38,7 +28,7 @@
       min-height: 1.1rem;
       aspect-ratio: 1;
       margin-right: 0.2rem;
-      background: currentColor;
+      background: var(--text-color-secondary);
       mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 48C141.31 48 48 141.31 48 256s93.31 208 208 208 208-93.31 208-208S370.69 48 256 48zm75.31 260.69a16 16 0 11-22.62 22.62L256 278.63l-52.69 52.68a16 16 0 01-22.62-22.62L233.37 256l-52.68-52.69a16 16 0 0122.62-22.62L256 233.37l52.69-52.68a16 16 0 0122.62 22.62L278.63 256z'/%3E%3C/svg%3E");
       mask-size: contain;
       mask-repeat: no-repeat;
@@ -49,27 +39,17 @@
       cursor: pointer;
 
       &:hover {
-        opacity: 0.75 !important;
+        opacity: 0.85 !important;
       }
 
       &:active {
-        opacity: 1 !important;
+        opacity: 0.7 !important;
       }
     }
 
     &:not(:disabled) {
-      &:hover {
-        background: var(--item-background--active);
-      }
-
       &:active,
       &:focus {
-        outline: none;
-        background: var(--item-background--active);
-        box-shadow:
-          0 0 0 2px var(--focus-input-border),
-          0 0 0 7px var(--focus-input-glow);
-
         &::-webkit-search-cancel-button {
           opacity: 0.5;
           pointer-events: all;
@@ -78,8 +58,13 @@
       }
     }
 
-    &:disabled {
-      cursor: not-allowed;
+    &:active,
+    &:focus {
+      &::-webkit-search-cancel-button {
+        opacity: 1;
+        pointer-events: all;
+        transform: scale(1);
+      }
     }
   }
 
@@ -93,10 +78,10 @@
     pointer-events: none;
 
     svg {
-      width: 45%;
-      height: 45%;
-      max-width: 1.1rem;
-      max-height: 1.1rem;
+      width: 1rem;
+      height: 1rem;
+      max-width: 1rem;
+      max-height: 1rem;
       grid-column-start: 1;
       grid-row-start: 1;
       place-self: center center;
@@ -106,22 +91,24 @@
     &::before,
     &::after {
       content: "";
-      width: 0;
-      height: 0;
+      width: 45%;
+      height: 45%;
       max-width: 1.1rem;
       max-height: 1.1rem;
-      border: 0.125rem solid currentColor;
+      border: 0.125rem solid var(--text-color-secondary);
       border-radius: 100%;
       transition: var(--standard-transition);
       grid-column-start: 1;
       grid-row-start: 1;
       place-self: center center;
       opacity: 0;
+      scale: 0;
+      filter: blur(2.5px);
     }
 
     &::after {
+      border-color: currentColor;
       clip-path: inset(0 0 50% 50%);
-      transition: var(--standard-transition);
       animation: loading-spinner 1s infinite linear;
 
       @media (prefers-reduced-motion) {
@@ -130,56 +117,34 @@
     }
   }
 
-  &__shortcut {
+  .jenkins-keyboard-shortcut {
     position: absolute;
-    aspect-ratio: 1 / 1;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.25s ease;
-    text-align: center;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    line-height: 1;
+    top: calc(50% - 0.6875rem);
+    right: 0.5rem;
+    min-width: 1.375rem;
+    min-height: 1.375rem;
+    padding: 0;
     color: var(--text-color-secondary);
-
-    &::after {
-      content: "";
-      position: absolute;
-      top: calc(50% - 1em);
-      right: calc(50% - 1em);
-      width: 2em;
-      height: 2em;
-      border: 0.1rem solid var(--item-background--active);
-      border-radius: 0.3rem;
-    }
-
-    svg {
-      width: 1.2em;
-      height: 1.2em;
-    }
   }
 
   &--loading {
     .jenkins-search__icon {
       svg {
         opacity: 0;
-        transform: scale(0);
+        scale: 0;
+        filter: blur(5px);
       }
 
       &::before {
-        opacity: 0.2;
-        width: 45%;
-        height: 45%;
+        opacity: 0.5;
+        scale: 1;
+        filter: blur(0);
       }
 
       &::after {
         opacity: 1;
-        width: 45%;
-        height: 45%;
+        scale: 1;
+        filter: blur(0);
       }
     }
   }
@@ -187,14 +152,22 @@
   &--app-bar {
     --search-bar-height: 3rem;
 
-    max-width: 50vw;
+    width: 100%;
     margin-block: -6px;
+
+    @media (min-width: breakpoints.$tablet-breakpoint) {
+      max-width: 50vw;
+    }
+
+    .jenkins-keyboard-shortcut {
+      right: 0.8125rem;
+    }
 
     &::before {
       content: "";
       position: absolute;
       inset: 0;
-      border-radius: 10px;
+      border-radius: var(--form-input-border-radius);
       z-index: -1;
       backdrop-filter: blur(20px);
       box-shadow: 0 0 var(--section-padding) var(--background);
@@ -210,7 +183,7 @@
       fill: var(--focus-input-border);
     }
 
-    .jenkins-search__shortcut {
+    .jenkins-keyboard-shortcut {
       opacity: 0;
       transform: scale(0.9);
       pointer-events: none;
@@ -221,7 +194,7 @@
     color: var(--text-color-secondary);
     opacity: 0.5;
 
-    .jenkins-search__shortcut {
+    .jenkins-keyboard-shortcut {
       display: none;
     }
   }
@@ -237,6 +210,7 @@
   height: 1px; // Setting to 0 caused the items not to render initially in Chrome
   opacity: 0;
   transition: var(--standard-transition);
+  background: color-mix(in sRGB, var(--background) 85%, transparent);
   backdrop-filter: var(--dropdown-backdrop-filter);
   visibility: collapse;
   scale: 95%;
@@ -249,135 +223,6 @@
     visibility: visible;
     translate: 0 0.3125rem;
   }
-
-  a {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    padding: 0.5rem 0.7rem;
-    font-size: 0.875rem;
-    border-radius: 10px;
-    color: var(--text-color);
-    font-weight: 500;
-    text-decoration: none;
-    z-index: 0;
-    line-height: 1;
-    min-height: 2.25rem;
-    transition: background var(--standard-transition);
-
-    div {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 1.125rem;
-      height: 1.125rem;
-
-      svg,
-      img {
-        width: 100%;
-        height: 100%;
-      }
-    }
-
-    &::before,
-    &::after {
-      position: absolute;
-      content: "";
-      inset: 0;
-      z-index: -1;
-      border-radius: 10px;
-      transition: var(--standard-transition);
-      pointer-events: none;
-    }
-
-    &::before {
-      background-color: transparent;
-    }
-
-    &::after {
-      box-shadow: 0 0 0 0.66rem transparent;
-    }
-
-    &:hover,
-    &:focus {
-      &::before {
-        background-color: var(--item-background--hover);
-      }
-    }
-
-    &:active,
-    &:focus {
-      outline: none !important;
-      z-index: 1;
-
-      &::before {
-        background-color: var(--item-background--active);
-      }
-
-      &::after {
-        box-shadow: 0 0 0 0.33rem var(--item-box-shadow--focus);
-      }
-    }
-
-    &:focus-visible {
-      &::after {
-        box-shadow: 0 0 0 0.33rem var(--text-color);
-      }
-    }
-  }
-
-  .jenkins-search__results {
-    position: relative;
-    display: flex;
-    justify-content: flex-start;
-    flex-direction: column;
-    gap: 0.2rem;
-    padding: 0.4rem;
-
-    & > div {
-      position: relative;
-      margin-top: -0.25rem;
-
-      a {
-        padding-left: 2.6rem;
-        color: var(--text-color-secondary);
-      }
-
-      &::before {
-        content: "";
-        position: absolute;
-        top: 0.4rem;
-        left: 1.1rem + 0.625rem;
-        bottom: 0.3rem;
-        width: 0.125rem;
-        background: currentColor;
-        border-radius: 100vmax;
-        opacity: 0.05;
-      }
-
-      &:empty {
-        display: none;
-      }
-    }
-  }
-
-  &:hover {
-    .jenkins-search__results-item--selected {
-      background: transparent;
-    }
-  }
-}
-
-.jenkins-search__results-item--selected {
-  background: var(--item-background--hover);
-  animation: pulse 1s ease-in-out forwards;
-
-  @keyframes pulse {
-    50% {
-      background: var(--item-background--active);
-    }
-  }
 }
 
 .jenkins-search__results__no-results-label {
@@ -385,5 +230,5 @@
   margin: 2rem;
   padding: 0;
   color: var(--text-color-secondary);
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 }

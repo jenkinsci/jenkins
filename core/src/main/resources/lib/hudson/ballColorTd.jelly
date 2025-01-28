@@ -24,9 +24,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
-    Display the ball in a TD.
-    <st:attribute name="it" type="hudson.model.BallColor">
-      Color of the ball or null to skip drawing.
+    Display the build status icon in a table cell.
+    <st:attribute name="it" type="hudson.model.StatusIcon">
+      Icon to be displayed.
     </st:attribute>
     <st:attribute name="iconSizeClass">
       Specifies the size of the icon. If unspecified, it inherits from
@@ -56,33 +56,42 @@ THE SOFTWARE.
           </j:choose>
         </j:if>
 
-        <j:choose>
-          <j:when test="${iconClassName != null}">
-            <l:icon class="${iconClassName} ${subIconSizeClass}" alt="${it.description}" tooltip="${it.description}" />
-          </j:when>
-          <j:otherwise>
-            <!-- "it" is not a hudson.model.BallColor.  Let's try figure out the icon from its URL.  -->
-            <j:set var="iconUrl" value="${it.getImageOf(iconSize)}"/>
-            <j:if test="${iconUrl.startsWith(imagesURL)}">
-              <!-- Normalize the icon URL  -->
-              <j:set var="iconUrl" value="${iconUrl.substring(imagesURL.length() + 1)}"/>
-            </j:if>
+        <!-- if its actually a BallColor then use the appropriate build symbol -->
+        <j:if test="${attrs.it.baseColor != null}">
+          <l:icon src="symbol-status-${attrs.it.iconName}" class="${subIconSizeClass}" alt="${it.description}" tooltip="${it.description}" />
+        </j:if>
 
-            <!-- See if we can get an Icon def from the URL  -->
-            <j:set var="icon" value="${icons.getIconByUrl(iconUrl)}"/>
-            <j:choose>
-              <j:when test="${icon != null}">
-                <!-- We found the Icon def -->
-                <l:icon class="${icon.classSpec}" alt="${it.description}" tooltip="${it.description}" style="${attrs.style}" />
-              </j:when>
-              <j:otherwise>
-                <!-- We don't seem to have this icon in the IconSet... fallback again... -->
-                <j:set var="iconUrl" value="${it.getImageOf(iconSize)}"/>
-                <l:icon src="${iconUrl}" class="${iconSizeClass}" alt="${it.description}" tooltip="${it.description}" style="${attrs.style}" />
-              </j:otherwise>
-            </j:choose>
-          </j:otherwise>
-        </j:choose>
+        <j:if test="${attrs.it.baseColor == null}">
+          <j:choose>
+            <j:when test="${iconClassName != null}">
+              <l:icon class="${iconClassName} ${subIconSizeClass}" alt="${it.description}" tooltip="${it.description}"/>
+            </j:when>
+            <j:otherwise>
+              <!-- "it" is not a hudson.model.BallColor.  Let's try figure out the icon from its URL.  -->
+              <j:set var="iconUrl" value="${it.getImageOf(iconSize)}"/>
+              <j:if test="${iconUrl.startsWith(imagesURL)}">
+                <!-- Normalize the icon URL  -->
+                <j:set var="iconUrl" value="${iconUrl.substring(imagesURL.length() + 1)}"/>
+              </j:if>
+
+              <!-- See if we can get an Icon def from the URL  -->
+              <j:set var="icon" value="${icons.getIconByUrl(iconUrl)}"/>
+              <j:choose>
+                <j:when test="${icon != null}">
+                  <!-- We found the Icon def -->
+                  <l:icon class="${icon.classSpec}" alt="${it.description}" tooltip="${it.description}"
+                          style="${attrs.style}"/>
+                </j:when>
+                <j:otherwise>
+                  <!-- We don't seem to have this icon in the IconSet... fallback again... -->
+                  <j:set var="iconUrl" value="${it.getImageOf(iconSize)}"/>
+                  <l:icon src="${iconUrl}" class="${iconSizeClass}" alt="${it.description}" tooltip="${it.description}"
+                          style="${attrs.style}"/>
+                </j:otherwise>
+              </j:choose>
+            </j:otherwise>
+          </j:choose>
+        </j:if>
       </j:if>
     </div>
   </td>
