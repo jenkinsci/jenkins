@@ -283,6 +283,8 @@ public final class Secret implements Serializable {
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
             return fromString(reader.getValue());
         }
+
+        private static final long serialVersionUID = 1L;
     }
 
     /**
