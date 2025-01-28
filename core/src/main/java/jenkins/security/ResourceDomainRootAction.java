@@ -190,7 +190,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         LOGGER.fine(() -> "Determined DBS URL: " + dbsUrl + " from restOfUrl: " + completeUrl + " and restOfPath: " + dbsFile);
 
         Authentication authentication = Jenkins.getAuthentication2();
-        String authenticationName = authentication.equals(Jenkins.ANONYMOUS2) ? "" : authentication.getName();
+        String authenticationName = ACL.isAnonymous2(authentication) ? "" : authentication.getName();
 
         try {
             return new Token(dbsUrl, authenticationName, Instant.now());
