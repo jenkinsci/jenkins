@@ -70,7 +70,6 @@ import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
-import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -346,10 +345,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     public static InputStream getInputStream(URL url) throws IOException {
         final ProxyConfiguration p = get();
         if (p == null)
-            return new RetryableHttpStream(url);
+            return ((HttpURLConnection) url.openConnection()).getInputStream();
 
         Proxy proxy = p.createProxy(url.getHost());
-        InputStream is = new RetryableHttpStream(url, proxy);
+        InputStream is = ((HttpURLConnection) url.openConnection(proxy)).getInputStream();
         if (p.getUserName() != null) {
             // Add an authenticator which provides the credentials for proxy authentication
             Authenticator.setDefault(p.authenticator);
