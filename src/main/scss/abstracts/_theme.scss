@@ -80,6 +80,13 @@ $semantics: (
     from var(--text-color) 96.8% 0.005 h / 0.8
   );
 
+  // App bar
+  --bottom-app-bar-shadow: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 7.5%,
+    transparent
+  );
+
   // Alert call outs
   --alert-success-text-color: var(--success-color);
   --alert-success-bg-color: color-mix(
@@ -125,8 +132,41 @@ $semantics: (
   // Typography
   --text-color-secondary: var(--secondary);
 
+  // Borders
+  --jenkins-border-width: 1.5px;
+  --jenkins-border-color: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 12%,
+    var(--card-background)
+  );
+  --jenkins-border-color--subtle: color-mix(
+    in sRGB,
+    currentColor 1.5%,
+    transparent
+  );
+
+  /* This is a harsher border - for dividers, content blocks and more */
+  --jenkins-border: var(--jenkins-border-width) solid
+    var(--jenkins-border-color);
+
+  /* This is a subtle border - for increasing contrast on elements, such as buttons, menu and more */
+  --jenkins-border--subtle: var(--jenkins-border-width) solid
+    var(--jenkins-border-color--subtle);
+  --jenkins-border--subtle-shadow: 0 0 0 1.5px
+    var(--jenkins-border-color--subtle);
+
+  @media (resolution <= 1x) {
+    --jenkins-border-width: 2px;
+  }
+
+  @media (prefers-contrast: more) {
+    --focus-input-border: var(--text-color);
+    --jenkins-border-color: var(--text-color);
+    --jenkins-border-color--subtle: var(--text-color);
+  }
+
   // Table
-  --table-background: oklch(from var(--text-color-secondary) l c h / 0.1);
+  --table-background: oklch(from var(--text-color-secondary) l c h / 0.075);
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
@@ -158,7 +198,8 @@ $semantics: (
   // Command Palette
   --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5)
     saturate(1.4) blur(20px);
-  --command-palette-inset-shadow: inset 0 0 2px 2px rgb(255 255 255 / 0.1);
+  --command-palette-inset-shadow: inset 0 0 2px 2px rgb(255 255 255 / 0.1),
+    var(--jenkins-border--subtle-shadow);
 
   ::backdrop {
     --command-palette-backdrop-background: radial-gradient(
@@ -171,21 +212,23 @@ $semantics: (
   // Tooltips
   --tooltip-backdrop-filter: saturate(2) blur(20px);
   --tooltip-color: var(--text-color);
-  --tooltip-box-shadow: 0 0 8px 2px rgb(0 0 30 / 0.05),
-    0 0 1px 1px rgb(0 0 20 / 0.025), 0 10px 20px rgb(0 0 20 / 0.15);
+  --tooltip-box-shadow: 0 0 8px 2px rgb(0 0 50 / 0.05),
+    var(--jenkins-border--subtle-shadow), 0 10px 50px rgb(0 0 20 / 0.1);
 
   // Dropdowns
   --dropdown-backdrop-filter: saturate(1.5) blur(20px);
-  --dropdown-box-shadow: 0 10px 30px rgb(0 0 20 / 0.2),
-    0 2px 10px rgb(0 0 20 / 0.05), inset 0 -1px 2px rgb(255 255 255 / 0.025);
+  --dropdown-box-shadow: var(--jenkins-border--subtle-shadow),
+    0 10px 30px rgb(0 0 20 / 0.1), 0 2px 10px rgb(0 0 20 / 0.05),
+    inset 0 -1px 2px rgb(255 255 255 / 0.025);
 
   // Dialogs
   ::backdrop {
     --dialog-backdrop-background: hsl(240 10% 20% / 0.8);
   }
 
-  --dialog-box-shadow: 0 10px 40px rgb(0 0 20 / 0.15),
-    0 2px 15px rgb(0 0 20 / 0.05), inset 0 0 2px 2px rgb(255 255 255 / 0.025);
+  --dialog-box-shadow: var(--jenkins-border--subtle-shadow),
+    0 10px 40px rgb(0 0 20 / 0.15), 0 2px 15px rgb(0 0 20 / 0.05),
+    inset 0 0 2px 2px rgb(255 255 255 / 0.025);
 
   // Dark link
   --link-dark-color: var(--text-color);
@@ -219,12 +262,20 @@ $semantics: (
   --card-border-color--active: oklch(
     from var(--text-color-secondary) l c h / 0.5
   );
-  --card-border-width: 2px;
+  --card-border-width: var(--jenkins-border-width);
+
+  @media (prefers-contrast: more) {
+    --card-border-color: var(--text-color);
+  }
 
   // Tab bar
   --tabs-background: oklch(from var(--text-color-secondary) l c h / 0.1);
   --tabs-item-background: transparent;
-  --tabs-item-foreground: var(--text-color);
+  --tabs-item-foreground: color-mix(
+    in sRGB,
+    var(--text-color-secondary),
+    var(--text-color)
+  );
   --tabs-item-background--hover: rgb(0 0 0 / 0.05);
   --tabs-item-foreground--hover: var(--text-color);
   --tabs-item-background--active: rgb(0 0 0 / 0.1);
@@ -268,13 +319,20 @@ $semantics: (
   }
 
   --form-label-font-weight: var(--font-bold-weight);
-  --form-input-padding: 0.625rem;
+  --form-input-padding: 0.5rem 0.625rem;
   --form-input-border-radius: 0.625rem;
-  --form-input-glow: 0 0 0 10px transparent;
-  --form-input-glow--focus: 0 0 0 5px var(--focus-input-glow);
-  --pre-background: rgb(0 0 0 / 0.05);
+  --form-input-glow: 0 0 0 0.5rem transparent;
+  --form-input-glow--focus: 0 0 0 0.25rem var(--focus-input-glow);
+  --pre-background: var(--button-background);
   --pre-color: var(--text-color);
   --selection-color: oklch(from var(--accent-color) l c h / 0.2);
+
+  @media (prefers-contrast: more) {
+    --input-border: var(--text-color) !important;
+    --input-border-hover: var(--text-color) !important;
+    --form-input-glow--focus: 0 0 0 4px
+      color-mix(in sRGB, var(--text-color), transparent);
+  }
 
   // Animations
   --standard-transition: 0.3s ease;

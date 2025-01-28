@@ -183,13 +183,12 @@
   }
 
   li {
-    @include mixins.item;
+    @include mixins.item($border: false);
 
     -webkit-touch-callout: none;
     user-select: none;
     padding: 0.75rem 1rem;
     min-height: 68px;
-    cursor: pointer;
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 0.25rem 1rem;

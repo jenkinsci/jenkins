@@ -1,10 +1,9 @@
 $jenkins-radio-size: 1.375rem;
-$jenkins-radio-border-size: 0.125rem;
+$jenkins-radio-border-size: 1.5px;
 $jenkins-radio-border-hover-size: 0.3125rem;
 $jenkins-radio-border-active-size: 0.5rem;
 $jenkins-radio-border-checked-size: 0.4rem;
-$jenkins-radio-glow-size: 0.625rem;
-$jenkins-radio-glow-active-size: 0.3125rem;
+$jenkins-radio-glow-size: 0.5rem;
 
 .jenkins-radio-help-wrapper {
   display: flex;
@@ -37,7 +36,7 @@ $jenkins-radio-glow-active-size: 0.3125rem;
       &:active {
         & + label::before {
           box-shadow:
-            0 0 0 $jenkins-radio-glow-active-size var(--focus-input-glow),
+            var(--form-input-glow--focus),
             inset 0 0 0 $jenkins-radio-border-active-size
               var(--focus-input-border);
         }
@@ -62,7 +61,7 @@ $jenkins-radio-glow-active-size: 0.3125rem;
         &:active {
           & + label::before {
             box-shadow:
-              0 0 0 $jenkins-radio-glow-active-size var(--focus-input-glow),
+              var(--form-input-glow--focus),
               inset 0 0 0 $jenkins-radio-border-active-size
                 var(--focus-input-border);
           }
