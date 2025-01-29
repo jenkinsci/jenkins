@@ -25,7 +25,7 @@
       var(--header-background) var(--background-opacity),
       transparent
     );
-    border-bottom: 1.5px solid
+    border-bottom: var(--jenkins-border-width) solid
       color-mix(
         in sRGB,
         var(--text-color-secondary) var(--border-opacity),
