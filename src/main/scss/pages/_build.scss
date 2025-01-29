@@ -1,0 +1,23 @@
+.build-caption-progress-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+.app-console-output-widget {
+  min-height: 340px;
+  max-height: 340px;
+  overflow-y: auto;
+  margin: 0 -1rem -1rem;
+  padding: 0 1rem 1rem;
+
+  pre {
+    background: transparent;
+    margin: 0;
+    padding: 0;
+    line-height: 1.75;
+    font-size: var(--font-size-sm);
+  }
+}

@@ -1,0 +1,196 @@
+@use "../abstracts/mixins";
+
+$min-button-size: 36px;
+
+.jenkins-icon-size {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: var(--section-padding) 0;
+
+  &__items {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    ol {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+      gap: 0.25rem;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 0.8rem;
+        background: var(--button-background);
+        opacity: 0;
+        transition: var(--standard-transition);
+      }
+
+      &:hover {
+        &::before {
+          inset: -0.2rem;
+          opacity: 1;
+        }
+      }
+    }
+
+    li {
+      .jenkins-button {
+        margin: 0 !important;
+        padding: 0 !important;
+        min-width: 0 !important;
+        aspect-ratio: 1;
+        height: $min-button-size;
+      }
+    }
+
+    .jenkins-icon-size__items-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1;
+      height: $min-button-size;
+      border-radius: var(--form-input-border-radius);
+      font-weight: var(--btn-link-font-weight);
+      font-size: var(--btn-font-size);
+      background: var(--button-background--hover);
+      cursor: default;
+    }
+  }
+}
+
+.jenkins-jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &__item {
+    @include mixins.item;
+
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    padding: calc(1rem - var(--card-border-width, 0));
+    align-items: center;
+    border-radius: 1rem;
+    background: var(--card-background);
+    border: var(--card-border-width) solid var(--card-border-color);
+    transition: var(--standard-transition);
+
+    &::before {
+      content: none;
+    }
+
+    &__icons {
+      pointer-events: none;
+      color: var(--text-color);
+    }
+
+    &__details {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1rem;
+      text-decoration: none !important;
+      overflow: hidden;
+    }
+
+    &__details__text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      overflow: hidden;
+    }
+
+    &__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-right: 0.5rem;
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    &__label {
+      color: var(--link-color);
+      font-weight: var(--font-bold-weight);
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    &__description {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: var(--text-color-secondary);
+      margin: 0;
+      font-size: 1rem;
+      white-space: nowrap;
+      mask-image: linear-gradient(90deg, black calc(100% - 1rem), transparent);
+
+      svg {
+        width: 1rem;
+        height: 1rem;
+      }
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    &__compact-column {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    &:hover {
+      --link-color: var(--link-color--hover);
+
+      background: var(--card-background--hover);
+      border-color: var(--card-border-color--hover);
+    }
+
+    &:active,
+    &:focus {
+      --link-color: var(--link-color--active);
+
+      background: var(--card-background--active);
+      border-color: var(--card-border-color--active);
+    }
+  }
+}
+
+.build-status-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+div.listview-jobs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  &--nested {
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid color-mix(in sRGB, var(--input-border), transparent);
+    margin-left: 10px;
+    padding-left: 22px;
+  }
+}

@@ -217,7 +217,7 @@ public class UpdateSite {
         return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8))), signatureCheck);
     }
 
-    private FormValidation updateData(String json, boolean signatureCheck)
+    protected FormValidation updateData(String json, boolean signatureCheck)
             throws IOException {
 
         dataTimestamp = System.currentTimeMillis();
@@ -538,14 +538,17 @@ public class UpdateSite {
 
     /**
      * Is this the legacy default update center site?
-     * @deprecated
-     *      Will be removed, currently returns always false.
-     * @since 2.343
+     * @since 1.357
      */
-    @Deprecated
     @Restricted(NoExternalUse.class)
     public boolean isLegacyDefault() {
-        return false;
+        return isJenkinsCI();
+    }
+
+    private boolean isJenkinsCI() {
+        return url != null
+                && UpdateCenter.PREDEFINED_UPDATE_SITE_ID.equals(id)
+                && url.startsWith("http://updates.jenkins-ci.org/");
     }
 
     /**

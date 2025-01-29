@@ -25,12 +25,14 @@
 
 package hudson.search;
 
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.EditDistance;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -40,18 +42,23 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
+import org.jenkins.ui.symbol.Symbol;
+import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.DataWriter;
+import org.kohsuke.stapler.export.ExportConfig;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
@@ -73,7 +80,32 @@ public class Search implements StaplerProxy {
      */
     private static /* nonfinal for Jenkins script console */ int MAX_SEARCH_SIZE = Integer.getInteger(Search.class.getName() + ".MAX_SEARCH_SIZE", 500);
 
-    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(Search.class, getClass(), "doIndex", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                doIndex(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            doIndexImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doIndex(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doIndexImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private void doIndexImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         List<Ancestor> l = req.getAncestors();
         for (int i = l.size() - 1; i >= 0; i--) {
             Ancestor a = l.get(i);
@@ -110,7 +142,7 @@ public class Search implements StaplerProxy {
      *
      * See http://developer.mozilla.org/en/docs/Supporting_search_suggestions_in_search_plugins
      */
-    public void doSuggestOpenSearch(StaplerRequest req, StaplerResponse rsp, @QueryParameter String q) throws IOException, ServletException {
+    public void doSuggestOpenSearch(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String q) throws IOException, ServletException {
         rsp.setContentType(Flavor.JSON.contentType);
         DataWriter w = Flavor.JSON.createDataWriter(null, rsp);
         w.startArray();
@@ -126,12 +158,25 @@ public class Search implements StaplerProxy {
     /**
      * Used by search box auto-completion. Returns JSON array.
      */
-    public void doSuggest(StaplerRequest req, StaplerResponse rsp, @QueryParameter String query) throws IOException, ServletException {
+    public void doSuggest(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String query) throws IOException, ServletException {
         Result r = new Result();
-        for (SuggestedItem item : getSuggestions(req, query))
-            r.suggestions.add(new Item(item.getPath()));
+        for (SuggestedItem curItem : getSuggestions(req, query)) {
+            String iconName = curItem.item.getSearchIcon();
 
-        rsp.serveExposedBean(req, r, Flavor.JSON);
+            if (iconName == null ||
+                    (!iconName.startsWith("symbol-") && !iconName.startsWith("http"))
+            ) {
+                iconName = "symbol-search";
+            }
+
+            if (iconName.startsWith("symbol")) {
+                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(),
+                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build())));
+            } else {
+                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image"));
+            }
+        }
+        rsp.serveExposedBean(req, r, new ExportConfig());
     }
 
     /**
@@ -141,7 +186,23 @@ public class Search implements StaplerProxy {
      *      can be empty but never null. The size of the list is always smaller than
      *      a certain threshold to avoid showing too many options.
      */
+    public SearchResult getSuggestions(StaplerRequest2 req, String query) {
+        if (Util.isOverridden(Search.class, getClass(), "getSuggestions", StaplerRequest.class, String.class)) {
+            return getSuggestions(StaplerRequest.fromStaplerRequest2(req), query);
+        } else {
+            return getSuggestionsImpl(req, query);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #getSuggestions(StaplerRequest2, String)}
+     */
+    @Deprecated
     public SearchResult getSuggestions(StaplerRequest req, String query) {
+        return getSuggestionsImpl(StaplerRequest.toStaplerRequest2(req), query);
+    }
+
+    private SearchResult getSuggestionsImpl(StaplerRequest2 req, String query) {
         Set<String> paths = new HashSet<>();  // paths already added, to control duplicates
         SearchResultImpl r = new SearchResultImpl();
         int max = Math.min(
@@ -164,7 +225,7 @@ public class Search implements StaplerProxy {
         return MAX_SEARCH_SIZE;
     }
 
-    private @CheckForNull SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
+    private @CheckForNull SearchableModelObject findClosestSearchableModelObject(StaplerRequest2 req) {
         List<Ancestor> l = req.getAncestors();
         for (int i = l.size() - 1; i >= 0; i--) {
             Ancestor a = l.get(i);
@@ -178,7 +239,7 @@ public class Search implements StaplerProxy {
     /**
      * Creates merged search index for suggestion.
      */
-    private SearchIndex makeSuggestIndex(StaplerRequest req) {
+    private SearchIndex makeSuggestIndex(StaplerRequest2 req) {
         SearchIndexBuilder builder = new SearchIndexBuilder();
         for (Ancestor a : req.getAncestors()) {
             if (a.getObject() instanceof SearchableModelObject) {
@@ -207,12 +268,48 @@ public class Search implements StaplerProxy {
 
     @ExportedBean(defaultVisibility = 999)
     public static class Item {
+
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String name;
 
+        private final String url;
+
+        private final String type;
+
+        private final String icon;
+
         public Item(String name) {
+            this(name, null, null);
+        }
+
+        public Item(String name, String url, String icon) {
             this.name = name;
+            this.url = url;
+            this.icon = icon;
+            this.type = "symbol";
+        }
+
+        public Item(String name, String url, String icon, String type) {
+            this.name = name;
+            this.url = url;
+            this.icon = icon;
+            this.type = type;
+        }
+
+        @Exported
+        public String getUrl() {
+            return url;
+        }
+
+        @Exported
+        public String getIcon() {
+            return icon;
+        }
+
+        @Exported
+        public String getType() {
+            return type;
         }
     }
 

@@ -21,8 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model.userproperty;
 
+package hudson.model.userproperty;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;

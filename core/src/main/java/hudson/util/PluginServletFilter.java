@@ -27,6 +27,15 @@ package hudson.util;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionPoint;
 import hudson.security.SecurityRealm;
+import io.jenkins.servlet.FilterWrapper;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -35,17 +44,11 @@ import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.util.HttpServletFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CompatibleFilter;
 
 /**
  * Servlet {@link Filter} that chains multiple {@link Filter}s, provided by plugins
@@ -60,7 +63,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @see SecurityRealm
  */
-public final class PluginServletFilter implements Filter, ExtensionPoint {
+public final class PluginServletFilter implements CompatibleFilter, ExtensionPoint {
     private final List<Filter> list = new CopyOnWriteArrayList<>();
 
     private /*almost final*/ FilterConfig config;
@@ -101,13 +104,15 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
      * Dynamically register a new filter.
      * May be paired with {@link #removeFilter}.
      * <p>For most purposes you can instead use {@link HttpServletFilter}.
+     *
+     * @since 2.475
      */
     public static void addFilter(Filter filter) throws ServletException {
         Jenkins j = Jenkins.getInstanceOrNull();
 
         PluginServletFilter container = null;
         if (j != null) {
-            container = getInstance(j.servletContext);
+            container = getInstance(j.getServletContext());
         }
         // https://marvelution.atlassian.net/browse/JJI-188
         if (j == null || container == null) {
@@ -121,16 +126,28 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
     }
 
     /**
+     * @deprecated use {@link #addFilter(Filter)}
+     */
+    @Deprecated
+    public static void addFilter(javax.servlet.Filter filter) throws javax.servlet.ServletException {
+        try {
+            addFilter(FilterWrapper.toJakartaFilter(filter));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    /**
      * Checks whether the given filter is already registered in the chain.
      * @param filter the filter to check.
      * @return true if the filter is already registered in the chain.
-     * @since 2.94
+     * @since 2.475
      */
     public static boolean hasFilter(Filter filter) {
         Jenkins j = Jenkins.getInstanceOrNull();
         PluginServletFilter container = null;
         if (j != null) {
-            container = getInstance(j.servletContext);
+            container = getInstance(j.getServletContext());
         }
         if (j == null || container == null) {
             return LEGACY.contains(filter);
@@ -139,12 +156,36 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
         }
     }
 
+    /**
+     * @deprecated use {@link #hasFilter(Filter)}
+     * @since 2.94
+     */
+    @Deprecated
+    public static boolean hasFilter(javax.servlet.Filter filter) {
+        return hasFilter(FilterWrapper.toJakartaFilter(filter));
+    }
+
+    /**
+     * @since 2.475
+     */
     public static void removeFilter(Filter filter) throws ServletException {
         Jenkins j = Jenkins.getInstanceOrNull();
-        if (j == null || getInstance(j.servletContext) == null) {
+        if (j == null || getInstance(j.getServletContext()) == null) {
             LEGACY.remove(filter);
         } else {
-            getInstance(j.servletContext).list.remove(filter);
+            getInstance(j.getServletContext()).list.remove(filter);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #removeFilter(Filter)}
+     */
+    @Deprecated
+    public static void removeFilter(javax.servlet.Filter filter) throws javax.servlet.ServletException {
+        try {
+            removeFilter(FilterWrapper.toJakartaFilter(filter));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
         }
     }
 
@@ -180,7 +221,7 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
         if (jenkins == null) {
             return;
         }
-        PluginServletFilter instance = getInstance(jenkins.servletContext);
+        PluginServletFilter instance = getInstance(jenkins.getServletContext());
         if (instance != null) {
             // While we could rely on the current implementation of list being a CopyOnWriteArrayList
             // safer to just take an explicit copy of the list and operate on the copy

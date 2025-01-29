@@ -31,7 +31,9 @@ import hudson.model.listeners.ItemListener;
 import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
-import hudson.util.Secret;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,17 +43,17 @@ import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import jenkins.model.Jenkins;
+import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.util.xml.XMLUtils;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.access.AccessDeniedException;
 import org.xml.sax.SAXException;
 
@@ -140,8 +142,10 @@ public abstract class ItemGroupMixIn {
     /**
      * Creates a {@link TopLevelItem} for example from the submission of the {@code /lib/hudson/newFromList/form} tag
      * or throws an exception if it fails.
+     *
+     * @since 2.475
      */
-    public synchronized TopLevelItem createTopLevelItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized TopLevelItem createTopLevelItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         acl.checkPermission(Item.CREATE);
 
         TopLevelItem result;
@@ -207,9 +211,21 @@ public abstract class ItemGroupMixIn {
     }
 
     /**
+     * @deprecated use {@link #createTopLevelItem(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    public synchronized TopLevelItem createTopLevelItem(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            return createTopLevelItem(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    /**
      * Computes the redirection target URL for the newly created {@link TopLevelItem}.
      */
-    protected String redirectAfterCreateItem(StaplerRequest req, TopLevelItem result) throws IOException {
+    protected String redirectAfterCreateItem(StaplerRequest2 req, TopLevelItem result) throws IOException {
         return req.getContextPath() + '/' + result.getUrl() + "configure";
     }
 
@@ -222,18 +238,17 @@ public abstract class ItemGroupMixIn {
         src.checkPermission(Item.EXTENDED_READ);
         XmlFile srcConfigFile = Items.getConfigFile(src);
         if (!src.hasPermission(Item.CONFIGURE)) {
-            Matcher matcher = AbstractItem.SECRET_PATTERN.matcher(srcConfigFile.asString());
-            while (matcher.find()) {
-                if (Secret.decrypt(matcher.group(1)) != null) {
-                    // AccessDeniedException2 does not permit a custom message, and anyway redirecting the user to the login screen is obviously pointless.
-                    throw new AccessDeniedException(
-                            Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(
-                                    src.getFullName(),
-                                    Jenkins.getAuthentication2().getName(),
-                                    Item.PERMISSIONS.title,
-                                    Item.EXTENDED_READ.name,
-                                    Item.CONFIGURE.name));
-                }
+            final String originalConfigDotXml = srcConfigFile.asString();
+            final String redactedConfigDotXml = ExtendedReadRedaction.applyAll(originalConfigDotXml);
+            if (!originalConfigDotXml.equals(redactedConfigDotXml)) {
+                // AccessDeniedException2 does not permit a custom message, and anyway redirecting the user to the login screen is obviously pointless.
+                throw new AccessDeniedException(
+                        Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(
+                                src.getFullName(),
+                                Jenkins.getAuthentication2().getName(),
+                                Item.PERMISSIONS.title,
+                                Item.EXTENDED_READ.name,
+                                Item.CONFIGURE.name));
             }
         }
         src.getDescriptor().checkApplicableIn(parent);
@@ -285,8 +300,17 @@ public abstract class ItemGroupMixIn {
                 }
             });
 
-            success = acl.getACL().hasCreatePermission2(Jenkins.getAuthentication2(), parent, result.getDescriptor())
-                && result.getDescriptor().isApplicableIn(parent);
+            boolean hasCreatePermission = acl.getACL().hasCreatePermission2(Jenkins.getAuthentication2(), parent, result.getDescriptor());
+            boolean applicableIn = result.getDescriptor().isApplicableIn(parent);
+
+            success = hasCreatePermission && applicableIn;
+
+            if (!hasCreatePermission) {
+                throw new AccessDeniedException(Jenkins.getAuthentication2().getName() + " does not have required permissions to create " + result.getDescriptor().clazz.getName());
+            }
+            if (!applicableIn) {
+                throw new AccessDeniedException(result.getDescriptor().clazz.getName() + " is not applicable in " + parent.getFullName());
+            }
 
             add(result);
 

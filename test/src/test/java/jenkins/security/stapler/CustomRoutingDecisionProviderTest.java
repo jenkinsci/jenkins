@@ -40,7 +40,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 
 @Issue("SECURITY-400")
@@ -99,7 +99,7 @@ public class CustomRoutingDecisionProviderTest {
     }
 
     private static void replyOk() {
-        StaplerResponse resp = Stapler.getCurrentResponse();
+        StaplerResponse2 resp = Stapler.getCurrentResponse2();
         try {
             resp.getWriter().write("ok");
             resp.flushBuffer();

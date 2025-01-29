@@ -6,8 +6,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.userproperty.UserPropertyCategory;
 import hudson.util.PersistedList;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import javax.servlet.http.HttpSession;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.Stapler;
 
@@ -70,13 +70,13 @@ public class PaneStatusProperties extends UserProperty implements Saveable {
 
         @Override
         public boolean isCollapsed(String paneId) {
-            final HttpSession session = Stapler.getCurrentRequest().getSession();
+            final HttpSession session = Stapler.getCurrentRequest2().getSession();
             return session.getAttribute(format(attribute, paneId)) != null;
         }
 
         @Override
         public boolean toggleCollapsed(String paneId) {
-            final HttpSession session = Stapler.getCurrentRequest().getSession();
+            final HttpSession session = Stapler.getCurrentRequest2().getSession();
             final String property = format(attribute, paneId);
             final Object collapsed = session.getAttribute(property);
             if (collapsed == null) {

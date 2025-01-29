@@ -30,7 +30,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
-import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
@@ -69,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.model.Nodes;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -79,6 +79,7 @@ import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.springframework.security.core.Authentication;
@@ -264,24 +265,13 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
-     * Let Nodes be aware of the lifecycle of their own {@link Computer}.
+     * @return true if this node has a temporary offline cause set.
      */
-    @Extension
-    public static class InternalComputerListener extends ComputerListener {
-        @Override
-        public void onOnline(Computer c, TaskListener listener) {
-            Node node = c.getNode();
-
-            // At startup, we need to restore any previously in-effect temp offline cause.
-            // We wait until the computer is started rather than getting the data to it sooner
-            // so that the normal computer start up processing works as expected.
-            if (node != null && node.temporaryOfflineCause != null && node.temporaryOfflineCause != c.getOfflineCause()) {
-                c.setTemporarilyOffline(true, node.temporaryOfflineCause);
-            }
-        }
+    boolean isTemporarilyOffline() {
+        return temporaryOfflineCause != null;
     }
 
-    private OfflineCause temporaryOfflineCause;
+    private volatile OfflineCause temporaryOfflineCause;
 
     /**
      * Enable a {@link Computer} to inform its node when it is taken
@@ -292,6 +282,11 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             if (temporaryOfflineCause != cause) {
                 temporaryOfflineCause = cause;
                 save();
+            }
+            if (temporaryOfflineCause != null) {
+                Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(toComputer(), temporaryOfflineCause));
+            } else {
+                Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOnline(toComputer()));
             }
         } catch (java.io.IOException e) {
             LOGGER.warning("Unable to complete save, temporary offline status will not be persisted: " + e.getMessage());
@@ -561,7 +556,24 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     @Override
+    public Node reconfigure(@NonNull final StaplerRequest2 req, JSONObject form) throws FormException {
+        if (Util.isOverridden(Node.class, getClass(), "reconfigure", StaplerRequest.class, JSONObject.class)) {
+            return reconfigure(StaplerRequest.fromStaplerRequest2(req), form);
+        } else {
+            return reconfigureImpl(req, form);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #reconfigure(StaplerRequest2, JSONObject)}
+     */
+    @Deprecated
+    @Override
     public Node reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws FormException {
+        return reconfigureImpl(StaplerRequest.toStaplerRequest2(req), form);
+    }
+
+    private Node reconfigureImpl(@NonNull final StaplerRequest2 req, JSONObject form) throws FormException {
         if (form == null)     return null;
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");

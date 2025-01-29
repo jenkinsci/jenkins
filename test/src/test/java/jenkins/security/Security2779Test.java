@@ -49,7 +49,7 @@ public class Security2779Test {
 
         // assert leading space to identify unintentional double-escaping (&amp;lt;) as test failure
         assertThat("tooltip does not contain dangerous HTML", jsResultString, not(containsString(" <img src=x")));
-        assertThat("tooltip contains safe text", jsResultString, containsString("lt;img src=x"));
+        assertThat("tooltip contains safe text", jsResultString, containsString(" &lt;img src=x"));
     }
 
     @TestExtension

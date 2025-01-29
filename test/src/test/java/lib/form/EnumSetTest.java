@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -46,7 +46,7 @@ public class EnumSetTest {
 
     @TestExtension
     public static final class RootActionImpl extends InvisibleAction implements RootAction {
-        public FormValidation doSubmitTest1(StaplerRequest req) throws Exception {
+        public FormValidation doSubmitTest1(StaplerRequest2 req) throws Exception {
             JSONObject f = req.getSubmittedForm();
             System.out.println(f);
             EnumSetTestDescribable r = req.bindJSON(EnumSetTestDescribable.class, f);
