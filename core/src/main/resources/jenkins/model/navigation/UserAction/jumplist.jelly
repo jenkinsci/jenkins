@@ -7,12 +7,17 @@
       </div>
       ${it.user.fullName}
     </a>
-    <a class="jenkins-dropdown__item" href="${rootURL}/${it.user.url}/account">
-      <div class="jenkins-dropdown__item__icon">
-        <l:icon src="symbol-settings" />
-      </div>
-      ${%Configure}
-    </a>
+    <div class="jenkins-dropdown__separator" />
+
+    <j:forEach var="action" items="${it.actions}">
+      <a class="jenkins-dropdown__item" href="${rootURL}/${it.user.url}/${action.urlName}">
+        <div class="jenkins-dropdown__item__icon">
+          <l:icon src="${action.iconFileName}" />
+        </div>
+        ${action.displayName}
+      </a>
+    </j:forEach>
+
     <div class="jenkins-dropdown__separator" />
     <a class="jenkins-dropdown__item" href="${rootURL}/logout">
       <div class="jenkins-dropdown__item__icon">

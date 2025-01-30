@@ -27,10 +27,16 @@ package jenkins.model.navigation;
 import static hudson.Functions.getAvatar;
 
 import hudson.Extension;
+import hudson.model.Action;
 import hudson.model.RootAction;
 import hudson.model.User;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * TODO
@@ -68,5 +74,19 @@ public class UserAction implements RootAction {
     @Restricted(NoExternalUse.class)
     public User getUser() {
         return User.current();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public List<Action> getActions() {
+        User current = User.current();
+
+        if (User.current() == null) {
+            return null;
+        }
+
+        List<Action> actions = new ArrayList<>();
+        actions.addAll(current.getPropertyActions());
+        actions.addAll(current.getTransientActions());
+        return Collections.unmodifiableList(actions);
     }
 }
