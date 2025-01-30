@@ -27,8 +27,11 @@ package hudson.model;
 import hudson.Extension;
 import hudson.Util;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import jenkins.management.AdministrativeMonitorsDecorator;
 import jenkins.management.Badge;
-import jenkins.management.PluginsLink;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
 import org.apache.commons.jelly.JellyException;
@@ -92,29 +95,21 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
 
     @Override
     public Badge getBadge() {
-//        Jenkins jenkins = Jenkins.get();
-//        AdministrativeMonitorsDecorator decorator = jenkins.getExtensionList(PageDecorator.class)
-//                .get(AdministrativeMonitorsDecorator.class);
-//        Collection<AdministrativeMonitor> activeAdministrativeMonitors = Optional.ofNullable(decorator.getMonitorsToDisplay()).orElse(Collections.emptyList());
-//        boolean anySecurity = activeAdministrativeMonitors.stream().anyMatch(AdministrativeMonitor::isSecurity);
-//
-//        if (activeAdministrativeMonitors.isEmpty()) {
-//            return null;
-//        }
+        Jenkins jenkins = Jenkins.get();
+        AdministrativeMonitorsDecorator decorator = jenkins.getExtensionList(PageDecorator.class)
+                .get(AdministrativeMonitorsDecorator.class);
+        Collection<AdministrativeMonitor> activeAdministrativeMonitors = Optional.ofNullable(decorator.getMonitorsToDisplay()).orElse(Collections.emptyList());
+        boolean anySecurity = activeAdministrativeMonitors.stream().anyMatch(AdministrativeMonitor::isSecurity);
 
-        // TODO - should this include plugin updates?
-        return ManagementLink.all()
-                .stream()
-                .filter(e -> e.getClass().equals(PluginsLink.class))
-                .findFirst()
-                .map(ManagementLink::getBadge)
-                .orElse(null);
+        if (activeAdministrativeMonitors.isEmpty()) {
+            return null;
+        }
 
-//        int size = activeAdministrativeMonitors.size();
-//        String suffix = size > 1 ? "notifications" : "notification";
-//
-//        return new Badge(String.valueOf(size),
-//                size + " " + suffix,
-//                anySecurity ? Badge.Severity.DANGER : Badge.Severity.WARNING);
+        int size = activeAdministrativeMonitors.size();
+        String suffix = size > 1 ? "notifications" : "notification";
+
+        return new Badge(String.valueOf(size),
+                size + " " + suffix,
+                anySecurity ? Badge.Severity.DANGER : Badge.Severity.WARNING);
     }
 }
