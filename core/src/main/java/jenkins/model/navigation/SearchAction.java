@@ -26,7 +26,6 @@ package jenkins.model.navigation;
 
 import hudson.Extension;
 import hudson.model.RootAction;
-import jenkins.model.experimentalflags.UserExperimentalFlag;
 
 /**
  * TODO
@@ -36,12 +35,6 @@ public class SearchAction implements RootAction {
 
     @Override
     public String getIconFileName() {
-        boolean flagEnabled = UserExperimentalFlag.getFlagValueForCurrentUser("jenkins.model.experimentalflags.NewHeaderUserExperimentalFlag");
-
-        if (!flagEnabled) {
-            return null;
-        }
-
         return "symbol-search";
     }
 

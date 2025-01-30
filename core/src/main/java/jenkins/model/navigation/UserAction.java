@@ -29,7 +29,6 @@ import static hudson.Functions.getAvatar;
 import hudson.Extension;
 import hudson.model.RootAction;
 import hudson.model.User;
-import jenkins.model.experimentalflags.UserExperimentalFlag;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -41,8 +40,7 @@ public class UserAction implements RootAction {
 
     @Override
     public String getIconFileName() {
-        boolean flagEnabled = UserExperimentalFlag.getFlagValueForCurrentUser("jenkins.model.experimentalflags.NewHeaderUserExperimentalFlag");
-        if (User.current() == null || !flagEnabled) {
+        if (User.current() == null) {
             return null;
         }
 

@@ -1,27 +1,5 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <l:userExperimentalFlag var="newHeader" flagClassName="jenkins.model.experimentalflags.NewHeaderUserExperimentalFlag" />
-  <j:choose>
-    <j:when test="${!newHeader}">
-      <div class="page-header__brand">
-        <div class="logo">
-          <a id="jenkins-home-link" href="${rootURL}/">
-            <img id="jenkins-head-icon" src="${imagesURL}/svgs/logo.svg" alt="[${logoAlt}]" />
-            <img id="jenkins-name-icon" src="${imagesURL}/title.svg" alt="${title}" width="139" height="34" />
-          </a>
-        </div>
-
-        <a class="page-header__brand-link" href="${rootURL}/">
-          <img src="${imagesURL}/svgs/logo.svg"
-               alt="[${logoAlt}]"
-               class="page-header__brand-image" />
-          <span class="page-header__brand-name">Jenkins</span>
-        </a>
-      </div>
-    </j:when>
-    <j:otherwise>
-      <img id="jenkins-head-icon" src="${imagesURL}/svgs/logo.svg" aria-hidden="true" />
-      Jenkins
-    </j:otherwise>
-  </j:choose>
+<j:jelly xmlns:j="jelly:core">
+  <img id="jenkins-head-icon" src="${imagesURL}/svgs/logo.svg" aria-hidden="true" />
+  Jenkins
 </j:jelly>
