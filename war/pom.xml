@@ -694,6 +694,7 @@ THE SOFTWARE.
             <!-- Enable nicer console logging. -->
             <extraClasspath>${project.build.directory}/support-log-formatter.jar</extraClasspath>
             <contextPath>${contextPath}</contextPath>
+            <webInfIncludeJarPattern>.*(jenkins-core|target/classes).*</webInfIncludeJarPattern>
           </webApp>
         </configuration>
       </plugin>
