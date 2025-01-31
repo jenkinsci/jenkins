@@ -185,6 +185,7 @@ public interface IComputer extends AccessControlled, IconSpec {
      * Returns the number of {@link IExecutor}s that are doing some work right now.
      */
     int countBusy();
+
     /**
      * Returns the current size of the executor pool for this computer.
      */
@@ -194,6 +195,7 @@ public interface IComputer extends AccessControlled, IconSpec {
      * @return true if the computer is online.
      */
     boolean isOnline();
+
     /**
      * @return the number of {@link IExecutor}s that are idle right now.
      */

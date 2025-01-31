@@ -307,7 +307,7 @@ public class NodesTest {
     private static class DumbSlaveNameAndRemoteFSMatcher extends TypeSafeMatcher<DumbSlavePair> {
         private final DumbSlavePair expected;
 
-        public DumbSlaveNameAndRemoteFSMatcher(DumbSlavePair expected) {
+        DumbSlaveNameAndRemoteFSMatcher(DumbSlavePair expected) {
             this.expected = expected;
         }
 

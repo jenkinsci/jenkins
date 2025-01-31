@@ -744,7 +744,7 @@
           mask-size: contain;
           mask-position: center;
 
-          @include spin();
+          @include spin;
         }
       }
 
@@ -757,7 +757,7 @@
           mask-size: contain;
           mask-position: center;
 
-          @include no-spin();
+          @include no-spin;
         }
       }
 
@@ -770,7 +770,7 @@
           mask-size: contain;
           mask-position: center;
 
-          @include no-spin();
+          @include no-spin;
         }
       }
     }

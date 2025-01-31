@@ -16,7 +16,6 @@ $colors: (
   "white": #fff,
   "black": oklch(from var(--accent-color) 2% 0.075 h),
 );
-
 $semantics: (
   "accent": var(--blue),
   "text": var(--black),
@@ -41,6 +40,7 @@ $semantics: (
   --font-size-sm: 0.875rem; // 14px
   --font-size-xs: 0.75rem; // 12px
   --font-size-monospace: 1em;
+  --font-bold-weight: 450;
 
   // Line height
   --line-height-base: 1.5;
@@ -57,16 +57,9 @@ $semantics: (
   --focus-input-border: var(--accent-color);
   --focus-input-glow: color-mix(in sRGB, var(--accent-color) 15%, transparent);
 
-  // Deprecated
-  --focus-btn-primary: #{color.change(#0b6aa2, $alpha: 0.5)};
-  --focus-btn-secondary: #{color.change(#0b6aa2, $alpha: 0.5)};
-  --focus-btn-danger: #{color.change(#cc0003, $alpha: 0.5)};
-
   // State colors
-  --primary-hover: #0587d4;
-  --primary-active: #095683;
-  --danger-hover: #eb383b;
-  --danger-active: #b50003;
+  --primary-hover: var(--accent-color);
+  --primary-active: var(--accent-color);
 
   // Status icon colors
   --weather-icon-color: var(--accent-color);
@@ -78,16 +71,9 @@ $semantics: (
   // Header
   --brand-link-color: var(--secondary);
   --header-link-color: var(--white);
-  --header-link-color-active: #f5f5f5;
-  --header-search-border: var(--white);
-  --search-input-color: var(--brand-link-color);
-  --search-bg: var(--white);
-  --search-box-completion-bg: var(--primary-hover);
-  --search-box-shadow: 0 1px 7px 0 rgb(0 0 0 / 0.3);
   --header-bg-classic: var(--black);
   --header-link-bg-classic-hover: #404040;
   --header-link-bg-classic-active: #404040;
-  --header-item-border-radius: 4px;
 
   // Breadcrumbs bar
   --breadcrumbs-bar-background: oklch(
@@ -139,39 +125,6 @@ $semantics: (
   // Typography
   --text-color-secondary: var(--secondary);
 
-  // Deprecated - Button generic
-  --btn-font-weight: bold;
-  --btn-text-color: var(--white);
-  --btn-font-size: var(--font-size-xs);
-  --btn-line-height: 1rem;
-  --btn-large-font-size: var(--font-size-sm);
-  --btn-large-line-height: 1.25rem;
-  // Deprecated - Button primary
-  --button-color--primary: var(--background);
-  --btn-primary-bg: #063f61;
-  --btn-primary-bg-hover: #{lighten(#063f61, 7.5%)};
-  --btn-primary-bg-active: #{lighten(#063f61, 12%)};
-  // Deprecated - Button primary
-  --btn-secondary-color: var(--secondary);
-  --btn-secondary-bg: var(--btn-text-color);
-  --btn-secondary-border: var(--medium-grey);
-  --btn-secondary-color--hover: var(--accent-color);
-  --btn-secondary-bg--hover: var(--btn-secondary-bg);
-  --btn-secondary-border--hover: var(--accent-color);
-  --btn-secondary-color--focus: var(--accent-color);
-  --btn-secondary-bg--focus: var(--btn-secondary-bg);
-  --btn-secondary-border--focus: var(--accent-color);
-  --btn-secondary-color--active: var(--primary-active);
-  --btn-secondary-bg--active: var(--btn-secondary-bg);
-  --btn-secondary-border--active: var(--primary-active);
-  // Deprecated - Button link
-  --btn-link-color: var(--accent-color);
-  --btn-link-font-weight: var(--link-font-weight);
-  --btn-link-color--hover: var(--primary-hover);
-  --btn-link-bg--hover: var(--very-light-grey);
-  --btn-link-color--active: var(--primary-active);
-  --btn-link-bg--active: var(--light-grey);
-
   // Table
   --table-background: oklch(from var(--text-color-secondary) l c h / 0.1);
   --table-header-foreground: var(--text-color);
@@ -200,7 +153,7 @@ $semantics: (
   --link-text-decoration: none;
   --link-text-decoration--hover: underline;
   --link-text-decoration--active: underline;
-  --link-font-weight: 450;
+  --link-font-weight: var(--font-bold-weight);
 
   // Command Palette
   --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5)
@@ -242,7 +195,7 @@ $semantics: (
   --link-dark-text-decoration: none;
   --link-dark-text-decoration--hover: underline;
   --link-dark-text-decoration--active: underline;
-  --link-dark-font-weight: 500;
+  --link-dark-font-weight: var(--font-bold-weight);
 
   // Pane
   --pane-border-width: 1px;
@@ -280,18 +233,10 @@ $semantics: (
   --tabs-item-foreground--selected: var(--link-color);
   --tabs-border-radius: calc((10px + 34px) / 2);
 
-  // Deprecated - Tabbar baseline
-  --tab-baseline-width: 2px;
-  --tab-baseline-color: var(--light-grey);
-  --tab-baseline-default-display: none;
-
   // Side panel
   --side-panel-width: 340px;
   --panel-header-bg-color: var(--light-grey);
   --panel-border-color: var(--light-grey);
-  --side-panel-hover-color: var(--panel-border-color);
-  --task-link-bg-color--active: var(--panel-border-color);
-  --task-link-bg-color--hover: var(--very-light-grey);
 
   // Form
   --section-padding: 1.625rem;
@@ -315,7 +260,6 @@ $semantics: (
   --form-item-max-width--medium: min(50vw, 1400px);
   --form-item-max-width--small: min(35vw, 1200px);
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media screen and (max-width: breakpoints.$tablet-breakpoint) {
     --section-padding: 1.25rem;
     --form-item-max-width: 100%;
@@ -323,7 +267,7 @@ $semantics: (
     --form-item-max-width--small: 100%;
   }
 
-  --form-label-font-weight: 450;
+  --form-label-font-weight: var(--font-bold-weight);
   --form-input-padding: 0.625rem;
   --form-input-border-radius: 0.625rem;
   --form-input-glow: 0 0 0 10px transparent;
@@ -336,23 +280,8 @@ $semantics: (
   --standard-transition: 0.3s ease;
   --elastic-transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
 
-  // Deprecated - Pop out menus
-  --menu-text-color: black;
-  --menu-bg-color: var(--white);
-  --menu-selected-color: #b3d4ff;
-  --menu-box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);
-
-  // Deprecated - Add form widget / configure job
-  --light-bg-color: #eee;
-  --light-bg-color--hover: rgb(255 255 255 / 0.65);
-  --add-item-btn-decorator-border-color: #acb;
-  --add-item-btn-decorator-bg-color: rgb(245 249 239 / 0.75);
-
   // Plugin manager
   --plugin-manager-bg-color-already-upgraded: var(--light-grey);
-
-  // Auto complete
-  --auto-complete-bg-color--prehighlight: #b3d4ff;
 
   // Default button
   --button-background: oklch(from var(--text-color-secondary) l c h / 0.075);
@@ -365,6 +294,7 @@ $semantics: (
   --button-box-shadow--focus: oklch(
     from var(--text-color-secondary) l c h / 0.1
   );
+  --button-color--primary: var(--background);
 
   // Variables for sidebar items, card items
   --item-background--hover: oklch(from var(--text-color-secondary) l c h / 0.1);

@@ -2,8 +2,8 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-bold-weight);
   margin: 0;
 
   &::before,
