@@ -81,13 +81,16 @@ public class MarkupTextTest {
      * Start/end tag nesting should be correct regardless of the order tags are added.
      */
     @Test
-    public void adjacent() {
+    public void addMarkupInOrder() {
         MarkupText text = new MarkupText("abcdef");
         text.addMarkup(0, 3, "$", "$");
         text.addMarkup(3, 6, "#", "#");
         assertEquals("$abc$#def#", text.toString(false));
+    }
 
-        text = new MarkupText("abcdef");
+    @Test
+    public void addMarkupInReverseOrder() {
+        MarkupText text = new MarkupText("abcdef");
         text.addMarkup(3, 6, "#", "#");
         text.addMarkup(0, 3, "$", "$");
         assertEquals("$abc$#def#", text.toString(false));
