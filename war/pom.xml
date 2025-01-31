@@ -691,12 +691,9 @@ THE SOFTWARE.
             <javax.xml.transform.TransformerFactory>com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl</javax.xml.transform.TransformerFactory>
           </systemProperties>
           <webApp>
-            <!-- Allows resources to be reloaded, and enable nicer console logging. -->
-            <extraClasspath>${project.basedir}/../core/src/main/resources,${project.basedir}/../core/target/classes,${project.build.directory}/support-log-formatter.jar</extraClasspath>
+            <!-- Enable nicer console logging. -->
+            <extraClasspath>${project.build.directory}/support-log-formatter.jar</extraClasspath>
             <contextPath>${contextPath}</contextPath>
-            <configurationDiscovered>false</configurationDiscovered>
-            <!-- see https://wiki.eclipse.org/Jetty/Howto/Avoid_slow_deployment -->
-            <webInfIncludeJarPattern>NONE</webInfIncludeJarPattern>
           </webApp>
         </configuration>
       </plugin>
