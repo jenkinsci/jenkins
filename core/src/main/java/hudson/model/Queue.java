@@ -1615,6 +1615,8 @@ public class Queue extends ResourceController implements Saveable {
             // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
             updateSnapshot();
 
+            // put label has no candidates here to accelerate the buildableItem circle
+            List<Label> noCandidateLabels = new ArrayList<>();
             // allocate buildable jobs to executors
             for (BuildableItem p : new ArrayList<>(
                     buildables)) { // copy as we'll mutate the list in the loop
@@ -1630,6 +1632,10 @@ public class Queue extends ResourceController implements Saveable {
                     continue;
                 }
 
+                Label itemLabel = p.getAssignedLabel();
+                if (noCandidateLabels.contains(itemLabel)) {
+                    continue;
+                }
                 String taskDisplayName = LOGGER.isLoggable(Level.FINEST) ? p.task.getFullDisplayName() : null;
 
                 if (p.task instanceof FlyweightTask) {
@@ -1673,6 +1679,11 @@ public class Queue extends ResourceController implements Saveable {
                                 new Object[]{p, candidates, parked.values()});
                         List<CauseOfBlockage> reasons = reasonMap.values().stream().filter(Objects::nonNull).collect(Collectors.toList());
                         p.transientCausesOfBlockage = reasons.isEmpty() ? null : reasons;
+                        // If no candidates, mark the label and end this loop early.
+                        if (candidates.isEmpty()) {
+                            noCandidateLabels.add(itemLabel);
+                            LOGGER.log(Level.FINEST, "{0} changes to the state of no candidate executor", itemLabel);
+                        }
                         continue;
                     }
 
