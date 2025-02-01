@@ -35,7 +35,6 @@
         align-items: center;
         justify-content: center;
         gap: 1rem;
-        font-weight: 500;
         font-size: var(--font-size-sm);
         margin: 0;
         padding: 0;
@@ -82,8 +81,7 @@
         mask-position: center;
         mask-repeat: no-repeat;
         mask-image: url("data:image/svg+xml,%3Csvg width='10' height='20' viewBox='0 0 10 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 18L8 2' stroke='black' stroke-width='1.5px' stroke-linecap='round'/%3E%3C/svg%3E%0A");
-        opacity: 0.2;
-        scale: 1.1;
+        opacity: 0.3;
       }
 
       &:last-of-type {
