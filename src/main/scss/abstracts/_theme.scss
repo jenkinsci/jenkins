@@ -71,18 +71,6 @@ $semantics: (
   // Header
   --header-background: var(--background);
 
-  // Header - deprecated
-  --brand-link-color: var(--secondary);
-  --header-link-color: var(--white);
-  --header-bg-classic: var(--black);
-  --header-link-bg-classic-hover: #404040;
-  --header-link-bg-classic-active: #404040;
-
-  // Breadcrumbs bar
-  --breadcrumbs-bar-background: oklch(
-    from var(--text-color) 96.8% 0.005 h / 0.8
-  );
-
   // App bar
   --bottom-app-bar-shadow: color-mix(
     in sRGB,
