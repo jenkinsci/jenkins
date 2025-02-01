@@ -56,9 +56,6 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
     public AdministrativeMonitorsDecorator() {
         // otherwise this would be added to every internal context menu building request
         ignoredJenkinsRestOfUrls.add("contextMenu");
-
-        // don't show here to allow admins to disable malfunctioning monitors via AdministrativeMonitorsDecorator
-        ignoredJenkinsRestOfUrls.add("configure");
     }
 
     @NonNull
