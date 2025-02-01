@@ -34,41 +34,46 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
- * TODO
+ * Display the user avatar in the navigation bar.
+ * Provides a handy jumplist for common user actions.
  */
 @Extension(ordinal = -1)
 public class UserAction implements RootAction {
 
     @Override
     public String getIconFileName() {
-        if (User.current() == null) {
+        User current = User.current();
+
+        if (current == null) {
             return null;
         }
 
-        return getAvatar(User.current(), "96x96");
+        return getAvatar(current, "96x96");
     }
 
     @Override
     public String getDisplayName() {
-        if (User.current() == null) {
+        User current = User.current();
+
+        if (current == null) {
             return null;
         }
 
-        return User.current().getFullName();
+        return current.getFullName();
     }
 
     @Override
     public String getUrlName() {
-        if (User.current() == null) {
+        User current = User.current();
+
+        if (current == null) {
             return null;
         }
 
-        return User.current().getUrl();
+        return current.getUrl();
     }
 
     @Restricted(NoExternalUse.class)
@@ -87,6 +92,6 @@ public class UserAction implements RootAction {
         List<Action> actions = new ArrayList<>();
         actions.addAll(current.getPropertyActions());
         actions.addAll(current.getTransientActions());
-        return Collections.unmodifiableList(actions);
+        return actions.stream().filter(e -> e.getIconFileName() != null).toList();
     }
 }
