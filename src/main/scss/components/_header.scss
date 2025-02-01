@@ -4,6 +4,7 @@
   --background-opacity: 0%;
   --background-blur: 0;
   --border-opacity: 0%;
+  --header-color: var(--text-color);
 
   position: sticky;
   top: 0;
@@ -14,6 +15,7 @@
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
   min-height: 4.375rem;
+  color: var(--header-color);
 
   &::before {
     content: "";
@@ -38,6 +40,11 @@
     width: 23px;
     height: 2rem;
     margin-left: 0.15rem;
+  }
+
+  // For customizable-header-plugin
+  .jenkins-button {
+    color: inherit !important;
   }
 
   &__actions {
