@@ -89,7 +89,7 @@ public class MarkupTextTest {
     }
 
     @Test
-    public void addMarkupInReverseOrder() {
+    public void addMarkupInReversedOrder() {
         MarkupText text = new MarkupText("abcdef");
         text.addMarkup(3, 6, "#", "#");
         text.addMarkup(0, 3, "$", "$");
