@@ -42,10 +42,10 @@ import jenkins.management.Badge;
 public interface RootAction extends Action, ExtensionPoint {
 
     /**
-     * A {@link Badge} shown as overlay over the icon on "Manage Jenkins".
+     * A {@link Badge} shown on the button for the action.
      *
      * @return badge or {@code null} if no badge should be shown.
-     * @since 2.385
+     * @since TODO
      */
     default @CheckForNull Badge getBadge() {
         return null;
