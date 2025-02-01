@@ -32,9 +32,9 @@
     <div class="jenkins-header__actions">
       <l:overflowButton clazz="jenkins-button--tertiary jenkins-mobile-show">
         <j:forEach var="action" items="${it.actions}">
-          <j:if test="${action.iconClassName != null}">
+          <j:if test="${action.iconFileName != null}">
             <dd:item href="${h.getActionUrl(app.url, action)}"
-                     icon="${action.iconClassName}"
+                     icon="${action.iconFileName}"
                      text="${action.displayName}" />
           </j:if>
         </j:forEach>
@@ -73,7 +73,7 @@
             <x:attribute name="data-tippy-theme">${interactive ? 'dropdown' : 'tooltip'}</x:attribute>
             <x:attribute name="draggable">false</x:attribute>
             <x:attribute name="class">jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'}</x:attribute>
-            <l:icon src="${action.iconClassName}" />
+            <l:icon src="${action.iconFileName}" />
             <span class="jenkins-visually-hidden">${action.displayName}</span>
             <j:if test="${action.badge != null}">
               <span class="jenkins-badge jenkins-!-${action.badge.severity}-color" />

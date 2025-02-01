@@ -2,8 +2,6 @@ package jenkins.views;
 
 import hudson.model.Action;
 import java.util.List;
-
-import hudson.model.RootAction;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -26,13 +24,11 @@ public abstract class FullHeader extends Header {
      * @return a list of {@link Action} to show in the header, defaults to {@link hudson.model.RootAction} extensions
      */
     @Restricted(NoExternalUse.class)
-    public List<HeaderAction> getActions() {
+    public List<Action> getActions() {
         return Jenkins.get()
                 .getActions()
                 .stream()
                 .filter(e -> e.getIconFileName() != null)
-                .map(e -> (RootAction) e)
-                .map(e -> new HeaderAction(e.getDisplayName(), e.getIconFileName(), e.getUrlName(), e.getBadge()))
                 .toList();
     }
 }
