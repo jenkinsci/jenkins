@@ -13,7 +13,7 @@
   border: none;
   box-shadow:
     var(--form-input-glow),
-    inset 0 0 0 0.125rem var(--input-border);
+    inset 0 0 0 var(--jenkins-border-width) var(--input-border);
   border-radius: 6px;
   transition: var(--standard-transition);
   cursor: pointer;
