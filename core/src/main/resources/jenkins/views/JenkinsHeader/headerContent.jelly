@@ -3,6 +3,8 @@
   <header id="page-header" class="jenkins-header">
     <div id="breadcrumbBar" class="jenkins-header__breadcrumbs" aria-label="breadcrumb">
       <ol class="jenkins-header__breadcrumbs__list" id="breadcrumbs">
+        <st:include page="prefix" optional="true" />
+
         <j:forEach var="anc" items="${request.ancestors}" indexVar="index">
           <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
             <j:set var="mode" value="breadcrumbs" />
@@ -30,6 +32,8 @@
     </div>
 
     <div class="jenkins-header__actions">
+      <st:include page="suffix" optional="true" />
+
       <l:overflowButton clazz="jenkins-button--tertiary jenkins-mobile-show">
         <j:forEach var="action" items="${it.actions}">
           <j:if test="${action.iconFileName != null}">

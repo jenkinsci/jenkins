@@ -10,6 +10,10 @@
   &__list {
     display: contents;
 
+    & > * {
+      z-index: 1;
+    }
+
     &-item {
       display: contents;
 
