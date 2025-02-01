@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  <img id="jenkins-head-icon" src="${imagesURL}/svgs/logo.svg" aria-hidden="true" />
+  Jenkins
+</j:jelly>

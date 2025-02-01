@@ -51,6 +51,7 @@
       & > a {
         @include mixins.item($border: false);
 
+        --item-background: transparent;
         --item-background--hover: transparent;
         --item-background--active: transparent;
         --item-box-shadow--focus: transparent;

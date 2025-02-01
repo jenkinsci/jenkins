@@ -13,7 +13,7 @@
               <j:when test="${anc.object == app}">
                 <li class="jenkins-header__breadcrumbs__list-item" aria-current="page">
                   <a href="${rootURL}">
-                    <h:logo />
+                    <st:include page="logo" />
                   </a>
                 </li>
               </j:when>
