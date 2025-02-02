@@ -21,9 +21,7 @@
     <div class="jenkins-dropdown__separator" />
     <a class="jenkins-dropdown__item" href="${rootURL}/logout">
       <div class="jenkins-dropdown__item__icon">
-        <div class="jenkins-dropdown__item__icon">
-          <l:icon src="symbol-log-out" />
-        </div>
+        <l:icon src="symbol-log-out" />
       </div>
       ${%Sign out}
     </a>
