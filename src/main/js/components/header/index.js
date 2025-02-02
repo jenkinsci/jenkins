@@ -23,21 +23,28 @@ function init() {
     }
   });
 
+  window.addEventListener("resize", computeBreadcrumbs);
+  computeBreadcrumbs();
+}
+
+function computeBreadcrumbs() {
   const breadcrumbsOverflow = document.querySelector("#button-breadcrumbs-overflow");
   const breadcrumbs = [...document.querySelectorAll(".jenkins-header__breadcrumbs__list-item")].slice(2)
 
+  breadcrumbsOverflow.parentNode.classList.remove("jenkins-hidden");
+  breadcrumbs.forEach(b => {
+    b.classList.remove("jenkins-hidden");
+  })
+
   if (!breadcrumbsBarOverflows()) {
-    breadcrumbsOverflow.parentNode.remove();
+    breadcrumbsOverflow.parentNode.classList.add("jenkins-hidden");
   }
 
   const items = [];
   while (breadcrumbsBarOverflows()) {
     const item = breadcrumbs.shift();
     items.push(item);
-    item.remove();
-
-    console.log("Overflowing?")
-    console.log(items)
+    item.classList.add("jenkins-hidden");
   }
 
   Utils.generateDropdown(breadcrumbsOverflow, (instance) => {
@@ -58,4 +65,4 @@ function breadcrumbsBarOverflows() {
   return breadcrumbsBar.scrollWidth > breadcrumbsBar.offsetWidth;
 }
 
-export default { init };
+init();

@@ -1,7 +1,5 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
-  <script src="${resURL}/jsbundles/header.js" type="text/javascript" />
-
   <header id="page-header" class="jenkins-header">
     <div id="breadcrumbBar" class="jenkins-header__breadcrumbs" aria-label="breadcrumb">
       <ol class="jenkins-header__breadcrumbs__list" id="breadcrumbs">
@@ -101,4 +99,6 @@
       <h:login/>
     </div>
   </header>
+
+  <script src="${resURL}/jsbundles/header.js" type="text/javascript" />
 </j:jelly>
