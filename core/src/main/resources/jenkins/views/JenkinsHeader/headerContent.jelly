@@ -27,7 +27,7 @@
         </j:forEach>
 
         <!-- render additional breadcrumb items -->
-        <j:out value="${contents}" />
+        <j:out value="${breadcrumbs}" />
       </ol>
     </div>
 

@@ -160,11 +160,6 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
             return null;
         }
 
-        // Don't show on Manage Jenkins
-        if (o instanceof ManageJenkinsAction) {
-            return null;
-        }
-
         // don't show for some URLs served directly by Jenkins
         if (o instanceof Jenkins) {
             String url = a.getRestOfUrl();
