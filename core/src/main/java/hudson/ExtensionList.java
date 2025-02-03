@@ -48,6 +48,8 @@ import java.util.logging.Logger;
 import jenkins.ExtensionComponentSet;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Retains the known extension instances for the given type 'T'.
@@ -335,12 +337,14 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     /**
      * Used during {@link Jenkins#refreshExtensions()} to add new components into existing {@link ExtensionList}s.
      * Do not call from anywhere else.
+     * @return true if {@link #fireOnChangeListeners} should be called on {@code this} after all lists have been refreshed.
      */
-    public void refresh(ExtensionComponentSet delta) {
+    @Restricted(NoExternalUse.class)
+    public boolean refresh(ExtensionComponentSet delta) {
         boolean fireOnChangeListeners = false;
         synchronized (getLoadLock()) {
             if (extensions == null)
-                return;     // not yet loaded. when we load it, we'll load everything visible by then, so no work needed
+                return false;     // not yet loaded. when we load it, we'll load everything visible by then, so no work needed
 
             Collection<ExtensionComponent<T>> found = load(delta);
             if (!found.isEmpty()) {
@@ -350,12 +354,11 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
                 fireOnChangeListeners = true;
             }
         }
-        if (fireOnChangeListeners) {
-            fireOnChangeListeners();
-        }
+        return fireOnChangeListeners;
     }
 
-    private void fireOnChangeListeners() {
+    @Restricted(NoExternalUse.class)
+    public void fireOnChangeListeners() {
         for (ExtensionListListener listener : listeners) {
             try {
                 listener.onChange();
