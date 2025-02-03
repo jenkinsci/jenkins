@@ -29,35 +29,7 @@ THE SOFTWARE.
     <l:header>
       <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
     </l:header>
-
-    <l:breadcrumb title="${%Test 1}" />
-    <l:breadcrumb title="${%Test 2}" />
-    <l:breadcrumb title="${%Test 3}" />
-    <l:breadcrumb title="${%Test 4}" />
-    <l:breadcrumb title="${%Test 5}" />
-    <l:breadcrumb title="${%Test 6}" />
-    <l:breadcrumb title="${%Test 7}" />
-    <l:breadcrumb title="${%Test 8}" />
-    <l:breadcrumb title="${%Test 9}" />
-    <l:breadcrumb title="${%Test 10}" />
-    <l:breadcrumb title="${%Test 11}" />
-    <l:breadcrumb title="${%Test 12}" />
-    <l:breadcrumb title="${%Test 13}" />
-    <l:breadcrumb title="${%Test 14}" />
-    <l:breadcrumb title="${%Test 15}" />
-    <l:breadcrumb title="${%Test 16}" />
-    <l:breadcrumb title="${%Test 17}" />
-    <l:breadcrumb title="${%Test 18}" />
-    <l:breadcrumb title="${%Test 19}" />
-    <l:breadcrumb title="${%Test 20}" />
-    <l:breadcrumb title="${%Test 21}" />
-    <l:breadcrumb title="${%Test 22}" />
-    <l:breadcrumb title="${%Test 23}" />
-    <l:breadcrumb title="${%Test 24}" />
-    <l:breadcrumb title="${%Test 25}" />
-    <l:breadcrumb title="${%Test 26}" />
-    <l:breadcrumb title="${%Test 27}" />
-
+    
     <l:main-panel>
       <div class="app-about-branding">
         <div class="app-about-branding__aurora"></div>
