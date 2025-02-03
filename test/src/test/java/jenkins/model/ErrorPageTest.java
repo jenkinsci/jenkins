@@ -150,6 +150,48 @@ public class ErrorPageTest {
     }
 
     @Test
+    @Issue("JENKINS-75205")
+    public void nice500ErrorPage() throws Exception {
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            Dispatcher.TRACE = false;
+
+            /* Start with no security realm configured */
+
+            {
+                final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("exception"));
+                assertEquals(500, ex.getStatusCode());
+                final String content = ex.getResponse().getContentAsString(StandardCharsets.UTF_8);
+                assertThat(content, not(containsString(j.contextPath + "/login?from=")));
+            }
+
+            /* Set up security realm and request as anonymous, we expect login link and hedged response */
+            j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+            j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().toAuthenticated().grant(Jenkins.READ).everywhere().toEveryone());
+
+            {
+                final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("exception"));
+                assertEquals(500, ex.getStatusCode());
+                final String content = ex.getResponse().getContentAsString(StandardCharsets.UTF_8);
+                assertThat(content, containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2Fexception"));
+                assertThat(content, not(containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2Foops")));
+            }
+
+            /* With the security realm still set up, log in and expect the profile link to show */
+            wc.login("alice");
+
+            {
+                final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("exception"));
+                assertEquals(500, ex.getStatusCode());
+                final String content = ex.getResponse().getContentAsString(StandardCharsets.UTF_8);
+                assertThat(content, not(containsString(j.contextPath + "/login?from=")));
+                assertThat(content, containsString("user/alice"));
+            }
+        } finally {
+            Dispatcher.TRACE = true;
+        }
+    }
+
+    @Test
     @Issue("JENKINS-71087")
     public void kindaNice404ErrorPageOnResourceDomain() throws Exception {
         final String resourceRoot;
