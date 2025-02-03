@@ -14,7 +14,7 @@
   gap: var(--section-padding);
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
-  min-height: 4.375rem;
+  min-height: var(--header-height);
   color: var(--header-color);
 
   &::before {
