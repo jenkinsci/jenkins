@@ -1,4 +1,5 @@
 import Utils from "@/components/dropdowns/utils";
+import { createElementFromHtml } from "@/util/dom";
 
 function init() {
   window.addEventListener("scroll", () => {
@@ -28,16 +29,18 @@ function init() {
 }
 
 function computeBreadcrumbs() {
-  const breadcrumbsOverflow = document.querySelector("#button-breadcrumbs-overflow");
-  const breadcrumbs = [...document.querySelectorAll(".jenkins-header__breadcrumbs__list-item")].slice(2)
+  const breadcrumbs = [
+    ...document.querySelectorAll(".jenkins-header__breadcrumbs__list-item"),
+  ].slice(2);
 
-  breadcrumbsOverflow.parentNode.classList.remove("jenkins-hidden");
-  breadcrumbs.forEach(b => {
+  removeOverflowButton();
+  generateOverflowButton();
+  breadcrumbs.forEach((b) => {
     b.classList.remove("jenkins-hidden");
-  })
+  });
 
   if (!breadcrumbsBarOverflows()) {
-    breadcrumbsOverflow.parentNode.classList.add("jenkins-hidden");
+    removeOverflowButton();
   }
 
   const items = [];
@@ -47,17 +50,42 @@ function computeBreadcrumbs() {
     item.classList.add("jenkins-hidden");
   }
 
-  Utils.generateDropdown(breadcrumbsOverflow, (instance) => {
-    const mappedItems = items.map(e => (
-      {
+  const breadcrumbsOverflow = document.querySelector(
+    ".jenkins-header__breadcrumbs__list-item .jenkins-button",
+  );
+  if (breadcrumbsOverflow) {
+    Utils.generateDropdown(breadcrumbsOverflow, (instance) => {
+      const mappedItems = items.map((e) => ({
         type: "link",
         label: e.textContent,
         url: e.querySelector("a")?.href,
-      }
-    ));
+      }));
 
-    instance.setContent(Utils.generateDropdownItems(mappedItems));
-  });
+      instance.setContent(Utils.generateDropdownItems(mappedItems));
+    });
+  }
+}
+
+function generateOverflowButton() {
+  const logo = document.querySelector(
+    ".jenkins-header__breadcrumbs__list-item",
+  );
+  const element =
+    createElementFromHtml(`<li class="jenkins-header__breadcrumbs__list-item"><button class="jenkins-button jenkins-button--tertiary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <circle cx="256" cy="256" r="45" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/>
+    <circle cx="441" cy="256" r="45" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/>
+    <circle cx="71" cy="256" r="45" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/>
+</svg>
+</button></li>`);
+  logo.after(element);
+  return element;
+}
+
+function removeOverflowButton() {
+  const breadcrumbsOverflow = document.querySelector(
+    ".jenkins-header__breadcrumbs__list-item .jenkins-button",
+  )?.parentNode;
+  breadcrumbsOverflow?.remove();
 }
 
 function breadcrumbsBarOverflows() {

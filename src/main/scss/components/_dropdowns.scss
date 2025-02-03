@@ -157,8 +157,9 @@ $dropdown-padding: 0.375rem;
 
       img {
         border-radius: 100px;
-        outline: 1px solid color-mix(in srgb, var(--text-color) 10%, transparent);
-        background: color-mix(in srgb, var(--text-color) 5%, transparent);
+        outline: 1px solid
+          color-mix(in sRGB, var(--text-color) 10%, transparent);
+        background: color-mix(in sRGB, var(--text-color) 5%, transparent);
         outline-offset: -1px;
       }
     }

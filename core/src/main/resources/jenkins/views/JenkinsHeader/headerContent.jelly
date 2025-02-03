@@ -16,16 +16,6 @@
                     <st:include page="logo" />
                   </a>
                 </li>
-                <li class="jenkins-header__breadcrumbs__list-item jenkins-hidden">
-                  <button class="jenkins-button jenkins-button--tertiary"
-                          id="button-breadcrumbs-overflow">
-                    <div class="jenkins-overflow-button__ellipsis">
-                      <span />
-                      <span />
-                      <span />
-                    </div>
-                  </button>
-                </li>
               </j:when>
               <j:otherwise>
                 <l:breadcrumb title="${anc.object.displayName}"

@@ -28,6 +28,7 @@
             content: "";
             position: absolute;
             inset: -30px -15px -18px -100px;
+            pointer-events: all;
           }
         }
       }
@@ -80,7 +81,6 @@
         width: 1rem;
         height: 1.25rem;
         flex-shrink: 0;
-        transition: var(--standard-transition);
         background: var(--text-color-secondary);
         mask-size: contain;
         mask-position: center;
@@ -97,7 +97,6 @@
     }
   }
 }
-
 
 .jenkins-menu-dropdown-chevron {
   position: absolute;
