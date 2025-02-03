@@ -44,7 +44,10 @@
     <div class="jenkins-header__actions">
       <st:include page="suffix" optional="true" />
 
-      <l:overflowButton clazz="jenkins-button--tertiary jenkins-mobile-show">
+      <j:invokeStatic var="user" className="hudson.model.User" method="current" />
+      <l:overflowButton tooltip="${%Menu}"
+                        icon="${user == null ? 'symbol-menu' : h.getAvatar(user, '96x96')}"
+                        clazz="jenkins-button--tertiary jenkins-mobile-show">
         <j:forEach var="action" items="${it.actions}">
           <j:if test="${action.iconFileName != null}">
             <dd:item href="${h.getActionUrl(app.url, action)}"
@@ -52,6 +55,13 @@
                      text="${action.displayName}" />
           </j:if>
         </j:forEach>
+
+        <j:if test="${app.useSecurity and !h.isAnonymous() and app.securityRealm.canLogOut()}">
+          <dd:separator />
+          <dd:item text="${%Sign out}"
+                   icon="symbol-log-out"
+                   href="${rootURL}/logout" />
+        </j:if>
       </l:overflowButton>
 
       <div class="jenkins-!-display-contents jenkins-mobile-hide">

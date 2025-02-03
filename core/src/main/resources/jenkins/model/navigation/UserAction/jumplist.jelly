@@ -7,6 +7,7 @@
       </div>
       ${it.user.fullName}
     </a>
+
     <div class="jenkins-dropdown__separator" />
 
     <j:forEach var="action" items="${it.actions}">
@@ -19,6 +20,7 @@
     </j:forEach>
 
     <div class="jenkins-dropdown__separator" />
+
     <a class="jenkins-dropdown__item" href="${rootURL}/logout">
       <div class="jenkins-dropdown__item__icon">
         <l:icon src="symbol-log-out" />
