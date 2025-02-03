@@ -154,14 +154,6 @@ $dropdown-padding: 0.375rem;
         height: 1.125rem;
         color: inherit;
       }
-
-      img {
-        border-radius: 100px;
-        outline: 1px solid
-          color-mix(in sRGB, var(--text-color) 10%, transparent);
-        background: color-mix(in sRGB, var(--text-color) 5%, transparent);
-        outline-offset: -1px;
-      }
     }
 
     &:disabled {

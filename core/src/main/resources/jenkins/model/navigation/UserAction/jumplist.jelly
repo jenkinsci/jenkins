@@ -3,7 +3,7 @@
   <div class="jenkins-dropdown">
     <a class="jenkins-dropdown__item" href="${rootURL}/${it.user.url}">
       <div class="jenkins-dropdown__item__icon">
-        <l:icon src="${it.iconFileName}" />
+        <l:icon src="${it.iconFileName}" class="jenkins-avatar" />
       </div>
       ${it.user.fullName}
     </a>

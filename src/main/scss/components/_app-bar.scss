@@ -51,7 +51,7 @@
 
   &--sticky {
     position: sticky;
-    top: 70px;
+    top: var(--header-height);
     z-index: 21; // todo - reset this
   }
 
