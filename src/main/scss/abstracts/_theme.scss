@@ -14,7 +14,7 @@ $colors: (
   "yellow": oklch(80% 0.17 76),
   "teal": oklch(60% 0.1122 216.72),
   "white": #fff,
-  "black": oklch(from var(--accent-color) 2% 0.075 h),
+  "black": oklch(from var(--accent-color) 5% 0.075 h),
 );
 $semantics: (
   "accent": var(--blue),
@@ -71,7 +71,7 @@ $semantics: (
   // Header
   --header-background: var(--background);
   --header-color: var(--text-color);
-  --header-height: 4.375rem;
+  --header-height: 4.25rem;
 
   // App bar
   --bottom-app-bar-shadow: color-mix(

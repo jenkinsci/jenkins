@@ -17,36 +17,28 @@
     &-item {
       display: contents;
 
+      // Increase the hit-box for the logo for Fitts’s Law
       &:first-of-type {
-        a {
-          font-family: Georgia, serif;
-          font-weight: 600;
-          font-size: 1.125rem;
-
-          // Increase the hit-box for the Jenkins logo for Fitts’s Law
-          &::before {
-            content: "";
-            position: absolute;
-            inset: -30px -15px -18px -100px;
-            pointer-events: all;
-          }
+        a::before {
+          content: "";
+          position: absolute;
+          inset: -30px -15px -18px -100px;
+          pointer-events: all;
         }
       }
 
-      & > a,
-      span {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        font-size: var(--font-size-sm);
-        margin: 0;
-        padding: 0;
-        color: inherit;
-        text-decoration: none;
-        text-wrap: nowrap;
-        flex-shrink: 0;
+      &:last-of-type {
+        .app-jenkins-logo span {
+          display: block !important;
+        }
+      }
+
+      .app-jenkins-logo {
+        span {
+          font-family: Georgia, serif;
+          font-weight: 600;
+          font-size: 1.125rem;
+        }
       }
 
       & > a {
@@ -72,6 +64,23 @@
         &:active {
           opacity: 0.4;
         }
+      }
+
+      & > a,
+      span {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-bold-weight);
+        margin: 0;
+        padding: 0;
+        color: inherit;
+        text-decoration: none;
+        text-wrap: nowrap;
+        flex-shrink: 0;
       }
 
       // '/' separator between two items

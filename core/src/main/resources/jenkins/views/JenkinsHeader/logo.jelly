@@ -1,5 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-  <img id="jenkins-head-icon" src="${imagesURL}/svgs/logo.svg" aria-hidden="true" />
-  Jenkins
+  <span class="app-jenkins-logo">
+    <img id="jenkins-head-icon" src="${imagesURL}/svgs/logo.svg" aria-hidden="true" />
+    <span class="jenkins-mobile-hide">Jenkins</span>
+  </span>
 </j:jelly>
