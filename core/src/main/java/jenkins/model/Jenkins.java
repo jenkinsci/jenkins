@@ -4464,15 +4464,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         rsp.getWriter().println("GCed");
     }
 
-    /**
-     * End point that intentionally throws an exception to test the error behaviour.
-     * @since 1.467
-     */
-    @StaplerDispatchable
-    public void doException() {
-        throw new RuntimeException();
-    }
-
     @Override
     public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws IOException, JellyException {
         ContextMenu menu = new ContextMenu().from(this, request, response);
