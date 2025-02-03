@@ -29,9 +29,11 @@ function init() {
 }
 
 function computeBreadcrumbs() {
-  document.querySelectorAll(".jenkins-header__breadcrumbs__list-item.jenkins-hidden").forEach((b) => {
-    b.classList.remove("jenkins-hidden");
-  });
+  document
+    .querySelectorAll(".jenkins-header__breadcrumbs__list-item.jenkins-hidden")
+    .forEach((b) => {
+      b.classList.remove("jenkins-hidden");
+    });
 
   if (!breadcrumbsBarOverflows()) {
     removeOverflowButton();
@@ -39,7 +41,9 @@ function computeBreadcrumbs() {
   }
 
   const items = [];
-  const breadcrumbs = [...document.querySelectorAll(".jenkins-header__breadcrumbs__list-item")].slice(2)
+  const breadcrumbs = [
+    ...document.querySelectorAll(`[data-type="breadcrumb-item"]`),
+  ];
   while (breadcrumbsBarOverflows()) {
     const item = breadcrumbs.shift();
     items.push(item);

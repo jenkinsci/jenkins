@@ -44,7 +44,7 @@ THE SOFTWARE.
 
   <j:if test="${mode=='breadcrumbs'}">
     <j:set var="hasLink" value="${attrs.href != null}" />
-    <li id="${attrs.id}" class="jenkins-header__breadcrumbs__list-item" aria-current="${hasLink ? null : 'page'}">
+    <li id="${attrs.id}" class="jenkins-header__breadcrumbs__list-item" data-type="breadcrumb-item" aria-current="${hasLink ? null : 'page'}">
       <j:choose>
         <j:when test="${!hasLink}">
           <span>${attrs.title}</span>
