@@ -29,30 +29,24 @@ function init() {
 }
 
 function computeBreadcrumbs() {
-  const breadcrumbs = [
-    ...document.querySelectorAll(".jenkins-header__breadcrumbs__list-item"),
-  ].slice(2);
-
-  removeOverflowButton();
-  generateOverflowButton();
-  breadcrumbs.forEach((b) => {
+  document.querySelectorAll(".jenkins-header__breadcrumbs__list-item.jenkins-hidden").forEach((b) => {
     b.classList.remove("jenkins-hidden");
   });
 
   if (!breadcrumbsBarOverflows()) {
     removeOverflowButton();
+    return;
   }
 
   const items = [];
+  const breadcrumbs = [...document.querySelectorAll(".jenkins-header__breadcrumbs__list-item")].slice(2)
   while (breadcrumbsBarOverflows()) {
     const item = breadcrumbs.shift();
     items.push(item);
     item.classList.add("jenkins-hidden");
   }
 
-  const breadcrumbsOverflow = document.querySelector(
-    ".jenkins-header__breadcrumbs__list-item .jenkins-button",
-  );
+  const breadcrumbsOverflow = generateOverflowButton().querySelector("button");
   if (breadcrumbsOverflow) {
     Utils.generateDropdown(breadcrumbsOverflow, (instance) => {
       const mappedItems = items.map((e) => ({
@@ -67,6 +61,15 @@ function computeBreadcrumbs() {
 }
 
 function generateOverflowButton() {
+  // If an overflow menu already exists let's use that
+  const overflowMenu = document.querySelector(
+    ".jenkins-header__breadcrumbs__list-item .jenkins-button",
+  )?.parentNode;
+  if (overflowMenu) {
+    return overflowMenu;
+  }
+
+  // Generate an overflow menu to store breadcrumbs
   const logo = document.querySelector(
     ".jenkins-header__breadcrumbs__list-item",
   );
