@@ -12,13 +12,13 @@ import hudson.XmlFile;
 import hudson.model.PersistentDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
+import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
 import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
 import org.jenkinsci.Symbol;
@@ -167,7 +167,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
      */
     private void updateSecureSessionFlag() {
         try {
-            ServletContext context = Jenkins.get().servletContext;
+            ServletContext context = Jenkins.get().getServletContext();
             Method m;
             try {
                 m = context.getClass().getMethod("getSessionCookieConfig");
@@ -177,7 +177,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
             }
             Object sessionCookieConfig = m.invoke(context);
 
-            Class scc = Class.forName("javax.servlet.SessionCookieConfig");
+            Class scc = Class.forName("jakarta.servlet.SessionCookieConfig");
             Method setSecure = scc.getMethod("setSecure", boolean.class);
             boolean v = fixNull(jenkinsUrl).startsWith("https");
             setSecure.invoke(sessionCookieConfig, v);

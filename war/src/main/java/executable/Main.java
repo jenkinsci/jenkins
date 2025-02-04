@@ -76,7 +76,7 @@ public class Main {
      * This list must remain synchronized with the one in {@code
      * JavaVersionRecommendationAdminMonitor}.
      */
-    private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS = new TreeSet<>(List.of(11, 17, 21));
+    private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS = new TreeSet<>(List.of(17, 21));
 
     /**
      * Sets custom session cookie name.
@@ -266,7 +266,7 @@ public class Main {
         // locate the Winstone launcher
         ClassLoader cl;
         try {
-            cl = new URLClassLoader(new URL[] {tmpJar.toURI().toURL()});
+            cl = new URLClassLoader("Jenkins Main ClassLoader", new URL[] {tmpJar.toURI().toURL()}, ClassLoader.getSystemClassLoader());
         } catch (MalformedURLException e) {
             throw new UncheckedIOException(e);
         }

@@ -52,6 +52,7 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
+import jakarta.servlet.ServletException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -83,7 +84,6 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.servlet.ServletException;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import jenkins.model.GlobalConfiguration;
@@ -108,8 +108,8 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -178,7 +178,7 @@ public class PluginManagerTest {
             return "pluginManagerGetPlugin";
         }
 
-        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("application/octet-stream");
             staplerResponse.setStatus(200);
             staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
@@ -578,8 +578,7 @@ public class PluginManagerTest {
             Thread.sleep(100);
             done = true;
             for (UpdateCenterJob job : r.jenkins.getUpdateCenter().getJobs()) {
-                if (job instanceof UpdateCenter.DownloadJob) {
-                    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob) job;
+                if (job instanceof UpdateCenter.DownloadJob j) {
                     assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
                     done &= !(j.status instanceof UpdateCenter.DownloadJob.Pending ||
                             j.status instanceof UpdateCenter.DownloadJob.Installing);
@@ -760,7 +759,7 @@ public class PluginManagerTest {
         File dir = tmp.newFolder();
         File plugin = new File(dir, "htmlpublisher.jpi");
         FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
-        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
         File filesRef = Files.createTempFile("tmp", ".tmp").toFile();
@@ -806,7 +805,7 @@ public class PluginManagerTest {
 
             PluginManagerUtil.getCheckForUpdatesButton(p).click();
             HtmlPage available = wc.goTo("pluginManager/available");
-            assertTrue(available.querySelector(".alert-danger")
+            assertTrue(available.querySelector(".jenkins-alert-danger")
                     .getTextContent().contains("This plugin is built for Jenkins 9999999"));
             wc.waitForBackgroundJavaScript(100);
 
@@ -881,7 +880,7 @@ public class PluginManagerTest {
             return "security3037UpdateCenter";
         }
 
-        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("application/json");
             staplerResponse.setStatus(200);
             staplerResponse.serveFile(staplerRequest, PluginManagerTest.class.getResource("/plugins/security3037-update-center.json"));
@@ -906,7 +905,7 @@ public class PluginManagerTest {
             return "pluginManagerGetPlugin";
         }
 
-        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("application/octet-stream");
             staplerResponse.setStatus(200);
             staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));

@@ -93,11 +93,14 @@ public class IconTest  {
         HtmlPage p = j.createWebClient().goTo("testBallColorTd");
 
         DomElement ballColorAborted = p.getElementById("ballColorAborted");
-        List<DomElement> ballIcons = StreamSupport.stream(ballColorAborted.getChildElements().spliterator(), false).collect(Collectors.toList());
-        assertIconToSvgIconOkay(ballIcons.get(0).getFirstElementChild(), "icon-aborted icon-md");
+        assertThat("Aborted", is(ballColorAborted.getTextContent()));
+        HtmlElement symbol = ballColorAborted.getElementsByTagName("svg").get(0);
+        assertThat("icon-md", is(symbol.getAttribute("class")));
+
+        assertIconToSymbolOkay(symbol);
 
         DomElement statusIcons = p.getElementById("statusIcons");
-        List<DomElement> statusIconsList = StreamSupport.stream(statusIcons.getChildElements().spliterator(), false).collect(Collectors.toList());
+        List<DomElement> statusIconsList = StreamSupport.stream(statusIcons.getChildElements().spliterator(), false).toList();
 
         assertIconToSvgOkay(statusIconsList.get(0).getFirstElementChild().getNextElementSibling(), "icon-user icon-xlg");
 
@@ -177,13 +180,6 @@ public class IconTest  {
     private void assertIconToSvgOkay(DomElement icon, String classSpec) {
         assertThat(icon.getTagName(), is("svg"));
 
-        if (classSpec != null) {
-            assertThat(icon.getAttribute("class"), endsWith(classSpec));
-        }
-    }
-
-    private void assertIconToSvgIconOkay(DomElement icon, String classSpec) {
-        assertThat(icon.getTagName(), is("span"));
         if (classSpec != null) {
             assertThat(icon.getAttribute("class"), endsWith(classSpec));
         }

@@ -25,13 +25,18 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <j:set var="changeSets" value="${it.changeSets}"/>
-  <j:if test="${!changeSets.isEmpty()}">
-    <table>
-      <t:summary icon="symbol-changes">
-        <j:forEach var="changeSet" items="${changeSets}">
-          <st:include it="${changeSet}" page="digest.jelly"/>
-        </j:forEach>
-      </t:summary>
-    </table>
-  </j:if>
+  <table>
+    <t:summary icon="symbol-changes">
+      <j:choose>
+        <j:when test="${!changeSets.isEmpty()}">
+          <j:forEach var="changeSet" items="${changeSets}">
+            <st:include it="${changeSet}" page="digest.jelly"/>
+          </j:forEach>
+        </j:when>
+        <j:otherwise>
+          <st:include class="hudson.scm.EmptyChangeLogSet" page="digest.jelly" />
+        </j:otherwise>
+      </j:choose>
+    </t:summary>
+  </table>
 </j:jelly>

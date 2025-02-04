@@ -504,24 +504,27 @@ window.addEventListener("load", function () {
     });
   });
 
-  // Enable/disable the 'Update' button depending on if any updates are checked
-  const anyCheckboxesSelected = () => {
-    return (
-      document.querySelectorAll("input[type='checkbox']:checked:not(:disabled)")
-        .length > 0
-    );
-  };
   const updateButton = document.querySelector("#button-update");
-  const checkboxes = document.querySelectorAll(
-    "input[type='checkbox'], [data-select], .jenkins-table__checkbox",
-  );
-  checkboxes.forEach((checkbox) => {
-    checkbox.addEventListener("click", () => {
-      setTimeout(() => {
-        updateButton.disabled = !anyCheckboxesSelected();
+  if (updateButton) {
+    // Enable/disable the 'Update' button depending on if any updates are checked
+    const anyCheckboxesSelected = () => {
+      return (
+        document.querySelectorAll(
+          "input[type='checkbox']:checked:not(:disabled)",
+        ).length > 0
+      );
+    };
+    const checkboxes = document.querySelectorAll(
+      "input[type='checkbox'], [data-select], .jenkins-table__checkbox",
+    );
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener("click", () => {
+        setTimeout(() => {
+          updateButton.disabled = !anyCheckboxesSelected();
+        });
       });
     });
-  });
+  }
 
   // Show update center error if element exists
   const updateCenterError = document.querySelector("#update-center-error");

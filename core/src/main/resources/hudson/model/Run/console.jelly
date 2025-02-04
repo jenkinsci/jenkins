@@ -28,47 +28,29 @@ THE SOFTWARE.
   Displays the console output
 -->
 <?jelly escape-by-default='true'?>
-<st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout title="${it.fullDisplayName} Console">
     <st:include page="sidepanel.jelly" />
-     <l:breadcrumb title="${%Console Output}" />
+
+    <l:breadcrumb title="${%Console Output}" />
+
     <l:main-panel>
-      <t:buildCaption>
+      <j:set var="controls">
+        <a class="jenkins-button" href="consoleText" download="${it.displayName}.txt">
+          <l:icon src="symbol-download" />
+          ${%Download}
+        </a>
+        <l:copyButton ref="out" label="${%Copy}" />
+        <a class="jenkins-button" href="consoleText">
+          ${%View as plain text}
+        </a>
+      </j:set>
+
+      <t:buildCaption controls="${controls}">
         ${%Console Output}
-        <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" ref="out"/>
       </t:buildCaption>
-      <j:set var="threshold" value="${h.getSystemProperty('hudson.consoleTailKB')?:'150'}" />
-      <!-- Show at most last 150KB (can override with system property) unless consoleFull is set -->
-      <j:set var="offset" value="${empty(consoleFull) ? it.logText.length()-threshold*1024 : 0}" />
-      <j:choose>
-        <j:when test="${offset > 0}">
-          ${%skipSome(offset/1024,"consoleFull")}
-        </j:when>
-        <j:otherwise>
-          <j:set var="offset" value="${0}" />
-        </j:otherwise>
-      </j:choose>
 
-      <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
-
-      <j:choose>
-        <!-- Do progressive console output -->
-        <j:when test="${it.isLogUpdated()}">
-          <pre id="out" class="console-output" />
-            <div id="spinner">
-              <l:progressAnimation/>
-            </div>
-          <t:progressiveText href="logText/progressiveHtml" idref="out" spinner="spinner"
-               startOffset="${offset}" onFinishEvent="jenkins:consoleFinished"/>
-        </j:when>
-        <!-- output is completed now. -->
-        <j:otherwise>
-          <pre class="console-output" id="out">
-            <st:getOutput var="output" />
-            <j:whitespace>${it.writeLogTo(offset,output)}</j:whitespace>
-          </pre>
-        </j:otherwise>
-      </j:choose>
+      <st:include page="console-log.jelly" />
     </l:main-panel>
   </l:layout>
-</st:compress>
+</j:jelly>

@@ -31,6 +31,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import hudson.Util;
+import java.io.PrintWriter;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
@@ -52,6 +53,8 @@ public class IsOverriddenTest {
         assertTrue(Util.isOverridden(Base.class, Derived.class, "method"));
         assertTrue(Util.isOverridden(Base.class, Intermediate.class, "method"));
         assertFalse(Util.isOverridden(Base.class, Base.class, "method"));
+        assertFalse(Util.isOverridden(Throwable.class, Throwable.class, "printStackTrace", PrintWriter.class));
+        assertFalse(Util.isOverridden(Throwable.class, Exception.class, "printStackTrace", PrintWriter.class));
         assertTrue(Util.isOverridden(Base.class, Intermediate.class, "setX", Object.class));
         assertTrue(Util.isOverridden(Base.class, Intermediate.class, "getX"));
     }

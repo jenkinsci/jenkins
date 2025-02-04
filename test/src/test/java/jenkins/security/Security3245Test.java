@@ -30,9 +30,9 @@ public class Security3245Test {
 
     @Issue("SECURITY-3245")
     @Test
-    public void captionCannotAttributeEscape() throws Exception {
+    public void captionCannotElementEscape() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
-        p.getBuildersList().add(new ExpandableDetailsNoteTestAction("' onclick=alert(1) foo='bar", "<h1></h1>"));
+        p.getBuildersList().add(new ExpandableDetailsNoteTestAction("<script>alert(1)</script>", "<h1></h1>"));
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
 
         AtomicBoolean alerts = new AtomicBoolean();
@@ -40,12 +40,9 @@ public class Security3245Test {
             wc.setAlertHandler((pr, s) -> alerts.set(true));
             final HtmlPage page = wc.goTo(build.getUrl() + "console");
             String content = page.getWebResponse().getContentAsString();
-            assertThat(content, containsString("<input type=button value='&#39; onclick=alert(1) foo=&#39;bar' class='reveal-expandable-detail'>"));
-
-            // Execute JavaScript code to simulate click event
-            String jsCode = "document.querySelector('.reveal-expandable-detail').dispatchEvent(new MouseEvent('click'));";
-            page.executeJavaScript(jsCode);
-
+            assertThat(content, containsString("<button type='button' class='jenkins-button " +
+                    "reveal-expandable-detail'>&lt;script&gt;alert(1)&lt;/script&gt;</button>"));
+            // check that alert was not executed
             Assert.assertFalse("Alert not expected", alerts.get());
         }
     }

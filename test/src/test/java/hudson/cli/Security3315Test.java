@@ -34,7 +34,7 @@ public class Security3315Test {
 
     public Security3315Test(String allowWs) {
         this.allowWs = allowWs == null ? null : Boolean.valueOf(allowWs);
-        this.escapeHatch = new FlagRule<>(() -> CLIAction.ALLOW_WEBSOCKET, v -> { CLIAction.ALLOW_WEBSOCKET = v; }, this.allowWs);
+        this.escapeHatch = new FlagRule<>(() -> CLIAction.ALLOW_WEBSOCKET, v -> CLIAction.ALLOW_WEBSOCKET = v, this.allowWs);
     }
 
     @Test

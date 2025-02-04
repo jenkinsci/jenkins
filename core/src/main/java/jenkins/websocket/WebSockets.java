@@ -24,6 +24,9 @@
 
 package jenkins.websocket;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.util.Iterator;
@@ -31,13 +34,11 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Support for serving WebSocket responses.
@@ -65,11 +66,16 @@ public class WebSockets {
     // TODO ability to handle subprotocols?
 
     public static HttpResponse upgrade(WebSocketSession session) {
-        return (req, rsp, node) -> upgradeResponse(session, req, rsp);
+        return new HttpResponse() {
+            @Override
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
+                upgradeResponse(session, req, rsp);
+            }
+        };
     }
 
     /**
-     * Variant of {@link #upgrade} that does not presume a {@link StaplerRequest}.
+     * Variant of {@link #upgrade} that does not presume a {@link StaplerRequest2}.
      * @since 2.446
      */
     public static void upgradeResponse(WebSocketSession session, HttpServletRequest req, HttpServletResponse rsp) throws IOException, ServletException {

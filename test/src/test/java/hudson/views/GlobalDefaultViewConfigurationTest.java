@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.MockStaplerRequestBuilder;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Tests of {@link GlobalDefaultViewConfiguration}.
@@ -52,7 +52,7 @@ public class GlobalDefaultViewConfigurationTest {
         String viewName = "NonExistentView";
         GlobalDefaultViewConfiguration c = new GlobalDefaultViewConfiguration();
 
-        StaplerRequest create = new MockStaplerRequestBuilder(j, "/configure").build();
+        StaplerRequest2 create = new MockStaplerRequestBuilder(j, "/configure").build();
         JSONObject params = new JSONObject();
         params.accumulate("primaryView", viewName);
         try {

@@ -39,6 +39,6 @@ import jenkins.util.groovy.GroovyHookScript;
 public class GroovyInitScript {
     @Initializer(after = JOB_CONFIG_ADAPTED)
     public static void init(Jenkins j) {
-        new GroovyHookScript("init", j.servletContext, j.getRootDir(), j.getPluginManager().uberClassLoader).run();
+        new GroovyHookScript("init", j.getServletContext(), j.getRootDir(), j.getPluginManager().uberClassLoader).run();
     }
 }

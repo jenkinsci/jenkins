@@ -43,6 +43,9 @@ THE SOFTWARE.
     <st:attribute name="clazz">
       Additional CSS class names
     </st:attribute>
+    <st:attribute name="label">
+      Optional label for the button, hides the tooltip if set
+    </st:attribute>
     <st:attribute name="ref" use="required">
       The id of the target element to be copied
       @since 2.449
@@ -50,14 +53,19 @@ THE SOFTWARE.
   </st:documentation>
 
   <!-- 'copy-button' class is for backwards compatability -->
-  <button class="copy-button jenkins-button ${attrs.iconOnly == 'true' ? 'jenkins-button--tertiary' : ''} jenkins-copy-button ${attrs.clazz}"
-          text="${attrs.text}"
-          ref="${attrs.ref}"
-          message="${attrs.message ?: '%Copied'}"
-          tooltip="${attrs.tooltip ?: '%Copy'}"
-          type="button">
-    <span class="jenkins-copy-button__icon" />
-  </button>
+  <span data-message-insecure="${%copyInsecure}">
+    <button class="copy-button jenkins-button ${attrs.iconOnly == 'true' ? 'jenkins-button--tertiary' : ''} jenkins-copy-button ${attrs.clazz}"
+            text="${attrs.text}"
+            ref="${attrs.ref}"
+            message="${attrs.message ?: '%Copied'}"
+            tooltip="${attrs.label != null ? null : attrs.tooltip ?: '%Copy'}"
+            type="button">
+      <span class="jenkins-copy-button__icon">
+        <l:icon src="symbol-check" />
+      </span>
+      ${attrs.label}
+    </button>
+  </span>
 
   <st:adjunct includes="lib.layout.copyButton.copyButton"/>
 </j:jelly>

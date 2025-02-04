@@ -1,0 +1,145 @@
+.app-about-branding {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--section-padding) * 2);
+  pointer-events: none;
+  margin-bottom: var(--section-padding);
+  overflow: hidden;
+  border-radius: 1rem;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+  }
+
+  &::before {
+    width: 120%;
+    aspect-ratio: 1;
+    background: repeating-conic-gradient(
+      var(--background) 0deg,
+      rgb(100 100 100 / 0.25) 20deg
+    );
+    animation: app-about-starburst 100s linear infinite;
+    opacity: 0.25;
+  }
+
+  &::after {
+    inset: 0;
+    border: var(--jenkins-border--subtle);
+    border-radius: inherit;
+  }
+
+  img {
+    height: 7.5rem;
+    z-index: 1;
+  }
+}
+
+.app-about-branding__aurora {
+  position: absolute;
+  width: 120%;
+  aspect-ratio: 1;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 100%;
+  }
+
+  &::before {
+    background-color: var(--color);
+    background-image: radial-gradient(
+        at 40% 20%,
+        hsl(28 100% 74% / 1) 0,
+        transparent 50%
+      ),
+      radial-gradient(at 80% 0%, hsl(189 100% 56% / 1) 0, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(355 85% 93% / 1) 0, transparent 50%),
+      radial-gradient(at 80% 50%, hsl(359 70% 46%) 0, transparent 50%),
+      radial-gradient(at 0% 100%, hsl(22 100% 77% / 1) 0, transparent 50%),
+      radial-gradient(at 80% 100%, hsl(242 100% 70% / 1) 0, transparent 50%),
+      radial-gradient(at 0% 0%, hsl(343 100% 76% / 1) 0, transparent 50%);
+    opacity: 0.4;
+    animation: app-about-aurora-one 7s linear infinite;
+  }
+
+  &::after {
+    background-image: radial-gradient(
+        at 40% 20%,
+        hsl(212 100% 74% / 1) 0,
+        transparent 50%
+      ),
+      radial-gradient(at 80% 0%, hsl(13 100% 56% / 1) 0, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(179 85% 93% / 1) 0, transparent 50%),
+      radial-gradient(at 80% 50%, hsl(164 100% 76% / 1) 0, transparent 50%),
+      radial-gradient(at 0% 100%, hsl(206 100% 77% / 1) 0, transparent 50%),
+      radial-gradient(at 80% 100%, hsl(66 100% 70% / 1) 0, transparent 50%),
+      radial-gradient(at 0% 0%, hsl(167 100% 76% / 1) 0, transparent 50%);
+    opacity: 0.2;
+    animation: app-about-aurora-two 14s linear infinite;
+  }
+}
+
+@keyframes app-about-aurora-one {
+  0% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 0.2;
+    transform: rotate(-180deg);
+  }
+
+  100% {
+    opacity: 0.4;
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes app-about-aurora-two {
+  0% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 0.55;
+    transform: rotate(180deg);
+  }
+
+  100% {
+    opacity: 0.2;
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes app-about-starburst {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.app-about-heading {
+  font-weight: 600;
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem !important;
+}
+
+.app-about-version {
+  font-weight: var(--font-bold-weight);
+  color: var(--text-color-secondary);
+  margin: 0;
+}
+
+.app-about-paragraph {
+  font-size: 1rem;
+  margin-bottom: var(--section-padding);
+  font-weight: var(--font-bold-weight);
+}

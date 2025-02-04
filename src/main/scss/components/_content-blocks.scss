@@ -1,0 +1,50 @@
+@use "../abstracts/mixins";
+
+.content-block__link {
+  @include mixins.item;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.1rem;
+  color: var(--text-color) !important;
+  font-weight: var(--font-bold-weight);
+  text-decoration: none !important;
+
+  &::before {
+    background: var(--button-background);
+  }
+
+  .trailing-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+}
+
+.empty-state-block {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.empty-state-section {
+  margin-top: var(--section-padding);
+}
+
+.empty-state-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0;
+
+  li {
+    list-style: none;
+  }
+}

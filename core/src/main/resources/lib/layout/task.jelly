@@ -80,7 +80,7 @@ THE SOFTWARE.
     <st:attribute name="onclick" deprecated="true">
       Onclick inline JS handler. Deprecated, specify data-callback attribute instead.
     </st:attribute>
-    <st:attribute name="data-callback" since="TODO">
+    <st:attribute name="data-callback" since="2.437">
       Name of a global function to call when clicked.
       It will be called with an element (currently 'a') as first argument, and the event as second argument.
       You can specify further data-* attributes to customize behavior, those will be defined on the element passed as first argument.
@@ -97,7 +97,7 @@ THE SOFTWARE.
       Message to use for confirmation, if requested; defaults to title.
       (since 1.512)
     </st:attribute>
-    <st:attribute name="destructive" type="boolean" since="TODO">
+    <st:attribute name="destructive" type="boolean" since="2.415">
       Show red confirmation button.
     </st:attribute>
   </st:documentation>
@@ -186,6 +186,7 @@ THE SOFTWARE.
                      href="${href}"
                      class="task-link task-link-no-confirm ${isCurrent ? 'task-link--active' : ''}"
                      data-task-success="${%Done.}"
+                     data-task-failure="${%Failed.}"
                      data-task-post="${attrs.post}"
                      ATTRIBUTES="${attrs}"
                      EXCEPT="badge confirmationMessage contextMenu destructive enabled href icon permission permissions post requiresConfirmation title">

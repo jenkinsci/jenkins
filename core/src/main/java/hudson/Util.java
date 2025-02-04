@@ -92,6 +92,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -115,7 +116,6 @@ import jenkins.model.Jenkins;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.PathRemover;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -125,6 +125,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -634,7 +635,6 @@ public class Util {
      *      The stream will be closed by this method at the end of this method.
      * @return
      *      32-char wide string
-     * @see DigestUtils#md5Hex(InputStream)
      */
     @NonNull
     public static String getDigestOf(@NonNull InputStream source) throws IOException {
@@ -709,13 +709,7 @@ public class Util {
 
     @NonNull
     public static String toHexString(@NonNull byte[] data, int start, int len) {
-        StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < len; i++) {
-            int b = data[start + i] & 0xFF;
-            if (b < 16)    buf.append('0');
-            buf.append(Integer.toHexString(b));
-        }
-        return buf.toString();
+        return HexFormat.of().formatHex(data, start, len);
     }
 
     @NonNull
@@ -725,12 +719,7 @@ public class Util {
 
     @NonNull
     public static byte[] fromHexString(@NonNull String data) {
-        if (data.length() % 2 != 0)
-            throw new IllegalArgumentException("data must have an even number of hexadecimal digits");
-        byte[] r = new byte[data.length() / 2];
-        for (int i = 0; i < data.length(); i += 2)
-            r[i / 2] = (byte) Integer.parseInt(data.substring(i, i + 2), 16);
-        return r;
+        return HexFormat.of().parseHex(data);
     }
 
     /**
@@ -1524,6 +1513,10 @@ public class Util {
      *                                  does not contain the specified method.
      */
     public static boolean isOverridden(@NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
+        if (base == derived) {
+            // If base and derived are the same type, the method is not overridden by definition
+            return false;
+        }
         // If derived is not a subclass or implementor of base, it can't override any method
         // Technically this should also be triggered when base == derived, because it can't override its own method, but
         // the unit tests explicitly test for that as working.
@@ -1850,14 +1843,25 @@ public class Util {
     /**
      * Find the specific ancestor, or throw an exception.
      * Useful for an ancestor we know is inside the URL to ease readability
+     *
+     * @since 2.475
      */
     @Restricted(NoExternalUse.class)
-    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest request, @NonNull Class<T> clazz) {
+    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest2 request, @NonNull Class<T> clazz) {
         T t = request.findAncestorObject(clazz);
         if (t == null) {
             throw new IllegalArgumentException("No ancestor of type " + clazz.getName() + " in the request");
         }
         return t;
+    }
+
+    /**
+     * @deprecated use {@link #getNearestAncestorOfTypeOrThrow(StaplerRequest2, Class)}
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest request, @NonNull Class<T> clazz) {
+        return getNearestAncestorOfTypeOrThrow(StaplerRequest.toStaplerRequest2(request), clazz);
     }
 
     @Restricted(NoExternalUse.class)
@@ -1976,9 +1980,18 @@ public class Util {
      * Returns Hex string of SHA-256 Digest of passed input
      */
     @Restricted(NoExternalUse.class)
-    public static String getHexOfSHA256DigestOf(byte[] input) throws IOException {
+    public static String getHexOfSHA256DigestOf(byte[] input) {
         //get hex string of sha 256 of payload
         byte[] payloadDigest = Util.getSHA256DigestOf(input);
         return (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
+    }
+
+
+    /**
+     * Returns Hex string of SHA-256 Digest of passed string
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getHexOfSHA256DigestOf(String input) {
+        return getHexOfSHA256DigestOf(input.getBytes(StandardCharsets.UTF_8));
     }
 }

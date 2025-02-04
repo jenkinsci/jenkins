@@ -67,23 +67,25 @@ THE SOFTWARE.
       </div>
 
       <div class="jenkins-mobile-hide">
-        <table id="projectstatus" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
-          <thead>
-          <tr>
-            <j:forEach var="col" items="${columnExtensions}">
-              <j:if test="${col.class.simpleName.equals('BuildButtonColumn')}">
-                <j:set var="buildButtonColumn" value="${col}" />
-              </j:if>
-              <st:include page="columnHeader.jelly" it="${col}" />
-            </j:forEach>
-          </tr>
-          </thead>
+        <div class="app-project-status-table">
+          <table id="projectstatus" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
+            <thead>
+              <tr>
+                <j:forEach var="col" items="${columnExtensions}">
+                  <j:if test="${col.class.simpleName.equals('BuildButtonColumn')}">
+                    <j:set var="buildButtonColumn" value="${col}" />
+                  </j:if>
+                  <st:include page="columnHeader.jelly" it="${col}" />
+                </j:forEach>
+              </tr>
+            </thead>
 
-          <j:forEach var="job" items="${jobs}">
-            <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
-            <t:projectViewRow jobBaseUrl="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
-          </j:forEach>
-        </table>
+            <j:forEach var="job" items="${jobs}">
+              <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
+              <t:projectViewRow jobBaseUrl="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
+            </j:forEach>
+          </table>
+        </div>
         <t:iconSize><t:rssBar/></t:iconSize>
       </div>
 

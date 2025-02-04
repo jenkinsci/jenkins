@@ -70,7 +70,6 @@ import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
-import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -346,10 +345,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     public static InputStream getInputStream(URL url) throws IOException {
         final ProxyConfiguration p = get();
         if (p == null)
-            return new RetryableHttpStream(url);
+            return ((HttpURLConnection) url.openConnection()).getInputStream();
 
         Proxy proxy = p.createProxy(url.getHost());
-        InputStream is = new RetryableHttpStream(url, proxy);
+        InputStream is = ((HttpURLConnection) url.openConnection(proxy)).getInputStream();
         if (p.getUserName() != null) {
             // Add an authenticator which provides the credentials for proxy authentication
             Authenticator.setDefault(p.authenticator);
@@ -538,6 +537,34 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 return FormValidation.error(Messages.PluginManager_PortNotInRange(0, 65535));
             }
             return FormValidation.ok();
+        }
+
+        /**
+         * Do check if the provided value is empty or composed of whitespaces.
+         * If so, return a validation warning.
+         *
+         * @param value the value to test
+         * @return a validation warning iff the provided value is empty or composed of whitespaces.
+         */
+        private static FormValidation checkProxyCredentials(String value) {
+            value = Util.fixEmptyAndTrim(value);
+            if (value == null) {
+                return FormValidation.ok();
+            } else {
+                return FormValidation.warning(Messages.ProxyConfiguration_NonTLSWarning());
+            }
+        }
+
+        @RequirePOST
+        @Restricted(NoExternalUse.class)
+        public FormValidation doCheckUserName(@QueryParameter String value) {
+            return checkProxyCredentials(value);
+        }
+
+        @RequirePOST
+        @Restricted(NoExternalUse.class)
+        public FormValidation doCheckSecretPassword(@QueryParameter String value) {
+            return checkProxyCredentials(value);
         }
 
         @RequirePOST

@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <l:layout permission="${app.ADMINISTER}" title="${%Users}" type="one-column">
     <l:main-panel>
-      <l:app-bar title="${%Users}">
+      <l:app-bar title="${%Users}" subtitle="${it.allUsers.size()}">
         <l:isAdmin>
           <a href="addUser" class="jenkins-button jenkins-button--primary">
             <l:icon src="symbol-add" />
@@ -52,7 +52,7 @@ THE SOFTWARE.
             <tr>
               <td class="jenkins-table__cell--tight jenkins-table__icon">
                 <div class="jenkins-table__cell__button-wrapper">
-                  <l:icon src="${h.getUserAvatar(user,'32x32')}" />
+                  <l:icon src="${h.getUserAvatar(user, '64x64')}" class="jenkins-avatar" />
                 </div>
               </td>
               <td>
@@ -63,7 +63,7 @@ THE SOFTWARE.
               </td>
               <td>
                 <div class="jenkins-table__cell__button-wrapper">
-                  <a href="${user.url}/configure" class="jenkins-button jenkins-button--tertiary">
+                  <a href="${user.url}/" class="jenkins-button jenkins-button--tertiary">
                     <l:icon src="symbol-settings" />
                   </a>
                 </div>

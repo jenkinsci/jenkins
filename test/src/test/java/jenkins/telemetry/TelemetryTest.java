@@ -13,8 +13,13 @@ import static org.junit.Assert.assertTrue;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.Util;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -26,12 +31,7 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,8 +39,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 public class TelemetryTest {
     @Rule
@@ -99,7 +99,7 @@ public class TelemetryTest {
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> types, hasItem("test-data"));
         //90ecf3ce1cd5ba1e5ad3cde7ad08a941e884f2e4d9bd463361715abab8efedc5
-        assertThat(correlators, hasItem(DigestUtils.sha256Hex(correlationId + "test-data")));
+        assertThat(correlators, hasItem(Util.getHexOfSHA256DigestOf(correlationId + "test-data")));
     }
 
     @Test
@@ -304,7 +304,7 @@ public class TelemetryTest {
 
     @TestExtension
     public static class TelemetryReceiver implements UnprotectedRootAction {
-        public void doEvents(StaplerRequest request, StaplerResponse response) throws IOException {
+        public void doEvents(StaplerRequest2 request, StaplerResponse2 response) throws IOException {
             StringWriter sw = new StringWriter();
             IOUtils.copy(request.getInputStream(), sw, StandardCharsets.UTF_8);
             JSONObject json = JSONObject.fromObject(sw.toString());

@@ -69,6 +69,9 @@ THE SOFTWARE.
     <st:attribute name="tooltip">
       Used as tooltip of the checkbox, and, if a title is specified, of the title
     </st:attribute>
+    <st:attribute name="description" since="TODO">
+      Optional description for the checkbox
+    </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
@@ -87,6 +90,11 @@ THE SOFTWARE.
     <label class="attach-previous ${attrs.title == null ? 'js-checkbox-label-empty' : ''}"
            title="${attrs.tooltip}">${attrs.title}</label>
   </span>
+  <j:if test="${attrs.description != null}">
+    <div class="jenkins-checkbox__description">
+      ${attrs.description}
+    </div>
+  </j:if>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
   </j:if>

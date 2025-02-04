@@ -14,12 +14,12 @@ properties([
 
 def axes = [
   platforms: ['linux', 'windows'],
-  jdks: [11, 17, 21],
+  jdks: [17, 21],
 ]
 
 stage('Record build') {
   retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-    node('maven-11') {
+    node('maven-17') {
       infra.checkoutSCM()
 
       /*

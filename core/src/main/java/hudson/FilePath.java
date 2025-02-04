@@ -31,8 +31,6 @@ import static hudson.Util.fixEmpty;
 import static hudson.Util.fixEmptyAndTrim;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -61,7 +59,6 @@ import hudson.util.DirScanner;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.FileVisitor;
 import hudson.util.FormValidation;
-import hudson.util.HeadBufferingStream;
 import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
@@ -80,6 +77,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -123,21 +121,23 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import jenkins.MasterToSlaveFileCallable;
-import jenkins.SlaveToMasterFileCallable;
+import jenkins.agents.ControllerToAgentFileCallable;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.tar.TarEntry;
+import org.apache.tools.tar.TarInputStream;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.jenkinsci.remoting.RoleChecker;
@@ -321,7 +321,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             buf.append(m.group(1));
             path = path.substring(m.end());
         }
-        boolean isAbsolute = buf.length() > 0;
+        boolean isAbsolute = !buf.isEmpty();
         // Split remaining path into tokens, trimming any duplicate or trailing separators
         List<String> tokens = new ArrayList<>();
         int s = 0, end = path.length();
@@ -366,7 +366,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
         // Recombine tokens
         for (String token : tokens) buf.append(token);
-        if (buf.length() == 0) buf.append('.');
+        if (buf.isEmpty()) buf.append('.');
         return buf.toString();
     }
 
@@ -520,21 +520,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new Archive(factory, out, scanner, verificationRoot, openOptions));
     }
 
-    private static class Archive extends MasterToSlaveFileCallable<Integer> {
-        private final ArchiverFactory factory;
-        private final OutputStream out;
-        private final DirScanner scanner;
-        private final String verificationRoot;
-        private OpenOption[] openOptions;
-
-        Archive(ArchiverFactory factory, OutputStream out, DirScanner scanner, String verificationRoot, OpenOption... openOptions) {
-            this.factory = factory;
-            this.out = out;
-            this.scanner = scanner;
-            this.verificationRoot = verificationRoot;
-            this.openOptions = openOptions;
-        }
-
+    private record Archive(ArchiverFactory factory, OutputStream out, DirScanner scanner, String verificationRoot, OpenOption... openOptions) implements ControllerToAgentFileCallable<Integer> {
         @Override
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
                 try (Archiver a = factory.create(out)) {
@@ -542,8 +528,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     return a.countEntries();
                 }
             }
-
-            private static final long serialVersionUID = 1L;
     }
 
     public int archive(final ArchiverFactory factory, OutputStream os, final FileFilter filter) throws IOException, InterruptedException {
@@ -887,15 +871,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         },
         GZIP {
             @Override
-            public InputStream extract(InputStream _in) throws IOException {
-                HeadBufferingStream in = new HeadBufferingStream(_in, SIDE_BUFFER_SIZE);
-                try {
-                    return new GZIPInputStream(in, 8192, true);
-                } catch (IOException e) {
-                    // various people reported "java.io.IOException: Not in GZIP format" here, so diagnose this problem better
-                    in.fillSide();
-                    throw new IOException(e.getMessage() + "\nstream=" + Util.toHexString(in.getSideBuffer()), e);
-                }
+            public InputStream extract(InputStream in) throws IOException {
+                return new GZIPInputStream(new BufferedInputStream(in));
             }
 
             @Override
@@ -1004,8 +981,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 }
             }
 
-            if (con instanceof HttpURLConnection) {
-                HttpURLConnection httpCon = (HttpURLConnection) con;
+            if (con instanceof HttpURLConnection httpCon) {
                 int responseCode = httpCon.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_MOVED_PERM
                         || responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
@@ -1166,7 +1142,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public void copyFrom(FileItem file) throws IOException, InterruptedException {
         if (channel == null) {
             try {
-                file.write(new File(remote));
+                file.write(Paths.get(remote));
+            } catch (UncheckedIOException e) {
+                throw e.getCause();
             } catch (IOException e) {
                 throw e;
             } catch (Exception e) {
@@ -1181,14 +1159,17 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
+     * @deprecated use {@link #copyFrom(FileItem)}
+     */
+    @Deprecated
+    public void copyFrom(org.apache.commons.fileupload.FileItem file) throws IOException, InterruptedException {
+        copyFrom(file.toFileUpload2FileItem());
+    }
+
+    /**
      * Code that gets executed on the machine where the {@link FilePath} is local.
      * Used to act on {@link FilePath}.
-     * <strong>Warning:</strong> implementations must be serializable, so prefer a static nested class to an inner class.
-     *
-     * <p>
-     * Subtypes would likely want to extend from either {@link MasterToSlaveCallable}
-     * or {@link SlaveToMasterFileCallable}.
-     *
+     * A typical implementation would be a {@code record} implementing {@link ControllerToAgentFileCallable}.
      * @see FilePath#act(FileCallable)
      */
     public interface FileCallable<T> extends Serializable, RoleSensitive {
@@ -1442,7 +1423,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             for (File file : listParentFiles(f)) {
                 if (file.getName().startsWith(f.getName() + WorkspaceList.COMBINATOR)) {
-                    Util.deleteRecursive(file.toPath(), path -> path.toFile());
+                    Util.deleteRecursive(file.toPath(), Path::toFile);
                 }
             }
 
@@ -1473,7 +1454,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            Util.deleteRecursive(fileToPath(f), path -> path.toFile());
+            Util.deleteRecursive(fileToPath(f), Path::toFile);
             return null;
         }
     }
@@ -1490,7 +1471,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            Util.deleteContentsRecursive(fileToPath(f), path -> path.toFile());
+            Util.deleteContentsRecursive(fileToPath(f), Path::toFile);
             return null;
         }
     }
@@ -2460,7 +2441,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             try (OutputStream os = p.getOut();
-                 OutputStream out = new java.util.zip.GZIPOutputStream(os, 8192);
+                 OutputStream out = new GZIPOutputStream(os, 8192);
                  RandomAccessFile raf = new RandomAccessFile(f, "r")) {
                 raf.seek(offset);
                 byte[] buf = new byte[8192];
@@ -3068,14 +3049,13 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
-     * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
+     * Supports large files &gt; 10 GB since 1.627.
      */
     private static void readFromTar(String name, File baseDir, InputStream in, Charset filenamesEncoding) throws IOException {
 
-        // TarInputStream t = new TarInputStream(in);
-        try (TarArchiveInputStream t = new TarArchiveInputStream(in, filenamesEncoding.name())) {
-            TarArchiveEntry te;
-            while ((te = t.getNextTarEntry()) != null) {
+        try (TarInputStream t = new TarInputStream(in, filenamesEncoding.name())) {
+            TarEntry te;
+            while ((te = t.getNextEntry()) != null) {
                 File f = new File(baseDir, te.getName());
                 if (!f.toPath().normalize().startsWith(baseDir.toPath())) {
                     throw new IOException(
@@ -3509,7 +3489,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     private static void checkPermissionForValidate() {
-        AccessControlled subject = Stapler.getCurrentRequest().findAncestorObject(AbstractProject.class);
+        AccessControlled subject = Stapler.getCurrentRequest2().findAncestorObject(AbstractProject.class);
         if (subject == null)
             Jenkins.get().checkPermission(Jenkins.MANAGE);
         else

@@ -209,7 +209,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                         LOGGER.log(INFO,
                                 "Disabling new jobs for computer {0} as it has finished its scheduled uptime",
                                 new Object[]{c.getName()});
-                        return 1;
+                        return 0;
                     } else if (c.isIdle() && c.isAcceptingTasks()) {
                         Queue.withLock(new Runnable() {
                             @Override
@@ -242,14 +242,34 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                     c.disconnect(OfflineCause.create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
                 }
             }
+        } else {
+            c.setOfflineCause(new ScheduledOfflineCause());
         }
-        return 1;
+        return 0;
     }
 
     private synchronized boolean isOnlineScheduled() {
         updateStartStopWindow();
         long now = System.currentTimeMillis();
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
+    }
+
+    public static class ScheduledOfflineCause extends OfflineCause.SimpleOfflineCause {
+        public ScheduledOfflineCause() {
+            super(Messages._SimpleScheduledRetentionStrategy_ScheduledOfflineCause_displayName());
+        }
+
+        @NonNull
+        @Override
+        public String getComputerIcon() {
+            return "symbol-computer-not-accepting";
+        }
+
+        @NonNull
+        @Override
+        public String getIcon() {
+            return "symbol-trigger";
+        }
     }
 
     @Extension @Symbol("schedule")

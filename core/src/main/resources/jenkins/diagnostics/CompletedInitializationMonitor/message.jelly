@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="alert alert-warning">
+  <div class="jenkins-alert jenkins-alert-warning">
       ${%blurb(app.initLevel)}
       ${%Example: usage of} <code>@Initializer(after = InitMilestone.COMPLETED)</code> ${%in a plugin}
       (<a href="https://www.jenkins.io/redirect/troubleshooting/initialization-not-completed" rel="noopener noreferrer" target="_blank">${%See documentation}</a>).
