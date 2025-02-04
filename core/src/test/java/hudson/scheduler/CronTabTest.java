@@ -27,6 +27,7 @@ package hudson.scheduler;
 import static java.util.Calendar.MONDAY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -338,6 +339,24 @@ public class CronTabTest {
             }
         }
         assertEquals("[35, 56]", times.toString());
+    }
+
+    @Test public void floorCeilMinuteGranularity() throws Exception {
+        var tab = new CronTab("*/5 * * * *");
+        assertFloorCeil(tab, new GregorianCalendar(2025, 2, 4, 14, 15, 23), "Mar 4, 2025, 2:15:00 PM", "Mar 4, 2025, 2:20:00 PM");
+        assertFloorCeil(tab, new GregorianCalendar(2025, 2, 4, 14, 19, 23), "Mar 4, 2025, 2:15:00 PM", "Mar 4, 2025, 2:20:00 PM");
+        assertFloorCeil(tab, new GregorianCalendar(2025, 2, 4, 14, 16,  0), "Mar 4, 2025, 2:15:00 PM", "Mar 4, 2025, 2:20:00 PM");
+        assertFloorCeil(tab, new GregorianCalendar(2025, 2, 4, 14, 19,  0), "Mar 4, 2025, 2:15:00 PM", "Mar 4, 2025, 2:20:00 PM");
+        assertFloorCeil(tab, new GregorianCalendar(2025, 2, 4, 14, 15,  0), "Mar 4, 2025, 2:15:00 PM", "Mar 4, 2025, 2:15:00 PM");
+    }
+
+    private static void assertFloorCeil(CronTab tab, Calendar now, String expectedFloor, String expectedCeil) {
+        var fmt = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
+        var nowFormatted = fmt.format(now.getTime());
+        var nowClone = (Calendar) now.clone();
+        assertThat("floor of " + nowFormatted, fmt.format(tab.floor(nowClone).getTime()), is(expectedFloor));
+        nowClone = (Calendar) now.clone();
+        assertThat("ceil of " + nowFormatted, fmt.format(tab.ceil(nowClone).getTime()), is(expectedCeil));
     }
 
     @Issue("SECURITY-790")
