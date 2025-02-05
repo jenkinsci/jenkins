@@ -34,8 +34,8 @@ import jenkins.util.SystemProperties;
  */
 // @MetaInfServices --- not annotated because this is the fallback implementation
 public class DefaultConfidentialStore extends ConfidentialStore {
-    static final String MASTER_KEY_FILE_SYSTEM_PROPERTY = "jenkins.master.key.file";
-    static final String MASTER_KEY_READONLY_SYSTEM_PROPERTY_NAME = "jenkins.master.key.readOnly";
+    static final String MASTER_KEY_FILE_SYSTEM_PROPERTY = DefaultConfidentialStore.class.getName() + ".file";
+    static final String MASTER_KEY_READONLY_SYSTEM_PROPERTY_NAME = DefaultConfidentialStore.class.getName() + ".readOnly";
 
     private final SecureRandom sr = new SecureRandom();
 
