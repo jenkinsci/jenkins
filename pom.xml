@@ -34,7 +34,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-parent</artifactId>
-  <version>2.492.1</version>
+  <version>${revision}${changelist}</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -63,7 +63,7 @@ THE SOFTWARE.
   <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
     <connection>scm:git:https://github.com/jenkinsci/jenkins.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/jenkins.git</developerConnection>
-    <tag>jenkins-2.492.1</tag>
+    <tag>${scmTag}</tag>
     <url>https://github.com/jenkinsci/jenkins</url>
   </scm>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.492.1</revision>
+    <revision>2.492.2</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-02-05T09:35:52Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-02-05T13:22:15Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
