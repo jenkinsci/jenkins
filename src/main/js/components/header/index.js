@@ -91,8 +91,11 @@ function generateOverflowButton() {
 function removeOverflowButton() {
   const breadcrumbsOverflow = document.querySelector(
     ".jenkins-header__breadcrumbs__list-item .jenkins-button",
-  )?.parentNode;
-  breadcrumbsOverflow?.remove();
+  );
+
+  if (breadcrumbsOverflow) {
+    breadcrumbsOverflow.parentNode.remove();
+  }
 }
 
 function breadcrumbsBarOverflows() {
