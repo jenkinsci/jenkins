@@ -12,7 +12,7 @@
             <j:choose>
               <j:when test="${anc.object == app}">
                 <li class="jenkins-breadcrumbs__list-item" aria-current="page">
-                  <a href="${rootURL}">
+                  <a href="${rootURL}/">
                     <st:include page="logo" />
                   </a>
                 </li>
