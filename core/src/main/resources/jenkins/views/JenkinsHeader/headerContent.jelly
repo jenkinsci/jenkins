@@ -70,11 +70,12 @@
             </j:set>
           </j:if>
 
+          <j:set var="badge" value="${action.badge}" />
           <j:if test="${tooltip.length() == 0}">
             <j:set var="tooltip">
               <div style="text-align: center;">${action.displayName}</div>
-              <j:if test="${action.badge != null}">
-                <div style="text-align: center; color: var(--text-color-secondary)">${action.badge.tooltip}</div>
+              <j:if test="${badge != null}">
+                <div style="text-align: center; color: var(--text-color-secondary)">${badge.tooltip}</div>
               </j:if>
             </j:set>
           </j:if>
@@ -89,8 +90,8 @@
             <x:attribute name="class">jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'}</x:attribute>
             <l:icon src="${action.iconFileName}" />
             <span class="jenkins-visually-hidden">${action.displayName}</span>
-            <j:if test="${action.badge != null}">
-              <span class="jenkins-badge jenkins-!-${action.badge.severity}-color" />
+            <j:if test="${badge != null}">
+              <span class="jenkins-badge jenkins-!-${badge.severity}-color" />
             </j:if>
           </x:element>
         </j:forEach>
