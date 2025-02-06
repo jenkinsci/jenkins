@@ -41,9 +41,9 @@ function computeBreadcrumbs() {
   }
 
   const items = [];
-  const breadcrumbs = [
-    ...document.querySelectorAll(`[data-type="breadcrumb-item"]`),
-  ];
+  const breadcrumbs = Array.from(
+    document.querySelectorAll(`[data-type="breadcrumb-item"]`),
+  );
   while (breadcrumbsBarOverflows()) {
     const item = breadcrumbs.shift();
     items.push(item);
