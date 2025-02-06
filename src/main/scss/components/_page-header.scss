@@ -80,11 +80,11 @@
     gap: 0.5rem;
     padding-right: var(--section-padding);
   }
-}
 
-body:has(.jenkins-app-bar--sticky) {
-  .jenkins-header::before {
-    bottom: -4rem;
-    mask-image: linear-gradient(black 50%, transparent);
+  &--has-sticky-app-bar {
+    &::before {
+      bottom: -4rem;
+      mask-image: linear-gradient(black 50%, transparent);
+    }
   }
 }

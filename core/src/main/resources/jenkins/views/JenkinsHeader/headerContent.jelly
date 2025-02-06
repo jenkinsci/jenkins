@@ -1,8 +1,8 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
   <header id="page-header" class="jenkins-header">
-    <div id="breadcrumbBar" class="jenkins-header__breadcrumbs" aria-label="breadcrumb">
-      <ol class="jenkins-header__breadcrumbs__list" id="breadcrumbs">
+    <div id="breadcrumbBar" class="jenkins-breadcrumbs" aria-label="breadcrumb">
+      <ol class="jenkins-breadcrumbs__list" id="breadcrumbs">
         <st:include page="prefix" optional="true" />
 
         <j:forEach var="anc" items="${request.ancestors}" indexVar="index">
@@ -11,7 +11,7 @@
 
             <j:choose>
               <j:when test="${anc.object == app}">
-                <li class="jenkins-header__breadcrumbs__list-item" aria-current="page">
+                <li class="jenkins-breadcrumbs__list-item" aria-current="page">
                   <a href="${rootURL}">
                     <st:include page="logo" />
                   </a>

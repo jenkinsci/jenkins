@@ -2,6 +2,7 @@ import Utils from "@/components/dropdowns/utils";
 import { createElementFromHtml } from "@/util/dom";
 
 function init() {
+  // TODO
   window.addEventListener("scroll", () => {
     const navigation = document.querySelector("#page-header");
     const scrollY = Math.max(0, window.scrollY);
@@ -24,13 +25,23 @@ function init() {
     }
   });
 
+  // TODO
   window.addEventListener("resize", computeBreadcrumbs);
   computeBreadcrumbs();
+
+  // TODO
+  window.addEventListener("load", () => {
+    if (document.querySelector(".jenkins-app-bar--sticky")) {
+      document
+        .querySelector(".jenkins-header")
+        .classList.add("jenkins-header--has-sticky-app-bar");
+    }
+  });
 }
 
 function computeBreadcrumbs() {
   document
-    .querySelectorAll(".jenkins-header__breadcrumbs__list-item.jenkins-hidden")
+    .querySelectorAll(".jenkins-breadcrumbs__list-item.jenkins-hidden")
     .forEach((b) => {
       b.classList.remove("jenkins-hidden");
     });
@@ -67,18 +78,16 @@ function computeBreadcrumbs() {
 function generateOverflowButton() {
   // If an overflow menu already exists let's use that
   const overflowMenu = document.querySelector(
-    ".jenkins-header__breadcrumbs__list-item .jenkins-button",
+    ".jenkins-breadcrumbs__list-item .jenkins-button",
   )?.parentNode;
   if (overflowMenu) {
     return overflowMenu;
   }
 
   // Generate an overflow menu to store breadcrumbs
-  const logo = document.querySelector(
-    ".jenkins-header__breadcrumbs__list-item",
-  );
+  const logo = document.querySelector(".jenkins-breadcrumbs__list-item");
   const element =
-    createElementFromHtml(`<li class="jenkins-header__breadcrumbs__list-item"><button class="jenkins-button jenkins-button--tertiary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    createElementFromHtml(`<li class="jenkins-breadcrumbs__list-item"><button class="jenkins-button jenkins-button--tertiary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
     <circle cx="256" cy="256" r="45" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/>
     <circle cx="441" cy="256" r="45" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/>
     <circle cx="71" cy="256" r="45" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/>
@@ -90,7 +99,7 @@ function generateOverflowButton() {
 
 function removeOverflowButton() {
   const breadcrumbsOverflow = document.querySelector(
-    ".jenkins-header__breadcrumbs__list-item .jenkins-button",
+    ".jenkins-breadcrumbs__list-item .jenkins-button",
   );
 
   if (breadcrumbsOverflow) {
