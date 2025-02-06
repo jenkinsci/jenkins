@@ -30,11 +30,10 @@ import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.RootAction;
 import hudson.model.User;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Display the user avatar in the navigation bar.

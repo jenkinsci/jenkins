@@ -28,7 +28,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.diagnosis.ReverseProxySetupMonitor;
 import hudson.model.AdministrativeMonitor;
-import hudson.model.ManageJenkinsAction;
 import hudson.model.PageDecorator;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
