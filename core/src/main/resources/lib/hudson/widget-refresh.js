@@ -1,4 +1,3 @@
-/* global Behaviour, refreshPart */
 /**
  * Use the `widget-refresh-reference` class on an element with `data-id` and `data-url` attributes.
  * The content from the URL will be used to replace the element with the specified ID.
