@@ -352,7 +352,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>944.v5a_859593b_98a_</version>
+                  <version>946.v2a_79d8a_4b_e14</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -497,7 +497,7 @@ THE SOFTWARE.
                   <!-- dependency of jdk-tool -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>apache-httpcomponents-client-4-api</artifactId>
-                  <version>4.5.14-208.v438351942757</version>
+                  <version>4.5.14-269.vfa_2321039a_83</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
