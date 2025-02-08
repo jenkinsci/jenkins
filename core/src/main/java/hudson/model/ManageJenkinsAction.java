@@ -98,6 +98,11 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
         Jenkins jenkins = Jenkins.get();
         AdministrativeMonitorsDecorator decorator = jenkins.getExtensionList(PageDecorator.class)
                 .get(AdministrativeMonitorsDecorator.class);
+
+        if (decorator == null) {
+            return null;
+        }
+
         Collection<AdministrativeMonitor> activeAdministrativeMonitors = Optional.ofNullable(decorator.getMonitorsToDisplay()).orElse(Collections.emptyList());
         boolean anySecurity = activeAdministrativeMonitors.stream().anyMatch(AdministrativeMonitor::isSecurity);
 
@@ -106,10 +111,10 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
         }
 
         int size = activeAdministrativeMonitors.size();
-        String suffix = size > 1 ? "notifications" : "notification";
+        String tooltip = size > 1 ? Messages.ManageJenkinsAction_notifications(size) : Messages.ManageJenkinsAction_notification(size);
 
         return new Badge(String.valueOf(size),
-                size + " " + suffix,
+                tooltip,
                 anySecurity ? Badge.Severity.DANGER : Badge.Severity.WARNING);
     }
 }
