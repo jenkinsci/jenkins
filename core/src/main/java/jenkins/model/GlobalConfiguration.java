@@ -67,7 +67,7 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
     @Override
     public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         if (Util.isOverridden(GlobalConfiguration.class, getClass(), "configure", StaplerRequest.class, JSONObject.class)) {
-            return configure(StaplerRequest.fromStaplerRequest2(req), json);
+            return configure(req != null ? StaplerRequest.fromStaplerRequest2(req) : null, json);
         } else {
             return configureImpl(req, json);
         }
