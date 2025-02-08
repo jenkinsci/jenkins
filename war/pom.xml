@@ -497,7 +497,7 @@ THE SOFTWARE.
                   <!-- dependency of jdk-tool -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>apache-httpcomponents-client-4-api</artifactId>
-                  <version>4.5.14-208.v438351942757</version>
+                  <version>4.5.14-269.vfa_2321039a_83</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
