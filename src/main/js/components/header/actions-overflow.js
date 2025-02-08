@@ -28,6 +28,11 @@ export default function computeActions() {
 
   while (actionsOverflows()) {
     const item = actions.pop();
+
+    if (!item) {
+      break;
+    }
+
     items.unshift(item);
     item.classList.add("jenkins-hidden");
   }
@@ -55,13 +60,16 @@ export default function computeActions() {
 
   // We want to disable the User action href on touch devices so that they can still activate the overflow menu
   const link = document.querySelector("#root-action-UserAction");
-  const originalHref = link.getAttribute("href");
-  const isTouchDevice = window.matchMedia("(hover: none)").matches;
 
-  if (isTouchDevice) {
-    link.removeAttribute("href");
-  } else {
-    link.setAttribute("href", originalHref);
+  if (link) {
+    const originalHref = link.getAttribute("href");
+    const isTouchDevice = window.matchMedia("(hover: none)").matches;
+
+    if (isTouchDevice) {
+      link.removeAttribute("href");
+    } else {
+      link.setAttribute("href", originalHref);
+    }
   }
 }
 
