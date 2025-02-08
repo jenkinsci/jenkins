@@ -90,12 +90,19 @@
         width: 1rem;
         height: 1.25rem;
         flex-shrink: 0;
-        background: var(--text-color-secondary);
         mask-size: contain;
         mask-position: center;
         mask-repeat: no-repeat;
         mask-image: url("data:image/svg+xml,%3Csvg width='10' height='20' viewBox='0 0 10 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 18L8 2' stroke='black' stroke-width='1.5px' stroke-linecap='round'/%3E%3C/svg%3E%0A");
-        opacity: 0.3;
+        background: color-mix(
+          in sRGB,
+          var(--text-color-secondary) 30%,
+          transparent
+        );
+
+        @media (prefers-contrast: more) {
+          background: var(--text-color);
+        }
       }
 
       &:last-of-type {

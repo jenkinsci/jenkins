@@ -70,6 +70,7 @@ $semantics: (
 
   // Header
   --header-background: var(--background);
+  --header-border: var(--text-color-secondary);
   --header-color: var(--text-color);
   --header-height: 4.25rem;
 
@@ -153,6 +154,7 @@ $semantics: (
   }
 
   @media (prefers-contrast: more) {
+    --header-border: var(--text-color);
     --focus-input-border: var(--text-color);
     --jenkins-border-color: var(--text-color);
     --jenkins-border-color--subtle: var(--text-color);

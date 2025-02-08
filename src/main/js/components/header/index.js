@@ -2,6 +2,16 @@ import computeActions from "@/components/header/actions-overflow";
 import computeBreadcrumbs from "@/components/header/breadcrumbs-overflow";
 
 function init() {
+  // Recompute what actions and breadcrumbs should be visible when the viewport size is changed
+  computeOverflow();
+  let lastWidth = window.innerWidth;
+  window.addEventListener("resize", () => {
+    if (window.innerWidth !== lastWidth) {
+      lastWidth = window.innerWidth;
+      computeOverflow();
+    }
+  });
+
   // Fade in the page header on scroll, increasing opacity and intensity of the backdrop blur
   window.addEventListener("scroll", () => {
     const navigation = document.querySelector("#page-header");
@@ -24,22 +34,12 @@ function init() {
       navigation.style.setProperty(
         "--border-opacity",
         Math.min(
-          prefersContrast ? 100 : 10,
+          prefersContrast ? 100 : 15,
           prefersContrast ? scrollY * 3 : scrollY,
         ) + "%",
       );
     }
   });
-
-  // Recompute what actions and breadcrumbs should be visible when the viewport size is changed
-  let lastWidth = window.innerWidth;
-  window.addEventListener("resize", () => {
-    if (window.innerWidth !== lastWidth) {
-      lastWidth = window.innerWidth;
-      computeOverflow();
-    }
-  });
-  computeOverflow();
 
   // We can't use :has due to HtmlUnit CSS Parser not supporting it, so
   // this is a workaround for that same behaviour

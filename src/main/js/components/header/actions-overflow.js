@@ -65,7 +65,8 @@ export default function computeActions() {
     const originalHref = link.getAttribute("href");
     const isTouchDevice = window.matchMedia("(hover: none)").matches;
 
-    if (isTouchDevice) {
+    // HTMLUnit doesn't register itself as supporting hover, thus the href is removed when it shouldn't be
+    if (isTouchDevice && !window.isRunAsTest) {
       link.removeAttribute("href");
     } else {
       link.setAttribute("href", originalHref);

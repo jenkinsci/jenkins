@@ -29,7 +29,7 @@
     border-bottom: var(--jenkins-border-width) solid
       color-mix(
         in sRGB,
-        var(--text-color-secondary) var(--border-opacity),
+        var(--header-border) var(--border-opacity),
         transparent
       );
     background-clip: padding-box;
