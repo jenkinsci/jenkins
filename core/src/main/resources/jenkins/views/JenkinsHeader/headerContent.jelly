@@ -34,28 +34,7 @@
     <div class="jenkins-header__actions">
       <st:include page="suffix" optional="true" />
 
-      <j:invokeStatic var="user" className="hudson.model.User" method="current" />
-      <l:overflowButton tooltip="${%Menu}"
-                        icon="${user == null ? 'symbol-menu' : h.getAvatar(user, '96x96')}"
-                        clazz="jenkins-button--tertiary jenkins-mobile-show">
-        <j:forEach var="action" items="${it.actions}">
-          <j:if test="${action.iconFileName != null}">
-            <dd:item href="${h.getActionUrl(app.url, action)}"
-                     icon="${action.iconFileName}"
-                     text="${action.displayName}" />
-          </j:if>
-        </j:forEach>
-
-        <j:if test="${app.useSecurity and !h.isAnonymous() and app.securityRealm.canLogOut()}">
-          <dd:separator />
-          <dd:item text="${%Sign out}"
-                   icon="symbol-log-out"
-                   href="${rootURL}/logout" />
-        </j:if>
-      </l:overflowButton>
-
-      <div class="jenkins-!-display-contents jenkins-mobile-hide">
-        <j:forEach var="action" items="${it.actions}">
+      <j:forEach var="action" items="${it.actions}">
           <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
 
           <j:set var="tooltip">
@@ -86,6 +65,8 @@
             <x:attribute name="data-html-tooltip" escapeText="false"><j:out value="${tooltip}" /></x:attribute>
             <x:attribute name="data-tooltip-interactive">${interactive}</x:attribute>
             <x:attribute name="data-tippy-theme">${interactive ? 'dropdown' : 'tooltip'}</x:attribute>
+            <x:attribute name="data-tippy-trigger">${interactive ? 'mouseenter click' : 'mouseenter'}</x:attribute>
+            <x:attribute name="data-type">header-action</x:attribute>
             <x:attribute name="draggable">false</x:attribute>
             <x:attribute name="class">jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'}</x:attribute>
             <l:icon src="${action.iconFileName}" />
@@ -95,7 +76,6 @@
             </j:if>
           </x:element>
         </j:forEach>
-      </div>
 
       <h:login/>
     </div>

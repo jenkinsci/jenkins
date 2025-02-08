@@ -25,7 +25,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-  <a class="jenkins-button" href="${rootURL}/${app.securityRealm.loginUrl}?from=${app.securityRealm.from}" style="aspect-ratio: unset; padding: 0.5rem 1rem" tooltip="Sign in to access and manage your Jenkins projects">
+  <a class="jenkins-button"
+     data-type="header-action"
+     href="${rootURL}/${app.securityRealm.loginUrl}?from=${app.securityRealm.from}"
+     style="aspect-ratio: unset; padding: 0.5rem 1rem"
+     tooltip="Sign in to access and manage your Jenkins projects">
     ${%Sign in}
   </a>
 </j:jelly>

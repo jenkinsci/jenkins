@@ -33,6 +33,7 @@
         transparent
       );
     background-clip: padding-box;
+    z-index: -1;
   }
 
   #jenkins-head-icon {

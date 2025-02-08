@@ -11,34 +11,39 @@ const SELECTED_ITEM_CLASS = "jenkins-dropdown__item--selected";
  * @param element - the element to generate the dropdown for
  * @param callback - called to retrieve the list of dropdown items
  */
-function generateDropdown(element, callback, immediate) {
+function generateDropdown(element, callback, immediate, options = {}) {
   if (element._tippy && element._tippy.props.theme === "dropdown") {
     element._tippy.destroy();
   }
 
   tippy(
     element,
-    Object.assign({}, Templates.dropdown(), {
-      hideOnClick: element.dataset["hideOnClick"] !== "false",
-      onCreate(instance) {
-        const onload = () => {
-          if (instance.loaded) {
-            return;
+    Object.assign(
+      {},
+      Templates.dropdown(),
+      {
+        hideOnClick: element.dataset["hideOnClick"] !== "false",
+        onCreate(instance) {
+          const onload = () => {
+            if (instance.loaded) {
+              return;
+            }
+
+            instance.popper.addEventListener("click", () => {
+              instance.hide();
+            });
+
+            callback(instance);
+          };
+          if (immediate) {
+            onload();
+          } else {
+            instance.reference.addEventListener("mouseenter", onload);
           }
-
-          instance.popper.addEventListener("click", () => {
-            instance.hide();
-          });
-
-          callback(instance);
-        };
-        if (immediate) {
-          onload();
-        } else {
-          instance.reference.addEventListener("mouseenter", onload);
-        }
+        },
       },
-    }),
+      options,
+    ),
   );
 }
 
