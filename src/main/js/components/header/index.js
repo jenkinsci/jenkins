@@ -2,7 +2,7 @@ import Utils from "@/components/dropdowns/utils";
 import { createElementFromHtml } from "@/util/dom";
 
 function init() {
-  // TODO
+  // Fade in the page header on scroll, increasing opacity and intensity of the backdrop blur
   window.addEventListener("scroll", () => {
     const navigation = document.querySelector("#page-header");
     const scrollY = Math.max(0, window.scrollY);
@@ -18,9 +18,10 @@ function init() {
       !document.querySelector(".jenkins-search--app-bar") &&
       !document.querySelector(".app-page-body__sidebar--sticky")
     ) {
+      const prefersContrast = window.matchMedia('(prefers-contrast: more)').matches;
       navigation.style.setProperty(
         "--border-opacity",
-        Math.min(10, scrollY) + "%",
+        Math.min(prefersContrast ? 100 : 10, prefersContrast ? scrollY * 3 : scrollY) + "%",
       );
     }
   });
