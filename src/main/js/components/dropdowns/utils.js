@@ -19,15 +19,26 @@ function generateDropdown(element, callback, immediate) {
   tippy(
     element,
     Object.assign({}, Templates.dropdown(), {
-      hideOnClick: element.dataset["hideOnClick"] !== "false",
+      hideOnClick: false,
       onCreate(instance) {
         const onload = () => {
           if (instance.loaded) {
             return;
           }
 
-          instance.popper.addEventListener("click", () => {
-            instance.hide();
+          document.addEventListener("click", (event) => {
+            const visibleDropdowns = Array.from(document.querySelectorAll('[data-tippy-root]'))
+              .filter(dropdown => window.getComputedStyle(dropdown).visibility === 'visible');
+
+            const isClickInAnyDropdown = visibleDropdowns.some(dropdown =>
+              dropdown.contains(event.target)
+            );
+
+            const isClickOnReference = instance.reference.contains(event.target);
+
+            if (!isClickInAnyDropdown && !isClickOnReference) {
+              instance.hide();
+            }
           });
 
           callback(instance);
