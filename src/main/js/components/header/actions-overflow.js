@@ -40,13 +40,25 @@ export default function computeActions() {
   Utils.generateDropdown(
     overflowButton,
     (instance) => {
-      const mappedItems = items.map((e) => ({
-        type: "link",
-        icon: true,
-        iconXml: e.querySelector("svg").outerHTML,
-        label: e.textContent,
-        url: e.href,
-      }));
+      const mappedItems = items.map((e) => {
+        let icon = e.querySelector("img");
+        if (icon) {
+          icon = icon.src;
+        }
+        let iconXml = e.querySelector("svg");
+        if (iconXml) {
+          icon = true;
+          iconXml = iconXml.outerHTML;
+        }
+
+        return {
+          type: "link",
+          icon: icon,
+          iconXml: iconXml,
+          label: e.textContent,
+          url: e.href,
+        };
+      });
 
       instance.setContent(Utils.generateDropdownItems(mappedItems));
     },

@@ -22,6 +22,11 @@ export default function computeBreadcrumbs() {
 
   while (breadcrumbsBarOverflows()) {
     const item = breadcrumbs.shift();
+
+    if (!item) {
+      break;
+    }
+
     items.push(item);
     item.classList.add("jenkins-hidden");
   }
