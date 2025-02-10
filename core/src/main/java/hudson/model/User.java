@@ -40,7 +40,7 @@ import hudson.XmlFile;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.listeners.SaveableListener;
-import hudson.search.SearchGroup;
+
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.SecurityRealm;
@@ -73,6 +73,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.scm.RunWithSCM;
+import jenkins.search.SearchGroup;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
@@ -286,8 +287,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     @Override
-    public String getSearchGroup() {
-        return SearchGroup.PEOPLE;
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.UserSearchGroup.class);
     }
 
     /**

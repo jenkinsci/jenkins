@@ -48,7 +48,7 @@ import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.search.QuickSilver;
-import hudson.search.SearchGroup;
+
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
@@ -101,6 +101,7 @@ import jenkins.model.ProjectNamingStrategy;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
+import jenkins.search.SearchGroup;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
@@ -528,8 +529,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Override
-    public String getSearchGroup() {
-        return SearchGroup.PROJECT;
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.JobSearchGroup.class);
     }
 
     @Override
