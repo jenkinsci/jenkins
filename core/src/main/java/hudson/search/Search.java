@@ -171,9 +171,9 @@ public class Search implements StaplerProxy {
 
             if (iconName.startsWith("symbol")) {
                 r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(),
-                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build()), "symbol", curItem.item.getSearchGroup()));
+                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build()), "symbol", curItem.item.getSearchGroup().getDisplayName()));
             } else {
-                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image", curItem.item.getSearchGroup()));
+                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image", curItem.item.getSearchGroup().getDisplayName()));
             }
         }
         rsp.serveExposedBean(req, r, new ExportConfig());

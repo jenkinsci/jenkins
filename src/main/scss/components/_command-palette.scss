@@ -14,7 +14,7 @@
 
   &::backdrop {
     background: var(--command-palette-backdrop-background);
-    backdrop-filter: contrast(0.7) brightness(0.9) saturate(1.25) blur(3px);
+    backdrop-filter: brightness(0.9) saturate(1.25) blur(2px);
     animation: jenkins-dialog-backdrop-animate-in 0.1s linear;
   }
 
@@ -76,7 +76,7 @@
   &__search {
     --search-bar-height: 3rem !important;
 
-    background: transparent;
+    background: color-mix(in sRGB, var(--card-background), transparent);
     box-shadow: var(--command-palette-inset-shadow);
     margin-bottom: var(--section-padding);
     border-radius: 1rem;
@@ -109,6 +109,7 @@
     display: flex;
     flex-direction: column;
     border-radius: 1rem;
+    background: color-mix(in sRGB, var(--card-background), transparent);
     backdrop-filter: var(--command-palette-results-backdrop-filter);
     box-shadow: var(--command-palette-inset-shadow);
 
@@ -132,7 +133,7 @@
       color: var(--text-color-secondary);
 
       &:not(:first-of-type) {
-        padding-top: 1.5rem;
+        padding-top: 1.375rem;
       }
     }
 
@@ -153,7 +154,7 @@
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      padding: 0.75rem;
+      padding: 0.625rem;
       border-radius: 0.5rem;
       color: var(--text-color) !important;
       transition: var(--standard-transition);

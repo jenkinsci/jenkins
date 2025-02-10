@@ -69,7 +69,7 @@ function init() {
           label: i18n.dataset.getHelp,
           url: headerCommandPaletteButton.dataset.searchHelpUrl,
           isExternal: true,
-          group: null
+          group: null,
         }),
       ]);
     } else {
@@ -86,7 +86,7 @@ function init() {
 
       if (query.length === 0 || Object.keys(results).length > 0) {
         for (const [group, items] of Object.entries(results)) {
-          if (group !== 'null') {
+          if (group !== "null") {
             const heading = document.createElement("p");
             heading.className = "jenkins-command-palette__results__heading";
             heading.innerText = group;

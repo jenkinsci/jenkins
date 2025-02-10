@@ -48,7 +48,6 @@ import hudson.node_monitors.DiskSpaceMonitorNodeProperty;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
-
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
