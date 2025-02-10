@@ -1,16 +1,16 @@
 package jenkins.search;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Extension;
-import hudson.ExtensionList;
-import hudson.ExtensionPoint;
-import hudson.model.ModelObject;
-
 import static jenkins.search.Messages.SearchGroup_ComputerSearchGroup_DisplayName;
 import static jenkins.search.Messages.SearchGroup_JobSearchGroup_DisplayName;
 import static jenkins.search.Messages.SearchGroup_UnclassifiedSearchGroup_DisplayName;
 import static jenkins.search.Messages.SearchGroup_UserSearchGroup_DisplayName;
 import static jenkins.search.Messages.SearchGroup_ViewSearchGroup_DisplayName;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
+import hudson.model.ModelObject;
 
 public interface SearchGroup extends ExtensionPoint, ModelObject {
 
