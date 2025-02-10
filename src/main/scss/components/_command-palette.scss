@@ -1,6 +1,12 @@
 @use "../abstracts/mixins";
 @use "../base/breakpoints";
 
+$command-palette-background: color-mix(
+  in sRGB,
+  var(--card-background) 90%,
+  transparent
+);
+
 .jenkins-command-palette__dialog {
   background: none;
   border: none;
@@ -14,7 +20,7 @@
 
   &::backdrop {
     background: var(--command-palette-backdrop-background);
-    backdrop-filter: saturate(1.25) blur(2px);
+    backdrop-filter: blur(1px);
     animation: jenkins-dialog-backdrop-animate-in 0.1s linear;
   }
 
@@ -48,7 +54,7 @@
 }
 
 .jenkins-command-palette__wrapper {
-  --inset: 15vh;
+  --inset: 14vh;
 
   width: 100%;
   height: 100%;
@@ -76,7 +82,7 @@
   &__search {
     --search-bar-height: 3rem !important;
 
-    background: color-mix(in sRGB, var(--card-background), transparent);
+    background: $command-palette-background;
     box-shadow: var(--command-palette-inset-shadow);
     margin-bottom: var(--section-padding);
     border-radius: 1rem;
@@ -109,7 +115,7 @@
     display: flex;
     flex-direction: column;
     border-radius: 1rem;
-    background: color-mix(in sRGB, var(--card-background), transparent);
+    background: $command-palette-background;
     backdrop-filter: var(--command-palette-results-backdrop-filter);
     box-shadow: var(--command-palette-inset-shadow);
 
@@ -126,7 +132,6 @@
     padding: 0.5rem;
 
     &__heading {
-      font-weight: var(--font-bold-weight);
       font-size: var(--font-size-sm);
       margin: 0;
       padding: 0.5rem 0.625rem;

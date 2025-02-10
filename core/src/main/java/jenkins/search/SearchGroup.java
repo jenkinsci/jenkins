@@ -6,6 +6,12 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.ModelObject;
 
+import static jenkins.search.Messages.SearchGroup_ComputerSearchGroup_DisplayName;
+import static jenkins.search.Messages.SearchGroup_JobSearchGroup_DisplayName;
+import static jenkins.search.Messages.SearchGroup_UnclassifiedSearchGroup_DisplayName;
+import static jenkins.search.Messages.SearchGroup_UserSearchGroup_DisplayName;
+import static jenkins.search.Messages.SearchGroup_ViewSearchGroup_DisplayName;
+
 public interface SearchGroup extends ExtensionPoint, ModelObject {
 
     static ExtensionList<SearchGroup> all() {
@@ -20,21 +26,21 @@ public interface SearchGroup extends ExtensionPoint, ModelObject {
         return category;
     }
 
-    @Extension
+    @Extension(ordinal = -1)
     class UnclassifiedSearchGroup implements SearchGroup {
 
         @Override
         public String getDisplayName() {
-            return "Other";
+            return SearchGroup_UnclassifiedSearchGroup_DisplayName();
         }
     }
 
-    @Extension
+    @Extension(ordinal = 999)
     class JobSearchGroup implements SearchGroup {
 
         @Override
         public String getDisplayName() {
-            return "Projects";
+            return SearchGroup_JobSearchGroup_DisplayName();
         }
     }
 
@@ -43,7 +49,7 @@ public interface SearchGroup extends ExtensionPoint, ModelObject {
 
         @Override
         public String getDisplayName() {
-            return "Computers";
+            return SearchGroup_ComputerSearchGroup_DisplayName();
         }
     }
 
@@ -52,7 +58,7 @@ public interface SearchGroup extends ExtensionPoint, ModelObject {
 
         @Override
         public String getDisplayName() {
-            return "Views";
+            return SearchGroup_ViewSearchGroup_DisplayName();
         }
     }
 
@@ -61,7 +67,7 @@ public interface SearchGroup extends ExtensionPoint, ModelObject {
 
         @Override
         public String getDisplayName() {
-            return "Users";
+            return SearchGroup_UserSearchGroup_DisplayName();
         }
     }
 }
