@@ -35,7 +35,7 @@
 .token-list .token-list-item {
   min-height: inherit;
   padding: 8px 10px;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   line-height: 26px;
 }
 .token-list .token-list-item.legacy-token {

@@ -43,7 +43,7 @@ THE SOFTWARE.
       <f:entry title="${%Home directory}" description="${%By default, Jenkins stores all of its data in this directory on the file system}" help="/help/system-config/homeDirectory.html">
         <div class="jenkins-quote jenkins-quote--monospace">
           ${it.rootDir}
-          <l:copyButton tooltip="${%Copy home directory}" text="${it.rootDir}" iconOnly="true" clazz="jenkins-!-margin-left-1" />
+          <l:copyButton tooltip="${%Copy home directory}" text="${it.rootDir}" iconOnly="true" />
         </div>
       </f:entry>
       <f:entry title="${%System Message}" description="${%This message will be displayed at the top of the Jenkins main page. This can be useful for posting notifications to your users}">

@@ -1,5 +1,14 @@
+@use "../abstracts/mixins";
+
 .jenkins-form {
   max-width: var(--form-item-max-width);
+}
+
+.jenkins-page-description {
+  font-size: 0.9375rem;
+  color: var(--text-color-secondary);
+  margin: calc(var(--section-padding) * -0.25) 0 var(--section-padding) 0;
+  line-height: 1.66;
 }
 
 .jenkins-fieldset {
@@ -50,6 +59,7 @@
 
 .jenkins-form-description {
   display: block;
+
   // Tweaked margin so that it appears visually centred when placed next to `.jenkins-form-label`
   margin: -0.2rem 0 0.5rem;
   color: var(--text-color-secondary);
@@ -58,16 +68,23 @@
 
 .jenkins-quote {
   position: relative;
-  display: flex;
-  line-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--button-background);
+  border-radius: var(--form-input-border-radius);
+  outline: var(--jenkins-border--subtle);
+  outline-offset: calc(var(--jenkins-border-width) * -1);
+  padding: 0 1rem;
+  gap: 1.5rem;
 
-  &::before {
-    content: "";
-    position: relative;
-    width: 2px;
-    background: var(--input-border);
-    margin-right: 1rem;
-    border-radius: 2px;
+  .jenkins-copy-button {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    margin-right: -0.75rem;
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: calc(var(--form-input-border-radius) - 0.25rem);
   }
 
   &--monospace {
@@ -76,12 +93,14 @@
 }
 
 .jenkins-help-button {
-  position: relative;
+  @include mixins.item;
+
+  --item-background: var(--button-background);
+
   display: inline-flex;
   justify-content: center;
   align-items: center;
   margin-left: 1ch;
-  color: var(--text-color) !important;
   border-radius: 100%;
 
   span {
@@ -96,47 +115,6 @@
     mask-size: 45% 45%;
     mask-position: center;
     mask-repeat: no-repeat;
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--text-color-secondary);
-    opacity: 0.1;
-    border-radius: inherit;
-    transition: var(--standard-transition);
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border: 1px solid
-      color-mix(in sRGB, var(--text-color-secondary), transparent);
-    box-shadow: var(--form-input-glow);
-    border-radius: inherit;
-    opacity: 0.1;
-    transition: var(--standard-transition);
-  }
-
-  &:hover {
-    &::before {
-      opacity: 0.2;
-    }
-  }
-
-  &:active,
-  &:focus {
-    outline: none;
-
-    &::before {
-      opacity: 0.3;
-    }
-
-    &::after {
-      box-shadow: 0 0 0 5px var(--text-color);
-    }
   }
 }
 
@@ -157,11 +135,53 @@
   gap: 0.45rem;
   margin-left: 0.4rem;
   font-size: 0.8rem;
-  font-weight: 500;
   cursor: default;
 
   svg {
     width: 1rem;
     height: 1rem;
+  }
+}
+
+.jenkins-instructions {
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+  padding: 0;
+  margin: 0 0 var(--section-padding);
+  gap: var(--section-padding);
+  counter-reset: section;
+
+  li {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 0.5rem;
+    padding-left: 3rem;
+    padding-top: 0.35rem;
+
+    .jenkins-instructions__label {
+      font-weight: var(--font-bold-weight);
+      margin: 0;
+    }
+
+    &::before {
+      counter-increment: section;
+      content: counters(section, "");
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      top: 0;
+      left: 0;
+      background: var(--text-color);
+      width: 2rem;
+      height: 2rem;
+      color: var(--background);
+      border-radius: 100px;
+      text-align: center;
+      font-weight: var(--font-bold-weight);
+    }
   }
 }

@@ -1,20 +1,23 @@
+@use "sass:color";
+@use "sass:string";
+
 .jenkins-notification {
   position: fixed;
   left: 1.2rem;
   bottom: 1.2rem;
   min-width: 321px;
-  max-width: min(600px, #{unquote("calc(100vw - 2.4rem)")});
+  max-width: min(600px, #{string.unquote("calc(100vw - 2.4rem)")});
   display: grid;
   grid-template-columns: auto 1fr;
   grid-gap: 1.5ch;
   padding: 0.8rem;
-  border-radius: 10px;
-  font-weight: 500;
+  border-radius: var(--form-input-border-radius);
+  font-weight: var(--font-bold-weight);
   line-height: 1.66;
   color: var(--text-color);
   box-shadow:
-    0 0 1px 1px rgba(darken(#024cb6, 50%), 0.075),
-    0 10px 30px rgba(darken(#024cb6, 50%), 0.25),
+    0 0 1px 1px rgba(color.adjust(#024cb6, $lightness: -50%), 0.075),
+    0 10px 30px rgba(color.adjust(#024cb6, $lightness: -50%), 0.25),
     0 0 30px 5px var(--background);
   will-change: opacity, transform;
   z-index: 999;
@@ -33,8 +36,8 @@
     inset: 0;
     border-radius: inherit;
     z-index: -1;
-    background: var(--background);
-    opacity: 0.3;
+    background: oklch(from var(--background) l c h / 0.3);
+    border: var(--jenkins-border--subtle);
   }
 
   @supports not (backdrop-filter: blur(15px)) {

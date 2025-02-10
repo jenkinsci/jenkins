@@ -56,11 +56,17 @@
   }
 }
 
-@mixin item {
+@mixin item($border: true) {
   position: relative;
+  appearance: none;
   z-index: 0;
   text-decoration: none !important;
-  border-radius: 0.66rem;
+  font-weight: normal;
+  border-radius: var(--form-input-border-radius);
+  cursor: pointer;
+  background: transparent;
+  outline: none;
+  border: none;
 
   &::before,
   &::after {
@@ -74,11 +80,12 @@
   }
 
   &::before {
-    background-color: transparent;
+    background-color: var(--item-background);
+    border: var(--jenkins-border--subtle);
   }
 
   &::after {
-    box-shadow: 0 0 0 0.66rem transparent;
+    box-shadow: 0 0 0 0.5rem transparent;
   }
 
   &:focus-visible {
@@ -102,7 +109,7 @@
       }
 
       &::after {
-        box-shadow: 0 0 0 0.33rem var(--item-box-shadow--focus);
+        box-shadow: 0 0 0 0.25rem var(--item-box-shadow--focus);
       }
     }
 
@@ -110,6 +117,14 @@
       &::after {
         box-shadow: 0 0 0 0.2rem var(--text-color) !important;
         opacity: 1 !important;
+      }
+    }
+  }
+
+  @if $border == false {
+    &:not(:hover, &:active, &:focus) {
+      &::before {
+        border-color: transparent;
       }
     }
   }
