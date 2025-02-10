@@ -202,7 +202,11 @@ $semantics: (
     var(--jenkins-border--subtle-shadow);
 
   ::backdrop {
-    --command-palette-backdrop-background: rgb(0 0 0 / 0.2);
+    --command-palette-backdrop-background: color-mix(
+      in sRGB,
+      var(--text-color) 30%,
+      transparent
+    );
   }
 
   // Tooltips

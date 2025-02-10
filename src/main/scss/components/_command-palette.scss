@@ -14,7 +14,7 @@
 
   &::backdrop {
     background: var(--command-palette-backdrop-background);
-    backdrop-filter: brightness(0.9) saturate(1.25) blur(2px);
+    backdrop-filter: saturate(1.25) blur(2px);
     animation: jenkins-dialog-backdrop-animate-in 0.1s linear;
   }
 
