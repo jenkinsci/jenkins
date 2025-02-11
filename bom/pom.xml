@@ -39,8 +39,9 @@ THE SOFTWARE.
 
   <properties>
     <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
-    <stapler.version>1928.v9115fe47607f</stapler.version>
     <groovy.version>2.4.21</groovy.version>
+    <jelly.version>1.1-jenkins-20250108</jelly.version>
+    <stapler.version>1948.v0f99403fe86a_</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -62,7 +63,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>6.2.1</version>
+        <version>6.2.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -119,7 +120,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.17.2</version>
+        <version>1.18.0</version>
       </dependency>
       <dependency>
         <groupId>commons-collections</groupId>
@@ -145,11 +146,6 @@ THE SOFTWARE.
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
         <version>2.6</version>
-      </dependency>
-      <dependency>
-        <groupId>io.jenkins.stapler</groupId>
-        <artifactId>jenkins-stapler-support</artifactId>
-        <version>1.1</version>
       </dependency>
       <dependency>
         <groupId>jakarta.servlet</groupId>
@@ -290,7 +286,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.hudson</groupId>
         <artifactId>commons-jelly-tags-define</artifactId>
-        <version>1.1-jenkins-20241115</version>
+        <version>${jelly.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
@@ -362,7 +358,7 @@ THE SOFTWARE.
         <!-- provided by jcl-over-slf4j -->
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
-        <version>1.3.4</version>
+        <version>1.3.5</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>

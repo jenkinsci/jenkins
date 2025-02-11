@@ -212,6 +212,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.stapler</groupId>
       <artifactId>jenkins-stapler-support</artifactId>
+      <version>1.1</version>
     </dependency>
     <dependency>
       <!-- needed by Jelly -->
@@ -511,6 +512,11 @@ THE SOFTWARE.
       <artifactId>xmlunit-matchers</artifactId>
       <version>${xmlunit.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-discovery</groupId>
+      <artifactId>commons-discovery</artifactId>
+      <version>0.5</version>
     </dependency>
   </dependencies>
 
