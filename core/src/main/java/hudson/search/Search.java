@@ -303,7 +303,7 @@ public class Search implements StaplerProxy {
         private final String group;
 
         public Item(String name) {
-            this(name, null, null, null, null);
+            this(name, null, null, "symbol", null);
         }
 
         public Item(String name, String url, String icon, String type, String group) {
