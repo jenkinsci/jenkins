@@ -27,13 +27,7 @@ function generateDropdown(element, callback, immediate) {
           }
 
           document.addEventListener("click", (event) => {
-            const visibleDropdowns = Array.from(document.querySelectorAll('[data-tippy-root]'))
-              .filter(dropdown => window.getComputedStyle(dropdown).visibility === 'visible');
-
-            const isClickInAnyDropdown = visibleDropdowns.some(dropdown =>
-              dropdown.contains(event.target)
-            );
-
+            const isClickInAnyDropdown = !!event.target.closest('[data-tippy-root]');
             const isClickOnReference = instance.reference.contains(event.target);
 
             if (!isClickInAnyDropdown && !isClickOnReference) {
