@@ -60,9 +60,9 @@ function generateOverflowButton() {
   // If an overflow menu already exists let's use that
   const overflowMenu = document.querySelector(
     ".jenkins-breadcrumbs__list-item .jenkins-button",
-  )?.parentNode;
+  );
   if (overflowMenu) {
-    return overflowMenu;
+    return overflowMenu.parentNode;
   }
 
   // Generate an overflow menu to store breadcrumbs
