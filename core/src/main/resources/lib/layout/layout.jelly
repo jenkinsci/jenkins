@@ -90,9 +90,9 @@ THE SOFTWARE.
   <j:set var="layoutType" value="${attrs.type}"/>
 </j:if>
 
-<j:set var="_" value="${request.getSession()}"/>
+<j:set var="_" value="${request2.getSession()}"/>
 <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
-<j:if test="${request.servletPath=='/' || request.servletPath==''}">
+<j:if test="${request2.servletPath=='/' || request2.servletPath==''}">
   ${h.advertiseHeaders(response)}
   <j:if test="${extensionsAvailable}">
     <j:forEach var="pd" items="${h.pageDecorators}">

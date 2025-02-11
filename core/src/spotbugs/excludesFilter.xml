@@ -240,13 +240,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="INSECURE_COOKIE"/>
-        <Or>
-          <Class name="hudson.security.SecurityRealm"/>
-          <Class name="jenkins.model.Jenkins"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="LI_LAZY_INIT_STATIC"/>
         <Class name="hudson.triggers.Trigger"/>
       </And>

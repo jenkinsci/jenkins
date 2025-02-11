@@ -41,7 +41,7 @@ THE SOFTWARE.
 
   <div id="breadcrumbBar" class="jenkins-breadcrumbs" aria-label="breadcrumb">
     <ol class="jenkins-breadcrumbs__list" id="breadcrumbs">
-      <j:forEach var="anc" items="${request.ancestors}" indexVar="index">
+      <j:forEach var="anc" items="${request2.ancestors}" indexVar="index">
         <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
           <j:set var="mode" value="breadcrumbs" />
           <l:breadcrumb title="${anc.object == app ? '%Dashboard' : anc.object.displayName}"
