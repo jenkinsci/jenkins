@@ -19,7 +19,7 @@ function generateDropdown(element, callback, immediate) {
   tippy(
     element,
     Object.assign({}, Templates.dropdown(), {
-      hideOnClick: "toggle",
+      hideOnClick: element.dataset["hideOnClick"] !== "false" ? "toggle" : false,
       onCreate(instance) {
         const onload = () => {
           if (instance.loaded) {
