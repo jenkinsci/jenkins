@@ -6,8 +6,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
-import hudson.util.FormValidation; // SPECIAL_IMPORTS group ? //it says needs to have an empty line above this but not above the next one?
-import org.junit.Test; // THIRD_PARTY_PACKAGE imports ?
+import hudson.util.FormValidation;
+import org.junit.Test;
 
 public class PartitionTest {
     public static class NewNodeValidator {
@@ -108,6 +108,3 @@ public class PartitionTest {
                 result.kind, is(not(FormValidation.Kind.OK)));
     }
 }
-
-
-

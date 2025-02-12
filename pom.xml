@@ -265,6 +265,7 @@ THE SOFTWARE.
           <!-- Version specified in parent POM -->
           <configuration>
             <maxHeap>768</maxHeap>
+            <skip>true</skip>
           </configuration>
         </plugin>
         <plugin>

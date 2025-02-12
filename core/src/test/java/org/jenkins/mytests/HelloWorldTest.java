@@ -1,6 +1,6 @@
 package org.jenkins.mytests;
 
-import static org.junit.Assert.assertTrue;  // SPACE BETWEEN IMPORTS HERE IS NECESSARY
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
