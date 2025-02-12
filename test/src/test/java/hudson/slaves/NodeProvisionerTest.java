@@ -31,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assume.assumeFalse;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.Functions;
 import hudson.Launcher;
@@ -328,9 +329,9 @@ public class NodeProvisionerTest {
         }
 
         @Override
-        public Collection<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
+        public Collection<NodeProvisioner.PlannedNode> provision(@NonNull CloudState state, int excessWorkload) {
             List<NodeProvisioner.PlannedNode> r = new ArrayList<>();
-            if (! this.canProvision(label))
+            if (! this.canProvision(state))
                 return r;
 
             while (excessWorkload > 0) {
@@ -343,8 +344,13 @@ public class NodeProvisionerTest {
         }
 
         @Override
-        public boolean canProvision(Label label) {
-            return label.matches(this.label.listAtoms());
+        public boolean canProvision(@NonNull CloudState state) {
+            var stateLabel = state.getLabel();
+            if (stateLabel == null) {
+                return this.label == null;
+            } else {
+                return stateLabel.matches(this.label.listAtoms());
+            }
         }
 
         private final class Launcher implements Callable<Node> {
