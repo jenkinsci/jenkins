@@ -34,11 +34,18 @@ export default function computeBreadcrumbs() {
   Utils.generateDropdown(
     breadcrumbsOverflow,
     (instance) => {
-      const mappedItems = items.map((e) => ({
-        type: "link",
-        label: e.textContent,
-        url: e.querySelector("a")?.href,
-      }));
+      const mappedItems = items.map((e) => {
+        let href = e.querySelector("a");
+        if (href) {
+          href = href.href;
+        }
+
+        return {
+          type: "link",
+          label: e.textContent,
+          url: href,
+        };
+      });
 
       instance.setContent(Utils.generateDropdownItems(mappedItems));
     },
