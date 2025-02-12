@@ -309,14 +309,14 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1369.v9b_98a_4e95b_2d</version>
+                  <version>1373.vb_b_4a_a_c26fa_00</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1312.v1a_235a_b_94a_31</version>
+                  <version>1314.vd966e9a_88895</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -462,7 +462,7 @@ THE SOFTWARE.
                   <!-- detached after 2.281 -->
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>sshd</artifactId>
-                  <version>3.350.v1080103a_10fd</version>
+                  <version>3.353.v2b_d33c46e970</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
