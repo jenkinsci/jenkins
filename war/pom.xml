@@ -691,7 +691,7 @@ THE SOFTWARE.
             <javax.xml.transform.TransformerFactory>com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl</javax.xml.transform.TransformerFactory>
           </systemProperties>
           <webApp>
-            <!-- Enable nicer console logging. -->
+            <!-- Allow resources to be reloaded and enable nicer console logging. -->
             <extraClasspath>${project.basedir}/../core/src/main/resources,${project.build.directory}/support-log-formatter.jar</extraClasspath>
             <contextPath>${contextPath}</contextPath>
             <webInfIncludeJarPattern>.*(jenkins-core|target/classes).*</webInfIncludeJarPattern>
