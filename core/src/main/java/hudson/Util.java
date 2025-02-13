@@ -161,7 +161,7 @@ public class Util {
      */
     @NonNull
     public static <T> List<T> filter(@NonNull List<?> base, @NonNull Class<T> type) {
-        return filter((Iterable) base, type);
+        return filter((Iterable<?>) base, type);
     }
 
     /**
