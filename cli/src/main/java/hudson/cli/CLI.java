@@ -29,11 +29,6 @@ import static java.util.logging.Level.parse;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.cli.client.Messages;
-import jakarta.websocket.ClientEndpointConfig;
-import jakarta.websocket.Endpoint;
-import jakarta.websocket.EndpointConfig;
-import jakarta.websocket.HandshakeResponse;
-import jakarta.websocket.Session;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +37,9 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.http.HttpClient;
+import java.net.http.WebSocket;
+import java.net.http.WebSocketHandshakeException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -54,19 +52,16 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import org.glassfish.tyrus.client.ClientManager;
-import org.glassfish.tyrus.client.ClientProperties;
-import org.glassfish.tyrus.client.SslEngineConfigurator;
-import org.glassfish.tyrus.client.exception.DeploymentHandshakeException;
-import org.glassfish.tyrus.container.jdk.client.JdkClientContainer;
 
 /**
  * CLI entry point to Jenkins.
@@ -336,74 +331,102 @@ public class CLI {
 
     private static int webSocketConnection(String url, List<String> args, CLIConnectionFactory factory) throws Exception {
         LOGGER.fine(() -> "Trying to connect to " + url + " via plain protocol over WebSocket");
-        class CLIEndpoint extends Endpoint {
-            @Override
-            public void onOpen(Session session, EndpointConfig config) {}
+        var wsb = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build().newWebSocketBuilder();
+        if (factory.authorization != null) {
+            wsb.header("Authorization", factory.authorization);
         }
-
-        class Authenticator extends ClientEndpointConfig.Configurator {
-            HandshakeResponse hr;
-
-            @Override
-            public void beforeRequest(Map<String, List<String>> headers) {
-                if (factory.authorization != null) {
-                    headers.put("Authorization", List.of(factory.authorization));
-                }
-            }
-
-            @Override
-            public void afterResponse(HandshakeResponse hr) {
-                this.hr = hr;
-            }
-        }
-
-        var authenticator = new Authenticator();
-
-        ClientManager client = ClientManager.createClient(JdkClientContainer.class.getName()); // ~ ContainerProvider.getWebSocketContainer()
-        client.getProperties().put(ClientProperties.REDIRECT_ENABLED, true); // https://tyrus-project.github.io/documentation/1.13.1/index/tyrus-proprietary-config.html#d0e1775
+        var controllerUri = new URI(url);
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin
+        wsb.header("Origin", new URI(controllerUri.getScheme(), null, controllerUri.getHost(), controllerUri.getPort(), null, null, null).toString());
         if (factory.noCertificateCheck) {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[] {new NoCheckTrustManager()}, new SecureRandom());
+            /* TODO
             SslEngineConfigurator sslEngineConfigurator = new SslEngineConfigurator(sslContext);
             sslEngineConfigurator.setHostnameVerifier((s, sslSession) -> true);
             client.getProperties().put(ClientProperties.SSL_ENGINE_CONFIGURATOR, sslEngineConfigurator);
+            */
         }
-        Session session;
-        try {
-            session = client.connectToServer(new CLIEndpoint(), ClientEndpointConfig.Builder.create().configurator(authenticator).build(), URI.create(url.replaceFirst("^http", "ws") + "cli/ws"));
-        } catch (DeploymentHandshakeException x) {
-            System.err.println("CLI handshake failed with status code " + x.getHttpStatusCode());
-            if (authenticator.hr != null) {
-                for (var entry : authenticator.hr.getHeaders().entrySet()) {
-                    // org.glassfish.tyrus.core.Utils.parseHeaderValue improperly splits values like Date at commas, so undo that:
-                    System.err.println(entry.getKey() + ": " + String.join(", ", entry.getValue()));
-                }
-                // UpgradeResponse.getReasonPhrase is useless since Jetty generates it from the code,
-                // and the body is not accessible at all.
-            }
-            return 15; // compare CLICommand.main
-        }
-        PlainCLIProtocol.Output out = new PlainCLIProtocol.Output() {
+        var ws = new AtomicReference<WebSocket>();
+        var out = new PlainCLIProtocol.Output() {
             @Override
             public void send(byte[] data) throws IOException {
-                session.getBasicRemote().sendBinary(ByteBuffer.wrap(data));
+                ws.get().sendBinary(ByteBuffer.wrap(data), true);
             }
-
             @Override
             public void close() throws IOException {
-                session.close();
+                var _ws = ws.get();
+                if (_ws != null) {
+                    _ws.sendClose(WebSocket.NORMAL_CLOSURE, "");
+                }
             }
         };
         try (ClientSideImpl connection = new ClientSideImpl(out)) {
-            session.addMessageHandler(InputStream.class, is -> {
-                try {
-                    connection.handle(new DataInputStream(is));
-                } catch (IOException x) {
-                    LOGGER.log(Level.WARNING, null, x);
+            ws.set(wsb.buildAsync(URI.create(url.replaceFirst("^http", "ws") + "cli/ws"), new WebSocket.Listener() {
+                @Override
+                public CompletionStage<?> onBinary(WebSocket webSocket, ByteBuffer data, boolean last) {
+                    // TODO if !last, buffer up (though CLIAction.ws does not currently send partial messages)
+                    try {
+                        connection.handle(new DataInputStream(new ByteBufferBackedInputStream(data)));
+                    } catch (IOException x) {
+                        x.printStackTrace();
+                        LOGGER.log(Level.WARNING, null, x);
+                    }
+                    webSocket.request(1);
+                    return null;
                 }
-            });
+                @Override
+                public void onOpen(WebSocket webSocket) {
+                    webSocket.request(1);
+                }
+                @Override
+                public void onError(WebSocket webSocket, Throwable error) {
+                    LOGGER.log(Level.WARNING, null, error);
+                }
+            }).get());
             connection.start(args);
             return connection.exit();
+        } catch (ExecutionException x) {
+            var cause = x.getCause();
+            if (cause instanceof WebSocketHandshakeException) {
+                var rsp = ((WebSocketHandshakeException) cause).getResponse();
+                System.err.println("CLI handshake failed with status code " + rsp.statusCode());
+                for (var entry : rsp.headers().map().entrySet()) {
+                    for (var value : entry.getValue()) {
+                        System.err.println(entry.getKey() + ": " + value);
+                    }
+                }
+                // WebSocketHandshakeException.getResponse is available but HttpResponse.body is empty
+                return 15; // compare CLICommand.main
+            } else if (cause instanceof Exception x2) {
+                throw x2;
+            } else {
+                throw new Exception(cause);
+            }
+        }
+    }
+
+    // https://stackoverflow.com/a/6603018/12916
+    private static final class ByteBufferBackedInputStream extends InputStream {
+        final ByteBuffer buf;
+        ByteBufferBackedInputStream(ByteBuffer buf) {
+            this.buf = buf;
+        }
+        @Override
+        public int read() throws IOException {
+            if (!buf.hasRemaining()) {
+                return -1;
+            }
+            return buf.get() & 0xFF;
+        }
+        @Override
+        public int read(byte[] bytes, int off, int len) throws IOException {
+            if (!buf.hasRemaining()) {
+                return -1;
+            }
+            len = Math.min(len, buf.remaining());
+            buf.get(bytes, off, len);
+            return len;
         }
     }
 
