@@ -100,6 +100,7 @@ import jenkins.model.ProjectNamingStrategy;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
+import jenkins.search.SearchGroup;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
@@ -524,6 +525,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public String getSearchIcon() {
         return "symbol-status-" +  this.getIconColor().getIconName();
+    }
+
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.JobSearchGroup.class);
     }
 
     @Override
