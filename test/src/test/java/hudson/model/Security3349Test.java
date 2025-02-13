@@ -52,13 +52,13 @@ public class Security3349Test {
             assertEquals(403, adminViews.getWebResponse().getStatusCode());
 
             HtmlPage adminUserPage = wc.goTo("user/admin/");
-            assertFalse(adminUserPage.getWebResponse().getContentAsString().contains("My Views"));
+            assertFalse(adminUserPage.getVisibleText().contains("My Views"));
 
             HtmlPage userViews = wc.goTo("user/user/my-views/view/all/");
             assertEquals(200, userViews.getWebResponse().getStatusCode());
 
             HtmlPage userUserPage = wc.goTo("user/user/");
-            assertTrue(userUserPage.getWebResponse().getContentAsString().contains("My Views"));
+            assertTrue(userUserPage.getVisibleText().contains("My Views"));
 
             wc.login("admin");
 
@@ -73,7 +73,7 @@ public class Security3349Test {
             adminViews = wc.goTo("user/admin/my-views/view/all/");
             assertEquals(200, adminViews.getWebResponse().getStatusCode());
             adminUserPage = wc.goTo("user/admin/");
-            assertTrue(adminUserPage.getWebResponse().getContentAsString().contains("My Views"));
+            assertTrue(adminUserPage.getVisibleText().contains("My Views"));
 
         }
     }
