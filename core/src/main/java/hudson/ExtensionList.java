@@ -36,10 +36,12 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -345,11 +347,24 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
             if (extensions == null)
                 return false;     // not yet loaded. when we load it, we'll load everything visible by then, so no work needed
 
-            Collection<ExtensionComponent<T>> found = load(delta);
-            if (!found.isEmpty()) {
-                List<ExtensionComponent<T>> l = new ArrayList<>(extensions);
-                l.addAll(found);
-                extensions = sort(l);
+            Collection<ExtensionComponent<T>> newComponents = load(delta);
+            if (!newComponents.isEmpty()) {
+                List<ExtensionComponent<T>> components = new ArrayList<>(extensions);
+                Set<T> instances = Collections.newSetFromMap(new IdentityHashMap<>());
+                for (ExtensionComponent<T> component : components) {
+                    instances.add(component.getInstance());
+                }
+                // We check to ensure that we do not insert duplicate instances of already-loaded extensions into the list.
+                // This can happen when dynamically loading a plugin with an extension A that itself loads another
+                // extension B from the same plugin in some contexts, such as in A's constructor or via a method in A called
+                // by an ExtensionListListener. In those cases, ExtensionList.refresh may be called on a list that already
+                // includes the new extensions.
+                for (ExtensionComponent<T> newComponent : newComponents) {
+                    if (instances.add(newComponent.getInstance())) {
+                        components.add(newComponent);
+                    }
+                }
+                extensions = sort(new ArrayList<>(components));
                 return true;
             }
         }
