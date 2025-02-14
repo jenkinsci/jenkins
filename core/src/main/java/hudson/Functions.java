@@ -1993,7 +1993,7 @@ public class Functions {
      */
     public static @CheckForNull String getConsoleUrl(WithConsoleUrl withConsoleUrl) {
         String consoleUrl = withConsoleUrl.getConsoleUrl();
-        return consoleUrl != null ? Stapler.getCurrentRequest().getContextPath() + '/' + consoleUrl : null;
+        return consoleUrl != null ? Stapler.getCurrentRequest2().getContextPath() + '/' + consoleUrl : null;
     }
 
     /**

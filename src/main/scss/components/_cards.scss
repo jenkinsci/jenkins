@@ -28,14 +28,22 @@ $icon-size: 1.375rem;
   }
 
   &:not(:hover) {
-    .jenkins-card__unveil {
-      color: var(--text-color-secondary) !important;
+    .jenkins-card__unveil,
+    .jenkins-card__reveal {
+      color: var(--text-color-secondary);
+    }
+  }
+
+  @media (prefers-contrast: more) {
+    .jenkins-card__unveil,
+    .jenkins-card__reveal {
+      color: var(--text-color) !important;
     }
   }
 
   &:hover {
     .jenkins-card__reveal {
-      color: var(--text-color) !important;
+      color: var(--text-color);
     }
   }
 
@@ -69,7 +77,6 @@ $icon-size: 1.375rem;
     width: 26px;
     height: 26px;
     border-radius: 0.33rem;
-    color: var(--text-color-secondary) !important;
     transition:
       scale var(--standard-transition),
       opacity var(--standard-transition);

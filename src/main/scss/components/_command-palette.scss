@@ -86,6 +86,7 @@
     max-width: unset;
 
     input {
+      padding: 0 0.5rem 0 45px;
       background: transparent !important;
 
       --input-border: transparent;
@@ -136,7 +137,7 @@
     }
 
     &__item {
-      @include mixins.item;
+      @include mixins.item($border: false);
 
       --item-background--hover: color-mix(
         in sRGB,
@@ -152,19 +153,15 @@
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      background: transparent;
       padding: 0.75rem;
       border-radius: 0.5rem;
-      cursor: pointer;
       color: var(--text-color) !important;
       transition: var(--standard-transition);
-      box-shadow: 0 0 0 10px transparent;
-      border: none;
-      outline: none;
 
       &--hover {
         &::before {
           background-color: var(--item-background--hover);
+          border: var(--jenkins-border--subtle) !important;
         }
       }
 

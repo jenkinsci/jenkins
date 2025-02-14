@@ -41,7 +41,7 @@ THE SOFTWARE.
                         placeholder="${%Search plugin updates}"
                         id="filter-box"
                         autofocus="true"
-                        value="${request.getParameter('filter')}"
+                        value="${request2.getParameter('filter')}"
                         enabled="${!empty(list)}" />
         </div>
         <div class="jenkins-app-bar__controls">

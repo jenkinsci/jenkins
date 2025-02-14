@@ -45,11 +45,8 @@
   }
 
   &::before {
-    background-image: radial-gradient(
-        at 40% 20%,
-        var(--orange) 0,
-        transparent 50%
-      ),
+    background-image:
+      radial-gradient(at 40% 20%, var(--orange) 0, transparent 50%),
       radial-gradient(at 80% 0%, var(--cyan) 0, transparent 50%),
       radial-gradient(at 0% 50%, var(--light-pink) 0, transparent 50%),
       radial-gradient(at 80% 50%, var(--light-red) 0, transparent 50%),
@@ -59,11 +56,8 @@
   }
 
   &::after {
-    background-image: radial-gradient(
-        at 40% 20%,
-        var(--light-cyan) 0,
-        transparent 50%
-      ),
+    background-image:
+      radial-gradient(at 40% 20%, var(--light-cyan) 0, transparent 50%),
       radial-gradient(at 80% 0%, var(--dark-orange) 0, transparent 50%),
       radial-gradient(at 0% 50%, var(--light-blue) 0, transparent 50%),
       radial-gradient(at 80% 50%, var(--light-green) 0, transparent 50%),
