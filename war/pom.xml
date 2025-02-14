@@ -360,7 +360,7 @@ THE SOFTWARE.
                   <!-- dependency of junit and echarts-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jackson2-api</artifactId>
-                  <version>2.17.0-379.v02de8ec9f64c</version>
+                  <version>2.17.0-386.vcb_b_037da_0d62</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -691,8 +691,8 @@ THE SOFTWARE.
             <javax.xml.transform.TransformerFactory>com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl</javax.xml.transform.TransformerFactory>
           </systemProperties>
           <webApp>
-            <!-- Enable nicer console logging. -->
-            <extraClasspath>${project.build.directory}/support-log-formatter.jar</extraClasspath>
+            <!-- Allow resources to be reloaded and enable nicer console logging. -->
+            <extraClasspath>${project.basedir}/../core/src/main/resources,${project.build.directory}/support-log-formatter.jar</extraClasspath>
             <contextPath>${contextPath}</contextPath>
             <webInfIncludeJarPattern>.*(jenkins-core|target/classes).*</webInfIncludeJarPattern>
           </webApp>
