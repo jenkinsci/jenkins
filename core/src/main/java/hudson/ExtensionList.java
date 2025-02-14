@@ -341,7 +341,6 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      */
     @Restricted(NoExternalUse.class)
     public boolean refresh(ExtensionComponentSet delta) {
-        boolean fireOnChangeListeners = false;
         synchronized (getLoadLock()) {
             if (extensions == null)
                 return false;     // not yet loaded. when we load it, we'll load everything visible by then, so no work needed
@@ -351,10 +350,10 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
                 List<ExtensionComponent<T>> l = new ArrayList<>(extensions);
                 l.addAll(found);
                 extensions = sort(l);
-                fireOnChangeListeners = true;
+                return true;
             }
         }
-        return fireOnChangeListeners;
+        return false;
     }
 
     @Restricted(NoExternalUse.class)
