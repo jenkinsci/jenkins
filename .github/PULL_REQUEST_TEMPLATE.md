@@ -46,14 +46,14 @@ You may add multiple changelog entries if applicable by adding a new entry to th
 
 /label <update-this-with-category>
 
-<!-- 
+<!--
 The changelog entry needs to have a category which is selected based on the label.
 If there's no changelog then the label should be `skip-changelog`.
 
 The available categories are:
 * bug - Minor bug. Will be listed after features
 * developer - Changes which impact plugin developers
-* dependencies - Pull requests that update a dependency 
+* dependencies - Pull requests that update a dependency
 * internal - Internal only change, not user facing
 * localization - Updates localization files
 * major-bug - Major bug. Will be highlighted on the top of the changelog
