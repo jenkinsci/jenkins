@@ -42,6 +42,34 @@ You may add multiple changelog entries if applicable by adding a new entry to th
 - Second changelog entry
 -->
 
+### Proposed changelog category
+
+/label <update-this-with-category>
+
+<!-- 
+The changelog entry needs to have a category which is selected based on the label.
+If there's no changelog then the label should be `skip-changelog`.
+
+The available categories are:
+* bug - Minor bug. Will be listed after features
+* developer - Changes which impact plugin developers
+* dependencies - Pull requests that update a dependency 
+* internal - Internal only change, not user facing
+* localization - Updates localization files
+* major-bug - Major bug. Will be highlighted on the top of the changelog
+* major-rfe - Major enhancement. Will be highlighted on the top
+* rfe - Minor enhancement
+* regression-fix - Fixes a regression in one of the previous Jenkins releases
+* removed - Removes a feature or a public API
+* skip-changelog - Should not be shown in the changelog
+
+Non-changelog categories:
+* web-ui - Changes in the web UI
+
+Non-changelog categories require a changelog category but should be used if applicable,
+comma separate to provide multiple categories in the label command.
+-->
+
 ### Proposed upgrade guidelines
 
 N/A

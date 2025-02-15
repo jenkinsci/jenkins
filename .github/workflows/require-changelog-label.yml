@@ -1,0 +1,29 @@
+name: Require Changelog Label
+on:
+  pull_request:
+    types: [opened, labeled, unlabeled, synchronize]
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: mheap/github-action-required-labels@388fd6af37b34cdfe5a23b37060e763217e58b03 # v5
+        with:
+          mode: minimum
+          count: 1
+          add_comment: true
+          message: "Missing required label for changelog. Requires {{errorString}} {{count}} of: {{ provided }}. Found: {{ applied }}.\n\nYou can add the required label by adding a comment with the following text: `/label <category>`"
+          labels: |
+            bug
+            developer
+            dependencies
+            internal
+            localization
+            major-bug
+            major-rfe
+            rfe
+            regression-fix
+            removed
+            skip-changelog
