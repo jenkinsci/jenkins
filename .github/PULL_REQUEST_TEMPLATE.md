@@ -55,6 +55,7 @@ The available categories are:
 * developer - Changes which impact plugin developers
 * dependencies - Pull requests that update a dependency
 * internal - Internal only change, not user facing
+* into-lts - Changes that are backported to the LTS baseline
 * localization - Updates localization files
 * major-bug - Major bug. Will be highlighted on the top of the changelog
 * major-rfe - Major enhancement. Will be highlighted on the top
