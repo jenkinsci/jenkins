@@ -28,7 +28,11 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:i="jelly:fmt">
   <j:set target="${it}" property="nextBuildNumberToFetch" value="${it.nextBuildNumber}" />
-  <j:invokeStatic className="java.time.LocalDate" method="now" var="now" />
+  <j:if test="${h.isUserTimeZoneOverride()}">
+    <i:setTimeZone value="${h.getUserTimeZone()}" />
+  </j:if>
+  <j:new var="dateNow" className="java.util.Date"/>
+  <i:formatDate value="${dateNow}" var="now" type="date" pattern="YYYY-MM-dd"/>
 
   <j:forEach var="pageEntry" items="${it.runs}">
     <i:formatDate value="${pageEntry.entry.timestamp.time}" var="date" type="date" dateStyle="long" />
