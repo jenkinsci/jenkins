@@ -1,7 +1,7 @@
 package jenkins.search;
 
 import static jenkins.search.Messages.SearchGroup_ComputerSearchGroup_DisplayName;
-import static jenkins.search.Messages.SearchGroup_JobSearchGroup_DisplayName;
+import static jenkins.search.Messages.SearchGroup_ItemSearchGroup_DisplayName;
 import static jenkins.search.Messages.SearchGroup_UnclassifiedSearchGroup_DisplayName;
 import static jenkins.search.Messages.SearchGroup_UserSearchGroup_DisplayName;
 import static jenkins.search.Messages.SearchGroup_ViewSearchGroup_DisplayName;
@@ -36,11 +36,11 @@ public interface SearchGroup extends ExtensionPoint, ModelObject {
     }
 
     @Extension(ordinal = 999)
-    class JobSearchGroup implements SearchGroup {
+    class ItemSearchGroup implements SearchGroup {
 
         @Override
         public String getDisplayName() {
-            return SearchGroup_JobSearchGroup_DisplayName();
+            return SearchGroup_ItemSearchGroup_DisplayName();
         }
     }
 

@@ -529,7 +529,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     @Override
     public SearchGroup getSearchGroup() {
-        return SearchGroup.get(SearchGroup.JobSearchGroup.class);
+        return SearchGroup.get(SearchGroup.ItemSearchGroup.class);
     }
 
     @Override
