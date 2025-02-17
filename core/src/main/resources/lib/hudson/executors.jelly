@@ -81,7 +81,7 @@ THE SOFTWARE.
                     <td class="pane">
                       <div style="white-space: normal">
                         <j:choose>
-                          <j:when test="${exeparent != null}">
+                          <j:when test="${exe == null and exeparent != null }">
                             <j:choose>
                               <j:when test="${exeparentcanread}">
                                 <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>

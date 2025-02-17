@@ -5479,7 +5479,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         @Override
         public boolean hasPermission(Permission permission) {
             // no one should be allowed to delete the master.
-            // this hides the "delete" link from the /computer/(master) page.
+            // this hides the "delete" link from the /computer/(built-in)/ page.
             if (permission == Computer.DELETE)
                 return false;
             // Configuration of master node requires ADMINISTER permission

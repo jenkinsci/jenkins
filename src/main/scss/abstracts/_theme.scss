@@ -31,11 +31,12 @@ $semantics: (
 :root,
 .app-theme-picker__picker[data-theme="none"] {
   // Font related properties
-  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen,
-    ubuntu, cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial,
-    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  --font-family-mono: ui-monospace, sfmono-regular, sf mono, jetbrainsmono,
-    consolas, monospace;
+  --font-family-sans:
+    system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu, cantarell,
+    "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family-mono:
+    ui-monospace, sfmono-regular, sf mono, jetbrainsmono, consolas, monospace;
   --font-size-base: 1rem; // 16px
   --font-size-sm: 0.875rem; // 14px
   --font-size-xs: 0.75rem; // 12px
@@ -193,7 +194,8 @@ $semantics: (
   // Command Palette
   --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5)
     saturate(1.4) blur(20px);
-  --command-palette-inset-shadow: inset 0 0 2px 2px rgb(255 255 255 / 0.1),
+  --command-palette-inset-shadow:
+    inset 0 0 2px 2px rgb(255 255 255 / 0.1),
     var(--jenkins-border--subtle-shadow);
 
   ::backdrop {
@@ -207,23 +209,24 @@ $semantics: (
   // Tooltips
   --tooltip-backdrop-filter: saturate(2) blur(20px);
   --tooltip-color: var(--text-color);
-  --tooltip-box-shadow: 0 0 8px 2px rgb(0 0 50 / 0.05),
-    var(--jenkins-border--subtle-shadow), 0 10px 50px rgb(0 0 20 / 0.1);
+  --tooltip-box-shadow:
+    0 0 8px 2px rgb(0 0 50 / 0.05), var(--jenkins-border--subtle-shadow),
+    0 10px 50px rgb(0 0 20 / 0.1);
 
   // Dropdowns
   --dropdown-backdrop-filter: saturate(1.5) blur(20px);
-  --dropdown-box-shadow: var(--jenkins-border--subtle-shadow),
-    0 10px 30px rgb(0 0 20 / 0.1), 0 2px 10px rgb(0 0 20 / 0.05),
-    inset 0 -1px 2px rgb(255 255 255 / 0.025);
+  --dropdown-box-shadow:
+    var(--jenkins-border--subtle-shadow), 0 10px 30px rgb(0 0 20 / 0.1),
+    0 2px 10px rgb(0 0 20 / 0.05), inset 0 -1px 2px rgb(255 255 255 / 0.025);
 
   // Dialogs
   ::backdrop {
     --dialog-backdrop-background: hsl(240 10% 20% / 0.8);
   }
 
-  --dialog-box-shadow: var(--jenkins-border--subtle-shadow),
-    0 10px 40px rgb(0 0 20 / 0.15), 0 2px 15px rgb(0 0 20 / 0.05),
-    inset 0 0 2px 2px rgb(255 255 255 / 0.025);
+  --dialog-box-shadow:
+    var(--jenkins-border--subtle-shadow), 0 10px 40px rgb(0 0 20 / 0.15),
+    0 2px 15px rgb(0 0 20 / 0.05), inset 0 0 2px 2px rgb(255 255 255 / 0.025);
 
   // Dark link
   --link-dark-color: var(--text-color);

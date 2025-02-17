@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2024 Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,25 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Displays a link to a node.
-    <st:attribute name="value" use="required" type="Node"/>
-    <st:attribute name="valueStr" use="optional" type="String"/>
-  </st:documentation>
-  <j:choose>
-    <j:when test="${value!=null and value!=app}">
-      <a href="${rootURL}/computer/${value.nodeName}/" class="model-link inside">${value.nodeName}</a>
-    </j:when>
-    <j:when test="${valueStr != null and valueStr != ''}">
-      ${valueStr}
-    </j:when>
-    <j:otherwise>
-      ${%built-in}
-    </j:otherwise>
-  </j:choose>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <j:set var="object" value="${it.object}" />
+  <div class="jenkins-card__details__item">
+    <div class="jenkins-card__details__item__icon">
+      <l:icon src="symbol-timer" />
+    </div>
+    <div>
+      <j:choose>
+        <j:when test="${object.building}">
+          ${%beingExecuted(object.executor.timestampString)}
+        </j:when>
+        <j:otherwise>
+          ${%Took} ${object.durationString}
+        </j:otherwise>
+      </j:choose>
+      <j:if test="${!empty(app.nodes) or (object.builtOnStr != null and object.builtOnStr != '')}">
+        ${%on} <t:node value="${object.builtOn}" valueStr="${object.builtOnStr}"/>
+      </j:if>
+      <st:include page="details.jelly" optional="true" />
+    </div>
+  </div>
 </j:jelly>

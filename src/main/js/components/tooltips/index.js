@@ -36,6 +36,7 @@ function registerTooltip(element) {
 
   const tooltip = element.getAttribute("tooltip");
   const htmlTooltip = element.getAttribute("data-html-tooltip");
+  const delay = element.getAttribute("data-tooltip-delay") || 0;
   let appendTo = document.body;
   if (element.hasAttribute("data-tooltip-append-to-parent")) {
     appendTo = "parent";
@@ -60,6 +61,7 @@ function registerTooltip(element) {
             instance.reference.setAttribute("title", instance.props.content);
           },
           appendTo: appendTo,
+          delay: [delay, null],
         },
         TOOLTIP_BASE,
       ),
@@ -79,6 +81,7 @@ function registerTooltip(element) {
               "true";
           },
           appendTo: appendTo,
+          delay: [delay, null],
         },
         TOOLTIP_BASE,
       ),
