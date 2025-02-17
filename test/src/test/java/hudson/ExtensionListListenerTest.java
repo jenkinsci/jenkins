@@ -24,6 +24,8 @@
 
 package hudson;
 
+import static org.junit.Assert.assertNotNull;
+
 import jenkins.model.TransientActionFactory;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -64,5 +66,16 @@ public class ExtensionListListenerTest {
         public void onChange() {
             onChangeCallCount++;
         }
+    }
+
+    /**
+     * Check that dynamically loading a plugin containing an extension that is used by an {@link ExtensionListListener}
+     * and that loads other extensions internally does not lead to extension lists with duplicate entries.
+     */
+    @Test
+    public void checkDynamicLoad_singleRegistration() throws Throwable {
+        PluginManagerUtil.dynamicLoad("extension-list-listener-dynamic-load.hpi", r.jenkins);
+        var fqcn = "io.jenkins.plugins.extension_list_listener_dynamic_load.CustomExtension";
+        assertNotNull(ExtensionList.lookupSingleton(r.jenkins.pluginManager.uberClassLoader.loadClass(fqcn)));
     }
 }
