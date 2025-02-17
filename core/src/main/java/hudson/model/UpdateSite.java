@@ -37,6 +37,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
@@ -48,6 +49,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -200,6 +202,27 @@ public class UpdateSite {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Opens a connection to the given URL
+     * @param src the url to connect to
+     * @return A {@code URLConnection} for the given src URL
+     * @since TODO
+     */
+    public URLConnection connect(URL src) throws IOException {
+        return ProxyConfiguration.open(src);
+    }
+
+    /**
+     * Validate the URL of the resource before downloading it.
+     *
+     * @param src The location of the resource on the network
+     * @throws IOException if the validation fails
+     * @since TODO
+     */
+    public void preValidate(URL src) throws IOException {
+        // no validation needed in the default setup
     }
 
     /**
