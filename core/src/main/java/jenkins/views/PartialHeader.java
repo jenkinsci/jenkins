@@ -25,7 +25,7 @@ public abstract class PartialHeader extends Header {
      *
      * Increment this number when an incompatible change is made to the header (like the search form API).
      */
-    private static final int compatibilityHeaderVersion = 1;
+    private static final int compatibilityHeaderVersion = 2;
 
     @Override
     public final boolean isCompatible() {
