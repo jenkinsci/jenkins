@@ -360,7 +360,7 @@ THE SOFTWARE.
                   <!-- dependency of junit and echarts-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jackson2-api</artifactId>
-                  <version>2.17.0-386.vcb_b_037da_0d62</version>
+                  <version>2.17.0-389.va_5c7e45cd806</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
