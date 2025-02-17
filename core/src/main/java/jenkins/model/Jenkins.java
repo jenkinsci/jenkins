@@ -3020,7 +3020,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public Item getItem(String pathName, ItemGroup context) {
         if (context == null)  context = this;
-        if (pathName == null) return null;
+        if (Util.fixEmpty(pathName) == null) return null;
 
         if (pathName.startsWith("/"))   // absolute
             return getItemByFullName(pathName);
