@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2024 Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,24 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Displays a link to a node.
-    <st:attribute name="value" use="required" type="Node"/>
-    <st:attribute name="valueStr" use="optional" type="String"/>
-  </st:documentation>
-  <j:choose>
-    <j:when test="${value!=null and value!=app}">
-      <a href="${rootURL}/computer/${value.nodeName}/" class="model-link inside">${value.nodeName}</a>
-    </j:when>
-    <j:when test="${valueStr != null and valueStr != ''}">
-      ${valueStr}
-    </j:when>
-    <j:otherwise>
-      ${%built-in}
-    </j:otherwise>
-  </j:choose>
+<j:jelly xmlns:j="jelly:core" xmlns:i="jelly:fmt">
+  <j:set var="object" value="${it.getObject()}" />
+  <i:formatDate var="tooltip" value="${object.timestamp.time}" type="both" dateStyle="long" timeStyle="medium" />
+
+  <div class="jenkins-card__details__item">
+    <j:set var="minutes" value="${360 * (object.timestamp.time.minutes / 60)}" />
+    <i:formatDate var="hours" value="${object.timestamp.time}" pattern="h" />
+    <j:set var="hours" value="${360 * (hours / 12) + (30 * (object.timestamp.time.minutes / 60))}" />
+
+    <div class="jenkins-card__details__item__icon">
+      <div class="app-build__clock" style="--hours: ${hours}deg; --minutes: ${minutes}deg">
+        <span class="app-build__clock__hours" />
+        <span class="app-build__clock__minutes" />
+      </div>
+    </div>
+
+    <span tooltip="${tooltip}" data-tooltip-delay="500">
+      ${%startedAgo(object.timestampString)}
+    </span>
+  </div>
 </j:jelly>

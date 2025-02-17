@@ -55,11 +55,8 @@
 
   &::before {
     background-color: var(--color);
-    background-image: radial-gradient(
-        at 40% 20%,
-        hsl(28 100% 74% / 1) 0,
-        transparent 50%
-      ),
+    background-image:
+      radial-gradient(at 40% 20%, hsl(28 100% 74% / 1) 0, transparent 50%),
       radial-gradient(at 80% 0%, hsl(189 100% 56% / 1) 0, transparent 50%),
       radial-gradient(at 0% 50%, hsl(355 85% 93% / 1) 0, transparent 50%),
       radial-gradient(at 80% 50%, hsl(359 70% 46%) 0, transparent 50%),
@@ -71,11 +68,8 @@
   }
 
   &::after {
-    background-image: radial-gradient(
-        at 40% 20%,
-        hsl(212 100% 74% / 1) 0,
-        transparent 50%
-      ),
+    background-image:
+      radial-gradient(at 40% 20%, hsl(212 100% 74% / 1) 0, transparent 50%),
       radial-gradient(at 80% 0%, hsl(13 100% 56% / 1) 0, transparent 50%),
       radial-gradient(at 0% 50%, hsl(179 85% 93% / 1) 0, transparent 50%),
       radial-gradient(at 80% 50%, hsl(164 100% 76% / 1) 0, transparent 50%),
