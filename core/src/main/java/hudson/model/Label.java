@@ -257,7 +257,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             Set<Cloud> r = new HashSet<>();
             Jenkins h = Jenkins.get();
             for (Cloud c : h.clouds) {
-                if (c.canProvision(this))
+                if (c.canProvision(new Cloud.CloudState(this)))
                     r.add(c);
             }
             clouds = Collections.unmodifiableSet(r);

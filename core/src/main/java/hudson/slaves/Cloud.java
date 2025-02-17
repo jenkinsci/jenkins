@@ -223,8 +223,9 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      *      just needs to return {@link PlannedNode}s that each contain an object that implements {@link Future}.
      *      When the {@link Future} has completed its work, {@link Future#get} will be called to obtain the
      *      provisioned {@link Node} object.
+     * @since 2.259
      */
-    public Collection<PlannedNode> provision(CloudState state, int excessWorkload) {
+    public Collection<PlannedNode> provision(@NonNull CloudState state, int excessWorkload) {
         return provision(state.getLabel(), excessWorkload);
     }
 
@@ -243,8 +244,9 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
 
     /**
      * Returns true if this cloud is capable of provisioning new nodes for the given label.
+     * @since 2.259
      */
-    public boolean canProvision(CloudState state) {
+    public boolean canProvision(@NonNull CloudState state) {
         return canProvision(state.getLabel());
     }
 
@@ -380,6 +382,10 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
          * current updating of the {@link NodeProvisioner}.
          */
         private final int additionalPlannedCapacity;
+
+        public CloudState(@CheckForNull Label label) {
+            this(label, 0);
+        }
 
         public CloudState(@CheckForNull Label label, int additionalPlannedCapacity) {
             this.label = label;
