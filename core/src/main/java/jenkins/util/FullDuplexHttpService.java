@@ -25,7 +25,7 @@
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.cli.FullDuplexHttpStream;
+import hudson.cli.HttpUploadDownloadStream;
 import hudson.model.RootAction;
 import hudson.security.csrf.CrumbExclusion;
 import hudson.util.ChunkedInputStream;
@@ -47,7 +47,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 
 /**
- * Server-side counterpart to {@link FullDuplexHttpStream}.
+ * Server-side counterpart to {@link HttpUploadDownloadStream}.
  * <p>
  * To use, bind this to an endpoint with {@link RootAction} (you will also need a {@link CrumbExclusion}).
  * @since 2.54
