@@ -134,6 +134,9 @@ public class ChunkedInputStream extends InputStream {
         len = Math.min(len, chunkSize - pos);
         int count = in.read(b, off, len);
         pos += count;
+        if (pos >= chunkSize) {
+            in.skip(2);
+        }
         return count;
     }
 
@@ -272,6 +275,9 @@ public class ChunkedInputStream extends InputStream {
             result = Integer.parseInt(dataString.trim(), 16);
         } catch (NumberFormatException e) {
             throw new IOException("Bad chunk size: " + dataString, e);
+        }
+        if (result > 10 * 1024 * 1024) {
+            throw new IOException("Chunk size too large: " + result);
         }
         return result;
     }
