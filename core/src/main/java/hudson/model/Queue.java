@@ -1615,7 +1615,8 @@ public class Queue extends ResourceController implements Saveable {
             // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
             updateSnapshot();
 
-            // put label has no candidates here to accelerate the buildableItem circle
+            // JENKINS-75152. Save the label and blockage reasons of items that have no candidates into this map.
+            // It is used to speed up the judgement of other buildable items with the same label.
             Map<Label, List<CauseOfBlockage>> noCandidateLabelsMap = new HashMap<>();
             // allocate buildable jobs to executors
             for (BuildableItem p : new ArrayList<>(
@@ -1632,11 +1633,6 @@ public class Queue extends ResourceController implements Saveable {
                     continue;
                 }
 
-                Label itemLabel = p.getAssignedLabel();
-                if (noCandidateLabelsMap.containsKey(itemLabel)) {
-                    p.transientCausesOfBlockage = noCandidateLabelsMap.get(itemLabel);
-                    continue;
-                }
                 String taskDisplayName = LOGGER.isLoggable(Level.FINEST) ? p.task.getFullDisplayName() : null;
 
                 if (p.task instanceof FlyweightTask) {
@@ -1648,6 +1644,13 @@ public class Queue extends ResourceController implements Saveable {
                         updateSnapshot();
                     }
                 } else {
+                    // JENKINS-75152. Skip the remaining steps if the label of this item has been determined
+                    // to have no candidate executors in the previous allocation process.
+                    Label itemLabel = p.getAssignedLabel();
+                    if (noCandidateLabelsMap.containsKey(itemLabel)) {
+                        p.transientCausesOfBlockage = noCandidateLabelsMap.get(itemLabel);
+                        continue;
+                    }
 
                     List<JobOffer> candidates = new ArrayList<>(parked.size());
                     Map<Node, CauseOfBlockage> reasonMap = new HashMap<>();
@@ -1680,7 +1683,7 @@ public class Queue extends ResourceController implements Saveable {
                                 new Object[]{p, candidates, parked.values()});
                         List<CauseOfBlockage> reasons = reasonMap.values().stream().filter(Objects::nonNull).collect(Collectors.toList());
                         p.transientCausesOfBlockage = reasons.isEmpty() ? null : reasons;
-                        // If no candidates, mark the label and reasons
+                        // If no candidates, save the label and blockage reasons.
                         if (candidates.isEmpty()) {
                             noCandidateLabelsMap.put(itemLabel, p.transientCausesOfBlockage);
                             LOGGER.log(Level.FINEST, "{0} changes to the state of no candidate executor", itemLabel);
