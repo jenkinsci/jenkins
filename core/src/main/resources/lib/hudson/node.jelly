@@ -31,7 +31,7 @@ THE SOFTWARE.
   </st:documentation>
   <j:choose>
     <j:when test="${value!=null and value!=app}">
-      <a href="${rootURL}/computer/${value.nodeName}" class="model-link inside">${value.nodeName}</a>
+      <a href="${rootURL}/computer/${value.nodeName}/" class="model-link inside">${value.nodeName}</a>
     </j:when>
     <j:when test="${valueStr != null and valueStr != ''}">
       ${valueStr}
