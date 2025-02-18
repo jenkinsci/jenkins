@@ -93,6 +93,13 @@ THE SOFTWARE.
         <version>5.1.0</version>
       </dependency>
       <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>jenkins-test-harness</artifactId>
+        <!-- TODO: https://github.com/jenkinsci/jenkins-test-harness/pull/920 -->
+        <version>2397.ve8774ea_1dd39</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
         <version>511.v0a_a_1a_334f41b_</version>
@@ -178,7 +185,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2391.v9b_3e2d3351a_2</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -255,6 +261,12 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
       <version>338.v848422169819</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>variant</artifactId>
+      <version>70.va_d9f17f859e0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

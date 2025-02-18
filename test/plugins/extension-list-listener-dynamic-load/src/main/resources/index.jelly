@@ -1,4 +1,0 @@
-<?jelly escape-by-default='true'?>
-<div>
-A simple test plugin that loads an extension from within the context of a ExtensionListListener.onChange method.
-</div>

@@ -1,4 +1,4 @@
-package io.jenkins.plugins.extension_list_listener_dynamic_load;
+package jenkins.plugins.dynamic_extension_loading;
 
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -13,6 +13,7 @@ public class CustomPeriodicWork extends PeriodicWork {
 
     public CustomPeriodicWork() {
         LOGGER.log(Level.INFO, null, new Exception("Instantiating CustomPeriodicWork"));
+        ExtensionList.lookupSingleton(CustomExtensionLoadedViaConstructor.class);
     }
 
     @Override
@@ -20,7 +21,7 @@ public class CustomPeriodicWork extends PeriodicWork {
 
     @Override
     public long getRecurrencePeriod() {
-        LOGGER.log(Level.INFO, null, new Exception("Loading CustomExtension"));
-        return ExtensionList.lookupSingleton(CustomExtension.class).recurrencePeriod;
+        LOGGER.log(Level.INFO, null, new Exception("Loading CustomExtensionLoadedViaListener"));
+        return ExtensionList.lookupSingleton(CustomExtensionLoadedViaListener.class).recurrencePeriod;
     }
 }
