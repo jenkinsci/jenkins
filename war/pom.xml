@@ -330,7 +330,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, echarts-api, font-awesome-api, and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>plugin-util-api</artifactId>
-                  <version>5.1.0</version>
+                  <version>6.0.0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
