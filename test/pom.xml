@@ -96,7 +96,7 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>jenkins-test-harness</artifactId>
         <!-- TODO: https://github.com/jenkinsci/jenkins-test-harness/pull/920 -->
-        <version>2397.ve8774ea_1dd39</version>
+        <version>2399.v070266dc43f6</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>

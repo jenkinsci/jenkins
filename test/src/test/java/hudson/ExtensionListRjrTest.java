@@ -2,22 +2,18 @@ package hudson;
 
 import static org.junit.Assert.assertNotNull;
 
-import jenkins.model.Jenkins;
 import jenkins.plugins.dynamic_extension_loading.CustomExtensionLoadedViaConstructor;
 import jenkins.plugins.dynamic_extension_loading.CustomExtensionLoadedViaListener;
 import jenkins.plugins.dynamic_extension_loading.CustomPeriodicWork;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.RealJenkinsRule.SyntheticPlugin;
 
 public class ExtensionListRjrTest {
     @Rule
     public RealJenkinsRule rjr = new RealJenkinsRule();
-
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
 
     /**
      * Check that dynamically loading a plugin does not lead to extension lists with duplicate entries.
@@ -26,15 +22,12 @@ public class ExtensionListRjrTest {
      */
     @Test
     public void checkDynamicLoad_singleRegistration() throws Throwable {
-        var shortName = "dynamic-extension-loading";
-        var pluginJpi = temp.newFile(shortName + ".jpi");
+        var pluginJpi = rjr.createSyntheticPlugin(new SyntheticPlugin(CustomPeriodicWork.class.getPackage())
+                .shortName("dynamic-extension-loading")
+                .header("Plugin-Dependencies", "variant:0"));
         var fqcn1 = CustomExtensionLoadedViaListener.class.getName();
         var fqcn2 = CustomExtensionLoadedViaConstructor.class.getName();
         rjr.then(r -> {
-            RealJenkinsRule.createSyntheticPlugin(CustomPeriodicWork.class.getPackage())
-                    .shortName(shortName)
-                    .header("Plugin-Dependencies", "variant:0")
-                    .writeTo(pluginJpi, Jenkins.getVersion().toString());
             r.jenkins.pluginManager.dynamicLoad(pluginJpi);
             assertSingleton(r, fqcn1);
             assertSingleton(r, fqcn2);
