@@ -39,6 +39,7 @@ import hudson.util.Secret;
 import java.io.IOException;
 import java.util.Collection;
 import jenkins.model.Jenkins;
+import jenkins.search.SearchGroup;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -248,6 +249,11 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * Deletes this item.
      */
     void delete() throws IOException, InterruptedException;
+
+    @Override
+    default SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.ItemSearchGroup.class);
+    }
 
     PermissionGroup PERMISSIONS = new PermissionGroup(Item.class, Messages._Item_Permissions_Title());
     Permission CREATE =
