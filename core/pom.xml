@@ -117,10 +117,6 @@ THE SOFTWARE.
       <version>${bridge-method-injector.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.sun.solaris</groupId>
-      <artifactId>embedded_su4j</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
       <exclusions>
@@ -165,10 +161,6 @@ THE SOFTWARE.
       <!-- Jenkins doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.jenkins.stapler</groupId>
-      <artifactId>jenkins-stapler-support</artifactId>
     </dependency>
     <dependency>
       <!-- needed by Jelly -->
@@ -332,10 +324,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.robust-http-client</groupId>
-      <artifactId>robust-http-client</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jvnet.winp</groupId>

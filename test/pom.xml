@@ -75,7 +75,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.6.0-2</version>
+        <version>6.7.2-1</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -90,7 +90,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>plugin-util-api</artifactId>
-        <version>5.1.0</version>
+        <version>6.0.0</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -118,23 +118,23 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1369.v9b_98a_4e95b_2d</version>
+        <version>1373.vb_b_4a_a_c26fa_00</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1358.vfb_5780da_64cb_</version>
+        <version>1363.v03f731255494</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-step-api</artifactId>
-        <version>678.v3ee58b_469476</version>
+        <version>686.v603d058a_e148</version>
       </dependency>
       <dependency>
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>943.v8b_0d01a_7b_a_08</version>
+        <version>946.v2a_79d8a_4b_e14</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -178,7 +178,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2380.vc51ea_a_cf2711</version>
+      <version>2395.v8256a_2157798</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -218,19 +218,19 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.980.v5a_cc0cb_25881</version>
+      <version>6.982.vf165a_16c9507</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1405.vb_cda_74a_f8974</version>
+      <version>1408.va_622a_b_f5b_1b_1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1312.v1a_235a_b_94a_31</version>
+      <version>1316.v13ec14a_de230</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -242,7 +242,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.2.3</version>
+      <version>3.2.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -344,7 +344,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>353.v3b_c47f293f54</version>
+                  <version>355.v0f007356e15d</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
@@ -352,7 +352,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.29.0-18</version>
+                  <version>1.29.0-19</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>prism-api.jpi</destFileName>
@@ -360,7 +360,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.3-1</version>
+                  <version>5.3.3-2</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>bootstrap5-api.jpi</destFileName>

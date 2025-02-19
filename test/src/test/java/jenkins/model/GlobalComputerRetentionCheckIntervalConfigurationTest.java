@@ -102,7 +102,7 @@ public class GlobalComputerRetentionCheckIntervalConfigurationTest {
         JSONObject json = new JSONObject();
         json.element("computerRetentionCheckInterval", 5);
         try {
-            c.configure(Stapler.getCurrentRequest(), json);
+            c.configure(Stapler.getCurrentRequest2(), json);
         } catch (Descriptor.FormException e) {
             throw new RuntimeException(e);
         }
@@ -121,7 +121,7 @@ public class GlobalComputerRetentionCheckIntervalConfigurationTest {
         JSONObject json = new JSONObject();
         json.element("computerRetentionCheckInterval", interval);
         try {
-            c.configure(Stapler.getCurrentRequest(), json);
+            c.configure(Stapler.getCurrentRequest2(), json);
             throw new RuntimeException("expected .configure() to throw");
         } catch (Descriptor.FormException e) {
             assertEquals(e.getMessage(), message);

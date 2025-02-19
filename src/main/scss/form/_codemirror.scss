@@ -1,7 +1,7 @@
 .CodeMirror {
   display: block;
   background: var(--input-color);
-  border: 2px solid var(--input-border);
+  border: var(--jenkins-border-width) solid var(--input-border);
   border-radius: var(--form-input-border-radius);
   width: 100%;
   box-shadow: var(--form-input-glow);
@@ -48,8 +48,7 @@
   }
 
   .CodeMirror-gutter-text {
-    padding: var(--form-input-padding) calc(var(--form-input-padding) * 0.5)
-      var(--form-input-padding) var(--form-input-padding);
+    padding: 0.5rem calc(0.625rem * 0.5) 0.625rem 0.5rem;
     color: var(--text-color-secondary);
   }
 }

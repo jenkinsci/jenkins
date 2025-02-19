@@ -29,7 +29,7 @@ THE SOFTWARE.
     <st:setHeader name="Expires" value="0" />
     <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
     <!-- needed for cli -->
-    <j:if test="${request.servletPath=='/' || request.servletPath==''}">
+    <j:if test="${request2.servletPath=='/' || request2.servletPath==''}">
       ${h.advertiseHeaders(response)}
       <j:forEach var="pd" items="${h.pageDecorators}">
         <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
@@ -39,21 +39,21 @@ THE SOFTWARE.
       needed to generate a session if non exists,
       without it we would add ";jsessionid=" to the url which will result in a 404
     -->
-    <j:set var="_" value="${request.getSession()}"/>
+    <j:set var="_" value="${request2.getSession()}"/>
     <!-- get default/common page variable -->
     ${h.initPageVariables(context)}
     <x:doctype name="html" />
     <!-- needed for the redirect after login -->
-    <j:set var="from" value="${error ? request.session.getAttribute('from') : request.getParameter('from')}"/>
+    <j:set var="from" value="${error ? request2.session.getAttribute('from') : request2.getParameter('from')}"/>
     <!-- in case of error we want to surround the form elements with an error hint -->
     <j:set var="inputClass" value="${error ? 'jenkins-input--error' : ''}"/>
     <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
     <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
 
     <!-- real deal starting here -->
-    <html lang="${request.getLocale().toLanguageTag()}">
+    <html lang="${request2.getLocale().toLanguageTag()}">
       <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
-        <title>${%signIn} [Jenkins]</title>
+        <title>${%signIn} - Jenkins</title>
         <!-- we do not want bots on this page -->
         <meta name="ROBOTS" content="NOFOLLOW" />
         <!-- mobile friendly layout -->

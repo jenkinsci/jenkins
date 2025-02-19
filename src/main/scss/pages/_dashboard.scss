@@ -1,6 +1,6 @@
 @use "../abstracts/mixins";
 
-$min-button-size: 36px;
+$min-button-size: 2.375rem;
 
 .jenkins-icon-size {
   display: flex;
@@ -57,7 +57,7 @@ $min-button-size: 36px;
       justify-content: center;
       aspect-ratio: 1;
       height: $min-button-size;
-      border-radius: 10px;
+      border-radius: var(--form-input-border-radius);
       font-weight: var(--btn-link-font-weight);
       font-size: var(--btn-font-size);
       background: var(--button-background--hover);

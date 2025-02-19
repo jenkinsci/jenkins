@@ -1,34 +1,23 @@
 @use "../abstracts/mixins";
 
 .jenkins-button {
+  --item-background: var(--button-background);
   --item-background--hover: var(--button-background--hover);
   --item-background--active: var(--button-background--active);
   --item-box-shadow--focus: var(--button-box-shadow--focus);
 
   @include mixins.item;
 
-  appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  outline: none;
   margin: 0;
-  padding: 0.5rem 0.9rem;
-  font-size: 0.875rem;
-  font-weight: normal;
-  text-decoration: none !important;
-  background: transparent;
+  padding: 0.5rem 1rem;
+  font-size: var(--font-size-sm);
   color: var(--text-color) !important;
-  border-radius: 0.66rem;
-  cursor: pointer;
-  min-height: 2.25rem;
+  min-height: 2.375rem;
   white-space: nowrap;
   gap: 1ch;
-
-  &::before {
-    background: var(--button-background);
-  }
 
   svg {
     width: 1.125rem;
@@ -43,118 +32,41 @@
 }
 
 .jenkins-button--primary {
+  --button-background: oklch(from var(--accent-color) l c h);
+  --button-background--hover: oklch(from var(--accent-color) l c h / 0.9);
+  --button-background--active: oklch(from var(--accent-color) l c h / 0.8);
+  --button-box-shadow--focus: oklch(from var(--accent-color) l c h / 0.4);
+
   color: var(--button-color--primary) !important;
-
-  &::before {
-    background: var(--accent-color) !important;
-  }
-
-  &::after {
-    box-shadow: 0 0 0 0.66rem var(--accent-color);
-    opacity: 0;
-  }
-
-  &:not(:disabled) {
-    &:hover {
-      &::before {
-        opacity: 0.9;
-      }
-    }
-
-    &:active,
-    &:focus-visible {
-      &::before {
-        opacity: 0.8;
-      }
-
-      &::after {
-        box-shadow: 0 0 0 0.33rem var(--accent-color);
-        opacity: 0.2;
-      }
-    }
-  }
-}
-
-.jenkins-button--tertiary {
-  &::before {
-    background: transparent;
-  }
 }
 
 // Support for custom colors
 // Modifier classes must include 'color' in name to work
 .jenkins-button[class*="color"] {
-  background: transparent;
+  --button-background: oklch(from currentColor l c h / 0.1);
+  --button-background--hover: oklch(from currentColor l c h / 0.15);
+  --button-background--active: oklch(from currentColor l c h / 0.25);
+  --button-box-shadow--focus: oklch(from currentColor l c h / 0.125);
+
   color: var(--color) !important;
-
-  &::before {
-    background: currentColor !important;
-    opacity: 0.1;
-  }
-
-  &::after {
-    box-shadow: 0 0 0 0.66rem currentColor;
-    opacity: 0;
-  }
-
-  &:not(:disabled) {
-    &:hover {
-      &::before {
-        opacity: 0.15;
-      }
-    }
-
-    &:active {
-      &::before {
-        opacity: 0.2;
-      }
-
-      &::after {
-        box-shadow: 0 0 0 0.33rem currentColor;
-        opacity: 0.1;
-      }
-    }
-  }
 }
 
 .jenkins-button--primary[class*="color"] {
-  background: transparent;
+  --button-background: oklch(from var(--color) l c h);
+  --button-background--hover: oklch(from var(--color) l c h / 0.9);
+  --button-background--active: oklch(from var(--color) l c h / 0.8);
+  --button-box-shadow--focus: oklch(from var(--color) l c h / 0.4);
+
   color: var(--background) !important;
-
-  &::before {
-    background: var(--color) !important;
-    opacity: 1;
-  }
-
-  &::after {
-    box-shadow: 0 0 0 0.66rem var(--color);
-    opacity: 0;
-  }
-
-  &:not(:disabled) {
-    &:hover {
-      &::before {
-        opacity: 0.9;
-      }
-    }
-
-    &:active,
-    &:focus-visible {
-      &::before {
-        opacity: 0.8;
-      }
-
-      &::after {
-        box-shadow: 0 0 0 0.33rem var(--color);
-        opacity: 0.3;
-      }
-    }
-  }
 }
 
-.jenkins-button--tertiary[class*="color"] {
-  &::before {
-    opacity: 0;
+.jenkins-button--tertiary {
+  --button-background: transparent !important;
+
+  &:not(:hover, &:active, &:focus) {
+    &::before {
+      border-color: transparent;
+    }
   }
 }
 
@@ -250,7 +162,7 @@
       in sRGB,
       var(--success-color) 10%,
       transparent
-    );
+    ) !important;
     --button-background--hover: var(--button-background);
     --button-background--active: var(--button-background);
 
@@ -353,23 +265,19 @@ $jenkins-split-button-border-radius: 0.2rem;
 }
 
 .stop-button-link {
+  --item-background: color-mix(in sRGB, var(--red) 15%, transparent);
   --item-background--hover: color-mix(in sRGB, var(--red) 20%, transparent);
   --item-background--active: color-mix(in sRGB, var(--red) 25%, transparent);
   --item-box-shadow--focus: transparent;
 
   @include mixins.item;
 
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 1rem;
   height: 1rem;
   border-radius: 0.25rem;
-
-  &::before {
-    background: color-mix(in sRGB, var(--red) 15%, transparent);
-  }
 
   svg {
     width: 87.5%;

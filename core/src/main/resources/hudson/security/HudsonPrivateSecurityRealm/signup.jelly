@@ -34,15 +34,15 @@ THE SOFTWARE.
     needed to generate a session if non exists,
     without it we would add ";jsessionid=" to the url which will result in a 404
     -->
-    <j:set var="_" value="${request.getSession()}"/>
+    <j:set var="_" value="${request2.getSession()}"/>
     <x:doctype name="html"/>
     <!-- in case of error we want to surround the form elements with an error hint -->
     <j:set var="inputClass" value="${data.errorMessage!=null ? 'jenkins-input--error' : ''}"/>
     <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
     <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
-    <html lang="${request.getLocale().toLanguageTag()}">
+    <html lang="${request2.getLocale().toLanguageTag()}">
       <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
-        <title>${%Register} [Jenkins]</title>
+        <title>${%Register} - Jenkins</title>
         <!-- we do not want bots on this page -->
         <meta name="ROBOTS" content="NOFOLLOW"/>
         <!-- mobile friendly layout -->

@@ -40,7 +40,7 @@ THE SOFTWARE.
     <l:main-panel>
       <h1>${it.job.pronoun} ${it.job.displayName}</h1>
       <p class="jenkins-description">${%description}</p>
-      <j:set var="delay" value="${request.getParameter('delay')}" />
+      <j:set var="delay" value="${request2.getParameter('delay')}" />
       <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters"
               tableClass="parameters" class="jenkins-form">
         <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">

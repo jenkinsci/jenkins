@@ -1,6 +1,7 @@
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Util;
 import hudson.util.FormValidation;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -33,8 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.jvnet.hudson.crypto.CertificateUtil;
 import org.jvnet.hudson.crypto.SignatureOutputStream;
@@ -221,10 +220,10 @@ public class JSONSignatureValidator {
         // This approach might look unnecessarily clever, but short of having redundant Signature instances,
         // there doesn't seem to be a better approach for this.
         try {
-            if (signature.verify(Hex.decodeHex(providedSignature.toCharArray()))) {
+            if (signature.verify(Util.fromHexString(providedSignature))) {
                 return true;
             }
-        } catch (SignatureException | DecoderException ignore) {
+        } catch (SignatureException | IllegalArgumentException ignore) {
             // ignore
         }
 
@@ -242,7 +241,7 @@ public class JSONSignatureValidator {
      * Utility method supporting both possible digest formats: Base64 and Hex
      */
     private boolean digestMatches(byte[] digest, String providedDigest) {
-        return providedDigest.equalsIgnoreCase(Hex.encodeHexString(digest)) || providedDigest.equalsIgnoreCase(Base64.getEncoder().encodeToString(digest));
+        return providedDigest.equalsIgnoreCase(Util.toHexString(digest)) || providedDigest.equalsIgnoreCase(Base64.getEncoder().encodeToString(digest));
     }
 
 

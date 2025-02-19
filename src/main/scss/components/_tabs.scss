@@ -1,3 +1,7 @@
+@use "../abstracts/mixins";
+
+$border-radius: 100px;
+
 .tabBarFrame {
   position: relative;
 }
@@ -7,8 +11,8 @@
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-  background: var(--tabs-background);
-  border-radius: var(--tabs-border-radius);
+  background: var(--button-background);
+  border-radius: $border-radius;
   padding: 2px;
   margin-bottom: var(--section-padding);
 
@@ -16,7 +20,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    border: var(--card-border-width) solid var(--tabs-border-color);
+    border: var(--jenkins-border--subtle);
     border-radius: inherit;
     pointer-events: none;
   }
@@ -27,38 +31,28 @@
 }
 
 .tabBar .tab a {
-  position: relative;
+  @include mixins.item($border: false);
+
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 3rem;
-  text-decoration: none;
-  margin: 2px;
-  padding: 0.4rem 1.2rem;
-  border-radius: 100px;
-  background: var(--tabs-item-background);
+  min-height: 36px;
+  padding: 0 1.2rem;
+  border-radius: $border-radius;
   color: var(--tabs-item-foreground);
-  font-weight: var(--font-bold-weight);
-  font-size: 0.875rem;
-  transition: var(--standard-transition);
-  cursor: pointer;
+  font-weight: normal;
+  font-size: var(--font-size-sm);
+  min-width: 3.75rem;
 
-  &:hover {
-    background: var(--tabs-item-background--hover);
-    color: var(--tabs-item-foreground--hover);
-  }
-
-  &:active,
-  &:focus {
-    outline: none;
-    background: var(--tabs-item-background--active);
-    color: var(--tabs-item-foreground--active);
+  &::before,
+  &::after {
+    inset: 2px;
   }
 }
 
 .tabBar .tab .addTab svg {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.125rem;
+  height: 1.125rem;
 }
 
 .tabBar .tab [type="radio"] {
@@ -66,10 +60,25 @@
 }
 
 .tabBar .tab.active a {
-  background: var(--tabs-item-background--selected);
-  color: var(--tabs-item-foreground--selected);
   z-index: 2;
   cursor: default;
+  font-weight: 450;
+  color: var(--tabs-item-foreground--active);
+
+  &::before {
+    background-clip: padding-box;
+    background-color: var(--tabs-item-background--selected) !important;
+    border: var(--jenkins-border--subtle) !important;
+  }
+
+  &::after {
+    display: none;
+  }
+
+  &::before,
+  &::after {
+    inset: 0;
+  }
 }
 
 .jenkins-tab-pane__title {

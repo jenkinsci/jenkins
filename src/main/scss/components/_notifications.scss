@@ -11,7 +11,7 @@
   grid-template-columns: auto 1fr;
   grid-gap: 1.5ch;
   padding: 0.8rem;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   font-weight: var(--font-bold-weight);
   line-height: 1.66;
   color: var(--text-color);
@@ -36,8 +36,8 @@
     inset: 0;
     border-radius: inherit;
     z-index: -1;
-    background: var(--background);
-    opacity: 0.3;
+    background: oklch(from var(--background) l c h / 0.3);
+    border: var(--jenkins-border--subtle);
   }
 
   @supports not (backdrop-filter: blur(15px)) {
