@@ -349,23 +349,27 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
 
             Collection<ExtensionComponent<T>> newComponents = load(delta);
             if (!newComponents.isEmpty()) {
+                // We check to ensure that we do not insert duplicate instances of already-loaded extensions into the list.
+                // This can happen when dynamically loading a plugin with an extension A that itself loads another
+                // extension B from the same plugin in some contexts, such as in A's constructor or via a method in A called
+                // by an ExtensionListListener. In those cases, ExtensionList.refresh may be called on a list that already
+                // includes the new extensions. Note that ExtensionComponent objects are always unique, even when
+                // ExtensionComponent.getInstance is identical, so we have to track the components and instances separately
+                // to handle ordinal sorting and check for dupes.
                 List<ExtensionComponent<T>> components = new ArrayList<>(extensions);
                 Set<T> instances = Collections.newSetFromMap(new IdentityHashMap<>());
                 for (ExtensionComponent<T> component : components) {
                     instances.add(component.getInstance());
                 }
-                // We check to ensure that we do not insert duplicate instances of already-loaded extensions into the list.
-                // This can happen when dynamically loading a plugin with an extension A that itself loads another
-                // extension B from the same plugin in some contexts, such as in A's constructor or via a method in A called
-                // by an ExtensionListListener. In those cases, ExtensionList.refresh may be called on a list that already
-                // includes the new extensions.
+                boolean fireListeners = false;
                 for (ExtensionComponent<T> newComponent : newComponents) {
                     if (instances.add(newComponent.getInstance())) {
+                        fireListeners = true;
                         components.add(newComponent);
                     }
                 }
                 extensions = sort(new ArrayList<>(components));
-                return true;
+                return fireListeners;
             }
         }
         return false;
