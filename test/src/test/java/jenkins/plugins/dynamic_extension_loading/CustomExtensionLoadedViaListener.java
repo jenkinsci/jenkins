@@ -1,10 +1,10 @@
 package jenkins.plugins.dynamic_extension_loading;
 
-import hudson.Extension;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jenkinsci.plugins.variant.OptionalExtension;
 
-@Extension
+@OptionalExtension
 public class CustomExtensionLoadedViaListener {
     private static final Logger LOGGER = Logger.getLogger(CustomExtensionLoadedViaListener.class.getName());
 

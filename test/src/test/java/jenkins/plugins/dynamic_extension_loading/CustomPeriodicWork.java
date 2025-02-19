@@ -1,12 +1,12 @@
 package jenkins.plugins.dynamic_extension_loading;
 
-import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.PeriodicWork;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jenkinsci.plugins.variant.OptionalExtension;
 
-@Extension
+@OptionalExtension
 public class CustomPeriodicWork extends PeriodicWork {
 
     private static final Logger LOGGER = Logger.getLogger(CustomPeriodicWork.class.getName());
