@@ -80,7 +80,7 @@ Leave the proposed upgrade guidelines in the pull request with the "N/A" value i
 The changelog generator relies on the presence of the upgrade guidelines section as part of its data extraction process.
 -->
 
-```[tasklist]
+```
 ### Submitter checklist
 - [ ] The Jira issue, if it exists, is well-described.
 - [ ] The changelog entries and upgrade guidelines are appropriate for the audience affected by the change (users or developers, depending on the change) and are in the imperative mood (see [examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)). Fill in the **Proposed upgrade guidelines** section only if there are breaking changes or changes that may require extra steps from users during upgrade.
@@ -102,7 +102,7 @@ If you need an accelerated review process by the community (e.g., for critical b
 
 Before the changes are marked as `ready-for-merge`:
 
-```[tasklist]
+```
 ### Maintainer checklist
 - [ ] There are at least two (2) approvals for the pull request and no outstanding requests for change.
 - [ ] Conversations in the pull request are over, or it is explicit that a reviewer is not blocking the change.
