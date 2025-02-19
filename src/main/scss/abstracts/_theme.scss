@@ -197,7 +197,7 @@ $semantics: (
   --link-font-weight: var(--font-bold-weight);
 
   // Command Palette
-  --command-palette-results-backdrop-filter: saturate(1.4) blur(20px);
+  --command-palette-results-backdrop-filter: saturate(1.5) blur(5px);
   --command-palette-inset-shadow:
     inset 0 0 2px 2px rgb(255 255 255 / 0.1),
     var(--jenkins-border--subtle-shadow),

@@ -3,7 +3,7 @@
 
 $command-palette-background: color-mix(
   in sRGB,
-  var(--card-background) 90%,
+  var(--card-background) 92.5%,
   transparent
 );
 
@@ -21,18 +21,18 @@ $command-palette-background: color-mix(
   &::backdrop {
     background: var(--command-palette-backdrop-background);
     backdrop-filter: blur(1px);
-    animation: jenkins-dialog-backdrop-animate-in 0.1s linear;
+    animation: jenkins-dialog-backdrop-animate-in 0.075s linear;
   }
 
   &[open] {
-    animation: command-palette-animate-in 0.1s cubic-bezier(0, 0.68, 0.5, 1.5);
+    animation: command-palette-animate-in 0.075s cubic-bezier(0, 0.68, 0.5, 1.5);
   }
 
   &[closing] {
-    animation: command-palette-animate-out 0.1s linear;
+    animation: command-palette-animate-out 0.05s linear;
 
     &::backdrop {
-      animation: jenkins-dialog-backdrop-animate-out 0.1s linear;
+      animation: jenkins-dialog-backdrop-animate-out 0.05s linear;
     }
   }
 }
@@ -54,7 +54,7 @@ $command-palette-background: color-mix(
 }
 
 .jenkins-command-palette__wrapper {
-  --inset: 14vh;
+  --inset: 10vh;
 
   width: 100%;
   height: 100%;
@@ -121,7 +121,7 @@ $command-palette-background: color-mix(
 
     // If set to 0, Safari won't always show the backdrop-filter
     height: 1px;
-    transition: height var(--standard-transition);
+    transition: height 0.15s ease;
     overflow: hidden;
     will-change: height;
   }
@@ -162,7 +162,6 @@ $command-palette-background: color-mix(
       padding: 0.625rem;
       border-radius: 0.5rem;
       color: var(--text-color) !important;
-      transition: var(--standard-transition);
 
       &--hover {
         &::before {
