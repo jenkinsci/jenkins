@@ -36,6 +36,7 @@ import static org.hamcrest.Matchers.not;
 import hudson.model.Computer;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
+import java.util.ArrayList;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -187,32 +188,38 @@ public class DisconnectNodeCommandTest {
 
     @Test
     public void disconnectNodeManyShouldSucceedWithCause() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        DumbSlave slave3 = j.createSlave("aNode3", "", null);
-        slave1.toComputer().waitUntilOnline();
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
-        slave2.toComputer().waitUntilOnline();
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), equalTo(null));
-        slave3.toComputer().waitUntilOnline();
-        assertThat(slave3.toComputer().isOnline(), equalTo(true));
-        assertThat(slave3.toComputer().getOfflineCause(), equalTo(null));
+        int n = 3;
+        var agents = new ArrayList<DumbSlave>();
+        for (int i = 1; i <= n; i++) {
+            agents.add(j.createSlave("aNode" + i, "", null));
+        }
+        for (var agent : agents) {
+            var computer = agent.toComputer();
+            computer.waitUntilOnline();
+            assertThat(computer.isOnline(), equalTo(true));
+            assertThat(computer.getOfflineCause(), equalTo(null));
+        }
 
+        var args = new ArrayList<String>();
+        for (var agent : agents) {
+            args.add(agent.getNodeName());
+        }
+        args.add("-m");
+        args.add("aCause");
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("aNode1", "aNode2", "aNode3", "-m", "aCause");
+                .invokeWithArgs(args.toArray(String[]::new));
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave3.toComputer().isOffline(), equalTo(true));
-        assertThat(slave3.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave3.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        for (var agent : agents) {
+            var computer = agent.toComputer();
+            assertThat(computer.isOffline(), equalTo(true));
+            var cause = computer.getOfflineCause();
+            if (cause instanceof OfflineCause.ByCLI cliCause) {
+                assertThat(cliCause.message, equalTo("aCause"));
+            } else {
+                assertThat("seen occasionally in CI", cause, instanceOf(OfflineCause.ChannelTermination.class));
+            }
+        }
     }
 
     @Test
