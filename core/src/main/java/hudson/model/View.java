@@ -62,6 +62,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -94,6 +95,7 @@ import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
+import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.xml.XMLUtils;
 import jenkins.widgets.HasWidgets;
@@ -983,7 +985,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 @Override
                 public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
                     rsp.setContentType("application/xml");
-                    View.this.writeXml(rsp.getOutputStream());
+                    if (hasPermission(CONFIGURE)) {
+                        View.this.writeXml(rsp.getOutputStream());
+                    } else {
+                        var baos = new ByteArrayOutputStream();
+                        View.this.writeXml(baos);
+                        String xml = baos.toString(StandardCharsets.UTF_8);
+
+                        xml = ExtendedReadRedaction.applyAll(xml);
+                        org.apache.commons.io.IOUtils.write(xml, rsp.getOutputStream(), StandardCharsets.UTF_8);
+                    }
                 }
             };
         }
