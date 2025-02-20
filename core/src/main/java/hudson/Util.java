@@ -1663,7 +1663,7 @@ public class Util {
      * @since 2.3 / 1.651.2
      */
     public static boolean isSafeToRedirectTo(@NonNull String uri) {
-        return !isAbsoluteUri(uri) && !uri.startsWith("//");
+        return !isAbsoluteUri(uri) && !uri.startsWith("\\") && !uri.replace('\\', '/').startsWith("//");
     }
 
     /**
