@@ -43,7 +43,7 @@ THE SOFTWARE.
           <ol>
             <j:forEach var="i" items="${items}">
               <li id="item_${i.path}">
-                <a href="?q=${h.urlEncode(i.path)}">${i.path}</a>
+                <a href="${i.url}">${i.path}</a>
               </li>
             </j:forEach>
           </ol>
