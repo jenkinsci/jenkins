@@ -109,7 +109,6 @@ public class AutoCompletionCandidates implements HttpResponse {
      *      The nearby contextual {@link ItemGroup} to resolve relative job names from.
      * @since 1.553
      */
-    @SuppressFBWarnings(value = "SBSC_USE_STRINGBUFFER_CONCATENATION", justification = "no big deal")
     public static  <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, ItemGroup container) {
         final AutoCompletionCandidates candidates = new AutoCompletionCandidates();
         class Visitor extends ItemVisitor {

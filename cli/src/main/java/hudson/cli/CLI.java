@@ -318,31 +318,20 @@ public class CLI {
         throw new AssertionError();
     }
 
-    private static File validateAndSanitizePath(String userInput) {
-        // Define a base directory for validation
-        String baseDir = "/safe/base/directory";
-        Path basePath = Paths.get(baseDir).toAbsolutePath().normalize();
-        Path userPath = Paths.get(userInput).toAbsolutePath().normalize();
-
-        // Check if the user path is within the base directory
-        if (!userPath.startsWith(basePath)) {
-            throw new IllegalArgumentException("Invalid file path");
-        }
-
-        // Sanitize the path (e.g., remove dangerous characters)
-        String sanitizedPath = userPath.toString().replaceAll("[^a-zA-Z0-9./_-]", "");
-        return new File(sanitizedPath);
-    }
-
-    @SuppressFBWarnings("PATH_TRAVERSAL_IN")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "User provided value for running the program.")
     private static String readAuthFromFile(String auth) throws IOException {
-        Path path = validateAndSanitizePath(auth.substring(1)).toPath();
+        Path path;
+        try {
+            path = Paths.get(auth.substring(1));
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
         return Files.readString(path, Charset.defaultCharset());
     }
 
-    @SuppressFBWarnings("PATH_TRAVERSAL_IN")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "User provided value for running the program.")
     private static File getFileFromArguments(List<String> args) {
-        return validateAndSanitizePath(args.get(1));
+        return new File(args.get(1));
     }
 
     private static int webSocketConnection(String url, List<String> args, CLIConnectionFactory factory) throws Exception {
@@ -354,17 +343,20 @@ public class CLI {
 
         class Authenticator extends ClientEndpointConfig.Configurator {
             HandshakeResponse hr;
+
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
                 if (factory.authorization != null) {
                     headers.put("Authorization", List.of(factory.authorization));
                 }
             }
+
             @Override
             public void afterResponse(HandshakeResponse hr) {
                 this.hr = hr;
             }
         }
+
         var authenticator = new Authenticator();
 
         ClientManager client = ClientManager.createClient(JdkClientContainer.class.getName()); // ~ ContainerProvider.getWebSocketContainer()
