@@ -50,7 +50,7 @@ THE SOFTWARE.
           <span>${attrs.title}</span>
         </j:when>
         <j:otherwise>
-          <a href="${attrs.href}">
+          <a href="${attrs.href}" class="${attrs.hasMenu ? 'hoverable-model-link' : ''}">
             ${attrs.title}
           </a>
         </j:otherwise>

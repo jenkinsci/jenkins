@@ -64,7 +64,7 @@ export default function computeActions() {
     },
     true,
     {
-      trigger: "mouseenter click",
+      trigger: "mouseenter focus",
       offset: [0, 10],
       animation: "tooltip",
     },

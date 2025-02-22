@@ -1,5 +1,6 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:st="jelly:stapler"
+         xmlns:x="jelly:xml">
   <header id="page-header" class="jenkins-header">
     <div id="breadcrumbBar" class="jenkins-breadcrumbs" aria-label="breadcrumb">
       <ol class="jenkins-breadcrumbs__list" id="breadcrumbs">
@@ -65,7 +66,8 @@
             <x:attribute name="data-html-tooltip" escapeText="false"><j:out value="${tooltip}" /></x:attribute>
             <x:attribute name="data-tooltip-interactive">${interactive}</x:attribute>
             <x:attribute name="data-tippy-theme">${interactive ? 'dropdown' : 'tooltip'}</x:attribute>
-            <x:attribute name="data-tippy-trigger">${interactive ? 'mouseenter click' : 'mouseenter'}</x:attribute>
+            <x:attribute name="data-tippy-trigger">${interactive ? 'mouseenter focus' : 'mouseenter'}</x:attribute>
+            <x:attribute name="data-tippy-touch">false</x:attribute>
             <x:attribute name="data-type">header-action</x:attribute>
             <x:attribute name="draggable">false</x:attribute>
             <x:attribute name="class">jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'}</x:attribute>

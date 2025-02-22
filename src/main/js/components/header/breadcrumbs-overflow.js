@@ -51,7 +51,7 @@ export default function computeBreadcrumbs() {
     },
     true,
     {
-      trigger: "mouseenter click",
+      trigger: "mouseenter focus",
       offset: [0, 10],
       animation: "tooltip",
     },
