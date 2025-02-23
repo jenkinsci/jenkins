@@ -72,30 +72,28 @@ THE SOFTWARE.
           </tbody>
         </table>
       </j:when>
-      <j:if test="${it.data.entrySet().size() == 0}">
+      <j:otherwise>
         <l:notice title="${%No old data was found.}" icon="symbol-trash-bin" text="${%No old data was found.}" />
-      </j:if>
+      </j:otherwise>
     </j:choose>
 
     <j:set var="vers" value="${it.versionList}"/>
-    <j:choose>
-      <j:when test="${vers.hasNext()}">
-        <h2>${%Old Data Format}</h2>
-        <p>${%blurb.3}</p>
-        <p>${%blurb.4}</p>
-        <form action="upgrade" method="POST" name="oldDataUpgrade">
-          ${%Resave data files with structure changes no newer than Jenkins}
-          <select name="thruVer">
-            <j:forEach var="ver" items="${vers}">
-              <f:option>${ver}</f:option>
-            </j:forEach>
-          </select>
-          ${%blurb.5}
-          <br/>
-          <f:submit value="${%Upgrade}"/>
-        </form>
-      </j:when>
-    </j:choose>
+    <j:if test="${vers.hasNext()}">
+      <h2>${%Old Data Format}</h2>
+      <p>${%blurb.3}</p>
+      <p>${%blurb.4}</p>
+      <form action="upgrade" method="POST" name="oldDataUpgrade">
+        ${%Resave data files with structure changes no newer than Jenkins}
+        <select name="thruVer">
+          <j:forEach var="ver" items="${vers}">
+            <f:option>${ver}</f:option>
+          </j:forEach>
+        </select>
+        ${%blurb.5}
+        <br/>
+        <f:submit value="${%Upgrade}"/>
+      </form>
+    </j:if>
     <j:if test="${hasExtra}">
       <br/>
       <h2>${%Unreadable Data}</h2>
