@@ -72,9 +72,9 @@ THE SOFTWARE.
           </tbody>
         </table>
       </j:when>
-      <j:otherwise>
+      <j:if test="${it.data.entrySet().size() == 0}">
         <l:notice title="${%No old data was found.}" icon="symbol-trash-bin" text="${%No old data was found.}" />
-      </j:otherwise>
+      </j:if>
     </j:choose>
 
     <j:set var="vers" value="${it.versionList}"/>
