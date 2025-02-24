@@ -37,7 +37,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.kohsuke.stapler.CompatibleFilter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.RememberMeServices;
@@ -53,7 +52,7 @@ import org.springframework.security.web.authentication.RememberMeServices;
  * @author Kohsuke Kawaguchi
  * @since 1.160
  */
-public class HudsonFilter implements CompatibleFilter {
+public class HudsonFilter implements Filter {
     /**
      * The SecurityRealm specific filter.
      */
