@@ -43,42 +43,44 @@ THE SOFTWARE.
     </j:forEach>
 
     <j:choose>
-      <j:when test="${hasValidData}">
-        <table class="jenkins-table sortable">
-          <thead>
-            <tr>
-              <th initialSortDir="down">${%Type}</th>
-              <th>${%Name}</th>
-              <th>${%Version}</th>
-              <th>${%Error}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <j:forEach var="item" items="${it.data.entrySet()}">
-              <j:if test="${item.value!=''}">
-                <j:set var="obj" value="${item.key}"/>
-                <tr>
-                  <td>${obj.class.name}</td>
-                  <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
-                  <td>
-                    <j:choose>
-                      <j:when test="${item.value.isOld(150)}">
-                        <b title="${%Very old version}">${item.value}</b>
-                      </j:when>
-                      <j:otherwise>
-                        ${item.value}
-                      </j:otherwise>
-                    </j:choose>
-                  </td>
-                  <td style="white-space:normal">${item.value.extra}</td>
-                </tr>
-              </j:if>
-            </j:forEach>
-          </tbody>
-        </table>
+      <j:when test="${!hasValidData and !hasExtra}">
+        <l:notice title="${%No old data was found.}" icon="symbol-trash-bin" text="${%No old data was found.}" />
       </j:when>
       <j:otherwise>
-        <l:notice title="${%No old data was found.}" icon="symbol-trash-bin" text="${%No old data was found.}" />
+        <j:if test="${hasValidData}">
+          <table class="jenkins-table sortable">
+            <thead>
+              <tr>
+                <th initialSortDir="down">${%Type}</th>
+                <th>${%Name}</th>
+                <th>${%Version}</th>
+                <th>${%Error}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <j:forEach var="item" items="${it.data.entrySet()}">
+                <j:if test="${item.value!=''}">
+                  <j:set var="obj" value="${item.key}"/>
+                  <tr>
+                    <td>${obj.class.name}</td>
+                    <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
+                    <td>
+                      <j:choose>
+                        <j:when test="${item.value.isOld(150)}">
+                          <b title="${%Very old version}">${item.value}</b>
+                        </j:when>
+                        <j:otherwise>
+                          ${item.value}
+                        </j:otherwise>
+                      </j:choose>
+                    </td>
+                    <td style="white-space:normal">${item.value.extra}</td>
+                  </tr>
+                </j:if>
+              </j:forEach>
+            </tbody>
+          </table>
+        </j:if>
       </j:otherwise>
     </j:choose>
 
