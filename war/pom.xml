@@ -483,7 +483,7 @@ THE SOFTWARE.
                   <!-- detached after 2.330 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-mail-api</artifactId>
-                  <version>1.6.2-10</version>
+                  <version>1.6.2-11</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
