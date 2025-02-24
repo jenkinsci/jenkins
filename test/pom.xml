@@ -254,7 +254,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>338.v848422169819</version>
+      <version>343.vdcf37b_a_c81d5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
