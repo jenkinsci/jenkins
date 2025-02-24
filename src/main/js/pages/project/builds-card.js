@@ -9,6 +9,7 @@ const ajaxUrl = buildHistoryPage.getAttribute("page-ajax");
 const card = document.querySelector("#jenkins-builds");
 const contents = card.querySelector("#jenkins-build-history");
 const container = card.querySelector(".app-builds-container");
+const loadingBuilds = card.querySelector("#loading-builds");
 const noBuilds = card.querySelector("#no-builds");
 
 // Pagination controls
@@ -58,6 +59,7 @@ function load(options = {}) {
         if (responseText.trim() === "") {
           contents.innerHTML = "";
           noBuilds.style.display = "block";
+          loadingBuilds.style.display = "none";
           updateCardControls({
             pageHasUp: false,
             pageHasDown: false,
@@ -69,7 +71,7 @@ function load(options = {}) {
 
         // Show the refreshed builds list
         contents.innerHTML = responseText;
-        noBuilds.style.display = "none";
+        loadingBuilds.style.display = "none";
         behaviorShim.applySubtree(contents);
 
         // Show the card controls
@@ -146,6 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
     debouncedLoad();
   });
 
+  container.classList.add("app-builds-container--loading");
   load();
 
   window.addEventListener("focus", function () {
