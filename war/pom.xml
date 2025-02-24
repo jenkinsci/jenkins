@@ -413,7 +413,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, plugin-util-api, workflow-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>686.v603d058a_e148</version>
+                  <version>700.v6e45cb_a_5a_a_21</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
