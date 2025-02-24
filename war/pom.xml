@@ -295,7 +295,7 @@ THE SOFTWARE.
                   <!-- detached after 1.553 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>antisamy-markup-formatter</artifactId>
-                  <version>162.v0e6ec0fcfcf6</version>
+                  <version>173.v680e3a_b_69ff3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
