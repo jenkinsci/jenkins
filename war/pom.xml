@@ -469,7 +469,7 @@ THE SOFTWARE.
                   <!-- detached after 2.184 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>trilead-api</artifactId>
-                  <version>2.147.vb_73cc728a_32e</version>
+                  <version>2.190.v1ed19f8137f8</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
