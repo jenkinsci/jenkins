@@ -17,13 +17,17 @@
     &-item {
       display: contents;
 
+      a::before {
+        content: "";
+        position: absolute;
+        inset: -0.5rem -0.75rem !important;
+        pointer-events: all !important;
+      }
+
       // Increase the hit-box for the logo for Fitts’s Law
       &:first-of-type {
         a::before {
-          content: "";
-          position: absolute;
-          inset: -30px -15px -18px -100px;
-          pointer-events: all;
+          inset: -30px -1rem -1rem -100px !important;
         }
       }
 
