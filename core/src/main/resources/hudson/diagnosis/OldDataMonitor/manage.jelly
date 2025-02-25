@@ -39,7 +39,7 @@ THE SOFTWARE.
         <j:set var="hasValidData" value="true"/>
       </j:if>
       <j:if test="${item.value.extra!=null}">
-        <j:set var="hasExtra" value="true"/>
+        <j:set var="hasExtra" value="false"/>
       </j:if>
     </j:forEach>
 
