@@ -46,7 +46,7 @@ THE SOFTWARE.
           </p>
 
           <form action="script" method="post">
-            <textarea id="script" name="script" class="script">${request.getParameter('script')}</textarea>
+            <textarea id="script" name="script" class="script">${request2.getParameter('script')}</textarea>
             <div align="right">
               <f:submit  value="${%Run}"/>
             </div>

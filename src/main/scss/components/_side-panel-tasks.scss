@@ -61,17 +61,11 @@ $background-outset: 0.7rem;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 0.55rem $background-outset;
+  padding: 0.5rem $background-outset;
   gap: 0.65rem;
   width: 100%;
-  cursor: pointer;
-  font-weight: normal !important;
   font-size: var(--font-size-sm);
-  color: var(--text-color) !important;
-  background: transparent;
-  outline: none;
-  border: none;
-  text-decoration: none;
+  color: var(--text-color);
   margin: 0;
   transition: opacity var(--standard-transition);
 
@@ -100,7 +94,7 @@ $background-outset: 0.7rem;
   }
 
   &--active {
-    font-weight: 500 !important;
+    font-weight: 450;
     cursor: default;
 
     svg * {
@@ -113,6 +107,12 @@ $background-outset: 0.7rem;
 
     &::after {
       box-shadow: none !important;
+    }
+  }
+
+  &:not(:hover, &:active, &:focus, &--active) {
+    &::before {
+      border-color: transparent;
     }
   }
 }

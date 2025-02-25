@@ -43,7 +43,7 @@ THE SOFTWARE.
                         placeholder="${%Search installed plugins}"
                         id="filter-box"
                         autofocus="true"
-                        value="${request.getParameter('filter')}"
+                        value="${request2.getParameter('filter')}"
                         enabled="${!noPlugins}" />
         </div>
       </div>

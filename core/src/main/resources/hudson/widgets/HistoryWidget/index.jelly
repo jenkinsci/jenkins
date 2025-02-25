@@ -49,7 +49,10 @@ THE SOFTWARE.
                     clazz="${page.runs.isEmpty() and page.queueItems.isEmpty() ? 'jenkins-hidden' : ''}"/>
 
       <div class="app-builds-container">
-        <div id="no-builds" class="app-builds-container__placeholder">
+        <div id="loading-builds" class="app-builds-container__placeholder">
+          <l:spinner text="${%Loading builds...}"/>
+        </div>
+        <div id="no-builds" style="display:none" class="app-builds-container__placeholder">
           ${%No builds}
         </div>
 
