@@ -1065,7 +1065,7 @@ public class UpdateSite {
          * {@code false} if it does; and {@code null} when the affected component isn't being offered, or it's a warning
          * for something other than core or a plugin.
          */
-        @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL")
+        @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "TODO needs triage")
         public Boolean isFixable() {
             final Data data = UpdateSite.this.data;
             if (data == null) {

@@ -117,9 +117,9 @@ public abstract class UserPropertyDescriptor extends Descriptor<UserProperty> {
      * Method proposed to prevent plugins to rely on too recent core version
      * while keeping the possibility to use the categories.
      *
-     * @deprecated This should only be used when the core requirement is below the version this method was added
-     *
      * @return String name corresponding to the symbol of {@link #getUserPropertyCategory()}
+     *
+     * @deprecated This should only be used when the core requirement is below the version this method was added
      *
      * @since 2.468
      */

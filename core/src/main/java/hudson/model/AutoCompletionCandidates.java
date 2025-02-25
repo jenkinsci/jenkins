@@ -25,7 +25,6 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.search.Search;
 import hudson.search.UserSearchProperty;
 import jakarta.servlet.ServletException;
