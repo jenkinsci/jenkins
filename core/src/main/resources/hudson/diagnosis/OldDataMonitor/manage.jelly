@@ -45,7 +45,7 @@ THE SOFTWARE.
 
     <j:choose>
       <j:when test="${!hasValidData and !hasExtra}">
-        <l:notice title="${%No old data was found}" icon="symbol-trash-bin"/>
+        <l:notice title="${%No old data}" icon="symbol-trash-bin"/>
       </j:when>
       <j:otherwise>
         <j:if test="${hasValidData}">
