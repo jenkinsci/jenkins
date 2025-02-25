@@ -27,6 +27,7 @@ package hudson.security;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
 import hudson.util.Scrambler;
+import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.RequestDispatcher;
@@ -42,7 +43,6 @@ import java.nio.charset.StandardCharsets;
 import jenkins.model.Jenkins;
 import jenkins.security.BasicApiTokenHelper;
 import jenkins.security.SecurityListener;
-import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.core.Authentication;
@@ -91,7 +91,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  *
  * @author Kohsuke Kawaguchi
  */
-public class BasicAuthenticationFilter implements CompatibleFilter {
+public class BasicAuthenticationFilter implements Filter {
     private ServletContext servletContext;
 
     @Override

@@ -31,7 +31,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.EditDistance;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.AbstractList;
@@ -43,7 +42,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
 import org.jenkins.ui.symbol.Symbol;
@@ -53,9 +51,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.DataWriter;
 import org.kohsuke.stapler.export.ExportConfig;
@@ -81,31 +77,6 @@ public class Search implements StaplerProxy {
     private static /* nonfinal for Jenkins script console */ int MAX_SEARCH_SIZE = Integer.getInteger(Search.class.getName() + ".MAX_SEARCH_SIZE", 500);
 
     public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        if (Util.isOverridden(Search.class, getClass(), "doIndex", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                doIndex(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            doIndexImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doIndex(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
-        try {
-            doIndexImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    private void doIndexImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         List<Ancestor> l = req.getAncestors();
         for (int i = l.size() - 1; i >= 0; i--) {
             Ancestor a = l.get(i);
@@ -187,22 +158,6 @@ public class Search implements StaplerProxy {
      *      a certain threshold to avoid showing too many options.
      */
     public SearchResult getSuggestions(StaplerRequest2 req, String query) {
-        if (Util.isOverridden(Search.class, getClass(), "getSuggestions", StaplerRequest.class, String.class)) {
-            return getSuggestions(StaplerRequest.fromStaplerRequest2(req), query);
-        } else {
-            return getSuggestionsImpl(req, query);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #getSuggestions(StaplerRequest2, String)}
-     */
-    @Deprecated
-    public SearchResult getSuggestions(StaplerRequest req, String query) {
-        return getSuggestionsImpl(StaplerRequest.toStaplerRequest2(req), query);
-    }
-
-    private SearchResult getSuggestionsImpl(StaplerRequest2 req, String query) {
         Set<String> paths = new HashSet<>();  // paths already added, to control duplicates
         SearchResultImpl r = new SearchResultImpl();
         int max = Math.min(
