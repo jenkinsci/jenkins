@@ -29,7 +29,7 @@ THE SOFTWARE.
      data-type="header-action"
      href="${rootURL}/${app.securityRealm.loginUrl}?from=${app.securityRealm.from}"
      style="aspect-ratio: unset; padding: 0.5rem 1rem"
-     tooltip="Sign in to access and manage your Jenkins projects">
-    ${%Sign in}
+     tooltip="${%signInTooltip}">
+    ${%signIn}
   </a>
 </j:jelly>
