@@ -103,7 +103,9 @@ rowSelectionControllers.forEach((headerCheckbox) => {
         "jenkins-table__checkbox-dropdown--visible",
       );
     });
+    moreOptionsDropdown.addEventListener("updateIcon", (e) => {
+      updateIcon();
+      e.stopPropagation();
+    });
   }
-
-  window.updateTableHeaderCheckbox = updateIcon;
 });
