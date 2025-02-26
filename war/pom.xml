@@ -295,7 +295,7 @@ THE SOFTWARE.
                   <!-- detached after 1.553 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>antisamy-markup-formatter</artifactId>
-                  <version>162.v0e6ec0fcfcf6</version>
+                  <version>173.v680e3a_b_69ff3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -316,7 +316,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1316.v13ec14a_de230</version>
+                  <version>1317.v5b_35d792b_06a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -337,7 +337,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.3-2</version>
+                  <version>5.3.3-3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -352,7 +352,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>946.v2a_79d8a_4b_e14</version>
+                  <version>961.v51869f7b_d409</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -374,7 +374,7 @@ THE SOFTWARE.
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>eddsa-api</artifactId>
-                  <version>0.3.0-4.v84c6f0f4969e</version>
+                  <version>0.3.0-13.v7cb_69ed68f00</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -413,7 +413,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, plugin-util-api, workflow-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>686.v603d058a_e148</version>
+                  <version>700.v6e45cb_a_5a_a_21</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -427,7 +427,7 @@ THE SOFTWARE.
                   <!-- dependency of scm-api and workflow-step-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>structs</artifactId>
-                  <version>338.v848422169819</version>
+                  <version>343.vdcf37b_a_c81d5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -469,21 +469,21 @@ THE SOFTWARE.
                   <!-- detached after 2.184 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>trilead-api</artifactId>
-                  <version>2.147.vb_73cc728a_32e</version>
+                  <version>2.190.v1ed19f8137f8</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.330 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-activation-api</artifactId>
-                  <version>1.2.0-7</version>
+                  <version>1.2.0-8</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.330 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-mail-api</artifactId>
-                  <version>1.6.2-10</version>
+                  <version>1.6.2-11</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -532,7 +532,7 @@ THE SOFTWARE.
                   <!-- dependency of junit and matrix-auth -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>ionicons-api</artifactId>
-                  <version>74.v93d5eb_813d5f</version>
+                  <version>82.v0597178874e1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
