@@ -29,6 +29,8 @@ import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.ExtensionComponent;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.util.EditDistance;
 import io.jenkins.servlet.ServletExceptionWrapper;
@@ -37,12 +39,16 @@ import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
+import jenkins.search.SearchGroup;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
@@ -171,11 +177,26 @@ public class Search implements StaplerProxy {
 
             if (iconName.startsWith("symbol")) {
                 r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(),
-                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build())));
+                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build()), "symbol", curItem.item.getSearchGroup().getDisplayName()));
             } else {
-                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image"));
+                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image", curItem.item.getSearchGroup().getDisplayName()));
             }
         }
+
+        // Sort results by group
+        ExtensionList<SearchGroup> groupsExtensionList = ExtensionList.lookup(SearchGroup.class);
+        List<ExtensionComponent<SearchGroup>> components = groupsExtensionList.getComponents();
+        Map<String, Double> searchGroupOrdinal = components.stream()
+                .collect(Collectors.toMap(
+                        (k) -> k.getInstance().getDisplayName(),
+                        ExtensionComponent::ordinal
+                ));
+        r.suggestions.sort(
+                Comparator.comparingDouble((Item item) -> searchGroupOrdinal.getOrDefault(item.getGroup(), Double.MAX_VALUE))
+                        .reversed()
+                        .thenComparing(item -> item.name)
+        );
+
         rsp.serveExposedBean(req, r, new ExportConfig());
     }
 
@@ -279,22 +300,19 @@ public class Search implements StaplerProxy {
 
         private final String icon;
 
+        private final String group;
+
         public Item(String name) {
-            this(name, null, null);
+            this(name, null, null, "symbol", null);
         }
 
-        public Item(String name, String url, String icon) {
+        public Item(String name, String url, String icon, String type, String group) {
             this.name = name;
             this.url = url;
             this.icon = icon;
-            this.type = "symbol";
-        }
-
-        public Item(String name, String url, String icon, String type) {
             this.name = name;
-            this.url = url;
-            this.icon = icon;
             this.type = type;
+            this.group = group;
         }
 
         @Exported
@@ -310,6 +328,11 @@ public class Search implements StaplerProxy {
         @Exported
         public String getType() {
             return type;
+        }
+
+        @Exported
+        public String getGroup() {
+            return group;
         }
     }
 
