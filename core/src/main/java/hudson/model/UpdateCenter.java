@@ -1273,6 +1273,9 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * @throws IOException if the validation fails
          */
         public void preValidate(DownloadJob job, URL src) throws IOException {
+            if (job.site != null) {
+                job.site.preValidate(src);
+            }
         }
 
         /**
@@ -1410,6 +1413,10 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * how the connection gets established.
          */
         protected URLConnection connect(DownloadJob job, URL src) throws IOException {
+            if (job.site != null) {
+                return job.site.connect(src);
+            }
+            // fall back to just using the normal ProxyConfiguration if the site is null
             return ProxyConfiguration.open(src);
         }
 
