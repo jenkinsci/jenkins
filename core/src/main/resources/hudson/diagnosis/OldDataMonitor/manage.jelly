@@ -34,12 +34,13 @@ THE SOFTWARE.
     
     <!-- First set a flag to check if we'll have any valid data -->
     <j:set var="hasValidData" value="false"/>
+    <j:set var="hasExtra" value="false"/>
     <j:forEach var="item" items="${it.data.entrySet()}">
       <j:if test="${item.value!=''}">
         <j:set var="hasValidData" value="true"/>
       </j:if>
       <j:if test="${item.value.extra!=null}">
-        <j:set var="hasExtra" value="false"/>
+        <j:set var="hasExtra" value="true"/>
       </j:if>
     </j:forEach>
 
