@@ -1,0 +1,31 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <div class="jenkins-dropdown">
+    <a class="jenkins-dropdown__item" href="${rootURL}/${it.user.url}">
+      <div class="jenkins-dropdown__item__icon">
+        <l:icon src="${it.iconFileName}" class="jenkins-avatar" />
+      </div>
+      ${it.user.fullName}
+    </a>
+
+    <div class="jenkins-dropdown__separator" />
+
+    <j:forEach var="action" items="${it.actions}">
+      <a class="jenkins-dropdown__item" href="${rootURL}/${it.user.url}/${action.urlName}">
+        <div class="jenkins-dropdown__item__icon">
+          <l:icon src="${action.iconFileName}" />
+        </div>
+        ${action.displayName}
+      </a>
+    </j:forEach>
+
+    <div class="jenkins-dropdown__separator" />
+
+    <a class="jenkins-dropdown__item" href="${rootURL}/logout">
+      <div class="jenkins-dropdown__item__icon">
+        <l:icon src="symbol-log-out" />
+      </div>
+      ${%Sign out}
+    </a>
+  </div>
+</j:jelly>
