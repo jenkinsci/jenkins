@@ -1,6 +1,6 @@
 @use "../abstracts/mixins";
 
-$border-radius: 100px;
+$border-radius: 19px;
 
 .tabBarFrame {
   position: relative;
@@ -36,7 +36,7 @@ $border-radius: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
+  min-height: 34px;
   padding: 0 1.2rem;
   border-radius: $border-radius;
   color: var(--tabs-item-foreground);
