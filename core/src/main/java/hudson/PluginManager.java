@@ -2661,7 +2661,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         public Map<PluginWrapper, String> getDeprecatedPlugins() {
             return Jenkins.get().getPluginManager().getPlugins().stream()
                     .filter(PluginWrapper::isDeprecated)
-                    .collect(Collectors.toMap(Function.identity(), it -> it.getDeprecations().get(0).url));
+                    .collect(ImmutableSortedMap.toImmutableSortedMap(
+                            String.CASE_INSENSITIVE_ORDER,
+                            Function.identity(),
+                            it -> it.getDeprecations().get(0).url
+                    ));
         }
     }
 
