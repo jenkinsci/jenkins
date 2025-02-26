@@ -31,66 +31,78 @@ THE SOFTWARE.
     <h1>${%Manage Old Data}</h1>
     <p>${%blurb.1}</p>
     <p>${%blurb.2}</p>
-    <table class="jenkins-table sortable">
-      <thead>
-        <tr>
-          <th initialSortDir="down">${%Type}</th>
-          <th>${%Name}</th>
-          <th>${%Version}</th>
-          <th>${%Error}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <j:forEach var="item" items="${it.data.entrySet()}">
-          <j:set var="obj" value="${item.key}"/>
-          <j:choose>
-            <j:when test="${item.value!=''}">
-              <tr>
-                <td>${obj.class.name}</td>
-                <!-- fullName is first to avoid calling User.get(String) for User object -->
-                <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
-                <td>
-                  <j:choose>
-                    <j:when test="${item.value.isOld(150)}">
-                      <b title="${%Very old version}">${item.value}</b>
-                    </j:when>
-                    <j:otherwise>
-                      ${item.value}
-                    </j:otherwise>
-                  </j:choose>
-                </td>
-                <td style="white-space:normal">${item.value.extra}</td>
-              </tr>
-            </j:when>
-            <j:otherwise>
-              <j:if test="${item.value.extra!=null}"><j:set var="hasExtra" value="${true}"/></j:if>
-            </j:otherwise>
-          </j:choose>
-        </j:forEach>
-      </tbody>
-    </table>
-    <j:set var="vers" value="${it.versionList}"/>
+    
+    <!-- First set a flag to check if we'll have any valid data -->
+    <j:set var="hasValidData" value="false"/>
+    <j:set var="hasExtra" value="false"/>
+    <j:forEach var="item" items="${it.data.entrySet()}">
+      <j:if test="${item.value!=''}">
+        <j:set var="hasValidData" value="true"/>
+      </j:if>
+      <j:if test="${item.value.extra!=null}">
+        <j:set var="hasExtra" value="true"/>
+      </j:if>
+    </j:forEach>
+
     <j:choose>
-      <j:when test="${vers.hasNext()}">
-        <h2>${%Old Data Format}</h2>
-        <p>${%blurb.3}</p>
-        <p>${%blurb.4}</p>
-        <form action="upgrade" method="POST" name="oldDataUpgrade">
-          ${%Resave data files with structure changes no newer than Jenkins}
-          <select name="thruVer">
-            <j:forEach var="ver" items="${vers}">
-              <f:option>${ver}</f:option>
-            </j:forEach>
-          </select>
-          ${%blurb.5}
-          <br/>
-          <f:submit value="${%Upgrade}"/>
-        </form>
+      <j:when test="${!hasValidData and !hasExtra}">
+        <l:notice title="${%No old data}" icon="symbol-trash-bin"/>
       </j:when>
       <j:otherwise>
-        ${%No old data was found.}
+        <j:if test="${hasValidData}">
+          <table class="jenkins-table sortable">
+            <thead>
+              <tr>
+                <th initialSortDir="down">${%Type}</th>
+                <th>${%Name}</th>
+                <th>${%Version}</th>
+                <th>${%Error}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <j:forEach var="item" items="${it.data.entrySet()}">
+                <j:if test="${item.value!=''}">
+                  <j:set var="obj" value="${item.key}"/>
+                  <tr>
+                    <td>${obj.class.name}</td>
+                    <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
+                    <td>
+                      <j:choose>
+                        <j:when test="${item.value.isOld(150)}">
+                          <b title="${%Very old version}">${item.value}</b>
+                        </j:when>
+                        <j:otherwise>
+                          ${item.value}
+                        </j:otherwise>
+                      </j:choose>
+                    </td>
+                    <td style="white-space:normal">${item.value.extra}</td>
+                  </tr>
+                </j:if>
+              </j:forEach>
+            </tbody>
+          </table>
+        </j:if>
       </j:otherwise>
     </j:choose>
+
+    <j:set var="vers" value="${it.versionList}"/>
+    <j:if test="${vers.hasNext()}">
+      <h2>${%Old Data Format}</h2>
+      <p>${%blurb.3}</p>
+      <p>${%blurb.4}</p>
+      <form action="upgrade" method="POST" name="oldDataUpgrade">
+        ${%Resave data files with structure changes no newer than Jenkins}
+        <select name="thruVer">
+          <j:forEach var="ver" items="${vers}">
+            <f:option>${ver}</f:option>
+          </j:forEach>
+        </select>
+        ${%blurb.5}
+        <br/>
+        <f:submit value="${%Upgrade}"/>
+      </form>
+    </j:if>
     <j:if test="${hasExtra}">
       <br/>
       <h2>${%Unreadable Data}</h2>
