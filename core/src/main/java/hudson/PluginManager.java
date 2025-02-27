@@ -1556,6 +1556,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         releaseTimestamp.put("displayValue", Messages.PluginManager_ago(Functions.getTimeSpanString(plugin.releaseTimestamp)));
                         jsonObject.put("releaseTimestamp", releaseTimestamp);
                     }
+                    if (plugin.healthScore != null) {
+                        jsonObject.put("healthScore", plugin.healthScore);
+                    }
                     return jsonObject;
                 })
                 .collect(toList());
@@ -1563,6 +1566,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (plugins.size() >= limit) {
                 break;
             }
+        }
+
+        final boolean missingHealthScore = plugins.stream().anyMatch(json -> !json.has("healthScore"));
+        if (missingHealthScore) {
+            LOGGER.log(Level.FINE, "Missing health score on at least one plugin, removing for all of them.");
+            plugins.forEach(plugin -> plugin.remove("healthScore"));
         }
 
         JSONArray mappedPlugins = new JSONArray();
