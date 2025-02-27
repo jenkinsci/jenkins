@@ -69,5 +69,10 @@
         {{else}}
             <td style="width: 25%"></td>
         {{/if}}
+        {{#if this.healthScore}}
+            <td data="{{ this.healthScore }}">
+                {{ this.healthScore }}
+            </td>
+        {{/if}}
     </tr>
 {{/each}}
