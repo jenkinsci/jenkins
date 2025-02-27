@@ -1,10 +1,11 @@
 package hudson.search;
 
+import static org.junit.Assert.*;
+
 import hudson.Util;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 // A modified version of SearchTest that expands its coverage
 public class SearchTestImproved {
@@ -87,6 +88,15 @@ public class SearchTestImproved {
     }
 
     // --------------------- New coverage ---------------------
+
+    @Test
+    public void deadCode() {
+        boolean ans = false;
+
+        if (ans) {
+           System.out.println("This will never happen");
+        }
+    }
 
     // Covers all the overloads of SearchIndexBuilder to improve branch and line coverage
     @Test
