@@ -197,15 +197,19 @@ public class AnnotatedLargeText<T> extends LargeText {
     private ConsoleAnnotator getConsoleAnnotator(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         return (ConsoleAnnotator) ois.readObject();
     }
-
     @CheckReturnValue
     @Override
     public long writeLogTo(long start, Writer w) throws IOException {
-        if (isHtml())
+        if (isHtml()) {
             return writeHtmlTo(start, w);
-        else
-            return super.writeLogTo(start, w);
+        }
+
+        long bytesRead = super.writeLogTo(start, w);
+        w.flush();
+
+        return bytesRead;
     }
+
 
     /**
      * Strips annotations using a {@link PlainTextConsoleOutputStream}.
@@ -231,17 +235,29 @@ public class AnnotatedLargeText<T> extends LargeText {
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
                 w, createAnnotator(Stapler.getCurrentRequest2()), context, charset);
         long r = super.writeLogTo(start, caw);
+        long bytesRead = 0;
 
+        try (Writer writer = w) {
+             bytesRead = super.writeLogTo(start, writer);
+            writer.flush();
+
+        }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Cipher sym = PASSING_ANNOTATOR.encrypt();
-        ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos, sym)));
-        oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
+        ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(
+                new GZIPOutputStream(new CipherOutputStream(baos, sym))
+        );
+
+        oos.writeLong(System.currentTimeMillis());
         oos.writeObject(caw.getConsoleAnnotator());
         oos.close();
+
         StaplerResponse2 rsp = Stapler.getCurrentResponse2();
-        if (rsp != null)
+        if (rsp != null) {
             rsp.setHeader("X-ConsoleAnnotator", Base64.getEncoder().encodeToString(baos.toByteArray()));
-        return r;
+        }
+
+        return bytesRead;
     }
 
     /**
