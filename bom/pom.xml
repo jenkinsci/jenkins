@@ -41,7 +41,7 @@ THE SOFTWARE.
     <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
     <groovy.version>2.4.21</groovy.version>
     <jelly.version>1.1-jenkins-20250108</jelly.version>
-    <stapler.version>1942.v708e07325402</stapler.version>
+    <stapler.version>1955.vdb_2736b_480e3</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -63,7 +63,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>6.2.2</version>
+        <version>6.2.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -71,7 +71,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/reference/6.3/getting-spring-security.html#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>6.4.2</version>
+        <version>6.4.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -104,7 +104,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-beanutils</groupId>
         <artifactId>commons-beanutils</artifactId>
-        <version>1.9.4</version>
+        <version>1.10.1</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
@@ -288,11 +288,6 @@ THE SOFTWARE.
         <version>1.31</version>
       </dependency>
       <dependency>
-        <groupId>org.jvnet.robust-http-client</groupId>
-        <artifactId>robust-http-client</artifactId>
-        <version>1.2</version>
-      </dependency>
-      <dependency>
         <groupId>org.jvnet.winp</groupId>
         <artifactId>winp</artifactId>
         <version>1.31</version>
@@ -342,7 +337,7 @@ THE SOFTWARE.
         <!-- provided by jcl-over-slf4j -->
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
-        <version>1.3.4</version>
+        <version>1.3.5</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>

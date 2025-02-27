@@ -332,10 +332,6 @@ THE SOFTWARE.
       <artifactId>localizer</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.robust-http-client</groupId>
-      <artifactId>robust-http-client</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
     </dependency>

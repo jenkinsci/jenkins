@@ -80,7 +80,7 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
      * @return the URL for the console for the specified build, relative to the web server root
      */
     static @NonNull String getRedirectUrl(Run<?, ?> run) {
-        return Stapler.getCurrentRequest().getContextPath() + '/' + run.getConsoleUrl();
+        return Stapler.getCurrentRequest2().getContextPath() + '/' + run.getConsoleUrl();
     }
 
     static List<ConsoleUrlProvider> all() {
