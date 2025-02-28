@@ -1,24 +1,25 @@
 package jenkins.security;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import hudson.model.Computer;
+import hudson.slaves.DumbSlave;
 import hudson.slaves.SlaveComputer;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import hudson.security.Permission;
-import hudson.model.Node;
-import hudson.slaves.DumbSlave;
 import org.junit.rules.ExpectedException;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 public class AgentSecretActionTest {
 
@@ -29,16 +30,17 @@ public class AgentSecretActionTest {
     public ExpectedException thrown = ExpectedException.none();
 
     private AgentSecretAction action;
-    private StaplerRequest req;
-    private StaplerResponse rsp;
+    private StaplerRequest2 req;
+    private StaplerResponse2 rsp;
     private StringWriter stringWriter;
     private PrintWriter writer;
 
     @Before
     public void setUp() throws Exception {
-        action = new AgentSecretAction();
-        req = mock(StaplerRequest.class);
-        rsp = mock(StaplerResponse.class);
+        SlaveComputer computer = mock(SlaveComputer.class);
+        action = new AgentSecretAction(computer);
+        req = mock(StaplerRequest2.class);
+        rsp = mock(StaplerResponse2.class);
         stringWriter = new StringWriter();
         writer = new PrintWriter(stringWriter);
         when(rsp.getWriter()).thenReturn(writer);
@@ -51,7 +53,7 @@ public class AgentSecretActionTest {
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Computer.AGENT_SECRET).everywhere().to("test-user"));
+                .grant(Computer.CONNECT).everywhere().to("test-user"));
 
         action.doGet(req, rsp, "test-agent");
         writer.flush();
@@ -74,7 +76,7 @@ public class AgentSecretActionTest {
     public void testGetSecretWithInvalidNodeName() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Computer.AGENT_SECRET).everywhere().to("test-user"));
+                .grant(Computer.CONNECT).everywhere().to("test-user"));
 
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Node not found: non-existent-agent");
@@ -85,7 +87,7 @@ public class AgentSecretActionTest {
     public void testGetSecretWithNullNodeName() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Computer.AGENT_SECRET).everywhere().to("test-user"));
+                .grant(Computer.CONNECT).everywhere().to("test-user"));
 
 
         thrown.expect(IllegalArgumentException.class);
@@ -97,7 +99,7 @@ public class AgentSecretActionTest {
     public void testGetSecretWithMasterNode() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Computer.AGENT_SECRET).everywhere().to("test-user"));
+                .grant(Computer.CONNECT).everywhere().to("test-user"));
 
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("The specified node is not an agent/slave node: master");

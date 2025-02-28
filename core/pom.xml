@@ -440,6 +440,12 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-test-harness</artifactId>
+      <version>2391.v9b_3e2d3351a_2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
@@ -471,12 +477,6 @@ THE SOFTWARE.
       <version>${xmlunit.version}</version>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>org.jenkins-ci.main</groupId>
-          <artifactId>jenkins-test-harness</artifactId>
-          <version>2391.v9b_3e2d3351a_2</version>
-          <scope>test</scope>
-      </dependency>
   </dependencies>
 
   <build>
