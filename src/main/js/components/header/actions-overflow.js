@@ -110,7 +110,10 @@ function generateOverflowButton() {
   const actionsContainer = document.querySelector(".jenkins-header__actions");
 
   // Insert the new element before the last child
-  actionsContainer.insertBefore(element, actionsContainer.lastChild);
+  actionsContainer.insertBefore(
+    element,
+    actionsContainer.children[actionsContainer.children.length - 2],
+  );
 
   return element;
 }

@@ -38,7 +38,9 @@ function generateDropdown(element, callback, immediate, options = {}) {
           if (immediate) {
             onload();
           } else {
-            instance.reference.addEventListener("mouseenter", onload);
+            ["mouseenter", "focus"].forEach((event) => {
+              instance.reference.addEventListener(event, onload);
+            });
           }
         },
       },
