@@ -192,17 +192,17 @@ $semantics: (
   --link-font-weight: var(--font-bold-weight);
 
   // Command Palette
-  --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5)
-    saturate(1.4) blur(20px);
+  --command-palette-results-backdrop-filter: saturate(1.5) blur(5px);
   --command-palette-inset-shadow:
     inset 0 0 2px 2px rgb(255 255 255 / 0.1),
-    var(--jenkins-border--subtle-shadow);
+    var(--jenkins-border--subtle-shadow),
+    0 5px 10px var(--jenkins-border-color--subtle);
 
   ::backdrop {
-    --command-palette-backdrop-background: radial-gradient(
-      farthest-corner at 50% 30vh,
-      rgb(0 0 0 / 0.3),
-      rgb(0 0 0 / 0.1)
+    --command-palette-backdrop-background: color-mix(
+      in sRGB,
+      var(--black) 17.5%,
+      transparent
     );
   }
 
