@@ -33,6 +33,7 @@ import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
 
+import com.google.common.collect.ImmutableSortedMap;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -2662,7 +2663,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return Jenkins.get().getPluginManager().getPlugins().stream()
                     .filter(PluginWrapper::isDeprecated)
                     .collect(ImmutableSortedMap.toImmutableSortedMap(
-                            String.CASE_INSENSITIVE_ORDER,
+                            Comparator.comparing(PluginWrapper::getDisplayName, String.CASE_INSENSITIVE_ORDER),
                             Function.identity(),
                             it -> it.getDeprecations().get(0).url
                     ));
