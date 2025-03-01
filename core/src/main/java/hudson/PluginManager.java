@@ -101,6 +101,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -2661,7 +2662,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         public Map<PluginWrapper, String> getDeprecatedPlugins() {
             return Jenkins.get().getPluginManager().getPlugins().stream()
                     .filter(PluginWrapper::isDeprecated)
-                    .collect(Collectors.toMap(Function.identity(), it -> it.getDeprecations().get(0).url));
+                    .sorted(Comparator.comparing(PluginWrapper::getDisplayName)) // Sort by plugin name
+                    .collect(LinkedHashMap::new,
+                            (map, plugin) -> map.put(plugin, plugin.getDeprecations().get(0).url),
+                            Map::putAll);
         }
     }
 
