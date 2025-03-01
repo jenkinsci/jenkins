@@ -167,7 +167,18 @@ Dialog.prototype.show = function () {
       "cancel",
       (e) => {
         e.preventDefault();
-        this.dialog.remove();
+
+        this.dialog.setAttribute("closing", "");
+
+        this.dialog.addEventListener(
+          "animationend",
+          () => {
+            this.dialog.removeAttribute("closing");
+            this.dialog.remove();
+          },
+          { once: true },
+        );
+
         cancel();
       },
       { once: true },
@@ -192,7 +203,7 @@ Dialog.prototype.show = function () {
           if (this.dialogType === "form") {
             value = new FormData(this.form);
           }
-          this.dialog.remove();
+          this.dialog.dispatchEvent(new Event("cancel"));
           resolve(value);
         },
         { once: true },
