@@ -52,7 +52,28 @@
   &--sticky {
     position: sticky;
     top: var(--header-height);
-    z-index: 21;
+    z-index: 2;
+
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      inset: calc(var(--header-height) * -1) calc(var(--section-padding) * -1)
+        calc(var(--section-padding) * -1);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    &::before {
+      background: var(--background);
+      mask-image: linear-gradient(black 70%, transparent);
+      opacity: 0.55;
+    }
+
+    &::after {
+      backdrop-filter: blur(10px);
+      mask-image: linear-gradient(black 50%, transparent);
+    }
   }
 
   h1,

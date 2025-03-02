@@ -134,7 +134,6 @@
 
   &--has-sticky-app-bar {
     &::before {
-      bottom: -4rem;
       mask-image: linear-gradient(black 50%, transparent);
     }
   }
