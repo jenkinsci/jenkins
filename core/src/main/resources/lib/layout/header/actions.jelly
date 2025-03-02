@@ -1,0 +1,69 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
+  <div class="jenkins-header__actions">
+    <st:include page="suffix" optional="true" />
+
+    <j:forEach var="action" items="${it.actions}">
+      <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
+
+      <j:set var="jumplist">
+        <st:include it="${action}" page="jumplist.jelly" optional="true" />
+      </j:set>
+
+      <j:if test="${jumplist.length() == 0}">
+        <j:set var="tooltip">
+          <st:include it="${action}" page="tooltip.jelly" optional="true" />
+        </j:set>
+      </j:if>
+
+      <j:set var="badge" value="${action.badge}" />
+      <j:if test="${jumplist.length() == 0 and tooltip.length() == 0}">
+        <j:set var="tooltip">
+          <div style="text-align: center;">${action.displayName}</div>
+          <j:if test="${badge != null}">
+            <div style="text-align: center; color: var(--text-color-secondary)">${badge.tooltip}</div>
+          </j:if>
+        </j:set>
+      </j:if>
+
+      <j:set var="interactive" value="${jumplist.length() gt 0}" />
+      <x:element name="${action.urlName == null ? 'button' : 'a'}">
+        <x:attribute name="data-dropdown">${interactive}</x:attribute>
+        <x:attribute name="id">root-action-${action.class.simpleName}</x:attribute>
+        <x:attribute name="href">${h.getActionUrl(app.url, action)}</x:attribute>
+        <j:if test="${interactive}">
+          <x:attribute name="data-tippy-offset">[0, 10]</x:attribute>
+        </j:if>
+        <j:if test="${!interactive}">
+          <x:attribute name="data-html-tooltip" escapeText="false"><j:out value="${tooltip}" /></x:attribute>
+        </j:if>
+        <x:attribute name="data-tooltip-interactive">${interactive}</x:attribute>
+        <x:attribute name="data-tippy-animation">tooltip</x:attribute>
+        <x:attribute name="data-tippy-theme">${interactive ? 'dropdown' : 'tooltip'}</x:attribute>
+        <x:attribute name="data-tippy-trigger">mouseenter focus</x:attribute>
+        <x:attribute name="data-tippy-touch">${interactive}</x:attribute>
+        <x:attribute name="data-type">header-action</x:attribute>
+        <x:attribute name="draggable">false</x:attribute>
+        <x:attribute name="class">jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'}</x:attribute>
+        <l:icon src="${action.iconFileName}" />
+        <span class="jenkins-visually-hidden">${action.displayName}</span>
+        <j:if test="${badge != null}">
+          <span class="jenkins-badge jenkins-!-${badge.severity}-color" />
+        </j:if>
+      </x:element>
+
+      <j:if test="${interactive}">
+        <template>
+          <div class="jenkins-dropdown">
+            <j:out value="${jumplist}" />
+          </div>
+        </template>
+      </j:if>
+
+      <j:set var="jumplist" />
+      <j:set var="tooltip" />
+    </j:forEach>
+
+    <h:login/>
+  </div>
+</j:jelly>
