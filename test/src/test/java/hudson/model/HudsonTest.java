@@ -145,13 +145,13 @@ public class HudsonTest {
     }
 
     /**
-     * Top page should only have one item in the breadcrumb.
+     * Top page should have zero items in the breadcrumb.
      */
     @Test
     public void breadcrumb() throws Exception {
         HtmlPage root = j.createWebClient().goTo("");
         DomElement navbar = root.getElementById("breadcrumbs");
-        assertEquals(1, navbar.querySelectorAll(".jenkins-breadcrumbs__list-item").size());
+        assertEquals(0, navbar.querySelectorAll(".jenkins-breadcrumbs__list-item").size());
     }
 
     /**
