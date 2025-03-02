@@ -60,7 +60,7 @@ function generateDropdowns() {
         false,
         {
           trigger: "mouseenter",
-          offset: [0, 10],
+          offset: [-16, 10],
           animation: "tooltip",
           touch: false,
         },

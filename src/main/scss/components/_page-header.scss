@@ -36,10 +36,53 @@
     z-index: -1;
   }
 
-  #jenkins-head-icon {
-    width: 23px;
-    height: 2rem;
-    margin-left: 0.15rem;
+  .app-jenkins-logo {
+    @include mixins.item($border: false);
+
+    --item-background: transparent;
+    --item-background--hover: transparent;
+    --item-background--active: transparent;
+    --item-box-shadow--focus: transparent;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    gap: 1rem;
+    color: var(--text-color);
+    transition: opacity var(--standard-transition);
+
+    &::before,
+    &::after {
+      inset: -2px -6px;
+      border: none;
+    }
+
+    &:hover {
+      opacity: 0.7;
+    }
+
+    &:active {
+      opacity: 0.4;
+    }
+
+    // Increase the hit-box for the logo for Fitts’s Law
+    &::before {
+      inset: -30px -1rem -1rem -100px !important;
+      pointer-events: all;
+    }
+
+    span {
+      font-family: Georgia, serif;
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+
+    #jenkins-head-icon {
+      width: 23px;
+      height: 2rem;
+      margin-left: 0.15rem;
+    }
   }
 
   .jenkins-button {
@@ -74,6 +117,13 @@
     }
   }
 
+  &__navigation {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: stretch;
+    padding-left: var(--section-padding);
+  }
+
   &__actions {
     display: flex;
     align-items: center;
@@ -86,6 +136,12 @@
     &::before {
       bottom: -4rem;
       mask-image: linear-gradient(black 50%, transparent);
+    }
+  }
+
+  &--no-breadcrumbs {
+    .app-jenkins-logo span {
+      display: block !important;
     }
   }
 }

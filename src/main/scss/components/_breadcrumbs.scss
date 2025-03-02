@@ -4,8 +4,8 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
+  margin-left: 0.625rem;
   overflow: hidden;
-  padding-left: var(--section-padding);
 
   &__list {
     display: contents;
@@ -22,27 +22,6 @@
         position: absolute;
         inset: -0.5rem -0.75rem !important;
         pointer-events: all !important;
-      }
-
-      // Increase the hit-box for the logo for Fitts’s Law
-      &:first-of-type {
-        a::before {
-          inset: -30px -1rem -1rem -100px !important;
-        }
-      }
-
-      &:last-of-type {
-        .app-jenkins-logo span {
-          display: block !important;
-        }
-      }
-
-      .app-jenkins-logo {
-        span {
-          font-family: Georgia, serif;
-          font-weight: 600;
-          font-size: 1.125rem;
-        }
       }
 
       & > a {
@@ -88,7 +67,7 @@
       }
 
       // '/' separator between two items
-      &::after {
+      &::before {
         content: "";
         position: relative;
         width: 1rem;
@@ -106,12 +85,6 @@
 
         @media (prefers-contrast: more) {
           background: var(--text-color);
-        }
-      }
-
-      &:last-of-type {
-        &::after {
-          display: none;
         }
       }
     }
