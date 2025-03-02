@@ -8,6 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import hudson.model.Computer;
+import hudson.model.User;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.SlaveComputer;
 import java.io.PrintWriter;
@@ -52,13 +55,37 @@ public class AgentSecretActionTest {
         String expectedSecret = ((SlaveComputer) agent.getComputer()).getJnlpMac();
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy authStrategy = new MockAuthorizationStrategy()
+                .grant(Computer.CONNECT).everywhere().to("test-user");
+        j.jenkins.setAuthorizationStrategy(authStrategy);
+
+        User user = User.getById("test-user", true);
+            try (ACLContext ignored = ACL.as(user)) {
+                action.doIndex(req, rsp);
+                writer.flush();
+                verify(rsp).setContentType("text/plain");
+                assertEquals(expectedSecret, stringWriter.toString());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+    }
+
+    @Test
+    public void testGetSecretViaWebClient() throws Exception {
+        DumbSlave agent = j.createSlave("test-agent", null);
+        String expectedSecret = ((SlaveComputer) agent.getComputer()).getJnlpMac();
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Computer.CONNECT).everywhere().to("test-user"));
 
-        action.doGet(req, rsp, "test-agent");
-        writer.flush();
-        verify(rsp).setContentType("text/plain");
-        assertEquals(expectedSecret, stringWriter.toString());
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        webClient.login("test-user");
+        String response = webClient.goTo("computer/test-agent/agentSecret/", "text/plain")
+                .getWebResponse().getContentAsString();
+
+        assertEquals(expectedSecret, response);
     }
 
     @Test
@@ -68,8 +95,10 @@ public class AgentSecretActionTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
 
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        webClient.login("test-user");
         thrown.expect(org.acegisecurity.AccessDeniedException.class);
-        action.doGet(req, rsp, "test-agent");
+        action.doIndex(req, rsp);
     }
 
     @Test
@@ -80,7 +109,7 @@ public class AgentSecretActionTest {
 
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Node not found: non-existent-agent");
-        action.doGet(req, rsp, "non-existent-agent");
+        action.doIndex(req, rsp);
     }
 
     @Test
@@ -92,17 +121,7 @@ public class AgentSecretActionTest {
 
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Node name is required");
-        action.doGet(req, rsp, null);
+        action.doIndex(req, rsp);
     }
 
-    @Test
-    public void testGetSecretWithMasterNode() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Computer.CONNECT).everywhere().to("test-user"));
-
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("The specified node is not an agent/slave node: master");
-        action.doGet(req, rsp, "master");
-    }
 }

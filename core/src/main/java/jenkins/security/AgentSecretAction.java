@@ -8,9 +8,10 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.verb.GET;
 
 public class AgentSecretAction implements Action {
     private final SlaveComputer computer;
@@ -36,37 +37,25 @@ public class AgentSecretAction implements Action {
         return null;
     }
 
-    public void doGet(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String nodeName) throws IOException {
-        Jenkins jenkins = Jenkins.get();
+    @WebMethod(name = "")
+    @GET
+    public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
 
-
-        if (nodeName == null || nodeName.isEmpty()) {
-            throw new IllegalArgumentException("Node name is required");
-        }
-
-        Computer computer = jenkins.getComputer(nodeName);
-        if (computer == null) {
-            throw new IllegalArgumentException("Node not found: " + nodeName);
-        }
         computer.checkPermission(Computer.CONNECT);
-        if (computer instanceof SlaveComputer) {
-            SlaveComputer slaveComputer = (SlaveComputer) computer;
-            if (!(slaveComputer.getLauncher() instanceof JNLPLauncher)) {
+
+            if (!(computer.getLauncher() instanceof JNLPLauncher)) {
                 throw new SecurityException("This API is only available for inbound agents.");
             }
-            String secret = slaveComputer.getJnlpMac();
+            String secret = computer.getJnlpMac();
 
             if (secret != null) {
                 rsp.setContentType("text/plain");
                 rsp.getWriter().write(secret);
-                LOGGER.log(Level.INFO, "Agent secret retrieved for node {0} by user {1}",
-                        new Object[]{nodeName, Jenkins.getAuthentication2().getName()});
+                LOGGER.log(Level.FINE, "Agent secret retrieved for node {0} by user {1}",
+                        new Object[]{computer.getName(), Jenkins.getAuthentication2().getName()});
             } else {
-                throw new IOException("Secret not available for node: " + nodeName);
+                throw new IOException("Secret not available for node: " + computer.getName());
             }
-        } else {
-            throw new IllegalArgumentException("The specified node is not an agent/slave node: " + nodeName);
         }
-    }
 
 }
