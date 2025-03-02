@@ -15,15 +15,24 @@
     }
   });
 
-  Behaviour.specify(".description-cancel-button", "description-cancel-button", 0, function (b) {
-    b.onclick = function() {
-      const descriptionLink = document.getElementById("description-link");
-      const descriptionContent = document.getElementById("description-content");
-      const descriptionEditForm = document.getElementById("description-edit-form");
-      descriptionEditForm.innerHTML = "";
-      descriptionEditForm.classList.add("jenkins-hidden");
-      descriptionContent.classList.remove("jenkins-hidden");
-      descriptionLink.classList.remove("jenkins-hidden");
-    };
-  });
+  Behaviour.specify(
+    ".description-cancel-button",
+    "description-cancel-button",
+    0,
+    function (b) {
+      b.onclick = function () {
+        const descriptionLink = document.getElementById("description-link");
+        const descriptionContent = document.getElementById(
+          "description-content",
+        );
+        const descriptionEditForm = document.getElementById(
+          "description-edit-form",
+        );
+        descriptionEditForm.innerHTML = "";
+        descriptionEditForm.classList.add("jenkins-hidden");
+        descriptionContent.classList.remove("jenkins-hidden");
+        descriptionLink.classList.remove("jenkins-hidden");
+      };
+    },
+  );
 })();
