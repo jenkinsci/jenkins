@@ -1871,6 +1871,40 @@ function xor(a, b) {
   return !a != !b;
 }
 
+// used by editableDescription.jelly to replace the description field with a form
+// eslint-disable-next-line no-unused-vars
+function replaceDescription(initialDescription, submissionUrl) {
+  const descriptionContent = document.getElementById("description-content");
+  const descriptionEditForm = document.getElementById("description-edit-form");
+  descriptionEditForm.innerHTML = "<div class='jenkins-spinner'></div>";
+  descriptionContent.classList.add("jenkins-hidden");
+  let parameters = {};
+  if (initialDescription !== null && initialDescription !== "") {
+    parameters["description"] = initialDescription;
+  }
+  if (submissionUrl !== null && submissionUrl !== "") {
+    parameters["submissionUrl"] = submissionUrl;
+  }
+  fetch("./descriptionForm", {
+    method: "post",
+    headers: crumb.wrap({
+      "Content-Type": "application/x-www-form-urlencoded",
+    }),
+    body: objectToUrlFormEncoded(parameters),
+  }).then((rsp) => {
+    rsp.text().then((responseText) => {
+      descriptionEditForm.innerHTML = responseText;
+      descriptionEditForm.classList.remove("jenkins-hidden");
+      evalInnerHtmlScripts(responseText, function () {
+        Behaviour.applySubtree(descriptionEditForm);
+        descriptionEditForm.getElementsByTagName("TEXTAREA")[0].focus();
+      });
+      layoutUpdateCallback.call();
+      return false;
+    });
+  });
+}
+
 /**
  * Indicates that form fields from rows [s,e) should be grouped into a JSON object,
  * and attached under the element identified by the specified id.
