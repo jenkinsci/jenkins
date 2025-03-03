@@ -39,8 +39,9 @@ THE SOFTWARE.
 
   <properties>
     <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
-    <stapler.version>1928.v9115fe47607f</stapler.version>
     <groovy.version>2.4.21</groovy.version>
+    <jelly.version>1.1-jenkins-20250108</jelly.version>
+    <stapler.version>1955.vdb_2736b_480e3</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -62,7 +63,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>6.2.1</version>
+        <version>6.2.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -70,7 +71,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/reference/6.3/getting-spring-security.html#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>6.4.2</version>
+        <version>6.4.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -91,17 +92,6 @@ THE SOFTWARE.
         <version>33.4.0-jre</version>
       </dependency>
       <dependency>
-        <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
-        <groupId>com.jcraft</groupId>
-        <artifactId>jzlib</artifactId>
-        <version>1.1.3-kohsuke-1</version>
-      </dependency>
-      <dependency>
-        <groupId>com.sun.solaris</groupId>
-        <artifactId>embedded_su4j</artifactId>
-        <version>1.1</version>
-      </dependency>
-      <dependency>
         <groupId>com.sun.xml.txw2</groupId>
         <artifactId>txw2</artifactId>
         <version>20110809</version>
@@ -114,12 +104,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-beanutils</groupId>
         <artifactId>commons-beanutils</artifactId>
-        <version>1.9.4</version>
+        <version>1.10.1</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.17.1</version>
+        <version>1.18.0</version>
       </dependency>
       <dependency>
         <groupId>commons-collections</groupId>
@@ -132,24 +122,9 @@ THE SOFTWARE.
         <version>2.18.0</version>
       </dependency>
       <dependency>
-        <groupId>commons-jelly</groupId>
-        <artifactId>commons-jelly-tags-fmt</artifactId>
-        <version>1.0</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-jelly</groupId>
-        <artifactId>commons-jelly-tags-xml</artifactId>
-        <version>1.1</version>
-      </dependency>
-      <dependency>
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
         <version>2.6</version>
-      </dependency>
-      <dependency>
-        <groupId>io.jenkins.stapler</groupId>
-        <artifactId>jenkins-stapler-support</artifactId>
-        <version>1.1</version>
       </dependency>
       <dependency>
         <groupId>jakarta.servlet</groupId>
@@ -169,7 +144,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.15.0</version>
+        <version>5.16.0</version>
       </dependency>
       <dependency>
         <groupId>net.java.sezpoz</groupId>
@@ -249,6 +224,21 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
+        <artifactId>commons-jelly</artifactId>
+        <version>${jelly.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>commons-jelly-tags-fmt</artifactId>
+        <version>${jelly.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>commons-jelly-tags-xml</artifactId>
+        <version>${jelly.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
         <artifactId>commons-jexl</artifactId>
         <version>1.1-jenkins-20111212</version>
       </dependency>
@@ -290,17 +280,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.hudson</groupId>
         <artifactId>commons-jelly-tags-define</artifactId>
-        <version>1.1-jenkins-20241115</version>
+        <version>${jelly.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>localizer</artifactId>
         <version>1.31</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jvnet.robust-http-client</groupId>
-        <artifactId>robust-http-client</artifactId>
-        <version>1.2</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.winp</groupId>
@@ -316,11 +301,6 @@ THE SOFTWARE.
         <groupId>org.kohsuke</groupId>
         <artifactId>windows-package-checker</artifactId>
         <version>1.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.kohsuke.jinterop</groupId>
-        <artifactId>j-interop</artifactId>
-        <version>2.0.8-kohsuke-1</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.metainf-services</groupId>
@@ -354,15 +334,10 @@ THE SOFTWARE.
         <version>9.7.1</version>
       </dependency>
       <dependency>
-        <groupId>org.samba.jcifs</groupId>
-        <artifactId>jcifs</artifactId>
-        <version>1.3.18-kohsuke-1</version>
-      </dependency>
-      <dependency>
         <!-- provided by jcl-over-slf4j -->
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
-        <version>1.3.4</version>
+        <version>1.3.5</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>

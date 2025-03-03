@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.Util;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
 import jakarta.servlet.FilterChain;
@@ -31,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import net.sf.json.JSONObject;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -99,7 +99,7 @@ public class TelemetryTest {
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> types, hasItem("test-data"));
         //90ecf3ce1cd5ba1e5ad3cde7ad08a941e884f2e4d9bd463361715abab8efedc5
-        assertThat(correlators, hasItem(DigestUtils.sha256Hex(correlationId + "test-data")));
+        assertThat(correlators, hasItem(Util.getHexOfSHA256DigestOf(correlationId + "test-data")));
     }
 
     @Test

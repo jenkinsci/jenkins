@@ -1,14 +1,9 @@
 @use "../abstracts/mixins";
 
 .jenkins-section {
-  border-top: 2px solid var(--panel-border-color);
+  border-top: var(--jenkins-border);
   padding: var(--section-padding) 0 0 0;
   max-width: 1800px;
-
-  &:first-of-type {
-    border-top: none;
-    padding-top: 0;
-  }
 
   &:last-child {
     padding-bottom: 0;
@@ -31,7 +26,7 @@
 .jenkins-section__title {
   margin: 0 0 var(--section-padding) 0;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 }
 
 .jenkins-section__description {
@@ -60,7 +55,7 @@
 }
 
 .jenkins-section__item a {
-  @include mixins.item;
+  @include mixins.item($border: false);
 
   display: flex;
   text-decoration: none;
@@ -95,6 +90,7 @@
       border-radius: 100%;
       pointer-events: none;
       background: var(--item-background--active);
+      border: var(--jenkins-border--subtle);
     }
 
     img,
@@ -114,14 +110,14 @@
 
   dt {
     font-size: 0.9375rem;
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
     margin: 0.1rem 0 0.2rem;
     color: var(--text-color);
   }
 
   dd {
     color: var(--text-color-secondary);
-    font-weight: 450;
+    font-weight: normal;
     line-height: 1.6;
     margin: 0 0.66rem 0 0;
     font-size: 0.9375rem;

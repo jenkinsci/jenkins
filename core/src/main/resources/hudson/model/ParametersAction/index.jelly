@@ -30,7 +30,7 @@ THE SOFTWARE.
     <j:invoke var="buildClass" on="${currentThread.contextClassLoader}" method="loadClass">
       <j:arg value="hudson.model.Run" />
     </j:invoke>
-    <j:set var="build" value="${request.findAncestorObject(buildClass)}" />
+    <j:set var="build" value="${request2.findAncestorObject(buildClass)}" />
     <st:include page="sidepanel.jelly" it="${build}" />
     <l:main-panel>
 	  <t:buildCaption it="${build}">${title}</t:buildCaption>

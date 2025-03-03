@@ -163,7 +163,7 @@ var repeatableSupport = {
 };
 
 // do the ones that extract innerHTML so that they can get their original HTML before
-// other behavior rules change them (like YUI buttons.)
+// other behavior rules change them.
 Behaviour.specify("DIV.repeated-container", "repeatable", -100, function (e) {
   if (isInsideRemovable(e)) {
     return;

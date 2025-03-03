@@ -30,14 +30,14 @@ THE SOFTWARE.
   <j:if test="${it.getPrimaryView() != null}">
     <j:set var="it" value="${it.getPrimaryView()}"/>
   </j:if>
-  <j:set var="submissionUrl" value="${request.getParameter('submissionUrl')}" defaultValue="submitDescription"/>
+  <j:set var="submissionUrl" value="${request2.getParameter('submissionUrl')}" defaultValue="submitDescription"/>
   <j:invokeStatic className="hudson.Util" method="isSafeToRedirectTo" var="isSafeToRedirectTo">
     <j:arg value="${submissionUrl}"/>
   </j:invokeStatic>
   <j:if test="${!isSafeToRedirectTo}">
     <j:set var="submissionUrl" value="submitDescription"/>
   </j:if>
-  <j:set var="initialDescription" value="${request.getParameter('description')}" defaultValue="${it.description}"/>
+  <j:set var="initialDescription" value="${request2.getParameter('description')}" defaultValue="${it.description}"/>
   <l:ajax>
     <form action="${submissionUrl}" method="post">
       <table>

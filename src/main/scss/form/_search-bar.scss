@@ -1,3 +1,5 @@
+@use "../base/breakpoints";
+
 .jenkins-search-container {
   position: relative;
 }
@@ -8,19 +10,7 @@
   position: relative;
 
   &__input {
-    appearance: none;
-    background: var(--item-background--hover);
-    border: none;
-    outline: none;
-    border-radius: 0.625rem;
-    width: 100%;
-    margin: 0;
-    padding: 0 0.5rem 0 var(--search-bar-height);
-    line-height: 1;
-    box-shadow:
-      0 0 0 2px transparent,
-      0 0 0 12px transparent;
-    transition: var(--standard-transition);
+    padding: 0 0.25rem 0 calc(var(--search-bar-height) * 0.9);
     height: var(--search-bar-height);
 
     &::placeholder {
@@ -58,18 +48,8 @@
     }
 
     &:not(:disabled) {
-      &:hover {
-        background: var(--item-background--active);
-      }
-
       &:active,
       &:focus {
-        outline: none;
-        background: var(--item-background--active);
-        box-shadow:
-          0 0 0 2px var(--focus-input-border),
-          0 0 0 7px var(--focus-input-glow);
-
         &::-webkit-search-cancel-button {
           opacity: 0.5;
           pointer-events: all;
@@ -80,21 +60,11 @@
 
     &:active,
     &:focus {
-      outline: none;
-      background: var(--item-background--active);
-      box-shadow:
-        0 0 0 2px var(--focus-input-border),
-        0 0 0 7px var(--focus-input-glow);
-
       &::-webkit-search-cancel-button {
         opacity: 1;
         pointer-events: all;
         transform: scale(1);
       }
-    }
-
-    &:disabled {
-      cursor: not-allowed;
     }
   }
 
@@ -108,10 +78,10 @@
     pointer-events: none;
 
     svg {
-      width: 45%;
-      height: 45%;
-      max-width: 1.1rem;
-      max-height: 1.1rem;
+      width: 1rem;
+      height: 1rem;
+      max-width: 1rem;
+      max-height: 1rem;
       grid-column-start: 1;
       grid-row-start: 1;
       place-self: center center;
@@ -182,8 +152,12 @@
   &--app-bar {
     --search-bar-height: 3rem;
 
-    max-width: 50vw;
-    margin-block: -6px;
+    width: 100%;
+    margin-block: -5px;
+
+    @media (min-width: breakpoints.$tablet-breakpoint) {
+      max-width: 50vw;
+    }
 
     .jenkins-keyboard-shortcut {
       right: 0.8125rem;
@@ -193,7 +167,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      border-radius: 10px;
+      border-radius: var(--form-input-border-radius);
       z-index: -1;
       backdrop-filter: blur(20px);
       box-shadow: 0 0 var(--section-padding) var(--background);
@@ -236,6 +210,7 @@
   height: 1px; // Setting to 0 caused the items not to render initially in Chrome
   opacity: 0;
   transition: var(--standard-transition);
+  background: color-mix(in sRGB, var(--background) 85%, transparent);
   backdrop-filter: var(--dropdown-backdrop-filter);
   visibility: collapse;
   scale: 95%;
@@ -248,135 +223,6 @@
     visibility: visible;
     translate: 0 0.3125rem;
   }
-
-  a {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    padding: 0.5rem 0.7rem;
-    font-size: 0.875rem;
-    border-radius: 10px;
-    color: var(--text-color);
-    font-weight: 500;
-    text-decoration: none;
-    z-index: 0;
-    line-height: 1;
-    min-height: 2.25rem;
-    transition: background var(--standard-transition);
-
-    div {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 1.125rem;
-      height: 1.125rem;
-
-      svg,
-      img {
-        width: 100%;
-        height: 100%;
-      }
-    }
-
-    &::before,
-    &::after {
-      position: absolute;
-      content: "";
-      inset: 0;
-      z-index: -1;
-      border-radius: 10px;
-      transition: var(--standard-transition);
-      pointer-events: none;
-    }
-
-    &::before {
-      background-color: transparent;
-    }
-
-    &::after {
-      box-shadow: 0 0 0 0.66rem transparent;
-    }
-
-    &:hover,
-    &:focus {
-      &::before {
-        background-color: var(--item-background--hover);
-      }
-    }
-
-    &:active,
-    &:focus {
-      outline: none !important;
-      z-index: 1;
-
-      &::before {
-        background-color: var(--item-background--active);
-      }
-
-      &::after {
-        box-shadow: 0 0 0 0.33rem var(--item-box-shadow--focus);
-      }
-    }
-
-    &:focus-visible {
-      &::after {
-        box-shadow: 0 0 0 0.33rem var(--text-color);
-      }
-    }
-  }
-
-  .jenkins-search__results {
-    position: relative;
-    display: flex;
-    justify-content: flex-start;
-    flex-direction: column;
-    gap: 0.2rem;
-    padding: 0.4rem;
-
-    & > div {
-      position: relative;
-      margin-top: -0.25rem;
-
-      a {
-        padding-left: 2.6rem;
-        color: var(--text-color-secondary);
-      }
-
-      &::before {
-        content: "";
-        position: absolute;
-        top: 0.4rem;
-        left: 1.1rem + 0.625rem;
-        bottom: 0.3rem;
-        width: 0.125rem;
-        background: currentColor;
-        border-radius: 100vmax;
-        opacity: 0.05;
-      }
-
-      &:empty {
-        display: none;
-      }
-    }
-  }
-
-  &:hover {
-    .jenkins-search__results-item--selected {
-      background: transparent;
-    }
-  }
-}
-
-.jenkins-search__results-item--selected {
-  background: var(--item-background--hover);
-  animation: pulse 1s ease-in-out forwards;
-
-  @keyframes pulse {
-    50% {
-      background: var(--item-background--active);
-    }
-  }
 }
 
 .jenkins-search__results__no-results-label {
@@ -384,5 +230,5 @@
   margin: 2rem;
   padding: 0;
   color: var(--text-color-secondary);
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 }

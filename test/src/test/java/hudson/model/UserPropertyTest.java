@@ -37,7 +37,7 @@ public class UserPropertyTest {
     public JenkinsRule j = new JenkinsRule();
 
     public User configRoundtrip(User u) throws Exception {
-        submit(j.createWebClient().goTo(u.getUrl()+"/account/").getFormByName("config"));
+        submit(j.createWebClient().goTo(u.getUrl() + "/account/").getFormByName("config"));
         return u;
     }
 

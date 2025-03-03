@@ -151,7 +151,8 @@ pre {
   word-wrap: break-word;
   margin: 0 0 var(--section-padding);
   padding: 0.8rem 1rem;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
+  border: var(--jenkins-border--subtle);
   background-color: var(--pre-background);
   color: var(--pre-color);
   font-family: var(--font-family-mono);
@@ -188,7 +189,7 @@ pre.console {
 }
 
 .setting-name {
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
   margin-bottom: 0.5rem;
   white-space: nowrap;
 }
@@ -209,7 +210,7 @@ pre.console {
   width: 100%;
   border-radius: 3px;
   border: 1px solid var(--input-border);
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.075);
   padding: 6px;
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -227,11 +228,6 @@ pre.console {
 .setting-main > textarea {
   vertical-align: middle;
   margin-top: 0;
-}
-
-.setting-main > .yui-button {
-  clear: both;
-  float: right;
 }
 
 .expanding-input {
@@ -258,7 +254,7 @@ pre.console {
 
 .changeset-message {
   padding: 0.8rem 1rem;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   background-color: var(--pre-background);
 
   pre {
@@ -270,80 +266,6 @@ pre.console {
 
 .disabledJob {
   color: gray;
-}
-
-.bottom-sticker,
-#bottom-sticker {
-  position: sticky;
-  // This has to be set to -1px so that IntersectionObserver can add the
-  // &--stuck class when the element is stuck to the bottom of the screen
-  // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
-  bottom: -1px;
-  margin-left: calc(var(--section-padding) * -1);
-  width: calc(
-    100% + calc(var(--section-padding) * 2)
-  ); /* it needs to occupy the entire width or else the underlying content will see through */
-
-  z-index: 998; /* behind top-sticker */
-}
-
-.bottom-sticker-inner {
-  position: relative;
-  padding: 1em var(--section-padding);
-  z-index: 0;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--background);
-    opacity: 0;
-    z-index: -1;
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: -30px;
-    left: 0;
-    right: 0;
-    background: linear-gradient(rgba(black, 0), rgba(#556, 0.075) 110%);
-    max-width: 100%;
-    height: 30px;
-    opacity: 0;
-    transition: var(--standard-transition);
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      white var(--section-padding),
-      white calc(100% - var(--section-padding)),
-      transparent
-    );
-    pointer-events: none;
-  }
-
-  &--stuck {
-    .bottom-sticker-inner {
-      backdrop-filter: blur(15px);
-
-      &::before {
-        opacity: 0.75 !important;
-
-        @supports not (backdrop-filter: blur(15px)) {
-          opacity: 1 !important;
-        }
-      }
-
-      &::after {
-        opacity: 1 !important;
-      }
-    }
-  }
-
-  .yui-button {
-    margin-left: 0;
-    margin-right: 0.5rem;
-  }
 }
 
 .icon16x16 {
@@ -369,20 +291,12 @@ pre.console {
   padding: 1rem;
   margin: 1rem 0;
   word-break: break-word;
-  border-radius: 6px;
+  border-radius: var(--form-input-border-radius);
+  background-color: var(--button-background);
+  border: var(--jenkins-border--subtle);
   z-index: 0;
 
   --section-padding: 0.8rem;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--text-color);
-    opacity: 0.05;
-    z-index: -1;
-    border-radius: inherit;
-  }
 
   p:first-of-type {
     margin-top: 0;
@@ -461,25 +375,11 @@ img.icon-help {
   display: block;
 }
 
-/* ================ Element overflow calculation helper styles ================ */
-
-.force-wrap,
-.force-wrap a {
-  white-space: normal !important;
-  overflow: visible !important;
-}
-
-.force-nowrap,
-.force-nowrap a {
-  white-space: nowrap !important;
-  overflow: hidden !important;
-}
-
 /* ========================= editable combobox style ========================= */
 .comboBoxList {
   overflow-y: scroll;
   color: var(--text-color);
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   box-shadow: 0 10px 20px rgba(black, 0.15);
   margin-top: 8px;
   margin-left: 3px;
@@ -493,14 +393,14 @@ img.icon-help {
   position: relative;
   padding: 0.5rem 0.8rem;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 
   &::before {
     content: "";
     position: absolute;
     inset: 0;
     background: var(--text-color);
-    border-radius: 10px;
+    border-radius: var(--form-input-border-radius);
     opacity: 0;
     transition: var(--standard-transition);
     z-index: -1;
@@ -629,7 +529,7 @@ table.fingerprint-in-build td {
     top: 0;
     left: 10px;
     bottom: 0;
-    width: 2px;
+    width: var(--jenkins-border-width);
     background: var(--input-border);
     border-radius: 2px;
     transition: var(--standard-transition);
@@ -729,23 +629,6 @@ table.progress-bar.red td.progress-bar-done {
   }
 }
 
-/* ========================= YUI dialog ========================= */
-
-/* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
- to the latest YUI will fix this? */
-.dialog .hd {
-  margin: 0 !important;
-  font-size: var(--font-size-xs) !important;
-}
-
-.dialog .bd {
-  margin: 0 !important;
-}
-
-.dialog .ft {
-  margin: 0 !important;
-}
-
 /* ========================= tags/labels ================== */
 // Used in core/src/main/java/hudson/util/TagCloud.java#getClassName
 
@@ -793,7 +676,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-container {
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   overflow: hidden;
   margin-bottom: var(--section-padding);
 
@@ -870,10 +753,6 @@ select.select-ajax-pending {
 }
 
 /* ========================= Button styles ================= */
-#disable-project {
-  margin-top: 6px;
-}
-
 .i18n {
   display: none;
 }

@@ -90,9 +90,9 @@ THE SOFTWARE.
   <j:set var="layoutType" value="${attrs.type}"/>
 </j:if>
 
-<j:set var="_" value="${request.getSession()}"/>
+<j:set var="_" value="${request2.getSession()}"/>
 <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
-<j:if test="${request.servletPath=='/' || request.servletPath==''}">
+<j:if test="${request2.servletPath=='/' || request2.servletPath==''}">
   ${h.advertiseHeaders(response)}
   <j:if test="${extensionsAvailable}">
     <j:forEach var="pd" items="${h.pageDecorators}">
@@ -109,7 +109,7 @@ THE SOFTWARE.
     ${h.checkPermission(it,permission)}
     ${h.checkAnyPermission(it, permissions)}
 
-    <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
+    <title>${h.appendIfNotNull(title, ' - Jenkins', 'Jenkins')}</title>
 
     <link rel="stylesheet" href="${resURL}/jsbundles/styles.css" type="text/css" />
     <j:if test="${attrs.nogrid==null or attrs.nogrid.equals(false)}">
@@ -128,36 +128,8 @@ THE SOFTWARE.
 
     <st:adjunct includes="org.kohsuke.stapler.bind"/>
 
-    <l:userExperimentalFlag var="removeYUI" flagClassName="jenkins.model.experimentalflags.RemoveYuiUserExperimentalFlag" />
-    <j:if test="${!removeYUI}">
-      <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
-      <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
-      <l:yui module="yahoo" />
-      <l:yui module="dom" />
-      <l:yui module="event" />
-      <j:if test="${h.yuiSuffix=='debug'}">
-        <l:yui module="logger" />
-      </j:if>
-      <l:yui module="animation" />
-      <l:yui module="dragdrop" />
-      <l:yui module="container" />
-      <l:yui module="connection" />
-      <l:yui module="datasource" />
-      <l:yui module="autocomplete" />
-      <l:yui module="menu" />
-      <l:yui module="element" />
-      <l:yui module="button" />
-      <l:yui module="storage" />
-    </j:if>
-
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
-
-    <j:if test="${!removeYUI}">
-      <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
-      <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>
-      <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
-    </j:if>
 
     <l:hasPermission permission="${app.READ}">
       <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
@@ -178,7 +150,7 @@ THE SOFTWARE.
     <script src="${resURL}/jsbundles/sortable-drag-drop.js" type="text/javascript"/>
     <script src="${resURL}/jsbundles/app.js" type="text/javascript" defer="true" />
   </head>
-  <body id="jenkins" class="${removeYUI ? '' : 'yui-skin-sam'} ${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}">
+  <body id="jenkins" class="${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}">
     <l:command-palette />
 
     <j:if test="${layoutType!='full-screen'}">
