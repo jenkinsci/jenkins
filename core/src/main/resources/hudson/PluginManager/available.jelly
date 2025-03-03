@@ -82,6 +82,7 @@ THE SOFTWARE.
               </l:isAdmin>
               <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
+              <th>${%Health score}</th>
             </tr>
           </thead>
           <tbody/>
