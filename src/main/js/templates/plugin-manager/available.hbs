@@ -61,18 +61,24 @@
             {{/if}}
         </td>
         {{#if this.releaseTimestamp }}
-            <td style="width: 25%" data="{{ this.releaseTimestamp.iso8601 }}">
+            <td style="width: 20%" data="{{ this.releaseTimestamp.iso8601 }}">
                 <time datetime="{{ this.releaseTimestamp.iso8601 }}">
                     {{ this.releaseTimestamp.displayValue }}
                 </time>
             </td>
         {{else}}
-            <td style="width: 25%"></td>
+            <td style="width: 20%"></td>
         {{/if}}
-        {{#if this.healthScore}}
-            <td data="{{ this.healthScore }}">
-                {{ this.healthScore }}
-            </td>
-        {{/if}}
+        <td style="width: 15%">
+            <div class="">
+                {{#if this.healthScore }}
+                    <a href="{{ this.wiki }}/healthScore" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
+                      {{ this.healthScore }} / 100
+                    </a>
+                {{else}}
+                  Not applicable
+                {{/if}}
+            </div>
+        </td>
     </tr>
 {{/each}}

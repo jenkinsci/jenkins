@@ -1568,12 +1568,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
         }
 
-        final boolean missingHealthScore = plugins.stream().anyMatch(json -> !json.has("healthScore"));
-        if (missingHealthScore) {
-            LOGGER.log(Level.FINE, "Missing health score on at least one plugin, removing for all of them.");
-            plugins.forEach(plugin -> plugin.remove("healthScore"));
-        }
-
         JSONArray mappedPlugins = new JSONArray();
         mappedPlugins.addAll(plugins);
 
