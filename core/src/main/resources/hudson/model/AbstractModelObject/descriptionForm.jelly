@@ -39,7 +39,7 @@ THE SOFTWARE.
   </j:if>
   <j:set var="initialDescription" value="${request2.getParameter('description')}" defaultValue="${it.description}"/>
   <l:ajax>
-    <form action="${submissionUrl}" method="post" id="description-edit-form">
+    <form action="${submissionUrl}" method="post">
       <f:entry help="${app.markupFormatter.helpUrl}">
         <f:textarea name="description" value="${initialDescription}"
                     codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
