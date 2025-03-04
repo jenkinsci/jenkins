@@ -1774,6 +1774,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     Permission.WRITE,
                     PermissionScope.COMPUTER);
 
+    public static final Permission AGENT_SECRET =
+            new Permission(
+                    PERMISSIONS,
+                    "AgentSecret",
+                    Messages._Computer_AgentSecretPermission_Description(),
+                    CONNECT,
+                    PermissionScope.COMPUTER);
 
     @Restricted(NoExternalUse.class) // called by jelly
     public static final Permission[] EXTENDED_READ_AND_CONNECT =
