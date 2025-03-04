@@ -45,12 +45,12 @@ THE SOFTWARE.
   </p>
     <h2>Retrieving Agent Secret</h2>
     <p>
-        To retrieve the agent secret (JNLP MAC) via the API, you can access <a href="../jenkins-agent-secret/">this URL</a>.
+        To retrieve the agent secret (JNLP MAC) via the API, you can access <a href="../agent-secret/">this URL</a>.
         This requires the Computer.CONNECT permission and returns the plain text secret that can be used for agent authentication.
     </p>
     <p>
         If you need to retrieve the secret for a specific agent from a script, you can access:
-        <code>JENKINS_URL/computer/AGENT_NAME/jenkins-agent-secret/</code>
+        <code>JENKINS_URL/computer/AGENT_NAME/agent-secret/</code>
     </p>
 
 </j:jelly>
