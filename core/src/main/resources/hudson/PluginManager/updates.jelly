@@ -84,6 +84,7 @@ THE SOFTWARE.
                   <th initialSortDir="down">${%Name}</th>
                   <th>${%Released}</th>
                   <th>${%Installed}</th>
+                  <th>${%Health score}</th>
                 </tr>
               </thead>
                   <j:forEach var="p" items="${list}">
@@ -222,6 +223,16 @@ THE SOFTWARE.
                             <span title="${%Inactive}">
                               (<st:out value="${p.installed.version}"/>)
                             </span>
+                          </j:otherwise>
+                        </j:choose>
+                      </td>
+                      <td>
+                        <j:choose>
+                          <j:when test="${p.healthScore}">
+                            <st:out value="${p.healthScore}"/> / 100
+                          </j:when>
+                          <j:otherwise>
+                            Not applicable
                           </j:otherwise>
                         </j:choose>
                       </td>
