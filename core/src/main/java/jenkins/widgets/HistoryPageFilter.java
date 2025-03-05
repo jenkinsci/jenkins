@@ -67,7 +67,6 @@ public class HistoryPageFilter<T> {
     public boolean hasDownPage = false; // there are older builds than on this page
     @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public long nextBuildNumber;
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public HistoryWidget widget;
 
     public long newestOnPage = Long.MIN_VALUE; // see updateNewestOldest()
