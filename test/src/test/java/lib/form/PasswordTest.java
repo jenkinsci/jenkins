@@ -24,6 +24,7 @@
 
 package lib.form;
 
+import static java.nio.file.Files.readString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -40,6 +41,8 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.GetJobCommand;
+import hudson.cli.GetNodeCommand;
+import hudson.cli.GetViewCommand;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Computer;
@@ -48,25 +51,35 @@ import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
+import hudson.model.ListView;
+import hudson.model.Node;
 import hudson.model.RootAction;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.User;
+import hudson.model.View;
+import hudson.model.ViewProperty;
+import hudson.security.ACL;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.NodeProperty;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Pattern;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
+import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.ExtendedReadSecretRedaction;
 import jenkins.tasks.SimpleBuildStep;
 import org.htmlunit.Page;
@@ -121,6 +134,145 @@ public class PasswordTest {
         @Override
         public String getUrlName() {
             return "secretNotPlainText";
+        }
+    }
+
+    @For({ExtendedReadRedaction.class, ExtendedReadSecretRedaction.class})
+    @Issue("SECURITY-3495")
+    @Test
+    public void testNodeSecrets() throws Exception {
+        Computer.EXTENDED_READ.setEnabled(true);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("alice").grant(Jenkins.READ, Computer.EXTENDED_READ).everywhere().to("bob"));
+
+        final DumbSlave onlineSlave = j.createOnlineSlave();
+        final String secretText = "t0ps3cr3td4t4_node";
+        final Secret encryptedSecret = Secret.fromString(secretText);
+        final String encryptedSecretText = encryptedSecret.getEncryptedValue();
+
+        onlineSlave.getNodeProperties().add(new NodePropertyWithSecret(encryptedSecret));
+        onlineSlave.save();
+
+        assertThat(readString(new File(onlineSlave.getRootDir(), "config.xml").toPath()), containsString(encryptedSecretText));
+
+
+        { // admin can see encrypted value
+            GetNodeCommand command = new GetNodeCommand();
+            try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+                final Page page = wc.goTo(onlineSlave.getComputer().getUrl() + "config.xml", "application/xml");
+                final String content = page.getWebResponse().getContentAsString();
+
+                assertThat(content, not(containsString(secretText)));
+                assertThat(content, containsString(encryptedSecretText));
+                assertThat(content, containsString("<secret>" + encryptedSecretText + "</secret>"));
+
+                var baos = new ByteArrayOutputStream();
+                try (var unused = ACL.as(User.get("alice", true, Map.of()))) {
+                    command.setTransportAuth2(Jenkins.getAuthentication2());
+                    command.main(List.of(onlineSlave.getNodeName()), Locale.US, System.in, new PrintStream(baos), System.err);
+                }
+                assertEquals(content, baos.toString(page.getWebResponse().getContentCharset()));
+            }
+        }
+
+        { // extended reader gets only redacted value
+            GetNodeCommand command = new GetNodeCommand();
+            try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+                final Page page = wc.goTo(onlineSlave.getComputer().getUrl() + "config.xml", "application/xml");
+                final String content = page.getWebResponse().getContentAsString();
+
+                assertThat(content, not(containsString(secretText)));
+                assertThat(content, not(containsString(encryptedSecretText)));
+                assertThat(content, containsString("<secret>********</secret>"));
+
+                var baos = new ByteArrayOutputStream();
+                try (var unused = ACL.as(User.get("bob", true, Map.of()))) {
+                    command.setTransportAuth2(Jenkins.getAuthentication2());
+                    command.main(List.of(onlineSlave.getNodeName()), Locale.US, System.in, new PrintStream(baos), System.err);
+                }
+                assertEquals(content, baos.toString(page.getWebResponse().getContentCharset()));
+            }
+        }
+    }
+
+    public static class NodePropertyWithSecret extends NodeProperty<Node> {
+        private final Secret secret;
+
+        public NodePropertyWithSecret(Secret secret) {
+            this.secret = secret;
+        }
+
+        public Secret getSecret() {
+            return secret;
+        }
+    }
+
+    @For({ExtendedReadRedaction.class, ExtendedReadSecretRedaction.class})
+    @Issue("SECURITY-3496")
+    @Test
+    public void testViewSecrets() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("alice").grant(Jenkins.READ, View.READ).everywhere().to("bob"));
+
+        final String secretText = "t0ps3cr3td4t4_view";
+        final Secret encryptedSecret = Secret.fromString(secretText);
+        final String encryptedSecretText = encryptedSecret.getEncryptedValue();
+
+        final ListView v = new ListView("security-3496");
+        v.getProperties().add(new ViewPropertyWithSecret(encryptedSecret));
+        j.jenkins.addView(v);
+
+        assertThat(readString(new File(j.jenkins.getRootDir(), "config.xml").toPath()), containsString(encryptedSecretText));
+
+
+        { // admin can see encrypted value
+            var command = new GetViewCommand();
+            try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+                final Page page = wc.goTo(v.getUrl() + "config.xml", "application/xml");
+                final String content = page.getWebResponse().getContentAsString();
+
+                assertThat(content, not(containsString(secretText)));
+                assertThat(content, containsString(encryptedSecretText));
+                assertThat(content, containsString("<secret>" + encryptedSecretText + "</secret>"));
+
+                var baos = new ByteArrayOutputStream();
+                try (var unused = ACL.as(User.get("alice", true, Map.of()))) {
+                    command.setTransportAuth2(Jenkins.getAuthentication2());
+                    command.main(List.of(v.getViewName()), Locale.US, System.in, new PrintStream(baos), System.err);
+                }
+                assertEquals(content, baos.toString(page.getWebResponse().getContentCharset()));
+            }
+        }
+
+        { // extended reader gets only redacted value
+            var command = new GetViewCommand();
+            try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+                final Page page = wc.goTo(v.getUrl() + "config.xml", "application/xml");
+                final String content = page.getWebResponse().getContentAsString();
+
+                assertThat(content, not(containsString(secretText)));
+                assertThat(content, not(containsString(encryptedSecretText)));
+                assertThat(content, containsString("<secret>********</secret>"));
+
+                var baos = new ByteArrayOutputStream();
+                try (var unused = ACL.as(User.get("bob", true, Map.of()))) {
+                    command.setTransportAuth2(Jenkins.getAuthentication2());
+                    command.main(List.of(v.getViewName()), Locale.US, System.in, new PrintStream(baos), System.err);
+                }
+                assertEquals(content, baos.toString(page.getWebResponse().getContentCharset()));
+            }
+        }
+    }
+
+    public static class ViewPropertyWithSecret extends ViewProperty {
+        private final Secret secret;
+
+        public ViewPropertyWithSecret(Secret secret) {
+            this.secret = secret;
+        }
+
+        public Secret getSecret() {
+            return secret;
         }
     }
 
