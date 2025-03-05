@@ -490,7 +490,7 @@ THE SOFTWARE.
                   <!-- detached after 2.356 -->
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>instance-identity</artifactId>
-                  <version>201.vd2a_b_5a_468a_a_6</version>
+                  <version>203.v15e81a_1b_7a_38</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
