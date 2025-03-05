@@ -36,6 +36,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @since 1.378
  * @see MyViewsTabBar
  */
+@Deprecated
 public class DefaultMyViewsTabBar extends MyViewsTabBar {
     @DataBoundConstructor
     public DefaultMyViewsTabBar() {

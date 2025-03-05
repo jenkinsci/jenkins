@@ -1922,10 +1922,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return this;
    }
 
+    @Deprecated
     public MyViewsTabBar getMyViewsTabBar() {
         return myViewsTabBar;
     }
 
+    @Deprecated
     public void setMyViewsTabBar(MyViewsTabBar myViewsTabBar) {
         this.myViewsTabBar = myViewsTabBar;
     }
