@@ -2867,11 +2867,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             delta = ExtensionComponentSet.union(delta, ef.refresh().filtered());
         }
 
+        List<ExtensionList> listsToFireOnChangeListeners = new ArrayList<>();
         for (ExtensionList el : extensionLists.values()) {
-            el.refresh(delta);
+            if (el.refresh(delta)) {
+                listsToFireOnChangeListeners.add(el);
+            }
         }
         for (ExtensionList el : descriptorLists.values()) {
-            el.refresh(delta);
+            if (el.refresh(delta)) {
+                listsToFireOnChangeListeners.add(el);
+            }
+        }
+        // Refresh all extension lists before firing any listeners in case a listener would cause any new extension
+        // lists to be forcibly loaded, which may lead to duplicate entries for the same extension object in a list.
+        for (var el : listsToFireOnChangeListeners) {
+            el.fireOnChangeListeners();
         }
 
         // TODO: we need some generalization here so that extension points can be notified when a refresh happens?
@@ -4165,6 +4175,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new HttpRedirect(".");
     }
 
+    @POST
     public HttpResponse doToggleCollapse() throws ServletException, IOException {
         final StaplerRequest2 request = Stapler.getCurrentRequest2();
         final String paneId = request.getParameter("paneId");
@@ -4465,15 +4476,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         rsp.getWriter().println("GCed");
-    }
-
-    /**
-     * End point that intentionally throws an exception to test the error behaviour.
-     * @since 1.467
-     */
-    @StaplerDispatchable
-    public void doException() {
-        throw new RuntimeException();
     }
 
     @Override

@@ -344,7 +344,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>checks-api</artifactId>
-                  <version>2.2.3</version>
+                  <version>367.v18b_7f530e54a_</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -367,7 +367,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>5.5.1-6</version>
+                  <version>5.6.0-2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -420,7 +420,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>703.v72ff4b_259600</version>
+                  <version>704.v3ce5c542825a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -455,7 +455,7 @@ THE SOFTWARE.
                   <!-- detached after 2.163 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jaxb</artifactId>
-                  <version>2.3.9-1</version>
+                  <version>2.3.9-133.vb_ec76a_73f706</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -469,7 +469,7 @@ THE SOFTWARE.
                   <!-- detached after 2.184 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>trilead-api</artifactId>
-                  <version>2.190.v1ed19f8137f8</version>
+                  <version>2.192.vc50a_d147e369</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

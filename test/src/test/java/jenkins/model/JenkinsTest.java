@@ -72,6 +72,7 @@ import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.VersionNumber;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -129,6 +130,16 @@ public class JenkinsTest {
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
+
+    @Test
+    @Issue("SECURITY-3498")
+    public void testPaneToggleCollapse() throws Exception {
+        try (WebClient wc = j.createWebClient()) {
+            final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("toggleCollapse?paneId=foo"));
+            // @POST responds 404 when the verb is wrong; @RequirePOST would respond 405.
+            assertThat(ex.getStatusCode(), is(HttpServletResponse.SC_NOT_FOUND));
+        }
+    }
 
     @Test
     @Issue("SECURITY-3073")
