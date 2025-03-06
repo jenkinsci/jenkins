@@ -49,18 +49,16 @@ public class AgentSecretAction implements Action {
         computer.checkPermission(Computer.CONNECT);
 
         if (!(computer.getLauncher() instanceof JNLPLauncher)) {
-                throw new SecurityException("This API is only available for inbound agents.");
+                throw new IllegalStateException("This action is only available for inbound agents.");
         }
         String secret = computer.getJnlpMac();
 
-        if (secret != null) {
+
             rsp.setContentType("text/plain");
             rsp.getWriter().write(secret);
             LOGGER.log(Level.FINE, "Agent secret retrieved for node {0} by user {1}",
                     new Object[]{computer.getName(), Jenkins.getAuthentication2().getName()});
-        } else {
-            throw new IOException("Secret not available for node: " + computer.getName());
-        }
+
     }
 
         @Extension
