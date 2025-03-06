@@ -40,7 +40,7 @@ public class DefaultCliListener implements CliListener {
     @Override
     public void onExecution(String correlationId, String command, int argsSize, Authentication auth) {
         LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.", new Object[] {
-            command, argsSize, auth != null ? auth.getName() : "<unknown>"
+            command, argsSize, auth != null ? auth.getName() : "<unknown>",
         });
     }
 

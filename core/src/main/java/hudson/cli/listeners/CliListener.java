@@ -89,7 +89,7 @@ public interface CliListener extends ExtensionPoint {
      * @param command The executed command.
      * @param argsSize Number of arguments passed to the command.
      * @param opaqueId ID used on the command output to indicate an authentication error.
-     * @param t Authentication error.
+     * @param authError Authentication error.
      * */
     default void onLoginFailed(
             @NonNull String correlationId,
