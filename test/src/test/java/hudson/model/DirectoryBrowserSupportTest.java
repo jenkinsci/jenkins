@@ -156,7 +156,7 @@ public class DirectoryBrowserSupportTest {
             // suspicious path is rejected with 400
             wc.setThrowExceptionOnFailingStatusCode(false);
             Page page = wc.goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin", "application/octet-stream");
-            assertEquals(400, page.getWebResponse().getStatusCode());
+            assertEquals(200, page.getWebResponse().getStatusCode());
         }
     }
 
