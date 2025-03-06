@@ -45,23 +45,21 @@ public class AgentSecretAction implements Action {
 
     @GET
     public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
-
         computer.checkPermission(Computer.CONNECT);
 
         if (!(computer.getLauncher() instanceof JNLPLauncher)) {
-                throw new IllegalStateException("This action is only available for inbound agents.");
+            throw new IllegalStateException("This action is only available for inbound agents.");
         }
+
         String secret = computer.getJnlpMac();
-
-
-            rsp.setContentType("text/plain");
-            rsp.getWriter().write(secret);
-            LOGGER.log(Level.FINE, "Agent secret retrieved for node {0} by user {1}",
-                    new Object[]{computer.getName(), Jenkins.getAuthentication2().getName()});
+        rsp.setContentType("text/plain");
+        rsp.getWriter().write(secret);
+        LOGGER.log(Level.FINE, "Agent secret retrieved for node {0} by user {1}",
+                new Object[]{computer.getName(), Jenkins.getAuthentication2().getName()});
 
     }
 
-        @Extension
+    @Extension
     public static class TransientAgentActionFactory extends TransientActionFactory<SlaveComputer> {
 
         @Override
@@ -73,7 +71,7 @@ public class AgentSecretAction implements Action {
         public Collection<? extends Action> createFor(SlaveComputer target) {
             if (!(target.getLauncher() instanceof hudson.slaves.JNLPLauncher)) {
                 return Collections.emptyList();
-          }
+            }
             return Collections.singleton(new AgentSecretAction(target));
         }
     }
