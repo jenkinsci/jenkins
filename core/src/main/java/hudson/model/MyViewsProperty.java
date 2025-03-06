@@ -293,7 +293,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
                     property.readResolve();
                     user.addProperty(property);
                 }
-                for (View view: property.views) {
+                for (View view : property.views) {
                     items.add(new ListBoxModel.Option(view.getDisplayName(), view.getViewName(),
                             view == property.getPrimaryView()));
                 }
