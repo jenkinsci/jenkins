@@ -115,7 +115,6 @@ import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.security.stapler.StaplerDispatchable;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import jenkins.util.io.OnMaster;
@@ -129,7 +128,6 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
@@ -442,24 +440,6 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
      */
     @Restricted(DoNotUse.class)
     public HttpResponse doConnectionStatus(StaplerRequest2 request) {
-        if (Util.isOverridden(UpdateCenter.class, getClass(), "doConnectionStatus", StaplerRequest.class)) {
-            return doConnectionStatus(StaplerRequest.fromStaplerRequest2(request));
-        } else {
-            return doConnectionStatusImpl(request);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doConnectionStatus(StaplerRequest2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    @Restricted(DoNotUse.class)
-    public HttpResponse doConnectionStatus(StaplerRequest request) {
-        return doConnectionStatusImpl(StaplerRequest.toStaplerRequest2(request));
-    }
-
-    private HttpResponse doConnectionStatusImpl(StaplerRequest2 request) {
         Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         try {
             String siteId = request.getParameter("siteId");
