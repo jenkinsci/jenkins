@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import jenkins.model.Jenkins;
-import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.tiger_types.Types;
@@ -257,44 +256,35 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 Jenkins.get().checkPermission(Jenkins.READ);
             p.parseArgument(args.toArray(new String[0]));
 
-            Listeners.notify(
-                    CliListener.class,
-                    true,
-                    listener -> listener.onExecution(correlationId, getName(), argsSize, auth));
+            CliListener.fireExecution(correlationId, getName(), argsSize, auth);
 
             int res = run();
 
-            Listeners.notify(
-                    CliListener.class,
-                    true,
-                    listener -> listener.onCompleted(correlationId, getName(), argsSize, auth, res));
+            CliListener.fireCompleted(correlationId, getName(), argsSize, auth, res);
 
             return res;
         } catch (CmdLineException e) {
-            notifyFailedCommandAndPrintExceptionErrorMessage(correlationId, args, e);
+            fireErrorAndPrintExceptionMessageToCommandStderr(correlationId, argsSize, e);
             printUsage(stderr, p);
             return 2;
         } catch (IllegalStateException e) {
-            notifyFailedCommandAndPrintExceptionErrorMessage(correlationId, args, e);
+            fireErrorAndPrintExceptionMessageToCommandStderr(correlationId, argsSize, e);
             return 4;
         } catch (IllegalArgumentException e) {
-            notifyFailedCommandAndPrintExceptionErrorMessage(correlationId, args, e);
+            fireErrorAndPrintExceptionMessageToCommandStderr(correlationId, argsSize, e);
             return 3;
         } catch (AbortException e) {
-            notifyFailedCommandAndPrintExceptionErrorMessage(correlationId, args, e);
+            fireErrorAndPrintExceptionMessageToCommandStderr(correlationId, argsSize, e);
             return 5;
         } catch (AccessDeniedException e) {
-            notifyFailedCommandAndPrintExceptionErrorMessage(correlationId, args, e);
+            fireErrorAndPrintExceptionMessageToCommandStderr(correlationId, argsSize, e);
             return 6;
         } catch (BadCredentialsException e) {
             // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
             // do that to the server log instead
             String id = UUID.randomUUID().toString();
 
-            Listeners.notify(
-                    CliListener.class,
-                    true,
-                    listener -> listener.onLoginFailed(correlationId, getName(), argsSize, id, e));
+            CliListener.fireLoginFailed(correlationId, getName(), argsSize, id, e);
 
             printError("Bad Credentials. Search the server log for " + id + " for more details.");
 
@@ -302,11 +292,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } catch (Throwable e) {
             String errorMsg = "Unexpected exception occurred while performing " + getName() + " command.";
 
-            Listeners.notify(
-                    CliListener.class,
-                    true,
-                    listener -> listener.onError(
-                            correlationId, getName(), argsSize, getTransportAuthentication2(), false, e));
+            CliListener.fireError(correlationId, getName(), argsSize, getTransportAuthentication2(), false, e);
 
             printError(errorMsg);
 
@@ -318,13 +304,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         }
     }
 
-    private void notifyFailedCommandAndPrintExceptionErrorMessage(String correlationId, List<String> args, Throwable e) {
-        Listeners.notify(
-                CliListener.class,
-                true,
-                listener -> listener.onError(
-                        correlationId, getName(), args.size(), getTransportAuthentication2(), true, e));
-
+    private void fireErrorAndPrintExceptionMessageToCommandStderr(String correlationId, int argsSize, Throwable e) {
+        CliListener.fireError(correlationId, getName(), argsSize, getTransportAuthentication2(), true, e);
         printError(e.getMessage());
     }
 
