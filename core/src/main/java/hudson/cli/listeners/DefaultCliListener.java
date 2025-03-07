@@ -27,6 +27,8 @@ package hudson.cli.listeners;
 import hudson.Extension;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 
@@ -34,6 +36,7 @@ import org.springframework.security.core.Authentication;
  * Basic default implementation of {@link CliListener} that just logs.
  */
 @Extension
+@Restricted(NoExternalUse.class)
 public class DefaultCliListener implements CliListener {
     private static final Logger LOGGER = Logger.getLogger(DefaultCliListener.class.getName());
 

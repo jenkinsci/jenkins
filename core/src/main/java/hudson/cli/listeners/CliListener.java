@@ -34,6 +34,8 @@ import org.springframework.security.core.Authentication;
 
 /**
  * Callback around {@link CLICommand#run()}, each execution generates a new `correlationId` in order to group related events.
+ *
+ * @since TODO
  */
 public interface CliListener extends ExtensionPoint {
 
