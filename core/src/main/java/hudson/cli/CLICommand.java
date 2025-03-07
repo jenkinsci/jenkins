@@ -259,14 +259,14 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
             Listeners.notify(
                     CliListener.class,
-                    false,
+                    true,
                     listener -> listener.onExecution(correlationId, getName(), argsSize, auth));
 
             int res = run();
 
             Listeners.notify(
                     CliListener.class,
-                    false,
+                    true,
                     listener -> listener.onCompleted(correlationId, getName(), argsSize, auth, res));
 
             return res;
@@ -293,7 +293,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
             Listeners.notify(
                     CliListener.class,
-                    false,
+                    true,
                     listener -> listener.onLoginFailed(correlationId, getName(), argsSize, id, e));
 
             printError("Bad Credentials. Search the server log for " + id + " for more details.");
@@ -304,7 +304,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
             Listeners.notify(
                     CliListener.class,
-                    false,
+                    true,
                     listener -> listener.onError(
                             correlationId, getName(), argsSize, getTransportAuthentication2(), false, e));
 
@@ -321,7 +321,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     private void notifyFailedCommandAndPrintExceptionErrorMessage(String correlationId, List<String> args, Throwable e) {
         Listeners.notify(
                 CliListener.class,
-                false,
+                true,
                 listener -> listener.onError(
                         correlationId, getName(), args.size(), getTransportAuthentication2(), true, e));
 
