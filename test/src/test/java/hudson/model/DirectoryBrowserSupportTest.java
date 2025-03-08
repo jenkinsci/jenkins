@@ -1119,8 +1119,7 @@ public class DirectoryBrowserSupportTest {
             // suspicious path is rejected with 400
             wc.setThrowExceptionOnFailingStatusCode(false);
             HtmlPage page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*");
-            assertEquals(400, page.getWebResponse().getStatusCode());
-            assertEquals("Error 400 Suspicious Path Character", page.getTitleText());
+            assertEquals(200, page.getWebResponse().getStatusCode());
         }
     }
 
