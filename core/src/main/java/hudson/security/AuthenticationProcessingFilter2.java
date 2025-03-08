@@ -62,7 +62,6 @@ public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthe
         setPasswordParameter("j_password");
     }
 
-    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "request.getSession(true) does in fact have a side effect")
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         if (SystemProperties.getInteger(SecurityRealm.class.getName() + ".sessionFixationProtectionMode", 1) == 2) {
