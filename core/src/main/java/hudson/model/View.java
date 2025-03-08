@@ -95,6 +95,7 @@ import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
+import jenkins.search.SearchGroup;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.xml.XMLUtils;
@@ -565,6 +566,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     @Override
     public String getSearchIcon() {
         return "symbol-jobs";
+    }
+
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.ViewSearchGroup.class);
     }
 
     /**
