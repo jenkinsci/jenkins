@@ -19,7 +19,8 @@ function generateDropdown(element, callback, immediate) {
   tippy(
     element,
     Object.assign({}, Templates.dropdown(), {
-      hideOnClick: element.dataset["hideOnClick"] !== "false" ? "toggle" : false,
+      hideOnClick:
+        element.dataset["hideOnClick"] !== "false" ? "toggle" : false,
       onCreate(instance) {
         const onload = () => {
           if (instance.loaded) {
@@ -27,8 +28,11 @@ function generateDropdown(element, callback, immediate) {
           }
 
           document.addEventListener("click", (event) => {
-            const isClickInAnyDropdown = !!event.target.closest('[data-tippy-root]');
-            const isClickOnReference = instance.reference.contains(event.target);
+            const isClickInAnyDropdown =
+              !!event.target.closest("[data-tippy-root]");
+            const isClickOnReference = instance.reference.contains(
+              event.target,
+            );
 
             if (!isClickInAnyDropdown && !isClickOnReference) {
               instance.hide();
