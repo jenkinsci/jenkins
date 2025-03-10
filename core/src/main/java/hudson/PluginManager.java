@@ -1556,6 +1556,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         releaseTimestamp.put("displayValue", Messages.PluginManager_ago(Functions.getTimeSpanString(plugin.releaseTimestamp)));
                         jsonObject.put("releaseTimestamp", releaseTimestamp);
                     }
+                    if (plugin.healthScore != null) {
+                        jsonObject.put("healthScore", plugin.healthScore);
+                    }
                     return jsonObject;
                 })
                 .collect(toList());

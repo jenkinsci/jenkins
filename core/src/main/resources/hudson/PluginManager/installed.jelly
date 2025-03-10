@@ -80,6 +80,9 @@ THE SOFTWARE.
               <th initialSortDir="down">${%Name}</th>
               <th class="jenkins-table__cell--tight">${%Enabled}</th>
               <l:isAdmin>
+                <th>${%Health score}</th>
+              </l:isAdmin>
+              <l:isAdmin>
                 <th data-sort-disable="true"/>
               </l:isAdmin>
             </tr>
@@ -174,6 +177,22 @@ THE SOFTWARE.
                       </span>
                     </div>
                   </td>
+                  <l:isAdmin>
+                    <td class="jenkins-table__cell--tight">
+                      <span>
+                        <j:choose>
+                          <j:when test="${p.healthScore != null}">
+                            <a href="${p.url}/healthScore" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
+                              <st:out value="${p.healthScore}"/> / 100
+                            </a>
+                          </j:when>
+                          <j:otherwise>
+                            Not applicable
+                          </j:otherwise>
+                        </j:choose>
+                      </span>
+                    </td>
+                  </l:isAdmin>
                   <l:isAdmin>
                     <td class="jenkins-table__cell--tight">
                       <div class="jenkins-table__cell__button-wrapper">
