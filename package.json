@@ -30,7 +30,7 @@
     "babel-loader": "10.0.0",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "7.1.2",
-    "css-minimizer-webpack-plugin": "7.0.0",
+    "css-minimizer-webpack-plugin": "7.0.2",
     "eslint": "9.22.0",
     "eslint-config-prettier": "10.1.1",
     "eslint-formatter-checkstyle": "8.40.0",
