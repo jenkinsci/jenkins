@@ -181,11 +181,6 @@ public class FileParameterValue extends ParameterValue {
                     FilePath locationFilePath = ws.child(location);
                     locationFilePath.getParent().mkdirs();
 
-                    // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
-                    if (locationFilePath.exists() && !locationFilePath.isDirectory()) {
-                        locationFilePath.delete();
-                    }
-
                     locationFilePath.copyFrom(file);
                     locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
                 }
