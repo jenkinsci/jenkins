@@ -423,6 +423,16 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     }
 
+    @Restricted(NoExternalUse.class) // Jelly use only
+    public Integer getHealthScore() {
+        final UpdateSite.Plugin plugin = getInfoFromAllSites().stream()
+                .filter(Objects::nonNull)
+                .filter(p -> p.healthScore != null)
+                .findFirst()
+                .orElse(null);
+        return plugin == null ? null : plugin.healthScore;
+    }
+
     @ExportedBean
     public static final class Dependency {
         @Exported
