@@ -94,7 +94,9 @@
 
   &:not(:disabled) {
     &:hover,
-    &:focus-visible {
+    &:focus-visible,
+    &[aria-describedby],
+    &[aria-expanded="true"] {
       &::before {
         background-color: var(--item-background--hover);
       }
