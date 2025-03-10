@@ -72,6 +72,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.scm.RunWithSCM;
+import jenkins.search.SearchGroup;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
@@ -282,6 +283,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Override
     public String getSearchIcon() {
         return UserAvatarResolver.resolve(this, "48x48");
+    }
+
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.UserSearchGroup.class);
     }
 
     /**
