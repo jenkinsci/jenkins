@@ -1116,10 +1116,9 @@ public class DirectoryBrowserSupportTest {
         Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
-            // suspicious path is rejected with 400
             wc.setThrowExceptionOnFailingStatusCode(false);
             HtmlPage page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*");
-            assertEquals(200, page.getWebResponse().getStatusCode());
+            assertEquals(404, page.getWebResponse().getStatusCode());
         }
     }
 
