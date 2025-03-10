@@ -48,12 +48,12 @@ THE SOFTWARE.
   <j:set var="hideDescriptionButton" value="${hideButton}" defaultValue="false"/>
 
   <div id="description" class="jenkins-!-margin-bottom-${hideButton?'3':'1'}">
-    <div>
+    <div id="description-content">
       <j:out value="${actualDescription!=null ? app.markupFormatter.translate(actualDescription) : ''}" />
     </div>
-
+    <div id="description-edit-form" class="jenkins-hidden"/>
     <j:if test="${!hideDescriptionButton}">
-      <div class="jenkins-buttons-row jenkins-buttons-row--invert">
+      <div class="jenkins-buttons-row jenkins-buttons-row--invert description-edit-button">
         <t:editDescriptionButton permission="${permission}" description="${actualDescription}" submissionUrl="${submissionUrl}"/>
       </div>
     </j:if>
