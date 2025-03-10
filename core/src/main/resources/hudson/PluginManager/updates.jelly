@@ -228,7 +228,7 @@ THE SOFTWARE.
                       </td>
                       <td>
                         <j:choose>
-                          <j:when test="${p.healthScore}">
+                          <j:when test="${p.healthScore != null}">
                             <st:out value="${p.healthScore}"/> / 100
                           </j:when>
                           <j:otherwise>
