@@ -257,57 +257,55 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             p.parseArgument(args.toArray(new String[0]));
 
             CliListener.fireExecution(correlationId, getName(), argsSize, auth);
-
             int res = run();
-
             CliListener.fireCompleted(correlationId, getName(), argsSize, auth, res);
 
             return res;
-        } catch (CmdLineException e) {
-            fireErrorAndPrintExceptionMessageToCommandStderr(correlationId, argsSize, e);
-            printUsage(stderr, p);
-            return 2;
-        } catch (IllegalStateException e) {
-            fireErrorAndPrintExceptionMessageToCommandStderr(correlationId, argsSize, e);
-            return 4;
-        } catch (IllegalArgumentException e) {
-            fireErrorAndPrintExceptionMessageToCommandStderr(correlationId, argsSize, e);
-            return 3;
-        } catch (AbortException e) {
-            fireErrorAndPrintExceptionMessageToCommandStderr(correlationId, argsSize, e);
-            return 5;
-        } catch (AccessDeniedException e) {
-            fireErrorAndPrintExceptionMessageToCommandStderr(correlationId, argsSize, e);
-            return 6;
-        } catch (BadCredentialsException e) {
-            // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
-            // do that to the server log instead
-            String id = UUID.randomUUID().toString();
-
-            CliListener.fireLoginFailed(correlationId, getName(), argsSize, id, e);
-
-            printError("Bad Credentials. Search the server log for " + id + " for more details.");
-
-            return 7;
         } catch (Throwable e) {
-            String errorMsg = "Unexpected exception occurred while performing " + getName() + " command.";
-
-            CliListener.fireError(correlationId, getName(), argsSize, getTransportAuthentication2(), false, e);
-
-            printError(errorMsg);
-
-            Functions.printStackTrace(e, stderr);
-            return 1;
+            int exitCode = handleException(e, correlationId, p);
+            CliListener.fireError(correlationId, getName(), argsSize, getTransportAuthentication2(), exitCode, e);
+            return exitCode;
         } finally {
             if (sc != null)
                 sc.setAuthentication(old); // restore
         }
     }
 
-    private void fireErrorAndPrintExceptionMessageToCommandStderr(String correlationId, int argsSize, Throwable e) {
-        CliListener.fireError(correlationId, getName(), argsSize, getTransportAuthentication2(), true, e);
-        printError(e.getMessage());
+    /**
+     * Determines command stderr output and return the exit code as described on {@link #main(List, Locale, InputStream, PrintStream, PrintStream)}
+     * */
+    protected int handleException(Throwable e, String correlationId, CmdLineParser p) {
+        int exitCode;
+        if (e instanceof CmdLineException) {
+            exitCode = 2;
+            printError(e.getMessage());
+            printUsage(stderr, p);
+        } else if (e instanceof IllegalArgumentException) {
+            exitCode = 3;
+            printError(e.getMessage());
+        } else if (e instanceof IllegalStateException) {
+            exitCode = 4;
+            printError(e.getMessage());
+        } else if (e instanceof AbortException) {
+            exitCode = 5;
+            printError(e.getMessage());
+        } else if (e instanceof AccessDeniedException) {
+            exitCode = 6;
+            printError(e.getMessage());
+        } else if (e instanceof BadCredentialsException) {
+            exitCode = 7;
+            // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
+            // do that to the server log instead
+            printError("Bad Credentials. Search the server log for " + correlationId + " for more details.");
+        } else {
+            exitCode = 1;
+            printError("Unexpected exception occurred while performing " + getName() + " command.");
+            Functions.printStackTrace(e, stderr);
+        }
+        return exitCode;
     }
+
+
 
     private void printError(String errorMessage) {
         this.stderr.println();

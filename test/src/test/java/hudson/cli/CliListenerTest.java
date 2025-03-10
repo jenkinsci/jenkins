@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 
 import hudson.cli.listeners.DefaultCliListener;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
@@ -38,6 +39,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
 
 public class CliListenerTest {
 
@@ -50,13 +52,13 @@ public class CliListenerTest {
     private static final String USER = "cli-user";
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.ADMINISTER)
                 .everywhere()
                 .to(USER));
-
+        j.createFreeStyleProject("p");
         logging.record(DefaultCliListener.class, Level.FINE).capture(2);
     }
 
@@ -92,5 +94,75 @@ public class CliListenerTest {
         assertThat(
                 logging.getRecords().get(0).getThrown().getMessage(),
                 containsString("No view or item group with the given name 'view-not-found' found"));
+    }
+
+    @Test
+    public void commandExecutionUnexpectedErrorIsLogged() throws Exception {
+        CLICommandInvoker command = new CLICommandInvoker(j, new ThrowsTestCommand());
+        command.asUser(USER).invoke();
+
+        List<String> messages = logging.getMessages();
+        assertThat(messages, hasSize(2));
+        assertThat(
+                messages.get(0),
+                containsString(
+                        "Invoking CLI command throws-test-command, with 0 arguments, as user %s.".formatted(USER)));
+        assertThat(
+                messages.get(1),
+                containsString("Unexpected exception occurred while performing throws-test-command command."));
+        assertThat(logging.getRecords().get(0).getThrown().getMessage(), containsString("unexpected"));
+    }
+
+    @Test
+    public void methodExecutionSuccessIsLogged() throws Exception {
+        CLICommandInvoker command = new CLICommandInvoker(j, "disable-job");
+        command.asUser(USER).invokeWithArgs("p");
+
+        List<String> messages = logging.getMessages();
+        assertThat(messages, hasSize(2));
+        assertThat(
+                messages.get(0),
+                containsString("Invoking CLI command disable-job, with 1 arguments, as user %s.".formatted(USER)));
+        assertThat(
+                messages.get(1),
+                containsString("Executed CLI command disable-job, with 1 arguments, as user %s, return code 0"
+                        .formatted(USER)));
+    }
+
+    @Test
+    public void methodExecutionErrorIsLogged() throws Exception {
+        CLICommandInvoker command = new CLICommandInvoker(j, "disable-job");
+        command.asUser(USER).invokeWithArgs("job-not-found");
+
+        List<String> messages = logging.getMessages();
+        assertThat(messages, hasSize(2));
+        assertThat(
+                messages.get(0),
+                containsString("Invoking CLI command disable-job, with 1 arguments, as user %s.".formatted(USER)));
+        assertThat(
+                messages.get(1),
+                containsString(
+                        "Failed call to CLI command disable-job, with 1 arguments, as user %s.".formatted(USER)));
+        assertThat(
+                logging.getRecords().get(0).getThrown().getMessage(),
+                containsString("No such job ‘job-not-found’ exists."));
+    }
+
+    @TestExtension
+    public static class ThrowsTestCommand extends CLICommand {
+        @Override
+        public String getName() {
+            return "throws-test-command";
+        }
+
+        @Override
+        public String getShortDescription() {
+            return "throws test command";
+        }
+
+        @Override
+        protected int run() {
+            throw new RuntimeException("unexpected");
+        }
     }
 }

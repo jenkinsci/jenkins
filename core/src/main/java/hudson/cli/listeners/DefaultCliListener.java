@@ -29,7 +29,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -57,23 +56,18 @@ public class DefaultCliListener implements CliListener {
 
     @Override
     public void onError(
-            String correlationId, String command, int argsSize, Authentication auth, boolean expected, Throwable t) {
-        if (expected) {
+            String correlationId, String command, int argsSize, Authentication auth, int exitCode, Throwable t) {
+        if (exitCode == 1) {
+            LOGGER.log(Level.WARNING, "Unexpected exception occurred while performing " + command + " command.", t);
+        } else if (exitCode == 7) {
+            LOGGER.log(Level.INFO, "CLI login attempt failed: " + correlationId, t);
+        } else {
             LOGGER.log(
                     Level.FINE,
                     String.format(
                             "Failed call to CLI command %s, with %d arguments, as user %s.",
                             command, argsSize, auth != null ? auth.getName() : "<unknown>"),
                     t);
-
-        } else {
-            LOGGER.log(Level.WARNING, "Unexpected exception occurred while performing " + command + " command.", t);
         }
-    }
-
-    @Override
-    public void onLoginFailed(
-            String correlationId, String command, int argsSize, String opaqueId, BadCredentialsException authError) {
-        LOGGER.log(Level.INFO, "CLI login attempt failed: " + opaqueId, authError);
     }
 }

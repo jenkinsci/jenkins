@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.cli.CLICommand;
 import jenkins.util.Listeners;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -74,7 +73,7 @@ public interface CliListener extends ExtensionPoint {
      * @param command The executed command.
      * @param argsSize Number of arguments passed to the command.
      * @param auth Authenticated user executing the command
-     * @param expected True when caller is handling the error to return an specific exitCode.
+     * @param exitCode `run` returned exit code.
      * @param t Any error during the execution of the command.
      * */
     default void onError(
@@ -82,24 +81,8 @@ public interface CliListener extends ExtensionPoint {
             @NonNull String command,
             int argsSize,
             @CheckForNull Authentication auth,
-            boolean expected,
+            int exitCode,
             @NonNull Throwable t) {}
-
-    /**
-     * Catch bad credentials.
-     *
-     * @param correlationId This value is used to correlate this command event to other, related command events.
-     * @param command The executed command.
-     * @param argsSize Number of arguments passed to the command.
-     * @param opaqueId ID used on the command output to indicate an authentication error.
-     * @param authError Authentication error.
-     * */
-    default void onLoginFailed(
-            @NonNull String correlationId,
-            @NonNull String command,
-            int argsSize,
-            @NonNull String opaqueId,
-            @NonNull BadCredentialsException authError) {}
 
     /**
      * Fires the {@link #onExecution} event.
@@ -144,7 +127,7 @@ public interface CliListener extends ExtensionPoint {
      * @param command The executed command.
      * @param argsSize Number of arguments passed to the command.
      * @param auth Authenticated user executing the command
-     * @param expected True when caller is handling the error to return an specific exitCode.
+     * @param exitCode `run` returned exit code.
      * @param t Any error during the execution of the command.
      * */
     static void fireError(
@@ -152,32 +135,11 @@ public interface CliListener extends ExtensionPoint {
             @NonNull String command,
             int argsSize,
             @CheckForNull Authentication auth,
-            boolean expected,
+            int exitCode,
             @NonNull Throwable t) {
         Listeners.notify(
                 CliListener.class,
                 true,
-                listener -> listener.onError(correlationId, command, argsSize, auth, expected, t));
-    }
-
-    /**
-     * Fires the {@link #onLoginFailed} event.
-     *
-     * @param correlationId This value is used to correlate this command event to other, related command events.
-     * @param command The executed command.
-     * @param argsSize Number of arguments passed to the command.
-     * @param opaqueId ID used on the command output to indicate an authentication error.
-     * @param authError Authentication error.
-     * */
-    static void fireLoginFailed(
-            @NonNull String correlationId,
-            @NonNull String command,
-            int argsSize,
-            @NonNull String opaqueId,
-            @NonNull BadCredentialsException authError) {
-        Listeners.notify(
-                CliListener.class,
-                true,
-                listener -> listener.onLoginFailed(correlationId, command, argsSize, opaqueId, authError));
+                listener -> listener.onError(correlationId, command, argsSize, auth, exitCode, t));
     }
 }
