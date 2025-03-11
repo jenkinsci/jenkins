@@ -25,6 +25,7 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.search.Search;
 import hudson.search.UserSearchProperty;
 import jakarta.servlet.ServletException;
@@ -90,6 +91,7 @@ public class AutoCompletionCandidates implements HttpResponse {
      *      The nearby contextual {@link ItemGroup} to resolve relative job names from.
      * @since 1.489
      */
+    @SuppressFBWarnings(value = "EC_UNRELATED_TYPES_USING_POINTER_EQUALITY", justification = "TODO needs triage")
     public static <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, @CheckForNull Item self, ItemGroup container) {
         if (self == container)
             container = self.getParent();

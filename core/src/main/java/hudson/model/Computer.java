@@ -1682,6 +1682,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         relocateOldLogs(Jenkins.get().getRootDir());
     }
 
+    @SuppressFBWarnings(value = "REDOS", justification = "TODO needs triage")
     /*package*/ static void relocateOldLogs(File dir) {
         final Pattern logfile = Pattern.compile("slave-(.*)\\.log(\\.[0-9]+)?");
         File[] logfiles = dir.listFiles((dir1, name) -> logfile.matcher(name).matches());
