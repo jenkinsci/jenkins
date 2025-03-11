@@ -70,14 +70,16 @@
             <td style="width: 20%"></td>
         {{/if}}
         <td style="width: 15%">
-            <div class="">
-                {{#if this.healthScore }}
-                    <a href="{{ this.wiki }}/healthScore" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
-                      {{ this.healthScore }} / 100
-                    </a>
-                {{else}}
-                  Not applicable
-                {{/if}}
+            <div>
+              {{#if this.healthScore }}
+                <a href="{{ this.wiki }}/healthScore"
+                   class="jenkins-healthScore--badge"
+                   target="_blank" rel="noopener noreferrer">
+                  {{ this.healthScore }}
+                </a>
+              {{else}}
+                Not applicable
+              {{/if}}
             </div>
         </td>
     </tr>

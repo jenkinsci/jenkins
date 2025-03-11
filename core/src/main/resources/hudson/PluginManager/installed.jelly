@@ -182,8 +182,8 @@ THE SOFTWARE.
                       <span>
                         <j:choose>
                           <j:when test="${p.healthScore != null}">
-                            <a href="${p.url}/healthScore" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
-                              <st:out value="${p.healthScore}"/> / 100
+                            <a href="${p.url}/healthScore" class="jenkins-healthScore--badge" target="_blank" rel="noopener noreferrer">
+                              <st:out value="${p.healthScore}"/>
                             </a>
                           </j:when>
                           <j:otherwise>
