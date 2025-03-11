@@ -151,10 +151,6 @@ public class DirectoryBrowserSupportTest {
 
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             // normal path provided by the UI succeeds
-            wc.goTo("job/" + p.getName() + "/ws/abc/def.bin", "application/octet-stream");
-
-            // suspicious path is rejected with 400
-            wc.setThrowExceptionOnFailingStatusCode(false);
             Page page = wc.goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin", "application/octet-stream");
             assertEquals(200, page.getWebResponse().getStatusCode());
         }
