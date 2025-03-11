@@ -40,34 +40,40 @@ public class DefaultCliListener implements CliListener {
     private static final Logger LOGGER = Logger.getLogger(DefaultCliListener.class.getName());
 
     @Override
-    public void onExecution(String correlationId, String command, int argsSize, Authentication auth) {
+    public void onExecution(CliContext context) {
         LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.", new Object[] {
-            command, argsSize, auth != null ? auth.getName() : "<unknown>",
+            context.getCommand(), context.getArgsSize(), authName(context.getAuth()),
         });
     }
 
     @Override
-    public void onCompleted(String correlationId, String command, int argsSize, Authentication auth, int exitCode) {
+    public void onCompleted(CliContext context, int exitCode) {
         LOGGER.log(
-                Level.FINE,
-                "Executed CLI command {0}, with {1} arguments, as user {2}, return code {3}",
-                new Object[] {command, argsSize, auth != null ? auth.getName() : "<unknown>", exitCode});
+                Level.FINE, "Executed CLI command {0}, with {1} arguments, as user {2}, return code {3}", new Object[] {
+                    context.getCommand(), context.getArgsSize(), authName(context.getAuth()), exitCode,
+                });
     }
 
     @Override
-    public void onError(
-            String correlationId, String command, int argsSize, Authentication auth, int exitCode, Throwable t) {
+    public void onError(CliContext context, int exitCode, Throwable t) {
         if (exitCode == 1) {
-            LOGGER.log(Level.WARNING, "Unexpected exception occurred while performing " + command + " command.", t);
+            LOGGER.log(
+                    Level.WARNING,
+                    "Unexpected exception occurred while performing " + context.getCommand() + " command.",
+                    t);
         } else if (exitCode == 7) {
-            LOGGER.log(Level.INFO, "CLI login attempt failed: " + correlationId, t);
+            LOGGER.log(Level.INFO, "CLI login attempt failed: " + context.getCorrelationId(), t);
         } else {
             LOGGER.log(
                     Level.FINE,
                     String.format(
                             "Failed call to CLI command %s, with %d arguments, as user %s.",
-                            command, argsSize, auth != null ? auth.getName() : "<unknown>"),
+                            context.getCommand(), context.getArgsSize(), authName(context.getAuth())),
                     t);
         }
+    }
+
+    private static String authName(Authentication auth) {
+        return auth != null ? auth.getName() : "<unknown>";
     }
 }

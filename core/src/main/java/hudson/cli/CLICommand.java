@@ -35,6 +35,7 @@ import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.Functions;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.OptionHandlerExtension;
+import hudson.cli.listeners.CliContext;
 import hudson.cli.listeners.CliListener;
 import hudson.remoting.Channel;
 import hudson.security.SecurityRealm;
@@ -49,7 +50,6 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.jvnet.hudson.annotation_indexer.Index;
@@ -238,32 +238,30 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.locale = locale;
         CmdLineParser p = getCmdLineParser();
 
-        final String correlationId = UUID.randomUUID().toString();
-        final int argsSize = args.size();
+        final CliContext context = new CliContext(getName(), args.size(), getTransportAuthentication2());
 
         // add options from the authenticator
         SecurityContext sc = null;
         Authentication old = null;
-        Authentication auth;
         try {
             // TODO as in CLIRegisterer this may be doing too much work
             sc = SecurityContextHolder.getContext();
             old = sc.getAuthentication();
 
-            sc.setAuthentication(auth = getTransportAuthentication2());
+            sc.setAuthentication(getTransportAuthentication2());
 
             if (!(this instanceof HelpCommand || this instanceof WhoAmICommand))
                 Jenkins.get().checkPermission(Jenkins.READ);
             p.parseArgument(args.toArray(new String[0]));
 
-            CliListener.fireExecution(correlationId, getName(), argsSize, auth);
+            CliListener.fireExecution(context);
             int res = run();
-            CliListener.fireCompleted(correlationId, getName(), argsSize, auth, res);
+            CliListener.fireCompleted(context, res);
 
             return res;
         } catch (Throwable e) {
-            int exitCode = handleException(e, correlationId, p);
-            CliListener.fireError(correlationId, getName(), argsSize, getTransportAuthentication2(), exitCode, e);
+            int exitCode = handleException(e, context, p);
+            CliListener.fireError(context, exitCode, e);
             return exitCode;
         } finally {
             if (sc != null)
@@ -274,7 +272,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     /**
      * Determines command stderr output and return the exit code as described on {@link #main(List, Locale, InputStream, PrintStream, PrintStream)}
      * */
-    protected int handleException(Throwable e, String correlationId, CmdLineParser p) {
+    protected int handleException(Throwable e, CliContext context, CmdLineParser p) {
         int exitCode;
         if (e instanceof CmdLineException) {
             exitCode = 2;
@@ -296,7 +294,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             exitCode = 7;
             // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
             // do that to the server log instead
-            printError("Bad Credentials. Search the server log for " + correlationId + " for more details.");
+            printError(
+                    "Bad Credentials. Search the server log for " + context.getCorrelationId() + " for more details.");
         } else {
             exitCode = 1;
             printError("Unexpected exception occurred while performing " + getName() + " command.");

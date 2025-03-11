@@ -24,15 +24,13 @@
 
 package hudson.cli.listeners;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.cli.CLICommand;
 import jenkins.util.Listeners;
-import org.springframework.security.core.Authentication;
 
 /**
- * Callback around {@link CLICommand#run()}, each execution generates a new `correlationId` in order to group related events.
+ * Callback around {@link CLICommand#run()}
  *
  * @since TODO
  */
@@ -41,105 +39,54 @@ public interface CliListener extends ExtensionPoint {
     /**
      * Called before.
      *
-     * @param correlationId This value is used to correlate this command event to other, related command events.
-     * @param command The command to be executed.
-     * @param argsSize Number of arguments passed to the command.
-     * @param auth Authenticated user performing the execution.
-     *
+     * @param context Information about the command being executed
      * */
-    default void onExecution(
-            @NonNull String correlationId, @NonNull String command, int argsSize, @CheckForNull Authentication auth) {}
+    default void onExecution(@NonNull CliContext context) {}
 
     /**
      * Called after.
      *
-     * @param correlationId This value is used to correlate this command event to other, related command events.
-     * @param command The executed command.
-     * @param argsSize Number of arguments passed to the command.
-     * @param auth Authenticated user executing the command.
+     * @param context Information about the command being executed
      * @param exitCode `run` returned exit code.
      * */
-    default void onCompleted(
-            @NonNull String correlationId,
-            @NonNull String command,
-            int argsSize,
-            @CheckForNull Authentication auth,
-            int exitCode) {}
+    default void onCompleted(@NonNull CliContext context, int exitCode) {}
 
     /**
      * Catch exceptions.
      *
-     * @param correlationId This value is used to correlate this command event to other, related command events.
-     * @param command The executed command.
-     * @param argsSize Number of arguments passed to the command.
-     * @param auth Authenticated user executing the command
+     * @param context Information about the command being executed
      * @param exitCode `run` returned exit code.
      * @param t Any error during the execution of the command.
      * */
-    default void onError(
-            @NonNull String correlationId,
-            @NonNull String command,
-            int argsSize,
-            @CheckForNull Authentication auth,
-            int exitCode,
-            @NonNull Throwable t) {}
+    default void onError(@NonNull CliContext context, int exitCode, @NonNull Throwable t) {}
 
     /**
      * Fires the {@link #onExecution} event.
      *
-     * @param correlationId This value is used to correlate this command event to other, related command events.
-     * @param command The command to be executed.
-     * @param argsSize Number of arguments passed to the command.
-     * @param auth Authenticated user performing the execution.
-     *
+     * @param context Information about the command being executed
      * */
-    static void fireExecution(
-            @NonNull String correlationId, @NonNull String command, int argsSize, @CheckForNull Authentication auth) {
-        Listeners.notify(
-                CliListener.class, true, listener -> listener.onExecution(correlationId, command, argsSize, auth));
+    static void fireExecution(@NonNull CliContext context) {
+        Listeners.notify(CliListener.class, true, listener -> listener.onExecution(context));
     }
 
     /**
      * Fires the {@link #onCompleted} event.
      *
-     * @param correlationId This value is used to correlate this command event to other, related command events.
-     * @param command The executed command.
-     * @param argsSize Number of arguments passed to the command.
-     * @param auth Authenticated user executing the command.
+     * @param context Information about the command being executed
      * @param exitCode `run` returned exit code.
      * */
-    static void fireCompleted(
-            @NonNull String correlationId,
-            @NonNull String command,
-            int argsSize,
-            @CheckForNull Authentication auth,
-            int exitCode) {
-        Listeners.notify(
-                CliListener.class,
-                true,
-                listener -> listener.onCompleted(correlationId, command, argsSize, auth, exitCode));
+    static void fireCompleted(@NonNull CliContext context, int exitCode) {
+        Listeners.notify(CliListener.class, true, listener -> listener.onCompleted(context, exitCode));
     }
 
     /**
      * Fires the {@link #onError} event.
      *
-     * @param correlationId This value is used to correlate this command event to other, related command events.
-     * @param command The executed command.
-     * @param argsSize Number of arguments passed to the command.
-     * @param auth Authenticated user executing the command
+     * @param context Information about the command being executed
      * @param exitCode `run` returned exit code.
      * @param t Any error during the execution of the command.
      * */
-    static void fireError(
-            @NonNull String correlationId,
-            @NonNull String command,
-            int argsSize,
-            @CheckForNull Authentication auth,
-            int exitCode,
-            @NonNull Throwable t) {
-        Listeners.notify(
-                CliListener.class,
-                true,
-                listener -> listener.onError(correlationId, command, argsSize, auth, exitCode, t));
+    static void fireError(@NonNull CliContext context, int exitCode, @NonNull Throwable t) {
+        Listeners.notify(CliListener.class, true, listener -> listener.onError(context, exitCode, t));
     }
 }

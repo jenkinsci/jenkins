@@ -33,6 +33,7 @@ import hudson.ExtensionFinder;
 import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
+import hudson.cli.listeners.CliContext;
 import hudson.cli.listeners.CliListener;
 import hudson.model.Hudson;
 import java.io.IOException;
@@ -48,7 +49,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Stack;
-import java.util.UUID;
 import java.util.logging.Logger;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
@@ -197,8 +197,7 @@ public class CLIRegisterer extends ExtensionFinder {
 
                             List<MethodBinder> binders = new ArrayList<>();
 
-                            final String correlationId = UUID.randomUUID().toString();
-                            final int argsSize = args.size();
+                            final CliContext context = new CliContext(getName(), args.size(), getTransportAuthentication2());
 
                             CmdLineParser parser = bindMethod(binders);
                             try {
@@ -213,7 +212,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                     sc.setAuthentication(auth); // run the CLI with the right credential
                                     jenkins.checkPermission(Jenkins.READ);
 
-                                    CliListener.fireExecution(correlationId, getName(), argsSize, auth);
+                                    CliListener.fireExecution(context);
 
                                     // resolve them
                                     Object instance = null;
@@ -221,7 +220,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                         instance = binder.call(instance);
 
                                     Integer exitCode = (instance instanceof Integer) ? (Integer) instance : 0;
-                                    CliListener.fireCompleted(correlationId, getName(), argsSize, auth, exitCode);
+                                    CliListener.fireCompleted(context, exitCode);
                                     return exitCode;
                                 } catch (InvocationTargetException e) {
                                     Throwable t = e.getTargetException();
@@ -232,8 +231,8 @@ public class CLIRegisterer extends ExtensionFinder {
                                     sc.setAuthentication(old); // restore
                                 }
                             } catch (Throwable e) {
-                            int exitCode = handleException(e, correlationId, parser);
-                            CliListener.fireError(correlationId, getName(), argsSize, getTransportAuthentication2(), exitCode, e);
+                            int exitCode = handleException(e, context, parser);
+                            CliListener.fireError(context, exitCode, e);
                             return exitCode;
                             }
                         }
