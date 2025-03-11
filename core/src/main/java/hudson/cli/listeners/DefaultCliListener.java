@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025
+ * Copyright (c) 2025, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,6 +62,8 @@ public class DefaultCliListener implements CliListener {
                     "Unexpected exception occurred while performing " + context.getCommand() + " command.",
                     t);
         } else if (exitCode == 7) {
+            // to the caller (stderr), we can't reveal whether the user didn't exist or the password didn't match.
+            // do that to the server log instead
             LOGGER.log(Level.INFO, "CLI login attempt failed: " + context.getCorrelationId(), t);
         } else {
             LOGGER.log(

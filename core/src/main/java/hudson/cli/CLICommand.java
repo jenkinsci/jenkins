@@ -238,7 +238,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.locale = locale;
         CmdLineParser p = getCmdLineParser();
 
-        final CliContext context = new CliContext(getName(), args.size(), getTransportAuthentication2());
+        CliContext context = new CliContext(getName(), args.size(), getTransportAuthentication2());
 
         // add options from the authenticator
         SecurityContext sc = null;
@@ -292,8 +292,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             printError(e.getMessage());
         } else if (e instanceof BadCredentialsException) {
             exitCode = 7;
-            // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
-            // do that to the server log instead
             printError(
                     "Bad Credentials. Search the server log for " + context.getCorrelationId() + " for more details.");
         } else {

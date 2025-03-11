@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025
+ * Copyright (c) 2025, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,21 +30,21 @@ import hudson.cli.CLICommand;
 import jenkins.util.Listeners;
 
 /**
- * Callback around {@link CLICommand#run()}
+ * Allows implementations to listen to {@link CLICommand#run()} execution events.
  *
  * @since TODO
  */
 public interface CliListener extends ExtensionPoint {
 
     /**
-     * Called before.
+     * Invoked before command execution.
      *
      * @param context Information about the command being executed
      * */
     default void onExecution(@NonNull CliContext context) {}
 
     /**
-     * Called after.
+     * Invoked after successful execution.
      *
      * @param context Information about the command being executed
      * @param exitCode `run` returned exit code.
@@ -52,7 +52,7 @@ public interface CliListener extends ExtensionPoint {
     default void onCompleted(@NonNull CliContext context, int exitCode) {}
 
     /**
-     * Catch exceptions.
+     * Invoked on execution failure.
      *
      * @param context Information about the command being executed
      * @param exitCode `run` returned exit code.

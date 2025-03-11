@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025
+ * Copyright (c) 2025, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ import org.springframework.security.core.Authentication;
 
 /**
  * Holds information of a command execution. Same instance is used to all {@link CliListener} invocations.
- * Use `correlationId` in order to group related events.
+ * Use `correlationId` in order to group related events to the same command.
  *
  * @since TODO
  */

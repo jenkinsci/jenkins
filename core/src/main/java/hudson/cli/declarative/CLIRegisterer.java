@@ -197,7 +197,7 @@ public class CLIRegisterer extends ExtensionFinder {
 
                             List<MethodBinder> binders = new ArrayList<>();
 
-                            final CliContext context = new CliContext(getName(), args.size(), getTransportAuthentication2());
+                            CliContext context = new CliContext(getName(), args.size(), getTransportAuthentication2());
 
                             CmdLineParser parser = bindMethod(binders);
                             try {
@@ -231,9 +231,9 @@ public class CLIRegisterer extends ExtensionFinder {
                                     sc.setAuthentication(old); // restore
                                 }
                             } catch (Throwable e) {
-                            int exitCode = handleException(e, context, parser);
-                            CliListener.fireError(context, exitCode, e);
-                            return exitCode;
+                                int exitCode = handleException(e, context, parser);
+                                CliListener.fireError(context, exitCode, e);
+                                return exitCode;
                             }
                         }
 
