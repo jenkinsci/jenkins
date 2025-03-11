@@ -27,29 +27,30 @@ package hudson.cli.listeners;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.security.core.Authentication;
 
 /**
  * Holds information of a command execution. Same instance is used to all {@link CliListener} invocations.
- * Use `correlationId` in order to group related events to the same command.
+ * Use  {@code correlationId} in order to group related events to the same command.
  *
  * @since TODO
  */
 public class CliContext {
     private final String correlationId = UUID.randomUUID().toString();
     private final String command;
-    private final int argsSize;
+    private final List<String> args;
     private final Authentication auth;
 
     /**
      * @param command The command being executed.
-     * @param argsSize Number of arguments passed to the command.
+     * @param args Arguments passed to the command.
      * @param auth Authenticated user performing the execution.
      */
-    public CliContext(@NonNull String command, int argsSize, @Nullable Authentication auth) {
+    public CliContext(@NonNull String command, @CheckForNull List<String> args, @Nullable Authentication auth) {
         this.command = command;
-        this.argsSize = argsSize;
+        this.args = args != null ? args : List.of();
         this.auth = auth;
     }
 
@@ -70,10 +71,11 @@ public class CliContext {
     }
 
     /**
-     * @return Number of arguments passed to the command.
+     * @return Arguments passed to the command.
      */
-    public int getArgsSize() {
-        return argsSize;
+    @NonNull
+    public List<String> getArgs() {
+        return args;
     }
 
     /**

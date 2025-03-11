@@ -51,6 +51,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Locale;
 import jenkins.model.Jenkins;
+import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.tiger_types.Types;
@@ -238,7 +239,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.locale = locale;
         CmdLineParser p = getCmdLineParser();
 
-        CliContext context = new CliContext(getName(), args.size(), getTransportAuthentication2());
+        CliContext context = new CliContext(getName(), args, getTransportAuthentication2());
 
         // add options from the authenticator
         SecurityContext sc = null;
@@ -254,14 +255,14 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 Jenkins.get().checkPermission(Jenkins.READ);
             p.parseArgument(args.toArray(new String[0]));
 
-            CliListener.fireExecution(context);
+            Listeners.notify(CliListener.class, true, listener -> listener.onExecution(context));
             int res = run();
-            CliListener.fireCompleted(context, res);
+            Listeners.notify(CliListener.class, true, listener -> listener.onCompleted(context, res));
 
             return res;
         } catch (Throwable e) {
             int exitCode = handleException(e, context, p);
-            CliListener.fireError(context, exitCode, e);
+            Listeners.notify(CliListener.class, true, listener -> listener.onException(context, e));
             return exitCode;
         } finally {
             if (sc != null)

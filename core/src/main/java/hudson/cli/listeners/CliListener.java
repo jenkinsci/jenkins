@@ -27,7 +27,6 @@ package hudson.cli.listeners;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.cli.CLICommand;
-import jenkins.util.Listeners;
 
 /**
  * Allows implementations to listen to {@link CLICommand#run()} execution events.
@@ -44,49 +43,18 @@ public interface CliListener extends ExtensionPoint {
     default void onExecution(@NonNull CliContext context) {}
 
     /**
-     * Invoked after successful execution.
+     * Invoked after command execution.
      *
      * @param context Information about the command being executed
-     * @param exitCode `run` returned exit code.
+     * @param exitCode Exit code returned by the implementation of {@link CLICommand#run()}.
      * */
     default void onCompleted(@NonNull CliContext context, int exitCode) {}
 
     /**
-     * Invoked on execution failure.
+     * Invoked on command exception.
      *
      * @param context Information about the command being executed
-     * @param exitCode `run` returned exit code.
      * @param t Any error during the execution of the command.
      * */
-    default void onError(@NonNull CliContext context, int exitCode, @NonNull Throwable t) {}
-
-    /**
-     * Fires the {@link #onExecution} event.
-     *
-     * @param context Information about the command being executed
-     * */
-    static void fireExecution(@NonNull CliContext context) {
-        Listeners.notify(CliListener.class, true, listener -> listener.onExecution(context));
-    }
-
-    /**
-     * Fires the {@link #onCompleted} event.
-     *
-     * @param context Information about the command being executed
-     * @param exitCode `run` returned exit code.
-     * */
-    static void fireCompleted(@NonNull CliContext context, int exitCode) {
-        Listeners.notify(CliListener.class, true, listener -> listener.onCompleted(context, exitCode));
-    }
-
-    /**
-     * Fires the {@link #onError} event.
-     *
-     * @param context Information about the command being executed
-     * @param exitCode `run` returned exit code.
-     * @param t Any error during the execution of the command.
-     * */
-    static void fireError(@NonNull CliContext context, int exitCode, @NonNull Throwable t) {
-        Listeners.notify(CliListener.class, true, listener -> listener.onError(context, exitCode, t));
-    }
+    default void onException(@NonNull CliContext context, @NonNull Throwable t) {}
 }

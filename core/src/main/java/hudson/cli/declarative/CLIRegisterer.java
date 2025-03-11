@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.model.Jenkins;
+import jenkins.util.Listeners;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.args4j.CmdLineParser;
@@ -197,7 +198,7 @@ public class CLIRegisterer extends ExtensionFinder {
 
                             List<MethodBinder> binders = new ArrayList<>();
 
-                            CliContext context = new CliContext(getName(), args.size(), getTransportAuthentication2());
+                            CliContext context = new CliContext(getName(), args, getTransportAuthentication2());
 
                             CmdLineParser parser = bindMethod(binders);
                             try {
@@ -212,7 +213,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                     sc.setAuthentication(auth); // run the CLI with the right credential
                                     jenkins.checkPermission(Jenkins.READ);
 
-                                    CliListener.fireExecution(context);
+                                    Listeners.notify(CliListener.class, true, listener -> listener.onExecution(context));
 
                                     // resolve them
                                     Object instance = null;
@@ -220,7 +221,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                         instance = binder.call(instance);
 
                                     Integer exitCode = (instance instanceof Integer) ? (Integer) instance : 0;
-                                    CliListener.fireCompleted(context, exitCode);
+                                    Listeners.notify(CliListener.class, true, listener -> listener.onCompleted(context, exitCode));
                                     return exitCode;
                                 } catch (InvocationTargetException e) {
                                     Throwable t = e.getTargetException();
@@ -232,7 +233,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                 }
                             } catch (Throwable e) {
                                 int exitCode = handleException(e, context, parser);
-                                CliListener.fireError(context, exitCode, e);
+                                Listeners.notify(CliListener.class, true, listener -> listener.onException(context, e));
                                 return exitCode;
                             }
                         }

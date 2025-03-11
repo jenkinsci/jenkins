@@ -41,7 +41,7 @@ import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 
-public class CliListenerTest {
+public class DefaultCliListenerTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();

@@ -24,11 +24,15 @@
 
 package hudson.cli.listeners;
 
+import hudson.AbortException;
 import hudson.Extension;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.args4j.CmdLineException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -42,7 +46,7 @@ public class DefaultCliListener implements CliListener {
     @Override
     public void onExecution(CliContext context) {
         LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.", new Object[] {
-            context.getCommand(), context.getArgsSize(), authName(context.getAuth()),
+            context.getCommand(), context.getArgs().size(), authName(context.getAuth()),
         });
     }
 
@@ -50,27 +54,32 @@ public class DefaultCliListener implements CliListener {
     public void onCompleted(CliContext context, int exitCode) {
         LOGGER.log(
                 Level.FINE, "Executed CLI command {0}, with {1} arguments, as user {2}, return code {3}", new Object[] {
-                    context.getCommand(), context.getArgsSize(), authName(context.getAuth()), exitCode,
+                    context.getCommand(), context.getArgs().size(), authName(context.getAuth()), exitCode,
                 });
     }
 
     @Override
-    public void onError(CliContext context, int exitCode, Throwable t) {
-        if (exitCode == 1) {
-            LOGGER.log(
-                    Level.WARNING,
-                    "Unexpected exception occurred while performing " + context.getCommand() + " command.",
-                    t);
-        } else if (exitCode == 7) {
+    public void onException(CliContext context, Throwable t) {
+        if (t instanceof BadCredentialsException) {
             // to the caller (stderr), we can't reveal whether the user didn't exist or the password didn't match.
             // do that to the server log instead
             LOGGER.log(Level.INFO, "CLI login attempt failed: " + context.getCorrelationId(), t);
-        } else {
+        } else if (t instanceof CmdLineException
+                || t instanceof IllegalArgumentException
+                || t instanceof IllegalStateException
+                || t instanceof AbortException
+                || t instanceof AccessDeniedException) {
+            // covered cases on CLICommand#handleException
             LOGGER.log(
                     Level.FINE,
                     String.format(
                             "Failed call to CLI command %s, with %d arguments, as user %s.",
-                            context.getCommand(), context.getArgsSize(), authName(context.getAuth())),
+                            context.getCommand(), context.getArgs().size(), authName(context.getAuth())),
+                    t);
+        } else {
+            LOGGER.log(
+                    Level.WARNING,
+                    "Unexpected exception occurred while performing " + context.getCommand() + " command.",
                     t);
         }
     }
