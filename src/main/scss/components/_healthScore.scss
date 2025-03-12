@@ -6,7 +6,7 @@
     border-radius: 50%;
     border-width: 3px;
     border-style: solid;
-    border-color: var(--primary);
+    border-color: var(--accent-color);
 
     display: table-cell;
     vertical-align: middle;
@@ -20,14 +20,14 @@
   }
 
   &--top {
-    border-color: var(--success);
+    border-color: var(--success-color);
   }
 
   &--middle {
-    border-color: var(--warning);
+    border-color: var(--warning-color);
   }
 
   &--bottom {
-    border-color: var(--danger);
+    border-color: var(--destructive-color);
   }
 }
