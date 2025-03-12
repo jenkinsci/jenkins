@@ -47,7 +47,7 @@ THE SOFTWARE.
   <j:set var="actualDescription" value="${description}" defaultValue="${it.description}"/>
   <j:set var="hideDescriptionButton" value="${hideButton}" defaultValue="false"/>
 
-  <div id="description" class="jenkins-!-margin-bottom-${hideButton?'3':'0'}">
+  <div id="description" class="jenkins-!-margin-bottom-${hideButton?'3':'1'}">
     <div>
       <j:out value="${actualDescription!=null ? app.markupFormatter.translate(actualDescription) : ''}" />
     </div>
