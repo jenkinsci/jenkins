@@ -29,7 +29,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 
 import hudson.model.FreeStyleProject;
+import hudson.model.InvisibleAction;
 import hudson.model.ItemGroup;
+import hudson.model.RootAction;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.User;
 import java.io.IOException;
@@ -41,6 +43,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.WebMethod;
 import org.xml.sax.SAXException;
 
 public class StackTraceSuppressionTest {
@@ -129,19 +133,15 @@ public class StackTraceSuppressionTest {
 
     @Test
     public void exceptionEndpoint() throws Exception {
-        /* This test is based upon a testing endpoint that really shouldn't exist in production code.
-           If Jenkins is improved to eliminate this endpoint, this test may erroneously fail. */
         String relativePath = "exception";
-        String detailString = "Jenkins.doException";
+        String detailString = "ExceptionAction.doException";
         checkSuppressedStack(relativePath, detailString);
     }
 
     @Test
     public void exceptionEndpointShowsTrace() throws Exception {
-        /* This test is based upon a testing endpoint that really shouldn't exist in production code.
-           If Jenkins is improved to eliminate this endpoint, this test may erroneously fail. */
         String relativePath = "exception";
-        String detailString = "Jenkins.doException";
+        String detailString = "ExceptionAction.doException";
         checkDisplayedStackTrace(relativePath, detailString);
     }
 
@@ -186,6 +186,20 @@ public class StackTraceSuppressionTest {
         checBaseResponseContent(content);
         assertThat(content, containsString("Stack trace"));
         assertThat(content, containsString(detailString));
+    }
+
+    /* Replacement for historical Jenkins#doException URL */
+    @TestExtension
+    public static class ExceptionAction extends InvisibleAction implements RootAction {
+        @WebMethod(name = "")
+        public void doException() {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public String getUrlName() {
+            return "exception";
+        }
     }
 
 }
