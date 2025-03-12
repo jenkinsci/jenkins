@@ -190,11 +190,10 @@ public class DisablePluginCommandTest {
     @Ignore("TODO calling restart seems to break Surefire")
     @Test
     @Issue("JENKINS-27177")
-    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
+    @WithPlugin({"depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
     public void restartAfterDisablePluginsAndErrors() {
         assumeNotWindows();
-        assertThat(disablePluginsCLiCommand("-restart", "variant", "dependee", "depender", "plugin-first", "mandatory-depender"), failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
-        assertPluginDisabled("variant");
+        assertThat(disablePluginsCLiCommand("-restart", "dependee", "depender", "plugin-first", "mandatory-depender"), failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
         assertPluginEnabled("dependee");
         assertPluginDisabled("depender");
         assertPluginDisabled("plugin-first");
@@ -207,13 +206,12 @@ public class DisablePluginCommandTest {
      */
     @Test
     @Issue("JENKINS-27177")
-    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
+    @WithPlugin({"depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
     public void disablePluginsStrategyAll() {
         assertPluginEnabled("dependee");
         assertPluginEnabled("depender");
         assertPluginEnabled("mandatory-depender");
-        assertThat(disablePluginsCLiCommand("-strategy", "all", "variant", "dependee", "plugin-first"), succeeded());
-        assertPluginDisabled("variant");
+        assertThat(disablePluginsCLiCommand("-strategy", "all", "dependee", "plugin-first"), succeeded());
         assertPluginDisabled("dependee");
         assertPluginDisabled("depender");
         assertPluginDisabled("plugin-first");
@@ -225,10 +223,9 @@ public class DisablePluginCommandTest {
      */
     @Test
     @Issue("JENKINS-27177")
-    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
+    @WithPlugin({"depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
     public void disablePluginsStrategyMandatory() {
-        assertThat(disablePluginsCLiCommand("-strategy", "mandatory", "variant", "dependee", "plugin-first"), succeeded());
-        assertPluginDisabled("variant");
+        assertThat(disablePluginsCLiCommand("-strategy", "mandatory", "dependee", "plugin-first"), succeeded());
         assertPluginDisabled("dependee");
         assertPluginEnabled("depender");
         assertPluginDisabled("plugin-first");
