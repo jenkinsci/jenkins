@@ -1,6 +1,26 @@
 import { createElementFromHtml } from "@/util/dom";
 import { xmlEscape } from "@/util/security";
 
+const hideOnPopperBlur = {
+  name: "hideOnPopperBlur",
+  defaultValue: true,
+  fn(instance) {
+    return {
+      onCreate() {
+        instance.popper.addEventListener("focusout", (event) => {
+          if (
+            instance.props.hideOnPopperBlur &&
+            event.relatedTarget &&
+            !instance.popper.contains(event.relatedTarget)
+          ) {
+            instance.hide();
+          }
+        });
+      },
+    };
+  },
+};
+
 function dropdown() {
   return {
     content: "<p class='jenkins-spinner'></p>",
@@ -11,6 +31,7 @@ function dropdown() {
     arrow: false,
     theme: "dropdown",
     appendTo: document.body,
+    plugins: [hideOnPopperBlur],
     offset: [0, 0],
     animation: "dropdown",
     onShow: (instance) => {

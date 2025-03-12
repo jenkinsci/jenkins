@@ -31,6 +31,43 @@ function generateJumplistAccessors() {
  */
 function generateDropdowns() {
   behaviorShim.specify(
+    ".hoverable-model-link",
+    "-hoverable-dropdown-",
+    1000,
+    (element) =>
+      Utils.generateDropdown(
+        element,
+        (instance) => {
+          const href = element.href;
+
+          if (element.items) {
+            instance.setContent(Utils.generateDropdownItems(element.items));
+            return;
+          }
+
+          fetch(Path.combinePath(href, "contextMenu"))
+            .then((response) => response.json())
+            .then((json) =>
+              instance.setContent(
+                Utils.generateDropdownItems(
+                  mapChildrenItemsToDropdownItems(json.items),
+                ),
+              ),
+            )
+            .catch((error) => console.log(`Jumplist request failed: ${error}`))
+            .finally(() => (instance.loaded = true));
+        },
+        false,
+        {
+          trigger: "mouseenter",
+          offset: [-16, 10],
+          animation: "tooltip",
+          touch: false,
+        },
+      ),
+  );
+
+  behaviorShim.specify(
     "li.children, .jenkins-jumplist-link, #menuSelector, .jenkins-menu-dropdown-chevron",
     "-dropdown-",
     1000,
