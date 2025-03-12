@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.492.3</revision>
+    <revision>2.502</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-03-03T17:25:06Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-03-11T13:49:05Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3283.v92c105e0f819</remoting.version>
+    <remoting.version>3291.vb_131b_dc231fa_</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -374,6 +374,11 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <!-- Version specified in parent POM -->
       </plugin>
     </plugins>
   </build>
