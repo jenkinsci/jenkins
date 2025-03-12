@@ -427,6 +427,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     @Restricted(NoExternalUse.class) // Jelly use only
     public Integer getHealthScore() {
+        if (this.healthScore == null) {
+            this.healthScore = getInfoFromAllSites().stream()
+                    .filter(Objects::nonNull)
+                    .filter(p -> p.healthScore != null)
+                    .findFirst()
+                    .map(plugin -> plugin.healthScore)
+                    .orElse(null);
+        }
         return this.healthScore;
     }
 
@@ -507,12 +515,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             assert d.optional : d + " included among optionalDependencies of " + shortName + " but was not marked optional";
         }
         this.archive = archive;
-        this.healthScore = getInfoFromAllSites().stream()
-                .filter(Objects::nonNull)
-                .filter(p -> p.healthScore != null)
-                .findFirst()
-                .map(plugin -> plugin.healthScore)
-                .orElse(null);
     }
 
     @Override
