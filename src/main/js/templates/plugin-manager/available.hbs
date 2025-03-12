@@ -73,7 +73,7 @@
             <div>
               {{#if this.healthScore }}
                 <a href="{{ this.wiki }}/healthScore"
-                   class="jenkins-healthScore--badge"
+                   class="jenkins-healthScore--badge {{ this.healthScoreClazz }}"
                    target="_blank" rel="noopener noreferrer">
                   {{ this.healthScore }}
                 </a>

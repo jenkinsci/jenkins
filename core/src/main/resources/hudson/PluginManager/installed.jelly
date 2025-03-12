@@ -182,18 +182,7 @@ THE SOFTWARE.
                       <span>
                         <j:choose>
                           <j:when test="${p.healthScore != null}">
-                            <j:choose>
-                              <j:when test="${p.healthScore gt 80}">
-                                <j:set var="healthScoreClazz" value="top"/>
-                              </j:when>
-                              <j:when test="${p.healthScore gt 60 and p.healthScore le 80}">
-                                <j:set var="healthScoreClazz" value="middle"/>
-                              </j:when>
-                              <j:when test="${p.healthScore le 60}">
-                                <j:set var="healthScoreClazz" value="bottom"/>
-                              </j:when>
-                            </j:choose>
-                            <a href="${p.wiki}/healthScore" class="jenkins-healthScore--badge jenkins-healthScore--${healthScoreClazz}" target="_blank" rel="noopener noreferrer">
+                            <a href="${p.wiki}/healthScore" class="jenkins-healthScore--badge ${p.healthScoreClazz}" target="_blank" rel="noopener noreferrer">
                               <st:out value="${p.healthScore}"/>
                             </a>
                           </j:when>

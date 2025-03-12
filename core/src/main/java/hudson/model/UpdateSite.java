@@ -1257,8 +1257,12 @@ public class UpdateSite {
         public IssueTracker[] issueTrackers;
 
         @Exported
-        @CheckForNull
+        @Restricted(NoExternalUse.class)
         public final Integer healthScore;
+
+        @Exported
+        @Restricted(NoExternalUse.class)
+        public final String healthScoreClazz;
 
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
@@ -1297,6 +1301,17 @@ public class UpdateSite {
             dependencies = getPresizedMutableMap(depCount);
             optionalDependencies = getPresizedMutableMap(optionalDepCount);
             this.healthScore = o.has("healthScore") ? o.getInt("healthScore") : null;
+            if (healthScore != null) {
+                if (healthScore > 80) {
+                    this.healthScoreClazz = "jenkins-healthScore--top";
+                } else if (healthScore > 60) {
+                    this.healthScoreClazz = "jenkins-healthScore--middle";
+                } else {
+                    this.healthScoreClazz = "jenkins-healthScore--bottom";
+                }
+            } else {
+                this.healthScoreClazz = null;
+            }
 
             for (Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;

@@ -222,6 +222,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     private static Set<String> CORE_ONLY_DEPENDANT = Set.of("jenkins-core");
 
+    private Integer healthScore;
+
     /**
      * Set the list of components that depend on this plugin.
      * @param dependents The list of components that depend on this plugin.
@@ -425,12 +427,15 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     @Restricted(NoExternalUse.class) // Jelly use only
     public Integer getHealthScore() {
-        final UpdateSite.Plugin plugin = getInfoFromAllSites().stream()
-                .filter(Objects::nonNull)
-                .filter(p -> p.healthScore != null)
-                .findFirst()
-                .orElse(null);
-        return plugin == null ? null : plugin.healthScore;
+        return this.healthScore;
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly use only
+    public String getHealthScoreClazz() {
+        if (this.healthScore == null) return null;
+        if (this.healthScore > 80) return "jenkins-healthScore--top";
+        if (this.healthScore > 60) return "jenkins-healthScore--middle";
+        return "jenkins-healthScore--bottom";
     }
 
     @ExportedBean
@@ -502,6 +507,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             assert d.optional : d + " included among optionalDependencies of " + shortName + " but was not marked optional";
         }
         this.archive = archive;
+        this.healthScore = getInfoFromAllSites().stream()
+                .filter(Objects::nonNull)
+                .filter(p -> p.healthScore != null)
+                .findFirst()
+                .map(plugin -> plugin.healthScore)
+                .orElse(null);
     }
 
     @Override
