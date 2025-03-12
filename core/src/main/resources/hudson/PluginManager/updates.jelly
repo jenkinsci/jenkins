@@ -229,7 +229,7 @@ THE SOFTWARE.
                       <td>
                         <j:choose>
                           <j:when test="${p.healthScore != null}">
-                            <a href="${p.wiki}/healthScore" class="jenkins-healthScore--badge ${p.healthScoreClazz}" target="_blank" rel="noopener noreferrer">
+                            <a href="${p.wiki}/healthScore" class="jenkins-healthScore--badge jenkins-healthScore--${p.healthScoreClazz}" target="_blank" rel="noopener noreferrer">
                               <st:out value="${p.healthScore}"/>
                             </a>
                           </j:when>

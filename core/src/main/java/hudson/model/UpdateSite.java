@@ -1302,13 +1302,7 @@ public class UpdateSite {
             optionalDependencies = getPresizedMutableMap(optionalDepCount);
             this.healthScore = o.has("healthScore") ? o.getInt("healthScore") : null;
             if (healthScore != null) {
-                if (healthScore > 80) {
-                    this.healthScoreClazz = "jenkins-healthScore--top";
-                } else if (healthScore > 60) {
-                    this.healthScoreClazz = "jenkins-healthScore--middle";
-                } else {
-                    this.healthScoreClazz = "jenkins-healthScore--bottom";
-                }
+                this.healthScoreClazz = PluginWrapper.getHealthScoreClassForScore(healthScore);
             } else {
                 this.healthScoreClazz = null;
             }
