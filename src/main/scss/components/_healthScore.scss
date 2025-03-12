@@ -1,31 +1,33 @@
-.jenkins-healthScore--badge {
-  height: 40px;
-  width: 40px;
+.jenkins-healthScore {
+  &--badge {
+    height: 40px;
+    width: 40px;
 
-  border-radius: 50%;
-  border-width: 3px;
-  border-style: solid;
-  border-color: var(--primary);
+    border-radius: 50%;
+    border-width: 3px;
+    border-style: solid;
+    border-color: var(--primary);
 
-  display: table-cell;
-  vertical-align: middle;
-  text-align: center;
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
 
-  background-color: var(--background);
+    background-color: var(--background);
 
-  &.jenkins-healthScore--top {
+    &:hover {
+      background-color: var(--light-grey);
+    }
+  }
+
+  &--top {
     border-color: var(--success);
   }
 
-  &.jenkins-healthScore--middle {
+  &--middle {
     border-color: var(--warning);
   }
 
-  &.jenkins-healthScore--bottom {
+  &--bottom {
     border-color: var(--danger);
-  }
-
-  &:hover {
-    background-color: var(--light-grey);
   }
 }
