@@ -140,7 +140,8 @@
   outline: none;
   cursor: pointer;
   padding: 0;
-  // pointer-events: none;
+
+  // pointer-events: none; commented to enable clicking
   transition: var(--standard-transition);
   background: transparent;
   top: 4px;
