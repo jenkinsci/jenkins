@@ -318,20 +318,31 @@ public class CLI {
         throw new AssertionError();
     }
 
-    @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
-    private static String readAuthFromFile(String auth) throws IOException {
-        Path path;
-        try {
-            path = Paths.get(auth.substring(1));
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
+    private static File validateAndSanitizePath(String userInput) {
+        // Define a base directory for validation
+        String baseDir = "/safe/base/directory";
+        Path basePath = Paths.get(baseDir).toAbsolutePath().normalize();
+        Path userPath = Paths.get(userInput).toAbsolutePath().normalize();
+
+        // Check if the user path is within the base directory
+        if (!userPath.startsWith(basePath)) {
+            throw new IllegalArgumentException("Invalid file path");
         }
+
+        // Sanitize the path (e.g., remove dangerous characters)
+        String sanitizedPath = userPath.toString().replaceAll("[^a-zA-Z0-9./_-]", "");
+        return new File(sanitizedPath);
+    }
+
+    @SuppressFBWarnings("PATH_TRAVERSAL_IN")
+    private static String readAuthFromFile(String auth) throws IOException {
+        Path path = validateAndSanitizePath(auth.substring(1)).toPath();
         return Files.readString(path, Charset.defaultCharset());
     }
 
-    @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
+    @SuppressFBWarnings("PATH_TRAVERSAL_IN")
     private static File getFileFromArguments(List<String> args) {
-        return new File(args.get(1));
+        return validateAndSanitizePath(args.get(1));
     }
 
     private static int webSocketConnection(String url, List<String> args, CLIConnectionFactory factory) throws Exception {

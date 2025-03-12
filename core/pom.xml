@@ -163,6 +163,11 @@ THE SOFTWARE.
       <artifactId>commons-collections</artifactId>
     </dependency>
     <dependency>
+      <groupId>commons-discovery</groupId>
+      <artifactId>commons-discovery</artifactId>
+      <version>0.5</version>
+    </dependency>
+    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
@@ -512,11 +517,6 @@ THE SOFTWARE.
       <artifactId>xmlunit-matchers</artifactId>
       <version>${xmlunit.version}</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-discovery</groupId>
-      <artifactId>commons-discovery</artifactId>
-      <version>0.5</version>
     </dependency>
   </dependencies>
 
