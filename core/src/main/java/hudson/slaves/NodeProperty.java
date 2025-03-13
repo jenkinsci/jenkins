@@ -30,7 +30,6 @@ import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor.FormException;
@@ -48,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
@@ -175,23 +173,6 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
 
     @Override
     public NodeProperty<?> reconfigure(StaplerRequest2 req, JSONObject form) throws FormException {
-        if (Util.isOverridden(NodeProperty.class, getClass(), "reconfigure", StaplerRequest.class, JSONObject.class)) {
-            return reconfigure(StaplerRequest.fromStaplerRequest2(req), form);
-        } else {
-            return reconfigureImpl(req, form);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #reconfigure(StaplerRequest2, JSONObject)}
-     */
-    @Deprecated
-    @Override
-    public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
-        return reconfigureImpl(StaplerRequest.toStaplerRequest2(req), form);
-    }
-
-    private NodeProperty<?> reconfigureImpl(StaplerRequest2 req, JSONObject form) throws FormException {
         return form == null ? null : getDescriptor().newInstance(req, form);
     }
 

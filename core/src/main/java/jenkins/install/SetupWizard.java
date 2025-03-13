@@ -66,7 +66,6 @@ import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -755,7 +754,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * This filter will validate that the security token is provided
      */
-    private final Filter FORCE_SETUP_WIZARD_FILTER = new CompatibleFilter() {
+    private final Filter FORCE_SETUP_WIZARD_FILTER = new Filter() {
         @Override
         public void init(FilterConfig cfg) throws ServletException {
         }

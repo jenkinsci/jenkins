@@ -85,7 +85,6 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
@@ -1157,7 +1156,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    private static final Filter CREATE_FIRST_USER_FILTER = new CompatibleFilter() {
+    private static final Filter CREATE_FIRST_USER_FILTER = new Filter() {
         @Override
         public void init(FilterConfig config) throws ServletException {
         }
