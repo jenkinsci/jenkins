@@ -138,6 +138,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
+     * In most cases, you should not call this method directly, but {@link Jenkins#updateNode(Node)} instead.
      * @since 1.635.
      */
     @Override
