@@ -178,7 +178,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <!-- TODO remove after release of https://github.com/jenkinsci/jenkins-test-harness/pull/935-->
+      <!-- TODO this is an incremental version, update to release version after https://github.com/jenkinsci/jenkins-test-harness/pull/935-->
       <version>2420.v7deff9656e72</version>
       <scope>test</scope>
       <exclusions>
