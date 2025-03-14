@@ -78,10 +78,10 @@ THE SOFTWARE.
             <thead>
             <tr>
               <th initialSortDir="down">${%Name}</th>
-              <th class="jenkins-table__cell--tight">${%Enabled}</th>
               <l:isAdmin>
                 <th>${%Health score}</th>
               </l:isAdmin>
+              <th class="jenkins-table__cell--tight">${%Enabled}</th>
               <l:isAdmin>
                 <th data-sort-disable="true"/>
               </l:isAdmin>
@@ -164,19 +164,6 @@ THE SOFTWARE.
                       </div>
                     </j:if>
                   </td>
-                  <j:set var="state" value="${p.enabled?'true':null}"/>
-                  <td class="jenkins-table__cell--tight enable" data="${state}">
-                    <div class="jenkins-table__cell__button-wrapper">
-                      <span class="jenkins-toggle-switch">
-                        <input type="checkbox" checked="${state}"
-                               class="plugin-manager-toggle-switch"
-                               url="plugin/${p.shortName}"
-                               disabled="${readOnlyMode ? 'true' : null}"
-                               original="${p.active?'true':'false'}"/>
-                        <label class="attach-previous"></label>
-                      </span>
-                    </div>
-                  </td>
                   <l:isAdmin>
                     <td class="jenkins-table__cell--tight">
                       <span>
@@ -193,27 +180,19 @@ THE SOFTWARE.
                       </span>
                     </td>
                   </l:isAdmin>
-                  <l:isAdmin>
-                    <td class="jenkins-table__cell--tight">
-                      <div class="jenkins-table__cell__button-wrapper">
-                          <j:if test="${p.downgradable}">
-                            <form method="post"
-                                  class="jenkins-buttons-row"
-                                  action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
-                              <button class="jenkins-button jenkins-button--tertiary jenkins-!-color-orange"
-                                      style="padding: 0.5rem"
-                                      tooltip="${%downgradeTo(p.backupVersion)}">
-                                <l:icon src="symbol-downgrade-circle"/>
-                                <span
-                                    style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">
-                                  ${p.backupVersion}
-                                </span>
-                              </button>
-                            </form>
-                          </j:if>
-                      </div>
-                    </td>
-                  </l:isAdmin>
+                  <j:set var="state" value="${p.enabled?'true':null}"/>
+                  <td class="jenkins-table__cell--tight enable" data="${state}">
+                    <div class="jenkins-table__cell__button-wrapper">
+                      <span class="jenkins-toggle-switch">
+                        <input type="checkbox" checked="${state}"
+                               class="plugin-manager-toggle-switch"
+                               url="plugin/${p.shortName}"
+                               disabled="${readOnlyMode ? 'true' : null}"
+                               original="${p.active?'true':'false'}"/>
+                        <label class="attach-previous"></label>
+                      </span>
+                    </div>
+                  </td>
                   <td class="jenkins-table__cell--tight uninstall ${readOnlyMode and !p.isDeleted() ? 'jenkins-hidden' : ''}">
                     <div class="jenkins-table__cell__button-wrapper">
                       <j:choose>
