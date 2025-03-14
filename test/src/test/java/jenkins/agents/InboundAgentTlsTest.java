@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.RealJenkinsRule;
 
-public class InboundAgentTlsCliArgumentTest {
+public class InboundAgentTlsTest {
 
     @Rule
     public final RealJenkinsRule rjr = new RealJenkinsRule().https();
@@ -20,7 +20,7 @@ public class InboundAgentTlsCliArgumentTest {
     }
 
     @Test
-    public void shouldConnectOverWebSocketWithoutCertificateCheck() throws Throwable {
+    public void webSocketNoCertificateCheck() throws Throwable {
         var options = InboundAgentRule.Options
             .newBuilder()
             .webSocket()
@@ -29,7 +29,7 @@ public class InboundAgentTlsCliArgumentTest {
     }
 
     @Test
-    public void shouldConnectOverWebSocketWithCertificateFromCLI() throws Throwable {
+    public void webSocketWithCertByValue() throws Throwable {
         var options = InboundAgentRule.Options
             .newBuilder()
             .webSocket()
@@ -38,7 +38,7 @@ public class InboundAgentTlsCliArgumentTest {
     }
 
     @Test
-    public void shouldConnectOverTcpWithoutCertificateCheck() throws Throwable {
+    public void tcpWithNoCertificateCheck() throws Throwable {
         var options = InboundAgentRule.Options
             .newBuilder()
             .noCertificateCheck();
@@ -46,7 +46,7 @@ public class InboundAgentTlsCliArgumentTest {
     }
 
     @Test
-    public void shouldConnectOverTcpWithCertificateFromCLI() throws Throwable {
+    public void tcpWithCertByValue() throws Throwable {
         var options = InboundAgentRule.Options
             .newBuilder()
             .cert(rjr.getRootCAPem());
