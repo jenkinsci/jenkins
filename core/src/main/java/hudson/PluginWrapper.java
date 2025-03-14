@@ -441,7 +441,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     public static String getHealthScoreClassForScore(int score) {
         if (score > 80) return "top";
         if (score > 60) return "middle";
-        return "bottom";}
+        return "bottom";
+    }
 
     @Restricted(NoExternalUse.class) // Jelly use only
     public String getHealthScoreClazz() {
