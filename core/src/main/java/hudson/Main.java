@@ -24,7 +24,6 @@
 
 package hudson;
 
-import com.thoughtworks.xstream.core.util.Base64Encoder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
@@ -38,201 +37,190 @@ import java.io.Writer;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import jenkins.util.SystemProperties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Entry point to Hudson from command line.
- *
  * <p>
  * This tool runs another process and sends its result to Hudson.
- *
- * @author Kohsuke Kawaguchi
+ * </p>
  */
 public class Main {
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    private static final int MAX_RETRIES = 3; // Prevent infinite retry loops
+    private static final int TIMEOUT = SystemProperties.getInteger(Main.class.getName() + ".timeout", 15000);
 
-    /** @see #remotePost */
     public static void main(String[] args) {
         try {
             System.exit(run(args));
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Unexpected error", e);
             System.exit(-1);
         }
     }
 
-    /** @see #remotePost */
     public static int run(String[] args) throws Exception {
         String home = getHudsonHome();
         if (home == null) {
-            System.err.println("JENKINS_HOME is not set.");
+            LOGGER.severe("JENKINS_HOME is not set.");
             return -1;
         }
         if (args.length < 2) {
-            System.err.println("Usage: <job-name> <command> <args..>");
+            LOGGER.severe("Usage: <job-name> <command> <args..>");
             return -1;
         }
-
         return remotePost(args);
     }
 
     private static String getHudsonHome() {
-        String home = EnvVars.masterEnvVars.get("JENKINS_HOME");
-        if (home != null) return home;
-        return EnvVars.masterEnvVars.get("HUDSON_HOME");
+        return EnvVars.masterEnvVars.getOrDefault("JENKINS_HOME", EnvVars.masterEnvVars.get("HUDSON_HOME"));
     }
 
-    /**
-     * Run command and send result to {@code ExternalJob} in the {@code external-monitor-job} plugin.
-     * Obsoleted by {@code SetExternalBuildResultCommand} but kept here for compatibility.
-     */
     public static int remotePost(String[] args) throws Exception {
         String projectName = args[0];
-
         String home = getHudsonHome();
-        if (!home.endsWith("/"))     home = home + '/';  // make sure it ends with '/'
+        if (!home.endsWith("/")) home += '/';  
 
-        // check for authentication info
-        String auth = new URL(home).getUserInfo();
-        if (auth != null) auth = "Basic " + new Base64Encoder().encode(auth.getBytes(StandardCharsets.UTF_8));
+        // Secure authentication using API token
+        String apiToken = System.getenv("JENKINS_API_TOKEN");
+        if (apiToken == null || apiToken.isEmpty()) {
+            LOGGER.severe("JENKINS_API_TOKEN is not set. Authentication required.");
+            return -1;
+        }
+        String authHeader = "Bearer " + apiToken;
 
-        { // check if the home is set correctly
-            HttpURLConnection con = open(new URL(home));
-            if (auth != null) con.setRequestProperty("Authorization", auth);
-            con.connect();
-            if (con.getResponseCode() != 200
-            || con.getHeaderField("X-Hudson") == null) {
-                System.err.println(home + " is not Hudson (" + con.getResponseMessage() + ")");
-                return -1;
-            }
+        if (!isValidJenkinsInstance(home, authHeader)) {
+            return -1;
         }
 
         URL jobURL = new URL(home + "job/" + Util.encode(projectName).replace("/", "/job/") + "/");
 
-        { // check if the job name is correct
-            HttpURLConnection con = open(new URL(jobURL, "acceptBuildResult"));
-            if (auth != null) con.setRequestProperty("Authorization", auth);
-            con.connect();
-            if (con.getResponseCode() != 200) {
-                System.err.println(jobURL + " is not a valid external job (" + con.getResponseCode() + " " + con.getResponseMessage() + ")");
-                return -1;
-            }
+        if (!isValidJob(jobURL, authHeader)) {
+            return -1;
         }
 
-        // get a crumb to pass the csrf check
-        String crumbField = null, crumbValue = null, sessionCookies = null;
-        try {
-            HttpURLConnection con = open(new URL(home +
-                    "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)"));
-            if (auth != null) con.setRequestProperty("Authorization", auth);
-            String line = IOUtils.readFirstLine(con.getInputStream(), "UTF-8");
-            String[] components = line.split(":");
-            if (components.length == 2) {
-                crumbField = components[0];
-                crumbValue = components[1];
-            }
-            sessionCookies = con.getHeaderField("Set-Cookie");
-        } catch (IOException e) {
-            // presumably this Hudson doesn't use CSRF protection
-        }
+        // Get CSRF token
+        String[] csrfData = getCSRFToken(home, authHeader);
+        String crumbField = csrfData[0];
+        String crumbValue = csrfData[1];
+        String sessionCookies = csrfData[2];
 
-        // write the output to a temporary file first.
-        File tmpFile = File.createTempFile("jenkins", "log");
+        // Write output to a secure temporary file
+        File tmpFile = Files.createTempFile("jenkins", "log", PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"))).toFile();
+        
         try {
             int ret;
             try (OutputStream os = Files.newOutputStream(tmpFile.toPath());
                  Writer w = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+                
                 w.write("<?xml version='1.1' encoding='UTF-8'?>");
-                w.write("<run><log encoding='hexBinary' content-encoding='" + Charset.defaultCharset().name() + "'>");
+                w.write("<run><log encoding='hexBinary' content-encoding='" + StandardCharsets.UTF_8.name() + "'>");
                 w.flush();
 
-                // run the command
                 long start = System.currentTimeMillis();
 
                 List<String> cmd = new ArrayList<>(Arrays.asList(args).subList(1, args.length));
-                Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]), (String[]) null, System.in,
-                    new DualOutputStream(System.out, new EncodingStream(os)));
+                Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]), null, System.in, new DualOutputStream(System.out, new EncodingStream(os)));
 
                 ret = proc.join();
 
                 w.write("</log><result>" + ret + "</result><duration>" + (System.currentTimeMillis() - start) + "</duration></run>");
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
             }
 
             URL location = new URL(jobURL, "postBuildResult");
-            while (true) {
-                try {
-                    // start a remote connection
-                    HttpURLConnection con = open(location);
-                    if (auth != null) con.setRequestProperty("Authorization", auth);
-                    if (crumbField != null && crumbValue != null) {
-                        con.setRequestProperty(crumbField, crumbValue);
-                        con.setRequestProperty("Cookie", sessionCookies);
-                    }
-                    con.setDoOutput(true);
-                    // this tells HttpURLConnection not to buffer the whole thing
-                    con.setFixedLengthStreamingMode((int) tmpFile.length());
-                    con.setRequestProperty("Content-Type", "application/xml");
-                    con.connect();
-                    // send the data
-                    try (InputStream in = Files.newInputStream(tmpFile.toPath())) {
-                        org.apache.commons.io.IOUtils.copy(in, con.getOutputStream());
-                    } catch (InvalidPathException e) {
-                        throw new IOException(e);
-                    }
+            return sendBuildResult(location, authHeader, crumbField, crumbValue, sessionCookies, tmpFile, ret);
 
-                    if (con.getResponseCode() != 200) {
-                        org.apache.commons.io.IOUtils.copy(con.getErrorStream(), System.err);
-                    }
-
-                    return ret;
-                } catch (HttpRetryException e) {
-                    if (e.getLocation() != null) {
-                        // retry with the new location
-                        location = new URL(e.getLocation());
-                        continue;
-                    }
-                    // otherwise failed for reasons beyond us.
-                    throw e;
-                }
-            }
         } finally {
-            Files.delete(Util.fileToPath(tmpFile));
+            Files.deleteIfExists(tmpFile.toPath());
         }
     }
 
-    /**
-     * Connects to the given HTTP URL and configure time out, to avoid infinite hang.
-     */
+    private static boolean isValidJenkinsInstance(String home, String authHeader) throws IOException {
+        HttpURLConnection con = open(new URL(home));
+        con.setRequestProperty("Authorization", authHeader);
+        con.connect();
+
+        if (con.getResponseCode() != 200 || con.getHeaderField("X-Hudson") == null) {
+            LOGGER.severe(home + " is not a valid Jenkins instance (" + con.getResponseMessage() + ")");
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean isValidJob(URL jobURL, String authHeader) throws IOException {
+        HttpURLConnection con = open(new URL(jobURL, "acceptBuildResult"));
+        con.setRequestProperty("Authorization", authHeader);
+        con.connect();
+
+        if (con.getResponseCode() != 200) {
+            LOGGER.severe(jobURL + " is not a valid external job (" + con.getResponseCode() + " " + con.getResponseMessage() + ")");
+            return false;
+        }
+        return true;
+    }
+
+    private static String[] getCSRFToken(String home, String authHeader) {
+        try {
+            HttpURLConnection con = open(new URL(home + "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)"));
+            con.setRequestProperty("Authorization", authHeader);
+            String line = IOUtils.readFirstLine(con.getInputStream(), StandardCharsets.UTF_8.name());
+            String[] components = line.split(":");
+            return components.length == 2 ? new String[]{components[0], components[1], con.getHeaderField("Set-Cookie")} : new String[]{null, null, null};
+        } catch (IOException e) {
+            LOGGER.warning("Failed to retrieve CSRF token. This Jenkins instance may not require one.");
+            return new String[]{null, null, null};
+        }
+    }
+
+    private static int sendBuildResult(URL location, String authHeader, String crumbField, String crumbValue, String sessionCookies, File tmpFile, int ret) throws IOException {
+        int attempts = 0;
+        while (attempts < MAX_RETRIES) {
+            try {
+                HttpURLConnection con = open(location);
+                con.setRequestProperty("Authorization", authHeader);
+                if (crumbField != null && crumbValue != null) {
+                    con.setRequestProperty(crumbField, crumbValue);
+                    con.setRequestProperty("Cookie", sessionCookies);
+                }
+                con.setDoOutput(true);
+                con.setFixedLengthStreamingMode((int) tmpFile.length());
+                con.setRequestProperty("Content-Type", "application/xml");
+                con.connect();
+
+                try (InputStream in = Files.newInputStream(tmpFile.toPath())) {
+                    org.apache.commons.io.IOUtils.copy(in, con.getOutputStream());
+                }
+
+                if (con.getResponseCode() == 200) {
+                    return ret;
+                } else {
+                    LOGGER.warning("Failed to post build result: " + con.getResponseCode() + " " + con.getResponseMessage());
+                }
+            } catch (HttpRetryException e) {
+                if (e.getLocation() != null) {
+                    location = new URL(e.getLocation());
+                } else {
+                    throw e;
+                }
+            }
+            attempts++;
+        }
+        return -1;
+    }
+
     private static HttpURLConnection open(URL url) throws IOException {
         HttpURLConnection c = (HttpURLConnection) url.openConnection();
         c.setReadTimeout(TIMEOUT);
         c.setConnectTimeout(TIMEOUT);
         return c;
     }
-
-    /**
-     * Set to true if we are running unit tests.
-     */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for debugging")
-    public static boolean isUnitTest = false;
-
-    /**
-     * Set to true if we are running inside {@code mvn jetty:run}.
-     * This is also set if running inside {@code mvn hpi:run} since plugins parent POM 2.30.
-     */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for debugging")
-    public static boolean isDevelopmentMode = SystemProperties.getBoolean(Main.class.getName() + ".development");
-
-    /**
-     * Time out for socket connection to Hudson.
-     */
-    public static final int TIMEOUT = SystemProperties.getInteger(Main.class.getName() + ".timeout", 15000);
 }
