@@ -955,6 +955,7 @@ public class SlaveComputer extends Computer {
     }
 
     @Override
+    @SuppressFBWarnings(value = "UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR", justification = "TODO needs triage")
     protected void setNode(final Node node) {
         super.setNode(node);
         launcher = grabLauncher(node);
