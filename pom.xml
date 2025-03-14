@@ -86,8 +86,9 @@ THE SOFTWARE.
 
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
+    <!-- TODO this is an incremental version, update to release version after https://github.com/jenkinsci/jenkins-test-harness/pull/935-->
     <!-- Bundled Remoting version -->
-    <remoting.version>3291.vb_131b_dc231fa_</remoting.version>
+    <remoting.version>3295.vd3a_13e38380c</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
