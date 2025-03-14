@@ -193,6 +193,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     protected CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<>();
 
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public transient RunIdMigrator runIdMigrator;
 
     protected Job(ItemGroup parent, String name) {
