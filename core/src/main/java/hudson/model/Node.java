@@ -282,7 +282,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         try {
             if (temporaryOfflineCause != cause) {
                 temporaryOfflineCause = cause;
-                save();
+                Jenkins.get().updateNode(this);
             }
             if (temporaryOfflineCause != null) {
                 Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(toComputer(), temporaryOfflineCause));
