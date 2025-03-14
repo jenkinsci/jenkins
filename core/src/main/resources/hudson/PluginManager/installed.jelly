@@ -165,7 +165,7 @@ THE SOFTWARE.
                     </j:if>
                   </td>
                   <l:isAdmin>
-                    <td class="jenkins-table__cell--tight">
+                    <td class="jenkins-table__cell">
                       <span>
                         <j:choose>
                           <j:when test="${p.healthScore != null}">
@@ -174,7 +174,7 @@ THE SOFTWARE.
                             </a>
                           </j:when>
                           <j:otherwise>
-                            Not applicable
+                            <l:icon src="symbol-status-aborted" class="icon-xlg" tooltip="Not applicable"/>
                           </j:otherwise>
                         </j:choose>
                       </span>
