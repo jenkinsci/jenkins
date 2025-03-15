@@ -69,7 +69,6 @@ import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
@@ -128,7 +127,6 @@ import jenkins.model.details.TimestampDetail;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.security.MasterToSlaveCallable;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
@@ -2218,23 +2216,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @since 2.475
      */
     public void doConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
-        if (Util.isOverridden(Run.class, getClass(), "doConsoleText", StaplerRequest.class, StaplerResponse.class)) {
-            doConsoleText(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-        } else {
-            doConsoleTextImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doConsoleText(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        doConsoleTextImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-    }
-
-    private void doConsoleTextImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
         try (InputStream input = getLogInputStream();
              OutputStream os = rsp.getOutputStream();
@@ -2297,32 +2278,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @RequirePOST
     public void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        if (Util.isOverridden(Run.class, getClass(), "doDoDelete", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                doDoDelete(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-            return;
-        } else {
-            doDoDeleteImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doDoDelete(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
-        try {
-            doDoDeleteImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    private void doDoDeleteImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         checkPermission(DELETE);
 
         // We should not simply delete the build if it has been explicitly
@@ -2606,25 +2561,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     @Override
     public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
-        if (Util.isOverridden(Run.class, getClass(), "getDynamic", String.class, StaplerRequest.class, StaplerResponse.class)) {
-            return getDynamic(token, StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-        } else {
-            Object returnedResult = super.getDynamic(token, req, rsp);
-            return getDynamicImpl(token, returnedResult);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #getDynamic(String, StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @Override
-    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         Object returnedResult = super.getDynamic(token, req, rsp);
-        return getDynamicImpl(token, returnedResult);
-    }
-
-    private Object getDynamicImpl(String token, Object returnedResult) {
         if (returnedResult == null) {
             //check transient actions too
             for (Action action : getTransientActions()) {

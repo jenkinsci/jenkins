@@ -59,7 +59,6 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -345,22 +344,6 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * @since 2.475
      */
     public Cloud reconfigure(@NonNull final StaplerRequest2 req, JSONObject form) throws Descriptor.FormException {
-        if (Util.isOverridden(Cloud.class, getClass(), "reconfigure", StaplerRequest.class, JSONObject.class)) {
-            return reconfigure(StaplerRequest.fromStaplerRequest2(req), form);
-        } else {
-            return reconfigureImpl(req, form);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #reconfigure(StaplerRequest2, JSONObject)}
-     */
-    @Deprecated
-    public Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {
-        return reconfigureImpl(StaplerRequest.toStaplerRequest2(req), form);
-    }
-
-    private Cloud reconfigureImpl(@NonNull final StaplerRequest2 req, JSONObject form) throws Descriptor.FormException {
         if (form == null)     return null;
         return getDescriptor().newInstance(req, form);
     }
