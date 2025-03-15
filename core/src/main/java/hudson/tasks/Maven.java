@@ -127,6 +127,7 @@ public class Maven extends Builder {
      *
      * @since 1.322
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public boolean usePrivateRepository;
 
     /**
