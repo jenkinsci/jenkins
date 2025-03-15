@@ -136,6 +136,10 @@ THE SOFTWARE.
     </l:hasPermission>
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <j:set var="breadcrumbs">
+      <j:set var="mode" value="breadcrumbs" />
+      <d:invokeBody />
+    </j:set>
     <j:set var="mode" value="header" />
     <d:invokeBody />
     <j:if test="${extensionsAvailable}">
@@ -158,11 +162,6 @@ THE SOFTWARE.
     <j:if test="${layoutType!='full-screen'}">
       <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
       <a href="#skip2content" class="jenkins-skip-link">Skip to content</a>
-
-      <j:set var="breadcrumbs">
-        <j:set var="mode" value="breadcrumbs" />
-        <d:invokeBody />
-      </j:set>
 
       <l:pageHeader title="${%title}"
                     logoAlt="${%jenkinshead.alt}"
