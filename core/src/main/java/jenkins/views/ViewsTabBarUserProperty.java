@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, Winston.Prakash@Oracle.com
+ * Copyright (c) 2025 Markus Winter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,35 +22,59 @@
  * THE SOFTWARE.
  */
 
-package hudson.views;
+package jenkins.views;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.model.User;
+import hudson.model.UserProperty;
+import hudson.model.UserPropertyDescriptor;
+import hudson.model.userproperty.UserPropertyCategory;
+import hudson.views.ViewsTabBar;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
-/**
- * The Default MyViewsTabBar Extension for {@link MyViewsTabBar}.
- *
- * @author Winston Prakash
- * @since 1.378
- * @see MyViewsTabBar
- * @deprecated No longer used
- */
-@Deprecated
-public class DefaultMyViewsTabBar extends MyViewsTabBar {
+@Restricted(NoExternalUse.class)
+public class ViewsTabBarUserProperty extends UserProperty {
+
+    private ViewsTabBar viewsTabBar;
+
     @DataBoundConstructor
-    public DefaultMyViewsTabBar() {
+    public ViewsTabBarUserProperty() {
     }
 
-    @Extension @Symbol("standard")
-    public static class DescriptorImpl extends MyViewsTabBarDescriptor {
+    @DataBoundSetter
+    public void setViewsTabBar(ViewsTabBar viewsTabBar) {
+        this.viewsTabBar = viewsTabBar;
+    }
+
+    @CheckForNull
+    public ViewsTabBar getViewsTabBar() {
+        return viewsTabBar;
+    }
+
+    @Extension
+    @Symbol("viewsTabBar")
+    public static class DescriptorImpl extends UserPropertyDescriptor {
+
         @NonNull
         @Override
         public String getDisplayName() {
-            return Messages.DefaultMyViewsTabsBar_DisplayName();
-            //return "Default My Views TabsBar";
+            return Messages.ViewsTabBarUserProperty_DisplayName();
+        }
+
+        @Override
+        public UserProperty newInstance(User user) {
+            return new ViewsTabBarUserProperty();
+        }
+
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Preferences.class);
         }
     }
-
 }
