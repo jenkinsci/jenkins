@@ -895,37 +895,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public Object getDynamic(String token, StaplerRequest2 req,
                              StaplerResponse2 rsp) {
-        if (Util.isOverridden(Job.class, getClass(), "getDynamic", String.class, StaplerRequest.class, StaplerResponse.class)) {
-            return getDynamic(token, StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-        }
-        try {
-            // try to interpret the token as build number
-            return getBuildByNumber(Integer.parseInt(token));
-        } catch (NumberFormatException e) {
-            // try to map that to widgets
-            for (Widget w : getWidgets()) {
-                if (w.getUrlName().equals(token))
-                    return w;
-            }
-
-            // is this a permalink?
-            for (Permalink p : getPermalinks()) {
-                if (p.getId().equals(token))
-                    return p.resolve(this);
-            }
-
-            return super.getDynamic(token, req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #getDynamic(String, StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @Override
-    public Object getDynamic(String token, StaplerRequest req,
-            StaplerResponse rsp) {
-        // Intentionally not factoring this out into a common implementation method because it contains a call to super.
         try {
             // try to interpret the token as build number
             return getBuildByNumber(Integer.parseInt(token));
