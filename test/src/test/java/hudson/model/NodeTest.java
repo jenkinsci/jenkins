@@ -39,6 +39,7 @@ import static org.junit.Assert.fail;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
@@ -61,6 +62,7 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.List;
 import jenkins.model.Jenkins;
+import jenkins.model.NodeListener;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
@@ -91,6 +93,18 @@ public class NodeTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
     }
 
+    @TestExtension("testSetTemporaryOfflineCause")
+    public static class NodeListenerImpl extends NodeListener {
+        public static int getCount() {
+            return ExtensionList.lookupSingleton(NodeListenerImpl.class).count;
+        }
+        private int count;
+        @Override
+        protected void onUpdated(@NonNull Node oldOne, @NonNull Node newOne) {
+            count++;
+        }
+    }
+
     @Test
     public void testSetTemporaryOfflineCause() throws Exception {
         Node node = j.createOnlineSlave();
@@ -98,16 +112,19 @@ public class NodeTest {
         project.setAssignedLabel(j.jenkins.getLabel(node.getDisplayName()));
         OfflineCause cause = new OfflineCause.ByCLI("message");
         node.setTemporaryOfflineCause(cause);
+        assertThat(NodeListenerImpl.getCount(), is(1));
         for (ComputerListener l : ComputerListener.all()) {
             l.onOnline(node.toComputer(), TaskListener.NULL);
         }
         assertEquals("Node should have offline cause which was set.", cause, node.toComputer().getOfflineCause());
         OfflineCause cause2 = new OfflineCause.ByCLI("another message");
         node.setTemporaryOfflineCause(cause2);
+        assertThat(NodeListenerImpl.getCount(), is(2));
         assertEquals("Node should have the new offline cause.", cause2, node.toComputer().getOfflineCause());
         // Exists in some plugins
         node.toComputer().setTemporarilyOffline(false, new OfflineCause.ByCLI("A third message"));
         assertThat(node.getTemporaryOfflineCause(), nullValue());
+        assertThat(NodeListenerImpl.getCount(), is(3));
     }
 
     @Test

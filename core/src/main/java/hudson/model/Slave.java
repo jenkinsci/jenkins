@@ -248,6 +248,15 @@ public abstract class Slave extends Node implements Serializable {
         return launcher == null ? new JNLPLauncher() : launcher;
     }
 
+    /**
+     * @deprecated In most cases, you should not call this method directly, but {@link Jenkins#updateNode(Node)} instead.
+     */
+    @Override
+    @Deprecated
+    public void save() throws IOException {
+        super.save();
+    }
+
     public void setLauncher(ComputerLauncher launcher) {
         this.launcher = launcher;
     }
