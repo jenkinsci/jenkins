@@ -25,7 +25,6 @@
 package hudson.security;
 
 import hudson.model.User;
-import hudson.util.Scrambler;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.RequestDispatcher;
@@ -38,6 +37,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import jenkins.model.Jenkins;
 import jenkins.security.BasicApiTokenHelper;
 import jenkins.security.SecurityListener;
@@ -126,7 +126,7 @@ public class BasicAuthenticationFilter implements CompatibleFilter {
         // authenticate the user
         String username = null;
         String password = null;
-        String uidpassword = Scrambler.descramble(authorization.substring(6));
+        String uidpassword = new String(Base64.getDecoder().decode(authorization.substring(6).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
         int idx = uidpassword.indexOf(':');
         if (idx >= 0) {
             username = uidpassword.substring(0, idx);
