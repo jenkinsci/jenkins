@@ -172,6 +172,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private static final String[] ILLEGAL_PERSISTED_USERNAMES = new String[]{ACL.ANONYMOUS_USERNAME,
             ACL.SYSTEM_USERNAME, UNKNOWN_USERNAME};
 
+    @SuppressFBWarnings(value = "SS_SHOULD_BE_STATIC", justification = "Reserved for future use")
     private final int version = 10; // Not currently used, but it may be helpful in the future to store a version.
     private String id;
     private volatile String fullName;

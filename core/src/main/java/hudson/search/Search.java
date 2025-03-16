@@ -271,6 +271,7 @@ public class Search implements StaplerProxy {
         return builder.make();
     }
 
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     private static class SearchResultImpl extends ArrayList<SuggestedItem> implements SearchResult {
 
         private boolean hasMoreResults = false;
