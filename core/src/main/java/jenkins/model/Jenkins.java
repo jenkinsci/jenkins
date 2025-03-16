@@ -633,6 +633,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public final transient PluginManager pluginManager;
 
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public transient volatile TcpSlaveAgentListener tcpSlaveAgentListener;
 
     private final transient Object tcpSlaveAgentListenerLock = new Object();
@@ -870,6 +871,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * HTTP proxy configuration.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public transient volatile ProxyConfiguration proxy;
 
     /**
@@ -973,6 +975,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             ClassFilterImpl.register();
             LOGGER.info("Starting version " + getVersion());
+
+            // Sanity check that we can load the confidential store. Fail fast if we can't.
+            ConfidentialStore.get();
 
             // initialization consists of ...
             executeReactor(is,
@@ -2864,11 +2869,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             delta = ExtensionComponentSet.union(delta, ef.refresh().filtered());
         }
 
+        List<ExtensionList> listsToFireOnChangeListeners = new ArrayList<>();
         for (ExtensionList el : extensionLists.values()) {
-            el.refresh(delta);
+            if (el.refresh(delta)) {
+                listsToFireOnChangeListeners.add(el);
+            }
         }
         for (ExtensionList el : descriptorLists.values()) {
-            el.refresh(delta);
+            if (el.refresh(delta)) {
+                listsToFireOnChangeListeners.add(el);
+            }
+        }
+        // Refresh all extension lists before firing any listeners in case a listener would cause any new extension
+        // lists to be forcibly loaded, which may lead to duplicate entries for the same extension object in a list.
+        for (var el : listsToFireOnChangeListeners) {
+            el.fireOnChangeListeners();
         }
 
         // TODO: we need some generalization here so that extension points can be notified when a refresh happens?
@@ -4162,6 +4177,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new HttpRedirect(".");
     }
 
+    @POST
     public HttpResponse doToggleCollapse() throws ServletException, IOException {
         final StaplerRequest2 request = Stapler.getCurrentRequest2();
         final String paneId = request.getParameter("paneId");
@@ -4462,15 +4478,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         rsp.getWriter().println("GCed");
-    }
-
-    /**
-     * End point that intentionally throws an exception to test the error behaviour.
-     * @since 1.467
-     */
-    @StaplerDispatchable
-    public void doException() {
-        throw new RuntimeException();
     }
 
     @Override
@@ -5476,7 +5483,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         @Override
         public boolean hasPermission(Permission permission) {
             // no one should be allowed to delete the master.
-            // this hides the "delete" link from the /computer/(master) page.
+            // this hides the "delete" link from the /computer/(built-in)/ page.
             if (permission == Computer.DELETE)
                 return false;
             // Configuration of master node requires ADMINISTER permission
@@ -5614,10 +5621,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Version number of this Jenkins.
      */
-    @SuppressFBWarnings(value = "MS_CANNOT_BE_FINAL", justification = "cannot be made immutable without breaking compatibility")
+    @SuppressFBWarnings(value = {"MS_CANNOT_BE_FINAL", "PA_PUBLIC_PRIMITIVE_ATTRIBUTE"}, justification = "Preserve API compatibility")
     public static String VERSION = UNCOMPUTED_VERSION;
 
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public static String CHANGELOG_URL;
 
     /**
@@ -5680,6 +5688,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Hash of {@link #VERSION}.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public static String VERSION_HASH;
 
     /**
@@ -5689,7 +5698,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * We used to use {@link #VERSION_HASH}, but making this session local allows us to
      * reuse the same {@link #RESOURCE_PATH} for static resources in plugins.
      */
-    @SuppressFBWarnings(value = "MS_CANNOT_BE_FINAL", justification = "cannot be made immutable without breaking compatibility")
+    @SuppressFBWarnings(value = {"MS_CANNOT_BE_FINAL", "PA_PUBLIC_PRIMITIVE_ATTRIBUTE"}, justification = "Preserve API compatibility")
     public static String SESSION_HASH;
 
     /**
@@ -5699,7 +5708,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>
      * Value computed in {@link WebAppMain}.
      */
-    @SuppressFBWarnings(value = "MS_CANNOT_BE_FINAL", justification = "cannot be made immutable without breaking compatibility")
+    @SuppressFBWarnings(value = {"MS_CANNOT_BE_FINAL", "PA_PUBLIC_PRIMITIVE_ATTRIBUTE"}, justification = "Preserve API compatibility")
     public static String RESOURCE_PATH = "";
 
     /**
@@ -5709,7 +5718,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>
      * Value computed in {@link WebAppMain}.
      */
-    @SuppressFBWarnings(value = "MS_CANNOT_BE_FINAL", justification = "cannot be made immutable without breaking compatibility")
+    @SuppressFBWarnings(value = {"MS_CANNOT_BE_FINAL", "PA_PUBLIC_PRIMITIVE_ATTRIBUTE"}, justification = "Preserve API compatibility")
     public static String VIEW_RESOURCE_PATH = "/resources/TBD";
 
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")

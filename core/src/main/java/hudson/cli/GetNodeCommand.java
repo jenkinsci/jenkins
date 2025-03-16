@@ -27,8 +27,11 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Node;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import jenkins.model.Jenkins;
+import jenkins.security.ExtendedReadRedaction;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -52,7 +55,16 @@ public class GetNodeCommand extends CLICommand {
 
         node.checkPermission(Computer.EXTENDED_READ);
 
-        Jenkins.XSTREAM2.toXMLUTF8(node, stdout);
+        if (node.hasPermission(Computer.CONFIGURE)) {
+            Jenkins.XSTREAM2.toXMLUTF8(node, stdout);
+        } else {
+            var baos = new ByteArrayOutputStream();
+            Jenkins.XSTREAM2.toXMLUTF8(node, baos);
+            String xml = baos.toString(StandardCharsets.UTF_8);
+
+            xml = ExtendedReadRedaction.applyAll(xml);
+            org.apache.commons.io.IOUtils.write(xml, stdout, StandardCharsets.UTF_8);
+        }
 
         return 0;
     }

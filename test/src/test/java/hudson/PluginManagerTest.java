@@ -86,7 +86,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
-import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -389,28 +388,6 @@ public class PluginManagerTest {
         assertEquals(1, r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension").size());
     }
 
-    /**
-     * Load "optional-depender" and then load "dependee".
-     * Asserts that "depender" can access to "dependee".
-     */
-    @Issue("JENKINS-60449")
-    @WithPlugin("variant.hpi")
-    @Test public void installDependedOptionalPluginWithoutRestart() throws Exception {
-        // Load optional-depender.
-        {
-            dynamicLoad("optional-depender-0.0.2.hpi");
-        }
-        // Extension depending on dependee class isn't loaded
-        assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.optionaldepender.OptionalDependerExtension").isEmpty());
-        // Load dependee.
-        {
-            dynamicLoad("dependee-0.0.2.hpi");
-        }
-
-        // Extensions in depender are loaded.
-        assertEquals(1, r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.optionaldepender.OptionalDependerExtension").size());
-    }
-
     @Issue("JENKINS-21486")
     @Test public void installPluginWithObsoleteDependencyFails() throws Exception {
         // Load dependee 0.0.1.
@@ -609,22 +586,6 @@ public class PluginManagerTest {
         URL fromToolkit = ClassLoaderReflectionToolkit._findResource(w.classLoader, "org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
 
         assertEquals(fromPlugin, fromToolkit);
-    }
-
-    // Sources for jenkins-50336.hpi are available at https://github.com/Vlatombe/jenkins-50336
-    //
-    // package io.jenkins.plugins;
-    // import org.jenkinsci.plugins.variant.OptionalExtension;
-    // import jenkins.model.GlobalConfiguration;
-    // @OptionalExtension public class MyGlobalConfiguration extends GlobalConfiguration {}
-    //
-    @Issue("JENKINS-50336")
-    @Test
-    public void optionalExtensionCanBeFoundAfterDynamicLoadOfVariant() throws Exception {
-        dynamicLoad("variant.hpi");
-        assertNotNull(r.jenkins.getPluginManager().getPlugin("variant"));
-        dynamicLoad("jenkins-50336.hpi");
-        assertTrue(ExtensionList.lookup(GlobalConfiguration.class).stream().anyMatch(gc -> "io.jenkins.plugins.MyGlobalConfiguration".equals(gc.getClass().getName())));
     }
 
     @Test @Issue("JENKINS-64840")

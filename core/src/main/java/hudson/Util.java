@@ -92,6 +92,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -115,7 +116,6 @@ import jenkins.model.Jenkins;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.PathRemover;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -635,7 +635,6 @@ public class Util {
      *      The stream will be closed by this method at the end of this method.
      * @return
      *      32-char wide string
-     * @see DigestUtils#md5Hex(InputStream)
      */
     @NonNull
     public static String getDigestOf(@NonNull InputStream source) throws IOException {
@@ -710,13 +709,7 @@ public class Util {
 
     @NonNull
     public static String toHexString(@NonNull byte[] data, int start, int len) {
-        StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < len; i++) {
-            int b = data[start + i] & 0xFF;
-            if (b < 16)    buf.append('0');
-            buf.append(Integer.toHexString(b));
-        }
-        return buf.toString();
+        return HexFormat.of().formatHex(data, start, len);
     }
 
     @NonNull
@@ -726,12 +719,7 @@ public class Util {
 
     @NonNull
     public static byte[] fromHexString(@NonNull String data) {
-        if (data.length() % 2 != 0)
-            throw new IllegalArgumentException("data must have an even number of hexadecimal digits");
-        byte[] r = new byte[data.length() / 2];
-        for (int i = 0; i < data.length(); i += 2)
-            r[i / 2] = (byte) Integer.parseInt(data.substring(i, i + 2), 16);
-        return r;
+        return HexFormat.of().parseHex(data);
     }
 
     /**
@@ -1663,7 +1651,7 @@ public class Util {
      * @since 2.3 / 1.651.2
      */
     public static boolean isSafeToRedirectTo(@NonNull String uri) {
-        return !isAbsoluteUri(uri) && !uri.startsWith("//");
+        return !isAbsoluteUri(uri) && !uri.startsWith("\\") && !uri.replace('\\', '/').startsWith("//");
     }
 
     /**
@@ -1992,9 +1980,18 @@ public class Util {
      * Returns Hex string of SHA-256 Digest of passed input
      */
     @Restricted(NoExternalUse.class)
-    public static String getHexOfSHA256DigestOf(byte[] input) throws IOException {
+    public static String getHexOfSHA256DigestOf(byte[] input) {
         //get hex string of sha 256 of payload
         byte[] payloadDigest = Util.getSHA256DigestOf(input);
         return (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
+    }
+
+
+    /**
+     * Returns Hex string of SHA-256 Digest of passed string
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getHexOfSHA256DigestOf(String input) {
+        return getHexOfSHA256DigestOf(input.getBytes(StandardCharsets.UTF_8));
     }
 }

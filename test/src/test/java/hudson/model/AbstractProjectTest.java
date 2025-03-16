@@ -666,6 +666,7 @@ public class AbstractProjectTest {
             o.put("url", JSONObject.fromObject(null));
             o.put("icon", JSONObject.fromObject(null));
             o.put("type", "symbol");
+            o.put("group", JSONObject.fromObject(null));
             expected.add(o);
         }
         assertThat(suggestions.containsAll(expected), is(true));
