@@ -356,6 +356,7 @@ public class CLI {
                 this.hr = hr;
             }
         }
+
         var authenticator = new Authenticator();
 
         ClientManager client = ClientManager.createClient(JdkClientContainer.class.getName()); // ~ ContainerProvider.getWebSocketContainer()
