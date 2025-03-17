@@ -2,16 +2,13 @@
   &--badge {
     width: 48px;
     height: 48px;
-
     border-radius: 50%;
     border-width: 4px;
     border-style: solid;
     border-color: var(--accent-color);
-
     display: table-cell;
     vertical-align: middle;
     text-align: center;
-
     background-color: var(--background);
 
     &:hover {
