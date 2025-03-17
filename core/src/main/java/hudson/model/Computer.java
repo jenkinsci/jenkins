@@ -74,6 +74,7 @@ import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
 import jakarta.servlet.ServletException;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -83,6 +84,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardCopyOption;
@@ -110,6 +112,8 @@ import jenkins.model.DisplayExecutor;
 import jenkins.model.IComputer;
 import jenkins.model.IDisplayExecutor;
 import jenkins.model.Jenkins;
+import jenkins.search.SearchGroup;
+import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.ImpersonatingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.stapler.StaplerDispatchable;
@@ -1109,6 +1113,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return getUrl();
     }
 
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.ComputerSearchGroup.class);
+    }
+
     /**
      * {@link RetentionStrategy} associated with this computer.
      *
@@ -1526,7 +1535,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             if (node == null) {
                 throw HttpResponses.notFound();
             }
-            Jenkins.XSTREAM2.toXMLUTF8(node, rsp.getOutputStream());
+            if (hasPermission(CONFIGURE)) {
+                Jenkins.XSTREAM2.toXMLUTF8(node, rsp.getOutputStream());
+            } else {
+                var baos = new ByteArrayOutputStream();
+                Jenkins.XSTREAM2.toXMLUTF8(node, baos);
+                String xml = baos.toString(StandardCharsets.UTF_8);
+
+                xml = ExtendedReadRedaction.applyAll(xml);
+                org.apache.commons.io.IOUtils.write(xml, rsp.getOutputStream(), StandardCharsets.UTF_8);
+            }
             return;
         }
         if (req.getMethod().equals("POST")) {
@@ -1664,6 +1682,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         relocateOldLogs(Jenkins.get().getRootDir());
     }
 
+    @SuppressFBWarnings(value = "REDOS", justification = "TODO needs triage")
     /*package*/ static void relocateOldLogs(File dir) {
         final Pattern logfile = Pattern.compile("slave-(.*)\\.log(\\.[0-9]+)?");
         File[] logfiles = dir.listFiles((dir1, name) -> logfile.matcher(name).matches());
