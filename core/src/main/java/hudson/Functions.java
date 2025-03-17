@@ -1810,6 +1810,7 @@ public class Functions {
         return s.toString();
     }
 
+    @SuppressFBWarnings(value = "INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE", justification = "Jenkins handles this issue differently or doesn't care about it")
     private static void doPrintStackTrace(@NonNull StringBuilder s, @NonNull Throwable t, @CheckForNull Throwable higher, @NonNull String prefix, @NonNull Set<Throwable> encountered) {
         if (!encountered.add(t)) {
             s.append("<cycle to ").append(t).append(">\n");
@@ -1863,6 +1864,7 @@ public class Functions {
      * @param pw the log
      * @since 2.43
      */
+    @SuppressFBWarnings(value = "XSS_SERVLET", justification = "TODO needs triage")
     public static void printStackTrace(@CheckForNull Throwable t, @NonNull PrintWriter pw) {
         pw.println(printThrowable(t).trim());
     }
