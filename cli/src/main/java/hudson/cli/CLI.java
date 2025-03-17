@@ -343,12 +343,14 @@ public class CLI {
 
         class Authenticator extends ClientEndpointConfig.Configurator {
             HandshakeResponse hr;
+
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
                 if (factory.authorization != null) {
                     headers.put("Authorization", List.of(factory.authorization));
                 }
             }
+
             @Override
             public void afterResponse(HandshakeResponse hr) {
                 this.hr = hr;
