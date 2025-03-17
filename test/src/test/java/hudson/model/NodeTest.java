@@ -95,10 +95,12 @@ public class NodeTest {
 
     @TestExtension("testSetTemporaryOfflineCause")
     public static class NodeListenerImpl extends NodeListener {
+        private int count;
+
         public static int getCount() {
             return ExtensionList.lookupSingleton(NodeListenerImpl.class).count;
         }
-        private int count;
+
         @Override
         protected void onUpdated(@NonNull Node oldOne, @NonNull Node newOne) {
             count++;
