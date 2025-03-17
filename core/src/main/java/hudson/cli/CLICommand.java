@@ -124,6 +124,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * (In contrast, calling {@code System.out.println(...)} would print out
      * the message to the server log file, which is probably not what you want.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public transient PrintStream stdout, stderr;
 
     /**
@@ -139,6 +140,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * <p>
      * This input stream is buffered to hide the latency in the remoting.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public transient InputStream stdin;
 
     /**
@@ -150,6 +152,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     /**
      * The locale of the client. Messages should be formatted with this resource.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public transient Locale locale;
 
     /**
