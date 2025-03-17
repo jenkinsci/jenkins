@@ -307,7 +307,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
 
-
     private void printError(String errorMessage) {
         this.stderr.println();
         this.stderr.println("ERROR: " + errorMessage);
