@@ -40,14 +40,13 @@ THE SOFTWARE.
   <j:set var="initialDescription" value="${request2.getParameter('description')}" defaultValue="${it.description}"/>
   <l:ajax>
     <form action="${submissionUrl}" method="post">
-      <table>
-        <f:entry help="${app.markupFormatter.helpUrl}">
-          <f:textarea name="description" value="${initialDescription}"
-                      codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-        </f:entry>
-      </table>
-      <div align="right">
+      <f:entry help="${app.markupFormatter.helpUrl}">
+        <f:textarea name="description" value="${initialDescription}"
+                    codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+      </f:entry>
+      <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
         <f:submit value="${%Save}" />
+        <button type="button" class="jenkins-button description-cancel-button">${%Cancel}</button>
       </div>
     </form>
   </l:ajax>
