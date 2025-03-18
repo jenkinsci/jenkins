@@ -156,7 +156,8 @@ public class Security3430Test {
                 // outdated remoting.jar will fail, but up to date one passes
                 if (requestingJarFromAgent) {
                     final IOException ex = assertThrows(IOException.class, () -> channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, Stapler.class));
-                    assertThat(ex.getMessage(), containsString("No hudson.remoting.JarURLValidator has been set for this channel, so all #fetchJar calls are rejected. This is likely a bug in Jenkins. As a workaround, try updating the agent.jar file."));
+                    assertThat(ex.getMessage(), containsString(
+                            "No hudson.remoting.JarURLValidator has been set for this channel, so all #fetchJar calls are rejected. This is likely a bug in Jenkins. As a workaround, try updating the agent.jar file."));
                 } else {
                     assertTrue(channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, Stapler.class));
                     assertThat(logRecords.stream().map(LogRecord::getMessage).toList(), is(empty()));
@@ -227,7 +228,8 @@ public class Security3430Test {
                     assertThat(logRecords, not(hasItem(logMessageContainsString("Allowing URL"))));
                     assertThat(logRecords, hasItem(logMessageContainsString("Rejecting URL: ")));
                 } else {
-                    assertThat(itex.getCause().getMessage(), containsString("No hudson.remoting.JarURLValidator has been set for this channel, so all #fetchJar calls are rejected. This is likely a bug in Jenkins. As a workaround, try updating the agent.jar file."));
+                    assertThat(itex.getCause().getMessage(), containsString(
+                            "No hudson.remoting.JarURLValidator has been set for this channel, so all #fetchJar calls are rejected. This is likely a bug in Jenkins. As a workaround, try updating the agent.jar file."));
                 }
             }
 
