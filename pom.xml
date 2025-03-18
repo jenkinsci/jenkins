@@ -86,9 +86,8 @@ THE SOFTWARE.
 
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
-    <!-- TODO this is an incremental version, update to release version after https://github.com/jenkinsci/jenkins-test-harness/pull/935-->
     <!-- Bundled Remoting version -->
-    <remoting.version>3295.vd3a_13e38380c</remoting.version>
+    <remoting.version>3299.v0d0d06908537</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -99,7 +98,7 @@ THE SOFTWARE.
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>8.5</winstone.version>
-    <node.version>20.18.3</node.version>
+    <node.version>20.19.0</node.version>
   </properties>
 
   <!--
