@@ -270,6 +270,7 @@ public class Security3430Test {
             this.controllerFilePath = controllerFilePath;
             this.expectedContent = expectedContent;
         }
+
         @Override
         public Void call() throws Exception {
             final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
