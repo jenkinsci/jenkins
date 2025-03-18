@@ -21,7 +21,6 @@ complete {
   // logkit is a part of Avalon
   match([
     "org.apache.ant:*",
-    "commons-jelly:*",
     "log4j:*",
     "avalon-framework:*",
     "logkit:logkit",
@@ -30,8 +29,9 @@ complete {
     "commons-beanutils:*",
     "commons-net:*",
     "commons-cli:*",
-    "*:commons-jelly",
+    "org.jenkins-ci:commons-jelly",
     "org.jenkins-ci:commons-jelly-tags-fmt",
+    "org.jenkins-ci:commons-jelly-tags-xml",
     "org.jvnet.hudson:commons-jelly-tags-define",
     "slide:slide-webdavlib"
   ]) {
