@@ -266,7 +266,7 @@ public class Security3430Test {
         private final URL controllerFilePath;
         private final String expectedContent;
 
-        public Exploit(URL controllerFilePath, String expectedContent) {
+        Exploit(URL controllerFilePath, String expectedContent) {
             this.controllerFilePath = controllerFilePath;
             this.expectedContent = expectedContent;
         }
@@ -293,7 +293,7 @@ public class Security3430Test {
     private static final class LogMessageContainsString extends TypeSafeMatcher<LogRecord> {
         private final Matcher<String> stringMatcher;
 
-        public LogMessageContainsString(Matcher<String> stringMatcher) {
+        LogMessageContainsString(Matcher<String> stringMatcher) {
             this.stringMatcher = stringMatcher;
         }
 
