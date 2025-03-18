@@ -196,21 +196,21 @@ THE SOFTWARE.
                   <l:isAdmin>
                     <td class="jenkins-table__cell--tight">
                       <div class="jenkins-table__cell__button-wrapper">
-                        <j:if test="${p.downgradable}">
-                          <form method="post"
-                                class="jenkins-buttons-row"
-                                action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
-                            <button class="jenkins-button jenkins-button--tertiary jenkins-!-color-orange"
-                                    style="padding: 0.5rem"
-                                    tooltip="${%downgradeTo(p.backupVersion)}">
-                              <l:icon src="symbol-downgrade-circle"/>
-                              <span
-                                      style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">
-                                ${p.backupVersion}
-                              </span>
-                            </button>
-                          </form>
-                        </j:if>
+                          <j:if test="${p.downgradable}">
+                            <form method="post"
+                                  class="jenkins-buttons-row"
+                                  action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
+                              <button class="jenkins-button jenkins-button--tertiary jenkins-!-color-orange"
+                                      style="padding: 0.5rem"
+                                      tooltip="${%downgradeTo(p.backupVersion)}">
+                                <l:icon src="symbol-downgrade-circle"/>
+                                <span
+                                    style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">
+                                  ${p.backupVersion}
+                                </span>
+                              </button>
+                            </form>
+                          </j:if>
                       </div>
                     </td>
                   </l:isAdmin>
