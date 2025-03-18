@@ -40,7 +40,6 @@ import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -184,30 +183,7 @@ public abstract class ParameterDefinition implements
      * and submits it to the server.
      */
     @CheckForNull
-    public /* abstract */ ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
-        return Util.ifOverridden(
-                () -> createValue(StaplerRequest.fromStaplerRequest2(req), jo),
-                ParameterDefinition.class,
-                getClass(),
-                "createValue",
-                StaplerRequest.class,
-                JSONObject.class);
-    }
-
-    /**
-     * @deprecated use {@link #createValue(StaplerRequest2, JSONObject)}
-     */
-    @CheckForNull
-    @Deprecated
-    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
-        return Util.ifOverridden(
-                () -> createValue(StaplerRequest.toStaplerRequest2(req), jo),
-                ParameterDefinition.class,
-                getClass(),
-                "createValue",
-                StaplerRequest2.class,
-                JSONObject.class);
-    }
+    public abstract ParameterValue createValue(StaplerRequest2 req, JSONObject jo);
 
     /**
      * Create a parameter value from a GET with query string.
@@ -226,28 +202,7 @@ public abstract class ParameterDefinition implements
      *      If the parameter is deemed required but was missing in the submission.
      */
     @CheckForNull
-    public /* abstract */ ParameterValue createValue(StaplerRequest2 req) {
-        return Util.ifOverridden(
-                () -> createValue(StaplerRequest.fromStaplerRequest2(req)),
-                ParameterDefinition.class,
-                getClass(),
-                "createValue",
-                StaplerRequest.class);
-    }
-
-    /**
-     * @deprecated use {@link #createValue(StaplerRequest2)}
-     */
-    @CheckForNull
-    @Deprecated
-    public ParameterValue createValue(StaplerRequest req) {
-        return Util.ifOverridden(
-                () -> createValue(StaplerRequest.toStaplerRequest2(req)),
-                ParameterDefinition.class,
-                getClass(),
-                "createValue",
-                StaplerRequest2.class);
-    }
+    public abstract ParameterValue createValue(StaplerRequest2 req);
 
     /**
      * Create a parameter value from the string given in the CLI.

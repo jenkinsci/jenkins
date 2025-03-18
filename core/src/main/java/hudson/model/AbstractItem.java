@@ -47,7 +47,6 @@ import hudson.util.AtomicFileWriter;
 import hudson.util.FormValidation;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -70,7 +69,6 @@ import jenkins.model.Loadable;
 import jenkins.model.queue.ItemDeletion;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.NotReallyRoleSensitiveCallable;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
 import org.apache.tools.ant.Project;
@@ -87,9 +85,7 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
@@ -652,31 +648,6 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      */
     @RequirePOST
     public synchronized void doSubmitDescription(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        if (Util.isOverridden(AbstractItem.class, getClass(), "doSubmitDescription", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                doSubmitDescription(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            doSubmitDescriptionImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doSubmitDescription(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public synchronized void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
-        try {
-            doSubmitDescriptionImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    private void doSubmitDescriptionImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
         setDescription(req.getParameter("description"));
@@ -693,27 +664,6 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      */
     @RequirePOST
     public void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, InterruptedException {
-        if (Util.isOverridden(AbstractItem.class, getClass(), "doDoDelete", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                doDoDelete(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            doDoDeleteImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doDoDelete(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException, InterruptedException {
-        doDoDeleteImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-    }
-
-    private void doDoDeleteImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, InterruptedException {
         delete();
         if (req == null || rsp == null) { // CLI
             return;
@@ -739,23 +689,6 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      */
     @Override
     public void delete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        deleteImpl(rsp);
-    }
-
-    /**
-     * @deprecated use {@link #delete(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @Override
-    public void delete(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
-        try {
-            deleteImpl(StaplerResponse.toStaplerResponse2(rsp));
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    private void deleteImpl(StaplerResponse2 rsp) throws IOException, ServletException {
         try {
             delete();
             rsp.setStatus(204);
@@ -834,25 +767,6 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      */
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest2 req, StaplerResponse2 rsp)
-            throws IOException {
-        if (Util.isOverridden(AbstractItem.class, getClass(), "doConfigDotXml", StaplerRequest.class, StaplerResponse.class)) {
-            doConfigDotXml(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-        } else {
-            doConfigDotXmlImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doConfigDotXml(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
-            throws IOException {
-        doConfigDotXmlImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-    }
-
-    private void doConfigDotXmlImpl(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException {
         if (req.getMethod().equals("GET")) {
             // read
