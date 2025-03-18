@@ -1115,7 +1115,8 @@ public abstract class Launcher {
             final String workDir = psPwd == null ? null : psPwd.getRemote();
 
             try {
-                RemoteLaunchCallable remote = new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener, ps.stdoutListener, envVarsFilterRuleWrapper);
+                RemoteLaunchCallable remote = new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err,
+                        ps.reverseStderr, ps.quiet, workDir, listener, ps.stdoutListener, envVarsFilterRuleWrapper);
                 // reset the rules to prevent build step without rules configuration to re-use those
                 envVarsFilterRuleWrapper = null;
                 return new ProcImpl(getChannel().call(remote));
