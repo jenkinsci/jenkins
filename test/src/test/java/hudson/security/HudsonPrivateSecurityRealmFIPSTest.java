@@ -164,7 +164,7 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         User u1 =  securityRealm.createAccount("test", "aValidFipsPass");
 
         WebClient wc = j.createWebClient();
-        wc.login("test","aValidFipsPass");
+        wc.login("test", "aValidFipsPass");
 
         HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
         HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
@@ -192,7 +192,7 @@ public class HudsonPrivateSecurityRealmFIPSTest {
 
 
         WebClient wc = j.createWebClient();
-        wc.login("test","aValidFipsPass");
+        wc.login("test", "aValidFipsPass");
 
         HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
         HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
@@ -219,7 +219,7 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         User u1 =  securityRealm.createAccount("test", "aValidFipsPass");
 
         WebClient wc = j.createWebClient();
-        wc.login("test","aValidFipsPass");
+        wc.login("test", "aValidFipsPass");
 
         HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
         HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
