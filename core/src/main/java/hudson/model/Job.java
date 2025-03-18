@@ -354,6 +354,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
          * Implementation of {@link Job#assignBuildNumber}.
          */
         int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException;
+
         /**
          * Provides an externally accessible alias for {@link Job#saveNextBuildNumber}, which is {@code protected}.
          * ({@link #getNextBuildNumber} and {@link #fastUpdateNextBuildNumber} are already accessible.)
