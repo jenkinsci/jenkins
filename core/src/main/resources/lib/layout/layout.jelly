@@ -218,17 +218,15 @@ THE SOFTWARE.
 
             <j:if test="${!empty(localeText)}">
               <div class="jenkins-page-generation-time">
-                  ${localeText == 'en' ? 'English' : 
-                  localeText == 'zh_TW' ? '中文 (繁體)' : 
+                  ${localeText == 'zh_TW' ? '中文 (繁體)' : 
                   localeText == 'tr' ? 'Türkçe' : 
                   localeText == 'ru' ? 'русский' : 
-                  'Unknown Language'}
+                  'English'}
                    &#160;&#160;&#160;&#160;
-                  ${localeText == 'en' ? 'Page generated' : 
-                    localeText == 'zh_TW' ? '畫面生成' : 
+                  ${localeText == 'zh_TW' ? '畫面生成' : 
                     localeText == 'tr' ? 'Sayfa oluşturuldu' : 
                     localeText == 'ru' ? 'Страница сгенерирована' : 
-                  'Unknown Language'}
+                  'Page generated'}
                   : <span id="page-gen-time"></span>
               </div>
             </j:if>
