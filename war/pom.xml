@@ -156,6 +156,7 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci:crypto-util</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
+                    <exclude>org.jenkins-ci.main:remoting</exclude>
                     <exclude>org.jenkins-ci.main:websocket-jetty12-ee9</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
                     <exclude>org.jenkins-ci:memory-monitor</exclude>
@@ -288,7 +289,7 @@ THE SOFTWARE.
                   <!-- detached after 1.535 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-auth</artifactId>
-                  <version>3.2.4</version>
+                  <version>3.2.5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -323,7 +324,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1363.v03f731255494</version>
+                  <version>1366.vf1fb_e1a_f6b_22</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -352,7 +353,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>961.v51869f7b_d409</version>
+                  <version>963.va_600813d04a_a_</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -647,7 +648,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty.ee9</groupId>
         <artifactId>jetty-ee9-maven-plugin</artifactId>
-        <version>12.0.16</version>
+        <version>12.0.17</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)

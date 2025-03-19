@@ -96,6 +96,7 @@ public class FileParameterValue extends ParameterValue {
      * @deprecated use {@link #FileParameterValue(String, FileItem)}
      */
     @Deprecated
+    @SuppressFBWarnings(value = "FILE_UPLOAD_FILENAME", justification = "TODO needs triage")
     public FileParameterValue(String name, org.apache.commons.fileupload.FileItem file) {
         this(name, file.toFileUpload2FileItem(), FilenameUtils.getName(file.getName()));
     }
