@@ -45,3 +45,17 @@
     display: none;
   }
 }
+
+.jenkins-page-generation-time {
+  pointer-events: none;
+  text-decoration: none;
+  background-color: transparent;
+  color: black;
+
+  &:hover,
+  &:focus {
+    color: black !important;
+    background-color: transparent !important;
+    text-decoration: none !important;
+  }
+}
