@@ -24,23 +24,11 @@
 
 package hudson.model;
 
-import hudson.Extension;
-import jenkins.model.Jenkins;
-
 /**
  * Partial default implementation of {@link Describable}.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated Implement {@link Describable} directly.
  */
-public abstract class AbstractDescribableImpl<T extends AbstractDescribableImpl<T>> implements Describable<T> {
-
-    /**
-     * By default looks for a nested class (conventionally named {@code DescriptorImpl}) implementing {@link Descriptor} and marked with {@link Extension}.
-     * <p>{@inheritDoc}
-     */
-    @Override
-    public Descriptor<T> getDescriptor() {
-        return Jenkins.get().getDescriptorOrDie(getClass());
-    }
-
-}
+@Deprecated
+public abstract class AbstractDescribableImpl<T extends AbstractDescribableImpl<T>> implements Describable<T> {}
