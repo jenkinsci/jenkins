@@ -35,6 +35,7 @@ THE SOFTWARE.
                    oneEach="true"
                    menuAlign="bl-tl"
                    honorOrder="true"
+                   enableTopButton="true"
                    addCaption="${%Add post-build action}"/>
   </f:section>
 </j:jelly>

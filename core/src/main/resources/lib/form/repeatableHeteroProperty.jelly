@@ -56,6 +56,12 @@ THE SOFTWARE.
       If true, insert new addition by default to their 'desired' location, which
       is the order induced by the descriptors.
     </st:attribute>
+    <st:attribute name="enableTopButton">
+      true if a new Add button, for inserting a new item, should be displayed above the existing items
+      Display of top button depends also on number of items. If there is no item, only one button is displayed. When at least one item is present, there are two
+      buttons displayed (only when enableTopButton is true). One above and one below.
+      Top button adds item on top, Bottom button adds item on the bottom. When honorOrder is set the item is inserted at its 'desired' location.
+    </st:attribute>
     <st:attribute name="capture">
       Config fragments from descriptors are rendered lazily by default, which means
       variables seen in the caller aren't visible to them. This attribute allows you
@@ -71,7 +77,7 @@ THE SOFTWARE.
                  addCaption="${attrs.addCaption}" deleteCaption="${attrs.deleteCaption}"
                  hasHeader="${attrs.hasHeader}" honorOrder="${attrs.honorOrder}"
                  menuAlign="${attrs.menuAlign}" oneEach="${attrs.oneEach}"
-                 targetType="${attrs.targetType}"
+                 targetType="${attrs.targetType}" enableTopButton="${attrs.enableTopButton}"
                  capture="${attrs.capture}"
           />
   <!-- TODO: there should be a mechanism to pass-through map as parameters -->

@@ -65,6 +65,12 @@ THE SOFTWARE.
       If true, insert new addition by default to their 'desired' location, which
       is the order induced by the descriptors.
     </st:attribute>
+    <st:attribute name="enableTopButton">
+      true if a new Add button, for inserting a new item, should be displayed above the existing items
+      Display of top button depends also on number of items. If there is no item, only one button is displayed. When at least one item is present, there are two
+      buttons displayed (only when enableTopButton is true). One above and one below.
+      Top button adds item on top  Bottom button adds item on the bottom. When honorOrder is set the item is inserted at its 'desired' location.
+    </st:attribute>
     <st:attribute name="capture">
       Config fragments from descriptors are rendered lazily by default, which means
       variables seen in the caller aren't visible to them. This attribute allows you
@@ -108,12 +114,21 @@ THE SOFTWARE.
   </d:taglib>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
+  <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}"
+        enableTopButton="${attrs.enableTopButton}">
+    <j:if test="${!readOnlyMode and attrs.enableTopButton}">
+      <div>
+        <button type="button" class="jenkins-button hetero-list-add hetero-list-add-top ${empty(attrs.items)?'jenkins-hidden':''}"
+                menualign="${attrs.menuAlign}" suffix="${attrs.name}">${attrs.addCaption?:'%Add'}<l:icon src="symbol-chevron-down"/>
+        </button>
+      </div>
+    </j:if>
+
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}"><!-- TODO consider customizedFields: how to distinguish default items from user-configured items? -->
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
-      <div name="${attrs.name}" class="repeated-chunk" descriptorId="${descriptor.id}">
+      <div name="${attrs.name}" class="repeated-chunk hetero-list-chunk" descriptorId="${descriptor.id}">
         <local:body deleteCaption="${attrs.deleteCaption}" disableDragAndDrop="${attrs.disableDragAndDrop}">
           <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
         </local:body>

@@ -38,20 +38,51 @@ function convertInputsToButtons(e) {
   });
 }
 
+function udpateTopButton(container) {
+  if (container.getAttribute("enableTopButton") === "true") {
+    let children = Array.from(container.children).filter(function (n) {
+      return n.classList.contains("repeated-chunk") && !n.classList.contains("fade-out");
+    });
+    const topAddButton = container.querySelector(".hetero-list-add-top");
+    if (children.length === 0) {
+      topAddButton.classList.add("jenkins-hidden");
+    } else {
+      topAddButton.classList.remove("jenkins-hidden");
+    }
+  }
+}
+
 function generateButtons() {
+  behaviorShim.specify(
+    "BUTTON.repeatable-delete",
+    "repeatable",
+    2,
+    function (n) {
+      n.addEventListener("click", function () {
+        n = n.closest(".repeated-chunk");
+        if (n.classList.contains("hetero-list-chunk")) {
+          const container = n.closest(".hetero-list-container");
+          udpateTopButton(container);
+        }
+      });
+    }
+  );
+
+
   behaviorShim.specify(
     "DIV.hetero-list-container",
     "hetero-list-new",
     -100,
-    function (e) {
-      if (isInsideRemovable(e)) {
+    function (container) {
+      if (isInsideRemovable(container)) {
         return;
       }
 
-      convertInputsToButtons(e);
-      let btn = Array.from(e.querySelectorAll("BUTTON.hetero-list-add")).pop();
+      convertInputsToButtons(container);
+      let btn = Array.from(container.querySelectorAll("BUTTON.hetero-list-add")).pop();
+      let topButton = Array.from(container.querySelectorAll("BUTTON.hetero-list-add-top")).pop();
 
-      let prototypes = e.lastElementChild;
+      let prototypes = container.lastElementChild;
       while (!prototypes.classList.contains("prototypes")) {
         prototypes = prototypes.previousElementSibling;
       }
@@ -73,11 +104,11 @@ function generateButtons() {
         });
       }
       prototypes.remove();
-      let withDragDrop = registerSortableDragDrop(e);
+      let withDragDrop = registerSortableDragDrop(container);
 
-      function insert(instance, template) {
+      function insert(instance, template, addOnTop) {
         let nc = document.createElement("div");
-        nc.className = "repeated-chunk fade-in";
+        nc.className = "repeated-chunk hetero-list-chunk fade-in";
         nc.setAttribute("name", template.name);
         nc.setAttribute("descriptorId", template.descriptorId);
         nc.innerHTML = template.html;
@@ -117,8 +148,8 @@ function generateButtons() {
                 return bestPos;
               }
 
-              let current = Array.from(e.children).filter(function (e) {
-                return e.matches("DIV.repeated-chunk");
+              let current = Array.from(container.children).filter(function (e) {
+                return container.matches("DIV.repeated-chunk");
               });
 
               function o(did) {
@@ -140,10 +171,20 @@ function generateButtons() {
                 return insertionPoint;
               }
             }
-            let referenceNode = e.classList.contains("honor-order")
+            let honorOrder = container.classList.contains("honor-order")
+            let referenceNode = honorOrder
               ? findInsertionPoint()
               : insertionPoint;
-            referenceNode.parentNode.insertBefore(nc, referenceNode);
+
+
+            if (addOnTop && !honorOrder && container.getAttribute("enableTopButton") === "true") {
+              let children = Array.from(container.children).filter(function (n) {
+                return n.classList.contains("repeated-chunk");
+              });
+              container.insertBefore(nc, children[0])
+            } else {
+              referenceNode.parentNode.insertBefore(nc, referenceNode);
+            }
 
             // Initialize drag & drop for this component
             if (withDragDrop) {
@@ -152,6 +193,7 @@ function generateButtons() {
             Behaviour.applySubtree(nc, true);
             ensureVisible(nc);
             nc.classList.remove("fade-in");
+            udpateTopButton(container);
             layoutUpdateCallback.call();
           },
           true,
@@ -160,14 +202,14 @@ function generateButtons() {
 
       function has(id) {
         return (
-          e.querySelector('DIV.repeated-chunk[descriptorId="' + id + '"]') !=
+          container.querySelector('DIV.repeated-chunk[descriptorId="' + id + '"]') !=
           null
         );
       }
 
-      let oneEach = e.classList.contains("one-each");
+      let oneEach = container.classList.contains("one-each");
 
-      generateDropDown(btn, (instance) => {
+      function expand(instance, addOnTop) {
         let menuItems = [];
         for (let i = 0; i < templates.length; i++) {
           let n = templates[i];
@@ -178,7 +220,7 @@ function generateButtons() {
             onClick: (event) => {
               event.preventDefault();
               event.stopPropagation();
-              insert(instance, n);
+              insert(instance, n, addOnTop);
             },
             type: type,
           };
@@ -189,6 +231,13 @@ function generateButtons() {
         menuContainer.appendChild(createFilter(menu));
         menuContainer.appendChild(menu);
         instance.setContent(menuContainer);
+      }
+
+      generateDropDown(btn, (instance) => {
+        expand(instance, false)
+      });
+      generateDropDown(topButton, (instance) => {
+        expand(instance, true)
       });
     },
   );
