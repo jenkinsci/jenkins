@@ -206,6 +206,7 @@ public final class TcpSlaveAgentListener extends Thread {
     /**
      * Initiates the shuts down of the listener.
      */
+    @SuppressFBWarnings(value = "UNENCRYPTED_SOCKET", justification = "TODO needs triage")
     public void shutdown() {
         shuttingDown = true;
         try {

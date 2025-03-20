@@ -27,6 +27,7 @@ package hudson;
 import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
@@ -113,6 +114,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * @see #getNoProxyHostPatterns()
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public String noProxyHost;
 
     @Deprecated

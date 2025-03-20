@@ -233,6 +233,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      * with the asymmetric cipher. The rest of the stream will be encrypted by a symmetric cipher.
      */
     public static final class CombinedCipherOutputStream extends FilterOutputStream {
+        @SuppressFBWarnings(value = "STATIC_IV", justification = "TODO needs triage")
         public CombinedCipherOutputStream(OutputStream out, Cipher asym, String algorithm) throws IOException, GeneralSecurityException {
             super(out);
 

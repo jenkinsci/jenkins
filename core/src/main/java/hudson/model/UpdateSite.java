@@ -208,7 +208,7 @@ public class UpdateSite {
      * Opens a connection to the given URL
      * @param src the url to connect to
      * @return A {@code URLConnection} for the given src URL
-     * @since TODO
+     * @since 2.499
      */
     public URLConnection connect(URL src) throws IOException {
         return ProxyConfiguration.open(src);
@@ -219,7 +219,7 @@ public class UpdateSite {
      *
      * @param src The location of the resource on the network
      * @throws IOException if the validation fails
-     * @since TODO
+     * @since 2.499
      */
     public void preValidate(URL src) throws IOException {
         // no validation needed in the default setup
@@ -1088,7 +1088,7 @@ public class UpdateSite {
          * {@code false} if it does; and {@code null} when the affected component isn't being offered, or it's a warning
          * for something other than core or a plugin.
          */
-        @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL")
+        @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "TODO needs triage")
         public Boolean isFixable() {
             final Data data = UpdateSite.this.data;
             if (data == null) {
