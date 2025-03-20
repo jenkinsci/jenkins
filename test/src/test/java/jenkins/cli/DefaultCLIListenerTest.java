@@ -27,6 +27,7 @@ package jenkins.cli;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 
 import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
@@ -149,6 +150,20 @@ public class DefaultCLIListenerTest {
         assertThat(
                 logging.getRecords().get(0).getThrown().getMessage(),
                 containsString("No such job ‘job-not-found’ exists."));
+    }
+
+    @Test
+    public void methodExecutionUnexpectedErrorIsLogged() throws Exception {
+        CLICommandInvoker command = new CLICommandInvoker(j, "restart");
+        command.asUser(USER).invoke();
+
+        List<String> messages = logging.getMessages();
+        assertThat(messages, hasSize(2));
+        assertThat(
+                messages.get(0),
+                containsString("Invoking CLI command restart, with 0 arguments, as user %s.".formatted(USER)));
+        assertThat(messages.get(1), containsString("Unexpected exception occurred while performing restart command."));
+        assertThat(logging.getRecords().get(0).getThrown(), notNullValue());
     }
 
     @TestExtension
