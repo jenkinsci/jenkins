@@ -227,7 +227,7 @@ public class DisconnectNodeCommandTest {
         if (offlineCause instanceof OfflineCause.ByCLI cliCause) {
             assertThat(cliCause.message, equalTo(message));
         } else {
-            assertThat("seen occasionally in CI", offlineCause, instanceOf(OfflineCause.ChannelTermination.class));
+            assertThat("sometimes overrides ByCLI", offlineCause, instanceOf(OfflineCause.ChannelTermination.class));
         }
     }
 }
