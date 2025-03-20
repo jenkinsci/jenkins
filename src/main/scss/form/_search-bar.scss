@@ -210,7 +210,7 @@
   height: 1px; // Setting to 0 caused the items not to render initially in Chrome
   opacity: 0;
   transition: var(--standard-transition);
-  background: color-mix(in sRGB, var(--background) 85%, transparent);
+  background: color-mix(in sRGB, var(--card-background) 85%, transparent);
   backdrop-filter: var(--dropdown-backdrop-filter);
   visibility: collapse;
   scale: 95%;
