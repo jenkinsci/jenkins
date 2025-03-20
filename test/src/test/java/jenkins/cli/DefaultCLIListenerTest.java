@@ -34,7 +34,7 @@ import hudson.cli.ListJobsCommand;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
-import jenkins.cli.listeners.DefaultCliListener;
+import jenkins.cli.listeners.DefaultCLIListener;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,7 +44,7 @@ import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 
-public class DefaultCliListenerTest {
+public class DefaultCLIListenerTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
@@ -62,7 +62,7 @@ public class DefaultCliListenerTest {
                 .everywhere()
                 .to(USER));
         j.createFreeStyleProject("p");
-        logging.record(DefaultCliListener.class, Level.FINE).capture(2);
+        logging.record(DefaultCLIListener.class, Level.FINE).capture(2);
     }
 
     @Test

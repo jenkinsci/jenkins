@@ -33,14 +33,14 @@ import hudson.cli.CLICommand;
  *
  * @since TODO
  */
-public interface CliListener extends ExtensionPoint {
+public interface CLIListener extends ExtensionPoint {
 
     /**
      * Invoked before command execution.
      *
      * @param context Information about the command being executed
      * */
-    default void onExecution(@NonNull CliContext context) {}
+    default void onExecution(@NonNull CLIContext context) {}
 
     /**
      * Invoked after command execution.
@@ -48,7 +48,7 @@ public interface CliListener extends ExtensionPoint {
      * @param context Information about the command being executed
      * @param exitCode Exit code returned by the implementation of {@link CLICommand#run()}.
      * */
-    default void onCompleted(@NonNull CliContext context, int exitCode) {}
+    default void onCompleted(@NonNull CLIContext context, int exitCode) {}
 
     /**
      * Invoked on command exception.
@@ -56,5 +56,5 @@ public interface CliListener extends ExtensionPoint {
      * @param context Information about the command being executed
      * @param t Any error during the execution of the command.
      * */
-    default void onException(@NonNull CliContext context, @NonNull Throwable t) {}
+    default void onException(@NonNull CLIContext context, @NonNull Throwable t) {}
 }

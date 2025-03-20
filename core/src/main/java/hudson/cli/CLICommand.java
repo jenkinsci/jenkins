@@ -48,8 +48,8 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Locale;
-import jenkins.cli.listeners.CliContext;
-import jenkins.cli.listeners.CliListener;
+import jenkins.cli.listeners.CLIContext;
+import jenkins.cli.listeners.CLIListener;
 import jenkins.model.Jenkins;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
@@ -242,7 +242,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.locale = locale;
         CmdLineParser p = getCmdLineParser();
 
-        CliContext context = new CliContext(getName(), args, getTransportAuthentication2());
+        CLIContext context = new CLIContext(getName(), args, getTransportAuthentication2());
 
         // add options from the authenticator
         SecurityContext sc = null;
@@ -258,14 +258,14 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 Jenkins.get().checkPermission(Jenkins.READ);
             p.parseArgument(args.toArray(new String[0]));
 
-            Listeners.notify(CliListener.class, true, listener -> listener.onExecution(context));
+            Listeners.notify(CLIListener.class, true, listener -> listener.onExecution(context));
             int res = run();
-            Listeners.notify(CliListener.class, true, listener -> listener.onCompleted(context, res));
+            Listeners.notify(CLIListener.class, true, listener -> listener.onCompleted(context, res));
 
             return res;
         } catch (Throwable e) {
             int exitCode = handleException(e, context, p);
-            Listeners.notify(CliListener.class, true, listener -> listener.onException(context, e));
+            Listeners.notify(CLIListener.class, true, listener -> listener.onException(context, e));
             return exitCode;
         } finally {
             if (sc != null)
@@ -276,7 +276,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     /**
      * Determines command stderr output and return the exit code as described on {@link #main(List, Locale, InputStream, PrintStream, PrintStream)}
      * */
-    protected int handleException(Throwable e, CliContext context, CmdLineParser p) {
+    protected int handleException(Throwable e, CLIContext context, CmdLineParser p) {
         int exitCode;
         if (e instanceof CmdLineException) {
             exitCode = 2;

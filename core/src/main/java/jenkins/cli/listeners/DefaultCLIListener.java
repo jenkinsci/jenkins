@@ -36,22 +36,22 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 
 /**
- * Basic default implementation of {@link CliListener} that just logs.
+ * Basic default implementation of {@link CLIListener} that just logs.
  */
 @Extension
 @Restricted(NoExternalUse.class)
-public class DefaultCliListener implements CliListener {
-    private static final Logger LOGGER = Logger.getLogger(DefaultCliListener.class.getName());
+public class DefaultCLIListener implements CLIListener {
+    private static final Logger LOGGER = Logger.getLogger(DefaultCLIListener.class.getName());
 
     @Override
-    public void onExecution(CliContext context) {
+    public void onExecution(CLIContext context) {
         LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.", new Object[] {
             context.getCommand(), context.getArgs().size(), authName(context.getAuth()),
         });
     }
 
     @Override
-    public void onCompleted(CliContext context, int exitCode) {
+    public void onCompleted(CLIContext context, int exitCode) {
         LOGGER.log(
                 Level.FINE, "Executed CLI command {0}, with {1} arguments, as user {2}, return code {3}", new Object[] {
                     context.getCommand(), context.getArgs().size(), authName(context.getAuth()), exitCode,
@@ -59,7 +59,7 @@ public class DefaultCliListener implements CliListener {
     }
 
     @Override
-    public void onException(CliContext context, Throwable t) {
+    public void onException(CLIContext context, Throwable t) {
         if (t instanceof BadCredentialsException) {
             // to the caller (stderr), we can't reveal whether the user didn't exist or the password didn't match.
             // do that to the server log instead

@@ -32,12 +32,12 @@ import java.util.UUID;
 import org.springframework.security.core.Authentication;
 
 /**
- * Holds information of a command execution. Same instance is used to all {@link CliListener} invocations.
+ * Holds information of a command execution. Same instance is used to all {@link CLIListener} invocations.
  * Use  {@code correlationId} in order to group related events to the same command.
  *
  * @since TODO
  */
-public class CliContext {
+public class CLIContext {
     private final String correlationId = UUID.randomUUID().toString();
     private final String command;
     private final List<String> args;
@@ -48,7 +48,7 @@ public class CliContext {
      * @param args Arguments passed to the command.
      * @param auth Authenticated user performing the execution.
      */
-    public CliContext(@NonNull String command, @CheckForNull List<String> args, @Nullable Authentication auth) {
+    public CLIContext(@NonNull String command, @CheckForNull List<String> args, @Nullable Authentication auth) {
         this.command = command;
         this.args = args != null ? args : List.of();
         this.auth = auth;
