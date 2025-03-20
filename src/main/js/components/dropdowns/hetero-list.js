@@ -149,7 +149,7 @@ function generateButtons() {
               }
 
               let current = Array.from(container.children).filter(function (e) {
-                return container.matches("DIV.repeated-chunk");
+                return e.matches("DIV.repeated-chunk");
               });
 
               function o(did) {
