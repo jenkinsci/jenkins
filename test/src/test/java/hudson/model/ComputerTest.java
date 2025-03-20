@@ -285,7 +285,7 @@ public class ComputerTest {
                 new OfflineCause.ChannelTermination(new RuntimeException(message))
         );
 
-        WebClient wc = j.createWebClient();
+        WebClient wc = j.createWebClient().withJavaScriptEnabled(false);
         Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(agent.toComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
