@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package hudson.cli.listeners;
+package jenkins.cli.listeners;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;

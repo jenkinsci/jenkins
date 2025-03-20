@@ -22,16 +22,19 @@
  * THE SOFTWARE.
  */
 
-package hudson.cli;
+package jenkins.cli;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 
-import hudson.cli.listeners.DefaultCliListener;
+import hudson.cli.CLICommand;
+import hudson.cli.CLICommandInvoker;
+import hudson.cli.ListJobsCommand;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
+import jenkins.cli.listeners.DefaultCliListener;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
