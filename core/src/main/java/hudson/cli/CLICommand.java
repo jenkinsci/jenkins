@@ -242,7 +242,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.locale = locale;
         CmdLineParser p = getCmdLineParser();
 
-        CLIContext context = new CLIContext(getName(), args, getTransportAuthentication2());
+        Authentication auth = getTransportAuthentication2();
+        CLIContext context = new CLIContext(getName(), args, auth);
 
         // add options from the authenticator
         SecurityContext sc = null;
@@ -252,7 +253,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             sc = SecurityContextHolder.getContext();
             old = sc.getAuthentication();
 
-            sc.setAuthentication(getTransportAuthentication2());
+            sc.setAuthentication(auth);
 
             if (!(this instanceof HelpCommand || this instanceof WhoAmICommand))
                 Jenkins.get().checkPermission(Jenkins.READ);

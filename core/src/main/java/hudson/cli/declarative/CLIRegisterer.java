@@ -198,7 +198,8 @@ public class CLIRegisterer extends ExtensionFinder {
 
                             List<MethodBinder> binders = new ArrayList<>();
 
-                            CLIContext context = new CLIContext(getName(), args, getTransportAuthentication2());
+                            Authentication auth = getTransportAuthentication2();
+                            CLIContext context = new CLIContext(getName(), args, auth);
 
                             CmdLineParser parser = bindMethod(binders);
                             try {
@@ -209,7 +210,6 @@ public class CLIRegisterer extends ExtensionFinder {
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
-                                    Authentication auth = getTransportAuthentication2();
                                     sc.setAuthentication(auth); // run the CLI with the right credential
                                     jenkins.checkPermission(Jenkins.READ);
 
