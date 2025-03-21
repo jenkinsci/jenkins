@@ -375,7 +375,7 @@ THE SOFTWARE.
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>eddsa-api</artifactId>
-                  <version>0.3.0-13.v7cb_69ed68f00</version>
+                  <version>0.3.0.1-16.vcb_4a_98a_3531c</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
