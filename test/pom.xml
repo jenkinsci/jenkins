@@ -179,7 +179,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
       <!-- TODO this is an incremental version, update to release version after https://github.com/jenkinsci/jenkins-test-harness/pull/935-->
-      <version>2420.v7deff9656e72</version>
+      <version>2424.vb_d30d01d7537</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -351,7 +351,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>358.vcc903045e088</version>
+                  <version>371.v171782a_56701</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
