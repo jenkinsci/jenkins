@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Explorations</title>
+    <style>
+        /* CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Root Variables */
+        :root {
+            --primary-color: #5d45e0;
+            --secondary-color: #7d69ff;
+            --accent-color: #ff3e78;
+            --dark-color: #121212;
+            --light-color: #ffffff;
+            --grey-color: #f5f5f7;
+            --text-color: #333333;
+            --header-height: 80px;
+            --transition: all 0.3s ease;
+            --max-width: 1200px;
+            --border-radius: 12px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        /* Typography */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-color);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+        }
+
+        h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 30px;
+        }
+
+        h3 {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: clamp(1rem, 1.1vw, 1.1rem);
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            height: var(--header-height);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            right: -12px;
+        }
+
+        /* Navigation */
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 1rem;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: var(--transition);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .current a {
+            color: var(--primary-color);
+        }
+
+        .current a::after {
+            width: 100%;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(93, 69, 224, 0.4);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: var(--light-color);
+        }
+
+        .btn-accent {
+            background-color: var(--accent-color);
+        }
+
+        .btn-accent:hover {
+            background-color: #ff0957;
+            box-shadow: 0 5px 15px rgba(255, 62, 120, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: calc(var(--header-height) + 60px) 0 80px;
+            background: var(--grey-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            right: -5%;
+            width: 600px;
+            height: 600px;
+            background: var(--gradient);
+            border-radius: 50%;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            opacity: 0.05;
+            z-index: 0;
+        }
+
+        .hero-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-content {
+            max-width: 600px;
+        }
+
+        .hero-title {
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+
+        .hero-title span {
+            color: var(--primary-color);
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-title span::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background-color: var(--accent-color);
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .hero-text {
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .hero-image {
+            position: relative;
+        }
+
+        .hero-image-main {
+            width: 100%;
+            height: auto;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transform: perspective(1000px) rotateY(-5deg);
+        }
+
+        .floating-card {
+            position: absolute;
+            background: var(--light-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card-1 {
+            top: 20px;
+            right: -30px;
+            max-width: 200px;
+        }
+
+        .card-2 {
+            bottom: 30px;
+            left: -40px;
+            max-width: 220px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--light-color);
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .card-content h4 {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .card-content p {
+            font-size: 0.8rem;
+            margin-bottom: 0;
+            color: #777;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 0;
+            background-color: var(--light-color);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            margin-bottom: 15px;
+        }
+
+        .section-title p {
+            max-width: 600px;
+            margin: 0 auto;
+            color: #666;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--gradient);
+            z-index: -1;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover::before {
+            width: 100%;
+            opacity: 0.05;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            background: var(--grey-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-text {
+            color: #666;
+            margin-bottom: 0;
+        }
+
+        /* Call to Action */
+        .cta {
+            padding: 80px 0;
+            background: var(--gradient);
+            color: var(--light-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .cta::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        .cta-container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 20px;
+        }
+
+        .cta-text {
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .cta-form {
+            display: flex;
+            max-width: 500px;
+            margin: 0 auto;
+            gap: 10px;
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px;
+        }
+
+        .cta-input {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .cta-btn {
+            background-color: var(--accent-color);
+            color: var(--light-color);
+            border: none;
+            border-radius: 30px;
+            padding: 15px 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .cta-btn:hover {
+            background-color: #ff0957;
+            transform: translateY(-2px);
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 100px 0;
+            background-color: var(--grey-color);
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .testimonial-card {
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .testimonial-text {
+            font-size: 1rem;
+            color: #555;
+            font-style: italic;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .testimonial-text::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--primary-color);
+            opacity: 0.1;
+            position: absolute;
+            top: -20px;
+            left: -15px;
+            font-family: Georgia, serif;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--grey-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .author-info h4 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .author-info p {
+            font-size: 0.8rem;
+            color: #777;
+            margin-bottom: 0;
+        }
+
+        .rating {
+            margin-top: 5px;
+            color: gold;
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 0 30px;
+            background-color: var(--dark-color);
+            color: var(--light-color);
+        }
+
+        .footer-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+        }
+
+        .footer-logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--light-color);
+            margin-bottom: 20px;
+            display: inline-block;
+            position: relative;
+        }
+
+        .footer-logo::after {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            right: -12px;
+        }
+
+        .footer-text {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .social-icon:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .footer-heading {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--light-color);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--light-color);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-image {
+                display: none;
+            }
+
+            .hero-content {
+                text-align: center;
+                margin: 0 auto;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav ul {
+                gap: 15px;
+            }
+
+            .floating-card {
+                display: none;
+            }
+
+            .cta-form {
+                flex-direction: column;
+                background: none;
+                padding: 0;
+            }
+
+            .cta-input, .cta-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            nav ul {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <a href="#" class="logo">Cosmic</a>
+            <nav>
+                <ul>
+                    <li class="current"><a href="#">Home</a></li>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Testimonials</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">Explore the <span>Cosmos</span> With Revolutionary Technology</h1>
+                <p class="hero-text">Discover the universe like never before with our state-of-the-art platform. Join thousands of explorers and embark on a journey through the stars.</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn">Get Started</a>
+                    <a href="#" class="btn btn-outline">Learn More</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="/api/placeholder/600/400" alt="Cosmic dashboard" class="hero-image-main">
+                <div class="floating-card card-1">
+                    <div class="card-icon">S</div>
+                    <div class="card-content">
+                        <h4>Star Discovery</h4>
+                        <p>New stellar body found today</p>
+                    </div>
+                </div>
+                <div class="floating-card card-2">
+                    <div class="card-icon">G</div>
+                    <div class="card-content">
+                        <h4>Galaxy Mapping</h4>
+                        <p>3,000+ galaxies cataloged</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Cutting-Edge Features</h2>
+                <p>Our platform offers a wide range of features to enhance your cosmic exploration experience.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">1</div>
+                    <h3 class="feature-title">Real-time Star Tracking</h3>
+                    <p class="feature-text">Monitor stars and constellations in real-time with our advanced tracking system. Never miss a cosmic event again.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">2</div>
+                    <h3 class="feature-title">Galactic Navigation</h3>
+                    <p class="feature-text">Navigate through thousands of galaxies with our intuitive interface. Explore new frontiers at the tap of a button.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">3</div>
+                    <h3 class="feature-title">Celestial Events Calendar</h3>
+                    <p class="feature-text">Stay updated with upcoming celestial events and set reminders to witness rare astronomical phenomena.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">4</div>
+                    <h3 class="feature-title">Planetary Analysis</h3>
+                    <p class="feature-text">Analyze planetary data and get detailed insights about their composition, atmosphere, and potential habitability.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">5</div>
+                    <h3 class="feature-title">Cosmic Community</h3>
+                    <p class="feature-text">Connect with fellow space enthusiasts, share discoveries, and participate in collaborative exploration projects.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">6</div>
+                    <h3 class="feature-title">Advanced Data Visualization</h3>
+                    <p class="feature-text">Visualize complex astronomical data in simple, interactive charts and 3D models for better understanding.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call To Action -->
+    <section class="cta">
+        <div class="container cta-container">
+            <h2 class="cta-title">Join Our Cosmic Journey</h2>
+            <p class="cta-text">Be the first to receive updates about new features, discoveries, and special events. Sign up for our newsletter today.</p>
+            <form class="cta-form">
+                <input type="email" placeholder="Enter your email address" class="cta-input" required>
+                <button type="submit" class="cta-btn">Subscribe</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-title">
+                <h2>What Our Explorers Say</h2>
+                <p>Hear from our community of cosmic explorers about their experiences with our platform.</p>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">Cosmic has completely transformed how I explore the night sky. The real-time tracking feature is phenomenal, and I've discovered stars I never knew existed!</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">AM</div>
+                        <div class="author-info">
+                            <h4>Alex Mitchell</h4>
+                            <p>Amateur Astronomer</p>
+                            <div class="rating">★★★★★</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">As an educator, I find the planetary analysis tools invaluable for teaching my students about our solar system. The visualizations are stunning and scientifically accurate.</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">EJ</div>
+                        <div class="author-info">
+                            <h4>Elena Jackson</h4>
+                            <p>Science Teacher</p>
+                            <div class="rating">★★★★★</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">The community feature has connected me with like-minded space enthusiasts around the world. We've collaborated on projects I couldn't have done alone. Simply amazing!</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">RK</div>
+                        <div class="author-info">
+                            <h4>Ryan Kim</h4>
+                            <p>Astrophotographer</p>
+                            <div class="rating">★★★★★</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-container">
+            <div>
+                <a href="#" class="footer-logo">Cosmic</a>
+                <p class="footer-text">Revolutionizing the way we explore and understand the universe through cutting-edge technology and community collaboration.</p>
+                <div class="footer-social">
+                    <a href="#" class="social-icon">F</a>
+                    <a href="#" class="social-icon">T</a>
+                    <a href="#" class="social-icon">I</a>
+                    <a href="#" class="social-icon">L</a>
+                </div>
+            </div>
+            <div>
+                <h3 class="footer-heading">Explore</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">Community</a></li>
+                    <li><a href="#">Resources</a></li>
+                    <li><a href="#">Events</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="footer-heading">Company</h3>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="footer-heading">Legal</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                    <li><a href="#">GDPR Compliance</a></li>
+                    <li><a href="#">Licensing</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2025 Cosmic Explorations. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
