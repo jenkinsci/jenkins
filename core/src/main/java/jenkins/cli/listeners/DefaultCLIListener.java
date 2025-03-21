@@ -59,7 +59,7 @@ public class DefaultCLIListener implements CLIListener {
     }
 
     @Override
-    public void onException(CLIContext context, Throwable t) {
+    public void onThrowable(CLIContext context, Throwable t) {
         if (t instanceof BadCredentialsException) {
             // to the caller (stderr), we can't reveal whether the user didn't exist or the password didn't match.
             // do that to the server log instead

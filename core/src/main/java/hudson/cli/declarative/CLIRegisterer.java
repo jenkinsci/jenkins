@@ -233,7 +233,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                 }
                             } catch (Throwable e) {
                                 int exitCode = handleException(e, context, parser);
-                                Listeners.notify(CLIListener.class, true, listener -> listener.onException(context, e));
+                                Listeners.notify(CLIListener.class, true, listener -> listener.onThrowable(context, e));
                                 return exitCode;
                             }
                         }

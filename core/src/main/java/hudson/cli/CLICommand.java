@@ -266,7 +266,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             return res;
         } catch (Throwable e) {
             int exitCode = handleException(e, context, p);
-            Listeners.notify(CLIListener.class, true, listener -> listener.onException(context, e));
+            Listeners.notify(CLIListener.class, true, listener -> listener.onThrowable(context, e));
             return exitCode;
         } finally {
             if (sc != null)

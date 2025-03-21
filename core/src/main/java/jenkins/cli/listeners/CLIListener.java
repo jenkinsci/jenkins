@@ -38,23 +38,23 @@ public interface CLIListener extends ExtensionPoint {
     /**
      * Invoked before command execution.
      *
-     * @param context Information about the command being executed
+     * @param context Information about the command being executed.
      * */
     default void onExecution(@NonNull CLIContext context) {}
 
     /**
      * Invoked after command execution.
      *
-     * @param context Information about the command being executed
+     * @param context Information about the command being executed.
      * @param exitCode Exit code returned by the implementation of {@link CLICommand#run()}.
      * */
     default void onCompleted(@NonNull CLIContext context, int exitCode) {}
 
     /**
-     * Invoked on command exception.
+     * Invoked when an exception or error occurs during command execution.
      *
-     * @param context Information about the command being executed
+     * @param context Information about the command being executed.
      * @param t Any error during the execution of the command.
      * */
-    default void onException(@NonNull CLIContext context, @NonNull Throwable t) {}
+    default void onThrowable(@NonNull CLIContext context, @NonNull Throwable t) {}
 }

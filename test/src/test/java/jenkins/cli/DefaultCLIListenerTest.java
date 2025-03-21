@@ -67,7 +67,7 @@ public class DefaultCLIListenerTest {
     }
 
     @Test
-    public void commandExecutionSuccessIsLogged() throws Exception {
+    public void commandOnCompletedIsLogged() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, new ListJobsCommand());
         command.asUser(USER).invoke();
 
@@ -83,7 +83,7 @@ public class DefaultCLIListenerTest {
     }
 
     @Test
-    public void commandExecutionErrorIsLogged() throws Exception {
+    public void commandOnThrowableIsLogged() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, new ListJobsCommand());
         command.asUser(USER).invokeWithArgs("view-not-found");
 
@@ -101,7 +101,7 @@ public class DefaultCLIListenerTest {
     }
 
     @Test
-    public void commandExecutionUnexpectedErrorIsLogged() throws Exception {
+    public void commandOnThrowableUnexpectedIsLogged() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, new ThrowsTestCommand());
         command.asUser(USER).invoke();
 
@@ -118,7 +118,7 @@ public class DefaultCLIListenerTest {
     }
 
     @Test
-    public void methodExecutionSuccessIsLogged() throws Exception {
+    public void methodOnCompletedIsLogged() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, "disable-job");
         command.asUser(USER).invokeWithArgs("p");
 
@@ -134,7 +134,7 @@ public class DefaultCLIListenerTest {
     }
 
     @Test
-    public void methodExecutionErrorIsLogged() throws Exception {
+    public void methodOnThrowableIsLogged() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, "disable-job");
         command.asUser(USER).invokeWithArgs("job-not-found");
 
@@ -153,7 +153,7 @@ public class DefaultCLIListenerTest {
     }
 
     @Test
-    public void methodExecutionUnexpectedErrorIsLogged() throws Exception {
+    public void methodOnThrowableUnexpectedIsLogged() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, "restart");
         command.asUser(USER).invoke();
 
