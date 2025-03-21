@@ -61,6 +61,7 @@ THE SOFTWARE.
       Display of top button depends also on number of items. If there is no item, only one button is displayed. When at least one item is present, there are two
       buttons displayed (only when enableTopButton is true). One above and one below.
       Top button adds item on top, Bottom button adds item on the bottom. When honorOrder is set the item is inserted at its 'desired' location.
+      @since TODO
     </st:attribute>
     <st:attribute name="capture">
       Config fragments from descriptors are rendered lazily by default, which means
