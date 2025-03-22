@@ -101,7 +101,7 @@ import org.kohsuke.stapler.StaplerResponse2;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Slave extends Node implements Serializable {
-
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = Logger.getLogger(Slave.class.getName());
 
     /**
@@ -768,6 +768,8 @@ public abstract class Slave extends Node implements Serializable {
             long endTime = System.currentTimeMillis();
             return new ClockDifference((startTime + endTime) / 2 - remoteTime);
         }
+
+        private static final long serialVersionUID = 1L;
     }
 
     /**
