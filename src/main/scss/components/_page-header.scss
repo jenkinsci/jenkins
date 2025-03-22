@@ -98,12 +98,8 @@
     }
 
     img {
-      border-radius: 100px;
       width: 1.625rem;
       height: 1.625rem;
-      outline: 1px solid color-mix(in sRGB, var(--text-color) 10%, transparent);
-      background: color-mix(in sRGB, var(--text-color) 5%, transparent);
-      outline-offset: -1px;
     }
 
     .jenkins-badge {

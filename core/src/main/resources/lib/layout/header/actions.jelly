@@ -45,7 +45,7 @@
         <x:attribute name="data-type">header-action</x:attribute>
         <x:attribute name="draggable">false</x:attribute>
         <x:attribute name="class">jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'}</x:attribute>
-        <l:icon src="${action.iconFileName}" />
+        <l:icon src="${action.iconFileName}" class="jenkins-avatar" />
         <span class="jenkins-visually-hidden">${action.displayName}</span>
         <j:if test="${badge != null}">
           <span class="jenkins-badge jenkins-!-${badge.severity}-color" />
