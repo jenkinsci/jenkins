@@ -35,34 +35,22 @@ THE SOFTWARE.
     ]]>
   </st:documentation>
 
-  <j:set var="contents" trim="true">
-    <d:invokeBody />
-  </j:set>
-
   <div id="breadcrumbBar" class="jenkins-breadcrumbs" aria-label="breadcrumb">
     <ol class="jenkins-breadcrumbs__list" id="breadcrumbs">
       <j:forEach var="anc" items="${request2.ancestors}" indexVar="index">
         <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
           <j:set var="mode" value="breadcrumbs" />
-          <l:breadcrumb title="${anc.object == app ? '%Dashboard' : anc.object.displayName}"
-                        href="${anc.url}/"
-                        hasMenu="${h.isModelWithContextMenu(anc.object)}" />
-          <j:choose>
-            <j:when test="${h.isModelWithChildren(anc.object)}">
-              <li class="children" data-href="${anc.url}/">
-                <!-- shows '>' for rendering children -->
-              </li>
-            </j:when>
-            <j:otherwise>
-              <li class="separator">
-              </li>
-            </j:otherwise>
-          </j:choose>
+
+          <j:if test="${anc.object != app}">
+            <l:breadcrumb title="${anc.object.displayName}"
+                          href="${anc.url}/"
+                          hasMenu="${h.isModelWithContextMenu(anc.object)}" />
+          </j:if>
         </j:if>
       </j:forEach>
 
       <!-- render additional breadcrumb items -->
-      <j:out value="${contents}" />
+      <d:invokeBody />
     </ol>
   </div>
 </j:jelly>

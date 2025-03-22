@@ -2,7 +2,10 @@ package jenkins.views;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.model.Action;
+import java.util.List;
 import java.util.Optional;
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -54,4 +57,15 @@ public abstract class Header implements ExtensionPoint {
         return header.orElseGet(JenkinsHeader::new);
     }
 
+    /**
+     * @return a list of {@link Action} to show in the header, defaults to {@link hudson.model.RootAction} extensions
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Action> getActions() {
+        return Jenkins.get()
+                .getActions()
+                .stream()
+                .filter(e -> e.getIconFileName() != null)
+                .toList();
+    }
 }
