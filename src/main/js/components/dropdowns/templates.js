@@ -34,6 +34,7 @@ function dropdown() {
     plugins: [hideOnPopperBlur],
     offset: [0, 0],
     animation: "dropdown",
+    duration: 250,
     onShow: (instance) => {
       const referenceParent = instance.reference.parentNode;
 

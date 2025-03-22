@@ -22,6 +22,7 @@ const TOOLTIP_BASE = {
       },
     ],
   },
+  duration: 250,
 };
 
 /**
