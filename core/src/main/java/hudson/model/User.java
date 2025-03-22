@@ -1131,7 +1131,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @see FullNameIdResolver
      * @since 1.479
      */
-    public abstract static class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
+    public abstract static class CanonicalIdResolver implements Describable<CanonicalIdResolver>, ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
          * context key for realm (domain) where idOrFullName has been retrieved from.

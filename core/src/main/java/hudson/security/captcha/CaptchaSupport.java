@@ -27,7 +27,7 @@ package hudson.security.captcha;
 
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -46,7 +46,7 @@ import jenkins.model.Jenkins;
  * @since 1.416
  * @see CaptchaSupportDescriptor
  */
-public abstract class CaptchaSupport extends AbstractDescribableImpl<CaptchaSupport> implements ExtensionPoint {
+public abstract class CaptchaSupport implements Describable<CaptchaSupport>, ExtensionPoint {
     /**
      * Returns all the registered {@link CaptchaSupport} descriptors.
      */
@@ -60,6 +60,6 @@ public abstract class CaptchaSupport extends AbstractDescribableImpl<CaptchaSupp
 
     @Override
     public CaptchaSupportDescriptor getDescriptor() {
-        return (CaptchaSupportDescriptor) super.getDescriptor();
+        return (CaptchaSupportDescriptor) Describable.super.getDescriptor();
     }
 }
