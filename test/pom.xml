@@ -178,7 +178,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2418.ve283b_a_b_79e37</version>
+      <!-- TODO this is an incremental version, update to release version after https://github.com/jenkinsci/jenkins-test-harness/pull/935-->
+      <version>2424.vb_d30d01d7537</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
