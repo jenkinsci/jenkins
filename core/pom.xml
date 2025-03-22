@@ -251,6 +251,12 @@ THE SOFTWARE.
       <artifactId>jbcrypt</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>9.4.51.v20230217</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <!-- Groovy shell uses this, but it doesn't declare the dependency -->
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
