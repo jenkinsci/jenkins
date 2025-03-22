@@ -222,6 +222,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     private static Set<String> CORE_ONLY_DEPENDANT = Set.of("jenkins-core");
 
+    private Integer healthScore;
+
     /**
      * Set the list of components that depend on this plugin.
      * @param dependents The list of components that depend on this plugin.
@@ -421,6 +423,31 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             throw new AssertionError("PluginWrapper classloader has changed type, but this code has not been updated accordingly");
         }
 
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly use only
+    public Integer getHealthScore() {
+        if (this.healthScore == null) {
+            this.healthScore = getInfoFromAllSites().stream()
+                    .filter(Objects::nonNull)
+                    .filter(p -> p.healthScore != null)
+                    .findFirst()
+                    .map(plugin -> plugin.healthScore)
+                    .orElse(null);
+        }
+        return this.healthScore;
+    }
+
+    public static String getHealthScoreClassForScore(int score) {
+        if (score > 80) return "top";
+        if (score > 60) return "middle";
+        return "bottom";
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly use only
+    public String getHealthScoreClazz() {
+        if (this.healthScore == null) return null;
+        return getHealthScoreClassForScore(this.healthScore);
     }
 
     @ExportedBean
