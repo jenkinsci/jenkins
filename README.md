@@ -72,3 +72,4 @@ See [adopters](https://www.jenkins.io/project/adopters/) for the list of Jenkins
 # License
 
 Jenkins is **licensed** under the **[MIT License](LICENSE.txt)**.
+Added Noam Seifer at the end of the file...
