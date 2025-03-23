@@ -648,6 +648,11 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty.ee9</groupId>
         <artifactId>jetty-ee9-maven-plugin</artifactId>
+        <!--
+          Make sure to keep the Winstone version in pom.xml in sync with this version. If the current Winstone release
+          contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
+          result before proceeding with the update here.
+        -->
         <version>12.0.18</version>
         <configuration>
           <!--
