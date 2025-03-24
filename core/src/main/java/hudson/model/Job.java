@@ -97,7 +97,6 @@ import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.PeepholePermalink;
 import jenkins.model.ProjectNamingStrategy;
-import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
@@ -192,10 +191,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     // this should have been DescribableList but now it's too late
     protected CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<>();
 
-    @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
-    public transient RunIdMigrator runIdMigrator;
-
     protected Job(ItemGroup parent, String name) {
         super(parent, name);
     }
@@ -206,20 +201,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         holdOffBuildUntilSave = holdOffBuildUntilUserSave;
     }
 
-    @Override public void onCreatedFromScratch() {
-        super.onCreatedFromScratch();
-        runIdMigrator = new RunIdMigrator();
-        runIdMigrator.created(getBuildDir());
-    }
-
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name)
             throws IOException {
         super.onLoad(parent, name);
-
-        File buildDir = getBuildDir();
-        runIdMigrator = new RunIdMigrator();
-        runIdMigrator.migrate(buildDir, Jenkins.get().getRootDir());
 
         TextFile f = getNextBuildNumberFile();
         if (f.exists()) {
