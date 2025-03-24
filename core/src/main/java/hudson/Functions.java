@@ -2633,11 +2633,13 @@ public class Functions {
         StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
         currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse2());
         String userAgent = currentRequest.getHeader("User-Agent");
-
-        List<String> platformsThatUseCommand = List.of("MAC", "IPHONE", "IPAD");
-        boolean useCmdKey = platformsThatUseCommand.stream().anyMatch(e -> userAgent.toUpperCase().contains(e));
-
-        return keyboardShortcut.replace("CMD", useCmdKey ? "⌘" : "CTRL");
+        if (userAgent != null) {
+          List<String> platformsThatUseCommand = List.of("MAC", "IPHONE", "IPAD");
+          boolean useCmdKey = platformsThatUseCommand.stream().anyMatch(e -> userAgent.toUpperCase().contains(e));
+          return keyboardShortcut.replace("CMD", useCmdKey ? "⌘" : "CTRL");
+        } else {
+          return keyboardShortcut;
+        }
     }
 
     @Restricted(NoExternalUse.class)
