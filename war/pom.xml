@@ -156,6 +156,7 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci:crypto-util</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
+                    <exclude>org.jenkins-ci.main:remoting</exclude>
                     <exclude>org.jenkins-ci.main:websocket-jetty12-ee9</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
                     <exclude>org.jenkins-ci:memory-monitor</exclude>
@@ -288,7 +289,7 @@ THE SOFTWARE.
                   <!-- detached after 1.535 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-auth</artifactId>
-                  <version>3.2.4</version>
+                  <version>3.2.5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -302,7 +303,7 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>845.vffd7fa_f27555</version>
+                  <version>847.v88a_f90ff9f20</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -316,14 +317,14 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1317.v5b_35d792b_06a_</version>
+                  <version>1319.v000471ca_e5e2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1363.v03f731255494</version>
+                  <version>1366.vf1fb_e1a_f6b_22</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -352,7 +353,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>961.v51869f7b_d409</version>
+                  <version>963.va_600813d04a_a_</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -374,7 +375,7 @@ THE SOFTWARE.
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>eddsa-api</artifactId>
-                  <version>0.3.0-13.v7cb_69ed68f00</version>
+                  <version>0.3.0.1-19.vc432d923e5ee</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -647,7 +648,12 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty.ee9</groupId>
         <artifactId>jetty-ee9-maven-plugin</artifactId>
-        <version>12.0.16</version>
+        <!--
+          Make sure to keep the Winstone version in pom.xml in sync with this version. If the current Winstone release
+          contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
+          result before proceeding with the update here.
+        -->
+        <version>12.0.18</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
