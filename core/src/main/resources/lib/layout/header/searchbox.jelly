@@ -14,7 +14,7 @@
       </div>
     </j:set>
 
-    <button id="button-open-command-palette" aria-label="Open Search"
+    <button id="button-open-command-palette" aria-label="${%Open Search}"
             data-html-tooltip="${commandPaletteTooltip}"
             data-keyboard-shortcut="CMD+K"
             data-search-url="${rootURL + '/search/suggest'}"
