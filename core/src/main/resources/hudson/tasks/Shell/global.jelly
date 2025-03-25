@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2025, Stefan Spieker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  read icon size from a cookie and set it up
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:set scope="parent" var="iconSize" value="${h.validateIconSize(h.getCookie(request2,'iconSize','32x32'))}" />
-  <j:set scope="parent" var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(iconSize)}" />
-  <!--
-    balls look smaller than their actual size,
-    so we try not to make the secondary icons look bigger than the icon.
-    we want the user's eyes to go to balls, not the clock.
-  -->
-  <j:set scope="parent" var="subIconSize" value="${iconSize=='32x32'?'24x24':iconSize}"/>
-  <j:set scope="parent" var="subIconSizeClass" value="${icons.toNormalizedIconSizeClass(subIconSize)}"/>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:section title="${%Shell}">
+        <f:entry title="${%Shell executable}" field="shell">
+            <f:textbox />
+        </f:entry>
+    </f:section>
 </j:jelly>
+

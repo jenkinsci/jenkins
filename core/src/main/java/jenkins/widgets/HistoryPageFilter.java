@@ -61,15 +61,17 @@ public class HistoryPageFilter<T> {
     public final List<HistoryPageEntry<QueueItem>> queueItems = new ArrayList<>();
     public final List<HistoryPageEntry<HistoricalBuild>> runs = new ArrayList<>();
 
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+    @SuppressFBWarnings(value = {"PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, justification = "Preserve API compatibility; read by Stapler")
     public boolean hasUpPage = false; // there are newer builds than on this page
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+    @SuppressFBWarnings(value = {"PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, justification = "Preserve API compatibility; read by Stapler")
     public boolean hasDownPage = false; // there are older builds than on this page
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+    @SuppressFBWarnings(value = {"PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, justification = "Preserve API compatibility; read by Stapler")
     public long nextBuildNumber;
     public HistoryWidget widget;
 
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public long newestOnPage = Long.MIN_VALUE; // see updateNewestOldest()
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public long oldestOnPage = Long.MAX_VALUE; // see updateNewestOldest()
 
     /**
