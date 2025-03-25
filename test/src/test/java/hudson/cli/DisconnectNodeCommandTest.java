@@ -85,75 +85,55 @@ public class DisconnectNodeCommandTest {
     @Test
     public void disconnectNodeShouldSucceed() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
+        assertOnline(slave);
 
         CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOffline(slave, null);
 
         slave.toComputer().connect(true);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
+        assertOnline(slave);
 
         result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOffline(slave, null);
 
         result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOffline(slave, null);
     }
 
     @Test
     public void disconnectNodeShouldSucceedWithCause() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
+        assertOnline(slave);
 
         CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertOffline(slave, "aCause");
 
         slave.toComputer().connect(true);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
+        assertOnline(slave);
 
         result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode", "-m", "anotherCause");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("anotherCause"));
+        assertOffline(slave, "anotherCause");
 
         result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode", "-m", "yetAnotherCause");
         assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("yetAnotherCause"));
+        assertOffline(slave, "yetAnotherCause");
     }
 
     @Test
@@ -161,29 +141,17 @@ public class DisconnectNodeCommandTest {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         DumbSlave slave3 = j.createSlave("aNode3", "", null);
-        slave1.toComputer().waitUntilOnline();
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
-        slave2.toComputer().waitUntilOnline();
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), equalTo(null));
-        slave3.toComputer().waitUntilOnline();
-        assertThat(slave3.toComputer().isOnline(), equalTo(true));
-        assertThat(slave3.toComputer().getOfflineCause(), equalTo(null));
+        assertOnline(slave1);
+        assertOnline(slave2);
+        assertOnline(slave3);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode3");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo(null));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo(null));
-        assertThat(slave3.toComputer().isOffline(), equalTo(true));
-        assertThat(slave3.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave3.toComputer().getOfflineCause()).message, equalTo(null));
+        assertOffline(slave1, null);
+        assertOffline(slave2, null);
+        assertOffline(slave3, null);
     }
 
     @Test
@@ -194,10 +162,7 @@ public class DisconnectNodeCommandTest {
             agents.add(j.createSlave("aNode" + i, "", null));
         }
         for (var agent : agents) {
-            var computer = agent.toComputer();
-            computer.waitUntilOnline();
-            assertThat(computer.isOnline(), equalTo(true));
-            assertThat(computer.getOfflineCause(), equalTo(null));
+            assertOnline(agent);
         }
 
         var args = new ArrayList<String>();
@@ -211,14 +176,7 @@ public class DisconnectNodeCommandTest {
                 .invokeWithArgs(args.toArray(String[]::new));
         assertThat(result, succeededSilently());
         for (var agent : agents) {
-            var computer = agent.toComputer();
-            assertThat(computer.isOffline(), equalTo(true));
-            var cause = computer.getOfflineCause();
-            if (cause instanceof OfflineCause.ByCLI cliCause) {
-                assertThat(cliCause.message, equalTo("aCause"));
-            } else {
-                assertThat("seen occasionally in CI", cause, instanceOf(OfflineCause.ChannelTermination.class));
-            }
+            assertOffline(agent, "aCause");
         }
     }
 
@@ -226,12 +184,8 @@ public class DisconnectNodeCommandTest {
     public void disconnectNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        slave1.toComputer().waitUntilOnline();
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
-        slave2.toComputer().waitUntilOnline();
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), equalTo(null));
+        assertOnline(slave1);
+        assertOnline(slave2);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -240,34 +194,40 @@ public class DisconnectNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such agent \"never_created\" exists. Did you mean \"aNode1\"?"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertOffline(slave1, "aCause");
+        assertOffline(slave2, "aCause");
     }
 
     @Test
     public void disconnectNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        slave1.toComputer().waitUntilOnline();
-        assertThat(slave1.toComputer().isOnline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
-        slave2.toComputer().waitUntilOnline();
-        assertThat(slave2.toComputer().isOnline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), equalTo(null));
+        assertOnline(slave1);
+        assertOnline(slave2);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "aNode1", "-m", "aCause");
         assertThat(result, succeededSilently());
-        assertThat(slave1.toComputer().isOffline(), equalTo(true));
-        assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo("aCause"));
-        assertThat(slave2.toComputer().isOffline(), equalTo(true));
-        assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertOffline(slave1, "aCause");
+        assertOffline(slave2, "aCause");
+    }
+
+    private static void assertOnline(DumbSlave slave) throws InterruptedException {
+        var computer = slave.toComputer();
+        computer.waitUntilOnline();
+        assertThat(computer.isOnline(), equalTo(true));
+        assertThat(computer.getOfflineCause(), equalTo(null));
+    }
+
+    private static void assertOffline(DumbSlave slave, String message) {
+        var computer = slave.toComputer();
+        assertThat(computer.isOffline(), equalTo(true));
+        var offlineCause = computer.getOfflineCause();
+        if (offlineCause instanceof OfflineCause.ByCLI cliCause) {
+            assertThat(cliCause.message, equalTo(message));
+        } else {
+            assertThat("sometimes overrides ByCLI", offlineCause, instanceOf(OfflineCause.ChannelTermination.class));
+        }
     }
 }

@@ -363,6 +363,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * This is used to report a message that Jenkins needs to be restarted
      * for new plugins to take effect.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public volatile boolean pluginUploaded = false;
 
     /**
