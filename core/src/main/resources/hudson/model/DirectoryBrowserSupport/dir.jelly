@@ -50,13 +50,13 @@ THE SOFTWARE.
             ${%No files in directory}
            <j:if test="${showSymlinkWarning}">
              <p>
-                <img id="symlinkalert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
+                <img id="symlinkalert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" alt=""/>
                ${%Symlinks are hidden}
              </p>
             </j:if>
            <j:if test="${showTmpDirWarning}">
              <p>
-               <img id="tmpdiralert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
+               <img id="tmpdiralert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" alt=""/>
                ${%Tmp directories are hidden}
              </p>
             </j:if>
@@ -124,13 +124,13 @@ THE SOFTWARE.
            </table>
            <j:if test="${showSymlinkWarning}">
              <p>
-                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
+                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" alt=""/>
                ${%Symlinks are hidden}
              </p>
             </j:if>
            <j:if test="${showTmpDirWarning}">
              <p>
-                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
+                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" alt=""/>
                ${%Tmp directories are hidden}
              </p>
             </j:if>
