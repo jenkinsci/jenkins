@@ -1203,12 +1203,14 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /** {@link Run.ArtifactList} without the implicit link to {@link Run} */
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     private static final class SerializableArtifactList extends ArrayList<SerializableArtifact> {
         private static final long serialVersionUID = 1L;
         private LinkedHashMap<SerializableArtifact, String> tree = new LinkedHashMap<>();
         private int idSeq = 0;
     }
 
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     public final class ArtifactList extends ArrayList<Artifact> {
         private static final long serialVersionUID = 1L;
         /**

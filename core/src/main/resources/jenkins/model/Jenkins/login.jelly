@@ -30,7 +30,7 @@ THE SOFTWARE.
     <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
     <!-- needed for cli -->
     <j:if test="${request2.servletPath=='/' || request2.servletPath==''}">
-      ${h.advertiseHeaders(response)}
+      ${h.advertiseHeaders(response2)}
       <j:forEach var="pd" items="${h.pageDecorators}">
         <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
       </j:forEach>

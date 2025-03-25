@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:choose>
     <j:when test="${it.offline and !it.temporarilyOffline}">
-      <j:set var="jenkinsURL" value="${h.inferHudsonURL(request)}"/>
+      <j:set var="jenkinsURL" value="${h.inferHudsonURL(request2)}"/>
       <j:set var="copy_agent_jar_unix" value="curl -sO ${jenkinsURL}jnlpJars/agent.jar" />
       <j:set var="copy_agent_jar_windows" value="curl.exe -sO ${jenkinsURL}jnlpJars/agent.jar" />
       <j:set var="copy_java_cmd_unix" value="java -jar agent.jar -url ${jenkinsURL} ${it.launcher.getRemotingOptionsUnix(it)}${it.launcher.getWorkDirOptions(it)}" />

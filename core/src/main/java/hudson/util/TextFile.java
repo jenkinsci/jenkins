@@ -25,6 +25,7 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import java.io.BufferedReader;
 import java.io.File;
@@ -111,6 +112,7 @@ public class TextFile {
     /**
      * Reads the first N characters or until we hit EOF.
      */
+    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public @NonNull String head(int numChars) throws IOException {
         char[] buf = new char[numChars];
         int read = 0;

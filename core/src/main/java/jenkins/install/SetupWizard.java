@@ -128,7 +128,6 @@ public class SetupWizard extends PageDecorator {
      * @since 2.260 (with NoExternalUse)
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ String ADMIN_INITIAL_API_TOKEN = SystemProperties.getString(ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
 
     @NonNull
@@ -212,7 +211,6 @@ public class SetupWizard extends PageDecorator {
         }
     }
 
-    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "only checked against true")
     private void createInitialApiToken(User user) throws IOException, InterruptedException {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
 
@@ -763,7 +761,6 @@ public class SetupWizard extends PageDecorator {
         }
 
         @Override
-        @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "TODO needs triage")
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
             // Force root requests to the setup wizard
             if (request instanceof HttpServletRequest && !Jenkins.get().getInstallState().isSetupComplete()) {

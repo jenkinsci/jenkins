@@ -138,6 +138,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
+     * In most cases, you should not call this method directly, but {@link Jenkins#updateNode(Node)} instead.
      * @since 1.635.
      */
     @Override
@@ -281,7 +282,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         try {
             if (temporaryOfflineCause != cause) {
                 temporaryOfflineCause = cause;
-                save();
+                Jenkins.get().updateNode(this);
             }
             if (temporaryOfflineCause != null) {
                 Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(toComputer(), temporaryOfflineCause));

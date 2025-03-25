@@ -1874,12 +1874,10 @@ function xor(a, b) {
 // used by editableDescription.jelly to replace the description field with a form
 // eslint-disable-next-line no-unused-vars
 function replaceDescription(initialDescription, submissionUrl) {
-  var d = document.getElementById("description");
-  let button = d.firstElementChild.nextElementSibling;
-  if (button !== null) {
-    d.firstElementChild.nextElementSibling.innerHTML =
-      "<div class='jenkins-spinner'></div>";
-  }
+  const descriptionContent = document.getElementById("description-content");
+  const descriptionEditForm = document.getElementById("description-edit-form");
+  descriptionEditForm.innerHTML = "<div class='jenkins-spinner'></div>";
+  descriptionContent.classList.add("jenkins-hidden");
   let parameters = {};
   if (initialDescription !== null && initialDescription !== "") {
     parameters["description"] = initialDescription;
@@ -1895,10 +1893,11 @@ function replaceDescription(initialDescription, submissionUrl) {
     body: objectToUrlFormEncoded(parameters),
   }).then((rsp) => {
     rsp.text().then((responseText) => {
-      d.innerHTML = responseText;
+      descriptionEditForm.innerHTML = responseText;
+      descriptionEditForm.classList.remove("jenkins-hidden");
       evalInnerHtmlScripts(responseText, function () {
-        Behaviour.applySubtree(d);
-        d.getElementsByTagName("TEXTAREA")[0].focus();
+        Behaviour.applySubtree(descriptionEditForm);
+        descriptionEditForm.getElementsByTagName("TEXTAREA")[0].focus();
       });
       layoutUpdateCallback.call();
       return false;

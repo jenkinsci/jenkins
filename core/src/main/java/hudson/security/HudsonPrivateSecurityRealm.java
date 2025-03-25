@@ -940,7 +940,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     static class JBCryptEncoder implements PasswordHashEncoder {
         // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
         // and for 18, it's "only" 20s
-        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
         @Restricted(NoExternalUse.class)
         private static int MAXIMUM_BCRYPT_LOG_ROUND = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".maximumBCryptLogRound", 18);
 
@@ -1135,7 +1134,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private static final String ENCODED_INVALID_USER_PASSWORD = PASSWORD_ENCODER.encode(generatePassword());
 
-    @SuppressFBWarnings(value = {"DMI_RANDOM_USED_ONLY_ONCE", "PREDICTABLE_RANDOM"}, justification = "https://github.com/spotbugs/spotbugs/issues/1539 and doesn't need to be secure, we're just not hardcoding a 'wrong' password")
+    @SuppressFBWarnings(value = "PREDICTABLE_RANDOM", justification = "Doesn't need to be secure, we're just not hardcoding a 'wrong' password")
     private static String generatePassword() {
         String password = new Random().ints(20, 33, 127).mapToObj(i -> (char) i)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();

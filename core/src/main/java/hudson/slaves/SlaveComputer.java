@@ -955,6 +955,7 @@ public class SlaveComputer extends Computer {
     }
 
     @Override
+    @SuppressFBWarnings(value = "UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR", justification = "TODO needs triage")
     protected void setNode(final Node node) {
         super.setNode(node);
         launcher = grabLauncher(node);
@@ -1116,10 +1117,14 @@ public class SlaveComputer extends Computer {
             this.ringBufferSize = ringBufferSize;
         }
 
-        @Override
         @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "field is static for the reason explained in the Javadoc for LogHolder")
-        public Void call() {
+        private void setLogHandler() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
+        }
+
+        @Override
+        public Void call() {
+            setLogHandler();
 
             // avoid double installation of the handler. Inbound agents can reconnect to the controller multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,

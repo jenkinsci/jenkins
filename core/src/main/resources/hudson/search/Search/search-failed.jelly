@@ -32,7 +32,7 @@ THE SOFTWARE.
   <l:layout title="${%Search for} '${q}'">
     <l:main-panel>
       <h1>${%Search for} '${q}'</h1>
-      <j:set var="items" value="${it.getSuggestions(request,q)}"/>
+      <j:set var="items" value="${it.getSuggestions(request2,q)}"/>
       <j:choose>
         <j:when test="${items.size()==0}">
           <div class='error'>

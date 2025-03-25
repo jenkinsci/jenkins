@@ -49,6 +49,14 @@ public class NodeListenerTest {
         verifyNoMoreInteractions(mock);
     }
 
+    @Test
+    public void updateNode() throws Exception {
+        Node agent = j.createSlave();
+        agent.setLabelString("some label");
+        Jenkins.get().updateNode(agent);
+        verify(mock, times(1)).onUpdated(any(Node.class), any(Node.class));
+    }
+
     private CLICommandInvoker cli(CLICommand cmd) {
         return new CLICommandInvoker(j, cmd);
     }

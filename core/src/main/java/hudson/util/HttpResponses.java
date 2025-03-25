@@ -25,6 +25,7 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +45,7 @@ import org.kohsuke.stapler.StaplerResponse2;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(value = "NM_SAME_SIMPLE_NAME_AS_SUPERCLASS", justification = "Used for backward compatibility and extending utility classes")
 public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     public static HttpResponse staticResource(File f) throws IOException {
         return staticResource(f.toURI().toURL());

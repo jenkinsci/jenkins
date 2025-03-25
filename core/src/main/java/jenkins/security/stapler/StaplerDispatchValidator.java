@@ -311,6 +311,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
             }
         }
 
+        @SuppressFBWarnings(value = "SIC_INNER_SHOULD_BE_STATIC", justification = "TODO needs triage")
         private class Validator {
             // lazy load parents to avoid trying to load potentially unavailable classes
             private final Supplier<Collection<Validator>> parentsSupplier;

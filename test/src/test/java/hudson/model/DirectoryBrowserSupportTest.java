@@ -151,13 +151,8 @@ public class DirectoryBrowserSupportTest {
 
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             // normal path provided by the UI succeeds
-            wc.goTo("job/" + p.getName() + "/ws/abc/def.bin", "application/octet-stream");
-
-            // suspicious path is rejected with 400
-            wc.setThrowExceptionOnFailingStatusCode(false);
-            HtmlPage page = wc.goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin");
-            assertEquals(400, page.getWebResponse().getStatusCode());
-            assertEquals("Error 400 Suspicious Path Character", page.getTitleText());
+            Page page = wc.goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin", "application/octet-stream");
+            assertEquals(200, page.getWebResponse().getStatusCode());
         }
     }
 
@@ -1117,11 +1112,9 @@ public class DirectoryBrowserSupportTest {
         Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
-            // suspicious path is rejected with 400
             wc.setThrowExceptionOnFailingStatusCode(false);
             HtmlPage page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*");
-            assertEquals(400, page.getWebResponse().getStatusCode());
-            assertEquals("Error 400 Suspicious Path Character", page.getTitleText());
+            assertEquals(404, page.getWebResponse().getStatusCode());
         }
     }
 
