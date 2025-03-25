@@ -291,6 +291,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                 }
             }
 
+            src.checkPermission(Computer.EXTENDED_READ);
+
             // copy through XStream
             String xml = Jenkins.XSTREAM.toXML(src);
             Node result = (Node) Jenkins.XSTREAM.fromXML(xml);
