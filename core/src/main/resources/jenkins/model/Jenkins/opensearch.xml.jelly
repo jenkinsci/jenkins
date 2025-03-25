@@ -29,7 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <l:view contentType="application/xml;charset=UTF-8">
   <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
-  <j:set var="rootURL" value="${h.inferHudsonURL(request)}"/>
+  <j:set var="rootURL" value="${h.inferHudsonURL(request2)}"/>
   <ShortName>Jenkins</ShortName>
   <Description>Jenkins at ${rootURL}</Description>
   <InputEncoding>UTF-8</InputEncoding>
