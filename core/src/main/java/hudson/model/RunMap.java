@@ -220,8 +220,13 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
         return super._put(r);
     }
 
+    @CheckForNull
     @Override public R getById(String id) {
-        return getByNumber(Integer.parseInt(id));
+        try {
+            return getByNumber(Integer.parseInt(id));
+        } catch (NumberFormatException e) { // see https://github.com/jenkinsci/jenkins/pull/10456/files#r2010184507
+            return null;
+        }
     }
 
     /**
