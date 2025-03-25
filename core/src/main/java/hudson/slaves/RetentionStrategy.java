@@ -29,8 +29,8 @@ import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Util;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.Computer;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Node;
 import hudson.model.Queue;
@@ -51,7 +51,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Stephen Connolly
  * @author Kohsuke Kawaguchi
  */
-public abstract class RetentionStrategy<T extends Computer> extends AbstractDescribableImpl<RetentionStrategy<?>> implements ExtensionPoint {
+public abstract class RetentionStrategy<T extends Computer> implements Describable<RetentionStrategy<?>>, ExtensionPoint {
 
     /**
      * This method will be called periodically to allow this strategy to decide what to do with its owning agent.
