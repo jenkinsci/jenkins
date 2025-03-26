@@ -40,14 +40,17 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Assume;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -58,6 +61,11 @@ public class FileParameterValueTest {
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
+
+    @ClassRule
+    public static BuildWatcher bw = new BuildWatcher();
+
+    public static final Logger LOGGER = Logger.getLogger(FileParameterValueTest.class.getName());
 
     @Test
     @Issue("SECURITY-1074")
@@ -318,15 +326,23 @@ public class FileParameterValueTest {
 
         // and reachable using request
         JenkinsRule.WebClient wc = j.createWebClient();
+
+        LOGGER.info("getting ws");
         HtmlPage workspacePage = wc.goTo(p.getUrl() + "ws");
+        LOGGER.info("got htmlunit for ws");
         String workspaceContent = workspacePage.getWebResponse().getContentAsString();
+        LOGGER.info("got ws");
         assertThat(workspaceContent, allOf(
                 containsString("direct-child1.txt"),
                 containsString("parent")
         ));
+        LOGGER.info("getting ws/parent");
         HtmlPage workspaceParentPage = wc.goTo(p.getUrl() + "ws" + "/parent");
+        LOGGER.info("got htmlunit for ws/parent");
         String workspaceParentContent = workspaceParentPage.getWebResponse().getContentAsString();
+        LOGGER.info("got ws/parent");
         assertThat(workspaceParentContent, containsString("child2.txt"));
+        LOGGER.info("completed");
     }
 
     @Test
