@@ -332,6 +332,7 @@ public class FileParameterValueTest {
 
         // and reachable using request
         JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setJavaScriptEnabled(false);
 
         LOGGER.info("getting ws");
         HtmlPage workspacePage = wc.goTo(p.getUrl() + "ws");
