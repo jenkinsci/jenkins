@@ -44,6 +44,9 @@ public interface CLIListener extends ExtensionPoint {
 
     /**
      * Invoked after command execution.
+     * <p>
+     * This method or {@link #onThrowable(CLIContext, Throwable)} will be called, but not both.
+     * </p>
      *
      * @param context Information about the command being executed.
      * @param exitCode Exit code returned by the implementation of {@link CLICommand#run()}.
@@ -52,6 +55,9 @@ public interface CLIListener extends ExtensionPoint {
 
     /**
      * Invoked when an exception or error occurs during command execution.
+     * <p>
+     * This method or {@link #onCompleted(CLIContext, int)} will be called, but not both.
+     * </p>
      *
      * @param context Information about the command being executed.
      * @param t Any error during the execution of the command.
