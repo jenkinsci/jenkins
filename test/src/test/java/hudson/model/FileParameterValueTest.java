@@ -40,9 +40,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.htmlunit.Page;
+import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Assume;
@@ -53,6 +55,7 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 public class FileParameterValueTest {
@@ -64,6 +67,9 @@ public class FileParameterValueTest {
 
     @ClassRule
     public static BuildWatcher bw = new BuildWatcher();
+
+    @Rule
+    public LoggerRule lr = new LoggerRule().recordPackage(WebClient.class, Level.ALL);
 
     public static final Logger LOGGER = Logger.getLogger(FileParameterValueTest.class.getName());
 
