@@ -67,7 +67,7 @@ public class SearchTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     private void searchWithoutNavigating(HtmlPage page, String query) throws IOException {
-        HtmlButton button = page.querySelector("#button-open-command-palette");
+        HtmlButton button = page.querySelector("#root-action-SearchAction");
         button.click();
 
         HtmlInput search = page.querySelector("#command-bar");
