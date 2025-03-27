@@ -40,22 +40,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.htmlunit.Page;
-import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Assume;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 public class FileParameterValueTest {
@@ -65,13 +59,11 @@ public class FileParameterValueTest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    @ClassRule
-    public static BuildWatcher bw = new BuildWatcher();
-
-    @Rule
-    public LoggerRule lr = new LoggerRule().recordPackage(WebClient.class, Level.ALL);
-
-    public static final Logger LOGGER = Logger.getLogger(FileParameterValueTest.class.getName());
+    private JenkinsRule.WebClient getWebClient() {
+        var wc = j.createWebClient();
+        wc.getOptions().setJavaScriptEnabled(false);
+        return wc;
+    }
 
     @Test
     @Issue("SECURITY-1074")
@@ -99,7 +91,7 @@ public class FileParameterValueTest {
         assertThat(root.child("root-level.txt").exists(), equalTo(false));
 
         // ensure also the file is not reachable by request
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/..%2F..%2F..%2F..%2F..%2Froot-level.txt/uploaded-file.txt", uploadedContent);
@@ -139,7 +131,7 @@ public class FileParameterValueTest {
         assertThat(root.child("pwned").exists(), equalTo(false));
 
         // ensure also the file is not reachable by request
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
     }
 
@@ -166,7 +158,7 @@ public class FileParameterValueTest {
         assertThat(root.child("pwned").exists(), equalTo(false));
 
         // ensure also the file is not reachable by request
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
     }
 
@@ -204,7 +196,7 @@ public class FileParameterValueTest {
         assertThat(root.child("root-level.txt").exists(), equalTo(false));
 
         // ensure also the file is not reachable by request
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/..\\..\\..\\..\\..\\root-level.txt/uploaded-file.txt", uploadedContent);
@@ -232,7 +224,7 @@ public class FileParameterValueTest {
         assertThat(build.getResult(), equalTo(Result.FAILURE));
 
         // ensure also the file is not reachable by request
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/uploaded-file.txt", uploadedContent);
@@ -260,7 +252,7 @@ public class FileParameterValueTest {
         assertThat(build.getResult(), equalTo(Result.FAILURE));
 
         // ensure also the file is not reachable by request
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/uploaded-file.txt", uploadedContent);
@@ -295,7 +287,7 @@ public class FileParameterValueTest {
         assertThat(root.child("root-level.txt").readToString(), equalTo(initialContent));
 
         // ensure also the file is not reachable by request
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/..%2F..%2F..%2F..%2F..%2Froot-level.txt/uploaded-file.txt", uploadedContent);
@@ -331,25 +323,16 @@ public class FileParameterValueTest {
         assertTrue(build.getWorkspace().child("parent").child("child2.txt").exists());
 
         // and reachable using request
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.getOptions().setJavaScriptEnabled(false);
-
-        LOGGER.info("getting ws");
+        JenkinsRule.WebClient wc = getWebClient();
         HtmlPage workspacePage = wc.goTo(p.getUrl() + "ws");
-        LOGGER.info("got htmlunit for ws");
         String workspaceContent = workspacePage.getWebResponse().getContentAsString();
-        LOGGER.info("got ws");
         assertThat(workspaceContent, allOf(
                 containsString("direct-child1.txt"),
                 containsString("parent")
         ));
-        LOGGER.info("getting ws/parent");
         HtmlPage workspaceParentPage = wc.goTo(p.getUrl() + "ws" + "/parent");
-        LOGGER.info("got htmlunit for ws/parent");
         String workspaceParentContent = workspaceParentPage.getWebResponse().getContentAsString();
-        LOGGER.info("got ws/parent");
         assertThat(workspaceParentContent, containsString("child2.txt"));
-        LOGGER.info("completed");
     }
 
     @Test
@@ -374,7 +357,7 @@ public class FileParameterValueTest {
         assertTrue(build.getWorkspace().child("weird..name.txt").exists());
 
         // and reachable using request
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         HtmlPage workspacePage = wc.goTo(p.getUrl() + "ws");
         String workspaceContent = workspacePage.getWebResponse().getContentAsString();
         assertThat(workspaceContent, containsString("weird..name.txt"));
@@ -402,7 +385,7 @@ public class FileParameterValueTest {
         assertTrue(build.getWorkspace().child("~name").exists());
 
         // and reachable using request
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         HtmlPage workspacePage = wc.goTo(p.getUrl() + "ws");
         String workspaceContent = workspacePage.getWebResponse().getContentAsString();
         assertThat(workspaceContent, containsString("~name"));
@@ -414,7 +397,8 @@ public class FileParameterValueTest {
     public void contentSecurityPolicy() throws Exception {
         FreeStyleProject p = j.jenkins.getItemByFullName("SECURITY-1793", FreeStyleProject.class);
 
-        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/parameters/parameter/html.html/html.html");
+        var wc = getWebClient();
+        HtmlPage page = wc.goTo("job/" + p.getName() + "/lastSuccessfulBuild/parameters/parameter/html.html/html.html");
         for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
             assertEquals("Header set: " + header, DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue(header));
         }
@@ -423,7 +407,7 @@ public class FileParameterValueTest {
         String initialValue = System.getProperty(propName);
         try {
             System.setProperty(propName, "");
-            page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/parameters/parameter/html.html/html.html");
+            page = wc.goTo("job/" + p.getName() + "/lastSuccessfulBuild/parameters/parameter/html.html/html.html");
             List<String> headers = page.getWebResponse().getResponseHeaders().stream().map(NameValuePair::getName).collect(Collectors.toList());
             for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
                 assertThat(headers, not(hasItem(header)));
