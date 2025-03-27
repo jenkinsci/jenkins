@@ -35,7 +35,7 @@ import org.springframework.security.core.Authentication;
  * Holds information of a command execution. Same instance is used to all {@link CLIListener} invocations.
  * Use  {@code correlationId} in order to group related events to the same command.
  *
- * @since TODO
+ * @since 2.503
  */
 public class CLIContext {
     private final String correlationId = UUID.randomUUID().toString();
