@@ -26,5 +26,5 @@ THE SOFTWARE.
     <f:entry title="${%Labels}" field="labelString">
         <f:textbox/>
     </f:entry>
-    <f:slave-mode name="builtin.mode" node="app" />
+    <f:slave-mode name="builtin.mode" node="${app}"/>
 </j:jelly>
