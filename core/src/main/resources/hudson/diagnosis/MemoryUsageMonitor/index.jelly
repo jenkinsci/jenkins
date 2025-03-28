@@ -26,7 +26,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} Memory Usage">
     <!-- TODO: where in the tree structure should this really belong? -->
-    <!-- TODO: st:include page="sidepanel.jelly" /-->
     <l:main-panel>
       <h1>
         ${%JVM Memory Usage}
