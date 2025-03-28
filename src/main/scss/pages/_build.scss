@@ -21,7 +21,7 @@
     flex-direction: column;
     grid-template-columns: 1fr 1fr;
 
-    .jenkins-card__content {
+    .jenkins-card__content .app-console-output-widget {
       max-height: 300px;
     }
   }
@@ -45,7 +45,7 @@
       }
     }
 
-    .jenkins-card__content {
+    .jenkins-card__content .app-console-output-widget {
       height: 300px;
     }
   }
