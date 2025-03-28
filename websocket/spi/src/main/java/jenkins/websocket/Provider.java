@@ -55,7 +55,7 @@ interface Provider {
 
         void onWebSocketError(Throwable cause);
 
-        void onWebSocketBinary(byte[] payload, int offset, int length);
+        void onWebSocketBinary(ByteBuffer data);
 
         void onWebSocketText(String message);
 
@@ -65,7 +65,7 @@ interface Provider {
 
         Future<Void> sendBinary(ByteBuffer data) throws IOException;
 
-        void sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException;
+        Future<Void> sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException;
 
         Future<Void> sendText(String text) throws IOException;
 
