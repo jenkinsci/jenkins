@@ -92,8 +92,10 @@ public class Jetty12EE9Provider implements Provider {
             }
 
             @Override
-            public void sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException {
-                session().getRemote().sendPartialBytes(partialByte, isLast);
+            public Future<Void> sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException {
+                CompletableFuture<Void> f = new CompletableFuture<>();
+                session().getRemote().sendPartialBytes(partialByte, isLast, new WriteCallbackImpl(f));
+                return f;
             }
 
             @Override
@@ -151,7 +153,7 @@ public class Jetty12EE9Provider implements Provider {
         return new WebSocketListener() {
             @Override
             public void onWebSocketBinary(byte[] payload, int offset, int length) {
-                listener.onWebSocketBinary(payload, offset, length);
+                listener.onWebSocketBinary(ByteBuffer.wrap(payload, offset, length));
             }
 
             @Override

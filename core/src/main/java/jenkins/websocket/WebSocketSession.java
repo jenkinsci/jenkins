@@ -96,7 +96,7 @@ public abstract class WebSocketSession {
         LOGGER.log(Level.WARNING, "unhandled WebSocket service error", cause);
     }
 
-    protected void binary(byte[] payload, int offset, int len) throws IOException {
+    protected void binary(ByteBuffer data) throws IOException {
         LOGGER.warning("unexpected binary frame");
     }
 
@@ -108,8 +108,8 @@ public abstract class WebSocketSession {
         return handler.sendBinary(data);
     }
 
-    protected final void sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException {
-        handler.sendBinary(partialByte, isLast);
+    protected final Future<Void> sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException {
+        return handler.sendBinary(partialByte, isLast);
     }
 
     protected final Future<Void> sendText(String text) throws IOException {
