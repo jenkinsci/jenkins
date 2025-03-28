@@ -30,7 +30,7 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task href="${h.getNearestAncestorUrl(request,it)}/" icon="symbol-computer"
+      <l:task href="${h.getNearestAncestorUrl(request2,it)}/" icon="symbol-computer"
               title="${%Nodes}"/>
       <l:task href="../cloud/" icon="symbol-cloud" permission="${app.SYSTEM_READ}"
               title="${app.hasPermission(app.ADMINISTER) ? '%Clouds' : '%View Clouds'}"/>
