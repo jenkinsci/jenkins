@@ -33,6 +33,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.userproperty.UserPropertyCategory;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import jakarta.servlet.ServletException;
@@ -48,6 +49,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -272,6 +274,16 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         @Override
         public @NonNull UserPropertyCategory getUserPropertyCategory() {
             return UserPropertyCategory.get(UserPropertyCategory.Preferences.class);
+        }
+
+        public ListBoxModel doFillPrimaryViewNameItems(@AncestorInPath User user) {
+            ListBoxModel items = new ListBoxModel();
+            if (user != null) {
+                MyViewsProperty viewsProperty = user.getProperty(MyViewsProperty.class);
+                viewsProperty.views.forEach(v -> items.add(new ListBoxModel.Option(v.getViewName(),
+                        v.getViewName(), v.getViewName().equals(viewsProperty.primaryViewName))));
+            }
+            return items;
         }
     }
 
