@@ -122,18 +122,11 @@ THE SOFTWARE.
                         <div class="token-list-item token-list-new-item">
                             <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
                             <f:textbox name="tokenName" clazz="token-name" placeholder="${%Default name}"/>
-                            <st:nbsp /><!-- without this non-breakable space, double click on the div will put the focus on the input -->
                             <span class="new-token-value jenkins-hidden"><!--will be filled by javascript--></span>
-                            <span class="token-save">
-                                <button class="jenkins-button" type="button" tabindex="0"
-                                        id="api-token-property-token-save"
-                                        data-target-url="${descriptor.descriptorFullUrl}/generateNewToken">
-                                    ${%GenerateNewToken}
-                                </button>
-                            </span>
-                            <span class="token-cancel">
-                                <f:repeatableDeleteButton value="${%Cancel}" />
-                            </span>
+                            <button class="jenkins-button api-token-property-token-save" type="button" tabindex="0"
+                                    data-target-url="${descriptor.descriptorFullUrl}/generateNewToken">
+                                ${%GenerateNewToken}
+                            </button>
                             <l:copyButton text="" clazz="jenkins-hidden" tooltip="${%CopyToken}" iconOnly="true" />
                             <a href="#"
                                  class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color api-token-property-token-revoke jenkins-hidden"
@@ -146,6 +139,7 @@ THE SOFTWARE.
                         </div>
                         <div class="error token-error-message jenkins-hidden"><!-- filled in case of error --></div>
                         <div class="warning display-after-generation jenkins-hidden">${%TokenDisplayedOnce}</div>
+                        <f:repeatableDeleteButton value="${%Cancel}" />
                     </j:otherwise>
                 </j:choose>
             </f:repeatable>

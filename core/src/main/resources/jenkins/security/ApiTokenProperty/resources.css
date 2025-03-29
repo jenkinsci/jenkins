@@ -38,7 +38,7 @@
 }
 
 .token-list .token-list-new-item {
-  width: calc(100% - 30px);
+  margin-right: 25px;
 }
 .token-list .token-list-new-item .new-token-value {
   font-family: monospace;

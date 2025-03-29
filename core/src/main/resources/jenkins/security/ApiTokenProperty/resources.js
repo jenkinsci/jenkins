@@ -34,7 +34,7 @@ Behaviour.specify(
 );
 
 Behaviour.specify(
-  "#api-token-property-token-save",
+  ".api-token-property-token-save",
   "api-token-property-token-save",
   0,
   function (element) {
@@ -148,8 +148,9 @@ function saveApiToken(button) {
           );
           revokeButton.classList.remove("jenkins-hidden");
 
-          const cancelButton = repeatedChunk.querySelector(".token-cancel");
-          cancelButton.classList.add("jenkins-hidden");
+          const cancelButton =
+            repeatedChunk.querySelector(".repeatable-delete");
+          cancelButton.remove();
 
           repeatedChunk.classList.add("token-list-fresh-item");
           const item = repeatedChunk.querySelector(".token-list-new-item");
