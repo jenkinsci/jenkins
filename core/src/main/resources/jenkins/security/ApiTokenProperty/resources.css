@@ -21,120 +21,69 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-.token-list {
-  /* reset to get rid of browser default */
-  margin: 0;
-  padding: 0;
-
-  max-width: 700px;
-  border: 1px solid #cccccc;
-  border-color: var(--medium-grey);
-  border-radius: 3px;
-}
 
 .token-list .token-list-item {
   min-height: inherit;
-  padding: 8px 10px;
-  font-size: var(--font-size-sm);
-  line-height: 26px;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
-.token-list .token-list-item.legacy-token {
-  padding: 6px 5px 6px 5px;
-  border: 2px solid #ffe262;
-  border-left-width: 5px;
-  border-right-width: 5px;
+
+.token-list .repeated-chunk:has(.legacy-token) {
+  border-color: var(--error-color);
 }
 
 .token-list .token-list-empty-item {
-  display: block;
-}
-.token-list .token-list-empty-item.hidden-message {
-  display: none;
+  margin-bottom: 0.5rem;
 }
 
-.token-list .token-list-item .token-name-input {
-  font-weight: bold;
+.token-list .token-creation.age-ok {
+  color: var(--text-color-secondary);
 }
-.token-list .token-list-item .token-creation {
-  margin-left: 5px;
-  font-size: 0.75rem;
+.token-list .token-creation.age-mmmh {
+  color: var(--warning-color);
 }
-.token-list .token-list-item .token-creation.age-ok {
-  color: #6d7680;
+.token-list .token-creation.age-argh {
+  color: var(--error-color);
 }
-.token-list .token-list-item .token-creation.age-mmmh {
-  color: #e09307;
-}
-.token-list .token-list-item .token-creation.age-argh {
-  color: #de6868;
-}
-.token-list .token-list-item .token-hide {
-  display: none;
-}
-.token-list .token-list-item .to-right {
-  float: right;
-}
-.token-list .token-list-item .token-use-counter {
-  font-size: 0.75rem;
-  color: #6d7680;
-}
-.token-list .token-list-item .no-statistics {
-  font-size: 0.75rem;
-  color: #6d7680;
-}
-.token-list
-  .token-list-new-item
-  .api-token-property-token-revoke.hidden-button {
-  display: none;
-}
-.token-list .token-list-new-item .token-cancel.hidden-button {
-  display: none;
-}
-.token-list .token-list-new-item .token-cancel .yui-button {
-  vertical-align: baseline;
-}
-.token-list .token-list-new-item .token-name {
-  width: 40%;
-  display: inline-block;
+
+.token-list .token-list-new-item {
+  width: calc(100% - 30px);
 }
 .token-list .token-list-new-item .new-token-value {
-  display: none;
   font-family: monospace;
-  margin-right: 2px;
-  font-size: 1em;
 }
-.token-list .token-list-new-item .new-token-value.visible {
-  display: inline-block;
+
+.token-list .token-error-message {
+  margin-top: 5px;
 }
-.token-list .token-list-new-item .controls-container {
+
+.token-list .display-after-generation {
+  margin-top: 5px;
+}
+
+.token-list .token-use-counter.token-warning {
+  font-weight: var(--font-bold-weight);
+  color: var(--warning-color);
+}
+
+.token-list .token-list-item-info {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  float: right;
-}
-.token-list .token-list-new-item .display-after-generation {
+  gap: 5px;
   margin-top: 5px;
-  display: none;
+  font-size: var(--font-size-xs);
+  color: var(--text-color-secondary);
 }
-.token-list .token-list-new-item .display-after-generation.visible {
-  display: block;
+
+.token-list .token-list-item-info .to-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
 }
-.token-list .token-list-new-item .token-error-message {
-  margin-top: 5px;
-  display: none;
-}
-.token-list .token-list-new-item .token-error-message.visible {
-  display: block;
-}
-.token-list .token-list-new-item .token-save {
-  vertical-align: baseline;
-}
-.token-list .repeated-chunk {
-  border-width: 0;
-  padding: 0;
-  margin: 0;
-}
-.token-list .repeatable-add {
-  margin: 6px 6px 3px 6px;
+
+.token-list .token-list-icon {
+  width: 22px;
+  height: 22px;
 }

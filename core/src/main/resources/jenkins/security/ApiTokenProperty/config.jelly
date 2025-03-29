@@ -36,7 +36,7 @@ THE SOFTWARE.
         <div class="token-list ignore-dirty-panel">
             <j:set var="isStatisticsEnabled" value="${descriptor.isStatisticsEnabled()}" />
             <j:set var="tokenList" value="${instance.tokenList}" />
-            <div class="token-list-item token-list-empty-item ${tokenList == null || tokenList.isEmpty() ? '' : 'hidden-message'}">
+            <div class="token-list-item token-list-empty-item ${tokenList == null || tokenList.isEmpty() ? '' : 'jenkins-hidden'}">
                 <div class="list-empty-message">${%NoTokenYet}</div>
             </div>
             <f:repeatable name="tokenStore" var="token" items="${tokenList}" minimum="0" add="${%AddNewToken}"
@@ -51,11 +51,16 @@ THE SOFTWARE.
                         <div class="token-list-item token-list-existing-item force-dirty-panel ${legacyClazz}">
                             <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
                             <f:textbox clazz="token-name" name="tokenName" value="${token.name}" />
-                            
-                            <j:if test="${token.isLegacy}">
-                                <l:icon class="icon-warning icon-sm" title="${%LegacyToken}"/>
-                            </j:if>
-                            
+                            <a href="#"
+                               class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color api-token-property-token-revoke"
+                               data-message-if-legacy-revoked="${%RevokedToken}"
+                               data-confirm="${%ConfirmRevokeSingle}"
+                               data-confirm-title="${%ConfirmRevokeSingleTitle}"
+                               data-target-url="${descriptor.descriptorFullUrl}/revoke" tooltip="${%RevokeToken}">
+                                <local:revokeIcon />
+                            </a>
+                        </div>
+                        <div class="token-list-item-info">
                             <j:set var="daysOld" value="${token.numDaysCreation}" />
                             <j:set var="oldClazz" value="age-ok" />
                             <j:if test="${daysOld > 180}">
@@ -71,8 +76,12 @@ THE SOFTWARE.
                                 <!--TODO convert to "Today", "Tomorrow", "4 days ago", "2 weeks ago", etc. -->
                                 <j:set var="creationDateValue" value="${%TokenCreation(daysOld)}" />
                             </j:if>
-                            <span class="token-creation ${oldClazz}" title="${creationDateFormat}">${creationDateValue}</span>
-                            
+                            <j:if test="${token.isLegacy}">
+                                <l:icon src="symbol-warning" class="token-list-icon jenkins-!-warning-color" tooltip="${%LegacyToken}"/>
+                            </j:if>
+                            <span class="token-creation ${oldClazz}" tooltip="${creationDateFormat}">
+                                ${creationDateValue}
+                            </span>
                             <span class="to-right">
                                 <j:choose>
                                     <j:when test="${isStatisticsEnabled}">
@@ -81,42 +90,31 @@ THE SOFTWARE.
                                             <j:when test="${useCounter > 0}">
                                                 <j:if test="${token.lastUseDate == null}">
                                                     <!--Should normally never happen without manual XML modification-->
-                                                    <span class="token-use-counter" title="${%TokenNeverUsedTooltip}">
+                                                    <span class="token-use-counter" tooltip="${%TokenNeverUsedTooltip}">
                                                         ${%TokenNeverUsed}
                                                     </span>
                                                 </j:if>
                                                 <j:if test="${token.lastUseDate != null}">
                                                     <i:formatDate var="lastUseDateFormat" value="${token.lastUseDate}" type="both" dateStyle="medium" timeStyle="medium" />
-                                                    <span class="token-use-counter" title="${lastUseDateFormat}">
+                                                    <span class="token-use-counter" tooltip="${lastUseDateFormat}">
                                                         ${%TokenLastUse(useCounter, token.numDaysUse)}
                                                     </span>
                                                 </j:if>
                                             </j:when>
                                             <j:otherwise>
-                                                <span class="token-use-counter">
-                                                    <strong title="${%TokenNeverUsed.Title}">
-                                                        <l:icon class="icon-warning icon-sm"/>
-                                                        ${%TokenNeverUsed}
-                                                    </strong>
+                                                <l:icon src="symbol-warning" class="token-list-icon jenkins-!-warning-color"/>
+                                                <span class="token-use-counter token-warning" tooltip="${%TokenNeverUsed.Title}">
+                                                    ${%TokenNeverUsed}
                                                 </span>
                                             </j:otherwise>
                                         </j:choose>
                                     </j:when>
                                     <j:otherwise>
-                                        <span class="no-statistics" title="${%StatisticsDisabled.Title}">
+                                        <span class="no-statistics" tooltip="${%StatisticsDisabled.Title}">
                                             ${%StatisticsDisabled}
                                         </span>
                                     </j:otherwise>
                                 </j:choose>
-
-                                <a href="#"
-                                   class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color api-token-property-token-revoke"
-                                   data-message-if-legacy-revoked="${%RevokedToken}"
-                                   data-confirm="${%ConfirmRevokeSingle}"
-                                   data-confirm-title="${%ConfirmRevokeSingleTitle}"
-                                   data-target-url="${descriptor.descriptorFullUrl}/revoke">
-                                    <local:revokeIcon title="${%RevokeToken}" />
-                                </a>
                             </span>
                         </div>
                     </j:when>
@@ -125,7 +123,7 @@ THE SOFTWARE.
                             <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
                             <f:textbox name="tokenName" clazz="token-name" placeholder="${%Default name}"/>
                             <st:nbsp /><!-- without this non-breakable space, double click on the div will put the focus on the input -->
-                            <span class="new-token-value"><!--will be filled by javascript--></span>
+                            <span class="new-token-value jenkins-hidden"><!--will be filled by javascript--></span>
                             <span class="token-save">
                                 <button class="jenkins-button" type="button" tabindex="0"
                                         id="api-token-property-token-save"
@@ -136,19 +134,18 @@ THE SOFTWARE.
                             <span class="token-cancel">
                                 <f:repeatableDeleteButton value="${%Cancel}" />
                             </span>
-                            <div class="controls-container">
-                              <l:copyButton text="" clazz="jenkins-hidden" tooltip="${%CopyToken}" iconOnly="true" />
-                              <a href="#"
-                                 class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color api-token-property-token-revoke hidden-button"
+                            <l:copyButton text="" clazz="jenkins-hidden" tooltip="${%CopyToken}" iconOnly="true" />
+                            <a href="#"
+                                 class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color api-token-property-token-revoke jenkins-hidden"
                                  data-confirm="${%ConfirmRevokeSingle}"
                                  data-confirm-title="${%ConfirmRevokeSingleTitle}"
-                                 data-target-url="${descriptor.descriptorFullUrl}/revoke">
-                                <local:revokeIcon title="${%RevokeToken}" />
-                              </a>
-                            </div>
-                            <div class="error token-error-message"><!-- filled in case of error --></div>
-                            <div class="warning display-after-generation">${%TokenDisplayedOnce}</div>
+                                 data-target-url="${descriptor.descriptorFullUrl}/revoke"
+                                 tooltip="${%RevokeToken}">
+                                <local:revokeIcon/>
+                            </a>
                         </div>
+                        <div class="error token-error-message jenkins-hidden"><!-- filled in case of error --></div>
+                        <div class="warning display-after-generation jenkins-hidden">${%TokenDisplayedOnce}</div>
                     </j:otherwise>
                 </j:choose>
             </f:repeatable>

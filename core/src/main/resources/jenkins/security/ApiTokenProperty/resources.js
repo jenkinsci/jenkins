@@ -45,14 +45,14 @@ Behaviour.specify(
 );
 
 function revokeToken(anchorRevoke) {
-  var repeatedChunk = anchorRevoke.closest(".repeated-chunk");
-  var tokenList = repeatedChunk.closest(".token-list");
-  var confirmMessage = anchorRevoke.getAttribute("data-confirm");
-  var confirmTitle = anchorRevoke.getAttribute("data-confirm-title");
-  var targetUrl = anchorRevoke.getAttribute("data-target-url");
+  const repeatedChunk = anchorRevoke.closest(".repeated-chunk");
+  const tokenList = repeatedChunk.closest(".token-list");
+  const confirmMessage = anchorRevoke.getAttribute("data-confirm");
+  const confirmTitle = anchorRevoke.getAttribute("data-confirm-title");
+  const targetUrl = anchorRevoke.getAttribute("data-target-url");
 
-  var inputUuid = repeatedChunk.querySelector("input.token-uuid-input");
-  var tokenUuid = inputUuid.value;
+  const inputUuid = repeatedChunk.querySelector("input.token-uuid-input");
+  const tokenUuid = inputUuid.value;
 
   dialog
     .confirm(confirmTitle, { message: confirmMessage, type: "destructive" })
@@ -68,11 +68,11 @@ function revokeToken(anchorRevoke) {
           if (rsp.ok) {
             if (repeatedChunk.querySelectorAll(".legacy-token").length > 0) {
               // we are revoking the legacy token
-              var messageIfLegacyRevoked = anchorRevoke.getAttribute(
+              const messageIfLegacyRevoked = anchorRevoke.getAttribute(
                 "data-message-if-legacy-revoked",
               );
 
-              var legacyInput = document.getElementById("apiToken");
+              const legacyInput = document.getElementById("apiToken");
               legacyInput.value = messageIfLegacyRevoked;
             }
             repeatedChunk.remove();
@@ -90,11 +90,11 @@ function saveApiToken(button) {
     return;
   }
   button.classList.add("request-pending");
-  var targetUrl = button.getAttribute("data-target-url");
-  var repeatedChunk = button.closest(".repeated-chunk ");
-  var tokenList = repeatedChunk.closest(".token-list");
-  var nameInput = repeatedChunk.querySelector('[name="tokenName"]');
-  var tokenName = nameInput.value;
+  const targetUrl = button.getAttribute("data-target-url");
+  const repeatedChunk = button.closest(".repeated-chunk ");
+  const tokenList = repeatedChunk.closest(".token-list");
+  const nameInput = repeatedChunk.querySelector('[name="tokenName"]');
+  const tokenName = nameInput.value;
 
   fetch(targetUrl, {
     body: new URLSearchParams({ newTokenName: tokenName }),
@@ -105,52 +105,53 @@ function saveApiToken(button) {
   }).then((rsp) => {
     if (rsp.ok) {
       rsp.json().then((json) => {
-        var errorSpan = repeatedChunk.querySelector(".error");
+        const errorSpan = repeatedChunk.querySelector(".error");
         if (json.status === "error") {
           errorSpan.innerHTML = json.message;
-          errorSpan.classList.add("visible");
+          errorSpan.classList.remove("jenkins-hidden");
 
           button.classList.remove("request-pending");
         } else {
           errorSpan.classList.remove("visible");
 
-          var tokenName = json.data.tokenName;
+          const tokenName = json.data.tokenName;
           // in case the name was empty, the application will propose a default one
           nameInput.value = tokenName;
 
-          var tokenValue = json.data.tokenValue;
-          var tokenValueSpan = repeatedChunk.querySelector(".new-token-value");
+          const tokenValue = json.data.tokenValue;
+          const tokenValueSpan = repeatedChunk.querySelector(".new-token-value");
           tokenValueSpan.innerText = tokenValue;
-          tokenValueSpan.classList.add("visible");
+          tokenValueSpan.classList.remove("jenkins-hidden");
 
           // show the copy button
-          var tokenCopyButton = repeatedChunk.querySelector(
+          const tokenCopyButton = repeatedChunk.querySelector(
             ".jenkins-copy-button",
           );
           tokenCopyButton.setAttribute("text", tokenValue);
           tokenCopyButton.classList.remove("jenkins-hidden");
 
-          var tokenUuid = json.data.tokenUuid;
-          var uuidInput = repeatedChunk.querySelector('[name="tokenUuid"]');
+          const tokenUuid = json.data.tokenUuid;
+          const uuidInput = repeatedChunk.querySelector('[name="tokenUuid"]');
           uuidInput.value = tokenUuid;
 
-          var warningMessage = repeatedChunk.querySelector(
+          const warningMessage = repeatedChunk.querySelector(
             ".display-after-generation",
           );
-          warningMessage.classList.add("visible");
+          warningMessage.classList.remove("jenkins-hidden");
 
           // we do not want to allow user to create twice a token using same name by mistake
           button.remove();
 
-          var revokeButton = repeatedChunk.querySelector(
+          const revokeButton = repeatedChunk.querySelector(
             ".api-token-property-token-revoke",
           );
-          revokeButton.classList.remove("hidden-button");
+          revokeButton.classList.remove("jenkins-hidden");
 
-          var cancelButton = repeatedChunk.querySelector(".token-cancel");
-          cancelButton.classList.add("hidden-button");
+          const cancelButton = repeatedChunk.querySelector(".token-cancel");
+          cancelButton.classList.add("jenkins-hidden");
 
           repeatedChunk.classList.add("token-list-fresh-item");
+          repeatedChunk.querySelector(".token-list-new-item").classList.remove("token-list-new-item");
 
           adjustTokenEmptyListMessage(tokenList);
         }
@@ -160,19 +161,19 @@ function saveApiToken(button) {
 }
 
 function adjustTokenEmptyListMessage(tokenList) {
-  var emptyListMessage = tokenList.querySelector(".token-list-empty-item");
+  const emptyListMessage = tokenList.querySelector(".token-list-empty-item");
 
   // number of token that are already existing or freshly created
-  var numOfToken = tokenList.querySelectorAll(
+  const numOfToken = tokenList.querySelectorAll(
     ".token-list-existing-item, .token-list-fresh-item",
   ).length;
   if (numOfToken >= 1) {
-    if (!emptyListMessage.classList.contains("hidden-message")) {
-      emptyListMessage.classList.add("hidden-message");
+    if (!emptyListMessage.classList.contains("jenkins-hidden")) {
+      emptyListMessage.classList.add("jenkins-hidden");
     }
   } else {
-    if (emptyListMessage.classList.contains("hidden-message")) {
-      emptyListMessage.classList.remove("hidden-message");
+    if (emptyListMessage.classList.contains("jenkins-hidden")) {
+      emptyListMessage.classList.remove("jenkins-hidden");
     }
   }
 }
