@@ -20,8 +20,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <j:if test="${app.views.size() > 0}">
-    <f:entry title="${%Default View}" field="defaultView">
+  <j:if test="${app.views.size() gt 1}">
+    <f:entry title="${%Default view}" field="defaultView">
       <div class="jenkins-select">
         <select name="primaryView" class="jenkins-select__input" disabled="${readOnlyMode ? 'true' : null}">
           <j:forEach var="v" items="${app.views}">
