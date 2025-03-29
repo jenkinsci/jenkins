@@ -152,9 +152,9 @@ function saveApiToken(button) {
           cancelButton.classList.add("jenkins-hidden");
 
           repeatedChunk.classList.add("token-list-fresh-item");
-          repeatedChunk
-            .querySelector(".token-list-new-item")
-            .classList.remove("token-list-new-item");
+          const item = repeatedChunk.querySelector(".token-list-new-item");
+          item.classList.remove("token-list-new-item");
+          item.classList.add("token-list-existing-item");
 
           adjustTokenEmptyListMessage(tokenList);
         }
