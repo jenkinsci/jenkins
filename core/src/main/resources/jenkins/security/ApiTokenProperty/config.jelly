@@ -62,11 +62,11 @@ THE SOFTWARE.
                         </div>
                         <div class="token-list-item-info">
                             <j:set var="daysOld" value="${token.numDaysCreation}" />
-                            <j:set var="oldClazz" value="age-ok" />
+                            <j:set var="oldClazz" value="jenkins-!-text-color-secondary" />
                             <j:if test="${daysOld > 180}">
-                                <j:set var="oldClazz" value="age-mmmh" />
+                                <j:set var="oldClazz" value="jenkins-!-warning-color" />
                                 <j:if test="${daysOld > 360}">
-                                    <j:set var="oldClazz" value="age-argh" />
+                                    <j:set var="oldClazz" value="jenkins-!-error-color" />
                                 </j:if>
                             </j:if>
                             <j:set var="creationDateFormat" value="${%NoCreationDate}" />

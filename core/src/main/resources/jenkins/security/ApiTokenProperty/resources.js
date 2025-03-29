@@ -119,7 +119,8 @@ function saveApiToken(button) {
           nameInput.value = tokenName;
 
           const tokenValue = json.data.tokenValue;
-          const tokenValueSpan = repeatedChunk.querySelector(".new-token-value");
+          const tokenValueSpan =
+            repeatedChunk.querySelector(".new-token-value");
           tokenValueSpan.innerText = tokenValue;
           tokenValueSpan.classList.remove("jenkins-hidden");
 
@@ -151,7 +152,9 @@ function saveApiToken(button) {
           cancelButton.classList.add("jenkins-hidden");
 
           repeatedChunk.classList.add("token-list-fresh-item");
-          repeatedChunk.querySelector(".token-list-new-item").classList.remove("token-list-new-item");
+          repeatedChunk
+            .querySelector(".token-list-new-item")
+            .classList.remove("token-list-new-item");
 
           adjustTokenEmptyListMessage(tokenList);
         }

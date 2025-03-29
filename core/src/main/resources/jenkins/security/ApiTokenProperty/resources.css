@@ -37,16 +37,6 @@
   margin-bottom: 0.5rem;
 }
 
-.token-list .token-creation.age-ok {
-  color: var(--text-color-secondary);
-}
-.token-list .token-creation.age-mmmh {
-  color: var(--warning-color);
-}
-.token-list .token-creation.age-argh {
-  color: var(--error-color);
-}
-
 .token-list .token-list-new-item {
   width: calc(100% - 30px);
 }
