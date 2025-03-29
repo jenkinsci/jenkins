@@ -17,7 +17,7 @@ function generateJumplistAccessors() {
     const dropdownChevron = document.createElement(
       isFirefox ? "span" : "button",
     );
-    dropdownChevron.className += " jenkins-menu-dropdown-chevron";
+    dropdownChevron.className = " jenkins-menu-dropdown-chevron";
     dropdownChevron.setAttribute("aria-label", "Open dropdown menu");
     dropdownChevron.dataset.href = link.href;
     dropdownChevron.addEventListener("click", (event) => {
