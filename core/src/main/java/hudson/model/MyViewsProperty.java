@@ -276,12 +276,20 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
             return UserPropertyCategory.get(UserPropertyCategory.Preferences.class);
         }
 
-        public ListBoxModel doFillPrimaryViewNameItems(@AncestorInPath User user) {
+        @POST
+        public ListBoxModel doFillPrimaryViewNameItems(@AncestorInPath User user) throws IOException {
             ListBoxModel items = new ListBoxModel();
+            user = user == null ? User.current() : user;
             if (user != null) {
-                MyViewsProperty viewsProperty = user.getProperty(MyViewsProperty.class);
-                viewsProperty.views.forEach(v -> items.add(new ListBoxModel.Option(v.getViewName(),
-                        v.getViewName(), v.getViewName().equals(viewsProperty.primaryViewName))));
+                MyViewsProperty property = user.getProperty(MyViewsProperty.class);
+                if (property == null) {
+                    property = new MyViewsProperty();
+                    user.addProperty(property);
+                }
+                for (View view : property.views) {
+                    items.add(new ListBoxModel.Option(view.getDisplayName(), view.getViewName(),
+                            view == property.getPrimaryView()));
+                }
             }
             return items;
         }
