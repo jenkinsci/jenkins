@@ -331,7 +331,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.7.1</version>
+        <version>9.8</version>
       </dependency>
       <dependency>
         <!-- provided by jcl-over-slf4j -->
