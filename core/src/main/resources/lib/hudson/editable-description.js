@@ -12,6 +12,17 @@
         let description = descriptionLink.getAttribute("data-description");
         return replaceDescription(description, url);
       });
+      // Adding a  new line whenever 'enter' key is detected.
+      description.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          let cursorPos = this.selectionStart;
+          let textBefore = this.value.substring(0, cursorPos);
+          let textAfter = this.value.substring(cursorPos);
+          this.value = textBefore + "\n" + textAfter;
+          this.selectionStart = this.selectionEnd = cursorPos + 1;
+        }
+      });
     }
   });
 
