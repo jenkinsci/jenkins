@@ -264,6 +264,14 @@ public class ApiTokenProperty extends UserProperty {
             this.lastUseDate = stats.getLastUseDate();
             this.numDaysUse = stats.getNumDaysUse();
         }
+
+        public String daysAgoString(int daysago) {
+            return switch (daysago) {
+                case 0 -> Messages.ApiTokenProperty_today();
+                case 1 -> Messages.ApiTokenProperty_yesterday();
+                default -> Messages.ApiTokenProperty_daysAgo(daysago);
+            };
+        }
     }
 
     /**
@@ -576,12 +584,12 @@ public class ApiTokenProperty extends UserProperty {
             }
             if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
-                return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
+                return HttpResponses.errorJSON("The tokenUuid cannot be empty");
             }
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
-                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
+                return HttpResponses.errorJSON("The user does not have any ApiToken yet, try generating one before.");
             }
 
             boolean renameOk = p.tokenStore.renameToken(tokenUuid, newName);
@@ -593,7 +601,7 @@ public class ApiTokenProperty extends UserProperty {
 
             u.save();
 
-            return HttpResponses.ok();
+            return HttpResponses.okJSON();
         }
 
         @RequirePOST

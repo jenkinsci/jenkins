@@ -25,34 +25,19 @@ Behaviour.specify(
   ".api-token-property-token-revoke",
   "api-token-property-token-revoke",
   0,
-  function (element) {
-    element.addEventListener("click", function (event) {
-      event.preventDefault();
-      revokeToken(element);
-    });
-  },
-);
-
-Behaviour.specify(
-  ".api-token-property-token-save",
-  "api-token-property-token-save",
-  0,
-  function (element) {
-    element.addEventListener("click", function () {
-      saveApiToken(element);
-    });
+  function (button) {
+    button.onclick = function () {
+      revokeToken(button);
+    };
   },
 );
 
 function revokeToken(anchorRevoke) {
-  const repeatedChunk = anchorRevoke.closest(".repeated-chunk");
-  const tokenList = repeatedChunk.closest(".token-list");
+  const tokenRow = anchorRevoke.closest("tr");
   const confirmMessage = anchorRevoke.getAttribute("data-confirm");
   const confirmTitle = anchorRevoke.getAttribute("data-confirm-title");
   const targetUrl = anchorRevoke.getAttribute("data-target-url");
-
-  const inputUuid = repeatedChunk.querySelector("input.token-uuid-input");
-  const tokenUuid = inputUuid.value;
+  const tokenUuid = tokenRow.dataset.tokenUuid;
 
   dialog
     .confirm(confirmTitle, { message: confirmMessage, type: "destructive" })
@@ -66,7 +51,7 @@ function revokeToken(anchorRevoke) {
           }),
         }).then((rsp) => {
           if (rsp.ok) {
-            if (repeatedChunk.querySelectorAll(".legacy-token").length > 0) {
+            if (tokenRow.classList.contains("legacy-token")) {
               // we are revoking the legacy token
               const messageIfLegacyRevoked = anchorRevoke.getAttribute(
                 "data-message-if-legacy-revoked",
@@ -75,8 +60,8 @@ function revokeToken(anchorRevoke) {
               const legacyInput = document.getElementById("apiToken");
               legacyInput.value = messageIfLegacyRevoked;
             }
-            repeatedChunk.remove();
-            adjustTokenEmptyListMessage(tokenList);
+            tokenRow.remove();
+            adjustTokenEmptyListMessage();
           }
         });
       },
@@ -84,100 +69,158 @@ function revokeToken(anchorRevoke) {
     );
 }
 
-function saveApiToken(button) {
-  if (button.classList.contains("request-pending")) {
-    // avoid multiple requests to be sent if user is clicking multiple times
-    return;
-  }
-  button.classList.add("request-pending");
-  const targetUrl = button.getAttribute("data-target-url");
-  const repeatedChunk = button.closest(".repeated-chunk ");
-  const tokenList = repeatedChunk.closest(".token-list");
-  const nameInput = repeatedChunk.querySelector('[name="tokenName"]');
-  const tokenName = nameInput.value;
+Behaviour.specify(
+  "#api-token-property-add",
+  "api-token-property-add",
+  0,
+  function (button) {
+    button.onclick = function () {
+      addToken(button);
+    };
+  },
+);
 
-  fetch(targetUrl, {
-    body: new URLSearchParams({ newTokenName: tokenName }),
-    method: "post",
-    headers: crumb.wrap({
-      "Content-Type": "application/x-www-form-urlencoded",
-    }),
-  }).then((rsp) => {
-    if (rsp.ok) {
-      rsp.json().then((json) => {
-        const errorSpan = repeatedChunk.querySelector(".error");
-        if (json.status === "error") {
-          errorSpan.innerHTML = json.message;
-          errorSpan.classList.remove("jenkins-hidden");
-
-          button.classList.remove("request-pending");
-        } else {
-          errorSpan.classList.remove("visible");
-
-          const tokenName = json.data.tokenName;
-          // in case the name was empty, the application will propose a default one
-          nameInput.value = tokenName;
-
-          const tokenValue = json.data.tokenValue;
-          const tokenValueSpan =
-            repeatedChunk.querySelector(".new-token-value");
-          tokenValueSpan.innerText = tokenValue;
-          tokenValueSpan.classList.remove("jenkins-hidden");
-
-          // show the copy button
-          const tokenCopyButton = repeatedChunk.querySelector(
-            ".jenkins-copy-button",
-          );
-          tokenCopyButton.setAttribute("text", tokenValue);
-          tokenCopyButton.classList.remove("jenkins-hidden");
-
-          const tokenUuid = json.data.tokenUuid;
-          const uuidInput = repeatedChunk.querySelector('[name="tokenUuid"]');
-          uuidInput.value = tokenUuid;
-
-          const warningMessage = repeatedChunk.querySelector(
-            ".display-after-generation",
-          );
-          warningMessage.classList.remove("jenkins-hidden");
-
-          // we do not want to allow user to create twice a token using same name by mistake
-          button.remove();
-
-          const revokeButton = repeatedChunk.querySelector(
-            ".api-token-property-token-revoke",
-          );
-          revokeButton.classList.remove("jenkins-hidden");
-
-          const cancelButton =
-            repeatedChunk.querySelector(".repeatable-delete");
-          cancelButton.remove();
-
-          repeatedChunk.classList.add("token-list-fresh-item");
-          const item = repeatedChunk.querySelector(".token-list-new-item");
-          item.classList.remove("token-list-new-item");
-          item.classList.add("token-list-existing-item");
-
-          adjustTokenEmptyListMessage(tokenList);
-        }
-      });
-    }
-  });
+function appendTokenToTable(data) {
+  const rowTemplate = document.getElementById("api-token-row-template");
+  const apiTokenRow = rowTemplate.content.firstElementChild.cloneNode(true);
+  apiTokenRow.dataset.tokenUuid = data.tokenUuid;
+  apiTokenRow.querySelector(".token-name").innerText = data.tokenName;
+  const table = document.getElementById("api-token-table");
+  table.tBodies[0].appendChild(apiTokenRow);
+  adjustTokenEmptyListMessage();
+  Behaviour.applySubtree(table);
 }
 
-function adjustTokenEmptyListMessage(tokenList) {
+function addToken(button) {
+  const targetUrl = button.dataset.targetUrl;
+  const promptMessage = button.dataset.promptMessage;
+  const promptName = button.dataset.messageName;
+  dialog
+    .prompt(promptMessage, {
+      message: promptName,
+      okText: button.dataset.generate,
+    })
+    .then(
+      (tokenName) => {
+        fetch(targetUrl, {
+          body: new URLSearchParams({ newTokenName: tokenName }),
+          method: "post",
+          headers: crumb.wrap({
+            "Content-Type": "application/x-www-form-urlencoded",
+          }),
+        }).then((rsp) => {
+          if (rsp.ok) {
+            rsp.json().then((json) => {
+              if (json.status === "error") {
+                dialog.alert(json.message, {
+                  type: "destructive",
+                });
+              } else {
+                const tokenTemplate =
+                  document.getElementById("api-token-template");
+                const form = document.createElement("form");
+                const apiTokenFormInner =
+                  tokenTemplate.firstElementChild.cloneNode(true);
+                form.appendChild(apiTokenFormInner);
+
+                const nameSpan = form.querySelector(".api-token-new-name");
+                nameSpan.innerText = json.data.tokenName;
+
+                const tokenValue = json.data.tokenValue;
+                const tokenValueSpan = form.querySelector(
+                  ".api-token-new-value",
+                );
+                1;
+                tokenValueSpan.innerText = tokenValue;
+
+                const tokenCopyButton = form.querySelector(
+                  ".jenkins-copy-button",
+                );
+                tokenCopyButton.setAttribute("text", tokenValue);
+                tokenCopyButton.classList.remove("jenkins-hidden");
+
+                dialog
+                  .form(form, {
+                    title: button.dataset.successTitle,
+                    submitButton: false,
+                    cancel: false,
+                    okText: "Ok",
+                  })
+                  .then(
+                    () => {
+                      appendTokenToTable(json.data);
+                    },
+                    () => {
+                      appendTokenToTable(json.data);
+                    },
+                  );
+              }
+            });
+          }
+        });
+      },
+      () => {},
+    );
+}
+
+Behaviour.specify(
+  ".api-token-property-token-rename",
+  "api-token-property-token-rename",
+  0,
+  function (button) {
+    button.onclick = function () {
+      renameToken(button);
+    };
+  },
+);
+
+function renameToken(button) {
+  const targetUrl = button.dataset.targetUrl;
+  const tokenRow = button.closest("tr");
+  dialog
+    .prompt(button.dataset.renameTitle, {
+      message: button.dataset.renameMessage,
+    })
+    .then(
+      (newName) => {
+        const tokenUuid = tokenRow.dataset.tokenUuid;
+        fetch(targetUrl, {
+          body: new URLSearchParams({ newName: newName, tokenUuid: tokenUuid }),
+          method: "post",
+          headers: crumb.wrap({
+            "Content-Type": "application/x-www-form-urlencoded",
+          }),
+        }).then((rsp) => {
+          if (rsp.ok) {
+            rsp.json().then((json) => {
+              if (json.status === "error") {
+                dialog.alert(json.message, {
+                  type: "destructive",
+                });
+              } else {
+                const tokenField = tokenRow.querySelector(".token-name");
+                tokenField.innerText = newName;
+              }
+            });
+          }
+        });
+      },
+      () => {},
+    );
+}
+
+function adjustTokenEmptyListMessage() {
+  const tokenList = document.querySelector(".token-list");
   const emptyListMessage = tokenList.querySelector(".token-list-empty-item");
+  const tokenTable = document.getElementById("api-token-table");
 
   // number of token that are already existing or freshly created
-  const numOfToken = tokenList.querySelectorAll(
-    ".token-list-existing-item, .token-list-fresh-item",
-  ).length;
+  const numOfToken = tokenTable.tBodies[0].rows.length;
   if (numOfToken >= 1) {
-    if (!emptyListMessage.classList.contains("jenkins-hidden")) {
-      emptyListMessage.classList.add("jenkins-hidden");
-    }
+    emptyListMessage.classList.toggle("jenkins-hidden", true);
+    tokenTable.classList.toggle("jenkins-hidden", false);
   } else {
-    if (emptyListMessage.classList.contains("jenkins-hidden")) {
-      emptyListMessage.classList.remove("jenkins-hidden");
-    }
+    emptyListMessage.classList.toggle("jenkins-hidden", false);
+    tokenTable.classList.toggle("jenkins-hidden", true);
   }
 }

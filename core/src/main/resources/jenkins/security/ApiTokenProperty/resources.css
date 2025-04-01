@@ -22,58 +22,24 @@
  * THE SOFTWARE.
  */
 
-.token-list .token-list-item {
-  min-height: inherit;
+.token-name-container,
+.token-last-used,
+.api-token-new-form-row {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-.token-list .repeated-chunk:has(.legacy-token) {
-  border-color: var(--error-color);
-}
-
-.token-list .token-list-empty-item {
-  margin-bottom: 0.5rem;
-}
-
-.token-list .token-list-new-item {
-  margin-right: 25px;
-}
-.token-list .token-list-new-item .new-token-value {
-  font-family: monospace;
-}
-
-.token-list .token-error-message {
-  margin-top: 5px;
-}
-
-.token-list .display-after-generation {
-  margin-top: 5px;
-}
-
-.token-list .token-use-counter.token-warning {
-  font-weight: var(--font-bold-weight);
+.token-use-counter.token-warning,
+.token-name-container.legacy-token,
+.api-token-new-warning {
   color: var(--warning-color);
 }
 
-.token-list .token-list-item-info {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 5px;
-  font-size: var(--font-size-xs);
-  color: var(--text-color-secondary);
+.api-token-new-value {
+  font-family: monospace;
 }
 
-.token-list .token-list-item-info .to-right {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin-left: auto;
-}
-
-.token-list .token-list-icon {
-  width: 22px;
-  height: 22px;
+.api-token-form {
+  margin-bottom: 0.5rem;
 }
