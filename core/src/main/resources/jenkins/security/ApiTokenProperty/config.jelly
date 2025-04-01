@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:d="jelly:define">
+    <j:set var="isStatisticsEnabled" value="${descriptor.isStatisticsEnabled()}" />
     <d:taglib uri="local">
         <d:tag name="editButton">
             <button type="button"
@@ -57,9 +58,19 @@ THE SOFTWARE.
             <td>
                 <span class="token-creation-date" tooltip="${%Just now}">${%Today}</span>
             </td>
-            <td align="right" class="token-use-counter">0</td>
+            <td align="right" class="token-use-counter">${isStatisticsEnabled? token.useCounter :'%N/A'}</td>
             <td align="right">
-                <div class="token-last-used">${%Never}</div>
+                <div class="token-last-used">
+                    <j:choose>
+                        <j:when test="${isStatisticsEnabled}">${%TokenNeverUsed}
+                        </j:when>
+                        <j:otherwise>
+                            <span class="no-statistics" tooltip="${%StatisticsDisabled.Title}">
+                                ${%StatisticsDisabled}
+                            </span>
+                        </j:otherwise>
+                    </j:choose>
+                </div>
             </td>
             <td class="jenkins-table__cell--tight">
                 <div class="jenkins-table__cell__button-wrapper">
@@ -88,10 +99,9 @@ THE SOFTWARE.
         </div>
     </div>
     <st:adjunct includes="jenkins.security.ApiTokenProperty.resources"/>
-    <f:entry title="${%CurrentTokens(instance.tokenList.size())}" help="${descriptor.getHelpFile('tokenStore')}">
+    <f:entry title="${%CurrentTokens}" help="${descriptor.getHelpFile('tokenStore')}">
         <!-- ignore the whole div to prevent the "Add new token" button to trigger the confirm -->
         <div class="token-list ignore-dirty-panel" xmlns:local="local">
-            <j:set var="isStatisticsEnabled" value="${descriptor.isStatisticsEnabled()}" />
             <j:set var="tokenList" value="${instance.tokenList}" />
             <div class="token-list-empty-item ${tokenList == null || tokenList.isEmpty() ? '' : 'jenkins-hidden'} jenkins-!-margin-bottom-2">
                 ${%NoTokenYet}
@@ -138,7 +148,7 @@ THE SOFTWARE.
                                 </j:if>
                                 <span class="${oldClazz}" tooltip="${creationDateFormat}">${token.daysAgoString(token.numDaysCreation)}</span>
                             </td>
-                            <td align="right">${token.useCounter}</td>
+                            <td align="right">${isStatisticsEnabled? token.useCounter :'%N/A'}</td>
                             <td align="right">
                                 <div class="token-last-used">
                                     <j:choose>
@@ -162,7 +172,7 @@ THE SOFTWARE.
                                                 <j:otherwise>
                                                     <j:set var="unusedTokenWarnClazz" value=""/>
                                                     <j:if test="${token.numDaysCreation gt 7}">
-                                                        <l:icon src="symbol-warning" class="icon-md jenkins-!-warning-color"/>
+                                                        <l:icon src="symbol-warning" class="icon-md jenkins-!-warning-color" tooltip="${%TokenNeverUsed.Title}"/>
                                                         <j:set var="unusedTokenWarnClazz" value="token-warning"/>
                                                     </j:if>
                                                     <span class="token-use-counter ${unusedTokenWarnClazz}" tooltip="${%TokenNeverUsed.Title}">
@@ -198,6 +208,7 @@ THE SOFTWARE.
                         data-target-url="${descriptor.descriptorFullUrl}/generateNewToken"
                         data-prompt-message="${%Create new API token}"
                         data-generate="${%GenerateNewToken}" data-success-title="${%New token successfully created}"
+                        data-cancel="${%Cancel}"
                         data-message-name="${%Name of the token}">${%AddNewToken}</button>
             </j:if>
         </div>

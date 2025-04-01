@@ -99,6 +99,7 @@ function addToken(button) {
     .prompt(promptMessage, {
       message: promptName,
       okText: button.dataset.generate,
+      cancelText: button.dataset.cancel,
     })
     .then(
       (tokenName) => {
