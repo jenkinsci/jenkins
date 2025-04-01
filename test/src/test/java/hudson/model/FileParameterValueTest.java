@@ -127,6 +127,8 @@ public class FileParameterValueTest {
         // ensure also the file is not reachable by request
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/dir/../../../pwned/uploaded-file.txt", uploadedContent);
+        checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/dir/..%2F..%2F..%2Fpwned/uploaded-file.txt", uploadedContent);
     }
 
     @Test
@@ -154,6 +156,8 @@ public class FileParameterValueTest {
         // ensure also the file is not reachable by request
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/../pwned/uploaded-file.txt", uploadedContent);
+        checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/..%2Fpwned/uploaded-file.txt", uploadedContent);
     }
 
     private void checkUrlNot200AndNotContains(JenkinsRule.WebClient wc, String url, String contentNotPresent) throws Exception {
