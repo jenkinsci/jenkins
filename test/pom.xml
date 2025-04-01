@@ -243,7 +243,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
       <!-- TODO https://github.com/jenkinsci/matrix-auth-plugin/pull/169 -->
-      <version>3.2.6-rc473.6f3a_8c212dd7</version>
+      <version>3.2.6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
