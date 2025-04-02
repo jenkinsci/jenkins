@@ -28,6 +28,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.util.Iterator;
 import java.util.ServiceConfigurationError;
@@ -115,9 +116,9 @@ public class WebSockets {
                 }
 
                 @Override
-                public void onWebSocketBinary(byte[] payload, int offset, int length) {
+                public void onWebSocketBinary(ByteBuffer data) {
                     try {
-                        session.binary(payload, offset, length);
+                        session.binary(data);
                     } catch (IOException x) {
                         session.error(x);
                     }
