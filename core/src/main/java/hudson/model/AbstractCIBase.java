@@ -249,12 +249,12 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 byName.put(n.getNodeName(), c);
             }
             Set<Computer> used = new HashSet<>(old.size());
-            for (Node s : nodes) {
+            for (Node node : nodes) {
                 long start = System.currentTimeMillis();
-                updateComputer(s, byName, used, automaticAgentLaunch);
+                updateComputer(node, byName, used, automaticAgentLaunch);
                 if (LOG_STARTUP_PERFORMANCE && LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("Took %dms to update node %s",
-                            System.currentTimeMillis() - start, s.getNodeName()));
+                            System.currentTimeMillis() - start, node.getNodeName()));
                 }
             }
 
