@@ -108,8 +108,8 @@ public abstract class WebSocketSession {
         return handler.sendBinary(data);
     }
 
-    protected final void sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException {
-        handler.sendBinary(partialByte, isLast);
+    protected final Future<Void> sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException {
+        return handler.sendBinary(partialByte, isLast);
     }
 
     protected final Future<Void> sendText(String text) throws IOException {
