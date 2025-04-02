@@ -21,7 +21,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:entry title="${%# of executors}" field="numExecutors">
-        <f:number min="0" clazz="non-negative-number-required"/>
+        <f:number min="0" clazz="non-negative-number-required" step="1"/>
     </f:entry>
     <f:entry title="${%Labels}" field="labelString">
         <f:textbox/>
