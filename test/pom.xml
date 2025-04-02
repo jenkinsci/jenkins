@@ -63,7 +63,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-lang3-api</artifactId>
-        <version>3.17.0-84.vb_b_938040b_078</version>
+        <version>3.17.0-87.v5cf526e63b_8b_</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
@@ -178,7 +178,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2421.v8109b_b_b_70175</version>
+      <version>2427.v186cd47d9b_e0</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -218,7 +218,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.991.v1d5f531726d0</version>
+      <version>6.999.v42253c105443</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -242,7 +242,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <!-- TODO https://github.com/jenkinsci/matrix-auth-plugin/pull/169 -->
       <version>3.2.6</version>
       <scope>test</scope>
     </dependency>
