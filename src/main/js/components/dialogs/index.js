@@ -96,6 +96,9 @@ Dialog.prototype.init = function () {
           <input data-id="input" type="text" class='jenkins-input'></div>`);
       this.dialog.appendChild(inputDiv);
       this.input = inputDiv.querySelector("[data-id=input]");
+      if (this.options.promptValue) {
+        this.input.value = this.options.promptValue;
+      }
       if (!this.options.allowEmpty) {
         this.input.addEventListener("input", () => this.checkInput());
       }
@@ -155,7 +158,12 @@ Dialog.prototype.appendButtons = function () {
       this.dialog.dispatchEvent(new Event("cancel"));
     });
   }
-  if (this.dialogType === "prompt" && !this.options.allowEmpty) {
+
+  if (
+    this.dialogType === "prompt" &&
+    !this.options.allowEmpty &&
+    (this.options.promptValue == null || this.options.promptValue.trim() === "")
+  ) {
     this.ok.disabled = true;
   }
 };

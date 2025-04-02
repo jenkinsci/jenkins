@@ -100,7 +100,9 @@ function addToken(button) {
       message: promptName,
       okText: button.dataset.generate,
       cancelText: button.dataset.cancel,
-    })
+      maxWidth: "400px",
+      minWidth: "400px",
+  })
     .then(
       (tokenName) => {
         fetch(targetUrl, {
@@ -124,9 +126,6 @@ function addToken(button) {
                   tokenTemplate.firstElementChild.cloneNode(true);
                 form.appendChild(apiTokenFormInner);
 
-                const nameSpan = form.querySelector(".api-token-new-name");
-                nameSpan.innerText = json.data.tokenName;
-
                 const tokenValue = json.data.tokenValue;
                 const tokenValueSpan = form.querySelector(
                   ".api-token-new-value",
@@ -142,7 +141,7 @@ function addToken(button) {
 
                 dialog
                   .form(form, {
-                    title: button.dataset.successTitle,
+                    title: json.data.tokenName,
                     submitButton: false,
                     cancel: false,
                     okText: "Ok",
@@ -178,9 +177,13 @@ Behaviour.specify(
 function renameToken(button) {
   const targetUrl = button.dataset.targetUrl;
   const tokenRow = button.closest("tr");
+  const promptValue = tokenRow.querySelector(".token-name").innerText;
   dialog
     .prompt(button.dataset.renameTitle, {
       message: button.dataset.renameMessage,
+      promptValue: promptValue,
+      maxWidth: "400px",
+      minWidth: "400px",
     })
     .then(
       (newName) => {

@@ -32,7 +32,7 @@ THE SOFTWARE.
                     class="jenkins-table-button jenkins-button jenkins-button--tertiary api-token-property-token-rename"
                     data-target-url="${descriptor.descriptorFullUrl}/rename" data-rename-title="${%RenameToken}"
                     data-rename-message="${%New name}"
-                    tooltip="${%Rename this token}">
+                    tooltip="${%Rename}">
                 <l:icon src="symbol-edit"/>
             </button>
         </d:tag>
@@ -86,15 +86,12 @@ THE SOFTWARE.
     </template>
     <div class="jenkins-hidden" id="api-token-template">
         <div class="api-token-form">
-            ${%Name}: <span class="api-token-new-name"/>
-            <div class="api-token-new-form-row">
-                <span>${%Token}:</span>
+            <div class="jenkins-alert jenkins-alert-info">
+                ${%TokenDisplayedOnce}
+            </div>
+            <div class="api-token-new-form-row jenkins-quote jenkins-quote--monospace">
                 <span class="api-token-new-value"/>
                 <l:copyButton text="" clazz="jenkins-hidden" tooltip="${%CopyToken}" iconOnly="true"/>
-            </div>
-            <div class="api-token-new-warning">
-                <l:icon src="symbol-warning" class="icon-md jenkins-!-warning-color"/>
-                ${%TokenDisplayedOnce}
             </div>
         </div>
     </div>
@@ -207,7 +204,7 @@ THE SOFTWARE.
                 <button id="api-token-property-add" class="jenkins-button jenkins-button--secondary" type="button"
                         data-target-url="${descriptor.descriptorFullUrl}/generateNewToken"
                         data-prompt-message="${%Create new API token}"
-                        data-generate="${%GenerateNewToken}" data-success-title="${%New token successfully created}"
+                        data-generate="${%GenerateNewToken}" data-success-title="${%successfully created}"
                         data-cancel="${%Cancel}"
                         data-message-name="${%Name of the token}">${%AddNewToken}</button>
             </j:if>
