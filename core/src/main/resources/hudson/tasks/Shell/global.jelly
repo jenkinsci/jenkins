@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2025, Stefan Spieker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,21 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Side panel
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:header />
-  <l:side-panel>
-    <l:tasks>
-      <l:task href="${h.getNearestAncestorUrl(request,it)}/" icon="symbol-computer"
-              title="${%Nodes}"/>
-      <l:task href="../cloud/" icon="symbol-cloud" permission="${app.SYSTEM_READ}"
-              title="${app.hasPermission(app.ADMINISTER) ? '%Clouds' : '%View Clouds'}"/>
-    </l:tasks>
-    <j:forEach var="w" items="${it.widgets}">
-      <st:include it="${w}" page="index" />
-    </j:forEach>
-  </l:side-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:section title="${%Shell}">
+        <f:entry title="${%Shell executable}" field="shell">
+            <f:textbox />
+        </f:entry>
+    </f:section>
 </j:jelly>
+

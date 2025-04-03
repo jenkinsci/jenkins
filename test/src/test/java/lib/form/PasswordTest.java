@@ -37,6 +37,7 @@ import static org.junit.Assert.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.cli.CopyJobCommand;
@@ -62,6 +63,7 @@ import hudson.model.ViewProperty;
 import hudson.security.ACL;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -70,6 +72,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -82,7 +85,10 @@ import jenkins.model.TransientActionFactory;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.ExtendedReadSecretRedaction;
 import jenkins.tasks.SimpleBuildStep;
+import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlHiddenInput;
 import org.htmlunit.html.HtmlInput;
@@ -195,15 +201,73 @@ public class PasswordTest {
         }
     }
 
+    @For({ExtendedReadRedaction.class, ExtendedReadSecretRedaction.class})
+    @Issue("SECURITY-3513")
+    @Test
+    public void testCopyNodeSecrets() throws Exception {
+        Computer.EXTENDED_READ.setEnabled(true);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy mockAuthorizationStrategy = new MockAuthorizationStrategy();
+        mockAuthorizationStrategy.grant(Jenkins.READ, Computer.CREATE, Computer.CONFIGURE).everywhere().to("alice");
+        mockAuthorizationStrategy.grant(Jenkins.READ, Computer.CREATE, Computer.EXTENDED_READ).everywhere().to("bob");
+        j.jenkins.setAuthorizationStrategy(mockAuthorizationStrategy);
+
+        final DumbSlave onlineSlave = j.createOnlineSlave();
+        final String secretText = "t0ps3cr3td4t4_node";
+        final Secret encryptedSecret = Secret.fromString(secretText);
+        final String encryptedSecretText = encryptedSecret.getEncryptedValue();
+
+        onlineSlave.getNodeProperties().add(new NodePropertyWithSecret(encryptedSecret));
+        onlineSlave.save();
+
+        assertThat(readString(new File(onlineSlave.getRootDir(), "config.xml").toPath()), containsString(encryptedSecretText));
+        assertEquals(2, j.getInstance().getComputers().length);
+
+        String agentCopyURL = j.getURL() + "/computer/createItem?mode=copy&from=" + onlineSlave.getNodeName() + "&name=";
+
+        { // with configure, you can copy a node containing secrets
+            try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+                WebResponse rsp = wc.getPage(wc.addCrumb(new WebRequest(new URL(agentCopyURL + "aliceAgent"),
+                        HttpMethod.POST))).getWebResponse();
+                assertEquals(200, rsp.getStatusCode());
+                assertEquals(3, j.getInstance().getComputers().length);
+
+                final Page page = wc.goTo("computer/aliceAgent/config.xml", "application/xml");
+                final String content = page.getWebResponse().getContentAsString();
+
+                assertThat(content, not(containsString(secretText)));
+                assertThat(content, containsString(encryptedSecretText));
+                assertThat(content, containsString("<secret>" + encryptedSecretText + "</secret>"));
+            }
+        }
+
+        { // without configure, you cannot copy a node containing secrets
+            try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false).login("bob")) {
+                WebResponse rsp = wc.getPage(wc.addCrumb(new WebRequest(new URL(agentCopyURL + "bobAgent"),
+                        HttpMethod.POST))).getWebResponse();
+
+                assertEquals(403, rsp.getStatusCode());
+                assertThat(rsp.getContentAsString(), containsString("May not copy " + onlineSlave.getNodeName() + " as it contains secrets"));
+                assertEquals(3, j.getInstance().getComputers().length);
+            }
+        }
+    }
+
     public static class NodePropertyWithSecret extends NodeProperty<Node> {
         private final Secret secret;
 
+        @DataBoundConstructor
         public NodePropertyWithSecret(Secret secret) {
             this.secret = secret;
         }
 
         public Secret getSecret() {
             return secret;
+        }
+
+        @Extension
+        public static class DescriptorImpl extends NodePropertyDescriptor {
+
         }
     }
 
