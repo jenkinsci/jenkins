@@ -63,9 +63,11 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -340,6 +342,23 @@ public abstract class Slave extends Node implements Serializable {
         return Util.fixNull(label).trim();
     }
 
+    private transient Set<LabelAtom> previouslyAssignedLabels = ConcurrentHashMap.newKeySet();
+
+    /**
+     * @return the labels to be trimmed for this node. This includes current and previous labels that were applied before the last call to this method.
+     */
+    @Override
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    public Set<LabelAtom> drainLabelsToTrim() {
+        var result = new HashSet<>(super.drainLabelsToTrim());
+        synchronized (previouslyAssignedLabels) {
+            result.addAll(previouslyAssignedLabels);
+            previouslyAssignedLabels.clear();
+        }
+        return result;
+    }
+
     @Override
     @DataBoundSetter
     public void setLabelString(String labelString) throws IOException {
@@ -349,6 +368,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     private void _setLabelString(String labelString) {
+        this.previouslyAssignedLabels.addAll(getAssignedLabels());
         this.label = Util.fixNull(labelString).trim();
         this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
     }
@@ -612,6 +632,7 @@ public abstract class Slave extends Node implements Serializable {
         if (nodeProperties == null)
             nodeProperties = new DescribableList<>(this);
         _setLabelString(label);
+        previouslyAssignedLabels = ConcurrentHashMap.newKeySet();
         return this;
     }
 
