@@ -74,22 +74,25 @@ public class HttpExtensionList extends Telemetry {
 
     @Override
     public synchronized JSONObject createContent() {
-        if (calls.isEmpty()) {
-            return null;
-        }
+        JSONObject info = new JSONObject();
+        info.put("components", buildComponentInformation());
+
         Map<String, Integer> currentRequests = new TreeMap<>(calls);
         calls.clear();
 
         JSONObject payload = new JSONObject();
         payload.putAll(currentRequests);
 
-        JSONObject info = new JSONObject();
-        info.put("components", buildComponentInformation());
         info.put("dispatches", payload);
-        return payload;
+        return info;
     }
 
     public synchronized void record(String path) {
+        String[] parts = path.split("/");
+        if (parts.length > 1) {
+            // Record just extension point + implementation class
+            path = parts[0] + '/' + parts[1];
+        }
         calls.compute(path, (p, v) -> v == null ? 1 : v + 1);
     }
 
