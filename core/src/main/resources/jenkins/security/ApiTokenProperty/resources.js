@@ -250,7 +250,10 @@ Behaviour.specify(
 );
 
 function showToken(button) {
+  const tokenDiv = document.createElement("div");
+  tokenDiv.classList.add("api-token-show", "jenkins-quote", "jenkins-quote--monospace");
+  tokenDiv.innerText = button.dataset.tokenValue;
   dialog.alert(button.dataset.title, {
-    message: button.dataset.tokenValue,
+    content: tokenDiv,
   });
 }

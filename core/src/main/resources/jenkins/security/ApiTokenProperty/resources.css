@@ -78,6 +78,7 @@
   height: 20px;
 }
 
-.api-token-message {
-  margin-bottom: 0.5rem;
+.api-token-show {
+  padding: 1rem;
+  width: 100%;
 }

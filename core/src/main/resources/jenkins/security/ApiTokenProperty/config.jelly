@@ -72,7 +72,7 @@ THE SOFTWARE.
         </div>
     </div>
     <div class="jenkins-hidden" id="api-token-template">
-        <div class="api-token-message">
+        <div>
             <div class="jenkins-alert jenkins-alert-info">
                 ${%TokenDisplayedOnce}
             </div>
