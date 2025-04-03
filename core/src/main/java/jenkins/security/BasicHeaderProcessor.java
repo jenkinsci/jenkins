@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -69,7 +70,13 @@ public class BasicHeaderProcessor implements CompatibleFilter {
 
         if (authorization != null && authorization.toLowerCase(Locale.ROOT).startsWith("Basic ".toLowerCase(Locale.ROOT))) {
             // authenticate the user
-            String uidpassword = new String(Base64.getDecoder().decode(authorization.substring(6).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+            String uidpassword = null;
+            try {
+                uidpassword = new String(Base64.getDecoder().decode(authorization.substring(6).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+            } catch (IllegalArgumentException ex) {
+                LOGGER.log(Level.FINE, ex, () -> "Failed to decode authentication from: " + authorization);
+                uidpassword = "";
+            }
             int idx = uidpassword.indexOf(':');
             if (idx >= 0) {
                 String username = uidpassword.substring(0, idx);
