@@ -153,6 +153,7 @@ public abstract class DirScanner implements Serializable {
     }
 
     private static class DescendantFileSelector implements FileSelector {
+        private static final long serialVersionUID = 1L;
         private final Set<String> alreadyDeselected;
         private final FilePath baseDirFP;
         private final int baseDirPathLength;
