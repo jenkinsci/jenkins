@@ -1611,11 +1611,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     protected void updateComputers(@NonNull Node... nodes) {
         var nodeSet = new HashSet<Node>();
-        for (var node : nodes) {
-            if (node != null) {
-                nodeSet.add(node);
-            }
-        }
+        Collections.addAll(nodeSet, nodes);
         updateComputerList(AUTOMATIC_AGENT_LAUNCH, nodeSet);
     }
 

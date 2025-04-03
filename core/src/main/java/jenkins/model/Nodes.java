@@ -166,8 +166,13 @@ public class Nodes implements PersistenceRoot {
                     @Override
                     public void run() {
                         nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> old);
-                        jenkins.updateComputers(node, old);
-                        jenkins.trimLabels(node, old);
+                        if (old != null) {
+                            jenkins.updateComputers(node, old);
+                            jenkins.trimLabels(node, old);
+                        } else {
+                            jenkins.updateComputers(node);
+                            jenkins.trimLabels(node);
+                        }
                     }
                 });
                 throw e;
