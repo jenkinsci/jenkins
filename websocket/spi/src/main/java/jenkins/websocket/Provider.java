@@ -65,7 +65,7 @@ interface Provider {
 
         Future<Void> sendBinary(ByteBuffer data) throws IOException;
 
-        void sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException;
+        Future<Void> sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException;
 
         Future<Void> sendText(String text) throws IOException;
 

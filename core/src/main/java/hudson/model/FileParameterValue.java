@@ -96,6 +96,7 @@ public class FileParameterValue extends ParameterValue {
      * @deprecated use {@link #FileParameterValue(String, FileItem)}
      */
     @Deprecated
+    @SuppressFBWarnings(value = "FILE_UPLOAD_FILENAME", justification = "TODO needs triage")
     public FileParameterValue(String name, org.apache.commons.fileupload.FileItem file) {
         this(name, file.toFileUpload2FileItem(), FilenameUtils.getName(file.getName()));
     }
@@ -164,7 +165,7 @@ public class FileParameterValue extends ParameterValue {
     @Override
     public BuildWrapper createBuildWrapper(AbstractBuild<?, ?> build) {
         return new BuildWrapper() {
-            @SuppressFBWarnings(value = {"FILE_UPLOAD_FILENAME", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"}, justification = "TODO needs triage")
+            @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
             @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
                 if (location != null && !location.isEmpty() && file.getName() != null && !file.getName().isEmpty()) {

@@ -26,6 +26,7 @@ package hudson.widgets;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Job;
@@ -71,6 +72,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     /**
      * The given data model of records. Newer ones first.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public Iterable<T> baseList;
 
     /**

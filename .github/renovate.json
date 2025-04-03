@@ -30,11 +30,11 @@
       "allowedVersions": "/20.[0-9]+.[0-9]+(.[0-9]+)?$/"
     },
     {
-      "description": "Should be upgraded in lockstep in order to keep their corresponding Jetty versions aligned, could be grouped but releases are likely separated by a bit of time",
+      "description": "Should be upgraded in lockstep in order to keep their corresponding Jetty versions aligned",
       "matchManagers": [
         "maven"
       ],
-      "enabled": false,
+      "groupName": "Winstone and Jetty",
       "matchPackageNames": [
         "org.eclipse.jetty.ee9:jetty-ee9-maven-plugin",
         "org.jenkins-ci:winstone"
