@@ -240,13 +240,15 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         final Set<Computer> old = new HashSet<>(nodes.size());
         Queue.withLock(() -> {
             Map<String, Computer> byName = new HashMap<>();
-            for (Node n : nodes) {
-                var c = n.toComputer();
-                if (c == null) {
-                    continue; // this computer is gone
+            for (Computer c : getComputerMap().values()) {
+                Node node = c.getNode();
+                if (node == null) {
+                    old.add(c);
+                    // this computer is gone
+                } else if (nodes.contains(node)) {
+                    old.add(c);
+                    byName.put(node.getNodeName(), c);
                 }
-                old.add(c);
-                byName.put(n.getNodeName(), c);
             }
             Set<Computer> used = new HashSet<>(old.size());
             for (Node node : nodes) {
