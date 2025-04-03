@@ -38,6 +38,9 @@ import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -265,12 +268,70 @@ public class ApiTokenProperty extends UserProperty {
             this.numDaysUse = stats.getNumDaysUse();
         }
 
-        public String daysAgoString(int daysago) {
-            return switch (daysago) {
-                case 0 -> Messages.ApiTokenProperty_today();
-                case 1 -> Messages.ApiTokenProperty_yesterday();
-                default -> Messages.ApiTokenProperty_daysAgo(daysago);
-            };
+        public String createdDaysAgo() {
+            LocalDate c = creationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            Period period = Period.between(c, now);
+            if (period.getYears() > 1) {
+                return Messages.ApiTokenProperty_createdYearsAgo(period.getYears());
+            }
+            if (period.getYears() == 1) {
+                return Messages.ApiTokenProperty_createdAYearAgo();
+            }
+            if (period.getMonths() > 1) {
+                return Messages.ApiTokenProperty_createdMonthsAgo(period.getMonths());
+            }
+            if (period.getMonths() == 1) {
+                return Messages.ApiTokenProperty_createdAMonthAgo();
+            }
+            if (period.getDays() > 14) {
+                return Messages.ApiTokenProperty_createdWeeksAgo(period.getDays() / 7);
+            }
+            if (period.getDays() >= 7) {
+                return Messages.ApiTokenProperty_createdAWeekAgo();
+            }
+            if (period.getDays() == 0) {
+                return Messages.ApiTokenProperty_createdToday();
+            }
+            if (period.getDays() == 1) {
+                return Messages.ApiTokenProperty_createdYesterday();
+            }
+            return Messages.ApiTokenProperty_createdDaysAgo(period.getDays());
+        }
+
+        public String lastUsedDaysAgo() {
+            LocalDate lu = lastUseDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            Period period = Period.between(lu, now);
+            String used = Messages.ApiTokenProperty_usedMultipleTimes(useCounter);
+            if (useCounter == 1) {
+                used = Messages.ApiTokenProperty_usedOneTime();
+            }
+            if (period.getYears() > 1) {
+                return used + " " + Messages.ApiTokenProperty_lastUsedYearsAgo(period.getYears());
+            }
+            if (period.getYears() == 1) {
+                return used + " " + Messages.ApiTokenProperty_lastUsedAYearAgo();
+            }
+            if (period.getMonths() > 1) {
+                return used + " " + Messages.ApiTokenProperty_lastUsedMonthsAgo(period.getMonths());
+            }
+            if (period.getMonths() == 1) {
+                return used + " " + Messages.ApiTokenProperty_lastUsedAMonthAgo();
+            }
+            if (period.getDays() > 14) {
+                return used + " " + Messages.ApiTokenProperty_lastUsedWeeksAgo(period.getDays() / 7);
+            }
+            if (period.getDays() >= 7) {
+                return used + " " + Messages.ApiTokenProperty_lastUsedAWeekAgo();
+            }
+            if (period.getDays() == 0) {
+                return used + " " + Messages.ApiTokenProperty_lastUsedToday();
+            }
+            if (period.getDays() == 1) {
+                return used + " " + Messages.ApiTokenProperty_lastUsedYesterday();
+            }
+            return used + " " + Messages.ApiTokenProperty_lastUsedDaysAgo(period.getDays());
         }
     }
 

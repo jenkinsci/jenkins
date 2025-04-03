@@ -22,25 +22,62 @@
  * THE SOFTWARE.
  */
 
-.token-name-container,
-.token-last-used,
-.api-token-new-form-row {
+.token-list {
+  max-width: 700px;
+}
+
+.token-card__title,
+.token-stats,
+.token-never-used,
+.api-token-new-form-row,
+.token-list .jenkins-card,
+.token-controls {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
+.token-stats {
+  padding: 0 1rem 0.5rem;
+}
 
-.token-use-counter.token-warning,
-.token-name-container.legacy-token,
-.api-token-new-warning {
+.token-card__title {
+  height: 30px;
+  padding: 0.5rem 1rem 0;
+  font-size: var(--font-size-sm) !important;
+  font-weight: var(--font-bold-weight);
+}
+
+.token-controls {
+  margin-left: auto;
+  padding-right: 1rem;
+}
+
+.token-card-inner {
+  width: 100%;
+}
+
+.token-creation {
+  font-size: var(--font-size-xs);
+  color: var(--text-color-secondary);
+  width: fit-content;
+}
+
+.token-last-used {
+  font-size: var(--font-size-xs);
+  color: var(--text-color-secondary);
+  margin-left: auto;
+}
+
+.legacy-token {
   color: var(--warning-color);
 }
 
-.api-token-new-value {
-  font-family: monospace;
+.legacy-token svg {
+  width: 20px;
+  height: 20px;
 }
 
-.api-token-form {
+.api-token-message {
   margin-bottom: 0.5rem;
 }

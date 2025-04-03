@@ -83,12 +83,20 @@ Dialog.prototype.init = function () {
       this.dialog.appendChild(contents);
       behaviorShim.applySubtree(contents, true);
     }
-    if (this.options.message != null && this.dialogType !== "form") {
+    if (this.dialogType !== "form") {
       const message = createElementFromHtml(
         `<div class='jenkins-dialog__contents'/>`,
       );
-      this.dialog.appendChild(message);
-      message.innerText = this.options.message;
+      if (this.options.content != null && this.dialogType === "alert") {
+        message.appendChild(this.options.content);
+        this.dialog.appendChild(message);
+      } else if (this.options.message != null) {
+        const message = createElementFromHtml(
+          `<div class='jenkins-dialog__contents'/>`,
+        );
+        this.dialog.appendChild(message);
+        message.innerText = this.options.message;
+      }
     }
 
     if (this.dialogType === "prompt") {

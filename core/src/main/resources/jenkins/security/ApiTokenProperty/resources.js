@@ -33,11 +33,11 @@ Behaviour.specify(
 );
 
 function revokeToken(anchorRevoke) {
-  const tokenRow = anchorRevoke.closest("tr");
+  const tokenRow = anchorRevoke.closest(".token-card");
   const confirmMessage = anchorRevoke.getAttribute("data-confirm");
   const confirmTitle = anchorRevoke.getAttribute("data-confirm-title");
   const targetUrl = anchorRevoke.getAttribute("data-target-url");
-  const tokenUuid = tokenRow.dataset.tokenUuid;
+  const tokenUuid = tokenRow.id;
 
   dialog
     .confirm(confirmTitle, { message: confirmMessage, type: "destructive" })
@@ -82,13 +82,27 @@ Behaviour.specify(
 
 function appendTokenToTable(data) {
   const rowTemplate = document.getElementById("api-token-row-template");
-  const apiTokenRow = rowTemplate.content.firstElementChild.cloneNode(true);
-  apiTokenRow.dataset.tokenUuid = data.tokenUuid;
+  const apiTokenRow = rowTemplate.firstElementChild.cloneNode(true);
+  const tokenList = document.getElementById("api-token-list");
+  const tokenShowButton = apiTokenRow.querySelector(
+    ".api-token-property-token-show",
+  );
+  const tokenCopyButton = apiTokenRow.querySelector(
+    ".api-token-property-token-copy",
+  );
+  apiTokenRow.id = data.tokenUuid;
   apiTokenRow.querySelector(".token-name").innerText = data.tokenName;
-  const table = document.getElementById("api-token-table");
-  table.tBodies[0].appendChild(apiTokenRow);
+  if (isSecureContext) {
+    tokenCopyButton.setAttribute("text", data.tokenValue);
+    tokenCopyButton.classList.remove("jenkins-hidden");
+  } else {
+    tokenShowButton.dataset.tokenValue = data.tokenValue;
+    tokenShowButton.dataset.title = data.tokenName;
+    tokenShowButton.classList.remove("jenkins-hidden");
+  }
+  tokenList.appendChild(apiTokenRow);
   adjustTokenEmptyListMessage();
-  Behaviour.applySubtree(table);
+  Behaviour.applySubtree(apiTokenRow);
 }
 
 function addToken(button) {
@@ -102,7 +116,7 @@ function addToken(button) {
       cancelText: button.dataset.cancel,
       maxWidth: "400px",
       minWidth: "400px",
-  })
+    })
     .then(
       (tokenName) => {
         fetch(targetUrl, {
@@ -121,39 +135,30 @@ function addToken(button) {
               } else {
                 const tokenTemplate =
                   document.getElementById("api-token-template");
-                const form = document.createElement("form");
-                const apiTokenFormInner =
+                const apiTokenMessage =
                   tokenTemplate.firstElementChild.cloneNode(true);
-                form.appendChild(apiTokenFormInner);
 
                 const tokenValue = json.data.tokenValue;
-                const tokenValueSpan = form.querySelector(
+                const tokenValueSpan = apiTokenMessage.querySelector(
                   ".api-token-new-value",
                 );
                 1;
                 tokenValueSpan.innerText = tokenValue;
 
-                const tokenCopyButton = form.querySelector(
-                  ".jenkins-copy-button",
-                );
-                tokenCopyButton.setAttribute("text", tokenValue);
-                tokenCopyButton.classList.remove("jenkins-hidden");
-
-                dialog
-                  .form(form, {
-                    title: json.data.tokenName,
-                    submitButton: false,
-                    cancel: false,
-                    okText: "Ok",
-                  })
-                  .then(
-                    () => {
-                      appendTokenToTable(json.data);
-                    },
-                    () => {
-                      appendTokenToTable(json.data);
-                    },
+                if (isSecureContext) {
+                  const tokenCopyButton = apiTokenMessage.querySelector(
+                    ".jenkins-copy-button",
                   );
+                  tokenCopyButton.setAttribute("text", tokenValue);
+                  tokenCopyButton.classList.remove("jenkins-hidden");
+                }
+                appendTokenToTable(json.data);
+                Behaviour.applySubtree(apiTokenMessage);
+
+                dialog.alert(json.data.tokenName, {
+                  title: json.data.tokenName,
+                  content: apiTokenMessage,
+                });
               }
             });
           }
@@ -176,7 +181,7 @@ Behaviour.specify(
 
 function renameToken(button) {
   const targetUrl = button.dataset.targetUrl;
-  const tokenRow = button.closest("tr");
+  const tokenRow = button.closest(".token-card");
   const promptValue = tokenRow.querySelector(".token-name").innerText;
   dialog
     .prompt(button.dataset.renameTitle, {
@@ -187,9 +192,11 @@ function renameToken(button) {
     })
     .then(
       (newName) => {
-        const tokenUuid = tokenRow.dataset.tokenUuid;
         fetch(targetUrl, {
-          body: new URLSearchParams({ newName: newName, tokenUuid: tokenUuid }),
+          body: new URLSearchParams({
+            newName: newName,
+            tokenUuid: tokenRow.id,
+          }),
           method: "post",
           headers: crumb.wrap({
             "Content-Type": "application/x-www-form-urlencoded",
@@ -203,6 +210,10 @@ function renameToken(button) {
                 });
               } else {
                 const tokenField = tokenRow.querySelector(".token-name");
+                const tokenShowButton = tokenRow.querySelector(
+                  ".api-token-property-token-show",
+                );
+                tokenShowButton.dataset.title = newName;
                 tokenField.innerText = newName;
               }
             });
@@ -216,15 +227,30 @@ function renameToken(button) {
 function adjustTokenEmptyListMessage() {
   const tokenList = document.querySelector(".token-list");
   const emptyListMessage = tokenList.querySelector(".token-list-empty-item");
-  const tokenTable = document.getElementById("api-token-table");
+  const apiTokenList = document.getElementById("api-token-list");
 
   // number of token that are already existing or freshly created
-  const numOfToken = tokenTable.tBodies[0].rows.length;
+  const numOfToken = apiTokenList.childElementCount;
   if (numOfToken >= 1) {
     emptyListMessage.classList.toggle("jenkins-hidden", true);
-    tokenTable.classList.toggle("jenkins-hidden", false);
   } else {
     emptyListMessage.classList.toggle("jenkins-hidden", false);
-    tokenTable.classList.toggle("jenkins-hidden", true);
   }
+}
+
+Behaviour.specify(
+  ".api-token-property-token-show",
+  "api-token-property-token-show",
+  0,
+  function (button) {
+    button.onclick = function () {
+      showToken(button);
+    };
+  },
+);
+
+function showToken(button) {
+  dialog.alert(button.dataset.title, {
+    message: button.dataset.tokenValue,
+  });
 }
