@@ -234,7 +234,7 @@ THE SOFTWARE.
                             </a>
                           </j:when>
                           <j:otherwise>
-                            <l:icon src="symbol-status-aborted" class="icon-xlg" tooltip="Not applicable"/>
+                            <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="Not applicable"/>
                           </j:otherwise>
                         </j:choose>
                       </td>
