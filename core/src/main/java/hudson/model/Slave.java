@@ -631,8 +631,8 @@ public abstract class Slave extends Node implements Serializable {
     protected Object readResolve() {
         if (nodeProperties == null)
             nodeProperties = new DescribableList<>(this);
-        _setLabelString(label);
         previouslyAssignedLabels = ConcurrentHashMap.newKeySet();
+        _setLabelString(label);
         return this;
     }
 
