@@ -137,7 +137,7 @@ $semantics: (
   --jenkins-border-width: 1.5px;
   --jenkins-border-color: color-mix(
     in sRGB,
-    var(--text-color-secondary) 12%,
+    var(--text-color-secondary) 15%,
     var(--card-background)
   );
   --jenkins-border-color--subtle: color-mix(
@@ -197,29 +197,29 @@ $semantics: (
   --link-font-weight: var(--font-bold-weight);
 
   // Command Palette
-  --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5)
-    saturate(1.4) blur(20px);
+  --command-palette-results-backdrop-filter: saturate(1.5) blur(5px);
   --command-palette-inset-shadow:
     inset 0 0 2px 2px rgb(255 255 255 / 0.1),
-    var(--jenkins-border--subtle-shadow);
+    var(--jenkins-border--subtle-shadow),
+    0 5px 10px var(--jenkins-border-color--subtle);
 
   ::backdrop {
-    --command-palette-backdrop-background: radial-gradient(
-      farthest-corner at 50% 30vh,
-      rgb(0 0 0 / 0.3),
-      rgb(0 0 0 / 0.1)
+    --command-palette-backdrop-background: color-mix(
+      in sRGB,
+      var(--black) 17.5%,
+      transparent
     );
   }
 
   // Tooltips
-  --tooltip-backdrop-filter: saturate(2) blur(20px);
+  --tooltip-backdrop-filter: contrast(1.1) saturate(2) blur(20px);
   --tooltip-color: var(--text-color);
   --tooltip-box-shadow:
     0 0 8px 2px rgb(0 0 50 / 0.05), var(--jenkins-border--subtle-shadow),
-    0 10px 50px rgb(0 0 20 / 0.1);
+    0 10px 50px rgb(0 0 20 / 0.1), inset 0 -1px 2px rgb(255 255 255 / 0.025);
 
   // Dropdowns
-  --dropdown-backdrop-filter: saturate(1.5) blur(20px);
+  --dropdown-backdrop-filter: contrast(1.1) saturate(2) blur(20px);
   --dropdown-box-shadow:
     var(--jenkins-border--subtle-shadow), 0 10px 30px rgb(0 0 20 / 0.1),
     0 2px 10px rgb(0 0 20 / 0.05), inset 0 -1px 2px rgb(255 255 255 / 0.025);
@@ -309,7 +309,6 @@ $semantics: (
     var(--text-color-secondary) 50%,
     transparent
   );
-  --input-hidden-password-bg-color: #f9f9f9;
   --form-item-max-width: min(65vw, 1600px);
   --form-item-max-width--medium: min(50vw, 1400px);
   --form-item-max-width--small: min(35vw, 1200px);
@@ -338,7 +337,7 @@ $semantics: (
   }
 
   // Animations
-  --standard-transition: 0.3s ease;
+  --standard-transition: 0.25s ease;
   --elastic-transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
 
   // Plugin manager

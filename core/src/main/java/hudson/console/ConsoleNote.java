@@ -193,6 +193,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * Technically, this method only works if the {@link Writer} to {@link OutputStream}
      * encoding is ASCII compatible.
      */
+    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public void encodeTo(Writer out) throws IOException {
         out.write(encodeToBytes().toString());
     }
@@ -223,6 +224,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     /**
      * Works like {@link #encodeTo(Writer)} but obtain the result as a string.
      */
+    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public String encode() throws IOException {
         return encodeToBytes().toString();
     }
