@@ -1,7 +1,7 @@
 package lib.form;
 
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.BallColor;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
@@ -31,7 +31,7 @@ public class EnumSetTest {
         j.submit(f);
     }
 
-    public static final class EnumSetTestDescribable extends AbstractDescribableImpl<EnumSetTestDescribable> {
+    public static final class EnumSetTestDescribable implements Describable<EnumSetTestDescribable> {
 
         EnumSet<BallColor> f;
 
