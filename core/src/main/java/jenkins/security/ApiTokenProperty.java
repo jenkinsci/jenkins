@@ -303,35 +303,31 @@ public class ApiTokenProperty extends UserProperty {
             LocalDate lu = lastUseDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             LocalDate now = LocalDate.now(ZoneId.systemDefault());
             Period period = Period.between(lu, now);
-            String used = Messages.ApiTokenProperty_usedMultipleTimes(useCounter);
-            if (useCounter == 1) {
-                used = Messages.ApiTokenProperty_usedOneTime();
-            }
             if (period.getYears() > 1) {
-                return used + " " + Messages.ApiTokenProperty_lastUsedYearsAgo(period.getYears());
+                return Messages.ApiTokenProperty_lastUsedYearsAgo(period.getYears());
             }
             if (period.getYears() == 1) {
-                return used + " " + Messages.ApiTokenProperty_lastUsedAYearAgo();
+                return Messages.ApiTokenProperty_lastUsedAYearAgo();
             }
             if (period.getMonths() > 1) {
-                return used + " " + Messages.ApiTokenProperty_lastUsedMonthsAgo(period.getMonths());
+                return Messages.ApiTokenProperty_lastUsedMonthsAgo(period.getMonths());
             }
             if (period.getMonths() == 1) {
-                return used + " " + Messages.ApiTokenProperty_lastUsedAMonthAgo();
+                return Messages.ApiTokenProperty_lastUsedAMonthAgo();
             }
             if (period.getDays() > 14) {
-                return used + " " + Messages.ApiTokenProperty_lastUsedWeeksAgo(period.getDays() / 7);
+                return Messages.ApiTokenProperty_lastUsedWeeksAgo(period.getDays() / 7);
             }
             if (period.getDays() >= 7) {
-                return used + " " + Messages.ApiTokenProperty_lastUsedAWeekAgo();
+                return Messages.ApiTokenProperty_lastUsedAWeekAgo();
             }
             if (period.getDays() == 0) {
-                return used + " " + Messages.ApiTokenProperty_lastUsedToday();
+                return Messages.ApiTokenProperty_lastUsedToday();
             }
             if (period.getDays() == 1) {
-                return used + " " + Messages.ApiTokenProperty_lastUsedYesterday();
+                return Messages.ApiTokenProperty_lastUsedYesterday();
             }
-            return used + " " + Messages.ApiTokenProperty_lastUsedDaysAgo(period.getDays());
+            return Messages.ApiTokenProperty_lastUsedDaysAgo(period.getDays());
         }
     }
 

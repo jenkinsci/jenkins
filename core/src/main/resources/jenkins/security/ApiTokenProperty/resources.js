@@ -74,7 +74,7 @@ function revokeToken(anchorRevoke) {
 }
 
 Behaviour.specify(
-  "#api-token-property-add",
+  ".api-token-property-add",
   "api-token-property-add",
   0,
   function (button) {
@@ -231,13 +231,16 @@ function adjustTokenEmptyListMessage() {
   const tokenList = document.querySelector(".token-list");
   const emptyListMessage = tokenList.querySelector(".token-list-empty-item");
   const apiTokenList = document.getElementById("api-token-list");
+  const apiTokenContainer = document.getElementById("api-tokens");
 
   // number of token that are already existing or freshly created
   const numOfToken = apiTokenList.childElementCount;
   if (numOfToken >= 1) {
     emptyListMessage.classList.toggle("jenkins-hidden", true);
+    apiTokenContainer.classList.toggle("jenkins-hidden", false);
   } else {
     emptyListMessage.classList.toggle("jenkins-hidden", false);
+    apiTokenContainer.classList.toggle("jenkins-hidden", true);
   }
 }
 
