@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class LabelAtomTest {
@@ -72,6 +73,7 @@ public class LabelAtomTest {
     }
 
     @Test
+    @Issue("JENKINS-68155")
     public void changeNodeLabel() throws Exception {
         var slave = j.createSlave("node", "label linux", null);
         var label = Label.get("label");
@@ -94,6 +96,7 @@ public class LabelAtomTest {
     }
 
     @Test
+    @Issue("JENKINS-68155")
     public void removeNodeLabel() throws Exception {
         var slave = j.createSlave("node", "label", null);
         var label = Label.get("label");
