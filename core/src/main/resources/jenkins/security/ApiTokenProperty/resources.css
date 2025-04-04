@@ -36,12 +36,15 @@
   align-items: center;
 }
 
+.token-name {
+  overflow-wrap: anywhere;
+}
+
 .token-stats {
   padding: 0 1rem 0.5rem;
 }
 
 .token-card__title {
-  height: 30px;
   padding: 0.5rem 1rem 0;
   font-size: var(--font-size-sm) !important;
   font-weight: var(--font-bold-weight);

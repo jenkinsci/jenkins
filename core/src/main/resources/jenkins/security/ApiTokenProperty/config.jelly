@@ -53,7 +53,7 @@ THE SOFTWARE.
     <div class="jenkins-hidden" id="api-token-row-template" xmlns:local="local">
         <div class="token-card jenkins-card" id="${token.uuid}">
             <div class="token-card-inner">
-                <div class="jenkins-card__title token-card__title">
+                <div class="token-card__title">
                     <span class="token-name">${token.name}</span>
                 </div>
                 <div class="token-stats">
@@ -90,7 +90,7 @@ THE SOFTWARE.
         <div class="token-list ignore-dirty-panel" xmlns:local="local">
             <j:set var="tokenList" value="${instance.tokenList}" />
             <div class="token-list-empty-item ${tokenList == null || tokenList.isEmpty() ? '' : 'jenkins-hidden'} jenkins-!-margin-bottom-2" >
-                ${%NoTokenYet}
+                <l:notice title="${%NoTokenYet}" icon="symbol-key"/>
             </div>
             <div id="api-token-list">
                 <j:forEach var="token" items="${tokenList}">

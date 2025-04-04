@@ -23,6 +23,7 @@ $jenkins-dialog-padding: 1.25rem;
     font-weight: var(--font-bold-weight);
     padding: 0 $jenkins-dialog-padding;
     color: var(--text-color);
+    overflow-wrap: anywhere;
   }
 
   &__contents {
