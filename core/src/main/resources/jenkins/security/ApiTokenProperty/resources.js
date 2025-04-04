@@ -40,7 +40,11 @@ function revokeToken(anchorRevoke) {
   const tokenUuid = tokenRow.id;
 
   dialog
-    .confirm(confirmTitle, { message: confirmMessage, type: "destructive" })
+    .confirm(confirmTitle, {
+      message: confirmMessage,
+      type: "destructive",
+      okText: anchorRevoke.dataset.buttonText,
+    })
     .then(
       () => {
         fetch(targetUrl, {

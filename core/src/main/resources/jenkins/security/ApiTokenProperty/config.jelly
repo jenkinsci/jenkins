@@ -42,6 +42,7 @@ THE SOFTWARE.
                     data-message-if-legacy-revoked="${%RevokedToken}"
                     data-confirm="${%ConfirmRevokeSingle}"
                     data-confirm-title="${%ConfirmRevokeSingleTitle}"
+                    data-button-text="${%Revoke}"
                     data-token-uuid="${token.uuid}"
                     data-target-url="${descriptor.descriptorFullUrl}/revoke" tooltip="${%RevokeToken}">
                 <l:icon src="symbol-trash" class="icon-sm"/>
