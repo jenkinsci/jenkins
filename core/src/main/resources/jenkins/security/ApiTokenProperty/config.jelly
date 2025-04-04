@@ -62,10 +62,10 @@ THE SOFTWARE.
                 </div>
             </div>
             <div class="token-controls">
-                <l:copyButton text="" clazz="jenkins-hidden api-token-property-token-copy" tooltip="${%CopyToken}" iconOnly="true"/>
                 <button type="button"
-                        class="jenkins-button jenkins-button--tertiary api-token-property-token-show jenkins-hidden"
-                        tooltip="${%Show token}">
+                        class="jenkins-button jenkins-button--tertiary api-token-property-token-show"
+                        data-button-done="${%Done}"
+                        tooltip="${%Show}">
                     <l:icon src="symbol-key" class="icon-sm"/>
                 </button>
                 <local:editButton/>
@@ -177,7 +177,8 @@ THE SOFTWARE.
                     data-prompt-message="${%Create new API token}"
                     data-generate="${%GenerateNewToken}" data-success-title="${%successfully created}"
                     data-cancel="${%Cancel}"
-                    data-message-name="${%Name of the token}">${%AddNewToken}</button>
+                    data-button-done="${%Done}"
+                    data-message-name="${%Name}">${%AddNewToken}</button>
         </j:if>
     </f:entry>
     <j:if test="${descriptor.mustDisplayLegacyApiToken(it)}">

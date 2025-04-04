@@ -29,7 +29,6 @@
 .token-card__title,
 .token-stats,
 .token-never-used,
-.api-token-new-form-row,
 .token-list .jenkins-card,
 .token-controls {
   display: flex;
@@ -78,7 +77,6 @@
   height: 20px;
 }
 
-.api-token-show {
-  padding: 1rem;
+.api-token-new-form-row {
   width: 100%;
 }

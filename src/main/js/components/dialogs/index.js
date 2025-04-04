@@ -90,7 +90,7 @@ Dialog.prototype.init = function () {
       if (this.options.content != null && this.dialogType === "alert") {
         message.appendChild(this.options.content);
         this.dialog.appendChild(message);
-      } else if (this.options.message != null) {
+      } else if (this.options.message != null && this.dialogType !== "prompt") {
         const message = createElementFromHtml(
           `<div class='jenkins-dialog__contents'/>`,
         );
@@ -104,6 +104,11 @@ Dialog.prototype.init = function () {
           <input data-id="input" type="text" class='jenkins-input'></div>`);
       this.dialog.appendChild(inputDiv);
       this.input = inputDiv.querySelector("[data-id=input]");
+      if (this.options.message != null) {
+        const message = document.createElement("div");
+        inputDiv.insertBefore(message, this.input);
+        message.innerText = this.options.message;
+      }
       if (this.options.promptValue) {
         this.input.value = this.options.promptValue;
       }

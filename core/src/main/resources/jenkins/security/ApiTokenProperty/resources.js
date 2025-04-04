@@ -96,14 +96,9 @@ function appendTokenToTable(data) {
   );
   apiTokenRow.id = data.tokenUuid;
   apiTokenRow.querySelector(".token-name").innerText = data.tokenName;
-  if (isSecureContext) {
-    tokenCopyButton.setAttribute("text", data.tokenValue);
-    tokenCopyButton.classList.remove("jenkins-hidden");
-  } else {
-    tokenShowButton.dataset.tokenValue = data.tokenValue;
-    tokenShowButton.dataset.title = data.tokenName;
-    tokenShowButton.classList.remove("jenkins-hidden");
-  }
+  tokenShowButton.dataset.tokenValue = data.tokenValue;
+  tokenShowButton.dataset.title = data.tokenName;
+  tokenShowButton.classList.remove("jenkins-hidden");
   tokenList.appendChild(apiTokenRow);
   adjustTokenEmptyListMessage();
   Behaviour.applySubtree(apiTokenRow);
@@ -137,32 +132,12 @@ function addToken(button) {
                   type: "destructive",
                 });
               } else {
-                const tokenTemplate =
-                  document.getElementById("api-token-template");
-                const apiTokenMessage =
-                  tokenTemplate.firstElementChild.cloneNode(true);
-
-                const tokenValue = json.data.tokenValue;
-                const tokenValueSpan = apiTokenMessage.querySelector(
-                  ".api-token-new-value",
-                );
-                1;
-                tokenValueSpan.innerText = tokenValue;
-
-                if (isSecureContext) {
-                  const tokenCopyButton = apiTokenMessage.querySelector(
-                    ".jenkins-copy-button",
-                  );
-                  tokenCopyButton.setAttribute("text", tokenValue);
-                  tokenCopyButton.classList.remove("jenkins-hidden");
-                }
                 appendTokenToTable(json.data);
-                Behaviour.applySubtree(apiTokenMessage);
-
-                dialog.alert(json.data.tokenName, {
-                  title: json.data.tokenName,
-                  content: apiTokenMessage,
-                });
+                showToken(
+                  json.data.tokenName,
+                  json.data.tokenValue,
+                  button.dataset.buttonDone,
+                );
               }
             });
           }
@@ -170,6 +145,29 @@ function addToken(button) {
       },
       () => {},
     );
+}
+
+function showToken(tokenName, tokenValue, doneText) {
+  const tokenTemplate = document.getElementById("api-token-template");
+  const apiTokenMessage = tokenTemplate.firstElementChild.cloneNode(true);
+
+  const tokenValueSpan = apiTokenMessage.querySelector(".api-token-new-value");
+  tokenValueSpan.innerText = tokenValue;
+
+  if (isSecureContext) {
+    const tokenCopyButton = apiTokenMessage.querySelector(
+      ".jenkins-copy-button",
+    );
+    tokenCopyButton.setAttribute("text", tokenValue);
+    tokenCopyButton.classList.remove("jenkins-hidden");
+  }
+  Behaviour.applySubtree(apiTokenMessage);
+
+  dialog.alert(tokenName, {
+    content: apiTokenMessage,
+    okText: doneText,
+    maxWidth: "500px",
+  });
 }
 
 Behaviour.specify(
@@ -249,20 +247,11 @@ Behaviour.specify(
   0,
   function (button) {
     button.onclick = function () {
-      showToken(button);
+      showToken(
+        button.dataset.title,
+        button.dataset.tokenValue,
+        button.dataset.buttonDone,
+      );
     };
   },
 );
-
-function showToken(button) {
-  const tokenDiv = document.createElement("div");
-  tokenDiv.classList.add(
-    "api-token-show",
-    "jenkins-quote",
-    "jenkins-quote--monospace",
-  );
-  tokenDiv.innerText = button.dataset.tokenValue;
-  dialog.alert(button.dataset.title, {
-    content: tokenDiv,
-  });
-}
