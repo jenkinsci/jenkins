@@ -38,7 +38,6 @@ import hudson.model.listeners.ItemListener;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormValidation;
-import io.jenkins.servlet.ServletContextWrapper;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -88,26 +87,10 @@ public class Hudson extends Jenkins {
     }
 
     /**
-     * @deprecated use {@link #Hudson(File, ServletContext)}
-     */
-    @Deprecated
-    public Hudson(File root, javax.servlet.ServletContext context) throws IOException, InterruptedException, ReactorException {
-        this(root, ServletContextWrapper.toJakartaServletContext(context));
-    }
-
-    /**
      * @since 2.475
      */
     public Hudson(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
         super(root, context, pluginManager);
-    }
-
-    /**
-     * @deprecated use {@link #Hudson(File, ServletContext, PluginManager)}
-     */
-    @Deprecated
-    public Hudson(File root, javax.servlet.ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
-        this(root, ServletContextWrapper.toJakartaServletContext(context), pluginManager);
     }
 
     /**

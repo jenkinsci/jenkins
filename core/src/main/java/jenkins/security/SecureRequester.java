@@ -2,15 +2,12 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.Util;
 import hudson.model.Api;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
@@ -31,31 +28,7 @@ public interface SecureRequester extends ExtensionPoint {
      * @param bean an exported object of some kind
      * @return true if this requester should be trusted, false to reject
      */
-    @StaplerNotDispatchable
-    default boolean permit(StaplerRequest2 req, Object bean) {
-        return Util.ifOverridden(
-                () -> permit(StaplerRequest.fromStaplerRequest2(req), bean),
-                SecureRequester.class,
-                getClass(),
-                "permit",
-                StaplerRequest.class,
-                Object.class);
-    }
-
-    /**
-     * @deprecated use {@link #permit(StaplerRequest2, Object)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    default boolean permit(StaplerRequest req, Object bean) {
-        return Util.ifOverridden(
-                () -> permit(StaplerRequest.toStaplerRequest2(req), bean),
-                SecureRequester.class,
-                getClass(),
-                "permit",
-                StaplerRequest2.class,
-                Object.class);
-    }
+    boolean permit(StaplerRequest2 req, Object bean);
 
     @Restricted(NoExternalUse.class)
     @Extension class Default implements SecureRequester {

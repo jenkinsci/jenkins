@@ -32,7 +32,6 @@ import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Option;
-import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Safe Restart Jenkins - do not accept any new jobs and try to pause existing.
@@ -54,7 +53,7 @@ public class SafeRestartCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        Jenkins.get().doSafeRestart((StaplerRequest2) null, message);
+        Jenkins.get().doSafeRestart(null, message);
         return 0;
     }
 }
