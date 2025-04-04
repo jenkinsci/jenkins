@@ -190,6 +190,7 @@ function renameToken(button) {
   dialog
     .prompt(button.dataset.renameTitle, {
       message: button.dataset.renameMessage,
+      okText: button.dataset.buttonText,
       promptValue: promptValue,
       maxWidth: "400px",
       minWidth: "400px",

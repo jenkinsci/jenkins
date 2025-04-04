@@ -31,6 +31,7 @@ THE SOFTWARE.
             <button type="button"
                     class="jenkins-button jenkins-button--tertiary api-token-property-token-rename"
                     data-target-url="${descriptor.descriptorFullUrl}/rename" data-rename-title="${%RenameToken}"
+                    data-button-text="${%Rename}"
                     data-rename-message="${%New name}"
                     tooltip="${%Rename}">
                 <l:icon src="symbol-edit" class="icon-sm"/>
