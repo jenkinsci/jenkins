@@ -96,7 +96,7 @@ public abstract class WebSocketSession {
         LOGGER.log(Level.WARNING, "unhandled WebSocket service error", cause);
     }
 
-    protected void binary(byte[] payload, int offset, int len) throws IOException {
+    protected void binary(ByteBuffer data) throws IOException {
         LOGGER.warning("unexpected binary frame");
     }
 

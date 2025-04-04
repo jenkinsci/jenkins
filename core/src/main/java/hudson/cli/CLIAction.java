@@ -204,10 +204,17 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             }
 
             @Override
-            protected void binary(byte[] payload, int offset, int len) {
+            protected void binary(ByteBuffer data) {
                 try {
-                    connection.handle(new DataInputStream(new ByteArrayInputStream(payload, offset, len)));
-                    receivedBytes += len;
+                    if (data.hasArray()) {
+                        connection.handle(new DataInputStream(new ByteArrayInputStream(data.array(), data.arrayOffset() + data.position(), data.remaining())));
+                        receivedBytes += data.remaining();
+                    } else {
+                        byte[] payload = new byte[data.remaining()];
+                        data.get(payload);
+                        connection.handle(new DataInputStream(new ByteArrayInputStream(payload)));
+                        receivedBytes += payload.length;
+                    }
                     receivedCount++;
                 } catch (IOException x) {
                     error(x);
