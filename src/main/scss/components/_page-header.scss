@@ -44,6 +44,7 @@ a.page-header__brand-link {
 .page-header__hyperlinks {
   display: flex;
   align-items: center;
+  gap: 0.15rem;
 }
 
 .page-header__hyperlinks > a,
