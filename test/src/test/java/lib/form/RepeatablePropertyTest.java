@@ -31,7 +31,6 @@ import static org.junit.Assert.assertNotNull;
 
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
@@ -196,7 +195,7 @@ public class RepeatablePropertyTest {
         }
     }
 
-    public static final class ExcitingObjectContainer extends AbstractDescribableImpl<ExcitingObjectContainer> {
+    public static final class ExcitingObjectContainer implements Describable<ExcitingObjectContainer> {
         String containerName;
         List<ExcitingObject> excitingObjectList;
 
