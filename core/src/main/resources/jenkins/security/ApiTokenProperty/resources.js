@@ -91,9 +91,6 @@ function appendTokenToTable(data) {
   const tokenShowButton = apiTokenRow.querySelector(
     ".api-token-property-token-show",
   );
-  const tokenCopyButton = apiTokenRow.querySelector(
-    ".api-token-property-token-copy",
-  );
   apiTokenRow.id = data.tokenUuid;
   apiTokenRow.querySelector(".token-name").innerText = data.tokenName;
   tokenShowButton.dataset.tokenValue = data.tokenValue;
