@@ -46,7 +46,7 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <mina-sshd-api.version>2.14.0-143.v2b_362fc39576</mina-sshd-api.version>
+    <mina-sshd-api.version>2.15.0-161.vb_200831a_c15b_</mina-sshd-api.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
     <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
 
@@ -289,7 +289,7 @@ THE SOFTWARE.
                   <!-- detached after 1.535 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-auth</artifactId>
-                  <version>3.2.5</version>
+                  <version>3.2.6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -303,7 +303,7 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>845.vffd7fa_f27555</version>
+                  <version>847.v88a_f90ff9f20</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -317,7 +317,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1317.v5b_35d792b_06a_</version>
+                  <version>1319.v000471ca_e5e2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -331,7 +331,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, echarts-api, font-awesome-api, and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>plugin-util-api</artifactId>
-                  <version>6.0.0</version>
+                  <version>6.1.0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -375,14 +375,14 @@ THE SOFTWARE.
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>eddsa-api</artifactId>
-                  <version>0.3.0-13.v7cb_69ed68f00</version>
+                  <version>0.3.0.1-19.vc432d923e5ee</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>snakeyaml-api</artifactId>
-                  <version>2.3-123.v13484c65210a_</version>
+                  <version>2.3-125.v4d77857a_b_402</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -390,7 +390,7 @@ THE SOFTWARE.
                   <!-- dependency of script-security and workflow-support -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>caffeine-api</artifactId>
-                  <version>3.2.0-161.v691ef352cee1</version>
+                  <version>3.2.0-166.v72a_6d74b_870f</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -505,14 +505,14 @@ THE SOFTWARE.
                   <!-- dependency of scm-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>asm-api</artifactId>
-                  <version>9.7.1-97.v4cc844130d97</version>
+                  <version>9.8-135.vb_2239d08ee90</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of bootstrap5-api, checks-api, commons-text-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-lang3-api</artifactId>
-                  <version>3.17.0-84.vb_b_938040b_078</version>
+                  <version>3.17.0-87.v5cf526e63b_8b_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -648,7 +648,12 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty.ee9</groupId>
         <artifactId>jetty-ee9-maven-plugin</artifactId>
-        <version>12.0.17</version>
+        <!--
+          Make sure to keep the Winstone version in pom.xml in sync with this version. If the current Winstone release
+          contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
+          result before proceeding with the update here.
+        -->
+        <version>12.0.19</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
