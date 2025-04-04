@@ -97,7 +97,6 @@ import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.PeepholePermalink;
 import jenkins.model.ProjectNamingStrategy;
-import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
@@ -192,10 +191,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     // this should have been DescribableList but now it's too late
     protected CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<>();
 
-    @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
-    public transient RunIdMigrator runIdMigrator;
-
     protected Job(ItemGroup parent, String name) {
         super(parent, name);
     }
@@ -206,20 +201,19 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         holdOffBuildUntilSave = holdOffBuildUntilUserSave;
     }
 
-    @Override public void onCreatedFromScratch() {
-        super.onCreatedFromScratch();
-        runIdMigrator = new RunIdMigrator();
-        runIdMigrator.created(getBuildDir());
-    }
-
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name)
             throws IOException {
         super.onLoad(parent, name);
 
-        File buildDir = getBuildDir();
-        runIdMigrator = new RunIdMigrator();
-        runIdMigrator.migrate(buildDir, Jenkins.get().getRootDir());
+        // see https://github.com/jenkinsci/jenkins/pull/10456#issuecomment-2748112449
+        // This code can be deleted after several Jenkins releases,
+        // when it is likely that everyone is running a version equal or higher to this version.
+        var buildDirPath = getBuildDir().toPath();
+        if (Files.deleteIfExists(buildDirPath.resolve("legacyIds"))) {
+            LOGGER.info("Deleting legacyIds file in " + buildDirPath + ". See https://issues.jenkins"
+                        + ".io/browse/JENKINS-75465 for more information.");
+        }
 
         TextFile f = getNextBuildNumberFile();
         if (f.exists()) {
@@ -895,37 +889,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public Object getDynamic(String token, StaplerRequest2 req,
                              StaplerResponse2 rsp) {
-        if (Util.isOverridden(Job.class, getClass(), "getDynamic", String.class, StaplerRequest.class, StaplerResponse.class)) {
-            return getDynamic(token, StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-        }
-        try {
-            // try to interpret the token as build number
-            return getBuildByNumber(Integer.parseInt(token));
-        } catch (NumberFormatException e) {
-            // try to map that to widgets
-            for (Widget w : getWidgets()) {
-                if (w.getUrlName().equals(token))
-                    return w;
-            }
-
-            // is this a permalink?
-            for (Permalink p : getPermalinks()) {
-                if (p.getId().equals(token))
-                    return p.resolve(this);
-            }
-
-            return super.getDynamic(token, req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #getDynamic(String, StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @Override
-    public Object getDynamic(String token, StaplerRequest req,
-            StaplerResponse rsp) {
-        // Intentionally not factoring this out into a common implementation method because it contains a call to super.
         try {
             // try to interpret the token as build number
             return getBuildByNumber(Integer.parseInt(token));

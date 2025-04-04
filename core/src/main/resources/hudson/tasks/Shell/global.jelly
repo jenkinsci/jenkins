@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2014, CloudBees, Inc.
+Copyright (c) 2025, Stefan Spieker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,11 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="Jenkins">
-    <l:header />
-    <l:main-panel>
-      <p>
-        To reverse the effect of build record migration, run the following command
-        on the server. See <a href="https://www.jenkins.io/redirect/build-record-migration">documentation</a>
-        for more details:
-      </p>
-      <table style="width:100%">
-        <tr>
-          <td style="line-height:2em; width:80%">
-            <input type="text" value="${it.command}" style="width:100%"/>
-          </td>
-          <td style="line-height:2em">
-            <l:copyButton text="${it.command}"/>
-          </td>
-        </tr>
-      </table>
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:section title="${%Shell}">
+        <f:entry title="${%Shell executable}" field="shell">
+            <f:textbox />
+        </f:entry>
+    </f:section>
 </j:jelly>
+
