@@ -98,3 +98,7 @@
 .api-token-new-form-row {
   width: 100%;
 }
+
+.token-use-counter {
+  display: none;
+}

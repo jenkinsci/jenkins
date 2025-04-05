@@ -145,7 +145,7 @@ THE SOFTWARE.
                                                     <j:when test="${useCounter gt 0}">
                                                         <j:if test="${token.lastUseDate == null}">
                                                             <!--Should normally never happen without manual XML modification-->
-                                                            <span class="token-use-counter" tooltip="${%TokenNeverUsedTooltip}">
+                                                            <span tooltip="${%TokenNeverUsedTooltip}">
                                                                 ${%TokenNeverUsed}
                                                             </span>
                                                         </j:if>
@@ -158,9 +158,10 @@ THE SOFTWARE.
                                                                 </j:if>
                                                             </j:if>
                                                             <i:formatDate var="lastUseDateFormat" value="${token.lastUseDate}" type="both" dateStyle="medium" timeStyle="medium" />
-                                                            <span class="token-use-counter ${noUseClazz}" tooltip="${lastUseDateFormat}">
-                                                                <span class="jenkins-hidden">${useCounter}</span>${token.lastUsedDaysAgo()}
+                                                            <span class="${noUseClazz}" tooltip="${lastUseDateFormat}">
+                                                                ${token.lastUsedDaysAgo()}
                                                             </span>
+                                                            <span class="token-use-counter">${useCounter}</span>
                                                         </j:if>
                                                     </j:when>
                                                     <j:otherwise>
@@ -168,9 +169,7 @@ THE SOFTWARE.
                                                             <j:if test="${daysOld gt 7}">
                                                                 <l:icon src="symbol-warning" class="icon-sm"/>
                                                             </j:if>
-                                                            <span class="token-use-counter">
-                                                                ${%TokenNeverUsed}
-                                                            </span>
+                                                            ${%TokenNeverUsed}
                                                         </div>
                                                     </j:otherwise>
                                                 </j:choose>
