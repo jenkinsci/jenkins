@@ -32,7 +32,7 @@ THE SOFTWARE.
   <l:layout title="${%Search for} '${q}'">
     <l:main-panel>
       <h1>${%Search for} '${q}'</h1>
-      <j:set var="items" value="${it.getSuggestions(request,q)}"/>
+      <j:set var="items" value="${it.getSuggestions(request2,q)}"/>
       <j:choose>
         <j:when test="${items.size()==0}">
           <div class='error'>
@@ -43,7 +43,7 @@ THE SOFTWARE.
           <ol>
             <j:forEach var="i" items="${items}">
               <li id="item_${i.path}">
-                <a href="?q=${h.urlEncode(i.path)}">${i.path}</a>
+                <a href="${rootURL}/${i.url}">${i.path}</a>
               </li>
             </j:forEach>
           </ol>

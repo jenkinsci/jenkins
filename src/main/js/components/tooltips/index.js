@@ -5,6 +5,7 @@ const TOOLTIP_BASE = {
   arrow: false,
   theme: "tooltip",
   animation: "tooltip",
+  duration: 250,
 };
 
 /**

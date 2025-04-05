@@ -30,7 +30,7 @@ THE SOFTWARE.
   <l:header title="Label ${it.displayName}" />
   <l:side-panel>
     <l:tasks>
-      <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
+      <j:set var="url" value="${h.getNearestAncestorUrl(request2,it)}"/>
       <l:task contextMenu="false" href="${url}" icon="symbol-tag" title="${%Overview}"/>
       <j:if test="${it.atom}">
         <l:task href="${url}/configure" icon="symbol-settings" title="${%Configure}" permission="${app.ADMINISTER}" />

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import hudson.ExtensionList;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
@@ -126,7 +125,7 @@ public class RowVisibilityGroupTest {
         }
     }
 
-    public abstract static class Drink extends AbstractDescribableImpl<Drink> {
+    public abstract static class Drink implements Describable<Drink> {
         public String textbox1;
         public Nested inner;
 
