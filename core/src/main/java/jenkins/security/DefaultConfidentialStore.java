@@ -26,9 +26,10 @@ import jenkins.util.SystemProperties;
  * Default portable implementation of {@link ConfidentialStore} that uses
  * a directory inside $JENKINS_HOME.
  * <p>
- * The master key is stored by default in <code>$JENKINS_HOME/secrets/master.key</code> but another location can be provided using the system property <code>jenkins.master.key.file</code>.
+ * The master key is stored by default in <code>$JENKINS_HOME/secrets/master.key</code> but another location can be provided using the system property <code>jenkins.security.DefaultConfidentialStore.file</code>.
  * <p>
- * It is also possible to prevent the generation of the master key file using the system property <code>-Djenkins.master.key.readOnly</code>. In this case, the master key file must be provided or startup will fail.
+ * It is also possible to prevent the generation of the master key file using the system property <code>jenkins.security.DefaultConfidentialStore.readOnly</code>.
+ * In this case, the master key file must be provided or startup will fail.
  *
  * @author Kohsuke Kawaguchi
  */

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2019-2024 CloudBees, Inc.
+ * Copyright (c) 2025, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,46 +22,32 @@
  * THE SOFTWARE.
  */
 
-.secret-header {
-  display: flex;
-  justify-content: space-around;
-  border: var(--jenkins-border-width) solid var(--input-border);
-  border-radius: var(--form-input-border-radius);
-  background: var(--input-color);
-}
+package jenkins.diagnosis;
 
-.secret-header--expanded {
-  border-bottom: none;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.diagnosis.MemoryUsageMonitor;
+import hudson.model.InvisibleAction;
+import hudson.model.RootAction;
+import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-.secret-header > div {
-  flex-grow: 1;
-  display: inline-flex;
-  align-items: center;
-  padding: 0 calc(var(--section-padding) / 2);
-  min-height: 4rem;
-}
+/**
+ * Expose {@link hudson.diagnosis.MemoryUsageMonitor#heap} at the {@code /hudson.diagnosis.MemoryUsageMonitor/heap} URL.
+ *
+ * @since TODO
+ */
+@Extension
+@Restricted(NoExternalUse.class)
+public class MemoryUsageMonitorAction extends InvisibleAction implements RootAction {
+    @Override
+    public String getUrlName() {
+        return MemoryUsageMonitorAction.class.getName();
+    }
 
-.secret-legend > svg {
-  margin-right: calc(var(--section-padding) / 2);
-}
-
-.secret-update {
-  justify-content: flex-end;
-}
-
-.secret-input {
-  display: flex;
-}
-
-.secret-input textarea {
-  font-family: var(--font-family-mono);
-  border-radius: 0 0 var(--form-input-border-radius)
-    var(--form-input-border-radius);
-}
-
-.secret * [hidden] {
-  display: none !important;
+    public MemoryUsageMonitor.MemoryGroup getHeap() {
+        Jenkins.get().checkAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
+        return ExtensionList.lookupSingleton(MemoryUsageMonitor.class).heap;
+    }
 }

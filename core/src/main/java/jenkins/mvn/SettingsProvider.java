@@ -3,7 +3,7 @@ package jenkins.mvn;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import io.jenkins.servlet.ServletExceptionWrapper;
@@ -17,7 +17,7 @@ import org.kohsuke.stapler.StaplerRequest2;
  * @author Dominik Bartholdi (imod)
  * @since 1.491
  */
-public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsProvider> implements ExtensionPoint {
+public abstract class SettingsProvider implements Describable<SettingsProvider>, ExtensionPoint {
 
     /**
      * Configure maven launcher argument list with adequate settings path. Implementations should be aware that this method might get called multiple times during a build.

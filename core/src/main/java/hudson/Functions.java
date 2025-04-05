@@ -2186,12 +2186,14 @@ public class Functions {
     /**
      * Generate a series of {@code <script>} tags to include {@code script.js}
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
+     *
+     * @see hudson.console.ConsoleAnnotatorFactory.RootAction
      */
     public static String generateConsoleAnnotationScriptAndStylesheet() {
         String cp = Stapler.getCurrentRequest2().getContextPath() + Jenkins.RESOURCE_PATH;
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
-            String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
+            String path = cp + "/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
                 buf.append("<script src='").append(path).append("/script.js'></script>");
             if (f.hasStylesheet())
