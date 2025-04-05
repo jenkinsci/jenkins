@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright (c) 2025, Jan Faracik
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +22,29 @@
  * THE SOFTWARE.
  */
 
-package lib.hudson;
+package jenkins.model.navigation;
 
-import static org.junit.Assert.assertNotNull;
-
-import hudson.model.InvisibleAction;
+import hudson.Extension;
 import hudson.model.RootAction;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
 
 /**
- * @author Kohsuke Kawaguchi
+ * TODO
  */
-public class ActionsTest {
+@Extension(ordinal = 999)
+public class SearchAction implements RootAction {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
-    @Test
-    public void override() throws Exception {
-        assertNotNull(j.createWebClient().goTo("").getElementById("bravo"));
+    @Override
+    public String getIconFileName() {
+        return "symbol-search";
     }
 
-    @TestExtension
-    public static class RootActionImpl extends InvisibleAction implements RootAction {
+    @Override
+    public String getDisplayName() {
+        return "Search";
+    }
+
+    @Override
+    public String getUrlName() {
+        return null;
     }
 }
