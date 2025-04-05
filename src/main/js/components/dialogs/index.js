@@ -203,7 +203,8 @@ Dialog.prototype.show = function () {
           if (this.dialogType === "form") {
             value = new FormData(this.form);
           }
-          this.dialog.dispatchEvent(new Event("cancel"));
+          // TODO - Need to fix this to show the animation
+          this.dialog.remove();
           resolve(value);
         },
         { once: true },
