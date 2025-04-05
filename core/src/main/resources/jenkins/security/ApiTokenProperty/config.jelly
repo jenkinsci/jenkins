@@ -159,7 +159,7 @@ THE SOFTWARE.
                                                             </j:if>
                                                             <i:formatDate var="lastUseDateFormat" value="${token.lastUseDate}" type="both" dateStyle="medium" timeStyle="medium" />
                                                             <span class="token-use-counter ${noUseClazz}" tooltip="${lastUseDateFormat}">
-                                                                ${token.lastUsedDaysAgo()}
+                                                                <span class="jenkins-hidden">${useCounter}</span>${token.lastUsedDaysAgo()}
                                                             </span>
                                                         </j:if>
                                                     </j:when>

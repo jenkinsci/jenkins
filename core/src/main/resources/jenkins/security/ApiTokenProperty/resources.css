@@ -40,12 +40,7 @@
   overflow-wrap: anywhere;
 }
 
-.token-stats {
-  padding: 0 1rem 0.5rem;
-}
-
 .token-card__title {
-  padding: 0.5rem 1rem 0;
   font-size: var(--font-size-sm) !important;
   font-weight: var(--font-bold-weight);
 }
@@ -53,10 +48,30 @@
 .token-controls {
   margin-left: auto;
   padding-right: 1rem;
+  margin-right: -0.25rem;
+}
+
+.token-controls button {
+  padding: 0;
+  height: 2.5rem;
+  width: 2.5rem;
+}
+
+.api-token-new-form-row.jenkins-quote {
+  color: var(--text-color);
+}
+
+.api-token-new-form-row span:has(button) {
+  margin-left: auto;
+}
+
+.api-token-new-form-row button {
+  margin-right: 0 !important;
 }
 
 .token-card-inner {
   width: 100%;
+  padding: 0.5rem 1rem;
 }
 
 .token-creation {
