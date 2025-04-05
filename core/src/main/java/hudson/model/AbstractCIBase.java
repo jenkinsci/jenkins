@@ -33,6 +33,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.AccessControlled;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.RetentionStrategy;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -226,48 +227,47 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     }
 
     /**
-     * Updates Computers.
+     * Updates Computers for the specified nodes.
      *
      * <p>
      * This method tries to reuse existing {@link Computer} objects
      * so that we won't upset {@link Executor}s running in it.
+     *
+     * @param automaticAgentLaunch whether to automatically launch agents.
+     * @param nodes the nodes to update.
      */
-    protected void updateComputerList(final boolean automaticAgentLaunch) {
-        final ConcurrentMap<Node, Computer> computers = getComputerMap();
-        final Set<Computer> old = new HashSet<>(computers.size());
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                Map<String, Computer> byName = new HashMap<>();
-                for (Computer c : computers.values()) {
+    protected void updateComputerList(final boolean automaticAgentLaunch, @NonNull Collection<Node> nodes) {
+        final Set<Computer> old = new HashSet<>(nodes.size());
+        Queue.withLock(() -> {
+            Map<String, Computer> byName = new HashMap<>();
+            for (Computer c : getComputerMap().values()) {
+                Node node = c.getNode();
+                if (node == null) {
                     old.add(c);
-                    Node node = c.getNode();
-                    if (node == null)
-                        continue;   // this computer is gone
+                    // this computer is gone
+                } else if (nodes.contains(node)) {
+                    old.add(c);
                     byName.put(node.getNodeName(), c);
                 }
-
-                Set<Computer> used = new HashSet<>(old.size());
-
-                updateComputer(AbstractCIBase.this, byName, used, automaticAgentLaunch);
-                for (Node s : getNodes()) {
-                    long start = System.currentTimeMillis();
-                    updateComputer(s, byName, used, automaticAgentLaunch);
-                    if (LOG_STARTUP_PERFORMANCE && LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Took %dms to update node %s",
-                                System.currentTimeMillis() - start, s.getNodeName()));
-                    }
+            }
+            Set<Computer> used = new HashSet<>(old.size());
+            for (Node node : nodes) {
+                long start = System.currentTimeMillis();
+                updateComputer(node, byName, used, automaticAgentLaunch);
+                if (LOG_STARTUP_PERFORMANCE && LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("Took %dms to update node %s",
+                            System.currentTimeMillis() - start, node.getNodeName()));
                 }
+            }
 
-                // find out what computers are removed, and kill off all executors.
-                // when all executors exit, it will be removed from the computers map.
-                // so don't remove too quickly
-                old.removeAll(used);
-                // we need to start the process of reducing the executors on all computers as distinct
-                // from the killing action which should not excessively use the Queue lock.
-                for (Computer c : old) {
-                    c.inflictMortalWound();
-                }
+            // find out what computers are removed, and kill off all executors.
+            // when all executors exit, it will be removed from the computers map.
+            // so don't remove too quickly
+            old.removeAll(used);
+            // we need to start the process of reducing the executors on all computers as distinct
+            // from the killing action which should not excessively use the Queue lock.
+            for (Computer c : old) {
+                c.inflictMortalWound();
             }
         });
         for (Computer c : old) {
