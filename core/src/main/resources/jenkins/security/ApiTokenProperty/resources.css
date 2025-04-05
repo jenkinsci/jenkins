@@ -43,6 +43,7 @@
 .token-card__title {
   font-size: var(--font-size-sm) !important;
   font-weight: var(--font-bold-weight);
+  width: fit-content;
 }
 
 .token-controls {

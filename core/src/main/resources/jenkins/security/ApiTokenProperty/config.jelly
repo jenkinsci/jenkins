@@ -165,7 +165,11 @@ THE SOFTWARE.
                                                         </j:if>
                                                     </j:when>
                                                     <j:otherwise>
-                                                        <div class="token-never-used ${oldClazz}" tooltip="${%TokenNeverUsed.Title}">
+                                                        <j:set var="neverUsedTooltip" value=""/>
+                                                        <j:if test="${daysOld gt 7}">
+                                                            <j:set var="neverUsedTooltip" value="${%TokenNeverUsed.Title}"/>
+                                                        </j:if>
+                                                        <div class="token-never-used ${oldClazz}" tooltip="${neverUsedTooltip}">
                                                             <j:if test="${daysOld gt 7}">
                                                                 <l:icon src="symbol-warning" class="icon-sm"/>
                                                             </j:if>
