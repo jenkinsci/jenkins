@@ -1256,6 +1256,14 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         public IssueTracker[] issueTrackers;
 
+        @Exported
+        @Restricted(NoExternalUse.class)
+        public final Integer healthScore;
+
+        @Exported
+        @Restricted(NoExternalUse.class)
+        public final String healthScoreClazz;
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
@@ -1292,6 +1300,12 @@ public class UpdateSite {
             int optionalDepCount = (int) ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL.negate())).count();
             dependencies = getPresizedMutableMap(depCount);
             optionalDependencies = getPresizedMutableMap(optionalDepCount);
+            this.healthScore = o.has("healthScore") ? o.getInt("healthScore") : null;
+            if (healthScore != null) {
+                this.healthScoreClazz = PluginWrapper.getHealthScoreClassForScore(healthScore);
+            } else {
+                this.healthScoreClazz = null;
+            }
 
             for (Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;
