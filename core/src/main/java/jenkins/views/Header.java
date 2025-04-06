@@ -1,10 +1,15 @@
 package jenkins.views;
 
+import hudson.ExtensionComponent;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Action;
+import hudson.model.RootAction;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -62,15 +67,23 @@ public abstract class Header implements ExtensionPoint {
      */
     @Restricted(NoExternalUse.class)
     public List<Action> getActions() {
+        // There's an issue where new actions (e.g. a new plugin installation) don't appear in the order
+        // of their ordinal annotation - to work around that we manually sort the list
+        Map<String, Double> rootActionsOrdinal = ExtensionList.lookup(RootAction.class)
+                .getComponents()
+                .stream()
+                .collect(Collectors.toMap(
+                        c -> c.getInstance().getClass().getName(),
+                        ExtensionComponent::ordinal
+                ));
+
         return Jenkins.get()
                 .getActions()
                 .stream()
                 .filter(e -> e.getIconFileName() != null)
-                .sorted((x, y) -> {
-                    if (x instanceof UserAction) return 1;
-                    if (y instanceof UserAction) return -1;
-                    return 0;
-                })
+                .sorted(Comparator.comparingDouble(
+                        a -> rootActionsOrdinal.getOrDefault(a.getClass().getName(), Double.MAX_VALUE)
+                ).reversed())
                 .toList();
     }
 }
