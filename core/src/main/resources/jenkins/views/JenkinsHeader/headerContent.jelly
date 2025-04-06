@@ -3,12 +3,14 @@
   <header id="page-header" class="jenkins-header">
     <st:include page="prefix" optional="true" />
 
-    <div class="jenkins-header__navigation">
-      <st:include page="logo" />
+    <div class="jenkins-header__main">
+      <div class="jenkins-header__navigation">
+        <st:include page="logo" />
 
-      <l:breadcrumbBar>
-        <j:out value="${breadcrumbs}" />
-      </l:breadcrumbBar>
+        <l:breadcrumbBar>
+          <j:out value="${breadcrumbs}" />
+        </l:breadcrumbBar>
+      </div>
     </div>
 
     <h:actions />

@@ -8,8 +8,8 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  align-items: center;
   gap: var(--section-padding);
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
@@ -112,11 +112,17 @@
     }
   }
 
+  &__main {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding-left: var(--section-padding);
+    width: 100%;
+  }
+
   &__navigation {
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: stretch;
-    padding-left: var(--section-padding);
   }
 
   &__actions {
