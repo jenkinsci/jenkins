@@ -4,10 +4,10 @@ import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractBuild.AbstractBuildExecution;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.BuildableItemWithBuildWrappers;
+import hudson.model.Describable;
 import hudson.model.Executor;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
@@ -48,7 +48,7 @@ import java.io.IOException;
  * the subtype needs to avoid using instance variables to refer to build-specific state (such as {@link BuildListener}s.)
  * Similarly, methods can be invoked concurrently. The code executes on the master, even if builds are running remotely.
  */
-public abstract class SCMCheckoutStrategy extends AbstractDescribableImpl<SCMCheckoutStrategy> implements ExtensionPoint {
+public abstract class SCMCheckoutStrategy implements Describable<SCMCheckoutStrategy>, ExtensionPoint {
 
     /*
         Default behavior is defined in AbstractBuild.AbstractRunner, which is the common
@@ -87,7 +87,7 @@ public abstract class SCMCheckoutStrategy extends AbstractDescribableImpl<SCMChe
 
     @Override
     public SCMCheckoutStrategyDescriptor getDescriptor() {
-        return (SCMCheckoutStrategyDescriptor) super.getDescriptor();
+        return (SCMCheckoutStrategyDescriptor) Describable.super.getDescriptor();
     }
 
 }

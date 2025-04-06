@@ -90,10 +90,10 @@ THE SOFTWARE.
   <j:set var="layoutType" value="${attrs.type}"/>
 </j:if>
 
-<j:set var="_" value="${request.getSession()}"/>
+<j:set var="_" value="${request2.getSession()}"/>
 <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
-<j:if test="${request.servletPath=='/' || request.servletPath==''}">
-  ${h.advertiseHeaders(response)}
+<j:if test="${request2.servletPath=='/' || request2.servletPath==''}">
+  ${h.advertiseHeaders(response2)}
   <j:if test="${extensionsAvailable}">
     <j:forEach var="pd" items="${h.pageDecorators}">
       <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
@@ -104,12 +104,12 @@ THE SOFTWARE.
 <html>
   <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}"
         data-extensions-available="${extensionsAvailable}"
-        data-crumb-header="${h.getCrumbRequestField()}" data-crumb-value="${h.getCrumb(request)}"
+        data-crumb-header="${h.getCrumbRequestField()}" data-crumb-value="${h.getCrumb(request2)}"
         data-unit-test="${h.isUnitTest}">
     ${h.checkPermission(it,permission)}
     ${h.checkAnyPermission(it, permissions)}
 
-    <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
+    <title>${h.appendIfNotNull(title, ' - Jenkins', 'Jenkins')}</title>
 
     <link rel="stylesheet" href="${resURL}/jsbundles/styles.css" type="text/css" />
     <j:if test="${attrs.nogrid==null or attrs.nogrid.equals(false)}">
@@ -122,7 +122,6 @@ THE SOFTWARE.
     <link rel="alternate icon" href="${resURL}/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="${resURL}/apple-touch-icon.png" sizes="180x180" />
     <link rel="mask-icon" href="${resURL}/mask-icon.svg" color="#191717" />
-    <meta name="theme-color" content="#ffffff" />
 
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 

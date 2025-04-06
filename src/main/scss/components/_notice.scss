@@ -6,7 +6,8 @@
   gap: 1rem;
   min-height: 15rem;
   background: var(--button-background);
-  border-radius: 0.66rem;
+  border: var(--jenkins-border--subtle);
+  border-radius: var(--form-input-border-radius);
   font-size: var(--font-size-base);
   margin-bottom: var(--section-padding);
   font-weight: var(--font-bold-weight);

@@ -1000,6 +1000,7 @@ public abstract class Launcher {
         }
 
         @Override
+        @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
         public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException {
             printCommandLine(cmd, workDir);
 
@@ -1115,7 +1116,21 @@ public abstract class Launcher {
             final String workDir = psPwd == null ? null : psPwd.getRemote();
 
             try {
-                RemoteLaunchCallable remote = new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener, ps.stdoutListener, envVarsFilterRuleWrapper);
+                RemoteLaunchCallable remote = new RemoteLaunchCallable(
+                        ps.commands,
+                        ps.masks,
+                        ps.envs,
+                        in,
+                        ps.reverseStdin,
+                        out,
+                        ps.reverseStdout,
+                        err,
+                        ps.reverseStderr,
+                        ps.quiet,
+                        workDir,
+                        listener,
+                        ps.stdoutListener,
+                        envVarsFilterRuleWrapper);
                 // reset the rules to prevent build step without rules configuration to re-use those
                 envVarsFilterRuleWrapper = null;
                 return new ProcImpl(getChannel().call(remote));
@@ -1423,11 +1438,15 @@ public abstract class Launcher {
             this.envOverrides = envOverrides;
         }
 
+        @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
+        private Process launchProcess() throws IOException {
+            return Runtime.getRuntime()
+                    .exec(cmd, Util.mapToEnv(inherit(envOverrides)), workDir == null ? null : new File(workDir));
+        }
+
         @Override
         public OutputStream call() throws IOException {
-            Process p = Runtime.getRuntime().exec(cmd,
-                Util.mapToEnv(inherit(envOverrides)),
-                workDir == null ? null : new File(workDir));
+            Process p = launchProcess();
 
             List<String> cmdLines = Arrays.asList(cmd);
             new StreamCopyThread("stdin copier for remote agent on " + cmdLines,

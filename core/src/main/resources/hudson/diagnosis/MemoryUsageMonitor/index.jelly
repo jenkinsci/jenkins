@@ -31,7 +31,7 @@ THE SOFTWARE.
       <h1>
         ${%JVM Memory Usage}
       </h1>
-      <j:set var="type" value="${request.getParameter('type') ?: 'min'}" />
+      <j:set var="type" value="${request2.getParameter('type') ?: 'min'}" />
       <div>
         ${%Timespan}:
         <j:choose>

@@ -8,7 +8,7 @@
   max-width: min(50vw, 1000px) !important;
   white-space: pre-line;
   z-index: 0;
-  background: color-mix(in sRGB, var(--background) 85%, transparent);
+  background: color-mix(in sRGB, var(--card-background) 85%, transparent);
   backdrop-filter: var(--tooltip-backdrop-filter);
 
   .tippy-content {
@@ -36,7 +36,7 @@
       position: absolute;
       inset: 0;
       border-radius: 0.375rem;
-      border: 0.1rem solid var(--text-color-secondary);
+      border: var(--jenkins-border-width) solid var(--text-color-secondary);
       opacity: 0.3;
       mask-image: linear-gradient(
         -45deg,
@@ -67,17 +67,20 @@
 }
 
 .tippy-box[data-animation="tooltip"][data-state="hidden"] {
+  $translate: 2px;
+  $scale: 0.99;
+
   opacity: 0;
-  transform: scale(0.995);
+  transform: scale($scale);
 
   &[data-placement^="top"] {
     transform-origin: bottom;
-    transform: translateY(2px) scale(0.995);
+    transform: translateY($translate) scale($scale);
   }
 
   &[data-placement^="bottom"] {
     transform-origin: top;
-    transform: translateY(-2px) scale(0.995);
+    transform: translateY(-$translate) scale($scale);
   }
 }
 
@@ -100,9 +103,8 @@
     content: "";
     position: absolute;
     inset: 0;
-    border-radius: 0.375rem;
-    border: 0.1rem solid var(--text-color-secondary);
-    opacity: 0.3;
+    border-radius: 0.3rem;
+    border: var(--jenkins-border-width) solid var(--input-border);
   }
 
   svg {

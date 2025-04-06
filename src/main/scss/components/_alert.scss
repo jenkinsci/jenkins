@@ -2,9 +2,9 @@
 .jenkins-alert {
   font-size: var(--font-size-sm);
   padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid transparent;
-  border-radius: 10px;
+  margin-bottom: var(--section-padding);
+  border: var(--jenkins-border-width) solid transparent;
+  border-radius: var(--form-input-border-radius);
 
   strong {
     font-weight: var(--font-bold-weight);
@@ -51,5 +51,9 @@
     p {
       color: var(--alert-danger-text-color);
     }
+  }
+
+  @media (prefers-contrast: more) {
+    border-color: var(--text-color);
   }
 }

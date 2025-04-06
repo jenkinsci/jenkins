@@ -151,7 +151,8 @@ pre {
   word-wrap: break-word;
   margin: 0 0 var(--section-padding);
   padding: 0.8rem 1rem;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
+  border: var(--jenkins-border--subtle);
   background-color: var(--pre-background);
   color: var(--pre-color);
   font-family: var(--font-family-mono);
@@ -253,7 +254,7 @@ pre.console {
 
 .changeset-message {
   padding: 0.8rem 1rem;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   background-color: var(--pre-background);
 
   pre {
@@ -290,20 +291,12 @@ pre.console {
   padding: 1rem;
   margin: 1rem 0;
   word-break: break-word;
-  border-radius: 6px;
+  border-radius: var(--form-input-border-radius);
+  background-color: var(--button-background);
+  border: var(--jenkins-border--subtle);
   z-index: 0;
 
   --section-padding: 0.8rem;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--text-color);
-    opacity: 0.05;
-    z-index: -1;
-    border-radius: inherit;
-  }
 
   p:first-of-type {
     margin-top: 0;
@@ -386,7 +379,7 @@ img.icon-help {
 .comboBoxList {
   overflow-y: scroll;
   color: var(--text-color);
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   box-shadow: 0 10px 20px rgba(black, 0.15);
   margin-top: 8px;
   margin-left: 3px;
@@ -407,7 +400,7 @@ img.icon-help {
     position: absolute;
     inset: 0;
     background: var(--text-color);
-    border-radius: 10px;
+    border-radius: var(--form-input-border-radius);
     opacity: 0;
     transition: var(--standard-transition);
     z-index: -1;
@@ -536,7 +529,7 @@ table.fingerprint-in-build td {
     top: 0;
     left: 10px;
     bottom: 0;
-    width: 2px;
+    width: var(--jenkins-border-width);
     background: var(--input-border);
     border-radius: 2px;
     transition: var(--standard-transition);
@@ -683,7 +676,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-container {
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   overflow: hidden;
   margin-bottom: var(--section-padding);
 

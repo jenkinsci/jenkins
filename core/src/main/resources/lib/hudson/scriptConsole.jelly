@@ -27,8 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" title="${%scriptConsole}">
-    <st:include page="sidepanel.jelly" />
+  <l:layout permission="${app.ADMINISTER}" title="${%scriptConsole}" type="one-column">
 
     <l:breadcrumb title="${%scriptConsole}"/>
     <l:main-panel>
@@ -46,7 +45,7 @@ THE SOFTWARE.
           </p>
 
           <form action="script" method="post">
-            <textarea id="script" name="script" class="script">${request.getParameter('script')}</textarea>
+            <textarea id="script" name="script" class="script">${request2.getParameter('script')}</textarea>
             <div align="right">
               <f:submit  value="${%Run}"/>
             </div>

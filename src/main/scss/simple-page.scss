@@ -38,7 +38,7 @@
 
 .simple-page .safe-restarting {
   padding: 10px 30px;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   text-align: center;
   margin-top: 2rem;
   background-color: var(--alert-success-bg-color);

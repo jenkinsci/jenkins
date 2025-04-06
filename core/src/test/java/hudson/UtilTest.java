@@ -416,12 +416,16 @@ public class UtilTest {
     }
 
     @Test
-    @Issue("SECURITY-276")
+    @Issue({"SECURITY-276", "SECURITY-3501"})
     public void testIsSafeToRedirectTo() {
         assertFalse(Util.isSafeToRedirectTo("http://foobar/"));
         assertFalse(Util.isSafeToRedirectTo("mailto:kk@kohsuke.org"));
         assertFalse(Util.isSafeToRedirectTo("d123://test/"));
         assertFalse(Util.isSafeToRedirectTo("//google.com"));
+        assertFalse(Util.isSafeToRedirectTo("\\\\google.com"));
+        assertFalse(Util.isSafeToRedirectTo("\\/google.com"));
+        assertFalse(Util.isSafeToRedirectTo("/\\google.com"));
+        assertFalse(Util.isSafeToRedirectTo("\\google.com"));
 
         assertTrue(Util.isSafeToRedirectTo("foo/bar/abc:def"));
         assertTrue(Util.isSafeToRedirectTo("foo?abc:def"));

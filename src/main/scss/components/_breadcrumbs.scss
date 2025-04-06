@@ -26,11 +26,11 @@
       justify-content: center;
       color: var(--text-color);
       font-weight: normal;
-      font-size: 0.875rem;
+      font-size: var(--font-size-sm);
       padding: 0.2rem 0.4rem;
 
       & > a {
-        @include mixins.item;
+        @include mixins.item($border: false);
 
         display: inline-flex;
         align-items: center;
@@ -40,7 +40,6 @@
         margin: 0;
         padding: 0;
         color: var(--text-color);
-        text-decoration: none;
         margin-right: 0 !important;
         transition: var(--standard-transition);
 

@@ -27,18 +27,22 @@ package hudson.scheduler;
 import static java.util.Calendar.MONDAY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
 import antlr.ANTLRException;
 import java.text.DateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.function.Function;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -338,6 +342,24 @@ public class CronTabTest {
             }
         }
         assertEquals("[35, 56]", times.toString());
+    }
+
+    @Test public void floorCeilMinuteGranularity() throws Exception {
+        var tab = new CronTab("*/5 * * * *");
+        assertFloorCeil(tab, new GregorianCalendar(2025, 2, 4, 14, 15, 23), "2025-03-04T14:15:00", "2025-03-04T14:20:00");
+        assertFloorCeil(tab, new GregorianCalendar(2025, 2, 4, 14, 19, 23), "2025-03-04T14:15:00", "2025-03-04T14:20:00");
+        assertFloorCeil(tab, new GregorianCalendar(2025, 2, 4, 14, 16,  0), "2025-03-04T14:15:00", "2025-03-04T14:20:00");
+        assertFloorCeil(tab, new GregorianCalendar(2025, 2, 4, 14, 19,  0), "2025-03-04T14:15:00", "2025-03-04T14:20:00");
+        assertFloorCeil(tab, new GregorianCalendar(2025, 2, 4, 14, 15,  0), "2025-03-04T14:15:00", "2025-03-04T14:15:00");
+    }
+
+    private static void assertFloorCeil(CronTab tab, Calendar now, String expectedFloor, String expectedCeil) {
+        Function<Calendar, String> fmt = c -> ZonedDateTime.ofInstant(c.toInstant(), c.getTimeZone().toZoneId()).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        var nowFormatted = fmt.apply(now);
+        var nowClone = (Calendar) now.clone();
+        assertThat("floor of " + nowFormatted, fmt.apply(tab.floor(nowClone)), is(expectedFloor));
+        nowClone = (Calendar) now.clone();
+        assertThat("ceil of " + nowFormatted, fmt.apply(tab.ceil(nowClone)), is(expectedCeil));
     }
 
     @Issue("SECURITY-790")

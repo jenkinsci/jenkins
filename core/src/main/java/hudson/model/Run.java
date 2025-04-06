@@ -40,6 +40,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
@@ -120,6 +121,10 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.DurationDetail;
+import jenkins.model.details.TimestampDetail;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.security.MasterToSlaveCallable;
@@ -1198,12 +1203,14 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /** {@link Run.ArtifactList} without the implicit link to {@link Run} */
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     private static final class SerializableArtifactList extends ArrayList<SerializableArtifact> {
         private static final long serialVersionUID = 1L;
         private LinkedHashMap<SerializableArtifact, String> tree = new LinkedHashMap<>();
         private int idSeq = 0;
     }
 
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     public final class ArtifactList extends ArrayList<Artifact> {
         private static final long serialVersionUID = 1L;
         /**
@@ -2667,6 +2674,19 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             PrintWriter out = rsp.getWriter();
             Util.printRedirect(req.getContextPath(), "..", "Not found", out);
             out.flush();
+        }
+    }
+
+    @Extension
+    public static final class BasicRunDetailFactory extends DetailFactory<Run> {
+
+        @Override
+        public Class<Run> type() {
+            return Run.class;
+        }
+
+        @NonNull @Override public List<? extends Detail> createFor(@NonNull Run target) {
+            return List.of(new TimestampDetail(target), new DurationDetail(target));
         }
     }
 }

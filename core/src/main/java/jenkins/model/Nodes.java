@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -113,7 +112,7 @@ public class Nodes implements PersistenceRoot {
      * @throws IOException if the new list of nodes could not be persisted.
      */
     public void setNodes(final @NonNull Collection<? extends Node> nodes) throws IOException {
-        Map<String,Node> toRemove = new HashMap<>();
+        Map<String, Node> toRemove = new HashMap<>();
         Queue.withLock(() -> {
             toRemove.putAll(Nodes.this.nodes);
             for (var node : nodes) {
@@ -203,17 +202,18 @@ public class Nodes implements PersistenceRoot {
      * @since 1.634
      */
     public boolean updateNode(final @NonNull Node node) throws IOException {
+        return updateNode(node, true);
+    }
+
+    private boolean updateNode(final @NonNull Node node, boolean fireListener) throws IOException {
         boolean exists;
         try {
-            exists = Queue.withLock(new Callable<>() {
-                @Override
-                public Boolean call() throws Exception {
-                    if (node == nodes.get(node.getNodeName())) {
-                        jenkins.trimLabels(node);
-                        return true;
-                    }
-                    return false;
+            exists = Queue.withLock(() -> {
+                if (node == nodes.get(node.getNodeName())) {
+                    jenkins.trimLabels(node);
+                    return true;
                 }
+                return false;
             });
         } catch (RuntimeException e) {
             // should never happen, but if it does let's do the right thing
@@ -225,7 +225,9 @@ public class Nodes implements PersistenceRoot {
         if (exists) {
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             node.save();
-            // TODO should this fireOnUpdated?
+            if (fireListener) {
+                NodeListener.fireOnUpdated(node, node);
+            }
             return true;
         }
         return false;
@@ -252,7 +254,7 @@ public class Nodes implements PersistenceRoot {
                     newOne.onLoad(Nodes.this, newOne.getNodeName());
                 }
             });
-            updateNode(newOne);
+            updateNode(newOne, false);
             if (!newOne.getNodeName().equals(oldOne.getNodeName())) {
                 LOGGER.fine(() -> "deleting " + new File(getRootDir(), oldOne.getNodeName()));
                 Util.deleteRecursive(new File(getRootDir(), oldOne.getNodeName()));
