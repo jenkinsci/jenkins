@@ -66,6 +66,11 @@ public abstract class Header implements ExtensionPoint {
                 .getActions()
                 .stream()
                 .filter(e -> e.getIconFileName() != null)
+                .sorted((x, y) -> {
+                    if (x instanceof UserAction) return 1;
+                    if (y instanceof UserAction) return -1;
+                    return 0;
+                })
                 .toList();
     }
 }
