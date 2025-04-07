@@ -54,11 +54,11 @@ THE SOFTWARE.
             </j:if>
           </j:if>
         </div>
-        <div style="width:100%; height:1em; background-color: #729FCF; border-radius: 6px; overflow: hidden;">
+        <div style="width:100%; height:1em; background-color: var(--success-color); border-radius: 6px; overflow: hidden;">
           <!-- Failed tests part of the bar. -->
-          <div style="width:${it.failCount*100/it.totalCount}%; height: 1em; background-color: #EF2929; float: left; border-top-left-radius: 6px; border-bottom-left-radius: 6px;"></div>
+          <div style="width:${it.failCount*100/it.totalCount}%; height: 1em; background-color: var(--error-color); float: left; border-top-left-radius: 6px; border-bottom-left-radius: 6px;"></div>
           <!-- Skipped tests part of the bar. -->
-          <div style="width:${it.skipCount*100/it.totalCount}%; height: 1em; background-color: #FCE94F; float: left;"></div>
+          <div style="width:${it.skipCount*100/it.totalCount}%; height: 1em; background-color: var(--warning-color); float: left;"></div>
         </div>
         <div align="right">
           ${%tests(it.totalCount)}
