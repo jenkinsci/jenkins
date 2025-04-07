@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Items;
@@ -86,7 +86,7 @@ public class RobustReflectionConverterTest {
     // GUI related implementations (@DataBoundConstructor and newInstance) aren't used actually
     // (no jelly files are provides and they don't work actually),
     // but written to clarify a use case.
-    public static class AcceptOnlySpecificKeyword extends AbstractDescribableImpl<AcceptOnlySpecificKeyword> {
+    public static class AcceptOnlySpecificKeyword implements Describable<AcceptOnlySpecificKeyword> {
         public static final String ACCEPT_KEYWORD = "accept";
         private final String keyword;
 
