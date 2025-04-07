@@ -51,7 +51,7 @@ $jenkins-dialog-font-size: 0.9375rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 0 $jenkins-dialog-padding 1rem;
+    padding: 0 $jenkins-dialog-padding;
     color: var(--text-color-secondary);
   }
 
