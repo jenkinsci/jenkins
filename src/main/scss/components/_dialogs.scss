@@ -14,11 +14,6 @@ $jenkins-dialog-font-size: 0.9375rem;
   gap: $jenkins-dialog-padding;
   outline: none;
 
-  * {
-    // Optically align text in the dialog
-    text-box-trim: trim-both;
-  }
-
   &::backdrop {
     background: var(--dialog-backdrop-background);
     backdrop-filter: var(--dialog-backdrop-backdrop-filter);
@@ -31,6 +26,7 @@ $jenkins-dialog-font-size: 0.9375rem;
     padding: 0 $jenkins-dialog-padding;
     color: var(--text-color);
     overflow-wrap: anywhere;
+    text-box-trim: trim-both;
   }
 
   &__contents {
