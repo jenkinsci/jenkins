@@ -34,8 +34,11 @@ import java.util.logging.Logger;
  * <strong>Do not use this</strong> for storing passwords and the like in configuration.
  * Use {@link Secret} instead.
  *
+ * @deprecated There's no reason to use this. To store secrets encrypted, use {@link Secret}. To encode/decode Base64, use {@link java.util.Base64}.
+ *
  * @author Kohsuke Kawaguchi
  */
+@Deprecated(since = "TODO")
 public class Scrambler {
     private static final Logger LOGGER = Logger.getLogger(Scrambler.class.getName());
 
