@@ -10,10 +10,14 @@ $jenkins-dialog-font-size: 0.9375rem;
   overflow: hidden;
   padding: $jenkins-dialog-padding 0 0 0;
   display: flex;
-  translate: 0 -2.5rem;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: $jenkins-dialog-padding;
   outline: none;
+
+  * {
+    // Optically align text in the dialog
+    text-box-trim: trim-both;
+  }
 
   &::backdrop {
     background: var(--dialog-backdrop-background);
@@ -65,7 +69,6 @@ $jenkins-dialog-font-size: 0.9375rem;
     .jenkins-button {
       min-width: 100px;
       flex-grow: 1;
-      font-size: $jenkins-dialog-font-size;
     }
   }
 
