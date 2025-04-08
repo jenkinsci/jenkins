@@ -30,7 +30,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
 import java.util.logging.Level;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,7 +50,17 @@ public class HealthCheckActionTest {
         try (var webClient = r.createWebClient()) {
             var page = webClient.goTo("healthCheck", "application/json");
             assertThat(page.getWebResponse().getStatusCode(), is(200));
-            assertEquals(new JSONObject().element("status", true).element("data", new JSONArray()), JSONObject.fromObject(page.getWebResponse().getContentAsString()));
+            assertEquals(JSONObject.fromObject("""
+            {
+                "status": true,
+                "data": [
+                  {
+                    "name": "completedInitialization",
+                    "result": true
+                  }
+                ]
+            }
+            """), JSONObject.fromObject(page.getWebResponse().getContentAsString()));
         }
     }
 
@@ -64,6 +73,10 @@ public class HealthCheckActionTest {
             {
                 "status": true,
                 "data": [
+                  {
+                    "name": "completedInitialization",
+                    "result": true
+                  },
                   {
                     "name": "success",
                     "result": true
@@ -99,6 +112,10 @@ public class HealthCheckActionTest {
             {
                 "status": false,
                 "data": [
+                  {
+                    "name": "completedInitialization",
+                    "result": true
+                  },
                   {
                     "name": "failing",
                     "result": false
@@ -136,6 +153,10 @@ public class HealthCheckActionTest {
             {
                 "status": true,
                 "data": [
+                  {
+                    "name": "completedInitialization",
+                    "result": true
+                  },
                   {
                     "name": "dupe",
                     "result": true
