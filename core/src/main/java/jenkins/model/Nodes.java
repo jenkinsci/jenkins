@@ -166,8 +166,13 @@ public class Nodes implements PersistenceRoot {
                     @Override
                     public void run() {
                         nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> old);
-                        jenkins.updateComputerList();
-                        jenkins.trimLabels(node, old);
+                        if (old != null) {
+                            jenkins.updateComputers(node, old);
+                            jenkins.trimLabels(node, old);
+                        } else {
+                            jenkins.updateComputers(node);
+                            jenkins.trimLabels(node);
+                        }
                     }
                 });
                 throw e;
@@ -260,7 +265,7 @@ public class Nodes implements PersistenceRoot {
                 Util.deleteRecursive(new File(getRootDir(), oldOne.getNodeName()));
             }
             Queue.withLock(() -> {
-                jenkins.updateComputerList();
+                jenkins.updateComputers(oldOne, newOne);
                 jenkins.trimLabels(oldOne, newOne);
             });
             NodeListener.fireOnUpdated(oldOne, newOne);
@@ -297,7 +302,7 @@ public class Nodes implements PersistenceRoot {
             Util.deleteRecursive(new File(getRootDir(), node.getNodeName()));
 
             if (match.get()) {
-                jenkins.updateComputerList();
+                jenkins.updateComputers(node);
                 jenkins.trimLabels(node);
             }
             NodeListener.fireOnDeleted(node);
@@ -407,7 +412,7 @@ public class Nodes implements PersistenceRoot {
 
     public void load(File dir) throws IOException {
         Node n = load(dir, nodes);
-        jenkins.updateComputerList();
+        jenkins.updateComputers(n);
         jenkins.trimLabels(n);
     }
 
@@ -416,7 +421,7 @@ public class Nodes implements PersistenceRoot {
             AtomicBoolean match = new AtomicBoolean();
             Queue.withLock(() -> match.set(node == nodes.remove(node.getNodeName())));
             if (match.get()) {
-                jenkins.updateComputerList();
+                jenkins.updateComputers(node);
                 jenkins.trimLabels(node);
             }
         }
