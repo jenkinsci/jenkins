@@ -45,8 +45,10 @@ import java.util.Objects;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
 import jenkins.model.lazy.BuildReference;
+import jenkins.model.lazy.LazyBuildMixIn;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -69,6 +71,10 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
     private final @CheckForNull Job<?, ?> job;
 
     private Constructor<R> cons;
+
+    /** Normally overwritten by {@link LazyBuildMixIn#onLoad} or {@link LazyBuildMixIn#onCreatedFromScratch}, in turn created during {@link Job#onLoad}. */
+    @Restricted(NoExternalUse.class)
+    public RunIdMigrator runIdMigrator = new RunIdMigrator();
 
     // TODO: before first complete build
     // patch up next/previous build link
@@ -150,6 +156,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
     @Override
     public boolean removeValue(R run) {
         run.dropLinks();
+        runIdMigrator.delete(dir, run.getId());
         return super.removeValue(run);
     }
 
@@ -220,13 +227,14 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
         return super._put(r);
     }
 
-    @CheckForNull
     @Override public R getById(String id) {
+        int n;
         try {
-            return getByNumber(Integer.parseInt(id));
-        } catch (NumberFormatException e) { // see https://issues.jenkins.io/browse/JENKINS-75476
-            return null;
+            n = Integer.parseInt(id);
+        } catch (NumberFormatException x) {
+            n = runIdMigrator.findNumber(id);
         }
+        return getByNumber(n);
     }
 
     /**
