@@ -26,13 +26,11 @@ package hudson.security;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
-import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
@@ -45,8 +43,6 @@ import hudson.security.captcha.CaptchaSupport;
 import hudson.util.FormValidation;
 import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
-import hudson.util.Scrambler;
-import hudson.util.XStream2;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -802,18 +798,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             @Override
             public int hashCode() {
                 return getUsername().hashCode();
-            }
-        }
-
-        public static class ConverterImpl extends XStream2.PassthruConverter<Details> {
-            public ConverterImpl(XStream2 xstream) { super(xstream); }
-
-            @Override protected void callback(Details d, UnmarshallingContext context) {
-                // Convert to hashed password and report to monitor if we load old data
-                if (d.password != null && d.passwordHash == null) {
-                    d.passwordHash = PASSWORD_ENCODER.encode(Scrambler.descramble(d.password));
-                    OldDataMonitor.report(context, "1.283");
-                }
             }
         }
 

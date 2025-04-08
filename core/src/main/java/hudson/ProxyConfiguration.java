@@ -28,14 +28,13 @@ import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
 import hudson.util.NamingThreadFactory;
-import hudson.util.Scrambler;
 import hudson.util.Secret;
 import hudson.util.XStream2;
 import java.io.File;
@@ -93,7 +92,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see jenkins.model.Jenkins#proxy
  */
 @StaplerAccessibleType
-public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfiguration> implements Saveable, Serializable {
+public final class ProxyConfiguration implements Describable<ProxyConfiguration>, Saveable, Serializable {
     /**
      * Holds a default TCP connect timeout set on all connections returned from this class,
      * note this is value is in milliseconds, it's passed directly to {@link URLConnection#setConnectTimeout(int)}
@@ -286,10 +285,6 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     private Object readResolve() {
-        if (secretPassword == null)
-            // backward compatibility : get scrambled password and store it encrypted
-            secretPassword = Secret.fromString(Scrambler.descramble(password));
-        password = null;
         authenticator = newAuthenticator();
         userName = Util.fixEmptyAndTrim(userName);
         return this;

@@ -3,7 +3,7 @@ package lib.form;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
@@ -31,7 +31,7 @@ public class BooleanRadioTest {
         j.submit(f);
     }
 
-    public static final class BooleanRadioTestDescribable extends AbstractDescribableImpl<BooleanRadioTestDescribable> {
+    public static final class BooleanRadioTestDescribable implements Describable<BooleanRadioTestDescribable> {
 
         boolean f;
 

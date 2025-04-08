@@ -83,12 +83,20 @@ Dialog.prototype.init = function () {
       this.dialog.appendChild(contents);
       behaviorShim.applySubtree(contents, true);
     }
-    if (this.options.message != null && this.dialogType !== "form") {
+    if (this.dialogType !== "form") {
       const message = createElementFromHtml(
         `<div class='jenkins-dialog__contents'/>`,
       );
-      this.dialog.appendChild(message);
-      message.innerText = this.options.message;
+      if (this.options.content != null && this.dialogType === "alert") {
+        message.appendChild(this.options.content);
+        this.dialog.appendChild(message);
+      } else if (this.options.message != null && this.dialogType !== "prompt") {
+        const message = createElementFromHtml(
+          `<div class='jenkins-dialog__contents'/>`,
+        );
+        this.dialog.appendChild(message);
+        message.innerText = this.options.message;
+      }
     }
 
     if (this.dialogType === "prompt") {
@@ -96,6 +104,14 @@ Dialog.prototype.init = function () {
           <input data-id="input" type="text" class='jenkins-input'></div>`);
       this.dialog.appendChild(inputDiv);
       this.input = inputDiv.querySelector("[data-id=input]");
+      if (this.options.message != null) {
+        const message = document.createElement("div");
+        inputDiv.insertBefore(message, this.input);
+        message.innerText = this.options.message;
+      }
+      if (this.options.promptValue) {
+        this.input.value = this.options.promptValue;
+      }
       if (!this.options.allowEmpty) {
         this.input.addEventListener("input", () => this.checkInput());
       }
@@ -155,7 +171,12 @@ Dialog.prototype.appendButtons = function () {
       this.dialog.dispatchEvent(new Event("cancel"));
     });
   }
-  if (this.dialogType === "prompt" && !this.options.allowEmpty) {
+
+  if (
+    this.dialogType === "prompt" &&
+    !this.options.allowEmpty &&
+    (this.options.promptValue == null || this.options.promptValue.trim() === "")
+  ) {
     this.ok.disabled = true;
   }
 };

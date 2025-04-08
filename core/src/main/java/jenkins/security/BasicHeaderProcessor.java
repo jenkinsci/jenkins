@@ -6,7 +6,6 @@ import static java.util.logging.Level.FINER;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.SecurityRealm;
-import hudson.util.Scrambler;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -16,8 +15,11 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -68,7 +70,13 @@ public class BasicHeaderProcessor implements CompatibleFilter {
 
         if (authorization != null && authorization.toLowerCase(Locale.ROOT).startsWith("Basic ".toLowerCase(Locale.ROOT))) {
             // authenticate the user
-            String uidpassword = Scrambler.descramble(authorization.substring(6));
+            String uidpassword = null;
+            try {
+                uidpassword = new String(Base64.getDecoder().decode(authorization.substring(6).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+            } catch (IllegalArgumentException ex) {
+                LOGGER.log(Level.FINE, ex, () -> "Failed to decode authentication from: " + authorization);
+                uidpassword = "";
+            }
             int idx = uidpassword.indexOf(':');
             if (idx >= 0) {
                 String username = uidpassword.substring(0, idx);

@@ -25,7 +25,6 @@
 package hudson.security;
 
 import hudson.model.User;
-import hudson.util.Scrambler;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.RequestDispatcher;
@@ -38,6 +37,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.security.BasicApiTokenHelper;
 import jenkins.security.SecurityListener;
@@ -91,6 +93,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @author Kohsuke Kawaguchi
  */
 public class BasicAuthenticationFilter implements CompatibleFilter {
+    private static final Logger LOGGER = Logger.getLogger(BasicAuthenticationFilter.class.getName());
     private ServletContext servletContext;
 
     @Override
@@ -126,7 +129,13 @@ public class BasicAuthenticationFilter implements CompatibleFilter {
         // authenticate the user
         String username = null;
         String password = null;
-        String uidpassword = Scrambler.descramble(authorization.substring(6));
+        String uidpassword = null;
+        try {
+            uidpassword = new String(Base64.getDecoder().decode(authorization.substring(6).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException ex) {
+            LOGGER.log(Level.FINE, ex, () -> "Failed to decode authentication from: " + authorization);
+            uidpassword = "";
+        }
         int idx = uidpassword.indexOf(':');
         if (idx >= 0) {
             username = uidpassword.substring(0, idx);

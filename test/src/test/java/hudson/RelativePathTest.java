@@ -3,7 +3,6 @@ package hudson;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
@@ -33,7 +32,7 @@ public class RelativePathTest {
         assertTrue(j.jenkins.getDescriptorByType(Model.DescriptorImpl.class).touched);
     }
 
-    public static class Model extends AbstractDescribableImpl<Model> {
+    public static class Model implements Describable<Model> {
 
         @TestExtension
         public static class DescriptorImpl extends Descriptor<Model> {
