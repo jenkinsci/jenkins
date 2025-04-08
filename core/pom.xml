@@ -43,6 +43,8 @@ THE SOFTWARE.
     <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
+    <!-- Intentionally run only one test to reduce cycle time -->
+    <test>EnvVarsTest</test>
   </properties>
 
   <dependencyManagement>

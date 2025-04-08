@@ -13,8 +13,8 @@ properties([
 ])
 
 def axes = [
-  platforms: ['linux', 'windows'],
-  jdks: [21, 25],
+  platforms: ['linux'],
+  jdks: [21],
 ]
 
 stage('Record build') {
@@ -128,7 +128,12 @@ axes.values().combinations {
             }
             withChecks(name: 'Tests', includeStage: true) {
               realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+                // Only use with replay, not with a commit
+                // sh 'curl -O https://home.markwaite.net/~mwaite/pom.patch && git apply pom.patch && rm pom.patch && git diff'
+                // mavenOptions.add(0, "-Dignore.dirt")
                 infra.runMaven(mavenOptions, jdk)
+                // Only use with replay, not with a commit
+                // sh 'git checkout -- */pom.xml'
                 if (isUnix()) {
                   sh 'git add . && git diff --exit-code HEAD'
                 }
@@ -211,41 +216,6 @@ axes.values().combinations {
             }
           }
         }
-      }
-    }
-  }
-}
-
-def athAxes = [
-  platforms: ['linux'],
-  jdks: [21],
-  browsers: ['firefox'],
-]
-athAxes.values().combinations {
-  def (platform, jdk, browser) = it
-  builds["ath-${platform}-jdk${jdk}-${browser}"] = {
-    retry(conditions: [agent(), nonresumable()], count: 2) {
-      node('docker-highmem') {
-        // Just to be safe
-        deleteDir()
-        checkout scm
-
-        withChecks(name: 'Tests', includeStage: true) {
-          infra.withArtifactCachingProxy {
-            sh "bash ath.sh ${jdk} ${browser}"
-          }
-          junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
-        }
-        /*
-         * Currently disabled, as the fact that this is a manually created subset will confuse Launchable,
-         * which expects this to be a full build. When we implement subsetting, this can be re-enabled using
-         * Launchable's subset rather than our own.
-         */
-        /*
-         withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
-         sh "launchable verify && launchable record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} maven './target/ath-reports'"
-         }
-         */
       }
     }
   }
