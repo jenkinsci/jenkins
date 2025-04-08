@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2014, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,22 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  "New agent" page.
-
-  The flow of this is:
-
-    new.jelly -> ComputerSet.doCreateItem -> _new2.jelly -> ComputerSet.doDoCreateItem
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
-  <l:layout title="${%New node}" permission="${createPermission}" type="one-column">
-    <l:breadcrumb title="${%New node}" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="Jenkins">
+    <l:header />
     <l:main-panel>
-      <j:invokeStatic var="slaves" className="hudson.slaves.NodeDescriptor" method="allInstantiable" />
-      <n:form title="${%New node}" nameTitle="${%Node name}" copyTitle="${%Copy Existing Node}" showCopyOption="${!empty(it._slaveNames)}"
-              descriptors="${slaves}" checkUrl="checkName" xmlns:n="/lib/hudson/newFromList" />
+      <p>
+        To reverse the effect of build record migration, run the following command
+        on the server. See <a href="https://www.jenkins.io/redirect/build-record-migration">documentation</a>
+        for more details:
+      </p>
+      <table style="width:100%">
+        <tr>
+          <td style="line-height:2em; width:80%">
+            <input type="text" value="${it.command}" style="width:100%"/>
+          </td>
+          <td style="line-height:2em">
+            <l:copyButton text="${it.command}"/>
+          </td>
+        </tr>
+      </table>
     </l:main-panel>
   </l:layout>
 </j:jelly>

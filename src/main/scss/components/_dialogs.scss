@@ -1,4 +1,4 @@
-$jenkins-dialog-padding: 1.3rem;
+$jenkins-dialog-padding: 1.25rem;
 
 .jenkins-dialog {
   border-radius: var(--form-input-border-radius);
@@ -23,6 +23,7 @@ $jenkins-dialog-padding: 1.3rem;
     font-weight: var(--font-bold-weight);
     padding: 0 $jenkins-dialog-padding;
     color: var(--text-color);
+    overflow-wrap: anywhere;
   }
 
   &__contents {
@@ -41,7 +42,10 @@ $jenkins-dialog-padding: 1.3rem;
 
   &__input {
     display: flex;
-    padding: 0 1rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 $jenkins-dialog-padding 1rem;
+    color: var(--text-color-secondary);
   }
 
   &__buttons {
