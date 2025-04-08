@@ -736,6 +736,44 @@ public class Functions {
         return TimeZoneProperty.forCurrentUser();
     }
 
+    /**
+     * Returns a disambiguated, locale-aware time string for the given build's timestamp.
+     * <p>
+     * In cases where the time is exactly 12:00 midnight or 12:00 noon, a human-friendly label
+     * is returned instead of a generic time (e.g., "12:00 AM" or "12:00 PM").
+     * Otherwise, it returns a formatted time string using the user's timezone and locale.
+     *
+     * @param build the build whose timestamp should be formatted
+     * @return a disambiguated, localized time string
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getDisambiguatedTime(Run<?, ?> build) {
+        Date date = build.getTimestamp().getTime();
+        TimeZone tz = isUserTimeZoneOverride()
+                ? TimeZone.getTimeZone(getUserTimeZone())
+                : TimeZone.getDefault();
+        Locale locale = getCurrentLocale();
+
+        Calendar calendar = Calendar.getInstance(tz);
+        calendar.setTime(date);
+
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+
+        if (minute == 0) {
+            if (hour == 0) {
+                return Messages.DisambiguatedTime_Midnight();
+            } else if (hour == 12) {
+                return Messages.DisambiguatedTime_Noon();
+            }
+        }
+
+        // Fallback: format time according to the user's locale and timezone
+        DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
+        timeFormat.setTimeZone(tz);
+        return timeFormat.format(date);
+    }
+
     @Restricted(NoExternalUse.class)
     public static String getUserTimeZonePostfix(Date date) {
         if (!isUserTimeZoneOverride()) {

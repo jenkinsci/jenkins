@@ -41,6 +41,7 @@ import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.model.ViewGroup;
@@ -48,9 +49,12 @@ import hudson.util.VersionNumber;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
@@ -353,6 +357,67 @@ public class FunctionsTest {
         assertBrokenAs("H,e.l/l:o=w_o+|d", "H", ",e", ".l", "/l", ":o", "=w", "_o", "+|d");
         assertBrokenAs("a¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷ", "a¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷ", "a¶‱ﻷa¶‱ﻷa¶‱ﻷ");
         assertNull(Functions.breakableString(null));
+    }
+
+    @Issue("JENKINS-75171")
+    @Test
+    public void testGetDisambiguatedTime_normalTime() {
+        TimeZone original = TimeZone.getDefault();
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+            Run<?, ?> mockRun = mock(Run.class);
+
+            GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.set(2023, Calendar.JANUARY, 1, 9, 15, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+
+            when(mockRun.getTimestamp()).thenReturn(cal);
+
+            String actual = Functions.getDisambiguatedTime(mockRun);
+            assertEquals("9:15 AM", actual.replace('\u202F', ' '));
+        } finally {
+            TimeZone.setDefault(original);
+        }
+    }
+
+    @Issue("JENKINS-75171")
+    @Test
+    public void testGetDisambiguatedTime_noon() {
+        TimeZone original = TimeZone.getDefault();
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+            Run<?, ?> mockRun = mock(Run.class);
+
+            GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.set(2023, Calendar.JANUARY, 1, 12, 0, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+
+            when(mockRun.getTimestamp()).thenReturn(cal);
+
+            assertEquals(Messages.DisambiguatedTime_Noon(), Functions.getDisambiguatedTime(mockRun));
+        } finally {
+            TimeZone.setDefault(original);
+        }
+    }
+
+    @Issue("JENKINS-75171")
+    @Test
+    public void testGetDisambiguatedTime_midnight() {
+        TimeZone original = TimeZone.getDefault();
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+            Run<?, ?> mockRun = mock(Run.class);
+
+            GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.set(2023, Calendar.JANUARY, 1, 0, 0, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+
+            when(mockRun.getTimestamp()).thenReturn(cal);
+
+            assertEquals(Messages.DisambiguatedTime_Midnight(), Functions.getDisambiguatedTime(mockRun));
+        } finally {
+            TimeZone.setDefault(original);
+        }
     }
 
     private void assertBrokenAs(String plain, String... chunks) {
