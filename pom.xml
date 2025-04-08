@@ -73,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.505</revision>
+    <revision>2.504.1</revision>
     <changelist>-SNAPSHOT</changelist>
     <project.build.outputTimestamp>2025-03-31T13:10:14Z</project.build.outputTimestamp>
 
