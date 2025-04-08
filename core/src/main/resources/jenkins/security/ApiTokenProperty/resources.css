@@ -21,120 +21,85 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 .token-list {
-  /* reset to get rid of browser default */
-  margin: 0;
-  padding: 0;
-
   max-width: 700px;
-  border: 1px solid #cccccc;
-  border-color: var(--medium-grey);
-  border-radius: 3px;
 }
 
-.token-list .token-list-item {
-  min-height: inherit;
-  padding: 8px 10px;
-  font-size: var(--font-size-sm);
-  line-height: 26px;
-}
-.token-list .token-list-item.legacy-token {
-  padding: 6px 5px 6px 5px;
-  border: 2px solid #ffe262;
-  border-left-width: 5px;
-  border-right-width: 5px;
-}
-
-.token-list .token-list-empty-item {
-  display: block;
-}
-.token-list .token-list-empty-item.hidden-message {
-  display: none;
-}
-
-.token-list .token-list-item .token-name-input {
-  font-weight: bold;
-}
-.token-list .token-list-item .token-creation {
-  margin-left: 5px;
-  font-size: 0.75rem;
-}
-.token-list .token-list-item .token-creation.age-ok {
-  color: #6d7680;
-}
-.token-list .token-list-item .token-creation.age-mmmh {
-  color: #e09307;
-}
-.token-list .token-list-item .token-creation.age-argh {
-  color: #de6868;
-}
-.token-list .token-list-item .token-hide {
-  display: none;
-}
-.token-list .token-list-item .to-right {
-  float: right;
-}
-.token-list .token-list-item .token-use-counter {
-  font-size: 0.75rem;
-  color: #6d7680;
-}
-.token-list .token-list-item .no-statistics {
-  font-size: 0.75rem;
-  color: #6d7680;
-}
-.token-list
-  .token-list-new-item
-  .api-token-property-token-revoke.hidden-button {
-  display: none;
-}
-.token-list .token-list-new-item .token-cancel.hidden-button {
-  display: none;
-}
-.token-list .token-list-new-item .token-cancel .yui-button {
-  vertical-align: baseline;
-}
-.token-list .token-list-new-item .token-name {
-  width: 40%;
-  display: inline-block;
-}
-.token-list .token-list-new-item .new-token-value {
-  display: none;
-  font-family: monospace;
-  margin-right: 2px;
-  font-size: 1em;
-}
-.token-list .token-list-new-item .new-token-value.visible {
-  display: inline-block;
-}
-.token-list .token-list-new-item .controls-container {
+.token-card__title,
+.token-stats,
+.token-never-used,
+.token-list .jenkins-card,
+.token-controls {
   display: flex;
+  gap: 0.5rem;
   align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  float: right;
 }
-.token-list .token-list-new-item .display-after-generation {
-  margin-top: 5px;
-  display: none;
+
+.token-name {
+  overflow-wrap: anywhere;
 }
-.token-list .token-list-new-item .display-after-generation.visible {
-  display: block;
+
+.token-card__title {
+  font-size: var(--font-size-sm) !important;
+  font-weight: var(--font-bold-weight);
+  width: fit-content;
 }
-.token-list .token-list-new-item .token-error-message {
-  margin-top: 5px;
-  display: none;
+
+.token-controls {
+  margin-left: auto;
+  padding-right: 1rem;
+  margin-right: -0.25rem;
 }
-.token-list .token-list-new-item .token-error-message.visible {
-  display: block;
-}
-.token-list .token-list-new-item .token-save {
-  vertical-align: baseline;
-}
-.token-list .repeated-chunk {
-  border-width: 0;
+
+.token-controls button {
   padding: 0;
-  margin: 0;
+  height: 2.5rem;
+  width: 2.5rem;
 }
-.token-list .repeatable-add {
-  margin: 6px 6px 3px 6px;
+
+.api-token-new-form-row.jenkins-quote {
+  color: var(--text-color);
+}
+
+.api-token-new-form-row span:has(button) {
+  margin-left: auto;
+}
+
+.api-token-new-form-row button {
+  margin-right: 0 !important;
+}
+
+.token-card-inner {
+  width: 100%;
+  padding: 0.5rem 1rem;
+}
+
+.token-creation {
+  font-size: var(--font-size-xs);
+  color: var(--text-color-secondary);
+  width: fit-content;
+}
+
+.token-last-used {
+  font-size: var(--font-size-xs);
+  color: var(--text-color-secondary);
+  margin-left: auto;
+}
+
+.legacy-token {
+  color: var(--warning-color);
+}
+
+.legacy-token svg {
+  width: 20px;
+  height: 20px;
+}
+
+.api-token-new-form-row {
+  width: 100%;
+}
+
+.token-use-counter {
+  display: none;
 }

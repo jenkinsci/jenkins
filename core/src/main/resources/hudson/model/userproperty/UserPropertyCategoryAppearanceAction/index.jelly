@@ -55,15 +55,13 @@ THE SOFTWARE.
                                 </f:section>
                             </j:if>
                         </j:forEach>
+
+                        <f:saveApplyBar/>
                     </j:when>
                     <j:otherwise>
-                        <div class="jenkins-alert jenkins-alert-info jenkins-form-item">
-                            ${%warningNoItems}
-                        </div>
+                        <l:notice title="${%warningNoItems}" icon="symbol-brush-outline" />
                     </j:otherwise>
                 </j:choose>
-
-                <f:saveApplyBar/>
             </f:form>
             <st:adjunct includes="lib.form.confirm" />
         </l:main-panel>
