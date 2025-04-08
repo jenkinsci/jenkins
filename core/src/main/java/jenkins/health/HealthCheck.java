@@ -29,7 +29,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Defines a health check that is critical to the operation of Jenkins.
- * @since XXX
+ * @since TODO
  */
 @Restricted(Beta.class)
 public interface HealthCheck extends ExtensionPoint {
