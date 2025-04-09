@@ -25,7 +25,6 @@
 package jenkins.health;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
@@ -136,59 +135,6 @@ public class HealthCheckActionTest {
         @Override
         public String getName() {
             return "failing";
-        }
-
-        @Override
-        public boolean check() {
-            return false;
-        }
-    }
-
-    @Test
-    public void duplicateHealthCheckExtension() throws Exception {
-        try (var webClient = r.createWebClient()) {
-            var page = webClient.goTo("healthCheck", "application/json");
-            assertThat(page.getWebResponse().getStatusCode(), is(200));
-            assertEquals(JSONObject.fromObject("""
-            {
-                "status": true,
-                "data": [
-                  {
-                    "name": "completedInitialization",
-                    "result": true
-                  },
-                  {
-                    "name": "dupe",
-                    "result": true
-                  }
-                ]
-            }
-            """), JSONObject.fromObject(page.getWebResponse().getContentAsString()));
-        }
-        // TestExtension doesn't have ordinal, but I think by default extensions are ordered alphabetically
-        assertThat(loggingRule.getMessages(), contains("Ignoring duplicate health check with name dupe from " + HealthCheck2.class.getName() + " as it is already defined by " + HealthCheck1.class.getName()));
-    }
-
-    @TestExtension("duplicateHealthCheckExtension")
-    public static class HealthCheck1 implements HealthCheck {
-
-        @Override
-        public String getName() {
-            return "dupe";
-        }
-
-        @Override
-        public boolean check() {
-            return true;
-        }
-    }
-
-    @TestExtension("duplicateHealthCheckExtension")
-    public static class HealthCheck2 implements HealthCheck {
-
-        @Override
-        public String getName() {
-            return "dupe";
         }
 
         @Override

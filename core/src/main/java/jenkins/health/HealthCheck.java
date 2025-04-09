@@ -37,6 +37,7 @@ public interface HealthCheck extends ExtensionPoint {
 
     /**
      * @return the name of the health check. Must be unique among health check implementations.
+     * Defaults to the fully qualified class name.
      */
     default String getName() {
         return getClass().getName();
