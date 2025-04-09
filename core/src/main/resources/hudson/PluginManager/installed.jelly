@@ -166,24 +166,22 @@ THE SOFTWARE.
                       </div>
                     </j:if>
                   </td>
-                  <l:isAdmin>
-                    <j:if test="${app.updateCenter.healthScoresAvailable}">
-                      <td class="jenkins-table__cell">
-                        <span>
-                          <j:choose>
-                            <j:when test="${p.healthScore != null}">
-                              <a href="${p.url}/healthScore" class="jenkins-healthScore--badge jenkins-healthScore--${p.healthScoreClazz}" target="_blank" rel="noopener noreferrer">
-                                <st:out value="${p.healthScore}"/>
-                              </a>
-                            </j:when>
-                            <j:otherwise>
-                              <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="Not applicable"/>
-                            </j:otherwise>
-                          </j:choose>
-                        </span>
-                      </td>
-                    </j:if>
-                  </l:isAdmin>
+                  <j:if test="${app.updateCenter.healthScoresAvailable}">
+                    <td class="jenkins-table__cell">
+                      <span>
+                        <j:choose>
+                          <j:when test="${p.healthScore != null}">
+                            <a href="${p.url}/healthScore" class="jenkins-healthScore--badge jenkins-healthScore--${p.healthScoreClazz}" target="_blank" rel="noopener noreferrer">
+                              <st:out value="${p.healthScore}"/>
+                            </a>
+                          </j:when>
+                          <j:otherwise>
+                            <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="Not applicable"/>
+                          </j:otherwise>
+                        </j:choose>
+                      </span>
+                    </td>
+                  </j:if>
                   <j:set var="state" value="${p.enabled?'true':null}"/>
                   <td class="jenkins-table__cell--tight enable" data="${state}">
                     <div class="jenkins-table__cell__button-wrapper">
