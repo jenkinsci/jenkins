@@ -127,9 +127,15 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.FormatStyle;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -144,6 +150,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -739,39 +746,59 @@ public class Functions {
     /**
      * Returns a disambiguated, locale-aware time string for the given build's timestamp.
      * <p>
-     * In cases where the time is exactly 12:00 midnight or 12:00 noon, a human-friendly label
-     * is returned instead of a generic time (e.g., "12:00 AM" or "12:00 PM").
-     * Otherwise, it returns a formatted time string using the user's timezone and locale.
+     * If the localized time format uses a 12‑hour clock and the time is exactly 12:00 midnight
+     * or 12:00 noon, a human-friendly label is returned (e.g., "Midnight" or "Noon")
+     * instead of a generic time (e.g., "12:00 AM" or "12:00 PM"). To ensure accurate labeling,
+     * the timestamp is truncated to the nearest minute, normalizing any potential sub-minute
+     * precision (e.g., 12:00:01 or 12:00:59) that may be included in the timestamp. For locales
+     * using a 24‑hour format, or for any other times, a formatted time string is returned according
+     * to the user's timezone and locale.
      *
      * @param build the build whose timestamp should be formatted
      * @return a disambiguated, localized time string
      */
     @Restricted(NoExternalUse.class)
     public static String getDisambiguatedTime(Run<?, ?> build) {
-        Date date = build.getTimestamp().getTime();
-        TimeZone tz = isUserTimeZoneOverride()
-                ? TimeZone.getTimeZone(getUserTimeZone())
-                : TimeZone.getDefault();
+        Instant instant = build.getTimestamp().toInstant();
+        ZoneId zoneId = isUserTimeZoneOverride() ? ZoneId.of(Objects.requireNonNull(getUserTimeZone())) : ZoneId.systemDefault();
         Locale locale = getCurrentLocale();
 
-        Calendar calendar = Calendar.getInstance(tz);
-        calendar.setTime(date);
+        ZonedDateTime zonedDateTime = instant.atZone(zoneId);
+        LocalTime localTime = zonedDateTime.toLocalTime();
+        LocalTime roundedTime = localTime.truncatedTo(ChronoUnit.MINUTES);
 
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-
-        if (minute == 0) {
-            if (hour == 0) {
+        // If the locale uses a 12-hour format, check if the time is exactly midnight (12:00 AM)
+        // or noon (12:00 PM). Truncated time ensures that slight variations (e.g., 12:00:01)
+        // are still correctly labeled as "Midnight" or "Noon".
+        if (is12HourFormat(locale)) {
+            if (roundedTime.equals(LocalTime.MIDNIGHT)) {
                 return Messages.DisambiguatedTime_Midnight();
-            } else if (hour == 12) {
+            } else if (roundedTime.equals(LocalTime.NOON)) {
                 return Messages.DisambiguatedTime_Noon();
             }
         }
 
-        // Fallback: format time according to the user's locale and timezone
-        DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
-        timeFormat.setTimeZone(tz);
-        return timeFormat.format(date);
+        // Fallback: format time according to the user's locale and timezone.
+        DateTimeFormatter formatter = DateTimeFormatter
+                .ofLocalizedTime(FormatStyle.SHORT)
+                .withLocale(locale)
+                .withZone(zoneId);
+        return formatter.format(zonedDateTime);
+    }
+
+    /**
+     * Determines if the localized time pattern for the given locale uses a 12-hour clock.
+     *
+     * @param locale the user's locale.
+     * @return true if the localized time pattern includes an AM/PM marker; false otherwise.
+     */
+    private static boolean is12HourFormat(Locale locale) {
+        // Obtain a time pattern; we pass null for the date style to get only the time part.
+        String pattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(
+                null, FormatStyle.SHORT, Chronology.ofLocale(locale), locale
+        );
+        // If the pattern contains an 'a', then it includes an AM/PM marker, implying a 12-hour format.
+        return pattern.contains("a");
     }
 
     @Restricted(NoExternalUse.class)
