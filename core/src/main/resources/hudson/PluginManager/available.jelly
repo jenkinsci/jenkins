@@ -72,7 +72,8 @@ THE SOFTWARE.
 
       <form id="form" method="post" action="install">
         <table id="plugins" class="jenkins-table sortable"
-               data-hasAdmin="${h.hasPermission(app.ADMINISTER)}">
+               data-hasAdmin="${h.hasPermission(app.ADMINISTER)}"
+               data-health="${app.updateCenter.healthScoresAvailable}">
           <thead>
             <tr>
               <l:isAdmin>
@@ -82,7 +83,9 @@ THE SOFTWARE.
               </l:isAdmin>
               <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
-              <th>${%Health score}</th>
+              <j:if test="${app.updateCenter.healthScoresAvailable}">
+                <th>${%Health score}</th>
+              </j:if>
             </tr>
           </thead>
           <tbody/>

@@ -69,6 +69,7 @@
         {{else}}
             <td style="width: 20%"></td>
         {{/if}}
+        {{#if @root/includeHealthScores }}
         <td style="width: 15%">
             <div>
                 {{#if this.healthScore }}
@@ -85,5 +86,6 @@
                 {{/if}}
             </div>
         </td>
+        {{/if}}
     </tr>
 {{/each}}

@@ -84,7 +84,9 @@ THE SOFTWARE.
                   <th initialSortDir="down">${%Name}</th>
                   <th>${%Released}</th>
                   <th>${%Installed}</th>
-                  <th>${%Health score}</th>
+                  <j:if test="${app.updateCenter.healthScoresAvailable}">
+                    <th>${%Health score}</th>
+                  </j:if>
                 </tr>
               </thead>
                   <j:forEach var="p" items="${list}">
@@ -226,18 +228,20 @@ THE SOFTWARE.
                           </j:otherwise>
                         </j:choose>
                       </td>
-                      <td>
-                        <j:choose>
-                          <j:when test="${p.healthScore != null}">
-                            <a href="${p.wiki}/healthScore" class="jenkins-healthScore--badge jenkins-healthScore--${p.healthScoreClazz}" target="_blank" rel="noopener noreferrer">
-                              <st:out value="${p.healthScore}"/>
-                            </a>
-                          </j:when>
-                          <j:otherwise>
-                            <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="Not applicable"/>
-                          </j:otherwise>
-                        </j:choose>
-                      </td>
+                      <j:if test="${app.updateCenter.healthScoresAvailable}">
+                        <td>
+                          <j:choose>
+                            <j:when test="${p.healthScore != null}">
+                              <a href="${p.wiki}/healthScore" class="jenkins-healthScore--badge jenkins-healthScore--${p.healthScoreClazz}" target="_blank" rel="noopener noreferrer">
+                                <st:out value="${p.healthScore}"/>
+                              </a>
+                            </j:when>
+                            <j:otherwise>
+                              <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="Not applicable"/>
+                            </j:otherwise>
+                          </j:choose>
+                        </td>
+                      </j:if>
                     </tr>
                   </j:forEach>
             </table>

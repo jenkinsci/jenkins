@@ -611,6 +611,9 @@ public class UpdateSite {
          */
         public final String connectionCheckUrl;
 
+        @Restricted(NoExternalUse.class)
+        public final boolean healthScoresAvailable;
+
         Data(JSONObject o) {
             this.sourceId = Util.intern((String) o.get("id"));
             JSONObject c = o.optJSONObject("core");
@@ -649,6 +652,8 @@ public class UpdateSite {
                 }
             }
 
+            boolean healthScoresAvailable = false;
+
             for (Map.Entry<String, JSONObject> e : (Set<Map.Entry<String, JSONObject>>) o.getJSONObject("plugins").entrySet()) {
                 Plugin p = new Plugin(sourceId, e.getValue());
                 // JENKINS-33308 - include implied dependencies for older plugins that may need them
@@ -662,6 +667,10 @@ public class UpdateSite {
                 }
                 plugins.put(Util.intern(e.getKey()), p);
 
+                if (p.healthScore != null) {
+                    healthScoresAvailable = true;
+                }
+
                 // compatibility with update sites that have no separate 'deprecated' top-level entry.
                 // Also do this even if there are deprecations to potentially allow limiting the top-level entry to overridden URLs.
                 if (p.hasCategory("deprecated")) {
@@ -670,6 +679,8 @@ public class UpdateSite {
                     }
                 }
             }
+
+            this.healthScoresAvailable = healthScoresAvailable;
 
             connectionCheckUrl = (String) o.get("connectionCheckUrl");
         }
