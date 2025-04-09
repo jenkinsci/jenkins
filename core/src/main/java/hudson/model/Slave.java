@@ -67,7 +67,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -343,7 +342,7 @@ public abstract class Slave extends Node implements Serializable {
         return Util.fixNull(label).trim();
     }
 
-    private transient Set<LabelAtom> previouslyAssignedLabels = ConcurrentHashMap.newKeySet();
+    private transient Set<LabelAtom> previouslyAssignedLabels = Collections.synchronizedSet(new HashSet<>());
 
     /**
      * @return the labels to be trimmed for this node. This includes current and previous labels that were applied before the last call to this method.
@@ -632,7 +631,7 @@ public abstract class Slave extends Node implements Serializable {
     protected Object readResolve() {
         if (nodeProperties == null)
             nodeProperties = new DescribableList<>(this);
-        previouslyAssignedLabels = ConcurrentHashMap.newKeySet();
+        previouslyAssignedLabels = Collections.synchronizedSet(new HashSet<>());
         _setLabelString(label);
         return this;
     }
