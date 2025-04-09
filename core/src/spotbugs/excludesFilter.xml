@@ -112,6 +112,7 @@
           <Class name="jenkins.fingerprints.FingerprintStorage"/>
           <Class name="jenkins.install.SetupWizard"/>
           <Class name="jenkins.model.Jenkins"/>
+          <Class name="jenkins.model.RunIdMigrator"/>
           <Class name="jenkins.mvn.SettingsPathHelper"/>
           <Class name="jenkins.security.CustomClassFilter$Contributed"/>
           <Class name="jenkins.security.ResourceDomainConfiguration"/>
