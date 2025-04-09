@@ -29,7 +29,11 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 /**
- * Defines a health check that is critical to the operation of Jenkins.
+ * <p>Specifies a health check that is essential for Jenkins to function properly.
+ * <br>If this health check fails, monitoring systems will treat the controller as unusable for meaningful tasks.
+ * <br>It is assumed that restarting Jenkins can resolve the issue.
+ * <p>For instance, low disk space is not a good health check because it can't be solved by restarting Jenkins.
+ * <br>Detecting a deadlock in a critical singleton thread would be a good health check as long as associated information (thread dump) is reported somewhere before restarting.
  * @since TODO
  */
 @Restricted(Beta.class)
