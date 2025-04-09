@@ -58,7 +58,7 @@ THE SOFTWARE.
           <!-- Failed tests part of the bar. -->
           <div style="width:${it.failCount*100/it.totalCount}%; height: 1em; background-color: var(--error-color); float: left; border-top-left-radius: 6px; border-bottom-left-radius: 6px;"></div>
           <!-- Skipped tests part of the bar. -->
-          <div style="width:${it.skipCount*100/it.totalCount}%; height: 1em; background-color: var(--warning-color); float: left;"></div>
+          <div style="width:${it.skipCount*100/it.totalCount}%; height: 1em; background-color: var(--skipped-color); float: left;"></div>
         </div>
         <div align="right">
           ${%tests(it.totalCount)}
