@@ -32,6 +32,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.json.JsonHttpResponse;
 
@@ -39,23 +40,28 @@ import org.kohsuke.stapler.json.JsonHttpResponse;
  * Provides a health check action for Jenkins.
  */
 @Extension
-@Restricted(DoNotUse.class)
+@Restricted(NoExternalUse.class)
 public final class HealthCheckAction extends InvisibleAction implements UnprotectedRootAction {
 
     @Override
     public String getUrlName() {
-        return "healthCheck";
+        return "health";
     }
 
     public HttpResponse doIndex() {
         boolean success = true;
-        var checks = new JSONArray();
+        var failing = new JSONArray();
         for (var healthCheck : ExtensionList.lookup(HealthCheck.class)) {
             var check = healthCheck.check();
-            var name = healthCheck.getName();
             success &= check;
-            checks.add(new JSONObject().element("name", name).element("result", check));
+            if (!check) {
+                failing.add(healthCheck.getName());
+            }
         }
-        return new JsonHttpResponse(new JSONObject().element("status", success).element("data", checks), success ? 200 : 503);
+        var payload = new JSONObject().element("status", success);
+        if (!success) {
+            payload = payload.element("failures", failing);
+        }
+        return new JsonHttpResponse(payload, success ? 200 : 503);
     }
 }

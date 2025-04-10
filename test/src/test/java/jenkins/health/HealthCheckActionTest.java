@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
+import hudson.ExtensionList;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
@@ -47,40 +48,28 @@ public class HealthCheckActionTest {
     @Test
     public void healthCheck() throws Exception {
         try (var webClient = r.createWebClient()) {
-            var page = webClient.goTo("healthCheck", "application/json");
+            var page = webClient.goTo(healthUrl(), "application/json");
             assertThat(page.getWebResponse().getStatusCode(), is(200));
             assertEquals(JSONObject.fromObject("""
             {
-                "status": true,
-                "data": [
-                  {
-                    "name": "completedInitialization",
-                    "result": true
-                  }
-                ]
+                "status": true
             }
             """), JSONObject.fromObject(page.getWebResponse().getContentAsString()));
         }
     }
 
+    private static String healthUrl() {
+        return ExtensionList.lookupSingleton(HealthCheckAction.class).getUrlName();
+    }
+
     @Test
     public void healthCheckSuccessExtension() throws Exception {
         try (var webClient = r.createWebClient()) {
-            var page = webClient.goTo("healthCheck", "application/json");
+            var page = webClient.goTo(healthUrl(), "application/json");
             assertThat(page.getWebResponse().getStatusCode(), is(200));
             assertEquals(JSONObject.fromObject("""
             {
-                "status": true,
-                "data": [
-                  {
-                    "name": "completedInitialization",
-                    "result": true
-                  },
-                  {
-                    "name": "success",
-                    "result": true
-                  }
-                ]
+                "status": true
             }
             """), JSONObject.fromObject(page.getWebResponse().getContentAsString()));
         }
@@ -105,25 +94,12 @@ public class HealthCheckActionTest {
         try (var webClient = r.createWebClient()) {
             webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
             webClient.getOptions().setPrintContentOnFailingStatusCode(false);
-            var page = webClient.goTo("healthCheck", "application/json");
+            var page = webClient.goTo(healthUrl(), "application/json");
             assertThat(page.getWebResponse().getStatusCode(), is(503));
             assertEquals(JSONObject.fromObject("""
             {
                 "status": false,
-                "data": [
-                  {
-                    "name": "completedInitialization",
-                    "result": true
-                  },
-                  {
-                    "name": "failing",
-                    "result": false
-                  },
-                  {
-                    "name": "success",
-                    "result": true
-                  }
-                ]
+                "failures": ["failing"]
             }
             """), JSONObject.fromObject(page.getWebResponse().getContentAsString()));
         }
