@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -50,8 +49,6 @@ import hudson.model.Slave;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.RetentionStrategy;
-import hudson.slaves.SlaveComputer;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -169,64 +166,6 @@ public class NodesTest {
         r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
         r.jenkins.getNodesObject().load();
         assertNotNull(r.jenkins.getNode("foo"));
-    }
-
-    @Test
-    @Issue("JENKINS-33704")
-    public void replacingSecondNodeIsLocal() throws Exception {
-        DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
-        var retentionStrategyA = new MockRetentionStrategy();
-        nodeA.setRetentionStrategy(retentionStrategyA);
-        r.jenkins.addNode(nodeA);
-        assertThat(retentionStrategyA.checkCount, equalTo(0));
-        DumbSlave nodeB = r.createSlave("nodeB", "temp", null);
-        var retentionStrategyB = new MockRetentionStrategy();
-        nodeB.setRetentionStrategy(retentionStrategyB);
-        r.jenkins.addNode(nodeB);
-        assertThat(retentionStrategyA.checkCount, equalTo(0));
-        assertThat(retentionStrategyB.checkCount, equalTo(0));
-        Jenkins.get().getNodesObject().replaceNode(nodeA, nodeA);
-        assertThat(retentionStrategyB.checkCount, equalTo(0));
-    }
-
-    @Test
-    @Issue("JENKINS-33704")
-    public void removingSecondNodeIsLocal() throws Exception {
-        DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
-        var retentionStrategyA = new MockRetentionStrategy();
-        nodeA.setRetentionStrategy(retentionStrategyA);
-        r.jenkins.addNode(nodeA);
-        assertThat(retentionStrategyA.checkCount, equalTo(0));
-        DumbSlave nodeB = r.createSlave("nodeB", "temp", null);
-        var retentionStrategyB = new MockRetentionStrategy();
-        nodeB.setRetentionStrategy(retentionStrategyB);
-        r.jenkins.addNode(nodeB);
-        assertThat(retentionStrategyA.checkCount, equalTo(0));
-        assertThat(retentionStrategyB.checkCount, equalTo(0));
-        r.jenkins.removeNode(nodeA);
-        assertThat(retentionStrategyB.checkCount, equalTo(0));
-    }
-
-    @Test
-    @Issue("JENKINS-33704")
-    public void changingBuiltInNodeDoesntChangeOtherNodes() throws Exception {
-        DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
-        var retentionStrategyA = new MockRetentionStrategy();
-        nodeA.setRetentionStrategy(retentionStrategyA);
-        r.jenkins.addNode(nodeA);
-        assertThat(retentionStrategyA.checkCount, equalTo(0));
-        r.jenkins.setNumExecutors(1);
-        assertThat(retentionStrategyA.checkCount, equalTo(0));
-    }
-
-    public static class MockRetentionStrategy extends RetentionStrategy.Always {
-        private int checkCount = 0;
-
-        @Override
-        public long check(SlaveComputer c) {
-            checkCount++;
-            return super.check(c);
-        }
     }
 
     private static class InvalidNode extends Slave {

@@ -1594,25 +1594,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         updateNewComputer(n, AUTOMATIC_AGENT_LAUNCH);
     }
 
-    /**
-     * Update the list of computers that are running on this Jenkins instance.
-     * Consider {@link #updateComputers(Node...)} instead if you know what nodes needs to be updated.
-     * @see #updateComputers(Node...)
-     */
     protected void updateComputerList() {
-        var allNodes = new HashSet<Node>();
-        allNodes.add(this);
-        allNodes.addAll(getNodes());
-        updateComputerList(AUTOMATIC_AGENT_LAUNCH, allNodes);
-    }
-
-    /**
-     * Update the computers for the given nodes.
-     */
-    protected void updateComputers(@NonNull Node... nodes) {
-        var nodeSet = new HashSet<Node>();
-        Collections.addAll(nodeSet, nodes);
-        updateComputerList(AUTOMATIC_AGENT_LAUNCH, nodeSet);
+        updateComputerList(AUTOMATIC_AGENT_LAUNCH);
     }
 
     /** @deprecated Use {@link SCMListener#all} instead. */
@@ -3008,7 +2991,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         if (this.numExecutors != n) {
             this.numExecutors = n;
-            updateComputers(this);
+            updateComputerList();
             save();
         }
     }
@@ -4047,7 +4030,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 result &= configureDescriptor(req, json, d);
 
             save();
-            updateComputers(this);
+            updateComputerList();
             if (result)
                 FormApply.success(req.getContextPath() + '/').generateResponse(req, rsp, null);
             else
@@ -4100,7 +4083,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             bc.commit();
         }
 
-        updateComputers(this);
+        updateComputerList();
 
         FormApply.success(req.getContextPath() + '/' + toComputer().getUrl()).generateResponse(req, rsp, null);
     }
