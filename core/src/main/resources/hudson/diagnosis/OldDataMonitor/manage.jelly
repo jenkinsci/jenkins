@@ -24,7 +24,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Manage Old Data}" type="one-column">
+<l:layout title="${%Manage Old Data}">
+  <st:include page="sidepanel.jelly" it="${app}"/>
   <!-- no need for additional breadcrumb here as we're on an "index" page already including breadcrumb -->
   <l:main-panel>
     <h1>${%Manage Old Data}</h1>

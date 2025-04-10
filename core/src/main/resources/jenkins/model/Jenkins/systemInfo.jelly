@@ -27,12 +27,12 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%System Information}" type="one-column">
+  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%System Information}">
     <l:header>
       <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
       <script src="${resURL}/jsbundles/pages/manage-jenkins/system-information.js" type="text/javascript" defer="true" />
     </l:header>
-    
+    <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%System Information}"/>
     <l:main-panel>
       <l:app-bar title="${%System Information}" />
