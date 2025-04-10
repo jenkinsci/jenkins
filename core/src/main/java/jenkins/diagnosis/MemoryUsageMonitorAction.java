@@ -36,7 +36,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 /**
  * Expose {@link hudson.diagnosis.MemoryUsageMonitor#heap} at the {@code /hudson.diagnosis.MemoryUsageMonitor/heap} URL.
  *
- * @since TODO
+ * @since 2.505
  */
 @Extension
 @Restricted(NoExternalUse.class)
