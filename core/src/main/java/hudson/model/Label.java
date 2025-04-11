@@ -33,6 +33,9 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
@@ -54,22 +57,24 @@ import hudson.slaves.Cloud;
 import hudson.slaves.NodeProvisioner;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import jenkins.model.IComputer;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.util.antlr.JenkinsANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -210,18 +215,6 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return nodes.size() == 1 && nodes.iterator().next().getSelfLabel().equals(this);
     }
 
-    private static class NodeSorter implements Comparator<Node>, Serializable {
-        private static final long serialVersionUID = -7368519598046684532L;
-
-        @Override
-        public int compare(Node o1, Node o2) {
-            if (o1 == o2) {
-                return 0;
-            }
-            return o1 instanceof Jenkins ? -1 : o2 instanceof Jenkins ? 1 : o1.getNodeName().compareTo(o2.getNodeName());
-        }
-    }
-
     /**
      * Gets all {@link Node}s that belong to this label.
      */
@@ -242,10 +235,26 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     @Restricted(DoNotUse.class) // Jelly
-    public Set<Node> getSortedNodes() {
-        Set<Node> r = new TreeSet<>(new NodeSorter());
-        r.addAll(getNodes());
-        return r;
+    public Collection<? extends IComputer> getComputers() {
+        return ExtensionList.lookupFirst(LabelComputerSource.class).get(this).stream().sorted(Comparator.comparing(IComputer::getName)).toList();
+    }
+
+    /**
+     * Allows plugins to override the displayed list of computers per label.
+     * @see ComputerSet.ComputerSource
+     */
+    @Restricted(Beta.class)
+    public interface LabelComputerSource extends ExtensionPoint {
+        Collection<? extends IComputer> get(Label label);
+    }
+
+    @Extension(ordinal = -1)
+    @Restricted(DoNotUse.class)
+    public static class LabelComputerSourceImpl implements LabelComputerSource {
+        @Override
+        public Collection<? extends IComputer> get(Label label) {
+            return label.getNodes().stream().map(Node::toComputer).filter(Objects::nonNull).toList();
+        }
     }
 
     /**
