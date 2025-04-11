@@ -84,7 +84,10 @@ THE SOFTWARE.
               <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
               <j:if test="${app.updateCenter.healthScoresAvailable}">
-                <th>${%Health score}</th>
+                <th>
+                  ${%Health score}
+                  <a href="https://jenkins.io/redirect/plugin-health-score"><l:helpIcon /></a>
+                </th>
               </j:if>
             </tr>
           </thead>

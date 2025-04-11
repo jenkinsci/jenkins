@@ -78,11 +78,12 @@ THE SOFTWARE.
             <thead>
             <tr>
               <th initialSortDir="down">${%Name}</th>
-              <l:isAdmin>
-                <j:if test="${app.updateCenter.healthScoresAvailable}">
-                  <th>${%Health score}</th>
-                </j:if>
-              </l:isAdmin>
+              <j:if test="${app.updateCenter.healthScoresAvailable}">
+                <th>
+                  ${%Health score}
+                  <a href="https://jenkins.io/redirect/plugin-health-score"><l:helpIcon /></a>
+                </th>
+              </j:if>
               <th class="jenkins-table__cell--tight">${%Enabled}</th>
               <l:isAdmin>
                 <th data-sort-disable="true"/>
