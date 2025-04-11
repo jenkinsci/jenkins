@@ -39,8 +39,7 @@ THE SOFTWARE.
     </j:forEach>
 
     <t:artifactList caption="${%Last Successful Artifacts}"
-        build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
-        permission="${it.lastSuccessfulBuild.ARTIFACTS}"/>
+        build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"/>
   </table>
 
   <!-- merge fragments from the actions -->

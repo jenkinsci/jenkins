@@ -325,7 +325,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
                     "WipeOut",
                     Messages._AbstractProject_WipeOutPermission_Description(),
                     null,
-                    Functions.isWipeOutPermissionEnabled(),
+                    SystemProperties.getBoolean("hudson.security.WipeOutPermission"),
                     new PermissionScope[] {PermissionScope.ITEM});
     Permission CANCEL =
             new Permission(
