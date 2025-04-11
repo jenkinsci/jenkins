@@ -5,6 +5,23 @@ const TOOLTIP_BASE = {
   arrow: false,
   theme: "tooltip",
   animation: "tooltip",
+  touch: false,
+  popperOptions: {
+    modifiers: [
+      {
+        name: "preventOverflow",
+        options: {
+          boundary: "viewport",
+          padding:
+            parseFloat(
+              getComputedStyle(document.documentElement).getPropertyValue(
+                "--section-padding",
+              ),
+            ) * 16,
+        },
+      },
+    ],
+  },
   duration: 250,
 };
 
