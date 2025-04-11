@@ -317,14 +317,14 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1319.v000471ca_e5e2</version>
+                  <version>1322.v1556dc1c59a_f</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1366.vf1fb_e1a_f6b_22</version>
+                  <version>1371.ve334280b_d611</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -353,7 +353,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>963.va_600813d04a_a_</version>
+                  <version>968.v8f17397e87b_8</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -470,7 +470,7 @@ THE SOFTWARE.
                   <!-- detached after 2.184 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>trilead-api</artifactId>
-                  <version>2.192.vc50a_d147e369</version>
+                  <version>2.209.v0e69b_c43c245</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
