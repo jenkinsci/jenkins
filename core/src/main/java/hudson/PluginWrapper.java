@@ -438,6 +438,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return this.healthScore;
     }
 
+    @Restricted(NoExternalUse.class)
     public static String getHealthScoreClassForScore(int score) {
         if (score > 80) return "top";
         if (score > 60) return "middle";
