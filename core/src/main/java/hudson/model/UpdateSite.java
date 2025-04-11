@@ -1311,7 +1311,7 @@ public class UpdateSite {
             int optionalDepCount = (int) ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL.negate())).count();
             dependencies = getPresizedMutableMap(depCount);
             optionalDependencies = getPresizedMutableMap(optionalDepCount);
-            this.healthScore = o.has("healthScore") ? o.getInt("healthScore") : null;
+            this.healthScore = o.has("health") ? o.getInt("health") : null;
             if (healthScore != null) {
                 this.healthScoreClazz = PluginWrapper.getHealthScoreClassForScore(healthScore);
             } else {
