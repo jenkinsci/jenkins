@@ -344,7 +344,7 @@ public abstract class Slave extends Node implements Serializable {
         return Util.fixNull(label).trim();
     }
 
-    private transient Set<LabelAtom> previouslyAssignedLabels = Collections.synchronizedSet(new HashSet<>());
+    private transient Set<LabelAtom> previouslyAssignedLabels = new HashSet<>();
 
     /**
      * @return the labels to be trimmed for this node. This includes current and previous labels that were applied before the last call to this method.
@@ -370,7 +370,9 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     private void _setLabelString(String labelString) {
-        this.previouslyAssignedLabels.addAll(getAssignedLabels().stream().filter(Objects::nonNull).collect(Collectors.toSet()));
+        synchronized(this.previouslyAssignedLabels) {
+            this.previouslyAssignedLabels.addAll(getAssignedLabels().stream().filter(Objects::nonNull).collect(Collectors.toSet()));
+        }
         this.label = Util.fixNull(labelString).trim();
         this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
     }
@@ -633,7 +635,7 @@ public abstract class Slave extends Node implements Serializable {
     protected Object readResolve() {
         if (nodeProperties == null)
             nodeProperties = new DescribableList<>(this);
-        previouslyAssignedLabels = Collections.synchronizedSet(new HashSet<>());
+        previouslyAssignedLabels = new HashSet<>();
         _setLabelString(label);
         return this;
     }
