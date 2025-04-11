@@ -176,7 +176,7 @@ THE SOFTWARE.
                             </a>
                           </j:when>
                           <j:otherwise>
-                            <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="Not applicable"/>
+                            <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="${%No health score available}"/>
                           </j:otherwise>
                         </j:choose>
                       </span>
