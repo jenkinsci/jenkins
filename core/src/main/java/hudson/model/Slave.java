@@ -370,7 +370,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     private void _setLabelString(String labelString) {
-        synchronized(this.previouslyAssignedLabels) {
+        synchronized (this.previouslyAssignedLabels) {
             this.previouslyAssignedLabels.addAll(getAssignedLabels().stream().filter(Objects::nonNull).collect(Collectors.toSet()));
         }
         this.label = Util.fixNull(labelString).trim();
