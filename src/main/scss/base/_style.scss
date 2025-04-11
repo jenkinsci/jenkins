@@ -464,24 +464,24 @@ table.fileList td.fileSize {
 
 /* ========================= test result ========================= */
 .result-passed {
-  color: #3465a4;
+  color: var(--success-color);
 }
 
 .result-skipped {
-  color: #db0;
+  color: var(--skipped-color);
 }
 
 .result-fixed {
-  color: #3465a4;
+  color: var(--success-color);
   font-weight: bold;
 }
 
 .result-failed {
-  color: #ef2929;
+  color: var(--error-color);
 }
 
 .result-regression {
-  color: #ef2929;
+  color: var(--error-color);
   font-weight: bold;
 }
 
