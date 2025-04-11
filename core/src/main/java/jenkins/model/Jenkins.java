@@ -3382,6 +3382,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         } catch (InvalidBuildsDir invalidBuildsDir) {
             throw new IOException(invalidBuildsDir);
         }
+        updateComputers(this);
     }
 
     private void setBuildsAndWorkspacesDir() throws IOException, InvalidBuildsDir {
