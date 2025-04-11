@@ -166,11 +166,10 @@ public class Nodes implements PersistenceRoot {
                     @Override
                     public void run() {
                         nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> old);
+                        jenkins.updateComputers(node);
                         if (old != null) {
-                            jenkins.updateComputers(node, old);
                             jenkins.trimLabels(node, old);
                         } else {
-                            jenkins.updateComputers(node);
                             jenkins.trimLabels(node);
                         }
                     }
@@ -265,7 +264,7 @@ public class Nodes implements PersistenceRoot {
                 Util.deleteRecursive(new File(getRootDir(), oldOne.getNodeName()));
             }
             Queue.withLock(() -> {
-                jenkins.updateComputers(oldOne, newOne);
+                jenkins.updateComputers(newOne);
                 jenkins.trimLabels(oldOne, newOne);
             });
             NodeListener.fireOnUpdated(oldOne, newOne);
