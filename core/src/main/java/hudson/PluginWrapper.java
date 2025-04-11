@@ -445,7 +445,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     @Restricted(NoExternalUse.class) // Jelly use only
-    public String getHealthScoreClazz() {
+    public String getHealthScoreClass() {
         if (this.healthScore == null) return null;
         return getHealthScoreClassForScore(this.healthScore);
     }

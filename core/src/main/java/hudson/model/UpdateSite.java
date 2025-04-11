@@ -1273,7 +1273,7 @@ public class UpdateSite {
 
         @Exported
         @Restricted(NoExternalUse.class)
-        public final String healthScoreClazz;
+        public final String healthScoreClass;
 
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
@@ -1313,9 +1313,9 @@ public class UpdateSite {
             optionalDependencies = getPresizedMutableMap(optionalDepCount);
             this.healthScore = o.has("health") ? o.getInt("health") : null;
             if (healthScore != null) {
-                this.healthScoreClazz = PluginWrapper.getHealthScoreClassForScore(healthScore);
+                this.healthScoreClass = PluginWrapper.getHealthScoreClassForScore(healthScore);
             } else {
-                this.healthScoreClazz = null;
+                this.healthScoreClass = null;
             }
 
             for (Object jo : o.getJSONArray("dependencies")) {

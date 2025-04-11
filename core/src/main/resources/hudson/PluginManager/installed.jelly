@@ -171,7 +171,7 @@ THE SOFTWARE.
                       <span>
                         <j:choose>
                           <j:when test="${p.healthScore != null}">
-                            <a href="${p.url}/healthScore" class="jenkins-healthScore--badge jenkins-healthScore--${p.healthScoreClazz}" target="_blank" rel="noopener noreferrer">
+                            <a href="${p.url}/healthScore" class="jenkins-healthScore--badge jenkins-healthScore--${p.healthScoreClass}" target="_blank" rel="noopener noreferrer">
                               <st:out value="${p.healthScore}"/>
                             </a>
                           </j:when>

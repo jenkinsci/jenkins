@@ -1559,7 +1559,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                     if (plugin.healthScore != null) {
                         jsonObject.put("healthScore", plugin.healthScore);
-                        jsonObject.put("healthScoreClazz", plugin.healthScoreClazz);
+                        jsonObject.put("healthScoreClass", plugin.healthScoreClass);
                     }
                     return jsonObject;
                 })
