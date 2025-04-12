@@ -338,7 +338,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.3-3</version>
+                  <version>5.3.5-1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -442,7 +442,7 @@ THE SOFTWARE.
                   <!-- detached after 2.86 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>118.v72741845c17a_</version>
+                  <version>123.v37cfdc92ef67</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
