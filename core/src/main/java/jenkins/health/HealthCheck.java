@@ -22,32 +22,33 @@
  * THE SOFTWARE.
  */
 
-package jenkins.diagnosis;
+package jenkins.health;
 
-import hudson.Extension;
-import hudson.ExtensionList;
-import hudson.diagnosis.MemoryUsageMonitor;
-import hudson.model.InvisibleAction;
-import hudson.model.RootAction;
-import jenkins.model.Jenkins;
+import hudson.ExtensionPoint;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
- * Expose {@link hudson.diagnosis.MemoryUsageMonitor#heap} at the {@code /hudson.diagnosis.MemoryUsageMonitor/heap} URL.
- *
- * @since 2.505
+ * <p>Specifies a health check that is essential for Jenkins to function properly.
+ * <br>If this health check fails, monitoring systems will treat the controller as unusable for meaningful tasks.
+ * <br>It is assumed that restarting Jenkins can resolve the issue.
+ * <p>For instance, low disk space is not a good health check because it can't be solved by restarting Jenkins.
+ * <br>Detecting a deadlock in a critical singleton thread would be a good health check as long as associated information (thread dump) is reported somewhere before restarting.
+ * @since TODO
  */
-@Extension
-@Restricted(NoExternalUse.class)
-public class MemoryUsageMonitorAction extends InvisibleAction implements RootAction {
-    @Override
-    public String getUrlName() {
-        return MemoryUsageMonitorAction.class.getName();
+@Restricted(Beta.class)
+public interface HealthCheck extends ExtensionPoint {
+
+    /**
+     * @return the name of the health check. Must be unique among health check implementations.
+     * Defaults to the fully qualified class name.
+     */
+    default String getName() {
+        return getClass().getName();
     }
 
-    public MemoryUsageMonitor.MemoryGroup getHeap() {
-        Jenkins.get().checkAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
-        return ExtensionList.lookupSingleton(MemoryUsageMonitor.class).heap;
-    }
+    /**
+     * @return true if the health check passed.
+     */
+    boolean check();
 }

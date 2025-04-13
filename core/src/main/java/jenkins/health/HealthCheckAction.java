@@ -22,32 +22,45 @@
  * THE SOFTWARE.
  */
 
-package jenkins.diagnosis;
+package jenkins.health;
 
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.diagnosis.MemoryUsageMonitor;
 import hudson.model.InvisibleAction;
-import hudson.model.RootAction;
-import jenkins.model.Jenkins;
+import hudson.model.UnprotectedRootAction;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.json.JsonHttpResponse;
 
 /**
- * Expose {@link hudson.diagnosis.MemoryUsageMonitor#heap} at the {@code /hudson.diagnosis.MemoryUsageMonitor/heap} URL.
- *
- * @since 2.505
+ * Provides a health check action for Jenkins.
  */
 @Extension
 @Restricted(NoExternalUse.class)
-public class MemoryUsageMonitorAction extends InvisibleAction implements RootAction {
+public final class HealthCheckAction extends InvisibleAction implements UnprotectedRootAction {
+
     @Override
     public String getUrlName() {
-        return MemoryUsageMonitorAction.class.getName();
+        return "health";
     }
 
-    public MemoryUsageMonitor.MemoryGroup getHeap() {
-        Jenkins.get().checkAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
-        return ExtensionList.lookupSingleton(MemoryUsageMonitor.class).heap;
+    public HttpResponse doIndex() {
+        boolean success = true;
+        var failing = new JSONArray();
+        for (var healthCheck : ExtensionList.lookup(HealthCheck.class)) {
+            var check = healthCheck.check();
+            success &= check;
+            if (!check) {
+                failing.add(healthCheck.getName());
+            }
+        }
+        var payload = new JSONObject().element("status", success);
+        if (!success) {
+            payload = payload.element("failures", failing);
+        }
+        return new JsonHttpResponse(payload, success ? 200 : 503);
     }
 }

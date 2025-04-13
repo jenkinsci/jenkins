@@ -123,7 +123,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1366.vf1fb_e1a_f6b_22</version>
+        <version>1371.ve334280b_d611</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -134,7 +134,7 @@ THE SOFTWARE.
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>963.va_600813d04a_a_</version>
+        <version>968.v8f17397e87b_8</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -218,7 +218,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.999.v42253c105443</version>
+      <version>6.1012.v79a_86a_1ea_c1f</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -230,7 +230,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1319.v000471ca_e5e2</version>
+      <version>1322.v1556dc1c59a_f</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -350,7 +350,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>371.v171782a_56701</version>
+                  <version>374.v9466b_9e00db_b_</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
@@ -366,7 +366,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.3-3</version>
+                  <version>5.3.5-1</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>bootstrap5-api.jpi</destFileName>
