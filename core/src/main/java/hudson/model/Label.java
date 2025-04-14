@@ -235,6 +235,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     @Restricted(DoNotUse.class) // Jelly
+    @NonNull
     public Collection<? extends IComputer> getComputers() {
         return ExtensionList.lookupFirst(LabelComputerSource.class).get(this).stream().sorted(Comparator.comparing(IComputer::getName)).toList();
     }
@@ -245,14 +246,16 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     @Restricted(Beta.class)
     public interface LabelComputerSource extends ExtensionPoint {
-        Collection<? extends IComputer> get(Label label);
+        @NonNull
+        Collection<? extends IComputer> get(@NonNull Label label);
     }
 
     @Extension(ordinal = -1)
     @Restricted(DoNotUse.class)
     public static class LabelComputerSourceImpl implements LabelComputerSource {
         @Override
-        public Collection<? extends IComputer> get(Label label) {
+        @NonNull
+        public Collection<? extends IComputer> get(@NonNull Label label) {
             return label.getNodes().stream().map(Node::toComputer).filter(Objects::nonNull).toList();
         }
     }
