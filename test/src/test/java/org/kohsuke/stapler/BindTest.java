@@ -87,13 +87,13 @@ public class BindTest {
             final String scriptUrl = htmlPage
                     .getElementsByTagName("script")
                     .stream()
-                    .filter(it -> it.getAttribute("src").startsWith(j.contextPath + "/$stapler/bound/script" + j.contextPath + "/the'Well'Known'Root'With'Quotes?"))
+                    .filter(it -> it.getAttribute("src").startsWith(j.contextPath + "/$stapler/bound/script" + j.contextPath + "/the'Well'Known\\'Root'With'Quotes?"))
                     .findFirst()
                     .orElseThrow()
                     .getAttribute("src");
 
             final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
-            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/the\\'Well\\'Known\\'Root\\'With\\'Quotes','test',['annotatedJsMethod2','byName2']);"));
+            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/the\\'Well\\'Known\\\\\\'Root\\'With\\'Quotes','test',['annotatedJsMethod2','byName2']);"));
         }
         assertThat(root.invocations, is(1));
     }
@@ -199,7 +199,7 @@ public class BindTest {
 
         @Override
         public String getUrlName() {
-            return "the'Well'Known'Root'With'Quotes";
+            return "the'Well'Known\\'Root'With'Quotes";
         }
 
         @Override
