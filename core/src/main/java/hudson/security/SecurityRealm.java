@@ -36,9 +36,6 @@ import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
-import io.jenkins.servlet.FilterConfigWrapper;
-import io.jenkins.servlet.FilterWrapper;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
@@ -57,7 +54,6 @@ import jenkins.model.Jenkins;
 import jenkins.security.AcegiSecurityExceptionFilter;
 import jenkins.security.AuthenticationSuccessHandler;
 import jenkins.security.BasicHeaderProcessor;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
@@ -67,7 +63,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -343,32 +338,6 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * @since 2.475
      */
     public void doLogout(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        if (Util.isOverridden(SecurityRealm.class, getClass(), "doLogout", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                doLogout(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            doLogoutImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doLogout(StaplerRequest2, StaplerResponse2)}
-     * @since 1.314
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public void doLogout(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
-        try {
-            doLogoutImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    void doLogoutImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         HttpSession session = req.getSession(false);
         if (session != null)
             session.invalidate();
@@ -622,26 +591,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * @since 2.475
      */
     public Filter createFilter(FilterConfig filterConfig) {
-        if (Util.isOverridden(SecurityRealm.class, getClass(), "createFilter", javax.servlet.FilterConfig.class)) {
-            return FilterWrapper.toJakartaFilter(createFilter(
-                    filterConfig != null ? FilterConfigWrapper.fromJakartaFilterConfig(filterConfig) : null));
-        } else {
-            return createFilterImpl(filterConfig);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #createFilter(FilterConfig)}
-     * @since 1.271
-     */
-    @Deprecated
-    public javax.servlet.Filter createFilter(javax.servlet.FilterConfig filterConfig) {
-        return FilterWrapper.fromJakartaFilter(createFilterImpl(
-                filterConfig != null ? FilterConfigWrapper.toJakartaFilterConfig(filterConfig) : null));
-    }
-
-    private Filter createFilterImpl(FilterConfig filterConfig) {
-        LOGGER.entering(SecurityRealm.class.getName(), "createFilterImpl");
+        LOGGER.entering(SecurityRealm.class.getName(), "createFilter");
 
         SecurityComponents sc = getSecurityComponents();
         List<Filter> filters = new ArrayList<>();
