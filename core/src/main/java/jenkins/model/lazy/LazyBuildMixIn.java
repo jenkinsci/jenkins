@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.RunIdMigrator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
@@ -146,6 +147,9 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
                 return loadBuild(dir);
             }
         });
+        RunIdMigrator runIdMigrator = asJob().runIdMigrator;
+        assert runIdMigrator != null;
+        r.runIdMigrator = runIdMigrator;
         return r;
     }
 
