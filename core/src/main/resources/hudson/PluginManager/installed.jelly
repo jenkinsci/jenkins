@@ -80,9 +80,12 @@ THE SOFTWARE.
               <th initialSortDir="down">${%Name}</th>
               <j:if test="${app.updateCenter.healthScoresAvailable}">
                 <th>
-                  ${%Health score}
-                  <a href="https://jenkins.io/redirect/plugin-health-score"><l:helpIcon /></a>
-                </th>
+                  <j:set var="healthTooltip">
+                    <a href="https://jenkins.io/redirect/plugin-health-score" target="_blank">${%Details}</a>
+                  </j:set>
+                  <span data-html-tooltip="${healthTooltip}" data-tooltip-interactive="true">
+                    ${%Health}
+                  </span></th>
               </j:if>
               <th class="jenkins-table__cell--tight">${%Enabled}</th>
               <l:isAdmin>
