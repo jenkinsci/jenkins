@@ -85,12 +85,11 @@ THE SOFTWARE.
               <th>${%Released}</th>
               <j:if test="${app.updateCenter.healthScoresAvailable}">
                 <th>
-                  <j:set var="healthTooltip">
-                    <a href="https://jenkins.io/redirect/plugin-health-score" target="_blank">${%Details}</a>
-                  </j:set>
+                  <j:set var="healthTooltip">${%healthTooltip}</j:set>
                   <span data-html-tooltip="${healthTooltip}" data-tooltip-interactive="true">
                     ${%Health}
-                  </span></th>
+                  </span>
+                </th>
               </j:if>
             </tr>
           </thead>
