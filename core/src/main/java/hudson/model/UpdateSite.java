@@ -1267,11 +1267,9 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         public IssueTracker[] issueTrackers;
 
-        @Exported
         @Restricted(NoExternalUse.class)
         public final Integer healthScore;
 
-        @Exported
         @Restricted(NoExternalUse.class)
         public final String healthScoreClass;
 
