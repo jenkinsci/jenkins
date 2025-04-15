@@ -22,6 +22,7 @@ $semantics: (
   "error": var(--red),
   "warning": var(--orange),
   "success": var(--green),
+  "skipped": var(--text-color-secondary),
   "destructive": var(--red),
   "build": var(--green),
   "danger": var(--red),
