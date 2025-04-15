@@ -149,6 +149,7 @@ public class PluginManagerInstalledGUITest {
         private InstalledPlugins() throws IOException, SAXException {
             JenkinsRule.WebClient webClient = jenkinsRule.createWebClient();
             HtmlPage installedPage = webClient.goTo("pluginManager/installed");
+            final boolean healthScoresAvailable = jenkinsRule.jenkins.getUpdateCenter().isHealthScoresAvailable();
 
             // Note for debugging... simply print installedPage to get the JenkinsRule
             // Jenkins URL and then add a long Thread.sleep here. It's useful re being
@@ -159,7 +160,7 @@ public class PluginManagerInstalledGUITest {
 
             installedPlugins = new ArrayList<>();
             for (DomElement htmlTableRow : tbody.getChildElements()) {
-                installedPlugins.add(new InstalledPlugin((HtmlTableRow) htmlTableRow));
+                installedPlugins.add(new InstalledPlugin((HtmlTableRow) htmlTableRow, healthScoresAvailable));
             }
         }
 
@@ -178,9 +179,11 @@ public class PluginManagerInstalledGUITest {
     private class InstalledPlugin {
 
         private final HtmlTableRow pluginRow;
+        private final boolean hasHealth;
 
-        InstalledPlugin(HtmlTableRow pluginRow) {
+        InstalledPlugin(HtmlTableRow pluginRow, boolean hasHealth) {
             this.pluginRow = pluginRow;
+            this.hasHealth = hasHealth;
         }
 
         public String getId() {
@@ -192,7 +195,7 @@ public class PluginManagerInstalledGUITest {
         }
 
         private HtmlInput getEnableWidget() {
-            HtmlElement input = pluginRow.getCells().get(2).getElementsByTagName("input").get(0);
+            HtmlElement input = pluginRow.getCells().get(hasHealth ? 1 : 2).getElementsByTagName("input").get(0);
             return (HtmlInput) input;
         }
 
