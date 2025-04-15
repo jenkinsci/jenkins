@@ -195,7 +195,7 @@ public class PluginManagerInstalledGUITest {
         }
 
         private HtmlInput getEnableWidget() {
-            HtmlElement input = pluginRow.getCells().get(hasHealth ? 1 : 2).getElementsByTagName("input").get(0);
+            HtmlElement input = pluginRow.getCells().get(hasHealth ? 2 : 1).getElementsByTagName("input").get(0);
             return (HtmlInput) input;
         }
 
