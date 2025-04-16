@@ -342,6 +342,15 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
+     * @return the labels to be trimmed for this node.
+     */
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    public Set<LabelAtom> drainLabelsToTrim() {
+        return new HashSet<>(getAssignedLabels());
+    }
+
+    /**
      * Return all the labels assigned dynamically to this node.
      * This calls all the LabelFinder implementations with the node converts
      * the results into Labels.
