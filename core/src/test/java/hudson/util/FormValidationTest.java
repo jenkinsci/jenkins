@@ -28,35 +28,35 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author sogabe
  */
-public class FormValidationTest {
+class FormValidationTest {
 
     @Test
-    public void testValidateRequired_OK() {
+    void testValidateRequired_OK() {
         FormValidation actual = FormValidation.validateRequired("Name");
         assertEquals(FormValidation.ok(), actual);
     }
 
     @Test
-    public void testValidateRequired_Null() {
+    void testValidateRequired_Null() {
         FormValidation actual = FormValidation.validateRequired(null);
         assertNotNull(actual);
         assertEquals(FormValidation.Kind.ERROR, actual.kind);
     }
 
     @Test
-    public void testValidateRequired_Empty() {
+    void testValidateRequired_Empty() {
         FormValidation actual = FormValidation.validateRequired("  ");
         assertNotNull(actual);
         assertEquals(FormValidation.Kind.ERROR, actual.kind);
@@ -64,17 +64,17 @@ public class FormValidationTest {
 
     // @Issue("JENKINS-7438")
     @Test
-    public void testMessage() {
+    void testMessage() {
         assertEquals("test msg", FormValidation.errorWithMarkup("test msg").getMessage());
     }
 
     @Test
-    public void aggregateZeroValidations() {
+    void aggregateZeroValidations() {
         assertEquals(FormValidation.ok(), aggregate());
     }
 
     @Test
-    public void aggregateSingleValidations() {
+    void aggregateSingleValidations() {
         FormValidation ok = FormValidation.ok();
         FormValidation warning = FormValidation.warning("");
         FormValidation error = FormValidation.error("");
@@ -85,7 +85,7 @@ public class FormValidationTest {
     }
 
     @Test
-    public void aggregateSeveralValidations() {
+    void aggregateSeveralValidations() {
         FormValidation ok = FormValidation.ok("ok_message");
         FormValidation warning = FormValidation.warning("warning_message");
         FormValidation error = FormValidation.error("error_message");
@@ -115,13 +115,13 @@ public class FormValidationTest {
     }
 
     @Test
-    public void formValidationException() {
+    void formValidationException() {
         FormValidation fv = FormValidation.error(new Exception("<html"), "Message<html");
         assertThat(fv.renderHtml(), not(containsString("<html")));
     }
 
     @Test
-    public void testUrlCheck() throws IOException {
+    void testUrlCheck() throws IOException {
         FormValidation.URLCheck urlCheck = new FormValidation.URLCheck() {
             @Override
             protected FormValidation check() throws IOException {

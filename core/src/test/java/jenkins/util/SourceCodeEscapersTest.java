@@ -1,14 +1,14 @@
 package jenkins.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SourceCodeEscapersTest {
+class SourceCodeEscapersTest {
 
     @Test
-    public void testJavaCharEscaper() {
+    void testJavaCharEscaper() {
         assertThrows(NullPointerException.class, () -> SourceCodeEscapers.javaCharEscaper()
                 .escape(null));
         assertEquals("", SourceCodeEscapers.javaCharEscaper().escape(""));

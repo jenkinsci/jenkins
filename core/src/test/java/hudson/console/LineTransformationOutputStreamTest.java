@@ -28,22 +28,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicLong;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class LineTransformationOutputStreamTest {
+final class LineTransformationOutputStreamTest {
 
-    @Test public void nl() throws Exception {
+    @Test
+    void nl() throws Exception {
         test("\n");
     }
 
-    @Test public void crnl() throws Exception {
+    @Test
+    void crnl() throws Exception {
         test("\r\n");
     }
 
-    @Test public void cr() throws Exception {
+    @Test
+    void cr() throws Exception {
         test("\r");
     }
 
@@ -51,7 +53,7 @@ public final class LineTransformationOutputStreamTest {
         var count = new AtomicLong();
         long max = 1_000_000; // to see OOME in cr without fix: 1_000_000_000
         try (var counter = new LineTransformationOutputStream() {
-            @Override protected void eol(byte[] b, int len) throws IOException {
+            @Override protected void eol(byte[] b, int len) {
                 var line = new String(b, 0, len);
                 assertThat(line, endsWith(linefeed));
                 count.addAndGet(Integer.parseInt(trimEOL(line)));
