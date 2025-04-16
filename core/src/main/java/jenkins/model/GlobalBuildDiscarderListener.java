@@ -24,13 +24,18 @@
 
 package jenkins.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.listeners.RunListener;
+import hudson.remoting.SingleLaneExecutorService;
 import hudson.util.LogTaskListener;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.Timer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -43,18 +48,31 @@ public class GlobalBuildDiscarderListener extends RunListener<Run> {
 
     private static final Logger LOGGER = Logger.getLogger(GlobalBuildDiscarderListener.class.getName());
 
+    private final ExecutorService executor = new SingleLaneExecutorService(Timer.get());
+
     @Override
     public void onFinalized(Run run) {
-        Job job = run.getParent();
-        try {
-            // Job-level build discarder execution is unconditional.
-            job.logRotate();
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, e, () -> "Failed to rotate log for " + run);
-        }
-        // Avoid calling Job.logRotate twice in case JobGlobalBuildDiscarderStrategy is configured globally.
-        BackgroundGlobalBuildDiscarder.processJob(new LogTaskListener(LOGGER, Level.FINE), job,
-                GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().stream()
-                        .filter(s -> !(s instanceof JobGlobalBuildDiscarderStrategy)));
+        executor.execute(() -> {
+            Job job = run.getParent();
+            try {
+                // Job-level build discarder execution is unconditional.
+                job.logRotate();
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, e, () -> "Failed to rotate log for " + run);
+            }
+            // Avoid calling Job.logRotate twice in case JobGlobalBuildDiscarderStrategy is configured globally.
+            BackgroundGlobalBuildDiscarder.processJob(new LogTaskListener(LOGGER, Level.FINE), job,
+                    GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().stream()
+                            .filter(s -> !(s instanceof JobGlobalBuildDiscarderStrategy)));
+        });
     }
+
+    /**
+     * Waits for all currently scheduled or running discards to complete.
+     */
+    @VisibleForTesting
+    static void await() throws Exception {
+        ExtensionList.lookupSingleton(GlobalBuildDiscarderListener.class).executor.submit(() -> {}).get();
+    }
+
 }
