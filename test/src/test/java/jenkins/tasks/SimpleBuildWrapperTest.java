@@ -24,9 +24,9 @@
 
 package jenkins.tasks;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -57,41 +57,48 @@ import hudson.tasks.Shell;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Locale;
-import org.junit.Assume;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class SimpleBuildWrapperTest {
+@WithJenkins
+class SimpleBuildWrapperTest {
 
-    @ClassRule public static BuildWatcher buildWatcher = new BuildWatcher();
-    @Rule public JenkinsRule r = new JenkinsRule();
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    private File tmp;
+    private JenkinsRule r;
 
-    @Test public void envOverride() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
+
+    @Test
+    void envOverride() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new WrapperWithEnvOverride());
         CaptureEnvironmentBuilder captureEnvironment = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(captureEnvironment);
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
         String path = captureEnvironment.getEnvVars().get("PATH");
-        assertTrue(path, path.startsWith(b.getWorkspace().child("bin").getRemote() + File.pathSeparatorChar));
+        assertTrue(path.startsWith(b.getWorkspace().child("bin").getRemote() + File.pathSeparatorChar), path);
     }
 
     public static class WrapperWithEnvOverride extends SimpleBuildWrapper {
-        @Override public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+        @Override public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) {
             assertNotNull(initialEnvironment.get("PATH"));
             context.env("PATH+STUFF", workspace.child("bin").getRemote());
         }
@@ -103,11 +110,12 @@ public class SimpleBuildWrapperTest {
         }
     }
 
-    @Test public void envOverrideExpand() throws Exception {
-        Assume.assumeFalse(Functions.isWindows());
+    @Test
+    void envOverrideExpand() throws Exception {
+        Assumptions.assumeFalse(Functions.isWindows());
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new WrapperWithEnvOverrideExpand());
-        SpecialEnvSlave slave = new SpecialEnvSlave(tmp.getRoot(), r.createComputerLauncher(null));
+        SpecialEnvSlave slave = new SpecialEnvSlave(tmp, r.createComputerLauncher(null));
         r.jenkins.addNode(slave);
         p.setAssignedNode(slave);
         JDK jdk = new JDK("test", "/opt/jdk");
@@ -124,7 +132,7 @@ public class SimpleBuildWrapperTest {
     }
 
     public static class WrapperWithEnvOverrideExpand extends SimpleBuildWrapper {
-        @Override public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+        @Override public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) {
             assertEquals("/opt/jdk/bin:/usr/bin:/bin", initialEnvironment.get("PATH"));
             assertEquals("/home/jenkins", initialEnvironment.get("HOME"));
             context.env("EXTRA", "${HOME}/extra");
@@ -161,7 +169,8 @@ public class SimpleBuildWrapperTest {
         }
     }
 
-    @Test public void disposer() throws Exception {
+    @Test
+    void disposer() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new WrapperWithDisposer());
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
@@ -170,15 +179,16 @@ public class SimpleBuildWrapperTest {
     }
 
     public static class WrapperWithDisposer extends SimpleBuildWrapper {
-        @Override public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+        @Override public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) {
             context.setDisposer(new DisposerImpl());
         }
 
         private static final class DisposerImpl extends Disposer {
+            @Serial
             private static final long serialVersionUID = 1;
             private int tearDownCount = 0;
 
-            @Override public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+            @Override public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
                 listener.getLogger().println("ran DisposerImpl #" + ++tearDownCount);
             }
         }
@@ -190,7 +200,8 @@ public class SimpleBuildWrapperTest {
         }
     }
 
-    @Test public void disposerForPreCheckoutWrapper() throws Exception {
+    @Test
+    void disposerForPreCheckoutWrapper() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new PreCheckoutWrapperWithDisposer());
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
@@ -199,7 +210,8 @@ public class SimpleBuildWrapperTest {
     }
 
     @Issue("JENKINS-43889")
-    @Test public void disposerForPreCheckoutWrapperWithScmError() throws Exception {
+    @Test
+    void disposerForPreCheckoutWrapperWithScmError() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setScm(new FailingSCM());
         p.getBuildWrappersList().add(new PreCheckoutWrapperWithDisposer());
@@ -223,7 +235,7 @@ public class SimpleBuildWrapperTest {
 
     public static class FailingSCM extends SCM {
         @Override
-        public void checkout(Run<?, ?> build, Launcher launcher, FilePath workspace, TaskListener listener, File changelogFile, SCMRevisionState baseline) throws IOException, InterruptedException {
+        public void checkout(Run<?, ?> build, Launcher launcher, FilePath workspace, TaskListener listener, File changelogFile, SCMRevisionState baseline) {
             throw new RuntimeException("SCM failed");
         }
 
@@ -233,7 +245,8 @@ public class SimpleBuildWrapperTest {
         }
     }
 
-    @Test public void failedJobWithInterruptedDisposer() throws Exception {
+    @Test
+    void failedJobWithInterruptedDisposer() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new FailureBuilder());
         p.getBuildWrappersList().add(new WrapperWithDisposer());
@@ -245,14 +258,15 @@ public class SimpleBuildWrapperTest {
     }
 
     public static class InterruptedDisposerWrapper extends SimpleBuildWrapper {
-        @Override public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+        @Override public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) {
             context.setDisposer(new InterruptedDisposerImpl());
         }
 
         private static final class InterruptedDisposerImpl extends Disposer {
+            @Serial
             private static final long serialVersionUID = 1;
 
-            @Override public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+            @Override public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException {
                 listener.getLogger().println("tearDown InterruptedDisposerImpl");
                 throw new InterruptedException("interrupted in InterruptedDisposerImpl");
             }
@@ -266,11 +280,12 @@ public class SimpleBuildWrapperTest {
     }
 
     @Issue("JENKINS-27392")
-    @Test public void loggerDecorator() throws Exception {
+    @Test
+    void loggerDecorator() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new WrapperWithLogger());
         p.getBuildersList().add(new TestBuilder() {
-            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger().println("sending a message");
                 return true;
             }
@@ -279,17 +294,18 @@ public class SimpleBuildWrapperTest {
     }
 
     public static class WrapperWithLogger extends SimpleBuildWrapper {
-        @Override public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {}
+        @Override public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) {}
 
         @Override public ConsoleLogFilter createLoggerDecorator(Run<?, ?> build) {
             return new UpcaseFilter();
         }
 
         private static class UpcaseFilter extends ConsoleLogFilter implements Serializable {
+            @Serial
             private static final long serialVersionUID = 1;
 
             @SuppressWarnings("rawtypes") // inherited
-            @Override public OutputStream decorateLogger(AbstractBuild _ignore, OutputStream logger) throws IOException, InterruptedException {
+            @Override public OutputStream decorateLogger(AbstractBuild _ignore, OutputStream logger) {
                 return new LineTransformationOutputStream.Delegating(logger) {
                     @Override protected void eol(byte[] b, int len) throws IOException {
                         out.write(new String(b, 0, len, Charset.defaultCharset()).toUpperCase(Locale.ROOT).getBytes(Charset.defaultCharset()));

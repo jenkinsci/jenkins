@@ -24,37 +24,44 @@
 
 package jenkins.model;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class BuiltInNodeMigrationPropertyTest {
+@WithJenkins
+class BuiltInNodeMigrationPropertyTest {
     public static final String KEY = Jenkins.class.getName() + ".nodeNameAndSelfLabelOverride";
     public static final String OVERRIDE_VALUE = "foo";
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
 
-    @BeforeClass
-    public static void setProperty() {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    @BeforeAll
+    static void setProperty() {
         System.setProperty(KEY, OVERRIDE_VALUE);
     }
 
-    @AfterClass
-    public static void clearProperty() {
+    @AfterAll
+    static void clearProperty() {
         System.clearProperty(KEY);
     }
 
     @Test
-    public void overrideAppliesToNewInstance() throws Exception {
+    void overrideAppliesToNewInstance() throws Exception {
         BuiltInNodeMigrationTest.assertStatus(j, true, false, OVERRIDE_VALUE, OVERRIDE_VALUE);
     }
 
     @Test
     @LocalData
-    public void overrideAppliesToUnmigratedInstance() throws Exception {
+    void overrideAppliesToUnmigratedInstance() throws Exception {
         BuiltInNodeMigrationTest.assertStatus(j, false, true, OVERRIDE_VALUE, OVERRIDE_VALUE);
         j.jenkins.performRenameMigration();
         BuiltInNodeMigrationTest.assertStatus(j, true, false, OVERRIDE_VALUE, OVERRIDE_VALUE);
@@ -62,7 +69,7 @@ public class BuiltInNodeMigrationPropertyTest {
 
     @Test
     @LocalData
-    public void overrideAppliesToMigratedInstance() throws Exception {
+    void overrideAppliesToMigratedInstance() throws Exception {
         BuiltInNodeMigrationTest.assertStatus(j, true, false, OVERRIDE_VALUE, OVERRIDE_VALUE);
     }
 }

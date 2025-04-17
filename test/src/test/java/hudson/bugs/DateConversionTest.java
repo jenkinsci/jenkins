@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Email;
 
 /**
@@ -38,12 +38,12 @@ import org.jvnet.hudson.test.Email;
  * @author Kohsuke Kawaguchi
  */
 @Email("http://www.nabble.com/Date-conversion-problem-causes-IOException-reading-fingerprint-file.-td19201137.html")
-public class DateConversionTest {
+class DateConversionTest {
     /**
      * Put it under a high-concurrency to make sure nothing bad happens.
      */
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         final DateConverter dc = new DateConverter();
         ExecutorService es = Executors.newFixedThreadPool(10);
 

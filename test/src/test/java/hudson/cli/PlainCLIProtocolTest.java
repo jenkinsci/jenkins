@@ -4,25 +4,23 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 
-import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.logging.Level;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 
-public class PlainCLIProtocolTest {
+class PlainCLIProtocolTest {
 
-    @Rule public LoggerRule logger = new LoggerRule().record(PlainCLIProtocol.class, Level.FINE).capture(50);
+    private final LogRecorder logger = new LogRecorder().record(PlainCLIProtocol.class, Level.FINE).capture(50);
 
     @Test
-    public void streamCorruption() throws Exception {
+    void streamCorruption() throws Exception {
         final PipedOutputStream upload = new PipedOutputStream();
         final PipedOutputStream download = new PipedOutputStream();
 
         class Server extends PlainCLIProtocol.ServerSide {
-            Server() throws IOException {
+            Server() {
                 super(new PlainCLIProtocol.FramedOutput(download));
             }
 
@@ -39,10 +37,10 @@ public class PlainCLIProtocolTest {
             protected synchronized void onStart() {}
 
             @Override
-            protected void onStdin(byte[] chunk) throws IOException {}
+            protected void onStdin(byte[] chunk) {}
 
             @Override
-            protected void onEndStdin() throws IOException {}
+            protected void onEndStdin() {}
 
             @Override
             protected void handleClose() {}

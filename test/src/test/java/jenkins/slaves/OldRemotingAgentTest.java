@@ -53,7 +53,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
@@ -163,7 +162,7 @@ public class OldRemotingAgentTest {
     private class JenkinsRuleWithOldAgent extends JenkinsRule {
 
         @Override
-        public ComputerLauncher createComputerLauncher(EnvVars env) throws URISyntaxException, IOException {
+        public ComputerLauncher createComputerLauncher(EnvVars env) {
 
             // EnvVars are ignored, simple Command Launcher does not offer this API in public
             int sz = this.jenkins.getNodes().size();

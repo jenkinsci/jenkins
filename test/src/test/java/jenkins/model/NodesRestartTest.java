@@ -9,6 +9,7 @@ import hudson.model.Descriptor;
 import hudson.model.Slave;
 import hudson.slaves.ComputerLauncher;
 import java.io.IOException;
+import java.io.Serial;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsSessionRule;
@@ -23,6 +24,7 @@ public class NodesRestartTest {
             super(name, remoteFS, launcher);
         }
 
+        @Serial
         @Override
         protected Object readResolve() {
             return this;

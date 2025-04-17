@@ -83,7 +83,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
@@ -590,11 +589,11 @@ public class PluginManagerTest {
 
     @Test @Issue("JENKINS-64840")
     @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi", "depender-0.0.2.hpi"})
-    public void getPluginsSortedByTitle() throws Exception {
+    public void getPluginsSortedByTitle() {
         List<String> installedPlugins = r.jenkins.getPluginManager().getPluginsSortedByTitle()
                 .stream()
                 .map(PluginWrapper::getDisplayName)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
         assertThat(installedPlugins, containsInRelativeOrder("dependee", "depender", "mandatory-depender"));
     }

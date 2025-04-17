@@ -40,7 +40,6 @@ import hudson.model.FreeStyleProject;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.slaves.DumbSlave;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
@@ -164,7 +163,7 @@ public class Security637Test {
         }
 
         @Override
-        public URL call() throws Exception {
+        public URL call() {
             return url;
         }
     }
@@ -218,7 +217,7 @@ public class Security637Test {
         }
 
         @Override
-        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             return true;
         }
 

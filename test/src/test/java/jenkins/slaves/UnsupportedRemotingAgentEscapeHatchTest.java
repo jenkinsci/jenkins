@@ -11,8 +11,6 @@ import hudson.slaves.SlaveComputer;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -64,7 +62,7 @@ public class UnsupportedRemotingAgentEscapeHatchTest {
 
     private class JenkinsRuleWithUnsupportedAgent extends JenkinsRule {
         @Override
-        public ComputerLauncher createComputerLauncher(EnvVars env) throws URISyntaxException, IOException {
+        public ComputerLauncher createComputerLauncher(EnvVars env) {
             int sz = this.jenkins.getNodes().size();
             return new SimpleCommandLauncher(
                     String.format(

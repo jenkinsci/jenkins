@@ -10,7 +10,6 @@ import hudson.model.Slave;
 import hudson.slaves.ComputerLauncher;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -50,7 +49,7 @@ public class UnsupportedRemotingAgentTest {
 
     private class JenkinsRuleWithUnsupportedAgent extends JenkinsRule {
         @Override
-        public ComputerLauncher createComputerLauncher(EnvVars env) throws URISyntaxException, IOException {
+        public ComputerLauncher createComputerLauncher(EnvVars env) {
             int sz = this.jenkins.getNodes().size();
             return new SimpleCommandLauncher(
                     String.format(

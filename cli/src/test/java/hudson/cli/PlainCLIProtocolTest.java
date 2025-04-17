@@ -34,17 +34,17 @@ import java.io.PipedOutputStream;
 import java.nio.charset.Charset;
 import org.junit.jupiter.api.Test;
 
-public class PlainCLIProtocolTest {
+class PlainCLIProtocolTest {
 
     @Test
-    public void ignoreUnknownOperations() throws Exception {
+    void ignoreUnknownOperations() throws Exception {
         final PipedOutputStream upload = new PipedOutputStream();
         final PipedOutputStream download = new PipedOutputStream();
         class Client extends PlainCLIProtocol.ClientSide {
             int code = -1;
             final ByteArrayOutputStream stdout = new ByteArrayOutputStream();
 
-            Client() throws IOException {
+            Client() {
                 super(new PlainCLIProtocol.FramedOutput(upload));
             }
 
@@ -60,7 +60,7 @@ public class PlainCLIProtocolTest {
             }
 
             @Override
-            protected void onStderr(byte[] chunk) throws IOException {}
+            protected void onStderr(byte[] chunk) {}
 
             @Override
             protected void handleClose() {}
@@ -84,7 +84,7 @@ public class PlainCLIProtocolTest {
             boolean started;
             final ByteArrayOutputStream stdin = new ByteArrayOutputStream();
 
-            Server() throws IOException {
+            Server() {
                 super(new PlainCLIProtocol.FramedOutput(download));
             }
 
@@ -118,7 +118,7 @@ public class PlainCLIProtocolTest {
             }
 
             @Override
-            protected void onEndStdin() throws IOException {}
+            protected void onEndStdin() {}
 
             @Override
             protected void handleClose() {}

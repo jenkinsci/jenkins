@@ -1,5 +1,6 @@
 package jenkins.security;
 
+import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
@@ -98,9 +99,10 @@ public abstract class ConfidentialStore {
         return cs;
     }
 
-    static final class Mock extends ConfidentialStore {
+    @VisibleForTesting
+    public static final class Mock extends ConfidentialStore {
 
-        static final Mock INSTANCE = new Mock();
+        public static final Mock INSTANCE = new Mock();
 
         private final SecureRandom rand;
 
@@ -116,7 +118,7 @@ public abstract class ConfidentialStore {
             rand.setSeed(new byte[] {1, 2, 3, 4});
         }
 
-        void clear() {
+        public void clear() {
             data.clear();
         }
 

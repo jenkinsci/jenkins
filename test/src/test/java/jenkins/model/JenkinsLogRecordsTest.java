@@ -29,7 +29,7 @@ public class JenkinsLogRecordsTest {
         rr.then(JenkinsLogRecordsTest::_logRecordsArePresentOnController);
     }
 
-    private static void _logRecordsArePresentOnController(JenkinsRule r) throws Throwable {
+    private static void _logRecordsArePresentOnController(JenkinsRule r) {
         List<LogRecord> logRecords = Jenkins.logRecords;
         assertThat(logRecords, not(empty()));
         assertThat("Records are displayed in reverse order",

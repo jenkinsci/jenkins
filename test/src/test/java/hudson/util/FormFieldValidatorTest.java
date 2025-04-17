@@ -28,6 +28,9 @@ package hudson.util;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
@@ -41,12 +44,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.WebResponseListener;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -55,14 +58,19 @@ import org.xml.sax.SAXException;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class FormFieldValidatorTest {
+@WithJenkins
+class FormFieldValidatorTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-2771")
-    public void configure() throws Exception {
+    void configure() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         j.createWebClient().getPage(p, "configure");
     }
@@ -87,7 +95,7 @@ public class FormFieldValidatorTest {
 
     @Test
     @Issue("JENKINS-15604")
-    public void testCodeMirrorBlur() throws IOException, SAXException {
+    void testCodeMirrorBlur() throws IOException, SAXException {
         final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
         freeStyleProject.getBuildersList().add(new CodeMirrorStep(""));
         freeStyleProject.save();
@@ -97,7 +105,7 @@ public class FormFieldValidatorTest {
         // get initial value
         final ScriptResult scriptResult1 = page.executeJavaScript("document.querySelectorAll('.validation-error-area--visible .ok')[1].textContent");
         final long javaScriptResult1 = Long.parseLong((String) scriptResult1.getJavaScriptResult());
-        Assert.assertEquals(System.currentTimeMillis(), javaScriptResult1, 5000); // value is expected to be roughly "now"
+        assertEquals(System.currentTimeMillis(), javaScriptResult1, 5000); // value is expected to be roughly "now"
 
         // focus then blur to update
         page.executeJavaScript("document.querySelector('.CodeMirror textarea').dispatchEvent(new Event(\"focus\"))");
@@ -107,15 +115,16 @@ public class FormFieldValidatorTest {
         // get updated value
         final ScriptResult scriptResult2 = page.executeJavaScript("document.querySelectorAll('.validation-error-area--visible .ok')[1].textContent");
         final long javaScriptResult2 = Long.parseLong((String) scriptResult2.getJavaScriptResult());
-        Assert.assertEquals(System.currentTimeMillis(), javaScriptResult2, 5000); // value is expected to be roughly "now"
+        assertEquals(System.currentTimeMillis(), javaScriptResult2, 5000); // value is expected to be roughly "now"
 
         // value should have changed
-        Assert.assertNotEquals(javaScriptResult1, javaScriptResult2);
+        assertNotEquals(javaScriptResult1, javaScriptResult2);
     }
 
     public static class CodeMirrorStep extends Builder {
         private String command;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public CodeMirrorStep(String command) {
             this.command = command;
@@ -139,7 +148,7 @@ public class FormFieldValidatorTest {
      */
     @Test
     @Issue("JENKINS-3382")
-    public void negative() throws Exception {
+    void negative() throws Exception {
         BrokenFormValidatorBuilder.DescriptorImpl d = new BrokenFormValidatorBuilder.DescriptorImpl();
         Recorder.all().add(d);
         try {
@@ -154,7 +163,7 @@ public class FormFieldValidatorTest {
 
             statusListener.assertHasResponses();
             String contentAsString = statusListener.getResponses().get(0).getContentAsString();
-            Assert.assertTrue(contentAsString.contains("doCheckXyz is broken"));
+            assertTrue(contentAsString.contains("doCheckXyz is broken"));
         } finally {
             Publisher.all().remove(d);
         }
@@ -162,7 +171,7 @@ public class FormFieldValidatorTest {
 
     @Issue("JENKINS-73404")
     @Test
-    public void testValidationforComponents() throws Exception {
+    void testValidationforComponents() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new ValidatingDescribable());
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
@@ -187,6 +196,7 @@ public class FormFieldValidatorTest {
         private Secret emptySecretTextarea;
         private Secret populatedSecretTextarea = Secret.fromString("sensitive!");
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public ValidatingDescribable() {
         }

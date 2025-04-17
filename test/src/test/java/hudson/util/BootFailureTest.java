@@ -11,7 +11,6 @@ import hudson.model.listeners.ItemListener;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -148,7 +147,7 @@ public class BootFailureTest {
         assertFalse(BootFailure.getBootFailureFile(home).exists());
     }
 
-    private static int bootFailures(File home) throws IOException {
+    private static int bootFailures(File home) {
         return new BootFailure() { }.loadAttempts(home).size();
     }
 
