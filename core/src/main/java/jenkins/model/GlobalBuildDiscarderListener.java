@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.Timer;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
@@ -71,7 +72,8 @@ public class GlobalBuildDiscarderListener extends RunListener<Run> {
      * Waits for all currently scheduled or running discards to complete.
      */
     @VisibleForTesting
-    static void await() throws Exception {
+    @Restricted(DoNotUse.class)
+    public static void await() throws Exception {
         ExtensionList.lookupSingleton(GlobalBuildDiscarderListener.class).executor.submit(() -> {}).get();
     }
 
