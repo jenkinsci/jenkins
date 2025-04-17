@@ -145,10 +145,10 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         }
 
         @Override
-        protected void binary(byte[] payload, int offset, int len) {
-            LOGGER.finest(() -> "reading block of length " + len + " from " + agent);
+        protected void binary(ByteBuffer data) {
+            LOGGER.finest(() -> "reading block of length " + data.remaining() + " from " + agent);
             try {
-                transport.receive(ByteBuffer.wrap(payload, offset, len));
+                transport.receive(data);
             } catch (IOException | InterruptedException e) {
                 error(e);
             }
