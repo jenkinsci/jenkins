@@ -80,7 +80,7 @@ public abstract class Header implements ExtensionPoint {
         return Jenkins.get()
                 .getActions()
                 .stream()
-                .filter(e -> e.getIconFileName() != null)
+                .filter(e -> e.getIconFileName() != null || (e instanceof IconSpec is && is.getIconClassName() != null))
                 .sorted(Comparator.comparingDouble(
                         a -> rootActionsOrdinal.getOrDefault(a.getClass().getName(), Double.MAX_VALUE)
                 ).reversed())
