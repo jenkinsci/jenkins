@@ -27,6 +27,7 @@
       </j:if>
 
       <j:set var="interactive" value="${jumplist.length() gt 0}" />
+      <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"/>
       <x:element name="${action.urlName == null ? 'button' : 'a'}">
         <x:attribute name="data-dropdown">${interactive}</x:attribute>
         <x:attribute name="id">root-action-${action.class.simpleName}</x:attribute>
