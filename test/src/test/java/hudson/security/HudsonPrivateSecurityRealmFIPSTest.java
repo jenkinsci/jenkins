@@ -143,7 +143,7 @@ public class HudsonPrivateSecurityRealmFIPSTest {
 
     }
 
-    private static void userCreationWithJBCryptPasswordsStep(JenkinsRule j) throws Exception {
+    private static void userCreationWithJBCryptPasswordsStep(JenkinsRule j) {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
 
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
@@ -174,9 +174,7 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         password2.setText("mockPassword");
 
         HtmlForm form = configurePage.getFormByName("config");
-        assertThrows(FailingHttpStatusCodeException.class, () -> {
-            j.submit(form);
-        });
+        assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(form));
     }
 
     @Test
@@ -202,9 +200,7 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         password2.setText("14charPa$$word");
 
         HtmlForm form = configurePage.getFormByName("config");
-        assertThrows(FailingHttpStatusCodeException.class, () -> {
-            j.submit(form);
-        });
+        assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(form));
     }
 
     @Test

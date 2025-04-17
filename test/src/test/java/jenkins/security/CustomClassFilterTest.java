@@ -67,7 +67,7 @@ public class CustomClassFilterTest {
 
     @WithPlugin("custom-class-filter.jpi")
     @Test
-    public void smokes() throws Exception {
+    public void smokes() {
         assertBlacklisted("enabled via system property", SimpleBindings.class, false);
         assertBlacklisted("enabled via plugin", ScriptException.class, false);
         assertBlacklisted("disabled by ClassFilter.STANDARD", ScriptEngineManager.class, true);

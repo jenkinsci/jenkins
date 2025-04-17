@@ -2,9 +2,9 @@ package hudson.console;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.FilePath;
 import hudson.Launcher;
@@ -23,7 +23,6 @@ import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMRevisionState;
 import hudson.triggers.SCMTrigger;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,27 +34,35 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNodeUtil;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
+@WithJenkins
 public class ConsoleAnnotatorTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     /**
      * Let the build complete, and see if stateless {@link ConsoleAnnotator} annotations happen as expected.
      */
     @Issue("JENKINS-6031")
-    @Test public void completedStatelessLogAnnotation() throws Exception {
+    @Test
+    void completedStatelessLogAnnotation() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -81,7 +88,7 @@ public class ConsoleAnnotatorTest {
 
         // there should be two 'ooo's
         String xml = rsp.asXml();
-        assertEquals(xml, 3, xml.split("ooo").length);
+        assertEquals(3, xml.split("ooo").length, xml);
     }
 
     /**
@@ -109,7 +116,8 @@ public class ConsoleAnnotatorTest {
     }
 
     @Issue("JENKINS-6034")
-    @Test public void consoleAnnotationFilterOut() throws Exception {
+    @Test
+    void consoleAnnotationFilterOut() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -168,7 +176,8 @@ public class ConsoleAnnotatorTest {
      * Tests the progressive output by making sure that the state of {@link ConsoleAnnotator}s are
      * maintained across different progressiveLog calls.
      */
-    @Test public void progressiveOutput() throws Exception {
+    @Test
+    void progressiveOutput() throws Exception {
         final SequenceLock lock = new SequenceLock();
         JenkinsRule.WebClient wc = r.createWebClient();
         FreeStyleProject p = r.createFreeStyleProject();
@@ -230,7 +239,8 @@ public class ConsoleAnnotatorTest {
     /**
      * Place {@link ConsoleNote}s and make sure it works.
      */
-    @Test public void consoleAnnotation() throws Exception {
+    @Test
+    void consoleAnnotation() throws Exception {
         final SequenceLock lock = new SequenceLock();
         JenkinsRule.WebClient wc = r.createWebClient();
         FreeStyleProject p = r.createFreeStyleProject();
@@ -294,7 +304,8 @@ public class ConsoleAnnotatorTest {
     /**
      * script.js defined in the annotator needs to be incorporated into the console page.
      */
-    @Test public void scriptInclusion() throws Exception {
+    @Test
+    void scriptInclusion() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
 
@@ -333,7 +344,8 @@ public class ConsoleAnnotatorTest {
      * Makes sure '<', '&', are escaped.
      */
     @Issue("JENKINS-5952")
-    @Test public void escape() throws Exception {
+    @Test
+    void escape() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -355,7 +367,8 @@ public class ConsoleAnnotatorTest {
     /**
      * Makes sure that annotations in the polling output is handled correctly.
      */
-    @Test public void pollingOutput() throws Exception {
+    @Test
+    void pollingOutput() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setScm(new PollingSCM());
         SCMTrigger t = new SCMTrigger("@daily");
@@ -369,11 +382,11 @@ public class ConsoleAnnotatorTest {
 
         HtmlPage log = r.createWebClient().getPage(p, "scmPollLog");
         String text = log.asNormalizedText();
-        assertTrue(text, text.contains("$$$hello from polling"));
+        assertTrue(text.contains("$$$hello from polling"), text);
     }
 
     public static class PollingSCM extends SingleFileSCM {
-        public PollingSCM() throws UnsupportedEncodingException {
+        public PollingSCM() {
             super("abc", "def");
         }
 

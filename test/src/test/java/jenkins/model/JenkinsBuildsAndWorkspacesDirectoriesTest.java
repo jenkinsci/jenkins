@@ -72,7 +72,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
     @Issue("JENKINS-53284")
     @Test
-    public void changeWorkspacesDirLog() throws Exception {
+    public void changeWorkspacesDirLog() {
         loggerRule.record(Jenkins.class, Level.WARNING)
                 .record(Jenkins.class, Level.INFO).capture(1000);
 
@@ -167,7 +167,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
     @Issue("JENKINS-50164")
     @Test
-    public void buildsDir() throws Exception {
+    public void buildsDir() {
         loggerRule.record(Jenkins.class, Level.WARNING)
                 .record(Jenkins.class, Level.INFO)
                 .capture(100);
@@ -193,7 +193,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
     @Issue("JENKINS-50164")
     @Test
-    public void workspacesDir() throws Exception {
+    public void workspacesDir() {
         loggerRule.record(Jenkins.class, Level.WARNING)
                 .record(Jenkins.class, Level.INFO)
                 .capture(1000);
@@ -283,7 +283,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
     @Test
     @Issue("JENKINS-17138")
-    public void externalBuildDirectoryRenameDelete() throws Exception {
+    public void externalBuildDirectoryRenameDelete() {
 
         // Hack to get String builds usable in lambda below
         final List<String> builds = new ArrayList<>();

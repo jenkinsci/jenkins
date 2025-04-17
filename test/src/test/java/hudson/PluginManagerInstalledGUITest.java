@@ -175,7 +175,7 @@ public class PluginManagerInstalledGUITest {
 
     }
 
-    private class InstalledPlugin {
+    private static class InstalledPlugin {
 
         private final HtmlTableRow pluginRow;
 

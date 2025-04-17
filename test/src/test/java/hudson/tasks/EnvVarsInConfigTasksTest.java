@@ -9,33 +9,25 @@ import hudson.model.Result;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Maven.MavenInstallation;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class EnvVarsInConfigTasksTest {
+@WithJenkins
+class EnvVarsInConfigTasksTest {
     public static final String DUMMY_LOCATION_VARNAME = "TOOLS_DUMMY_LOCATION";
 
     private DumbSlave agentEnv = null;
     private DumbSlave agentRegular = null;
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
+    private JenkinsRule j;
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
         JDK defaultJDK = j.jenkins.getJDK(null);
         JDK varJDK = new JDK("varJDK", withVariable(defaultJDK.getHome()));
         j.jenkins.getJDKs().add(varJDK);
@@ -58,7 +50,7 @@ public class EnvVarsInConfigTasksTest {
     }
 
     @Test
-    public void testFreeStyleShellOnAgent() throws Exception {
+    void testFreeStyleShellOnAgent() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         if (Functions.isWindows()) {
             project.getBuildersList().add(new BatchFile("echo %JAVA_HOME%"));
@@ -86,7 +78,7 @@ public class EnvVarsInConfigTasksTest {
     }
 
     @Test
-    public void testFreeStyleMavenOnAgent() throws Exception {
+    void testFreeStyleMavenOnAgent() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setJDK(j.jenkins.getJDK("varJDK"));
         project.setScm(new ExtractResourceSCM(getClass().getResource(

@@ -27,10 +27,10 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -56,22 +56,30 @@ import jenkins.model.Jenkins;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class ItemGroupMixInTest {
+@WithJenkins
+class ItemGroupMixInTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-20951")
     @LocalData
-    @Test public void xmlFileReadCannotResolveClassException() {
+    @Test
+    void xmlFileReadCannotResolveClassException() {
         MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);
         assertNotNull(d);
         Collection<TopLevelItem> items = d.getItems();
@@ -79,15 +87,15 @@ public class ItemGroupMixInTest {
         assertEquals("valid", items.iterator().next().getName());
     }
 
-  /**
-   * This test unit makes sure that if part of the config.xml file is
-   * deleted it will still load everything else inside the folder.
-   * The test unit expects an IOException is thrown, and the one failed
-   * job fails to load.
-   */
-  @Issue("JENKINS-22811")
-  @Test
-  public void xmlFileFailsToLoad() throws Exception {
+    /**
+     * This test unit makes sure that if part of the config.xml file is
+     * deleted it will still load everything else inside the folder.
+     * The test unit expects an IOException is thrown, and the one failed
+     * job fails to load.
+     */
+    @Issue("JENKINS-22811")
+    @Test
+    void xmlFileFailsToLoad() throws Exception {
     MockFolder folder = r.createFolder("folder");
     assertNotNull(folder);
 
@@ -110,20 +118,20 @@ public class ItemGroupMixInTest {
     r.jenkins.reload();
 
     // Folder
-    assertNotNull("Folder failed to load.", r.jenkins.getItemByFullName("folder"));
-    assertNull("Job should have failed to load.", r.jenkins.getItemByFullName("folder/job1"));
-    assertNotNull("Other job in folder should have loaded.", r.jenkins.getItemByFullName("folder/job2"));
-    assertNotNull("Other job in folder should have loaded.", r.jenkins.getItemByFullName("folder/job3"));
+    assertNotNull(r.jenkins.getItemByFullName("folder"), "Folder failed to load.");
+    assertNull(r.jenkins.getItemByFullName("folder/job1"), "Job should have failed to load.");
+    assertNotNull(r.jenkins.getItemByFullName("folder/job2"), "Other job in folder should have loaded.");
+    assertNotNull(r.jenkins.getItemByFullName("folder/job3"), "Other job in folder should have loaded.");
   }
 
-  /**
-   * This test unit makes sure that jobs that contain bad get*Action methods will continue to
-   * load the project.
-   */
-  @LocalData
-  @Issue("JENKINS-22811")
-  @Test
-  public void xmlFileReadExceptionOnLoad() {
+    /**
+     * This test unit makes sure that jobs that contain bad get*Action methods will continue to
+     * load the project.
+     */
+    @LocalData
+    @Issue("JENKINS-22811")
+    @Test
+    void xmlFileReadExceptionOnLoad() {
     MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);
     assertNotNull(d);
     Collection<TopLevelItem> items = d.getItems();
@@ -195,33 +203,35 @@ public class ItemGroupMixInTest {
     }
   }
 
-    @Test public void createProjectFromXMLShouldNoCreateEntities() throws IOException {
+    @Test
+    void createProjectFromXMLShouldNoCreateEntities() throws IOException {
 
-        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-                "<!DOCTYPE project[\n" +
-                "  <!ENTITY foo SYSTEM \"file:///\">\n" +
-                "]>\n" +
-                "<project>\n" +
-                "  <actions/>\n" +
-                "  <description>&foo;</description>\n" +
-                "  <keepDependencies>false</keepDependencies>\n" +
-                "  <properties/>\n" +
-                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
-                "  <canRoam>true</canRoam>\n" +
-                "  <triggers/>\n" +
-                "  <builders/>\n" +
-                "  <publishers/>\n" +
-                "  <buildWrappers/>\n" +
-                "</project>";
+        final String xml = """
+                <?xml version='1.0' encoding='UTF-8'?>
+                <!DOCTYPE project[
+                  <!ENTITY foo SYSTEM "file:///">
+                ]>
+                <project>
+                  <actions/>
+                  <description>&foo;</description>
+                  <keepDependencies>false</keepDependencies>
+                  <properties/>
+                  <scm class="hudson.scm.NullSCM"/>
+                  <canRoam>true</canRoam>
+                  <triggers/>
+                  <builders/>
+                  <publishers/>
+                  <buildWrappers/>
+                </project>""";
 
         Item foo = r.jenkins.createProjectFromXML("foo", new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
         // if no exception then JAXP is swallowing these - so there should be no entity in the description.
         assertThat(Items.getConfigFile(foo).asString(), containsString("<description/>"));
     }
 
-  @Issue("JENKINS-61956")
-  @Test
-  public void copy_checkGoodName() throws IOException {
+    @Issue("JENKINS-61956")
+    @Test
+    void copy_checkGoodName() throws IOException {
     final String goodName = "calvin-jenkins";
     final String badName = "calvin@jenkins";
 
@@ -231,44 +241,45 @@ public class ItemGroupMixInTest {
     assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 
-  @Issue("JENKINS-61956")
-  @Test
-  public void createProject_checkGoodName() {
+    @Issue("JENKINS-61956")
+    @Test
+    void createProject_checkGoodName() {
     final String badName = "calvin@jenkins";
 
     Failure exception = assertThrows(Failure.class, () -> r.jenkins.createProject(MockFolder.class, badName));
     assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 
-  @Issue("JENKINS-61956")
-  @Test
-  public void createProjectFromXML_checkGoodName() {
+    @Issue("JENKINS-61956")
+    @Test
+    void createProjectFromXML_checkGoodName() {
     final String badName = "calvin@jenkins";
 
-    final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-            "<!DOCTYPE project[\n" +
-            "  <!ENTITY foo SYSTEM \"file:///\">\n" +
-            "]>\n" +
-            "<project>\n" +
-            "  <actions/>\n" +
-            "  <description>&foo;</description>\n" +
-            "  <keepDependencies>false</keepDependencies>\n" +
-            "  <properties/>\n" +
-            "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
-            "  <canRoam>true</canRoam>\n" +
-            "  <triggers/>\n" +
-            "  <builders/>\n" +
-            "  <publishers/>\n" +
-            "  <buildWrappers/>\n" +
-            "</project>";
+    final String xml = """
+            <?xml version='1.0' encoding='UTF-8'?>
+            <!DOCTYPE project[
+              <!ENTITY foo SYSTEM "file:///">
+            ]>
+            <project>
+              <actions/>
+              <description>&foo;</description>
+              <keepDependencies>false</keepDependencies>
+              <properties/>
+              <scm class="hudson.scm.NullSCM"/>
+              <canRoam>true</canRoam>
+              <triggers/>
+              <builders/>
+              <publishers/>
+              <buildWrappers/>
+            </project>""";
 
     Failure exception = assertThrows(Failure.class, () -> r.jenkins.createProjectFromXML(badName, new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
     assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 
-  @Issue("SECURITY-1923")
-  @Test
-  public void doCreateItemWithValidXmlAndBadField() throws Exception {
+    @Issue("SECURITY-1923")
+    @Test
+    void doCreateItemWithValidXmlAndBadField() throws Exception {
     final String CREATOR = "create_user";
 
     r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
@@ -299,13 +310,15 @@ public class ItemGroupMixInTest {
     boolean createUser = false;
     User badUser = User.getById("foo", createUser);
 
-    assertNull("Should not have created user.", badUser);
+    assertNull(badUser, "Should not have created user.");
   }
 
   private static final String VALID_XML_BAD_FIELD_USER_XML =
-          "<hudson.model.User>\n" +
-                  "  <id>foo</id>\n" +
-                  "  <fullName>Foo User</fullName>\n" +
-                  "  <badField/>\n" +
-                  "</hudson.model.User>\n";
+          """
+                  <hudson.model.User>
+                    <id>foo</id>
+                    <fullName>Foo User</fullName>
+                    <badField/>
+                  </hudson.model.User>
+                  """;
 }

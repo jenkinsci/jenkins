@@ -56,7 +56,7 @@ public final class DoubleLaunchCheckerTest {
         mainController.runRemotely(DoubleLaunchCheckerTest::waitForWarning);
     }
 
-    private static void waitForWarning(JenkinsRule r) throws Throwable {
+    private static void waitForWarning(JenkinsRule r) {
         await().atMost(Duration.ofMinutes(3)).until(ExtensionList.lookupSingleton(DoubleLaunchChecker.class)::isActivated);
     }
 

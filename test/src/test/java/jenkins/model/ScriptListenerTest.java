@@ -22,22 +22,27 @@ import jenkins.util.DefaultScriptListener;
 import jenkins.util.ScriptListener;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ScriptListenerTest {
+@WithJenkins
+class ScriptListenerTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private final LogRecorder logging = new LogRecorder();
 
-    @Rule
-    public LoggerRule logging = new LoggerRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void consoleUsageIsLogged() throws IOException {
+    void consoleUsageIsLogged() throws IOException {
         final String output = "hello from script console";
         final String script = "println '" + output + "'";
 
@@ -72,7 +77,7 @@ public class ScriptListenerTest {
     }
 
     @Test
-    public void groovyCliUsageIsLogged() {
+    void groovyCliUsageIsLogged() {
         final String output = "hello from groovy CLI";
         final String script = "println '" + output + "'";
 
@@ -109,7 +114,7 @@ public class ScriptListenerTest {
     }
 
     @Test
-    public void groovyShCliUsageIsLogged() {
+    void groovyShCliUsageIsLogged() {
         final String output = "hello from groovysh CLI";
         final String script = "println '" + output + "'";
 

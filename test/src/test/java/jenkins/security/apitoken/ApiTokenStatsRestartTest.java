@@ -159,7 +159,7 @@ public class ApiTokenStatsRestartTest {
         assertThat(xmlPage, hasXPath("//authority", is("authenticated")));
     }
 
-    private static void checkUserIsNotConnected(WebClient wc) throws Exception {
+    private static void checkUserIsNotConnected(WebClient wc) {
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goToXml("whoAmI/api/xml"));
         assertEquals(401, e.getStatusCode());
     }

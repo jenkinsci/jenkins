@@ -1,7 +1,7 @@
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -10,20 +10,27 @@ import hudson.model.RootAction;
 import hudson.util.ListBoxModel;
 import java.util.Objects;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.QueryParameter;
 
-public class RelativePathTest {
+@WithJenkins
+class RelativePathTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-18776")
     @Test
-    public void testRelativePath() throws Exception {
+    void testRelativePath() throws Exception {
         // I was having trouble causing annotation processing on test stubs
 //        jenkins.getDescriptorOrDie(RelativePathTest.class);
 //        jenkins.getDescriptorOrDie(Model.class);

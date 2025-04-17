@@ -955,7 +955,7 @@ public class ProjectTest {
 
     }
 
-    public class ActionImpl extends InvisibleAction{
+    public static class ActionImpl extends InvisibleAction {
 
     }
 

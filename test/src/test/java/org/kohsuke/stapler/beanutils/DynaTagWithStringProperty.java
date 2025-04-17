@@ -25,14 +25,14 @@ public class DynaTagWithStringProperty extends TagSupport implements DynaTag {
     }
 
     @Override
-    public void setAttribute(String name, Object value) throws JellyTagException {
+    public void setAttribute(String name, Object value) {
         if ("class".equals(name)) {
             this.setClass((String) value);
         }
     }
 
     @Override
-    public Class getAttributeType(String name) throws JellyTagException {
+    public Class getAttributeType(String name) {
         if ("class".equals(name)) {
             return String.class;
         }

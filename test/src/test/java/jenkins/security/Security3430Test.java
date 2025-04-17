@@ -105,7 +105,7 @@ public class Security3430Test {
         }
     }
 
-    private static String getJnlpMac(JenkinsRule r, String name) throws Throwable {
+    private static String getJnlpMac(JenkinsRule r, String name) {
         return ((SlaveComputer) r.jenkins.getComputer(name)).getJnlpMac();
     }
 
@@ -249,14 +249,14 @@ public class Security3430Test {
 
     private static class AgentVersionCallable extends MasterToSlaveCallable<String, Exception> {
         @Override
-        public String call() throws Exception {
+        public String call() {
             return Launcher.VERSION;
         }
     }
 
     private static class ConfirmBouncyCastleLibrary extends MasterToSlaveCallable<Void, Exception> {
         @Override
-        public Void call() throws Exception {
+        public Void call() {
             assertNotNull(Security.getProvider("BC"));
             return null;
         }

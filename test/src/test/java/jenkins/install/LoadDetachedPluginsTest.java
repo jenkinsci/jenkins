@@ -41,7 +41,6 @@ import hudson.PluginManager;
 import hudson.PluginManagerUtil;
 import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -69,7 +68,7 @@ public class LoadDetachedPluginsTest {
     @Issue("JENKINS-48365")
     @Test
     @LocalData
-    public void upgradeFromJenkins1() throws IOException {
+    public void upgradeFromJenkins1() {
         VersionNumber since = new VersionNumber("1.490");
         rr.then(r -> {
             List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
