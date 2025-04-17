@@ -145,6 +145,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
         MarkupText mt = new MarkupText(strBuf.toString());
         if (ann != null)
             ann = ann.annotate(context, mt);
+        System.err.println("TODO writing " + mt.toString(true).trim() + " with " + ann);
         out.write(mt.toString(true)); // this perform escapes
     }
 
