@@ -40,7 +40,6 @@ import hudson.tasks.Publisher;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.util.DescribableList;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.Collection;
@@ -53,9 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 
 /**
@@ -232,33 +229,7 @@ public abstract class Project<P extends Project<P, B>, B extends Build<P, B>>
      */
     @Override
     protected void submit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
-        if (Util.isOverridden(Project.class, getClass(), "submit", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                submit(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-       } else {
-            super.submit(req, rsp);
-            submitImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #submit(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @Override
-    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException, FormException {
         super.submit(req, rsp);
-        try {
-            submitImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-        } catch (ServletException e) {
-            throw new javax.servlet.ServletException(e);
-        }
-    }
-
-    private void submitImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
         JSONObject json = req.getSubmittedForm();
 
         getBuildWrappersList().rebuild(req, json, BuildWrappers.getFor(this));
