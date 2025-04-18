@@ -27,8 +27,10 @@ package jenkins.util;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 
 import jakarta.servlet.ServletContextEvent;
+import java.time.Duration;
 import org.eclipse.jetty.ee9.webapp.WebAppContext;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -95,6 +97,18 @@ public class SystemPropertiesTest {
         setWebAppInitParameter("foo.bar", "myVal");
         assertThat("Should return web app property if system property is not set and default value is set",
                 SystemProperties.getString("foo.bar", "defaultVal"), equalTo("myVal"));
+    }
+
+    @Test
+    public void duration() {
+        System.setProperty("foo.bar", "1s");
+        assertEquals(Duration.ofSeconds(1), SystemProperties.getDuration("foo.bar"));
+        System.setProperty("foo.bar", "2m");
+        assertEquals(Duration.ofMinutes(2), SystemProperties.getDuration("foo.bar"));
+        System.setProperty("foo.bar", "3h");
+        assertEquals(Duration.ofHours(3), SystemProperties.getDuration("foo.bar"));
+        System.setProperty("foo.bar", "4d");
+        assertEquals(Duration.ofDays(4), SystemProperties.getDuration("foo.bar"));
     }
 
     /**

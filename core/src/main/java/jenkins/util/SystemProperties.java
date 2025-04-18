@@ -26,6 +26,7 @@ package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -38,6 +39,7 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.io.OnMaster;
+import org.jenkinsci.remoting.util.DurationStyle;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -306,6 +309,49 @@ public class SystemProperties {
     public static Boolean optBoolean(String name) {
         String v = getString(name);
         return v == null ? null : Boolean.parseBoolean(v);
+    }
+
+    /**
+     * Determines the duration value of the system property with the specified name.
+     * @param name property name.
+     * @return the property value as a duration.
+     * @since TODO
+     */
+    @CheckForNull
+    public static Duration getDuration(@NonNull String name) {
+        return getDuration(name, null);
+    }
+
+    /**
+     * Determines the duration value of the system property with the specified name, or a default value.
+     * @param name property name.
+     * @param defaultValue a default value
+     * @return the property value as a duration.
+     * @since TODO
+     */
+    @Nullable
+    public static Duration getDuration(@NonNull String name, @CheckForNull Duration defaultValue) {
+        return getDuration(name, defaultValue, Level.CONFIG);
+    }
+
+    /**
+     * Determines the duration value of the system property with the specified name, or a default value.
+     * @param name property name.
+     * @param defaultValue a default value
+     * @param logLevel the level of the log if the provided system property name cannot be parsed into Duration.
+     * @return the property value as a duration.
+     */
+    @Nullable
+    public static Duration getDuration(@NonNull String name, @CheckForNull Duration defaultValue, @NonNull Level logLevel) {
+        String v = getString(name);
+        if (v != null) {
+            try {
+                return DurationStyle.detectAndParse(v);
+            } catch (Exception e) {
+                LOGGER.log(logLevel, e, () -> "Property. Value is not a duration: " + name + " => " + v);
+            }
+        }
+        return defaultValue;
     }
 
     /**
