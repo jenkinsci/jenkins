@@ -340,6 +340,7 @@ public class SystemProperties {
      * @param defaultValue a default value
      * @param logLevel the level of the log if the provided system property name cannot be parsed into Duration.
      * @return the property value as a duration.
+     * @since TODO
      */
     @Nullable
     public static Duration getDuration(@NonNull String name, @CheckForNull Duration defaultValue, @NonNull Level logLevel) {
