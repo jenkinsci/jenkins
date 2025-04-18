@@ -1932,7 +1932,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      */
     @RequirePOST
     public HttpResponse doDoWipeOutWorkspace() throws IOException, InterruptedException {
-        checkPermission(Functions.isWipeOutPermissionEnabled() ? WIPEOUT : BUILD);
+        checkPermission(Item.WIPEOUT.getEnabled() ? WIPEOUT : BUILD);
         R b = getSomeBuildWithWorkspace();
         FilePath ws = b != null ? b.getWorkspace() : null;
         if (ws != null && getScm().processWorkspaceBeforeDeletion(this, ws, b.getBuiltOn())) {
