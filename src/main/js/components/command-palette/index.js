@@ -12,7 +12,7 @@ const datasources = [JenkinsSearchSource];
 function init() {
   const i18n = document.getElementById("command-palette-i18n");
   const headerCommandPaletteButton = document.getElementById(
-    "button-open-command-palette",
+    "root-action-SearchAction",
   );
   if (headerCommandPaletteButton === null) {
     return; // no JenkinsHeader, no h:searchbox
@@ -67,7 +67,7 @@ function init() {
           icon: Symbols.HELP,
           type: "symbol",
           label: i18n.dataset.getHelp,
-          url: headerCommandPaletteButton.dataset.searchHelpUrl,
+          url: document.querySelector("body").dataset.searchHelpUrl,
           isExternal: true,
           group: null,
         }),
