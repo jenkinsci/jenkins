@@ -374,9 +374,7 @@ public class SystemProperties {
         String v = getString(name);
         if (v != null) {
             try {
-                DurationStyle.detectAndParse(v, ChronoUnit.SECONDS);
-                return DurationStyle.detectAndParse(v);
-
+                return DurationStyle.detectAndParse(v, ChronoUnit.SECONDS);
             } catch (Exception e) {
                 LOGGER.log(logLevel, e, () -> "Property. Value is not a duration: " + name + " => " + v);
             }
