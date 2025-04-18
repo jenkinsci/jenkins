@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -116,6 +117,7 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     private void doProgressiveHtmlImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         req.setAttribute("html", true);
+        System.err.println("TODO doProgressiveHtmlImpl");
         doProgressText(req, rsp);
     }
 
@@ -207,6 +209,20 @@ public class AnnotatedLargeText<T> extends LargeText {
             return super.writeLogTo(start, w);
     }
 
+    @Override
+    protected void writeLogUncounted(long started, OutputStream os) throws IOException {
+        if (isHtml()) {
+            System.err.println("TODO writeLogUncounted in HTML");
+            ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
+                    new OutputStreamWriter(os, charset), createAnnotator(Stapler.getCurrentRequest2()), context, charset);
+            super.writeLogUncounted(started, caw);
+            caw.flush();
+            setConsoleAnnotatorHeader(caw);
+        } else {
+            super.writeLogUncounted(started, os);
+        }
+    }
+
     /**
      * Strips annotations using a {@link PlainTextConsoleOutputStream}.
      * {@inheritDoc}
@@ -231,7 +247,11 @@ public class AnnotatedLargeText<T> extends LargeText {
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
                 w, createAnnotator(Stapler.getCurrentRequest2()), context, charset);
         long r = super.writeLogTo(start, caw);
+        setConsoleAnnotatorHeader(caw);
+        return r;
+    }
 
+    private void setConsoleAnnotatorHeader(ConsoleAnnotationOutputStream<?> caw) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Cipher sym = PASSING_ANNOTATOR.encrypt();
         ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos, sym)));
@@ -241,7 +261,6 @@ public class AnnotatedLargeText<T> extends LargeText {
         StaplerResponse2 rsp = Stapler.getCurrentResponse2();
         if (rsp != null)
             rsp.setHeader("X-ConsoleAnnotator", Base64.getEncoder().encodeToString(baos.toByteArray()));
-        return r;
     }
 
     /**
