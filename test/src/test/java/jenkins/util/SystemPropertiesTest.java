@@ -31,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 
 import jakarta.servlet.ServletContextEvent;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import org.eclipse.jetty.ee9.webapp.WebAppContext;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -109,6 +110,9 @@ public class SystemPropertiesTest {
         assertEquals(Duration.ofHours(3), SystemProperties.getDuration("foo.bar"));
         System.setProperty("foo.bar", "4d");
         assertEquals(Duration.ofDays(4), SystemProperties.getDuration("foo.bar"));
+        System.setProperty("foo.bar", "4");
+        assertEquals(Duration.ofMillis(4), SystemProperties.getDuration("foo.bar"));
+        assertEquals(Duration.ofSeconds(4), SystemProperties.getDuration("foo.bar", ChronoUnit.SECONDS));
     }
 
     /**

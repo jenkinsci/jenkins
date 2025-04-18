@@ -40,6 +40,7 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import java.io.IOException;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -319,7 +320,19 @@ public class SystemProperties {
      */
     @CheckForNull
     public static Duration getDuration(@NonNull String name) {
-        return getDuration(name, null);
+        return getDuration(name, (Duration) null);
+    }
+
+    /**
+     * Determines the duration value of the system property with the specified name.
+     * @param name property name.
+     * @param unit the duration unit to use if the value doesn't specify one (defaults to `ms`)
+     * @return the property value as a duration.
+     * @since TODO
+     */
+    @CheckForNull
+    public static Duration getDuration(@NonNull String name, @CheckForNull ChronoUnit unit) {
+        return getDuration(name, unit, null);
     }
 
     /**
@@ -336,6 +349,20 @@ public class SystemProperties {
 
     /**
      * Determines the duration value of the system property with the specified name, or a default value.
+     *
+     * @param name         property name.
+     * @param unit         the duration unit to use if the value doesn't specify one (defaults to `ms`)
+     * @param defaultValue a default value
+     * @return the property value as a duration.
+     * @since TODO
+     */
+    @Nullable
+    public static Duration getDuration(@NonNull String name, @CheckForNull ChronoUnit unit, @CheckForNull Duration defaultValue) {
+        return getDuration(name, unit, defaultValue, Level.CONFIG);
+    }
+
+    /**
+     * Determines the duration value of the system property with the specified name, or a default value.
      * @param name property name.
      * @param defaultValue a default value
      * @param logLevel the level of the log if the provided system property name cannot be parsed into Duration.
@@ -347,7 +374,32 @@ public class SystemProperties {
         String v = getString(name);
         if (v != null) {
             try {
+                DurationStyle.detectAndParse(v, ChronoUnit.SECONDS);
                 return DurationStyle.detectAndParse(v);
+
+            } catch (Exception e) {
+                LOGGER.log(logLevel, e, () -> "Property. Value is not a duration: " + name + " => " + v);
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Determines the duration value of the system property with the specified name, or a default value.
+     *
+     * @param name         property name.
+     * @param unit         the duration unit to use if the value doesn't specify one (defaults to `ms`)
+     * @param defaultValue a default value
+     * @param logLevel     the level of the log if the provided system property name cannot be parsed into Duration.
+     * @return the property value as a duration.
+     * @since TODO
+     */
+    @Nullable
+    public static Duration getDuration(@NonNull String name, @CheckForNull ChronoUnit unit, @CheckForNull Duration defaultValue, @NonNull Level logLevel) {
+        String v = getString(name);
+        if (v != null) {
+            try {
+                return DurationStyle.detectAndParse(v, unit);
             } catch (Exception e) {
                 LOGGER.log(logLevel, e, () -> "Property. Value is not a duration: " + name + " => " + v);
             }
