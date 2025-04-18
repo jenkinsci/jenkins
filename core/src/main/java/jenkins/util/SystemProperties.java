@@ -371,15 +371,7 @@ public class SystemProperties {
      */
     @Nullable
     public static Duration getDuration(@NonNull String name, @CheckForNull Duration defaultValue, @NonNull Level logLevel) {
-        String v = getString(name);
-        if (v != null) {
-            try {
-                return DurationStyle.detectAndParse(v);
-            } catch (Exception e) {
-                LOGGER.log(logLevel, e, () -> "Property. Value is not a duration: " + name + " => " + v);
-            }
-        }
-        return defaultValue;
+        return getDuration(name, null, defaultValue, logLevel);
     }
 
     /**
