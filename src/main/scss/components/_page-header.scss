@@ -1,94 +1,147 @@
 @use "../abstracts/mixins";
 
-.page-header {
+.jenkins-header {
+  --background-opacity: 0%;
+  --background-blur: 0;
+  --border-opacity: 0%;
+
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
-  height: 3.5rem;
+  gap: var(--section-padding);
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
-  background-color: var(--header-bg-classic);
-}
+  min-height: var(--header-height);
+  color: var(--header-color);
 
-.page-header > * {
-  margin-right: 0.75rem;
-}
-
-.page-header__brand {
-  display: inline-block;
-  height: 3.5rem;
-  position: relative;
-  flex: 1; // push controls to the end of the block
-}
-
-// Need to use the element selector to increase weight otherwise it will be overriden by the
-// a:visited selector if it is declared later
-// Only styled by the overrides with the new UI enabled
-a.page-header__brand-link {
-  display: none;
-}
-
-.page-header__brand-name {
-  color: inherit;
-}
-
-.page-header__brand-image {
-  height: 2rem;
-  width: 1.5rem;
-  margin-right: 0.75rem;
-}
-
-.page-header__am-wrapper {
-  display: contents;
-}
-
-.page-header__hyperlinks {
-  display: flex;
-  align-items: center;
-}
-
-.page-header__hyperlinks > a,
-.page-header__hyperlinks > button,
-.am-container > a {
-  @include mixins.item;
-
-  --text-color: var(--header-link-color);
-
-  display: inline-flex;
-  align-items: center;
-  appearance: none;
-  background: transparent;
-  outline: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-color);
-  text-decoration: none;
-  padding: 0.5rem;
-  margin-right: 0 !important;
-
-  svg {
-    width: 1.25rem;
-    height: 1.25rem;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(var(--background-blur));
+    background: color-mix(
+      in sRGB,
+      var(--header-background) var(--background-opacity),
+      transparent
+    );
+    border-bottom: var(--jenkins-border-width) solid
+      color-mix(
+        in sRGB,
+        var(--header-border) var(--border-opacity),
+        transparent
+      );
+    background-clip: padding-box;
+    z-index: -1;
   }
 
-  &::before,
-  &::after {
-    inset: 0 !important;
-  }
+  .app-jenkins-logo {
+    @include mixins.item($border: false);
 
-  .jenkins-menu-dropdown-chevron {
-    position: relative;
-    top: unset !important;
-    right: unset !important;
-    margin-left: 0.5rem;
+    --item-background: transparent;
+    --item-background--hover: transparent;
+    --item-background--active: transparent;
+    --item-box-shadow--focus: transparent;
 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    gap: 1rem;
+    color: var(--header-color);
+    transition: opacity var(--standard-transition);
+
+    &::before,
     &::after {
-      opacity: 1;
+      inset: -2px -6px;
+      border: none;
+    }
+
+    &:hover {
+      opacity: 0.7;
+    }
+
+    &:active {
+      opacity: 0.4;
+    }
+
+    // Increase the hit-box for the logo for Fitts’s Law
+    &::before {
+      inset: -30px -1rem -1rem -100px !important;
+      pointer-events: all;
+    }
+
+    span {
+      font-family: Georgia, serif;
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+
+    #jenkins-head-icon {
+      height: 2.125rem;
+      margin-left: 0.15rem;
     }
   }
-}
 
-.page-header__hyperlinks a span {
-  &:not(:first-child) {
-    margin-left: 0.25rem;
+  .jenkins-button {
+    min-width: 2.375rem;
+    min-height: 2.375rem;
+    padding: 0;
+
+    // For customizable-header-plugin
+    color: inherit !important;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    img {
+      width: 1.625rem;
+      height: 1.625rem;
+    }
+
+    .jenkins-badge {
+      position: absolute;
+      top: calc(16%);
+      right: calc(16%);
+      min-width: 5px;
+      min-height: 5px;
+      padding: 0;
+    }
+  }
+
+  &__main {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding-left: var(--section-padding);
+    width: 100%;
+  }
+
+  &__navigation {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: stretch;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding-right: var(--section-padding);
+  }
+
+  &--has-sticky-app-bar {
+    &::before {
+      mask-image: linear-gradient(black 50%, transparent);
+    }
+  }
+
+  &--no-breadcrumbs {
+    .app-jenkins-logo span {
+      display: block !important;
+    }
   }
 }
