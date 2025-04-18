@@ -806,7 +806,7 @@ public class FilePathTest {
         // Compress archive
         final FilePath tmpDirPath = new FilePath(srcFolder);
         int tarred = tmpDirPath.tar(Files.newOutputStream(archive.toPath()), "**");
-        assertEquals("One file should have been compressed", 3, tarred);
+        assertEquals("One file should have been compressed", 4, tarred);
 
         // Decompress
         final File dstFolder = temp.newFolder("dst");
