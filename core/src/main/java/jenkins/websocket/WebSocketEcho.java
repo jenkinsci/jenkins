@@ -52,10 +52,10 @@ public class WebSocketEcho  extends InvisibleAction implements RootAction {
                 }
 
                 @Override
-                protected void binary(byte[] payload, int offset, int len) throws IOException {
-                    ByteBuffer data = ByteBuffer.allocate(len);
-                    for (int i = 0; i < len; i++) {
-                        byte b = payload[offset + i];
+                protected void binary(ByteBuffer input) throws IOException {
+                    ByteBuffer data = ByteBuffer.allocate(input.remaining());
+                    for (int i = 0; i < input.remaining(); i++) {
+                        byte b = input.get(input.position() + i);
                         if (b >= 'a' && b <= 'z') {
                             b += 'A' - 'a';
                         }

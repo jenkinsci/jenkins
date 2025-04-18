@@ -55,7 +55,7 @@ interface Provider {
 
         void onWebSocketError(Throwable cause);
 
-        void onWebSocketBinary(byte[] payload, int offset, int length);
+        void onWebSocketBinary(ByteBuffer data);
 
         void onWebSocketText(String message);
 

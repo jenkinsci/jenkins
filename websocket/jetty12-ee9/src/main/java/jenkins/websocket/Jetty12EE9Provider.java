@@ -153,7 +153,7 @@ public class Jetty12EE9Provider implements Provider {
         return new WebSocketListener() {
             @Override
             public void onWebSocketBinary(byte[] payload, int offset, int length) {
-                listener.onWebSocketBinary(payload, offset, length);
+                listener.onWebSocketBinary(ByteBuffer.wrap(payload, offset, length));
             }
 
             @Override
