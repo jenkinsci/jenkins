@@ -59,8 +59,8 @@
     &::after {
       content: "";
       position: absolute;
-      inset: calc(var(--header-height) * -1) calc(var(--section-padding) * -1)
-        calc(var(--section-padding) * -1);
+      inset: calc(var(--header-height) * -1)
+        calc(var(--section-padding) * -1) -0.875rem;
       z-index: -1;
       pointer-events: none;
     }
