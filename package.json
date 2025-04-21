@@ -31,7 +31,7 @@
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "7.1.2",
     "css-minimizer-webpack-plugin": "7.0.2",
-    "eslint": "9.24.0",
+    "eslint": "9.25.0",
     "eslint-config-prettier": "10.1.2",
     "eslint-formatter-checkstyle": "8.40.0",
     "globals": "16.0.0",
