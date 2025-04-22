@@ -34,6 +34,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.oneOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -444,7 +445,7 @@ public class QueueTest {
         XmlPage queueItem = webclient.goToXml("queue/item/" + queueTaskId + "/api/xml");
         assertNotNull(queueItem);
         String tagName = queueItem.getDocumentElement().getTagName();
-        assertTrue(tagName.equals("blockedItem") || tagName.equals("buildableItem"));
+        assertThat(tagName, oneOf("blockedItem", "buildableItem"));
 
         // Clear the queue
         assertTrue(r.jenkins.getQueue().cancel(p));

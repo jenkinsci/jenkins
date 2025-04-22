@@ -345,7 +345,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>checks-api</artifactId>
-                  <version>367.v18b_7f530e54a_</version>
+                  <version>370.vb_61a_c57328f3</version>
                   <type>hpi</type>
                 </artifactItem>
 
