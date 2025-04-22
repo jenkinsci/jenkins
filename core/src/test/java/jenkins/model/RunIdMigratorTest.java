@@ -24,11 +24,11 @@
 
 package jenkins.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.Functions;
 import hudson.Util;
@@ -45,31 +45,34 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class RunIdMigratorTest {
+class RunIdMigratorTest {
 
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    private File tmp;
 
     private static TimeZone defaultTimezone;
 
     /** Ensures that legacy timestamps are interpreted in a predictable time zone. */
-    @BeforeClass public static void timezone() {
+    @BeforeAll
+    static void timezone() {
         defaultTimezone = TimeZone.getDefault();
         TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
     }
 
-    @AfterClass public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         TimeZone.setDefault(defaultTimezone);
     }
 
     // TODO could use LoggerRule only if it were extracted to an independent library
-    @BeforeClass public static void logging() {
+    @BeforeAll
+    static void logging() {
         RunIdMigrator.LOGGER.setLevel(Level.ALL);
         Handler handler = new ConsoleHandler();
         handler.setLevel(Level.ALL);
@@ -79,12 +82,14 @@ public class RunIdMigratorTest {
     private RunIdMigrator migrator;
     private File dir;
 
-    @Before public void init() {
+    @BeforeEach
+    void init() {
         migrator = new RunIdMigrator();
-        dir = tmp.getRoot();
+        dir = tmp;
     }
 
-    @Test public void newJob() throws Exception {
+    @Test
+    void newJob() throws Exception {
         migrator.created(dir);
         assertEquals("{legacyIds=''}", summarize());
         assertEquals(0, migrator.findNumber("whatever"));
@@ -94,37 +99,41 @@ public class RunIdMigratorTest {
         assertEquals("{legacyIds=''}", summarize());
     }
 
-    @Test public void legacy() throws Exception {
-        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
+    @Test
+    void legacy() throws Exception {
+        assumeFalse(Functions.isWindows(), "Symlinks don't work well on Windows");
         write(
                 "2014-01-02_03-04-05/build.xml",
-                "<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <number>99</number>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>");
+                """
+                        <?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <number>99</number>
+                          <otherstuff>ok</otherstuff>
+                        </run>""");
         link("99", "2014-01-02_03-04-05");
         link("lastFailedBuild", "-1");
         link("lastSuccessfulBuild", "99");
         assertEquals(
-                "{2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <number>99</number>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}, 99=→2014-01-02_03-04-05, lastFailedBuild=→-1, lastSuccessfulBuild=→99}",
+                """
+                        {2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <number>99</number>
+                          <otherstuff>ok</otherstuff>
+                        </run>'}, 99=→2014-01-02_03-04-05, lastFailedBuild=→-1, lastSuccessfulBuild=→99}""",
                 summarize());
         assertTrue(migrator.migrate(dir, null));
         assertEquals(
-                "{99={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <id>2014-01-02_03-04-05</id>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}, lastFailedBuild=→-1, lastSuccessfulBuild=→99, legacyIds='2014-01-02_03-04-05 99\n"
-                    + "'}",
+                """
+                        {99={build.xml='<?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <id>2014-01-02_03-04-05</id>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>'}, lastFailedBuild=→-1, lastSuccessfulBuild=→99, legacyIds='2014-01-02_03-04-05 99
+                        '}""",
                 summarize());
         assertEquals(99, migrator.findNumber("2014-01-02_03-04-05"));
         migrator = new RunIdMigrator();
@@ -136,139 +145,155 @@ public class RunIdMigratorTest {
         assertEquals("{lastFailedBuild=→-1, legacyIds=''}", summarize());
     }
 
-    @Test public void reRunMigration() throws Exception {
-        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
+    @Test
+    void reRunMigration() throws Exception {
+        assumeFalse(Functions.isWindows(), "Symlinks don't work well on Windows");
         write("2014-01-02_03-04-04/build.xml", "<run>\n  <number>98</number>\n</run>");
         link("98", "2014-01-02_03-04-04");
         write(
                 "99/build.xml",
-                "<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>");
+                """
+                        <?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>""");
         link("lastFailedBuild", "-1");
         link("lastSuccessfulBuild", "99");
         assertEquals(
-                "{2014-01-02_03-04-04={build.xml='<run>\n"
-                    + "  <number>98</number>\n"
-                    + "</run>'}, 98=→2014-01-02_03-04-04, 99={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}, lastFailedBuild=→-1, lastSuccessfulBuild=→99}",
+                """
+                        {2014-01-02_03-04-04={build.xml='<run>
+                          <number>98</number>
+                        </run>'}, 98=→2014-01-02_03-04-04, 99={build.xml='<?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>'}, lastFailedBuild=→-1, lastSuccessfulBuild=→99}""",
                 summarize());
         assertTrue(migrator.migrate(dir, null));
         assertEquals(
-                "{98={build.xml='<run>\n"
-                    + "  <id>2014-01-02_03-04-04</id>\n"
-                    + "  <timestamp>1388649844000</timestamp>\n"
-                    + "</run>'}, 99={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}, lastFailedBuild=→-1, lastSuccessfulBuild=→99, legacyIds='2014-01-02_03-04-04 98\n"
-                    + "'}",
+                """
+                        {98={build.xml='<run>
+                          <id>2014-01-02_03-04-04</id>
+                          <timestamp>1388649844000</timestamp>
+                        </run>'}, 99={build.xml='<?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>'}, lastFailedBuild=→-1, lastSuccessfulBuild=→99, legacyIds='2014-01-02_03-04-04 98
+                        '}""",
                 summarize());
     }
 
-    @Test public void reverseImmediately() throws Exception {
-        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
+    @Test
+    void reverseImmediately() throws Exception {
+        assumeFalse(Functions.isWindows(), "Symlinks don't work well on Windows");
         File root = dir;
         dir = new File(dir, "jobs/somefolder/jobs/someproject/promotions/OK/builds");
         write(
                 "99/build.xml",
-                "<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <id>2014-01-02_03-04-05</id>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>");
+                """
+                        <?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <id>2014-01-02_03-04-05</id>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>""");
         link("lastFailedBuild", "-1");
         link("lastSuccessfulBuild", "99");
         write("legacyIds", "2014-01-02_03-04-05 99\n");
         assertEquals(
-                "{99={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <id>2014-01-02_03-04-05</id>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}, lastFailedBuild=→-1, lastSuccessfulBuild=→99, legacyIds='2014-01-02_03-04-05 99\n"
-                    + "'}",
+                """
+                        {99={build.xml='<?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <id>2014-01-02_03-04-05</id>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>'}, lastFailedBuild=→-1, lastSuccessfulBuild=→99, legacyIds='2014-01-02_03-04-05 99
+                        '}""",
                 summarize());
     }
 
-    @Test public void reverseAfterNewBuilds() throws Exception {
-        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
+    @Test
+    void reverseAfterNewBuilds() throws Exception {
+        assumeFalse(Functions.isWindows(), "Symlinks don't work well on Windows");
         File root = dir;
         dir = new File(dir, "jobs/someproject/modules/test$test/builds");
         write(
                 "1/build.xml",
-                "<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>");
+                """
+                        <?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>""");
         write("legacyIds", "");
         assertEquals(
-                "{1={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}, legacyIds=''}",
+                """
+                        {1={build.xml='<?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>'}, legacyIds=''}""",
                 summarize());
     }
 
-    @Test public void reverseMatrixAfterNewBuilds() throws Exception {
-        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
+    @Test
+    void reverseMatrixAfterNewBuilds() throws Exception {
+        assumeFalse(Functions.isWindows(), "Symlinks don't work well on Windows");
         File root = dir;
         dir = new File(dir, "jobs/someproject/Environment=prod/builds");
         write(
                 "1/build.xml",
-                "<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>");
+                """
+                        <?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>""");
         write("legacyIds", "");
         assertEquals(
-                "{1={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}, legacyIds=''}",
+                """
+                        {1={build.xml='<?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>'}, legacyIds=''}""",
                 summarize());
     }
 
-    @Test public void reverseMavenAfterNewBuilds() throws Exception {
-        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
+    @Test
+    void reverseMavenAfterNewBuilds() throws Exception {
+        assumeFalse(Functions.isWindows(), "Symlinks don't work well on Windows");
         File root = dir;
         dir = new File(dir, "jobs/someproject/test$test/builds");
         write(
                 "1/build.xml",
-                "<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>");
+                """
+                        <?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>""");
         write("legacyIds", "");
         assertEquals(
-                "{1={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <timestamp>1388649845000</timestamp>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}, legacyIds=''}",
+                """
+                        {1={build.xml='<?xml version='1.0' encoding='UTF-8'?>
+                        <run>
+                          <stuff>ok</stuff>
+                          <timestamp>1388649845000</timestamp>
+                          <otherstuff>ok</otherstuff>
+                        </run>'}, legacyIds=''}""",
                 summarize());
     }
 
@@ -308,11 +333,12 @@ public class RunIdMigratorTest {
         return m.toString();
     }
 
-    @Test public void move() throws Exception {
-        File src = tmp.newFile();
-        File dest = new File(tmp.getRoot(), "dest");
+    @Test
+    void move() throws Exception {
+        File src = File.createTempFile("junit", null, tmp);
+        File dest = new File(tmp, "dest");
         RunIdMigrator.move(src, dest);
-        File dest2 = tmp.newFile();
+        File dest2 = File.createTempFile("junit", null, tmp);
         assertThrows(IOException.class, () -> RunIdMigrator.move(dest, dest2));
     }
 
