@@ -26,20 +26,27 @@ package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.Messages;
 import org.htmlunit.WebResponse;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class FormValidationSecurity1893Test {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class FormValidationSecurity1893Test {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void checkHeaderPresence() throws Exception {
+    void checkHeaderPresence() throws Exception {
         final JenkinsRule.WebClient wc = j.createWebClient();
         final WebResponse response = wc.goTo("descriptorByName/hudson.model.FreeStyleProject/checkCustomWorkspace").getWebResponse();
         assertEquals(200, response.getStatusCode());

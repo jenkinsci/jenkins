@@ -30,13 +30,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
@@ -67,39 +67,36 @@ import org.htmlunit.html.HtmlPasswordInput;
 import org.htmlunit.util.Cookie;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.xml.XmlPage;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mindrot.jbcrypt.BCrypt;
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
-public class HudsonPrivateSecurityRealmTest {
+@WithJenkins
+class HudsonPrivateSecurityRealmTest {
 
     // the PBKDF encoded form of "password" without the quotes
     private static final String PBKDF_ENDOCED_PASSWORD =
             "$PBKDF2$HMACSHA512:210000:ffbb207b847010af98cdd2b09c79392c$f67c3b985daf60db83a9088bc2439f7b77016d26c1439a9877c4f863c377272283ce346edda4578a5607ea620a4beb662d853b800f373297e6f596af797743a6";
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
-    @Rule
-    public LoggerRule lr = new LoggerRule().record(HudsonPrivateSecurityRealm.class, Level.WARNING).capture(5);
+    private final LogRecorder lr = new LogRecorder().record(HudsonPrivateSecurityRealm.class, Level.WARNING).capture(5);
 
     private SpySecurityListenerImpl spySecurityListener;
 
-    @Before
-    public void linkExtension() {
-        spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
-    }
+    private JenkinsRule j;
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
+        spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
+
         Field field = HudsonPrivateSecurityRealm.class.getDeclaredField("ID_REGEX");
         field.setAccessible(true);
         field.set(null, null);
@@ -107,7 +104,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Issue("SECURITY-243")
     @Test
-    public void fullNameCollisionPassword() throws Exception {
+    void fullNameCollisionPassword() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
@@ -154,7 +151,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Issue("SECURITY-243")
     @Test
-    public void fullNameCollisionToken() throws Exception {
+    void fullNameCollisionToken() throws Exception {
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
         config.setTokenGenerationOnCreationEnabled(true);
 
@@ -205,7 +202,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void signup() throws Exception {
+    void signup() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -225,7 +222,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Issue("SECURITY-166")
     @Test
-    public void anonymousCantSignup() throws Exception {
+    void anonymousCantSignup() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -241,7 +238,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Issue("SECURITY-166")
     @Test
-    public void systemCantSignup() throws Exception {
+    void systemCantSignup() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -260,7 +257,7 @@ public class HudsonPrivateSecurityRealmTest {
      */
     @Issue("SECURITY-166")
     @Test
-    public void fullNameOfUnknownCantSignup() throws Exception {
+    void fullNameOfUnknownCantSignup() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -276,7 +273,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Issue("JENKINS-48383")
     @Test
-    public void selfRegistrationTriggerLoggedIn() throws Exception {
+    void selfRegistrationTriggerLoggedIn() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         j.jenkins.setCrumbIssuer(null);
@@ -296,7 +293,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Issue("JENKINS-55307")
     @Test
-    public void selfRegistrationTriggerUserCreation() throws Exception {
+    void selfRegistrationTriggerUserCreation() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         j.jenkins.setCrumbIssuer(null);
@@ -312,7 +309,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Issue("JENKINS-55307")
     @Test
-    public void userCreationFromRealm() throws Exception {
+    void userCreationFromRealm() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
@@ -333,7 +330,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Issue("JENKINS-55307")
     @Test
-    public void userCreationWithHashedPasswords() throws Exception {
+    void userCreationWithHashedPasswords() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
@@ -434,7 +431,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Issue("SECURITY-786")
     @Test
-    public void controlCharacterAreNoMoreValid() throws Exception {
+    void controlCharacterAreNoMoreValid() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
@@ -470,7 +467,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Issue("SECURITY-786")
     @Test
-    public void controlCharacterAreNoMoreValid_CustomRegex() throws Exception {
+    void controlCharacterAreNoMoreValid_CustomRegex() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
@@ -511,7 +508,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void createAccountSupportsHashedPasswords() throws Exception {
+    void createAccountSupportsHashedPasswords() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
@@ -527,18 +524,18 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void createAccountWithHashedPasswordRequiresPrefix() {
+    void createAccountWithHashedPasswordRequiresPrefix() {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         assertThrows(IllegalArgumentException.class, () -> securityRealm.createAccountWithHashedPassword("user_hashed", BCrypt.hashpw("password", BCrypt.gensalt())));
     }
 
     @Test
-    public void hashedPasswordTest() {
-        assertTrue("password is hashed", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt())));
-        assertFalse("password is not hashed", PASSWORD_ENCODER.isPasswordHashed("password"));
-        assertFalse("only valid hashed passwords allowed", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a$blah"));
-        assertFalse("only valid hashed passwords allowed", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:password"));
+    void hashedPasswordTest() {
+        assertTrue(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt())), "password is hashed");
+        assertFalse(PASSWORD_ENCODER.isPasswordHashed("password"), "password is not hashed");
+        assertFalse(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a$blah"), "only valid hashed passwords allowed");
+        assertFalse(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:password"), "only valid hashed passwords allowed");
 
         // real examples
         // password = a
@@ -547,28 +544,28 @@ public class HudsonPrivateSecurityRealmTest {
         assertTrue(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a$12$8NJH3LsPrANStV6XtBakCez0cKHXVxmvxIlcz785vxAIZrihHZpeS"));
 
         // password = password
-        assertFalse("too big number of iterations", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a208$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+        assertFalse(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a208$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), "too big number of iterations");
 
         // until https://github.com/jeremyh/jBCrypt/pull/16 is merged, the lib released and the dep updated, only the version 2a is supported
-        assertFalse("unsupported version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm"));
-        assertFalse("unsupported version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2y$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"));
+        assertFalse(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm"), "unsupported version");
+        assertFalse(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2y$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"), "unsupported version");
 
-        assertFalse("invalid version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2t$10$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
-        assertFalse("invalid version", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$3t$10$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+        assertFalse(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2t$10$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), "invalid version");
+        assertFalse(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$3t$10$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), "invalid version");
     }
 
     @Test
-    public void ensureHashingVersion_2a_isSupported() {
-        assertTrue("version 2a is supported", BCrypt.checkpw("a", "$2a$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"));
+    void ensureHashingVersion_2a_isSupported() {
+        assertTrue(BCrypt.checkpw("a", "$2a$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"), "version 2a is supported");
     }
 
     @Test
-    public void ensureHashingVersion_2x_isNotSupported() {
+    void ensureHashingVersion_2x_isNotSupported() {
         assertThrows(IllegalArgumentException.class, () -> BCrypt.checkpw("abc", "$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm"));
     }
 
     @Test
-    public void ensureHashingVersion_2y_isNotSupported() {
+    void ensureHashingVersion_2y_isNotSupported() {
         assertThrows(IllegalArgumentException.class, () -> BCrypt.checkpw("a", "$2y$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V."));
     }
 
@@ -609,7 +606,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Test
     @Issue("SECURITY-1158")
-    public void singupNoLongerVulnerableToSessionFixation() throws Exception {
+    void singupNoLongerVulnerableToSessionFixation() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -638,7 +635,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Test
     @Issue("SECURITY-1245")
-    public void changingPassword_mustInvalidateAllSessions() throws Exception {
+    void changingPassword_mustInvalidateAllSessions() throws Exception {
         User alice = prepareRealmAndAlice();
         String initialSeed = alice.getProperty(UserSeedProperty.class).getSeed();
 
@@ -670,7 +667,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Test
     @Issue("SECURITY-1245")
-    public void notChangingPassword_hasNoImpactOnSeed() throws Exception {
+    void notChangingPassword_hasNoImpactOnSeed() throws Exception {
         User alice = prepareRealmAndAlice();
         String initialSeed = alice.getProperty(UserSeedProperty.class).getSeed();
 
@@ -697,7 +694,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Test
     @Issue("SECURITY-1245")
-    public void changingPassword_withSeedDisable_hasNoImpact() throws Exception {
+    void changingPassword_withSeedDisable_hasNoImpact() throws Exception {
         boolean previousConfig = UserSeedProperty.DISABLE_USER_SEED;
         try {
             UserSeedProperty.DISABLE_USER_SEED = true;
@@ -731,7 +728,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void userLoginAfterDisablingFIPS() throws Exception {
+    void userLoginAfterDisablingFIPS() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
@@ -750,7 +747,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void userCreationWithPBKDFPasswords() throws Exception {
+    void userCreationWithPBKDFPasswords() {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
 
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
@@ -759,8 +756,8 @@ public class HudsonPrivateSecurityRealmTest {
                 is("The hashed password was hashed with an incorrect algorithm. Jenkins is expecting #jbcrypt:"));
     }
 
-    private static Matcher<LoggerRule> hasIncorrectHashingLogEntry() {
-        return LoggerRule.recorded(is(
+    private static Matcher<LogRecorder> hasIncorrectHashingLogEntry() {
+        return LogRecorder.recorded(is(
                 "A password appears to be stored (or is attempting to be stored) that was created with a different hashing/encryption algorithm, check the FIPS-140 state of the system has not changed inadvertently"));
     }
 
