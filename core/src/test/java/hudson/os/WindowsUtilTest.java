@@ -24,17 +24,18 @@
 
 package hudson.os;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test the test utility code, too!
  */
-public class WindowsUtilTest {
+class WindowsUtilTest {
+
     @Test
-    public void testQuoteArgument() {
+    void testQuoteArgument() {
         String input = "C:\\Programs and \"Settings\"\\System32\\\\";
         String expected = "\"C:\\Programs and \\\"Settings\\\"\\System32\\\\\\\\\"";
         String actual = WindowsUtil.quoteArgument(input);
@@ -42,14 +43,14 @@ public class WindowsUtilTest {
     }
 
     @Test
-    public void testQuoteArgument_OnlyQuotesWhenNecessary() {
+    void testQuoteArgument_OnlyQuotesWhenNecessary() {
         for (String arg : Arrays.asList("", "foo", "foo-bar", "C:\\test\\path", "http://www.example.com/")) {
             assertEquals(arg, WindowsUtil.quoteArgument(arg));
         }
     }
 
     @Test
-    public void testQuoteArgumentForCmd() {
+    void testQuoteArgumentForCmd() {
         String input = "hello \"\\world&";
         String expected = "^\"hello \\^\"\\world^&^\"";
         String actual = WindowsUtil.quoteArgumentForCmd(input);
@@ -57,7 +58,7 @@ public class WindowsUtilTest {
     }
 
     @Test
-    public void testQuoteArgumentForCmd_OnlyQuotesWhenNecessary() {
+    void testQuoteArgumentForCmd_OnlyQuotesWhenNecessary() {
         for (String arg : Arrays.asList("", "foo", "foo-bar", "C:\\test\\path", "http://www.example.com/")) {
             assertEquals(arg, WindowsUtil.quoteArgumentForCmd(arg));
         }
