@@ -218,6 +218,10 @@ public class ConsoleAnnotatorTest {
     public static class StatefulAnnotator extends ConsoleAnnotator<Object> {
         int n = 1;
 
+        public StatefulAnnotator() {
+            Thread.dumpStack();
+        }
+
         @Override
         public ConsoleAnnotator annotate(Object build, MarkupText text) {
             if (text.getText().startsWith("line"))
@@ -227,7 +231,12 @@ public class ConsoleAnnotatorTest {
 
         @Override
         public String toString() {
-            return "StatefulAnnotator:" + n;
+            return "StatefulAnnotator:" + n + " @" + System.identityHashCode(this);
+        }
+
+        private Object readResolve() {
+            Thread.dumpStack();
+            return this;
         }
     }
 

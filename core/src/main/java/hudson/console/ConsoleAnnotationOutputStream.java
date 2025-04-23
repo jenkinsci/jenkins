@@ -143,7 +143,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
 
         lineOut.flush();
         MarkupText mt = new MarkupText(strBuf.toString());
-        System.err.println("TODO initial ann: " + ann + " @ " + System.identityHashCode(ann));
+        System.err.println("TODO initial ann: " + ann);
         if (ann != null)
             ann = ann.annotate(context, mt);
         System.err.println("TODO writing " + mt.toString(true).trim() + " with " + ann);

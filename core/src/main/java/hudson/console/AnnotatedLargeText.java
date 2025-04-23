@@ -184,9 +184,12 @@ public class AnnotatedLargeText<T> extends LargeText {
                     if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis() - timestamp))
                         // don't deserialize something too old to prevent a replay attack
                         return getConsoleAnnotator(ois);
+                    else System.err.println("TODO too old");
                 } catch (RuntimeException ex) {
                     throw new IOException("Could not decode input", ex);
                 }
+            } else {
+                System.err.println("TODO no X-ConsoleAnnotator header");
             }
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
@@ -259,8 +262,10 @@ public class AnnotatedLargeText<T> extends LargeText {
         oos.writeObject(caw.getConsoleAnnotator());
         oos.close();
         StaplerResponse2 rsp = Stapler.getCurrentResponse2();
-        if (rsp != null)
+        if (rsp != null) {
+            System.err.println("TODO setting the header here");
             rsp.setHeader("X-ConsoleAnnotator", Base64.getEncoder().encodeToString(baos.toByteArray()));
+        }
     }
 
     /**
