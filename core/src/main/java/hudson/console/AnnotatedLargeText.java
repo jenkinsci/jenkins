@@ -239,6 +239,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
                 w, createAnnotator(Stapler.getCurrentRequest2()), context, charset);
         long r = super.writeLogTo(start, caw);
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Cipher sym = PASSING_ANNOTATOR.encrypt();
         ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos, sym)));
