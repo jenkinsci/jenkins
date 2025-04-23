@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -117,7 +116,6 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     private void doProgressiveHtmlImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         req.setAttribute("html", true);
-        System.err.println("TODO doProgressiveHtmlImpl");
         doProgressText(req, rsp);
     }
 
@@ -143,7 +141,10 @@ public class AnnotatedLargeText<T> extends LargeText {
      * and use this request attribute to differentiate.
      */
     private boolean isHtml() {
-        StaplerRequest2 req = Stapler.getCurrentRequest2();
+        return isHtml(Stapler.getCurrentRequest2());
+    }
+
+    private boolean isHtml(StaplerRequest2 req) {
         return req != null && req.getAttribute("html") != null;
     }
 
@@ -184,12 +185,9 @@ public class AnnotatedLargeText<T> extends LargeText {
                     if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis() - timestamp))
                         // don't deserialize something too old to prevent a replay attack
                         return getConsoleAnnotator(ois);
-                    else System.err.println("TODO too old");
                 } catch (RuntimeException ex) {
                     throw new IOException("Could not decode input", ex);
                 }
-            } else {
-                System.err.println("TODO no X-ConsoleAnnotator header");
             }
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
@@ -213,17 +211,8 @@ public class AnnotatedLargeText<T> extends LargeText {
     }
 
     @Override
-    protected void writeLogUncounted(long started, OutputStream os) throws IOException {
-        if (isHtml()) {
-            System.err.println("TODO writeLogUncounted in HTML");
-            ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
-                    new OutputStreamWriter(os, charset), createAnnotator(Stapler.getCurrentRequest2()), context, charset);
-            super.writeLogUncounted(started, caw);
-            caw.flush();
-            setConsoleAnnotatorHeader(caw);
-        } else {
-            super.writeLogUncounted(started, os);
-        }
+    protected boolean delegateToWriteLogTo(StaplerRequest2 req, StaplerResponse2 rsp) {
+        return isHtml(req);
     }
 
     /**
@@ -250,11 +239,6 @@ public class AnnotatedLargeText<T> extends LargeText {
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
                 w, createAnnotator(Stapler.getCurrentRequest2()), context, charset);
         long r = super.writeLogTo(start, caw);
-        setConsoleAnnotatorHeader(caw);
-        return r;
-    }
-
-    private void setConsoleAnnotatorHeader(ConsoleAnnotationOutputStream<?> caw) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Cipher sym = PASSING_ANNOTATOR.encrypt();
         ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos, sym)));
@@ -262,10 +246,9 @@ public class AnnotatedLargeText<T> extends LargeText {
         oos.writeObject(caw.getConsoleAnnotator());
         oos.close();
         StaplerResponse2 rsp = Stapler.getCurrentResponse2();
-        if (rsp != null) {
-            System.err.println("TODO setting the header here");
+        if (rsp != null)
             rsp.setHeader("X-ConsoleAnnotator", Base64.getEncoder().encodeToString(baos.toByteArray()));
-        }
+        return r;
     }
 
     /**

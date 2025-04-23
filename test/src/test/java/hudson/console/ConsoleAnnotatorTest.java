@@ -199,7 +199,7 @@ public class ConsoleAnnotatorTest {
 
         // the new invocation should start from where the previous call left off
         lock.phase(5);
-        assertEquals("<b tag=2>line2</b>\r\n", plc.next()); // TODO StatefulAnnotator.n is reset
+        assertEquals("<b tag=2>line2</b>\r\n", plc.next());
 
         lock.done();
 
@@ -218,10 +218,6 @@ public class ConsoleAnnotatorTest {
     public static class StatefulAnnotator extends ConsoleAnnotator<Object> {
         int n = 1;
 
-        public StatefulAnnotator() {
-            Thread.dumpStack();
-        }
-
         @Override
         public ConsoleAnnotator annotate(Object build, MarkupText text) {
             if (text.getText().startsWith("line"))
@@ -232,11 +228,6 @@ public class ConsoleAnnotatorTest {
         @Override
         public String toString() {
             return "StatefulAnnotator:" + n + " @" + System.identityHashCode(this);
-        }
-
-        private Object readResolve() {
-            Thread.dumpStack();
-            return this;
         }
     }
 
