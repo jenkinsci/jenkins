@@ -110,21 +110,6 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
          // passing these causes an infinite loop - getTotalExecutors(),getBusyExecutors());
         this.loadStatistics = new LoadStatistics(0, 0) {
             @Override
-            public int computeIdleExecutors() {
-                return Label.this.getIdleExecutors();
-            }
-
-            @Override
-            public int computeTotalExecutors() {
-                return Label.this.getTotalExecutors();
-            }
-
-            @Override
-            public int computeQueueLength() {
-                return Jenkins.get().getQueue().countBuildableItemsFor(Label.this);
-            }
-
-            @Override
             protected Set<Node> getNodes() {
                 return Label.this.getNodes();
             }
