@@ -31,14 +31,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import java.io.IOException;
-import org.kohsuke.stapler.CompatibleFilter;
 
 /**
  * {@link Filter} that does nothing.
  *
  * @author Kohsuke Kawaguchi
  */
-public class NoopFilter implements CompatibleFilter {
+public class NoopFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }

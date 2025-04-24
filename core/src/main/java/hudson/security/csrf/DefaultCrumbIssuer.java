@@ -69,7 +69,6 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     }
 
     @Override
-    @SuppressFBWarnings(value = "NM_WRONG_PACKAGE", justification = "false positive")
     protected synchronized String issueCrumb(ServletRequest request, String salt) {
         if (request instanceof HttpServletRequest) {
             if (md != null) {

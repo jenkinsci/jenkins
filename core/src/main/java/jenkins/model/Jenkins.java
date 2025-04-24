@@ -212,7 +212,6 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
 import io.jenkins.servlet.RequestDispatcherWrapper;
-import io.jenkins.servlet.ServletContextWrapper;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletContext;
@@ -711,12 +710,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Deprecated
     public final transient NodeProvisioner overallNodeProvisioner = unlabeledNodeProvisioner;
 
-    /**
-     * @deprecated use {@link #getServletContext}
-     */
-    @Deprecated
-    public final transient javax.servlet.ServletContext servletContext;
-
     private final transient ServletContext jakartaServletContext;
 
     /**
@@ -903,7 +896,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             this.root = root;
             this.jakartaServletContext = context;
-            this.servletContext = ServletContextWrapper.fromJakartServletContext(context);
             computeVersion(context);
             if (theInstance != null)
                 throw new IllegalStateException("second instance");
@@ -4626,20 +4618,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         return HttpResponses.redirectToDot();
-    }
-
-    /**
-     * @deprecated use {@link #doSafeRestart(StaplerRequest2, String)}
-     * @since 2.414
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public HttpResponse doSafeRestart(StaplerRequest req, @QueryParameter("message") String message) throws IOException, javax.servlet.ServletException, RestartNotSupportedException {
-        try {
-            return doSafeRestart(req != null ? StaplerRequest.toStaplerRequest2(req) : null, message);
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
     }
 
     private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {

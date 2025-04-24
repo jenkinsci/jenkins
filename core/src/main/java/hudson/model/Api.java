@@ -25,8 +25,6 @@
 package hudson.model;
 
 import hudson.ExtensionList;
-import hudson.Util;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -41,7 +39,6 @@ import java.util.logging.Logger;
 import javax.xml.transform.stream.StreamResult;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.xml.FilteredFunctionContext;
 import org.dom4j.CharacterData;
 import org.dom4j.Document;
@@ -54,9 +51,7 @@ import org.dom4j.io.XMLWriter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.Flavor;
@@ -229,31 +224,6 @@ public class Api extends AbstractModelObject {
      * Exposes the bean as JSON.
      */
     public void doJson(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        if (Util.isOverridden(Api.class, getClass(), "doJson", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                doJson(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            doJsonImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doJson(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
-        try {
-            doJsonImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    private void doJsonImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         if (req.getParameter("jsonp") == null || permit(req)) {
             setHeaders(rsp);
             rsp.serveExposedBean(req, bean, req.getParameter("jsonp") == null ? Flavor.JSON : Flavor.JSONP);
@@ -266,31 +236,6 @@ public class Api extends AbstractModelObject {
      * Exposes the bean as Python literal.
      */
     public void doPython(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        if (Util.isOverridden(Api.class, getClass(), "doPython", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                doPython(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            doPythonImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doPython(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public void doPython(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
-        try {
-            doPythonImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    private void doPythonImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         setHeaders(rsp);
         rsp.serveExposedBean(req, bean, Flavor.PYTHON);
     }

@@ -24,7 +24,6 @@
 
 package hudson.model;
 
-import hudson.Util;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -34,7 +33,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.OptionalJobProperty;
 import net.sf.json.JSONObject;
 import org.jvnet.tiger_types.Types;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
@@ -64,23 +62,6 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
      */
     @Override
     public JobProperty<?> newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
-        if (Util.isOverridden(JobPropertyDescriptor.class, getClass(), "newInstance", StaplerRequest.class, JSONObject.class)) {
-            return newInstance(req != null ? StaplerRequest.fromStaplerRequest2(req) : null, formData);
-        } else {
-            // JobPropertyDescriptors are bit different in that we allow them even without any user-visible configuration parameter,
-            // so replace the lack of form data by an empty one.
-            if (formData.isNullObject()) formData = new JSONObject();
-
-            return super.newInstance(req, formData);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #newInstance(StaplerRequest2, JSONObject)}
-     */
-    @Deprecated
-    @Override
-    public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
         // JobPropertyDescriptors are bit different in that we allow them even without any user-visible configuration parameter,
         // so replace the lack of form data by an empty one.
         if (formData.isNullObject()) formData = new JSONObject();

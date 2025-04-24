@@ -48,7 +48,6 @@ import jenkins.model.Jenkins;
 import jenkins.util.HttpServletFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.CompatibleFilter;
 
 /**
  * Servlet {@link Filter} that chains multiple {@link Filter}s, provided by plugins
@@ -63,7 +62,7 @@ import org.kohsuke.stapler.CompatibleFilter;
  *
  * @see SecurityRealm
  */
-public final class PluginServletFilter implements CompatibleFilter, ExtensionPoint {
+public final class PluginServletFilter implements Filter, ExtensionPoint {
     private final List<Filter> list = new CopyOnWriteArrayList<>();
 
     private /*almost final*/ FilterConfig config;

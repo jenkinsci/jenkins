@@ -24,6 +24,7 @@
 
 package hudson;
 
+import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
@@ -32,7 +33,6 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Enumeration;
-import org.kohsuke.stapler.CompatibleFilter;
 
 /**
  * This filter allows you to modify headers set by the container or other servlets
@@ -77,7 +77,7 @@ import org.kohsuke.stapler.CompatibleFilter;
  *
  * @author Mike Wille
  */
-public class ResponseHeaderFilter implements CompatibleFilter {
+public class ResponseHeaderFilter implements Filter {
     private FilterConfig config;
 
     @Override

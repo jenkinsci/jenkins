@@ -24,16 +24,10 @@
 
 package hudson.model;
 
-import hudson.Util;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
-import jenkins.security.stapler.StaplerNotDispatchable;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link ItemGroup} that is a general purpose container, which allows users and the rest of the program
@@ -51,45 +45,5 @@ public interface ModifiableItemGroup<T extends Item> extends ItemGroup<T> {
      * The request format follows that of {@code &lt;n:form xmlns:n="/lib/form">}.
      *
      */
-    @RequirePOST
-    default T doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        if (Util.isOverridden(
-                ModifiableItemGroup.class,
-                getClass(),
-                "doCreateItem",
-                StaplerRequest.class,
-                StaplerResponse.class)) {
-            try {
-                return doCreateItem(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
-                    + ModifiableItemGroup.class.getSimpleName() + ".doCreateItem methods");
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doCreateItem(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    default T doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
-        if (Util.isOverridden(
-                ModifiableItemGroup.class,
-                getClass(),
-                "doCreateItem",
-                StaplerRequest2.class,
-                StaplerResponse2.class)) {
-            try {
-                return doCreateItem(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-            } catch (ServletException e) {
-                throw ServletExceptionWrapper.fromJakartaServletException(e);
-            }
-        } else {
-            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
-                    + ModifiableItemGroup.class.getSimpleName() + ".doCreateItem methods");
-        }
-    }
+    T doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException;
 }

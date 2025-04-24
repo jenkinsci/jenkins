@@ -3,11 +3,9 @@ package jenkins.model;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.Util;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
@@ -66,23 +64,6 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
      */
     @Override
     public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
-        if (Util.isOverridden(GlobalConfiguration.class, getClass(), "configure", StaplerRequest.class, JSONObject.class)) {
-            return configure(req != null ? StaplerRequest.fromStaplerRequest2(req) : null, json);
-        } else {
-            return configureImpl(req, json);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #configure(StaplerRequest2, JSONObject)}
-     */
-    @Deprecated
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        return configureImpl(StaplerRequest.toStaplerRequest2(req), json);
-    }
-
-    private boolean configureImpl(StaplerRequest2 req, JSONObject json) throws FormException {
         req.bindJSON(this, json);
         return true;
     }

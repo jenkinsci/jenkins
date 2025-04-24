@@ -51,7 +51,6 @@ import hudson.search.SearchIndexBuilder;
 import hudson.triggers.Trigger;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.views.BuildButtonColumn;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,7 +59,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.lazy.LazyBuildMixIn;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.triggers.TriggeredItem;
 import jenkins.util.TimeDuration;
@@ -74,9 +72,7 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -406,28 +402,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
          * @see ParameterizedJobMixIn#doBuild
          */
         default void doBuild(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-            if (Util.isOverridden(ParameterizedJob.class, getClass(), "doBuild", StaplerRequest.class, StaplerResponse.class, TimeDuration.class)) {
-                try {
-                    doBuild(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp), delay);
-                } catch (javax.servlet.ServletException e) {
-                    throw ServletExceptionWrapper.toJakartaServletException(e);
-                }
-            } else {
-                getParameterizedJobMixIn().doBuild(req, rsp, delay);
-            }
-        }
-
-        /**
-         * @deprecated use {@link #doBuild(StaplerRequest2, StaplerResponse2, TimeDuration)}
-         */
-        @Deprecated
-        @StaplerNotDispatchable
-        default void doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, javax.servlet.ServletException {
-            try {
-                getParameterizedJobMixIn().doBuild(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), delay);
-            } catch (ServletException e) {
-                throw ServletExceptionWrapper.fromJakartaServletException(e);
-            }
+            getParameterizedJobMixIn().doBuild(req, rsp, delay);
         }
 
         /**
@@ -436,28 +411,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
          * @see ParameterizedJobMixIn#doBuildWithParameters
          */
         default void doBuildWithParameters(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-            if (Util.isOverridden(ParameterizedJob.class, getClass(), "doBuildWithParameters", StaplerRequest.class, StaplerResponse.class, TimeDuration.class)) {
-                try {
-                    doBuildWithParameters(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp), delay);
-                } catch (javax.servlet.ServletException e) {
-                    throw ServletExceptionWrapper.toJakartaServletException(e);
-                }
-            } else {
-                getParameterizedJobMixIn().doBuildWithParameters(req, rsp, delay);
-            }
-        }
-
-        /**
-         * @deprecated use {@link #doBuildWithParameters(StaplerRequest2, StaplerResponse2, TimeDuration)}
-         */
-        @Deprecated
-        @StaplerNotDispatchable
-        default void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, javax.servlet.ServletException {
-            try {
-                getParameterizedJobMixIn().doBuildWithParameters(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), delay);
-            } catch (ServletException e) {
-                throw ServletExceptionWrapper.fromJakartaServletException(e);
-            }
+            getParameterizedJobMixIn().doBuildWithParameters(req, rsp, delay);
         }
 
         /**

@@ -41,7 +41,6 @@ import hudson.util.HttpResponses;
 import hudson.views.ListViewColumn;
 import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,7 +66,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -442,31 +440,6 @@ public class ListView extends View implements DirectlyModifiableView {
      */
     @Override
     protected void submit(StaplerRequest2 req) throws ServletException, FormException, IOException {
-        if (Util.isOverridden(View.class, getClass(), "submit", StaplerRequest.class)) {
-            try {
-                submit(StaplerRequest.fromStaplerRequest2(req));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            submitImpl(req);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #submit(StaplerRequest2)}
-     */
-    @Deprecated
-    @Override
-    protected void submit(StaplerRequest req) throws javax.servlet.ServletException, FormException, IOException {
-        try {
-            submitImpl(StaplerRequest.toStaplerRequest2(req));
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    private void submitImpl(StaplerRequest2 req) throws ServletException, FormException, IOException {
         JSONObject json = req.getSubmittedForm();
         synchronized (this) {
             recurse = json.optBoolean("recurse", true);

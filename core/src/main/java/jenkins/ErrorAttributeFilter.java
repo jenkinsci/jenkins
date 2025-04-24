@@ -1,5 +1,6 @@
 package jenkins;
 
+import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
@@ -9,7 +10,6 @@ import java.io.IOException;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.CompatibleFilter;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -18,7 +18,7 @@ import org.springframework.security.core.Authentication;
  * @see Jenkins#generateNotFoundResponse(org.kohsuke.stapler.StaplerRequest2, org.kohsuke.stapler.StaplerResponse2)
  */
 @Restricted(NoExternalUse.class)
-public class ErrorAttributeFilter implements CompatibleFilter {
+public class ErrorAttributeFilter implements Filter {
 
     public static final String USER_ATTRIBUTE = "jenkins.ErrorAttributeFilter.user";
 

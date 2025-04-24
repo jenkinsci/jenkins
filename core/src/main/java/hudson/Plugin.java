@@ -46,7 +46,6 @@ import java.util.logging.Logger;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
@@ -54,7 +53,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 
 /**
@@ -253,31 +251,6 @@ public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
      * @since 2.475
      */
     public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        if (Util.isOverridden(Plugin.class, getClass(), "doDynamic", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                doDynamic(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            doDynamicImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doDynamic(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
-        try {
-            doDynamicImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    private void doDynamicImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
 
         String pathUC = path.toUpperCase(Locale.ENGLISH);

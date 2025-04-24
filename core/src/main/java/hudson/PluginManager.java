@@ -67,7 +67,6 @@ import hudson.util.Service;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import io.jenkins.servlet.ServletContextWrapper;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import java.io.ByteArrayInputStream;
@@ -136,7 +135,6 @@ import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.CustomClassFilter;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
@@ -167,7 +165,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
@@ -246,17 +243,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
                                             @NonNull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(ServletContext.class, File.class).newInstance(jenkins.getServletContext(), jenkins.getRootDir());
-            }
-        },
-        /**
-         * @deprecated use {@link #SC_FILE2}
-         */
-        @Deprecated
-        SC_FILE {
-            @Override
-            @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
-                                            @NonNull Jenkins jenkins) throws ReflectiveOperationException {
-                return klass.getConstructor(javax.servlet.ServletContext.class, File.class).newInstance(jenkins.servletContext, jenkins.getRootDir());
             }
         },
         FILE {
@@ -1908,31 +1894,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @RequirePOST
     public HttpResponse doUploadPlugin(StaplerRequest2 req) throws IOException, ServletException {
-        if (Util.isOverridden(PluginManager.class, getClass(), "doUploadPlugin", StaplerRequest.class)) {
-            try {
-                return doUploadPlugin(StaplerRequest.fromStaplerRequest2(req));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            return doUploadPluginImpl(req);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doUploadPlugin(StaplerRequest2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public HttpResponse doUploadPlugin(StaplerRequest req) throws IOException, javax.servlet.ServletException {
-        try {
-            return doUploadPluginImpl(StaplerRequest.toStaplerRequest2(req));
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    private HttpResponse doUploadPluginImpl(StaplerRequest2 req) throws IOException, ServletException {
         try {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 

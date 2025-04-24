@@ -7,6 +7,7 @@
 package hudson.security.csrf;
 
 import hudson.util.MultipartFormDataParser;
+import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
@@ -27,7 +28,6 @@ import jenkins.util.SystemProperties;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -38,7 +38,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
  *
  * @author dty
  */
-public class CrumbFilter implements CompatibleFilter {
+public class CrumbFilter implements Filter {
     /**
      * Because servlet containers generally don't specify the ordering of the initialization
      * (and different implementations indeed do this differently --- See JENKINS-3878),

@@ -40,7 +40,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.CompatibleFilter;
 
 /**
  * More convenient and declarative way to use {@link PluginServletFilter}.
@@ -64,7 +63,7 @@ public interface HttpServletFilter extends ExtensionPoint {
     @Restricted(DoNotUse.class)
     @Initializer
     static void register() throws ServletException {
-        PluginServletFilter.addFilter(new CompatibleFilter() {
+        PluginServletFilter.addFilter(new Filter() {
             @Override
             public void doFilter(ServletRequest req, ServletResponse rsp, FilterChain chain) throws IOException, ServletException {
                 if (req instanceof HttpServletRequest && rsp instanceof HttpServletResponse) {

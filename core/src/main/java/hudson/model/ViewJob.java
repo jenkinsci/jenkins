@@ -25,9 +25,7 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Util;
 import hudson.model.Descriptor.FormException;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -39,9 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 
 /**
@@ -170,29 +166,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT, RunT>, RunT extends Run
 
     @Override
     protected void submit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
-        if (Util.isOverridden(ViewJob.class, getClass(), "submit", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                submit(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            super.submit(req, rsp);
-            submitImpl();
-        }
-    }
-
-    /**
-     * @deprecated use {@link #submit(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @Override
-    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException, FormException {
         super.submit(req, rsp);
-        submitImpl();
-    }
-
-    private void submitImpl() {
         // make sure to reload to reflect this config change.
         nextUpdate = 0;
     }

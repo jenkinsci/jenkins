@@ -24,6 +24,7 @@
 
 package hudson.util;
 
+import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
@@ -34,7 +35,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
-import org.kohsuke.stapler.CompatibleFilter;
 
 /**
  * Filter that sets the character encoding to be used in parsing the request
@@ -42,7 +42,7 @@ import org.kohsuke.stapler.CompatibleFilter;
  *
  * @author Seiji Sogabe
  */
-public class CharacterEncodingFilter implements CompatibleFilter {
+public class CharacterEncodingFilter implements Filter {
 
     /**
      * The default character encoding.

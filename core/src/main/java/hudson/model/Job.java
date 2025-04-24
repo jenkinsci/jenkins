@@ -70,7 +70,6 @@ import hudson.util.TextFile;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.awt.Color;
 import java.awt.Paint;
@@ -101,7 +100,6 @@ import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONException;
@@ -1211,24 +1209,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Override
     public ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
-        if (Util.isOverridden(Job.class, getClass(), "doChildrenContextMenu", StaplerRequest.class, StaplerResponse.class)) {
-            return doChildrenContextMenu(StaplerRequest.fromStaplerRequest2(request), StaplerResponse.fromStaplerResponse2(response));
-        } else {
-            return doChildrenContextMenuImpl(request, response);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doChildrenContextMenu(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    @Override
-    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
-        return doChildrenContextMenuImpl(StaplerRequest.toStaplerRequest2(request), StaplerResponse.toStaplerResponse2(response));
-    }
-
-    private ContextMenu doChildrenContextMenuImpl(StaplerRequest2 request, StaplerResponse2 response) {
         // not sure what would be really useful here. This needs more thoughts.
         // for the time being, I'm starting with permalinks
         ContextMenu menu = new ContextMenu();
@@ -1437,21 +1417,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     protected void submit(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException, ServletException, FormException {
-        if (Util.isOverridden(Job.class, getClass(), "submit", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                submit(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        }
-    }
-
-    /**
-     * @deprecated use {@link #submit(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    protected void submit(StaplerRequest req, StaplerResponse rsp)
-            throws IOException, javax.servlet.ServletException, FormException {
     }
 
     /**

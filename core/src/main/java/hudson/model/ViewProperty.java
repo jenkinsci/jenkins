@@ -26,10 +26,8 @@ package hudson.model;
 
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
-import hudson.Util;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
@@ -72,20 +70,6 @@ public class ViewProperty implements ReconfigurableDescribable<ViewProperty>, Ex
 
     @Override
     public ViewProperty reconfigure(StaplerRequest2 req, JSONObject form) throws Descriptor.FormException {
-        if (Util.isOverridden(ViewProperty.class, getClass(), "reconfigure", StaplerRequest.class, JSONObject.class)) {
-            return reconfigure(StaplerRequest.fromStaplerRequest2(req), form);
-        } else {
-            return reconfigureImpl(req, form);
-        }
-    }
-
-    @Deprecated
-    @Override
-    public ViewProperty reconfigure(StaplerRequest req, JSONObject form) throws Descriptor.FormException {
-        return reconfigureImpl(StaplerRequest.toStaplerRequest2(req), form);
-    }
-
-    private ViewProperty reconfigureImpl(StaplerRequest2 req, JSONObject form) throws Descriptor.FormException {
         return form == null ? null : getDescriptor().newInstance(req, form);
     }
 }

@@ -30,7 +30,6 @@ import static java.lang.Math.abs;
 
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Util;
 import hudson.remoting.ObjectInputStreamEx;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,12 +50,9 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import jenkins.model.Jenkins;
 import jenkins.security.CryptoConfidentialKey;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 import org.kohsuke.stapler.framework.io.LargeText;
@@ -98,23 +94,6 @@ public class AnnotatedLargeText<T> extends LargeText {
      * @since 2.475
      */
     public void doProgressiveHtml(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
-        if (Util.isOverridden(AnnotatedLargeText.class, getClass(), "doProgressiveHtml", StaplerRequest.class, StaplerResponse.class)) {
-            doProgressiveHtml(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-        } else {
-            doProgressiveHtmlImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doProgressiveHtml(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    public void doProgressiveHtml(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        doProgressiveHtmlImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-    }
-
-    private void doProgressiveHtmlImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         req.setAttribute("html", true);
         doProgressText(req, rsp);
     }
@@ -125,14 +104,6 @@ public class AnnotatedLargeText<T> extends LargeText {
      * @since 2.475
      */
     public void doProgressiveText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
-        doProgressText(req, rsp);
-    }
-
-    /**
-     * @deprecated use {@link #doProgressiveText(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    public void doProgressiveText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         doProgressText(req, rsp);
     }
 
@@ -150,22 +121,6 @@ public class AnnotatedLargeText<T> extends LargeText {
      */
     @Override
     protected void setContentType(StaplerResponse2 rsp) {
-        if (Util.isOverridden(AnnotatedLargeText.class, getClass(), "setContentType", StaplerResponse.class)) {
-            setContentType(StaplerResponse.fromStaplerResponse2(rsp));
-        } else {
-            setContentTypeImpl(rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #setContentType(StaplerResponse2)}
-     */
-    @Deprecated
-    protected void setContentType(StaplerResponse rsp) {
-        setContentTypeImpl(StaplerResponse.toStaplerResponse2(rsp));
-    }
-
-    private void setContentTypeImpl(StaplerResponse2 rsp) {
         rsp.setContentType(isHtml() ? "text/html;charset=UTF-8" : "text/plain;charset=UTF-8");
     }
 

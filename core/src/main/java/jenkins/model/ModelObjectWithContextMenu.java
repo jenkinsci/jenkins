@@ -2,7 +2,6 @@ package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
-import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.BallColor;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import jenkins.management.Badge;
-import jenkins.security.stapler.StaplerNotDispatchable;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
@@ -64,28 +62,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
      * which implements the default behaviour. See {@link ContextMenu#from(ModelObjectWithContextMenu, StaplerRequest2, StaplerResponse2)}
      * for more details of what it does. This should suit most implementations.
      */
-    default ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
-        if (Util.isOverridden(ModelObjectWithContextMenu.class, getClass(), "doContextMenu", StaplerRequest.class, StaplerResponse.class)) {
-            return doContextMenu(StaplerRequest.fromStaplerRequest2(request), StaplerResponse.fromStaplerResponse2(response));
-        } else {
-            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
-                    + ModelObjectWithContextMenu.class.getSimpleName() + ".doContextMenu methods");
-        }
-    }
-
-    /**
-     * @deprecated use {@link #doContextMenu(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @StaplerNotDispatchable
-    default ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
-        if (Util.isOverridden(ModelObjectWithContextMenu.class, getClass(), "doContextMenu", StaplerRequest2.class, StaplerResponse2.class)) {
-            return doContextMenu(StaplerRequest.toStaplerRequest2(request), StaplerResponse.toStaplerResponse2(response));
-        } else {
-            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
-                    + ModelObjectWithContextMenu.class.getSimpleName() + ".doContextMenu methods");
-        }
-    }
+    ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception;
 
     /**
      * Data object that represents the context menu.

@@ -1782,33 +1782,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      */
     @Override
     protected void submit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
-        if (Util.isOverridden(AbstractProject.class, getClass(), "submit", StaplerRequest.class, StaplerResponse.class)) {
-            try {
-                submit(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            super.submit(req, rsp);
-            submitImpl(req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #submit(StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @Override
-    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException, FormException {
         super.submit(req, rsp);
-        try {
-            submitImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    private void submitImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
         JSONObject json = req.getSubmittedForm();
 
         makeDisabled(!json.optBoolean("enable"));
