@@ -82,6 +82,11 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>websocket-jetty12-ee10</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>websocket-jetty12-ee9</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -158,6 +163,7 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
                     <exclude>org.jenkins-ci.main:remoting</exclude>
                     <exclude>org.jenkins-ci.main:websocket-jetty12-ee9</exclude>
+                    <exclude>org.jenkins-ci.main:websocket-jetty12-ee10</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
                     <exclude>org.jenkins-ci:memory-monitor</exclude>
                     <exclude>org.jenkins-ci:symbol-annotation</exclude>
@@ -580,7 +586,7 @@ THE SOFTWARE.
             </configuration>
           </execution>
           <execution>
-            <!-- see jetty-ee9-maven-plugin config and WebAppMain -->
+            <!-- see jetty-ee10-maven-plugin config and WebAppMain -->
             <id>support-log-formatter</id>
             <goals>
               <goal>copy</goal>
@@ -646,8 +652,8 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.eclipse.jetty.ee9</groupId>
-        <artifactId>jetty-ee9-maven-plugin</artifactId>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-maven-plugin</artifactId>
         <!--
           Make sure to keep the Winstone version in pom.xml in sync with this version. If the current Winstone release
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
