@@ -147,6 +147,11 @@ THE SOFTWARE.
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-war</artifactId>
       <version>${project.version}</version>
@@ -178,7 +183,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2435.ve31a_a_7742319</version>
+      <version>2438.v25a_85fb_0328f</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
