@@ -53,6 +53,7 @@ THE SOFTWARE.
     <module>bom</module>
     <module>websocket/spi</module>
     <module>websocket/jetty12-ee9</module>
+    <module>websocket/jetty12-ee10</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -96,8 +97,9 @@ THE SOFTWARE.
     <antlr.version>4.13.2</antlr.version>
     <bridge-method-injector.version>1.31</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
-    <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.7</winstone.version>
+    <!-- Make sure to keep the jetty-ee10-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
+    <!-- TODO https://github.com/jenkinsci/winstone/pull/422 -->
+    <winstone.version>8.8-rc969.23328d87ea_d1</winstone.version>
     <node.version>20.19.0</node.version>
   </properties>
 

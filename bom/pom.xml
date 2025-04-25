@@ -40,8 +40,10 @@ THE SOFTWARE.
   <properties>
     <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
     <groovy.version>2.4.21</groovy.version>
-    <jelly.version>1.1-jenkins-20250108</jelly.version>
-    <stapler.version>1971.vf47a_d79853d7</stapler.version>
+    <!-- TODO https://github.com/jenkinsci/jelly/pull/140 -->
+    <jelly.version>1.1-jenkins-20250109-rc236.04a_a_57a_f8d9b_</jelly.version>
+    <!-- TODO https://github.com/jenkinsci/stapler/pull/617 -->
+    <stapler.version>1972.va_2b_2b_d237eca_</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -129,12 +131,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>jakarta.servlet</groupId>
         <artifactId>jakarta.servlet-api</artifactId>
-        <version>5.0.0</version>
+        <version>6.0.0</version>
       </dependency>
       <dependency>
         <groupId>jakarta.servlet.jsp.jstl</groupId>
         <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
-        <version>2.0.0</version>
+        <version>3.0.0</version>
       </dependency>
       <dependency>
         <groupId>jaxen</groupId>
