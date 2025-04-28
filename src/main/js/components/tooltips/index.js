@@ -1,4 +1,4 @@
-import tippy from "tippy.js";
+import tippy, { followCursor } from "tippy.js";
 import behaviorShim from "@/util/behavior-shim";
 
 const TOOLTIP_BASE = {
@@ -23,6 +23,8 @@ const TOOLTIP_BASE = {
     ],
   },
   duration: 250,
+  maxWidth: "min(50vw, 1000px)",
+  plugins: [followCursor],
 };
 
 /**
@@ -38,7 +40,31 @@ function registerTooltip(element) {
 
   const tooltip = element.getAttribute("tooltip");
   const htmlTooltip = element.getAttribute("data-html-tooltip");
-  const delay = element.getAttribute("data-tooltip-delay") || 0;
+  const dataTooltipOptions = element.getAttribute("data-tooltip-options");
+  let tooltipOptions = {};
+  if (dataTooltipOptions !== null) {
+    const options = JSON.parse(dataTooltipOptions);
+    [
+      "placement",
+      "delay",
+      "maxWidth",
+      "followCursor",
+      "interactive",
+      "offset",
+    ].forEach((opt) => {
+      if (opt in options) {
+        tooltipOptions[opt] = options[opt];
+      }
+    });
+  }
+  const delay = element.getAttribute("data-tooltip-delay");
+  if (delay) {
+    tooltipOptions.delay = delay;
+  }
+  const interactive = element.getAttribute("data-tooltip-interactive");
+  if (interactive) {
+    tooltipOptions.interactive = interactive === "true";
+  }
   let appendTo = document.body;
   if (element.hasAttribute("data-tooltip-append-to-parent")) {
     appendTo = "parent";
@@ -63,9 +89,9 @@ function registerTooltip(element) {
             instance.reference.setAttribute("title", instance.props.content);
           },
           appendTo: appendTo,
-          delay: [delay, null],
         },
         TOOLTIP_BASE,
+        tooltipOptions,
       ),
     );
   }
@@ -77,15 +103,10 @@ function registerTooltip(element) {
         {
           content: () => htmlTooltip,
           allowHTML: true,
-          onCreate(instance) {
-            instance.props.interactive =
-              instance.reference.getAttribute("data-tooltip-interactive") ===
-              "true";
-          },
           appendTo: appendTo,
-          delay: [delay, null],
         },
         TOOLTIP_BASE,
+        tooltipOptions,
       ),
     );
   }
