@@ -4376,7 +4376,7 @@ __metadata:
     sass-loader: "npm:16.0.5"
     sortablejs: "npm:1.15.6"
     style-loader: "npm:4.0.0"
-    stylelint: "npm:16.19.0"
+    stylelint: "npm:16.19.1"
     stylelint-checkstyle-reporter: "npm:1.0.0"
     stylelint-config-standard-scss: "npm:14.0.0"
     tippy.js: "npm:6.3.7"
@@ -6713,9 +6713,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:16.19.0":
-  version: 16.19.0
-  resolution: "stylelint@npm:16.19.0"
+"stylelint@npm:16.19.1":
+  version: 16.19.1
+  resolution: "stylelint@npm:16.19.1"
   dependencies:
     "@csstools/css-parser-algorithms": "npm:^3.0.4"
     "@csstools/css-tokenizer": "npm:^3.0.3"
@@ -6757,7 +6757,7 @@ __metadata:
     write-file-atomic: "npm:^5.0.1"
   bin:
     stylelint: bin/stylelint.mjs
-  checksum: 10c0/15a8c2f5c1ece526672eec05b8c69e2cb0fb41c9d77e22577d19d88610de2f1f59fd5926b067166d0d8d30cca8c745401fa119c31d2525335d631bd58c75a7a0
+  checksum: 10c0/e633f323ff730e8f2ac982067e4caa9a6c98b81a519e7adff96fa7a7d047f68a24c0dd2d81f3511b0943d99c915f20f19da911d16d47336705ea70d46e960c89
   languageName: node
   linkType: hard
 
