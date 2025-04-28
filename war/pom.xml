@@ -303,7 +303,7 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>847.v88a_f90ff9f20</version>
+                  <version>849.v0cd64ed7e531</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -368,7 +368,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>5.6.0-3</version>
+                  <version>5.6.0-4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
