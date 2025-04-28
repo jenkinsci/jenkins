@@ -311,4 +311,28 @@ public class ComputerTest {
         MemoryAssert.assertGC(channelRef, false);
     }
 
+    @Test
+    public void isConnectedTest() throws Exception {
+        var agent = j.createOnlineSlave();
+        var computer = agent.toComputer();
+        assertThat(computer.isOnline(), is(true));
+        assertThat(computer.isConnected(), is(true));
+        assertThat(computer.isOffline(), is(false));
+
+        // marks the computer temporary offline
+        computer.doToggleOffline(null);
+        assertThat("temporary offline agent is still connected", computer.isConnected(), is(true));
+        assertThat("temporary offline agent is not available for scheduling", computer.isOnline(), is(false));
+        assertThat(computer.isOffline(), is(true));
+
+        // bring it back online
+        computer.doToggleOffline(null);
+        assertThat(computer.isOnline(), is(true));
+
+        // disconnect the computer
+        computer.disconnect(new OfflineCause.UserCause(null, null));
+        assertThat("disconnected agent is not connected", computer.isConnected(), is(false));
+        assertThat("disconnected agent is not available for scheduling", computer.isOnline(), is(false));
+    }
+
 }

@@ -60,7 +60,11 @@ public interface IComputer extends AccessControlled, IconSpec {
     List<? extends IDisplayExecutor> getDisplayExecutors();
 
     /**
-     * @return {@code true} if the node is offline. {@code false} if it is online.
+     * Returns whether the agent is offline for scheduling new tasks.
+     * Even if {@code true}, the agent may still be connected to the controller and executing a task,
+     * but is considered offline for scheduling.
+     * @return {@code true} if the agent is offline; {@code false} if online.
+     * @see #isConnected()
      */
     boolean isOffline();
 
@@ -192,9 +196,17 @@ public interface IComputer extends AccessControlled, IconSpec {
     int countExecutors();
 
     /**
-     * @return true if the computer is online.
+     * Indicates whether the agent can accept a new task when it becomes idle.
+     * {@code false} does not necessarily mean the agent is disconnected.
+     * @return {@code true} if the agent is online.
+     * @see #isConnected()
      */
     boolean isOnline();
+
+    /**
+     * @return {@code true} if the agent is connected to the controller.
+     */
+    boolean isConnected();
 
     /**
      * @return the number of {@link IExecutor}s that are idle right now.

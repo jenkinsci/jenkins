@@ -625,6 +625,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return !isOffline();
     }
 
+    public boolean isConnected() {
+        return getChannel() != null;
+    }
+
     /**
      * This method is called to determine whether manual launching of the agent is allowed at this point in time.
      * @return {@code true} if manual launching of the agent is allowed at this point in time.
