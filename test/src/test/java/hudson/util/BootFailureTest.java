@@ -19,13 +19,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.NoListenerConfiguration2;
 import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.WebApp;
@@ -42,6 +44,31 @@ public class BootFailureTest {
     static boolean makeBootFail = true;
     static WebAppMain wa;
 
+    private static String forceSessionTrackingByCookiePreviousValue;
+
+    /*
+     * TODO use RealJenkinsRule
+     *
+     * The system property change workaround is needed because wa.contextInitialized is called while the context is
+     * already started. The JavaDoc is explicit: it must be starting, not started. When this test has been rewritten to
+     * use RealJenkinsRule, this workaround should be deleted.
+     */
+
+    @BeforeClass
+    public static void disableSessionTrackingSetting() {
+        forceSessionTrackingByCookiePreviousValue = SystemProperties.getString(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP);
+        System.setProperty(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP, "false");
+    }
+
+    @AfterClass
+    public static void resetSessionTrackingSetting() {
+        if (forceSessionTrackingByCookiePreviousValue == null) {
+            System.clearProperty(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP);
+        } else {
+            System.setProperty(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP, forceSessionTrackingByCookiePreviousValue);
+        }
+    }
+
     static class CustomRule extends JenkinsRule {
         @Override
         public void before() {
@@ -53,6 +80,7 @@ public class BootFailureTest {
         @Override
         public Hudson newHudson() throws Exception {
             localPort = 0;
+            ServletContext ws = createWebServer2();
             wa = new WebAppMain() {
                 @Override
                 public WebAppMain.FileAndDescription getHomeDir(ServletContextEvent event) {
@@ -63,26 +91,7 @@ public class BootFailureTest {
                     }
                 }
             };
-            // Without this gymnastic, the jenkins-test-harness adds a NoListenerConfiguration
-            // that prevents us to inject our own custom WebAppMain
-            // With this approach we can make the server calls the regular contextInitialized
-            ServletContext ws = createWebServer2((context, server) -> {
-                NoListenerConfiguration2 noListenerConfiguration = context.getBean(NoListenerConfiguration2.class);
-                // future-proof
-                assertNotNull(noListenerConfiguration);
-                if (noListenerConfiguration != null) {
-                    context.removeBean(noListenerConfiguration);
-                    context.addBean(new NoListenerConfiguration2(context) {
-                        @Override
-                        protected void doStart() {
-                            // default behavior of noListenerConfiguration
-                            super.doStart();
-                            // ensuring our custom context will received the contextInitialized event
-                            context.addEventListener(wa);
-                        }
-                    });
-                }
-            });
+            wa.contextInitialized(new ServletContextEvent(ws));
             wa.joinInit();
 
             Object a = WebApp.get(ws).getApp();
