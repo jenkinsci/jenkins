@@ -313,26 +313,35 @@ public class ComputerTest {
 
     @Test
     public void isConnectedTest() throws Exception {
-        var agent = j.createOnlineSlave();
+        var agent = j.createSlave();
         var computer = agent.toComputer();
-        assertThat(computer.isOnline(), is(true));
+
+        // Verify initial state: computer is not connected
+        assertThat(computer.isOnline(), is(false));
+        assertThat(computer.isConnected(), is(false));
+
+        // Connect the computer
+        computer.connect(false);
+        await("computer should be online after connect").until(() -> computer.isOnline(), is(true));
         assertThat(computer.isConnected(), is(true));
         assertThat(computer.isOffline(), is(false));
 
-        // marks the computer temporary offline
+        // Mark computer temporary offline
         computer.doToggleOffline(null);
         assertThat("temporary offline agent is still connected", computer.isConnected(), is(true));
         assertThat("temporary offline agent is not available for scheduling", computer.isOnline(), is(false));
         assertThat(computer.isOffline(), is(true));
 
-        // bring it back online
+        // Bring it back online
         computer.doToggleOffline(null);
         assertThat(computer.isOnline(), is(true));
+        assertThat(computer.isConnected(), is(true)); // channel is still there.
 
-        // disconnect the computer
+        // Disconnect the computer
         computer.disconnect(new OfflineCause.UserCause(null, null));
-        assertThat("disconnected agent is not connected", computer.isConnected(), is(false));
-        assertThat("disconnected agent is not available for scheduling", computer.isOnline(), is(false));
+        // wait for the slave process to be killed
+        await("disconnected agent is not available for scheduling").until(() -> computer.isOnline(), is(false));
+        assertThat(computer.isConnected(), is(false));
+        assertThat(computer.isOffline(), is(true));
     }
-
 }
