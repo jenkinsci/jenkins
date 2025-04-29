@@ -34,7 +34,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * <br>It is assumed that restarting Jenkins can resolve the issue.
  * <p>For instance, low disk space is not a good health check because it can't be solved by restarting Jenkins.
  * <br>Detecting a deadlock in a critical singleton thread would be a good health check as long as associated information (thread dump) is reported somewhere before restarting.
- * @since TODO
+ * @since 2.506
  */
 @Restricted(Beta.class)
 public interface HealthCheck extends ExtensionPoint {
