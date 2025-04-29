@@ -24,8 +24,6 @@
 
 package hudson.model;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeFalse;
 
 import hudson.Functions;
@@ -50,21 +48,6 @@ public class LoadStatisticsTest {
     public void graph() throws IOException {
         assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         LoadStatistics ls = new LoadStatistics(0, 0) {
-            @Override
-            public int computeIdleExecutors() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public int computeTotalExecutors() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public int computeQueueLength() {
-                throw new UnsupportedOperationException();
-            }
-
             @Override
             protected Iterable<Node> getNodes() {
                 throw new UnsupportedOperationException();
@@ -98,44 +81,6 @@ public class LoadStatisticsTest {
             ImageIO.write(image, "PNG", os);
         } finally {
             tempFile.delete();
-        }
-    }
-
-    @Test
-    public void isModernWorks() {
-        assertThat(LoadStatistics.isModern(Modern.class), is(true));
-        assertThat(LoadStatistics.isModern(LoadStatistics.class), is(false));
-    }
-
-    private static class Modern extends LoadStatistics {
-
-        protected Modern(int initialOnlineExecutors, int initialBusyExecutors) {
-            super(initialOnlineExecutors, initialBusyExecutors);
-        }
-
-        @Override
-        public int computeIdleExecutors() {
-            return 0;
-        }
-
-        @Override
-        public int computeTotalExecutors() {
-            return 0;
-        }
-
-        @Override
-        public int computeQueueLength() {
-            return 0;
-        }
-
-        @Override
-        protected Iterable<Node> getNodes() {
-            return null;
-        }
-
-        @Override
-        protected boolean matches(Queue.Item item, SubTask subTask) {
-            return false;
         }
     }
 }

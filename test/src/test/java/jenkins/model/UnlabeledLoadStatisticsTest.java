@@ -61,7 +61,7 @@ public class UnlabeledLoadStatisticsTest {
     public void computeQueueLength() throws Exception {
         final Queue queue = j.jenkins.getQueue();
         assertEquals("Queue must be empty when the test starts", 0, queue.getBuildableItems().size());
-        assertEquals("Statistics must return 0 when the test starts", 0, unlabeledLoad.computeQueueLength());
+        assertEquals("Statistics must return 0 when the test starts", 0, unlabeledLoad.computeSnapshot().getQueueLength());
 
         // Disable builds by default, create an agent to prevent assigning of "built-in" labels
         j.jenkins.setNumExecutors(0);
@@ -77,22 +77,22 @@ public class UnlabeledLoadStatisticsTest {
         // Put unlabeled build into the queue
         unlabeledProject.scheduleBuild2(0, new ParametersAction(new StringParameterValue("FOO", "BAR1")));
         queue.maintain();
-        assertEquals("Unlabeled build must be taken into account", 1, unlabeledLoad.computeQueueLength());
+        assertEquals("Unlabeled build must be taken into account", 1, unlabeledLoad.computeSnapshot().getQueueLength());
         unlabeledProject.scheduleBuild2(0, new ParametersAction(new StringParameterValue("FOO", "BAR2")));
         queue.maintain();
-        assertEquals("Second Unlabeled build must be taken into account", 2, unlabeledLoad.computeQueueLength());
+        assertEquals("Second Unlabeled build must be taken into account", 2, unlabeledLoad.computeSnapshot().getQueueLength());
 
         // Put labeled build into the queue
         labeledProject.scheduleBuild2(0);
         queue.maintain();
-        assertEquals("Labeled builds must be ignored", 2, unlabeledLoad.computeQueueLength());
+        assertEquals("Labeled builds must be ignored", 2, unlabeledLoad.computeSnapshot().getQueueLength());
 
         // Allow executions of unlabeled builds on built-in node, all unlabeled builds should pass
         j.jenkins.setNumExecutors(1);
         j.buildAndAssertSuccess(unlabeledProject);
         queue.maintain();
         assertEquals("Queue must contain the labeled project build", 1, queue.getBuildableItems().size());
-        assertEquals("Statistics must return 0 after all builds", 0, unlabeledLoad.computeQueueLength());
+        assertEquals("Statistics must return 0 after all builds", 0, unlabeledLoad.computeSnapshot().getQueueLength());
     }
 
 }

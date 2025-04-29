@@ -147,6 +147,11 @@ THE SOFTWARE.
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-war</artifactId>
       <version>${project.version}</version>
@@ -178,7 +183,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2429.v843718995d1d</version>
+      <version>2439.vee0607d480ea_</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -248,7 +253,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>847.v88a_f90ff9f20</version>
+      <version>849.v0cd64ed7e531</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -350,7 +355,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>374.v9466b_9e00db_b_</version>
+                  <version>380.v552d32a_3b_8a_c</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
