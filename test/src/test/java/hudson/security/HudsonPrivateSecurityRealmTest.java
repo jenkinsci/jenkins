@@ -762,9 +762,20 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Issue("JENKINS-75533")
-    public void ensureExpectedMessage() {
-        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode("1234567890123456789012345678901234567890123456789012345678901234567890123"));
-        assertThat(ex.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong()));
+    public void supportLongerPasswordToLogIn() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        final String _72CharPass = "123456789012345678901234567890123456789012345678901234567890123456789012";
+        final String username = "user";
+        securityRealm.createAccount(username, _72CharPass);
+        try (WebClient wc = j.createWebClient()) {
+            // can log in with the real 72 byte password
+            wc.login(username, _72CharPass);
+        }
+        try (WebClient wc = j.createWebClient()) {
+            // can log in with even longer password for this edge case
+            wc.login(username, _72CharPass + "345");
+        }
     }
 
     private static Matcher<LoggerRule> hasIncorrectHashingLogEntry() {
