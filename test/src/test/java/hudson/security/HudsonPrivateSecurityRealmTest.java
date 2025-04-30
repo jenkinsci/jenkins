@@ -76,7 +76,7 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 @WithJenkins
@@ -546,7 +546,7 @@ class HudsonPrivateSecurityRealmTest {
         // password = password
         assertFalse(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a208$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), "too big number of iterations");
 
-        // until https://github.com/jeremyh/jBCrypt/pull/16 is merged, the lib released and the dep updated, only the version 2a is supported
+        // Supported by Spring Security's BCrypt, but not by the Jenkins wrapper
         assertFalse(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm"), "unsupported version");
         assertFalse(PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2y$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe"), "unsupported version");
 
@@ -560,13 +560,15 @@ class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    void ensureHashingVersion_2x_isNotSupported() {
-        assertThrows(IllegalArgumentException.class, () -> BCrypt.checkpw("abc", "$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm"));
+    void ensureHashingVersion_2x_isSupported() {
+        // See #hashedPasswordTest for the corresponding test going through the Jenkins core wrapper class rejecting 2x
+        assertTrue(BCrypt.checkpw("abc", "$2x$08$Ro0CUfOqk6cXEKf3dyaM7OhSCvnwM9s4wIX9JeLapehKK5YdLxKcm"), "version 2x is supported");
     }
 
     @Test
-    void ensureHashingVersion_2y_isNotSupported() {
-        assertThrows(IllegalArgumentException.class, () -> BCrypt.checkpw("a", "$2y$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V."));
+    void ensureHashingVersion_2y_isSupported() {
+        // See #hashedPasswordTest for the corresponding test going through the Jenkins core wrapper class rejecting 2y
+        assertTrue(BCrypt.checkpw("a", "$2y$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V."), "version 2y is supported");
     }
 
     private void checkUserCanBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {
@@ -754,6 +756,24 @@ class HudsonPrivateSecurityRealmTest {
                 () -> securityRealm.createAccountWithHashedPassword("user_hashed_incorrect_algorithm", PBKDF_ENDOCED_PASSWORD));
         assertThat(illegalArgumentException.getMessage(),
                 is("The hashed password was hashed with an incorrect algorithm. Jenkins is expecting #jbcrypt:"));
+    }
+      
+    @Test
+    @Issue("JENKINS-75533")
+    void supportLongerPasswordToLogIn() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        final String _72CharPass = "123456789012345678901234567890123456789012345678901234567890123456789012";
+        final String username = "user";
+        securityRealm.createAccount(username, _72CharPass);
+        try (WebClient wc = j.createWebClient()) {
+            // can log in with the real 72 byte password
+            wc.login(username, _72CharPass);
+        }
+        try (WebClient wc = j.createWebClient()) {
+            // can log in with even longer password for this edge case
+            wc.login(username, _72CharPass + "345");
+        }
     }
 
     private static Matcher<LogRecorder> hasIncorrectHashingLogEntry() {

@@ -183,7 +183,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2438.v25a_85fb_0328f</version>
+      <version>2439.vee0607d480ea_</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -253,7 +253,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>847.v88a_f90ff9f20</version>
+      <version>849.v0cd64ed7e531</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -355,7 +355,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>376.v76d809f50b_83</version>
+                  <version>380.v552d32a_3b_8a_c</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
