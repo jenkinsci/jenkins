@@ -207,11 +207,6 @@ THE SOFTWARE.
         <version>${groovy.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.connectbot</groupId>
-        <artifactId>jbcrypt</artifactId>
-        <version>1.0.2</version>
-      </dependency>
-      <dependency>
         <!-- Groovy shell uses this, but it doesn't declare the dependency -->
         <groupId>org.fusesource.jansi</groupId>
         <artifactId>jansi</artifactId>
