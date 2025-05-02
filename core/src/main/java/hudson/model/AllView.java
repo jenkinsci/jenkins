@@ -26,9 +26,7 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.Descriptor.FormException;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.Collection;
@@ -40,7 +38,6 @@ import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -114,23 +111,6 @@ public class AllView extends View {
 
     @Override
     protected void submit(StaplerRequest2 req) throws IOException, ServletException, FormException {
-        if (Util.isOverridden(AllView.class, getClass(), "submit", StaplerRequest.class)) {
-            try {
-                submit(StaplerRequest.fromStaplerRequest2(req));
-            } catch (javax.servlet.ServletException e) {
-                throw ServletExceptionWrapper.toJakartaServletException(e);
-            }
-        } else {
-            // noop
-        }
-    }
-
-    /**
-     * @deprecated use {@link #submit(StaplerRequest2)}
-     */
-    @Deprecated
-    @Override
-    protected void submit(StaplerRequest req) throws IOException, javax.servlet.ServletException, FormException {
         // noop
     }
 
