@@ -80,7 +80,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>ionicons-api</artifactId>
-        <version>82.v0597178874e1</version>
+        <version>87.ve74b_60c10b_57</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -183,7 +183,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2439.vee0607d480ea_</version>
+      <version>2443.v1f61c6816c2c</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
