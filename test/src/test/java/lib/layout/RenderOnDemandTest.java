@@ -33,9 +33,12 @@ import hudson.model.RootAction;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.WebClientUtil;
 import org.htmlunit.html.HtmlPage;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.TestExtension;
 
 /**
@@ -64,27 +67,21 @@ public class RenderOnDemandTest {
         assertEquals("AlphaBravoCharlie", r.getJavaScriptResult().toString());
     }
 
-    /*
+    @Ignore("just informational")
+    @Issue("JENKINS-16341")
     @Test
     public void testMemoryConsumption() throws Exception {
         j.createWebClient().goTo("self/testBehaviour"); // prime caches
         int total = 0;
-        for (MemoryAssert.HistogramElement element : MemoryAssert.increasedMemory(new Callable<Void>() {
-            @Override public Void call() throws Exception {
-                j.createWebClient().goTo("self/testBehaviour");
-                return null;
-            }
-        }, new Filter() {
-            @Override public boolean accept(Object obj, Object referredFrom, Field reference) {
-                return !obj.getClass().getName().contains("htmlunit");
-            }
-        })) {
+        for (var element : MemoryAssert.increasedMemory(() -> {
+            j.createWebClient().goTo("self/testBehaviour");
+            return null;
+        }, (obj, referredFrom, reference) -> !obj.getClass().getName().contains("htmlunit"))) {
             total += element.byteSize;
             System.out.println(element.className + " ×" + element.instanceCount + ": " + element.byteSize);
         }
         System.out.println("total: " + total);
     }
-    */
 
     /**
      * Makes sure that scripts get evaluated.
