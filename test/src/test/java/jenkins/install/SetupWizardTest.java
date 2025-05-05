@@ -27,6 +27,7 @@ package jenkins.install;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
@@ -62,10 +63,10 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.Callback;
 import org.htmlunit.Page;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -78,18 +79,16 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 @WithJenkins
 class SetupWizardTest {
 
-    @TempDir
     private File tmpdir;
 
     private JenkinsRule j;
 
     @BeforeEach
-    void setUp(JenkinsRule rule) {
+    void setUp(JenkinsRule rule) throws Exception {
         j = rule;
-    }
 
-    @BeforeEach
-    void initSetupWizard() throws IOException, InterruptedException {
+        tmpdir = Files.createTempDirectory("junit-").toFile();
+
         final SetupWizard wizard = j.jenkins.getSetupWizard();
         wizard.init(true);
 
@@ -98,6 +97,11 @@ class SetupWizardTest {
         ByteArrayOutputStream ostream = new ByteArrayOutputStream();
         adminPassFile.copyTo(ostream);
         final String password = ostream.toString(StandardCharsets.UTF_8);
+    }
+
+    @AfterEach
+    void tearDown() {
+        tmpdir.delete();
     }
 
     @Test
@@ -170,15 +174,13 @@ class SetupWizardTest {
 
     private String jsonRequest(JenkinsRule.WebClient wc, String path) {
         // Try to call the actions method to retrieve the data
-        final Page res;
         try {
-            res = wc.goTo(path, null);
+            final Page res = wc.goTo(path, null);
+            final String responseJSON = res.getWebResponse().getContentAsString();
+            return responseJSON;
         } catch (Exception ex) {
-            ex.getMessage();
-            throw new AssertionError("Cannot get a response from " + path, ex);
+            return fail("Cannot get a response from " + path, ex);
         }
-        final String responseJSON = res.getWebResponse().getContentAsString();
-        return responseJSON;
     }
 
     private static final class CustomLocalUpdateSite extends UpdateSite {
