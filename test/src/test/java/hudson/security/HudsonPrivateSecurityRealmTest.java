@@ -757,7 +757,7 @@ class HudsonPrivateSecurityRealmTest {
         assertThat(illegalArgumentException.getMessage(),
                 is("The hashed password was hashed with an incorrect algorithm. Jenkins is expecting #jbcrypt:"));
     }
-      
+
     @Test
     @Issue("JENKINS-75533")
     void supportLongerPasswordToLogIn() throws Exception {

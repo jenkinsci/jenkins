@@ -52,6 +52,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.GlobalBuildDiscarderListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FailureBuilder;
@@ -81,9 +82,11 @@ public class LogRotatorTest {
         project.getBuildersList().replaceBy(Set.of(new FailureBuilder()));
         j.buildAndAssertStatus(Result.FAILURE, project); // #2
         j.buildAndAssertStatus(Result.FAILURE, project); // #3
+        GlobalBuildDiscarderListener.await();
         assertEquals(1, numberOf(project.getLastSuccessfulBuild()));
         project.getBuildersList().replaceBy(Collections.emptySet());
         j.buildAndAssertSuccess(project); // #4
+        GlobalBuildDiscarderListener.await();
         assertEquals(4, numberOf(project.getLastSuccessfulBuild()));
         assertNull(project.getBuildByNumber(1));
         assertNull(project.getBuildByNumber(2));
@@ -100,6 +103,7 @@ public class LogRotatorTest {
         j.buildAndAssertStatus(Result.UNSTABLE, project); // #1
         project.getBuildersList().replaceBy(Set.of(new FailureBuilder()));
         j.buildAndAssertStatus(Result.FAILURE, project); // #2
+        GlobalBuildDiscarderListener.await();
         assertNull(project.getBuildByNumber(1));
         assertEquals(2, numberOf(project.getLastFailedBuild()));
     }
@@ -114,6 +118,7 @@ public class LogRotatorTest {
         logRotator.setRemoveLastBuild(true);
         p.setBuildDiscarder(logRotator);
         j.buildAndAssertStatus(Result.SUCCESS, p);
+        GlobalBuildDiscarderListener.await();
         assertNull(p.getBuildByNumber(1));
     }
 
@@ -126,9 +131,11 @@ public class LogRotatorTest {
         project.getPublishersList().replaceBy(Set.of(new TestsFail()));
         j.buildAndAssertStatus(Result.UNSTABLE, project); // #2
         j.buildAndAssertStatus(Result.UNSTABLE, project); // #3
+        GlobalBuildDiscarderListener.await();
         assertEquals(1, numberOf(project.getLastStableBuild()));
         project.getPublishersList().replaceBy(Collections.emptySet());
         j.buildAndAssertSuccess(project); // #4
+        GlobalBuildDiscarderListener.await();
         assertNull(project.getBuildByNumber(1));
         assertNull(project.getBuildByNumber(2));
     }
@@ -144,6 +151,7 @@ public class LogRotatorTest {
         j.buildAndAssertStatus(Result.UNSTABLE, project); // #2
         project.getBuildersList().replaceBy(Set.of(new FailureBuilder()));
         j.buildAndAssertStatus(Result.FAILURE, project); // #3
+        GlobalBuildDiscarderListener.await();
         assertNull(project.getBuildByNumber(1));
         assertNull(project.getBuildByNumber(2));
         assertEquals(-1, numberOf(project.getLastSuccessfulBuild()));
@@ -157,31 +165,37 @@ public class LogRotatorTest {
         project.setBuildDiscarder(new LogRotator(-1, 6, -1, 2));
         project.getPublishersList().replaceBy(Set.of(new ArtifactArchiver("f", "", true, false)));
         j.buildAndAssertStatus(Result.FAILURE, project); // #1
+        GlobalBuildDiscarderListener.await();
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());
         project.getBuildersList().replaceBy(Set.of(new CreateArtifact()));
         j.buildAndAssertSuccess(project); // #2
         assertTrue(project.getBuildByNumber(2).getHasArtifacts());
         project.getBuildersList().replaceBy(Arrays.asList(new CreateArtifact(), new FailureBuilder()));
         j.buildAndAssertStatus(Result.FAILURE, project); // #3
+        GlobalBuildDiscarderListener.await();
         assertTrue(project.getBuildByNumber(2).getHasArtifacts());
         assertTrue(project.getBuildByNumber(3).getHasArtifacts());
         j.buildAndAssertStatus(Result.FAILURE, project); // #4
+        GlobalBuildDiscarderListener.await();
         assertTrue(project.getBuildByNumber(2).getHasArtifacts());
         assertTrue(project.getBuildByNumber(3).getHasArtifacts());
         assertTrue(project.getBuildByNumber(4).getHasArtifacts());
         j.buildAndAssertStatus(Result.FAILURE, project); // #5
+        GlobalBuildDiscarderListener.await();
         assertTrue(project.getBuildByNumber(2).getHasArtifacts());
         assertFalse(project.getBuildByNumber(3).getHasArtifacts(), "no better than #4");
         assertTrue(project.getBuildByNumber(4).getHasArtifacts());
         assertTrue(project.getBuildByNumber(5).getHasArtifacts());
         project.getBuildersList().replaceBy(Set.of(new CreateArtifact()));
         j.buildAndAssertSuccess(project); // #6
+        GlobalBuildDiscarderListener.await();
         assertFalse(project.getBuildByNumber(2).getHasArtifacts(), "#2 is still lastSuccessful until #6 is complete");
         assertFalse(project.getBuildByNumber(3).getHasArtifacts());
         assertFalse(project.getBuildByNumber(4).getHasArtifacts());
         assertTrue(project.getBuildByNumber(5).getHasArtifacts());
         assertTrue(project.getBuildByNumber(6).getHasArtifacts());
         j.buildAndAssertSuccess(project); // #7
+        GlobalBuildDiscarderListener.await();
         assertNull(project.getBuildByNumber(1));
         assertNotNull(project.getBuildByNumber(2));
         assertFalse(project.getBuildByNumber(2).getHasArtifacts(), "lastSuccessful was #6 for ArtifactArchiver");
@@ -191,6 +205,7 @@ public class LogRotatorTest {
         assertTrue(project.getBuildByNumber(6).getHasArtifacts());
         assertTrue(project.getBuildByNumber(7).getHasArtifacts());
         j.buildAndAssertSuccess(project); // #8
+        GlobalBuildDiscarderListener.await();
         assertNull(project.getBuildByNumber(2));
         assertNotNull(project.getBuildByNumber(3));
         assertFalse(project.getBuildByNumber(3).getHasArtifacts());
@@ -222,6 +237,7 @@ public class LogRotatorTest {
         assertThat("we haven't released run1's guard", run1.isBuilding(), is(true));
         assertThat("we haven't released run2's guard", run2.isBuilding(), is(true));
         assertThat("we haven't released run3's guard", run3.isBuilding(), is(true));
+        GlobalBuildDiscarderListener.await();
         assertThat("we have artifacts in run1", run1.getHasArtifacts(), is(true));
         assertThat("we have artifacts in run2", run2.getHasArtifacts(), is(true));
         assertThat("we have artifacts in run3", run3.getHasArtifacts(), is(true));
@@ -230,6 +246,7 @@ public class LogRotatorTest {
         assertThat("we have released run1's guard", run1.isBuilding(), is(false));
         assertThat("we haven't released run2's guard", run2.isBuilding(), is(true));
         assertThat("we haven't released run3's guard", run3.isBuilding(), is(true));
+        GlobalBuildDiscarderListener.await();
         assertThat("run1 is last stable build", p.getLastStableBuild(), is(run1));
         assertThat("run1 is last successful build", p.getLastSuccessfulBuild(), is(run1));
         assertThat("we have artifacts in run1", run1.getHasArtifacts(), is(true));
@@ -239,6 +256,7 @@ public class LogRotatorTest {
         futureRun2.get();
         assertThat("we have released run2's guard", run2.isBuilding(), is(false));
         assertThat("we haven't released run3's guard", run3.isBuilding(), is(true));
+        GlobalBuildDiscarderListener.await();
         assertThat("we have no artifacts in run1", run1.getHasArtifacts(), is(false));
         assertThat("run2 is last stable build", p.getLastStableBuild(), is(run2));
         assertThat("run2 is last successful build", p.getLastSuccessfulBuild(), is(run2));
@@ -247,6 +265,7 @@ public class LogRotatorTest {
         sync.release(run3.getNumber());
         futureRun3.get();
         assertThat("we have released run3's guard", run3.isBuilding(), is(false));
+        GlobalBuildDiscarderListener.await();
         assertThat("we have no artifacts in run1", run1.getHasArtifacts(), is(false));
         assertThat("we have no artifacts in run2", run2.getHasArtifacts(), is(false));
         assertThat("run3 is last stable build", p.getLastStableBuild(), is(run3));
