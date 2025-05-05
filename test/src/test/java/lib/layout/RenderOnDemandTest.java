@@ -73,13 +73,18 @@ public class RenderOnDemandTest {
     public void testMemoryConsumption() throws Exception {
         j.createWebClient().goTo("self/testBehaviour"); // prime caches
         int total = 0;
+        int count = 80;
         for (var element : MemoryAssert.increasedMemory(() -> {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < count; i++) {
+                System.err.println("#" + i);
                 j.createWebClient().goTo("self/testBehaviour");
             }
             return null;
         }, (obj, referredFrom, reference) -> !obj.getClass().getName().contains("htmlunit"))) {
             total += element.byteSize;
+            if (element.instanceCount == count) {
+                System.out.print("⚠ ️");
+            }
             System.out.println(element.className + " ×" + element.instanceCount + ": " + element.byteSize);
         }
         System.out.println("total: " + total);

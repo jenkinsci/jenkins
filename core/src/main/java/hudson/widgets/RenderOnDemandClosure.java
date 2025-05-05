@@ -96,6 +96,7 @@ public class RenderOnDemandClosure {
         return new HttpResponse() {
             @Override
             public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
+                req.getBoundObjectTable().releaseMe();
                 req.getWebApp().getDispatchValidator().allowDispatch(req, rsp);
                 try {
                     new DefaultScriptInvoker() {
