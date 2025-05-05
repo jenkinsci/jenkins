@@ -74,7 +74,9 @@ public class RenderOnDemandTest {
         j.createWebClient().goTo("self/testBehaviour"); // prime caches
         int total = 0;
         for (var element : MemoryAssert.increasedMemory(() -> {
-            j.createWebClient().goTo("self/testBehaviour");
+            for (int i = 0; i < 10; i++) {
+                j.createWebClient().goTo("self/testBehaviour");
+            }
             return null;
         }, (obj, referredFrom, reference) -> !obj.getClass().getName().contains("htmlunit"))) {
             total += element.byteSize;
