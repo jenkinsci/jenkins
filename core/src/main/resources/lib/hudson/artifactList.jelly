@@ -39,11 +39,11 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <j:if test="${build != null and (!h.artifactsPermissionEnabled or h.artifactsPermissionEnabled and h.hasPermission(build, attrs.permission))}">
-    <l:renderOnDemand div="tag" clazz="artifact-list" capture="build,caption,baseURL">
+    <l:renderOnDemand tag="tbody" clazz="artifact-list" capture="build,caption,baseURL">
         <l:ajax>
             <j:set var="artifacts" value="${build.getArtifactsUpTo(build.LIST_CUTOFF+1)}" />
             <j:if test="${!empty(artifacts)}">
-                <!-- TODO does not scale correctly <t:summary icon="symbol-cube" href="${baseURL}artifact/"> -->
+                <t:summary icon="symbol-cube" href="${baseURL}artifact/">
                     <a href="${baseURL}artifact/">${caption}</a>
                     <j:if test="${build.building}">
                         <p>
@@ -78,7 +78,7 @@ THE SOFTWARE.
                         </table>
                     </j:if>
                     <!-- otherwise just show link to directory browser -->
-                    <!-- </t:summary> -->
+                </t:summary>
             </j:if>
         </l:ajax>
     </l:renderOnDemand>
