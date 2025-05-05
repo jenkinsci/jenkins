@@ -26,4 +26,4 @@
 // TODO why is render-on-demand not specified to run this already?
 // hudson-behavior.js hard-codes this for .dropdownList,
 // and RenderOnDemandTest calls it manually which seems like cheating.
-renderOnDemand(document.getElementsBySelector('.artifact-list')[0]);
+renderOnDemand(document.getElementsBySelector(".artifact-list")[0]);
