@@ -533,7 +533,7 @@ THE SOFTWARE.
                   <!-- dependency of junit and matrix-auth -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>ionicons-api</artifactId>
-                  <version>87.ve74b_60c10b_57</version>
+                  <version>88.va_4187cb_eddf1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
