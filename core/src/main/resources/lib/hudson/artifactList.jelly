@@ -28,7 +28,7 @@ THE SOFTWARE.
     Generates a listing of the build artifacts.
     Depending on the size of the artifact, this will either produce a list or a link to the directory view.
 
-    <st:attribute name="build" type="hudson.model.Build" use="required">
+    <st:attribute name="build" type="hudson.model.Run" use="required">
       Build object for which the artifacts are displayed
     </st:attribute>
     <st:attribute name="caption" use="required">
@@ -38,45 +38,50 @@ THE SOFTWARE.
       If the hyperlink to artifacts are at another URL, specify the prefix.
     </st:attribute>
   </st:documentation>
-  <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it,attrs.permission)}">
-    <j:set var="artifacts" value="${build.getArtifactsUpTo(build.LIST_CUTOFF+1)}" />
-    <j:if test="${!empty(artifacts)}">
-      <t:summary icon="symbol-cube" href="${baseURL}artifact/">
-        <a href="${baseURL}artifact/">${caption}</a>
-        <j:if test="${build.building}">
-          <p>
-            ${%building}
-          </p>
-        </j:if>
-        <j:if test="${size(artifacts) le build.LIST_CUTOFF}">
-          <!-- if not too many, just list them -->
-          <table class="fileList">
-            <j:forEach var="f" items="${artifacts}">
-              <tr>
-                <td>
-                  <l:icon class="icon-document icon-sm"/>
-                </td>
-                <td>
-                  <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
-                </td>
-                <td class="fileSize">
-                  ${h.humanReadableByteSize(f.getFileSize())}
-                </td>
-                <td>
-                  <j:if test="${app.fingerprintMap.ready}">
-                    <a href="${baseURL}artifact/${f.href}/*fingerprint*/">
-                      <l:icon class="icon-fingerprint icon-sm"/>
-                    </a>
-                    <st:nbsp/>
-                  </j:if>
-                  <a href="${baseURL}artifact/${f.href}/*view*/">${%view}</a>
-                </td>
-              </tr>
-            </j:forEach>
-          </table>
-        </j:if>
-          <!-- otherwise just show link to directory browser -->
-      </t:summary>
-    </j:if>
+  <j:if test="${build != null and (!h.artifactsPermissionEnabled or h.artifactsPermissionEnabled and h.hasPermission(build, attrs.permission))}">
+    <l:renderOnDemand div="tag" clazz="artifact-list" capture="build,caption,baseURL">
+        <l:ajax>
+            <j:set var="artifacts" value="${build.getArtifactsUpTo(build.LIST_CUTOFF+1)}" />
+            <j:if test="${!empty(artifacts)}">
+                <!-- TODO does not scale correctly <t:summary icon="symbol-cube" href="${baseURL}artifact/"> -->
+                    <a href="${baseURL}artifact/">${caption}</a>
+                    <j:if test="${build.building}">
+                        <p>
+                            ${%building}
+                        </p>
+                    </j:if>
+                    <j:if test="${size(artifacts) le build.LIST_CUTOFF}">
+                         <!-- if not too many, just list them -->
+                        <table class="fileList">
+                            <j:forEach var="f" items="${artifacts}">
+                                <tr>
+                                    <td>
+                                        <l:icon class="icon-document icon-sm"/>
+                                    </td>
+                                    <td>
+                                        <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
+                                    </td>
+                                    <td class="fileSize">
+                                        ${h.humanReadableByteSize(f.getFileSize())}
+                                    </td>
+                                    <td>
+                                        <j:if test="${app.fingerprintMap.ready}">
+                                            <a href="${baseURL}artifact/${f.href}/*fingerprint*/">
+                                                <l:icon class="icon-fingerprint icon-sm"/>
+                                            </a>
+                                            <st:nbsp/>
+                                        </j:if>
+                                        <a href="${baseURL}artifact/${f.href}/*view*/">${%view}</a>
+                                    </td>
+                                </tr>
+                            </j:forEach>
+                        </table>
+                    </j:if>
+                    <!-- otherwise just show link to directory browser -->
+                    <!-- </t:summary> -->
+            </j:if>
+        </l:ajax>
+    </l:renderOnDemand>
+    <st:adjunct includes="lib.hudson.artifactList"/>
   </j:if>
 </j:jelly>
