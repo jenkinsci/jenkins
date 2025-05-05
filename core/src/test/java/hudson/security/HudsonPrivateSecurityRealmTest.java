@@ -1,5 +1,7 @@
 package hudson.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,7 +15,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import javax.crypto.SecretKeyFactory;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 
 public class HudsonPrivateSecurityRealmTest {
@@ -150,5 +154,11 @@ public class HudsonPrivateSecurityRealmTest {
         String encoded = encoder.encode("thisIsMyPassword");
         assertTrue(encoder.matches("thisIsMyPassword", encoded));
         assertFalse(encoder.matches("thisIsNotMyPassword", encoded));
+    }
+
+    @Issue("JENKINS-75533")
+    public void ensureExpectedMessage() {
+        final IllegalArgumentException ex = Assert.assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode("1234567890123456789012345678901234567890123456789012345678901234567890123"));
+        assertThat(ex.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong()));
     }
 }

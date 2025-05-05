@@ -278,6 +278,11 @@ class RunTest {
     }
 
     @Test
+    void wontPushOffsetOnRenderingFromBeginningOfLine() throws Exception {
+        assertWriteLogToEquals(new String(new char[3]).replace("\0", SAMPLE_BUILD_OUTPUT) + "Finished: SUCCESS.\n", 2 * SAMPLE_BUILD_OUTPUT.length());
+    }
+
+    @Test
     void willRenderNothingIfOffsetSetOnLastLine() throws Exception {
         assertWriteLogToEquals("", 5 * SAMPLE_BUILD_OUTPUT.length() + 6);
     }
