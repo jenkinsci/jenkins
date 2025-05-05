@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -183,42 +182,6 @@ class LogRecorderManagerTest {
         assertFalse(text.contains("msg #4"), text);
         assertTrue(text.contains("LambdaLog @FINE"), text);
         assertFalse(text.contains("LambdaLog @FINER"), text);
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    void addingLogRecorderToLegacyMapAddsToRecordersList() throws IOException {
-        LogRecorderManager log = j.jenkins.getLog();
-
-        assertThat(log.logRecorders.size(), is(0));
-        assertThat(log.getRecorders().size(), is(0));
-
-        LogRecorder logRecorder = new LogRecorder("dummy");
-        logRecorder.getLoggers().add(new LogRecorder.Target("dummy", Level.ALL));
-
-        log.logRecorders.put("dummy", logRecorder);
-        logRecorder.save();
-
-        assertThat(log.logRecorders.size(), is(1));
-        assertThat(log.getRecorders().size(), is(1));
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    void addingLogRecorderToListAddsToLegacyRecordersMap() throws IOException {
-        LogRecorderManager log = j.jenkins.getLog();
-
-        assertThat(log.logRecorders.size(), is(0));
-        assertThat(log.getRecorders().size(), is(0));
-
-        LogRecorder logRecorder = new LogRecorder("dummy");
-        logRecorder.getLoggers().add(new LogRecorder.Target("dummy", Level.ALL));
-
-        log.getRecorders().add(logRecorder);
-        logRecorder.save();
-
-        assertThat(log.logRecorders.size(), is(1));
-        assertThat(log.getRecorders().size(), is(1));
     }
 
     @Test

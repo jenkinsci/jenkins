@@ -234,6 +234,11 @@ public class ConsoleAnnotatorTest {
                 text.addMarkup(0, 5, "<b tag=" + n++ + ">", "</b>");
             return this;
         }
+
+        @Override
+        public String toString() {
+            return "StatefulAnnotator:" + n + " @" + System.identityHashCode(this);
+        }
     }
 
 
