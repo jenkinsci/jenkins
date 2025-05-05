@@ -12,6 +12,7 @@ function applyFilter(searchQuery) {
       var pluginsTable = document.getElementById("plugins");
       var tbody = pluginsTable.querySelector("tbody");
       var admin = pluginsTable.dataset.hasadmin === "true";
+      var includeHealthScores = pluginsTable.dataset.health === "true";
       var selectedPlugins = [];
 
       var filterInput = document.getElementById("filter-box");
@@ -43,6 +44,7 @@ function applyFilter(searchQuery) {
           (plugin) => selectedPlugins.indexOf(plugin.name) === -1,
         ),
         admin,
+        includeHealthScores,
       });
 
       tbody.insertAdjacentHTML("beforeend", rows);
