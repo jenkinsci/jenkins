@@ -7,7 +7,7 @@ $background-outset: 0.7rem;
 .subtasks {
   display: flex;
   flex-direction: column;
-  margin: var(--section-padding);
+  margin: 0 var(--section-padding) var(--section-padding) var(--section-padding);
   gap: 0.125rem;
 
   @media (min-width: breakpoints.$tablet-breakpoint) {
@@ -26,15 +26,12 @@ $background-outset: 0.7rem;
 
 #side-panel {
   .jenkins-app-bar {
-    margin-top: var(--section-padding);
     margin-left: var(--section-padding);
     margin-right: var(--section-padding);
   }
 
   & > #tasks > .jenkins-search-container {
-    margin-left: -$background-outset;
-    margin-right: -$background-outset;
-    margin-bottom: calc(var(--section-padding) / 2);
+    margin: 0 #{-$background-outset} 1rem;
 
     .jenkins-search__icon {
       width: 2.8rem;
@@ -45,10 +42,6 @@ $background-outset: 0.7rem;
       padding-left: 2.6rem;
     }
   }
-}
-
-#side-panel .jenkins-search__results-container--visible .task-link {
-  opacity: 0.3;
 }
 
 #tasks .task {
