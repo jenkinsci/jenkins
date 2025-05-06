@@ -30,6 +30,10 @@ import static org.junit.Assert.assertNull;
 
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import hudson.widgets.RenderOnDemandClosure;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.util.logging.Level;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.WebClientUtil;
 import org.htmlunit.html.HtmlPage;
@@ -38,6 +42,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -49,6 +54,7 @@ import org.jvnet.hudson.test.TestExtension;
 public class RenderOnDemandTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule public LoggerRule logging = new LoggerRule().record(RenderOnDemandClosure.class, Level.FINE);
 
     /**
      * Makes sure that the behavior rules are applied to newly inserted nodes,
@@ -71,14 +77,20 @@ public class RenderOnDemandTest {
     @Issue("JENKINS-16341")
     @Test
     public void testMemoryConsumption() throws Exception {
-        j.createWebClient().goTo("self/testBehaviour"); // prime caches
+        var wc = j.createWebClient();
+        callTestBehaviour(wc); // prime caches
         int total = 0;
-        int count = 80;
+        int count = 50;
         for (var element : MemoryAssert.increasedMemory(() -> {
             for (int i = 0; i < count; i++) {
                 System.err.println("#" + i);
-                j.createWebClient().goTo("self/testBehaviour");
+                callTestBehaviour(wc);
             }
+            var o = new Object();
+            var sr = new SoftReference<>(o);
+            var wr = new WeakReference<>(o);
+            o = null;
+            MemoryAssert.assertGC(wr, true);
             return null;
         }, (obj, referredFrom, reference) -> !obj.getClass().getName().contains("htmlunit"))) {
             total += element.byteSize;
@@ -88,6 +100,12 @@ public class RenderOnDemandTest {
             System.out.println(element.className + " ×" + element.instanceCount + ": " + element.byteSize);
         }
         System.out.println("total: " + total);
+    }
+
+    private void callTestBehaviour(JenkinsRule.WebClient wc) throws Exception {
+        var p = wc.goTo("self/testBehaviour");
+        p.executeJavaScript("renderOnDemand(document.getElementsBySelector('.lazy')[0])");
+        WebClientUtil.waitForJSExec(p.getWebClient());
     }
 
     /**
