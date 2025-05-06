@@ -43,6 +43,7 @@ public class GlobalBuildDiscarderTest {
             j.buildAndAssertSuccess(p);
             j.buildAndAssertSuccess(p);
             j.buildAndAssertSuccess(p);
+            GlobalBuildDiscarderListener.await();
             Assert.assertArrayEquals("all 5 builds exist", p.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{5, 4, 3, 2, 1});
         }
 
@@ -55,11 +56,13 @@ public class GlobalBuildDiscarderTest {
             Assert.assertArrayEquals("only 3 builds left", p.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{5, 4, 3});
 
             j.buildAndAssertSuccess(p);
+            GlobalBuildDiscarderListener.await();
             Assert.assertArrayEquals("still only 3 builds", p.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{6, 5, 4});
 
             p.setBuildDiscarder(null);
             j.buildAndAssertSuccess(p);
             j.buildAndAssertSuccess(p);
+            GlobalBuildDiscarderListener.await();
             Assert.assertArrayEquals("5 builds again", p.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{8, 7, 6, 5, 4});
 
             ExtensionList.lookupSingleton(BackgroundGlobalBuildDiscarder.class).execute(TaskListener.NULL);
@@ -72,9 +75,10 @@ public class GlobalBuildDiscarderTest {
             Assert.assertArrayEquals("newest 2 builds", p.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{8, 7});
             j.buildAndAssertSuccess(p);
             j.buildAndAssertSuccess(p);
+            GlobalBuildDiscarderListener.await();
 
             // run global discarders once a build finishes
-            Assert.assertArrayEquals("2 builds because of BackgroundBuildDiscarderListener", p.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{10, 9});
+            Assert.assertArrayEquals("2 builds because of GlobalBuildDiscarderListener", p.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{10, 9});
 
             GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().clear();
             GlobalBuildDiscarderConfiguration.get().getConfiguredBuildDiscarders().add(new SimpleGlobalBuildDiscarderStrategy(new LogRotator(null, "1", null, null)));
@@ -96,6 +100,7 @@ public class GlobalBuildDiscarderTest {
             j.buildAndAssertSuccess(p1);
             j.buildAndAssertSuccess(p1);
             j.buildAndAssertSuccess(p1);
+            GlobalBuildDiscarderListener.await();
             Assert.assertArrayEquals("job with 5 builds", p1.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{7, 6, 5, 4, 3, 2, 1});
             p1.setBuildDiscarder(new LogRotator(null, "5", null, null));
 
@@ -106,6 +111,7 @@ public class GlobalBuildDiscarderTest {
             j.buildAndAssertSuccess(p2);
             j.buildAndAssertSuccess(p2);
             j.buildAndAssertSuccess(p2);
+            GlobalBuildDiscarderListener.await();
             Assert.assertArrayEquals("job with 3 builds", p2.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{6, 5, 4, 3, 2, 1});
             p2.setBuildDiscarder(new LogRotator(null, "3", null, null));
 
@@ -115,6 +121,7 @@ public class GlobalBuildDiscarderTest {
             { // job 1 with builds more aggressively deleted by global strategy
                 j.buildAndAssertSuccess(p1);
                 j.buildAndAssertSuccess(p1);
+                GlobalBuildDiscarderListener.await();
                 Assert.assertArrayEquals("job 1 discards down to 5, but global override is for 4", p1.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{9, 8, 7, 6});
                 ExtensionList.lookupSingleton(BackgroundGlobalBuildDiscarder.class).execute(TaskListener.NULL);
                 Assert.assertArrayEquals("job 1 discards down to 5, but global override is for 4", p1.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{9, 8, 7, 6});
@@ -122,6 +129,7 @@ public class GlobalBuildDiscarderTest {
 
             { // job 2 with more aggressive local build discarder
                 j.buildAndAssertSuccess(p2);
+                GlobalBuildDiscarderListener.await();
                 Assert.assertArrayEquals("job 1 discards down to 3", p2.getBuilds().stream().mapToInt(Run::getNumber).toArray(), new int[]{7, 6, 5});
             }
         }

@@ -99,7 +99,7 @@ public class Security3430Test {
             // would be helpful to have an option for a specific agent JAR:
             var opts = InboundAgentRule.Options.newBuilder().name(name).skipStart().build();
             agents.createAgent(jj, opts);
-            agents.start(new InboundAgentRule.AgentArguments(jj.getUrl() + "computer/" + name + "/slave-agent.jnlp", jar, jj.runRemotely(Security3430Test::getJnlpMac, name), 1, List.of()), opts);
+            agents.start(new InboundAgentRule.AgentArguments(jar, jj.getUrl().toString(), name, jj.runRemotely(Security3430Test::getJnlpMac, name), 1, List.of()), opts);
         } else {
             agents.createAgent(jj, InboundAgentRule.Options.newBuilder().name(name).build());
         }
