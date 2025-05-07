@@ -115,6 +115,38 @@ function generateDropdowns() {
   );
 }
 
+behaviorShim.specify(
+  "li.children, .jenkins-jumplist-link, #menuSelector, .jenkins-menu-dropdown-chevron",
+  "-dropdown-",
+  1000,
+  (element) =>
+    Utils.generateDropdown(element, (instance) => {
+      const href = element.dataset.href;
+
+
+      const jumplistType = !element.classList.contains("children")
+        ? "contextMenu"
+        : "childrenContextMenu";
+
+      if (element.items) {
+        instance.setContent(Utils.generateDropdownItems(element.items));
+        return;
+      }
+
+      fetch(Path.combinePath(href, jumplistType))
+        .then((response) => response.json())
+        .then((json) =>
+          instance.setContent(
+            Utils.generateDropdownItems(
+              mapChildrenItemsToDropdownItems(json.items),
+            ),
+          ),
+        )
+        .catch((error) => console.log(`Jumplist request failed: ${error}`))
+        .finally(() => (instance.loaded = true));
+    }),
+);
+
 /*
  * Generates the contents for the dropdown
  */
