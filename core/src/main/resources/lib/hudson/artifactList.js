@@ -22,8 +22,18 @@
  * THE SOFTWARE.
  */
 
-// Or could use Behaviour.specify.
-// TODO why is render-on-demand not specified to run this already?
-// hudson-behavior.js hard-codes this for .dropdownList,
-// and RenderOnDemandTest calls it manually which seems like cheating.
-renderOnDemand(document.querySelector(".artifact-list"));
+// TODO package this logic into a generic utility like renderOnDemand/refreshPart with Behaviour.specify
+var e = document.querySelector(".artifact-list");
+fetch(
+  e.getAttribute("data-url") +
+    "?" +
+    new URLSearchParams({ caption: e.getAttribute("data-caption") }),
+).then((rsp) => {
+  if (rsp.ok) {
+    rsp.text().then((responseText) => {
+      e.innerHTML = responseText;
+      Behaviour.applySubtree(e);
+      layoutUpdateCallback.call();
+    });
+  }
+});

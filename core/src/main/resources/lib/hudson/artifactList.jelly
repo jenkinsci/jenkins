@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
     Generates a listing of the build artifacts.
     Depending on the size of the artifact, this will either produce a list or a link to the directory view.
@@ -34,54 +34,17 @@ THE SOFTWARE.
     <st:attribute name="caption" use="required">
       Human readable title text
     </st:attribute>
-    <st:attribute name="baseURL">
-      If the hyperlink to artifacts are at another URL, specify the prefix.
-    </st:attribute>
   </st:documentation>
-  <j:if test="${build != null and (!h.artifactsPermissionEnabled or h.artifactsPermissionEnabled and h.hasPermission(build, attrs.permission))}">
-    <l:renderOnDemand tag="tbody" clazz="artifact-list" capture="build,caption,baseURL">
-        <l:ajax>
-            <j:set var="artifacts" value="${build.getArtifactsUpTo(build.LIST_CUTOFF+1)}" />
-            <j:if test="${!empty(artifacts)}">
-                <t:summary icon="symbol-cube" href="${baseURL}artifact/">
-                    <a href="${baseURL}artifact/">${caption}</a>
-                    <j:if test="${build.building}">
-                        <p>
-                            ${%building}
-                        </p>
-                    </j:if>
-                    <j:if test="${size(artifacts) le build.LIST_CUTOFF}">
-                         <!-- if not too many, just list them -->
-                        <table class="fileList">
-                            <j:forEach var="f" items="${artifacts}">
-                                <tr>
-                                    <td>
-                                        <l:icon class="icon-document icon-sm"/>
-                                    </td>
-                                    <td>
-                                        <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
-                                    </td>
-                                    <td class="fileSize">
-                                        ${h.humanReadableByteSize(f.getFileSize())}
-                                    </td>
-                                    <td>
-                                        <j:if test="${app.fingerprintMap.ready}">
-                                            <a href="${baseURL}artifact/${f.href}/*fingerprint*/">
-                                                <l:icon class="icon-fingerprint icon-sm"/>
-                                            </a>
-                                            <st:nbsp/>
-                                        </j:if>
-                                        <a href="${baseURL}artifact/${f.href}/*view*/">${%view}</a>
-                                    </td>
-                                </tr>
-                            </j:forEach>
-                        </table>
-                    </j:if>
-                    <!-- otherwise just show link to directory browser -->
-                </t:summary>
-            </j:if>
-        </l:ajax>
-    </l:renderOnDemand>
-    <st:adjunct includes="lib.hudson.artifactList"/>
-  </j:if>
+  <j:choose>
+    <j:when test="${build == null}">
+      <!-- nothing to render -->
+    </j:when>
+    <j:when test="${build.hasCustomArtifactManager()}">
+      <tbody class="artifact-list" data-url="${rootURL}/${build.url}artifactList" data-caption="${caption}"/>
+      <st:adjunct includes="lib.hudson.artifactList"/>
+    </j:when>
+    <j:otherwise>
+      <st:include it="${build}" page="artifactList"/>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
