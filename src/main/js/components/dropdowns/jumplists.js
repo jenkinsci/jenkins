@@ -123,7 +123,6 @@ behaviorShim.specify(
     Utils.generateDropdown(element, (instance) => {
       const href = element.dataset.href;
 
-
       const jumplistType = !element.classList.contains("children")
         ? "contextMenu"
         : "childrenContextMenu";
