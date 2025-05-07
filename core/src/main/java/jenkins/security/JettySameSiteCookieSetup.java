@@ -45,13 +45,13 @@ public class JettySameSiteCookieSetup {
 
     @Initializer(before = InitMilestone.COMPLETED, after = InitMilestone.PLUGINS_PREPARED) // 'after' to ensure loggers are set up
     public static void setUpCookie() {
-        // https://eclipse.dev/jetty/javadoc/jetty-10/org/eclipse/jetty/http/HttpCookie.html#SAME_SITE_DEFAULT_ATTRIBUTE
         final String key = JettySameSiteCookieSetup.class.getName() + ".sameSiteDefault";
         if ("".equals(SystemProperties.getString(key))) {
             LOGGER.log(Level.CONFIG, "Not setting a SameSite default value for cookies in Jetty");
             return;
         }
         final String value = SystemProperties.getString(key, "Lax");
+        // https://javadoc.jetty.org/jetty-12/org/eclipse/jetty/server/HttpCookieUtils.html#SAME_SITE_DEFAULT_ATTRIBUTE
         Jenkins.get().getServletContext().setAttribute("org.eclipse.jetty.cookie.sameSiteDefault", value);
         LOGGER.log(Level.CONFIG, () -> "Setting SameSite default value for cookies in Jetty: " + value);
     }
