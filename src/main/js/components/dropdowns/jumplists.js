@@ -37,7 +37,7 @@ function generateDropdowns() {
     (element) =>
       Utils.generateDropdown(
         element,
-        async (instance) => {
+        (instance) => {
           const href = element.href;
 
           if (element.items) {
@@ -57,52 +57,53 @@ function generateDropdowns() {
             children: null,
           };
 
-          const fetchSection = async (urlSuffix) => {
-            const response = await fetch(Path.combinePath(href, urlSuffix));
-            const json = await response.json();
-            const items = mapChildrenItemsToDropdownItems(json.items);
-            const section = document.createElement("div");
-            section.appendChild(Utils.generateDropdownItems(items));
-
-            return section;
+          const fetchSection = function (urlSuffix) {
+            return fetch(Path.combinePath(href, urlSuffix))
+              .then((response) => response.json())
+              .then((json) => {
+                const items = mapChildrenItemsToDropdownItems(json.items);
+                const section = document.createElement("div");
+                section.appendChild(Utils.generateDropdownItems(items));
+                return section;
+              });
           };
 
-          try {
-            const promises = [];
+          const promises = [];
 
-            if (hasModelLink) {
-              promises.push(
-                fetchSection("contextMenu").then(
-                  (section) => (sections.model = section),
-                ),
-              );
-            }
-
-            if (hasChildrenLink) {
-              promises.push(
-                fetchSection("childrenContextMenu").then(
-                  (section) => (sections.children = section),
-                ),
-              );
-            }
-
-            await Promise.all(promises);
-
-            const container = document.createElement("div");
-            container.className = "jenkins-dropdown__split-container";
-            if (sections.model) {
-              container.appendChild(sections.model);
-            }
-            if (sections.children) {
-              container.appendChild(sections.children);
-            }
-
-            instance.setContent(container);
-          } catch (error) {
-            console.log(`Dropdown fetch failed: ${error}`);
-          } finally {
-            instance.loaded = true;
+          if (hasModelLink) {
+            promises.push(
+              fetchSection("contextMenu").then((section) => {
+                sections.model = section;
+              }),
+            );
           }
+
+          if (hasChildrenLink) {
+            promises.push(
+              fetchSection("childrenContextMenu").then((section) => {
+                sections.children = section;
+              }),
+            );
+          }
+
+          Promise.all(promises)
+            .then(() => {
+              const container = document.createElement("div");
+              container.className = "jenkins-dropdown__split-container";
+              if (sections.model) {
+                container.appendChild(sections.model);
+              }
+              if (sections.children) {
+                container.appendChild(sections.children);
+              }
+              instance.setContent(container);
+            })
+            .catch((error) => {
+              console.log(`Dropdown fetch failed: ${error}`);
+            })
+            .finally(() => {
+              instance.loaded = true;
+            });
         },
         false,
         {
