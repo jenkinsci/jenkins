@@ -57,16 +57,11 @@ function generateDropdowns() {
             children: null,
           };
 
-          const fetchSection = async (urlSuffix, secondary) => {
+          const fetchSection = async (urlSuffix) => {
             const response = await fetch(Path.combinePath(href, urlSuffix));
             const json = await response.json();
             const items = mapChildrenItemsToDropdownItems(json.items);
             const section = document.createElement("div");
-
-            if (secondary) {
-              section.className = "jenkins-dropdown__split-container__children";
-            }
-
             section.appendChild(Utils.generateDropdownItems(items));
 
             return section;
@@ -85,7 +80,7 @@ function generateDropdowns() {
 
             if (hasChildrenLink) {
               promises.push(
-                fetchSection("childrenContextMenu", true).then(
+                fetchSection("childrenContextMenu").then(
                   (section) => (sections.children = section),
                 ),
               );
