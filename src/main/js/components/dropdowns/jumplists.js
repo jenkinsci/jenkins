@@ -52,7 +52,6 @@ function generateDropdowns() {
             "hoverable-children-model-link",
           );
 
-          // Track sections by type
           const sections = {
             model: null,
             children: null,
