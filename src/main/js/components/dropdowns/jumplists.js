@@ -31,13 +31,13 @@ function generateJumplistAccessors() {
  */
 function generateDropdowns() {
   behaviorShim.specify(
-    ".hoverable-model-link",
+    ".hoverable-model-link, .hoverable-children-model-link",
     "-hoverable-dropdown-",
     1000,
     (element) =>
       Utils.generateDropdown(
         element,
-        (instance) => {
+        async (instance) => {
           const href = element.href;
 
           if (element.items) {
@@ -45,17 +45,68 @@ function generateDropdowns() {
             return;
           }
 
-          fetch(Path.combinePath(href, "contextMenu"))
-            .then((response) => response.json())
-            .then((json) =>
-              instance.setContent(
-                Utils.generateDropdownItems(
-                  mapChildrenItemsToDropdownItems(json.items),
-                ),
-              ),
-            )
-            .catch((error) => console.log(`Jumplist request failed: ${error}`))
-            .finally(() => (instance.loaded = true));
+          const hasModelLink = element.classList.contains("hoverable-model-link");
+          const hasChildrenLink = element.classList.contains("hoverable-children-model-link");
+
+          // Track sections by type
+          const sections = {
+            model: null,
+            children: null,
+          };
+
+          const fetchSection = async (urlSuffix, secondary) => {
+            const response = await fetch(Path.combinePath(href, urlSuffix));
+            const json = await response.json();
+            const items = mapChildrenItemsToDropdownItems(json.items);
+            const section = document.createElement("div");
+            section.className = "dropdown-section";
+
+            if (secondary) {
+              section.className += " secondary";
+            }
+
+            section.appendChild(Utils.generateDropdownItems(items));
+
+            return section;
+          };
+
+          try {
+            const promises = [];
+
+            if (hasModelLink) {
+              promises.push(
+                fetchSection("contextMenu").then(
+                  (section) => (sections.model = section)
+                )
+              );
+            }
+
+            if (hasChildrenLink) {
+              promises.push(
+                fetchSection("childrenContextMenu", true).then(
+                  (section) => (sections.children = section)
+                )
+              );
+            }
+
+            await Promise.all(promises);
+
+            // Append in desired order: model first, then children
+            const container = document.createElement("div");
+            container.className = "dropdown-container";
+            if (sections.model) {
+              container.appendChild(sections.model);
+            }
+            if (sections.children) {
+              container.appendChild(sections.children);
+            }
+
+            instance.setContent(container);
+          } catch (error) {
+            console.log(`Dropdown fetch failed: ${error}`);
+          } finally {
+            instance.loaded = true;
+          }
         },
         false,
         {
@@ -65,36 +116,6 @@ function generateDropdowns() {
           touch: false,
         },
       ),
-  );
-
-  behaviorShim.specify(
-    "li.children, .jenkins-jumplist-link, #menuSelector, .jenkins-menu-dropdown-chevron",
-    "-dropdown-",
-    1000,
-    (element) =>
-      Utils.generateDropdown(element, (instance) => {
-        const href = element.dataset.href;
-        const jumplistType = !element.classList.contains("children")
-          ? "contextMenu"
-          : "childrenContextMenu";
-
-        if (element.items) {
-          instance.setContent(Utils.generateDropdownItems(element.items));
-          return;
-        }
-
-        fetch(Path.combinePath(href, jumplistType))
-          .then((response) => response.json())
-          .then((json) =>
-            instance.setContent(
-              Utils.generateDropdownItems(
-                mapChildrenItemsToDropdownItems(json.items),
-              ),
-            ),
-          )
-          .catch((error) => console.log(`Jumplist request failed: ${error}`))
-          .finally(() => (instance.loaded = true));
-      }),
   );
 }
 
