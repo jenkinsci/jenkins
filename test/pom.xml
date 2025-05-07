@@ -183,7 +183,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2443.v1f61c6816c2c</version>
+      <version>2444.v82e008e25040</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
