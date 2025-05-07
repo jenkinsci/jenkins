@@ -45,7 +45,7 @@ public interface RootAction extends Action, ExtensionPoint {
      * A {@link Badge} shown on the button for the action.
      *
      * @return badge or {@code null} if no badge should be shown.
-     * @since TODO
+     * @since 2.507
      */
     default @CheckForNull Badge getBadge() {
         return null;
