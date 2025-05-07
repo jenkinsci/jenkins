@@ -247,10 +247,6 @@ THE SOFTWARE.
       <artifactId>groovy-all</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.connectbot</groupId>
-      <artifactId>jbcrypt</artifactId>
-    </dependency>
-    <dependency>
       <!-- Groovy shell uses this, but it doesn't declare the dependency -->
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>

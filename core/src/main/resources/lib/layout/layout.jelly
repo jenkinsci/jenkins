@@ -135,6 +135,10 @@ THE SOFTWARE.
     </l:hasPermission>
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <j:set var="breadcrumbs">
+      <j:set var="mode" value="breadcrumbs" />
+      <d:invokeBody />
+    </j:set>
     <j:set var="mode" value="header" />
     <d:invokeBody />
     <j:if test="${extensionsAvailable}">
@@ -149,7 +153,9 @@ THE SOFTWARE.
     <script src="${resURL}/jsbundles/sortable-drag-drop.js" type="text/javascript"/>
     <script src="${resURL}/jsbundles/app.js" type="text/javascript" defer="true" />
   </head>
-  <body id="jenkins" class="${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}">
+  <body id="jenkins" class="${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}"
+        data-search-url="${rootURL + '/search/suggest'}"
+        data-search-help-url="${%searchBox.url}">
     <l:command-palette />
 
     <j:if test="${layoutType!='full-screen'}">
@@ -161,11 +167,6 @@ THE SOFTWARE.
                     searchPlaceholder="${%search}"
                     searchHelpUrl="${%searchBox.url}"
                     logout="${%logout}"/>
-
-      <l:breadcrumbBar>
-        <j:set var="mode" value="breadcrumbs" />
-        <d:invokeBody/>
-      </l:breadcrumbBar>
     </j:if>
 
     <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">
