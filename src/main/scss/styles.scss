@@ -3,13 +3,3 @@
 @use "components";
 @use "form";
 @use "pages";
-
-.dropdown-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-
-.secondary {
-  background: color-mix(in srgb, var(--text-color-secondary) 5%, transparent);
-  border-left: var(--jenkins-border--subtle);
-}

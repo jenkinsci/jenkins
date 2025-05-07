@@ -288,3 +288,17 @@ $dropdown-padding: 0.375rem;
     height: 1.25rem;
   }
 }
+
+.jenkins-dropdown__split-container {
+  display: grid;
+  grid-template-columns: auto auto;
+
+  & > * {
+    min-width: 215px;
+  }
+
+  .jenkins-dropdown__split-container__children {
+    background: color-mix(in sRGB, var(--text-color-secondary) 5%, transparent);
+    border-left: var(--jenkins-border--subtle);
+  }
+}

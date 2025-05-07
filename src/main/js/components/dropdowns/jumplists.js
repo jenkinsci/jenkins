@@ -45,8 +45,12 @@ function generateDropdowns() {
             return;
           }
 
-          const hasModelLink = element.classList.contains("hoverable-model-link");
-          const hasChildrenLink = element.classList.contains("hoverable-children-model-link");
+          const hasModelLink = element.classList.contains(
+            "hoverable-model-link",
+          );
+          const hasChildrenLink = element.classList.contains(
+            "hoverable-children-model-link",
+          );
 
           // Track sections by type
           const sections = {
@@ -59,10 +63,9 @@ function generateDropdowns() {
             const json = await response.json();
             const items = mapChildrenItemsToDropdownItems(json.items);
             const section = document.createElement("div");
-            section.className = "dropdown-section";
 
             if (secondary) {
-              section.className += " secondary";
+              section.className = "jenkins-dropdown__split-container__children";
             }
 
             section.appendChild(Utils.generateDropdownItems(items));
@@ -76,24 +79,23 @@ function generateDropdowns() {
             if (hasModelLink) {
               promises.push(
                 fetchSection("contextMenu").then(
-                  (section) => (sections.model = section)
-                )
+                  (section) => (sections.model = section),
+                ),
               );
             }
 
             if (hasChildrenLink) {
               promises.push(
                 fetchSection("childrenContextMenu", true).then(
-                  (section) => (sections.children = section)
-                )
+                  (section) => (sections.children = section),
+                ),
               );
             }
 
             await Promise.all(promises);
 
-            // Append in desired order: model first, then children
             const container = document.createElement("div");
-            container.className = "dropdown-container";
+            container.className = "jenkins-dropdown__split-container";
             if (sections.model) {
               container.appendChild(sections.model);
             }
