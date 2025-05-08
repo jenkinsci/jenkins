@@ -72,8 +72,12 @@ public class RenderOnDemandClosure {
         assert !bodyStack.isEmpty();    // there must be at least one, which is the direct child of <l:renderOnDemand>
 
         Map<String, Object> variables = new HashMap<>();
-        for (String v : Util.fixNull(attributesToCapture).split(","))
-            variables.put(v.intern(), context.getVariable(v));
+        String _attributesToCapture = Util.fixEmpty(attributesToCapture);
+        if (_attributesToCapture != null) {
+            for (String v : _attributesToCapture.split(",")) {
+                variables.put(v.intern(), context.getVariable(v));
+            }
+        }
 
         // capture the current base of context for descriptors
         currentDescriptorByNameUrl = Descriptor.getCurrentDescriptorByNameUrl();
@@ -86,6 +90,7 @@ public class RenderOnDemandClosure {
         for (String adjunct : _adjuncts) {
             this.adjuncts[i++] = adjunct.intern();
         }
+        LOGGER.fine(() -> "captured " + variables);
     }
 
     /**
@@ -96,6 +101,8 @@ public class RenderOnDemandClosure {
         return new HttpResponse() {
             @Override
             public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
+                LOGGER.fine(() -> "rendering " + req.getPathInfo());
+                req.getBoundObjectTable().releaseMe();
                 req.getWebApp().getDispatchValidator().allowDispatch(req, rsp);
                 try {
                     new DefaultScriptInvoker() {
