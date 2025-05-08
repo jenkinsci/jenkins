@@ -1004,6 +1004,7 @@ function renderOnDemand(e, callback, noBehaviour) {
 
   let proxyMethod = e.getAttribute("data-proxy-method");
   let proxyUrl = e.getAttribute("data-proxy-url");
+  let releaseUrl = e.getAttribute("data-release-url");
   let proxyCrumb = e.getAttribute("data-proxy-crumb");
   let proxyUrlNames = e.getAttribute("data-proxy-url-names").split(",");
 
@@ -1038,6 +1039,15 @@ function renderOnDemand(e, callback, noBehaviour) {
     });
   });
 }
+
+window.addEventListener("unload", function (ev) {
+  let element = document.querySelector('#render-on-demand-proxies-release');
+  let jsonString = element.dataset.proxies;
+  let json = JSON.parse(jsonString);
+  json.forEach(function (url) {
+    fetch(url);
+  });
+});
 
 /**
  * Finds all the script tags
