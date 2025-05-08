@@ -2197,7 +2197,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @throws AccessDeniedException Access denied
      */
     public @NonNull DirectoryBrowserSupport doArtifact() {
-        if (Functions.isArtifactsPermissionEnabled()) {
+        if (ARTIFACTS.getEnabled()) {
           checkPermission(ARTIFACTS);
         }
         return new DirectoryBrowserSupport(this, getArtifactManager().root(), Messages.Run_ArtifactsBrowserTitle(project.getDisplayName(), getDisplayName()), "package.png", true);
@@ -2582,7 +2582,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public static final Permission UPDATE = new Permission(PERMISSIONS, "Update", Messages._Run_UpdatePermission_Description(), Permission.UPDATE, PermissionScope.RUN);
     /** See {@link hudson.Functions#isArtifactsPermissionEnabled} */
     public static final Permission ARTIFACTS = new Permission(PERMISSIONS, "Artifacts", Messages._Run_ArtifactsPermission_Description(), null,
-                                                              Functions.isArtifactsPermissionEnabled(), new PermissionScope[]{PermissionScope.RUN});
+            SystemProperties.getBoolean("hudson.security.ArtifactsPermission"), new PermissionScope[]{PermissionScope.RUN});
 
     private static class DefaultFeedAdapter implements FeedAdapter<Run> {
         @Override

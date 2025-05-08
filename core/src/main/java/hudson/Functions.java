@@ -2311,15 +2311,17 @@ public class Functions {
      * Returns {@code true} if the {@link Run#ARTIFACTS} permission is enabled,
      * {@code false} otherwise.
      *
-     * <p>When the {@link Run#ARTIFACTS} permission is not turned on using the
-     * {@code hudson.security.ArtifactsPermission} system property, this
+     * <p>When the {@link Run#ARTIFACTS} permission is not turned on, this
      * permission must not be considered to be set to {@code false} for every
      * user. It must rather be like if the permission doesn't exist at all
      * (which means that every user has to have an access to the artifacts but
      * the permission can't be configured in the security screen). Got it?</p>
+     *
+     * @deprecated Use {@code Run.ARTIFACTS.getEnabled()} instead.
      */
+    @Deprecated
     public static boolean isArtifactsPermissionEnabled() {
-        return SystemProperties.getBoolean("hudson.security.ArtifactsPermission");
+        return Run.ARTIFACTS.getEnabled();
     }
 
     /**
@@ -2332,9 +2334,12 @@ public class Functions {
      * trigger builds. As such, when enabling the {@code hudson.security.WipeOutPermission}
      * system property, a new "WipeOut" permission will allow to have greater
      * control on the "Wipe Out Workspace" action.</p>
+     *
+     * @deprecated Use {@code Item.WIPEOUT.getEnabled()} instead.
      */
+    @Deprecated
     public static boolean isWipeOutPermissionEnabled() {
-        return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
+        return Item.WIPEOUT.getEnabled();
     }
 
     @Deprecated

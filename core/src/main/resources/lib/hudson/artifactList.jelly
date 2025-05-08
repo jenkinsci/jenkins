@@ -38,7 +38,7 @@ THE SOFTWARE.
       If the hyperlink to artifacts are at another URL, specify the prefix.
     </st:attribute>
   </st:documentation>
-  <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it,attrs.permission)}">
+  <j:if test="${!build.ARTIFACTS.enabled or h.hasPermission(build, build.ARTIFACTS)}">
     <j:set var="artifacts" value="${build.getArtifactsUpTo(build.LIST_CUTOFF+1)}" />
     <j:if test="${!empty(artifacts)}">
       <t:summary icon="symbol-cube" href="${baseURL}artifact/">

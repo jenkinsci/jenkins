@@ -67,8 +67,7 @@ THE SOFTWARE.
 
 
           <table>
-            <t:artifactList build="${it}" caption="${%Build Artifacts}"
-                            permission="${it.ARTIFACTS}" />
+            <t:artifactList build="${it}" caption="${%Build Artifacts}" />
 
             <!-- give actions a chance to contribute summary item -->
             <j:forEach var="a" items="${it.allActions}">
