@@ -157,8 +157,16 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Issue("JENKINS-75533")
-    public void ensureExpectedMessage() {
+    public void ensureExpectedMessageAscii() {
         final IllegalArgumentException ex = Assert.assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode("1234567890123456789012345678901234567890123456789012345678901234567890123"));
+        assertThat(ex.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong_ASCII()));
+    }
+
+    @Issue("JENKINS-75533")
+    public void ensureExpectedMessageEmoji() {
+        final IllegalArgumentException ex = Assert.assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode(
+                "\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20" +
+                        "\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20")); // 🤠
         assertThat(ex.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong()));
     }
 }
