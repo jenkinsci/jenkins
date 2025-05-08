@@ -127,8 +127,6 @@
   align-items: center;
   justify-content: center;
   inset: 0;
-  top: var(--header-height);
-  padding-bottom: var(--header-height);
   z-index: 999;
   backdrop-filter: blur(15px);
   transition: var(--standard-transition);
