@@ -939,6 +939,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return super.encode(rawPassword);
             } catch (IllegalArgumentException ex) {
                 if (ex.getMessage().equals("password cannot be more than 72 bytes")) {
+                    if (rawPassword.toString().matches("\\A\\p{ASCII}+\\z")) {
+                        throw new IllegalArgumentException(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong_ASCII());
+                    }
                     throw new IllegalArgumentException(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong());
                 }
                 throw ex;
