@@ -1731,6 +1731,15 @@ function rowvgStartEachRow(recursive, f) {
   });
 
   Behaviour.specify(
+    "DIV.jenkins-form-skeleton",
+    "div-jenkins-form-skeleton",
+    ++p,
+    function (e) {
+      e.remove();
+    },
+  );
+
+  Behaviour.specify(
     "DIV.behavior-loading",
     "div-behavior-loading",
     ++p,

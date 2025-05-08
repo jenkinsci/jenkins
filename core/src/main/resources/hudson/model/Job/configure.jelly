@@ -42,7 +42,7 @@ THE SOFTWARE.
     </l:side-panel>
 
     <l:main-panel>
-      <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
+      <l:skeleton />
 
       <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
         <l:app-bar title="${%General}" headingLevel="h2">

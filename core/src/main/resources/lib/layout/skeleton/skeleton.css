@@ -1,0 +1,7 @@
+body:has(.jenkins-form-skeleton) {
+  section,
+  .jenkins-form-item,
+  #bottom-sticker {
+    display: none !important;
+  }
+}
