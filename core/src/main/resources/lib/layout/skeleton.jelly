@@ -51,6 +51,7 @@ THE SOFTWARE.
     <div />
   </div>
 
+  <!-- :has isn't supported in HTMLUnit, so don't load the CSS in that case -->
   <j:if test="${!h.isUnitTest}">
     <st:adjunct includes="lib.layout.skeleton.skeleton" />
   </j:if>
