@@ -51,5 +51,7 @@ THE SOFTWARE.
     <div />
   </div>
 
-  <st:adjunct includes="lib.layout.skeleton.skeleton"/>
+  <j:if test="${!h.isUnitTest}">
+    <st:adjunct includes="lib.layout.skeleton.skeleton" />
+  </j:if>
 </j:jelly>
