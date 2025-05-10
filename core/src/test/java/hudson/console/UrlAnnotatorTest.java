@@ -33,12 +33,12 @@ import org.jvnet.hudson.test.Issue;
 /**
  * @author Alan Harder
  */
-public class UrlAnnotatorTest {
+class UrlAnnotatorTest {
 
     private ConsoleAnnotator<?> ca = new UrlAnnotator().newInstance(null);
 
     @Test
-    public void testAnnotate() {
+    void testAnnotate() {
         assertEquals("Hello &lt;foo&gt;<a href='http://foo/'>http://foo/</a>&lt;/foo&gt; Bye",
                      annotate("Hello <foo>http://foo/</foo> Bye"));
 
@@ -60,7 +60,7 @@ public class UrlAnnotatorTest {
 
     @Test
     @Issue("JENKINS-19866")
-    public void annotateFileScheme() {
+    void annotateFileScheme() {
         assertEquals(
                 "Get this <a href='file://here/in/this/folder/'>file://here/in/this/folder/</a>.",
                 annotate("Get this file://here/in/this/folder/.")

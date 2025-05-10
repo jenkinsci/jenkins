@@ -1,8 +1,8 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 import hudson.EnvVars;
@@ -10,24 +10,24 @@ import hudson.model.queue.SubTask;
 import hudson.tasks.BuildWrapper;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
-public class ParametersActionTest {
+class ParametersActionTest {
 
     private ParametersAction baseParamsAB;
     private StringParameterValue baseA;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         baseA = new StringParameterValue("a", "base-a");
         StringParameterValue baseB = new StringParameterValue("b", "base-b");
         baseParamsAB = new ParametersAction(baseA, baseB);
     }
 
     @Test
-    public void mergeShouldOverrideParameters() {
+    void mergeShouldOverrideParameters() {
         StringParameterValue overrideB = new StringParameterValue("b", "override-b");
         ParametersAction extraParams = new ParametersAction(overrideB);
 
@@ -40,7 +40,7 @@ public class ParametersActionTest {
     }
 
     @Test
-    public void mergeShouldCombineDisparateParameters() {
+    void mergeShouldCombineDisparateParameters() {
         StringParameterValue overrideB = new StringParameterValue("b", "override-b");
         ParametersAction extraParams = new ParametersAction(overrideB);
 
@@ -53,7 +53,7 @@ public class ParametersActionTest {
     }
 
     @Test
-    public void mergeShouldHandleEmptyOverrides() {
+    void mergeShouldHandleEmptyOverrides() {
         ParametersAction params = baseParamsAB.merge(new ParametersAction());
 
         StringParameterValue a = (StringParameterValue) params.getParameter("a");
@@ -61,7 +61,7 @@ public class ParametersActionTest {
     }
 
     @Test
-    public void mergeShouldHandleNullOverrides() {
+    void mergeShouldHandleNullOverrides() {
         ParametersAction params = baseParamsAB.merge(null);
 
         StringParameterValue a = (StringParameterValue) params.getParameter("a");
@@ -69,7 +69,7 @@ public class ParametersActionTest {
     }
 
     @Test
-    public void mergeShouldReturnNewInstanceWithOverride() {
+    void mergeShouldReturnNewInstanceWithOverride() {
         StringParameterValue overrideA = new StringParameterValue("a", "override-a");
         ParametersAction overrideParams = new ParametersAction(overrideA);
 
@@ -79,7 +79,7 @@ public class ParametersActionTest {
     }
 
     @Test
-    public void createUpdatedShouldReturnNewInstanceWithNullOverride() {
+    void createUpdatedShouldReturnNewInstanceWithNullOverride() {
         ParametersAction params = baseParamsAB.createUpdated(null);
 
         assertNotSame(baseParamsAB, params);
@@ -87,7 +87,7 @@ public class ParametersActionTest {
 
     @Test
     @Issue("JENKINS-15094")
-    public void checkNullParameterValues() {
+    void checkNullParameterValues() {
         SubTask subtask = mock(SubTask.class);
         Build build = mock(Build.class);
 
