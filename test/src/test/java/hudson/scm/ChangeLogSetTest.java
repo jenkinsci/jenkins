@@ -1,32 +1,36 @@
 package hudson.scm;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.Extension;
 import hudson.MarkupText;
 import hudson.model.AbstractBuild;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ChangeLogSetTest {
+@WithJenkins
+class ChangeLogSetTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-17084")
-    public void catchingExceptionDuringAnnotation() {
+    void catchingExceptionDuringAnnotation() {
         FakeChangeLogSCM.EntryImpl change = new FakeChangeLogSCM.EntryImpl();
         change.setParent(ChangeLogSet.createEmpty(null)); // otherwise test would actually test only NPE thrown when accessing parent.build
-        try {
+        assertDoesNotThrow(() -> {
             change.getMsgAnnotated();
-        } catch (Throwable t) {
-            fail(t.getMessage());
-        }
+        });
         assertEquals(new FakeChangeLogSCM.EntryImpl().getMsg(), change.getMsg());
     }
 
