@@ -217,6 +217,7 @@ THE SOFTWARE.
         </div>
       </footer>
     </j:if>
+    <div id="render-on-demand-proxies-release" class="jenkins-!-display-contents" data-proxies="${h.getRenderOnDemandProxyReleaseURLs()}"/>
   </body>
 </html>
 </l:view>
