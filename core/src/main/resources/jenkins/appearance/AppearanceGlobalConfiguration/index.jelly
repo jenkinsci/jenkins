@@ -48,10 +48,6 @@ THE SOFTWARE.
           </l:notice>
         </j:when>
         <j:otherwise>
-          <div class="behavior-loading">
-            <l:spinner text="${%Loading}"/>
-          </div>
-
           <f:form method="post" name="config" action="configure">
             <j:set var="instance" value="${it}" />
             <j:set var="descriptor" value="${instance.descriptor}" />
