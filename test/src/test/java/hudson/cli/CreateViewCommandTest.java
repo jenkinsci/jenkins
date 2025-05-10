@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
+import hudson.model.Item;
 import hudson.model.ListView;
 import hudson.model.View;
 import java.io.IOException;
@@ -41,6 +42,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.MockFolder;
 
 public class CreateViewCommandTest {
 
@@ -117,6 +119,72 @@ public class CreateViewCommandTest {
         final CLICommandInvoker.Result result = command
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
                 .invokeWithArgs("..")
+        ;
+
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("ERROR: Invalid view name"));
+    }
+
+    @Test public void createViewSpecifyingFolderShouldSucceed() throws IOException {
+        final MockFolder f = j.createFolder("f");
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+            .grant(Jenkins.READ).everywhere().toAuthenticated()
+            .grant(View.CREATE, Item.READ).onItems(f).toAuthenticated()
+        );
+
+        final CLICommandInvoker.Result result = command
+                .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
+                .invokeWithArgs("f/ViewFromXML")
+        ;
+
+        assertThat(result, succeededSilently());
+
+        final View updatedView = f.getView("ViewFromXML");
+        assertThat(updatedView.getViewName(), equalTo("ViewFromXML"));
+        assertThat(updatedView.isFilterExecutors(), equalTo(true));
+        assertThat(updatedView.isFilterQueue(), equalTo(false));
+    }
+
+    @Test public void createViewSpecifyingUnknownFolderShouldFail() {
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.CREATE, Jenkins.READ).everywhere().toAuthenticated());
+        final CLICommandInvoker.Result result = command
+                .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
+                .invokeWithArgs("UnknownFolder/ViewFromXML")
+        ;
+
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("ERROR: Unknown ItemGroup"));
+    }
+
+    @Test public void createViewSpecifyingFolderShouldFailIfViewAlreadyExists() throws IOException {
+        final MockFolder f = j.createFolder("f");
+        f.addView(new ListView("ViewFromXML"));
+
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+            .grant(Jenkins.READ).everywhere().toAuthenticated()
+            .grant(View.CREATE, Item.READ).onItems(f).toAuthenticated()
+        );
+        final CLICommandInvoker.Result result = command
+                .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
+                .invokeWithArgs("f/ViewFromXML")
+        ;
+
+        assertThat(result, failedWith(4));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("ERROR: View 'ViewFromXML' already exists"));
+    }
+
+    @Test public void createViewSpecifyingFolderShouldFailUsingInvalidName() throws IOException {
+        final MockFolder f = j.createFolder("f");
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+            .grant(Jenkins.READ).everywhere().toAuthenticated()
+            .grant(View.CREATE, Item.READ).onItems(f).toAuthenticated()
+        );
+        final CLICommandInvoker.Result result = command
+                .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
+                .invokeWithArgs("f/..")
         ;
 
         assertThat(result, failedWith(3));
