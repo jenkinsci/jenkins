@@ -3,25 +3,25 @@ package jenkins.plugins;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.util.VersionNumber;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DetachedPluginsUtilTest {
+class DetachedPluginsUtilTest {
+
     @Test
-    public void checkJaxb() {
+    void checkJaxb() {
         final List<DetachedPluginsUtil.DetachedPlugin> plugins =
                 DetachedPluginsUtil.DETACHED_LIST.stream()
                         .filter(plugin -> plugin.getShortName().equals("jaxb"))
-                        .collect(Collectors.toList());
+                        .toList();
         assertEquals(1, plugins.size());
 
         DetachedPluginsUtil.DetachedPlugin jaxb = plugins.get(0);
@@ -43,23 +43,23 @@ public class DetachedPluginsUtilTest {
      * Checks the format of the {@code /jenkins/split-plugins.txt} file has maximum 4 columns.
      */
     @Test
-    public void checkSplitPluginsFileFormat() throws IOException {
+    void checkSplitPluginsFileFormat() {
         final List<String> splitPluginsLines = IOUtils.readLines(getClass().getResourceAsStream("/jenkins/split-plugins.txt"), StandardCharsets.UTF_8);
         assertFalse(splitPluginsLines.isEmpty());
 
         // File is not only comments
         final List<String> linesWithoutComments = splitPluginsLines.stream()
-                .filter(line -> !line.startsWith("#")).collect(Collectors.toList());
-        assertFalse("weird, split-plugins.txt only has comments?", linesWithoutComments.isEmpty());
+                .filter(line -> !line.startsWith("#")).toList();
+        assertFalse(linesWithoutComments.isEmpty(), "weird, split-plugins.txt only has comments?");
 
         //
-        assertFalse("no whitespaces only lines allowed", linesWithoutComments.stream()
+        assertFalse(linesWithoutComments.stream()
                             .filter(line -> line.trim().isEmpty())
-                            .anyMatch(line -> !line.isEmpty()));
+                            .anyMatch(line -> !line.isEmpty()), "no whitespaces only lines allowed");
 
 
-        assertTrue("max 4 columns is supported", linesWithoutComments.stream()
+        assertTrue(linesWithoutComments.stream()
                            .map(line -> line.split(" "))
-                           .noneMatch(line -> line.length > 4));
+                           .noneMatch(line -> line.length > 4), "max 4 columns is supported");
     }
 }
