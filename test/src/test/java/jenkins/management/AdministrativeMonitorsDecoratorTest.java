@@ -28,7 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.ExtensionList;
 import hudson.model.AdministrativeMonitor;
@@ -37,24 +37,39 @@ import hudson.security.ACL;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.FlagRule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AdministrativeMonitorsDecoratorTest {
+@WithJenkins
+class AdministrativeMonitorsDecoratorTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private String managePermission;
 
-    @Rule
-    public final FlagRule<String> managePermissionRule = FlagRule.systemProperty("jenkins.security.ManagePermission", "true");
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+        managePermission = System.setProperty("jenkins.security.ManagePermission", "true");
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (managePermission != null) {
+            System.setProperty("jenkins.security.ManagePermission", managePermission);
+        } else {
+            System.clearProperty("jenkins.security.ManagePermission");
+        }
+    }
 
     @Test
-    public void ensureAdminMonitorsAreNotRunPerNonAdminPage() throws Exception {
+    void ensureAdminMonitorsAreNotRunPerNonAdminPage() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         String nonAdminLogin = "nonAdmin";
         User.getById(nonAdminLogin, true);
@@ -76,7 +91,7 @@ public class AdministrativeMonitorsDecoratorTest {
 
     @Test
     @Issue("JENKINS-63977")
-    public void ensureAdminMonitorsAreRunOnlyOncePerAdminPage() throws Exception {
+    void ensureAdminMonitorsAreRunOnlyOncePerAdminPage() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         String adminLogin = "admin";
         User.getById(adminLogin, true);
@@ -143,7 +158,7 @@ public class AdministrativeMonitorsDecoratorTest {
     }
 
     @Test
-    public void ensureAdminMonitorsCanBeSeenByManagers() {
+    void ensureAdminMonitorsCanBeSeenByManagers() {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         var managerLogin = "manager";
         var systemReadLogin = "system-reader";
@@ -177,7 +192,7 @@ public class AdministrativeMonitorsDecoratorTest {
     }
 
     @Test
-    public void ensureAdminMonitorsCanBeSeenByManagersOrSystemReaders() {
+    void ensureAdminMonitorsCanBeSeenByManagersOrSystemReaders() {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         var managerLogin = "manager";
         var systemReadLogin = "system-reader";
