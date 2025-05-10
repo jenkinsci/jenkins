@@ -24,6 +24,7 @@
 
 package hudson.cli;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Failure;
 import hudson.model.Item;
@@ -40,6 +41,7 @@ import org.kohsuke.args4j.Argument;
 public class CreateViewCommand extends CLICommand {
 
     @Argument(usage = "Name of the view to use instead of the one in XML")
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public String viewName = null;
 
     @Override
