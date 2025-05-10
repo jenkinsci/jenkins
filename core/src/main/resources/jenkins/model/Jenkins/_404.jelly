@@ -34,7 +34,7 @@ THE SOFTWARE.
         <l:header />
         <l:main-panel>
             <h1 style="text-align: center">
-                <img src="${imagesURL}/rage.svg" height="179" width="154"/>
+                <img src="${imagesURL}/rage.svg" height="179" width="154" alt=""/>
                 <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
             </h1>
             <div id="error-description" style="text-align: center">
