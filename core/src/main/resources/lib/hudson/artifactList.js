@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright 2025 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,32 +22,18 @@
  * THE SOFTWARE.
  */
 
-package hudson.model;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.Extension;
-import hudson.ExtensionPoint;
-import jenkins.management.Badge;
-
-/**
- * Marker interface for actions that are added to {@link jenkins.model.Jenkins}.
- *
- * <p>
- * Extend from this interface and put {@link Extension} on your subtype
- * to have them auto-registered to {@link jenkins.model.Jenkins}.
- *
- * @author Kohsuke Kawaguchi
- * @since 1.311
- */
-public interface RootAction extends Action, ExtensionPoint {
-
-    /**
-     * A {@link Badge} shown on the button for the action.
-     *
-     * @return badge or {@code null} if no badge should be shown.
-     * @since 2.507
-     */
-    default @CheckForNull Badge getBadge() {
-        return null;
-    }
-}
+// TODO package this logic into a generic utility like renderOnDemand/refreshPart with Behaviour.specify
+var e = document.querySelector(".artifact-list");
+fetch(
+  e.getAttribute("data-url") +
+    "?" +
+    new URLSearchParams({ caption: e.getAttribute("data-caption") }),
+).then((rsp) => {
+  if (rsp.ok) {
+    rsp.text().then((responseText) => {
+      e.innerHTML = responseText;
+      Behaviour.applySubtree(e);
+      layoutUpdateCallback.call();
+    });
+  }
+});
