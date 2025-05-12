@@ -135,6 +135,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -1071,6 +1072,11 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
             return new StandardArtifactManager(this);
         }
+    }
+
+    @Restricted(DoNotUse.class) // Jelly
+    public final boolean hasCustomArtifactManager() {
+        return artifactManager != null;
     }
 
     /**
