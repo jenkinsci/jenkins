@@ -30,12 +30,20 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import hudson.widgets.RenderOnDemandClosure;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.util.logging.Level;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.WebClientUtil;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
@@ -48,6 +56,7 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 class RenderOnDemandTest {
 
     private JenkinsRule j;
+    private LogRecorder logging = new LogRecorder().record(RenderOnDemandClosure.class, Level.FINE);
 
     @BeforeEach
     void setUp(JenkinsRule rule) {
@@ -71,27 +80,40 @@ class RenderOnDemandTest {
         assertEquals("AlphaBravoCharlie", r.getJavaScriptResult().toString());
     }
 
-    /*
+    @Disabled("just informational")
+    @Issue("JENKINS-16341")
     @Test
     public void testMemoryConsumption() throws Exception {
-        j.createWebClient().goTo("self/testBehaviour"); // prime caches
+        var wc = j.createWebClient();
+        callTestBehaviour(wc); // prime caches
         int total = 0;
-        for (MemoryAssert.HistogramElement element : MemoryAssert.increasedMemory(new Callable<Void>() {
-            @Override public Void call() throws Exception {
-                j.createWebClient().goTo("self/testBehaviour");
-                return null;
+        int count = 50;
+        for (var element : MemoryAssert.increasedMemory(() -> {
+            for (int i = 0; i < count; i++) {
+                System.err.println("#" + i);
+                callTestBehaviour(wc);
             }
-        }, new Filter() {
-            @Override public boolean accept(Object obj, Object referredFrom, Field reference) {
-                return !obj.getClass().getName().contains("htmlunit");
-            }
-        })) {
+            var o = new Object();
+            var sr = new SoftReference<>(o);
+            var wr = new WeakReference<>(o);
+            o = null;
+            MemoryAssert.assertGC(wr, true);
+            return null;
+        }, (obj, referredFrom, reference) -> !obj.getClass().getName().contains("htmlunit"))) {
             total += element.byteSize;
+            if (element.instanceCount == count) {
+                System.out.print("⚠ ️");
+            }
             System.out.println(element.className + " ×" + element.instanceCount + ": " + element.byteSize);
         }
         System.out.println("total: " + total);
     }
-    */
+
+    private void callTestBehaviour(JenkinsRule.WebClient wc) throws Exception {
+        var p = wc.goTo("self/testBehaviour");
+        p.executeJavaScript("renderOnDemand(document.getElementsBySelector('.lazy')[0])");
+        WebClientUtil.waitForJSExec(p.getWebClient());
+    }
 
     /**
      * Makes sure that scripts get evaluated.
