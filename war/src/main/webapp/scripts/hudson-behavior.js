@@ -1039,6 +1039,15 @@ function renderOnDemand(e, callback, noBehaviour) {
   });
 }
 
+window.addEventListener("unload", function () {
+  let element = document.querySelector("#render-on-demand-proxies-release");
+  let jsonString = element.dataset.proxies;
+  let json = JSON.parse(jsonString);
+  json.forEach(function (url) {
+    fetch(url);
+  });
+});
+
 /**
  * Finds all the script tags
  */
