@@ -27,12 +27,12 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:set var="q" value="${request.getParameter('q')}"/>
+  <j:set var="q" value="${request2.getParameter('q')}"/>
   <j:new var="h" className="hudson.Functions" /><!-- needed for printing title. -->
   <l:layout title="${%Search for} '${q}'">
     <l:main-panel>
       <h1>${%Search for} '${q}'</h1>
-      <j:set var="items" value="${it.getSuggestions(request,q)}"/>
+      <j:set var="items" value="${it.getSuggestions(request2,q)}"/>
       <j:choose>
         <j:when test="${items.size()==0}">
           <div class='error'>
@@ -43,12 +43,12 @@ THE SOFTWARE.
           <ol>
             <j:forEach var="i" items="${items}">
               <li id="item_${i.path}">
-                <a href="?q=${h.urlEncode(i.path)}">${i.path}</a>
+                <a href="${rootURL}/${i.url}">${i.path}</a>
               </li>
             </j:forEach>
           </ol>
             <j:if test="${items.hasMoreResults()}">
-              <j:set var="max" value="${request.hasParameter('max')?request.getParameter('max'):100}"/>
+              <j:set var="max" value="${request2.hasParameter('max')?request2.getParameter('max'):100}"/>
               <j:choose>
                 <j:when test="${max &gt; it.getMaxSearchSize()}">
                  <em>Only showing the first ${it.getMaxSearchSize()} results,

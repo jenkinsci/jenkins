@@ -1,28 +1,5 @@
 @use "../base/breakpoints";
 
-/* --------------- header --------------- */
-
-#page-header .logo {
-  margin-left: 1.2rem;
-  display: inline-flex;
-  align-items: center;
-  position: relative;
-  height: 100%;
-  width: 100%;
-}
-
-#jenkins-home-link {
-  position: relative;
-}
-
-#jenkins-head-icon {
-  height: 2.5rem;
-}
-
-#jenkins-name-icon {
-  margin-left: 0.25rem;
-}
-
 /* -------------------------------------- */
 
 .app-page-body {
@@ -33,11 +10,10 @@
 }
 
 .app-page-body__sidebar {
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media (min-width: breakpoints.$tablet-breakpoint) {
     &--sticky {
       position: sticky;
-      top: 44px;
+      top: var(--header-height);
       align-self: flex-start;
     }
   }
@@ -54,7 +30,8 @@
 }
 
 #main-panel {
-  padding: var(--section-padding);
+  padding: 0 var(--section-padding) var(--section-padding)
+    var(--section-padding);
   display: inline-block;
   width: 100%;
 }
@@ -101,7 +78,6 @@ body.two-column #side-panel {
   width: var(--side-panel-width);
 }
 
-/* stylelint-disable-next-line media-query-no-invalid */
 @media (max-width: breakpoints.$tablet-breakpoint) {
   body.two-column #page-body {
     flex-wrap: wrap;

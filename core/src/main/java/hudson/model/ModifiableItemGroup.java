@@ -24,15 +24,16 @@
 
 package hudson.model;
 
+import hudson.Util;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import jenkins.security.stapler.StaplerNotDispatchable;
-import org.kohsuke.stapler.ReflectionUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link ItemGroup} that is a general purpose container, which allows users and the rest of the program
@@ -50,9 +51,9 @@ public interface ModifiableItemGroup<T extends Item> extends ItemGroup<T> {
      * The request format follows that of {@code &lt;n:form xmlns:n="/lib/form">}.
      *
      */
-    @StaplerNotDispatchable
+    @RequirePOST
     default T doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        if (ReflectionUtils.isOverridden(
+        if (Util.isOverridden(
                 ModifiableItemGroup.class,
                 getClass(),
                 "doCreateItem",
@@ -75,7 +76,7 @@ public interface ModifiableItemGroup<T extends Item> extends ItemGroup<T> {
     @Deprecated
     @StaplerNotDispatchable
     default T doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
-        if (ReflectionUtils.isOverridden(
+        if (Util.isOverridden(
                 ModifiableItemGroup.class,
                 getClass(),
                 "doCreateItem",

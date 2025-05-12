@@ -58,6 +58,8 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.ResourceDomainConfiguration;
@@ -65,8 +67,6 @@ import jenkins.security.ResourceDomainRootAction;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -530,8 +530,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private static void zip(StaplerResponse2 rsp, VirtualFile root, VirtualFile dir, String glob) throws IOException, InterruptedException {
         OutputStream outputStream = rsp.getOutputStream();
-        try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
-            zos.setEncoding(Charset.defaultCharset().displayName()); // TODO JENKINS-20663 make this overridable via query parameter
+        // TODO JENKINS-20663 make encoding overridable via query parameter
+        try (ZipOutputStream zos = new ZipOutputStream(outputStream, Charset.defaultCharset())) {
             // TODO consider using run(Callable) here
 
             if (glob.isEmpty()) {

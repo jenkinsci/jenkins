@@ -1,4 +1,5 @@
 @use "../abstracts/mixins";
+@use "../base/breakpoints";
 
 body,
 p {
@@ -16,11 +17,18 @@ button {
 table,
 td,
 th,
-form,
+form {
+  font-size: var(--font-size-sm);
+}
+
 input,
 textarea,
 select {
   font-size: var(--font-size-sm);
+
+  @media (max-width: breakpoints.$tablet-breakpoint) {
+    font-size: var(--font-size-base);
+  }
 }
 
 // Reset monospaced font-size, because browsers reduce it by default to ~81%

@@ -29,7 +29,7 @@
 .info {
   position: relative;
   padding-left: calc(22px + 0.4rem);
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 
   &::before {
     content: "";
@@ -60,7 +60,7 @@
 
 .error-inline {
   color: var(--red);
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 }
 
 .warning {
@@ -73,7 +73,7 @@
 
 .warning-inline {
   color: var(--orange);
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 }
 
 .info {

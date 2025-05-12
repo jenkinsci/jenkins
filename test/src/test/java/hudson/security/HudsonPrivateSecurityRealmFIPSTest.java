@@ -35,7 +35,6 @@ import hudson.logging.LogRecorder;
 import hudson.logging.LogRecorderManager;
 import hudson.model.User;
 import hudson.security.HudsonPrivateSecurityRealm.Details;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -43,19 +42,23 @@ import jenkins.model.Jenkins;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPasswordInput;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 
 @For(HudsonPrivateSecurityRealm.class)
 public class HudsonPrivateSecurityRealmFIPSTest {
 
-    // the jbcrypt encoded for of "a" without the quotes
-    private static final String JBCRYPT_ENCODED_PASSWORD = "#jbcrypt:$2a$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe";
+    // the bcrypt encoded form of "passwordpassword" without the quotes
+    private static final String JBCRYPT_ENCODED_PASSWORD = "#jbcrypt:$2a$10$Nm37vwdZwJ5T2QTBwYuBYONHD3qKilgd5UO7wuDXI83z5dAdrgi4i";
 
     private static final String LOG_RECORDER_NAME = "HPSR_LOG_RECORDER";
 
@@ -72,7 +75,7 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
-        User u1 = securityRealm.createAccount("user", "password");
+        User u1 = securityRealm.createAccount("user", "passwordpassword");
         u1.setFullName("A User");
         u1.save();
 
@@ -81,8 +84,8 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         assertThat(hashedPassword, startsWith("$PBKDF2$HMACSHA512:210000:"));
 
         try (WebClient wc = j.createWebClient()) {
-            wc.login("user", "password");
-            assertThrows(FailingHttpStatusCodeException.class, () -> wc.login("user", "wrongPass"));
+            wc.login("user", "passwordpassword");
+            assertThrows(FailingHttpStatusCodeException.class, () -> wc.login("user", "wrongPass123456"));
         }
     }
 
@@ -95,19 +98,20 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         setupLogRecorder();
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
-        // "password" after it has gone through the KDF
+        // "passwordpassword" after it has gone through the KDF
         securityRealm.createAccountWithHashedPassword("user_hashed",
-                "$PBKDF2$HMACSHA512:210000:ffbb207b847010af98cdd2b09c79392c$f67c3b985daf60db83a9088bc2439f7b77016d26c1439a9877c4f863c377272283ce346edda4578a5607ea620a4beb662d853b800f373297e6f596af797743a6");
+                "$PBKDF2$HMACSHA512:210000:92857a190ac711436e8a9cb56595d642$0d66e61da0b04283148b4a574422a17762c96c46bcd3aa587b6d447a908367fe8030bd2083dc54313639561d36cc9ac707bed72fc3400465e7dc1d6805cffb66");
 
         try (WebClient wc = j.createWebClient()) {
             // login should succeed
-            wc.login("user_hashed", "password");
-            assertThrows(FailingHttpStatusCodeException.class, () -> wc.login("user_hashed", "password2"));
+            wc.login("user_hashed", "passwordpassword");
+            assertThrows(FailingHttpStatusCodeException.class, () -> wc.login("user_hashed", "passwordpassword2"));
         }
         assertThat(getLogRecords(), not(hasItem(incorrectHashingLogEntry())));
     }
 
     @Test
+    @LocalData
     public void userLoginAfterEnablingFIPS() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::userLoginAfterEnablingFIPSStep);
     }
@@ -117,19 +121,10 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
-        User u1 = securityRealm.createAccount("user", "a");
-        u1.setFullName("A User");
-        // overwrite the password property using an password created using an incorrect algorithm
-        Method m = Details.class.getDeclaredMethod("fromHashedPassword", String.class);
-        m.setAccessible(true);
-        Details d = (Details) m.invoke(null, JBCRYPT_ENCODED_PASSWORD);
-        u1.addProperty(d);
-
-        u1.save();
-        assertThat(u1.getProperty(Details.class).getPassword(), is(JBCRYPT_ENCODED_PASSWORD));
+        assertThat(securityRealm.getUser("user").getProperty(Details.class).getPassword(), is(JBCRYPT_ENCODED_PASSWORD));
 
         try (WebClient wc = j.createWebClient()) {
-            assertThrows(FailingHttpStatusCodeException.class, () -> wc.login("user", "a"));
+            assertThrows(FailingHttpStatusCodeException.class, () -> wc.login("user", "passwordpassword"));
         }
         assertThat(getLogRecords(), hasItem(incorrectHashingLogEntry()));
     }
@@ -147,6 +142,87 @@ public class HudsonPrivateSecurityRealmFIPSTest {
                 () -> securityRealm.createAccountWithHashedPassword("user_hashed_incorrect_algorithm", JBCRYPT_ENCODED_PASSWORD));
         assertThat(illegalArgumentException.getMessage(),
                 is("The hashed password was hashed with an incorrect algorithm. Jenkins is expecting $PBKDF2"));
+    }
+
+    @Test
+    public void validatePasswordLengthForFIPS() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordLengthForFIPSStep);
+    }
+
+    private static void validatePasswordLengthForFIPSStep(JenkinsRule j) throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User u1 =  securityRealm.createAccount("test", "aValidFipsPass");
+
+        WebClient wc = j.createWebClient();
+        wc.login("test", "aValidFipsPass");
+
+        HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+        //Should fail as the password length is <14 (In FIPS mode)
+        password1.setText("mockPassword");
+        password2.setText("mockPassword");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        assertThrows(FailingHttpStatusCodeException.class, () -> {
+            j.submit(form);
+        });
+    }
+
+    @Test
+    public void validatePasswordMismatchForFIPS() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordMismatchForFIPSStep);
+    }
+
+    private static void validatePasswordMismatchForFIPSStep(JenkinsRule j) throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User u1 =  securityRealm.createAccount("test", "aValidFipsPass");
+
+
+        WebClient wc = j.createWebClient();
+        wc.login("test", "aValidFipsPass");
+
+        HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+        //should fail as the passwords are different (even though the password length >=14) In FIPS mode
+        password1.setText("14charPassword");
+        password2.setText("14charPa$$word");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        assertThrows(FailingHttpStatusCodeException.class, () -> {
+            j.submit(form);
+        });
+    }
+
+    @Test
+    public void validatePasswordSuccessForFIPS() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordSuccessForFIPSStep);
+    }
+
+    private static void validatePasswordSuccessForFIPSStep(JenkinsRule j) throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User u1 =  securityRealm.createAccount("test", "aValidFipsPass");
+
+        WebClient wc = j.createWebClient();
+        wc.login("test", "aValidFipsPass");
+
+        HtmlPage configurePage = wc.goTo(u1.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+        //should pass as the passwords are same and length >=14 In FIPS mode.
+        password1.setText("14charPassword");
+        password2.setText("14charPassword");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        HtmlPage success = j.submit(form);
+        assertThat(success.getWebResponse().getStatusCode(), is(200));
     }
 
     private static Matcher<LogRecord> incorrectHashingLogEntry() {

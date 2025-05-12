@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.125</version>
+    <version>1.132</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.482</revision>
+    <revision>2.510</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-10-15T13:52:44Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-05-06T13:04:02Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,18 +87,18 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3270.v9e0d174083ed</remoting.version>
+    <remoting.version>3309.v27b_9314fd1a_4</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
-    <access-modifier.version>1.34</access-modifier.version>
+    <access-modifier.version>1.35</access-modifier.version>
     <antlr.version>4.13.2</antlr.version>
-    <bridge-method-injector.version>1.30</bridge-method-injector.version>
+    <bridge-method-injector.version>1.31</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.2</winstone.version>
-    <node.version>20.18.0</node.version>
+    <winstone.version>8.8</winstone.version>
+    <node.version>22.15.0</node.version>
   </properties>
 
   <!--
@@ -281,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.18.2</version>
+              <version>10.23.1</version>
             </dependency>
           </dependencies>
           <executions>
@@ -297,7 +297,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.12</version>
+          <version>0.8.13</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -374,6 +374,11 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <!-- Version specified in parent POM -->
       </plugin>
     </plugins>
   </build>
@@ -517,6 +522,18 @@ THE SOFTWARE.
                 <configuration>
                   <arguments>yarn lint:ci</arguments>
                   <skip>${yarn.lint.skip}</skip>
+                </configuration>
+              </execution>
+              <execution>
+                <id>prettier</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>yarn exec prettier --check .</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                  <testFailureIgnore>false</testFailureIgnore>
                 </configuration>
               </execution>
             </executions>

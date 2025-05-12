@@ -117,15 +117,6 @@ THE SOFTWARE.
       <version>${bridge-method-injector.version}</version>
     </dependency>
     <dependency>
-      <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
-      <groupId>com.jcraft</groupId>
-      <artifactId>jzlib</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.solaris</groupId>
-      <artifactId>embedded_su4j</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
       <exclusions>
@@ -167,51 +158,9 @@ THE SOFTWARE.
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-jelly</groupId>
-      <artifactId>commons-jelly-tags-fmt</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-jelly</groupId>
-      <artifactId>commons-jelly-tags-xml</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-jelly</groupId>
-          <artifactId>commons-jelly</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-jelly</groupId>
-          <artifactId>commons-jelly-tags-junit</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-jexl</groupId>
-          <artifactId>commons-jexl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xalan</groupId>
-          <artifactId>xalan</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xerces</groupId>
-          <artifactId>xercesImpl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <!-- Jenkins doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.jenkins.stapler</groupId>
-      <artifactId>jenkins-stapler-support</artifactId>
     </dependency>
     <dependency>
       <!-- needed by Jelly -->
@@ -287,17 +236,6 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-      <exclusions>
-        <!-- Only needed for Pack200UnpackerAdapter, which we do not use -->
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
       <artifactId>commons-fileupload2-core</artifactId>
     </dependency>
     <dependency>
@@ -309,10 +247,6 @@ THE SOFTWARE.
       <artifactId>groovy-all</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.connectbot</groupId>
-      <artifactId>jbcrypt</artifactId>
-    </dependency>
-    <dependency>
       <!-- Groovy shell uses this, but it doesn't declare the dependency -->
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
@@ -320,6 +254,24 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>commons-jelly-tags-fmt</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>commons-jelly-tags-xml</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>jaxen</groupId>
+          <artifactId>jaxen</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.dom4j</groupId>
+          <artifactId>dom4j</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -370,10 +322,6 @@ THE SOFTWARE.
       <artifactId>localizer</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.robust-http-client</groupId>
-      <artifactId>robust-http-client</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
     </dependency>
@@ -384,10 +332,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>windows-package-checker</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.jinterop</groupId>
-      <artifactId>j-interop</artifactId>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>

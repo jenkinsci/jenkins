@@ -36,6 +36,7 @@ import hudson.console.ConsoleAnnotatorFactory;
 import hudson.init.InitMilestone;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -62,6 +63,7 @@ import hudson.model.User;
 import hudson.model.View;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import hudson.search.SearchFactory;
 import hudson.search.SearchableModelObject;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -124,6 +126,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -141,6 +144,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
@@ -156,6 +160,7 @@ import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import jenkins.console.ConsoleUrlProvider;
+import jenkins.console.DefaultConsoleUrlProvider;
 import jenkins.console.WithConsoleUrl;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
@@ -163,6 +168,9 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.SimplePageDecorator;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.DetailGroup;
 import jenkins.util.SystemProperties;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -660,17 +668,14 @@ public class Functions {
     }
 
     /**
-     * Gets the suffix to use for YUI JavaScript.
-     */
-    public static String getYuiSuffix() {
-        return DEBUG_YUI ? "debug" : "min";
-    }
-
-    /**
-     * Set to true if you need to use the debug version of YUI.
+     * No longer used, to be removed after enough plugins have adopted a version of the test harness with
+     * <a href="https://github.com/jenkinsci/jenkins-test-harness/pull/874">jenkins-test-harness/pull/874</a> in it.
+     *
+     * @deprecated removed without replacement
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static boolean DEBUG_YUI = SystemProperties.getBoolean("debug.YUI");
+    @Deprecated(forRemoval = true, since = "TODO")
+    public static boolean DEBUG_YUI;
 
     /**
      * Creates a sub map by using the given range (both ends inclusive).
@@ -1805,6 +1810,7 @@ public class Functions {
         return s.toString();
     }
 
+    @SuppressFBWarnings(value = "INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE", justification = "Jenkins handles this issue differently or doesn't care about it")
     private static void doPrintStackTrace(@NonNull StringBuilder s, @NonNull Throwable t, @CheckForNull Throwable higher, @NonNull String prefix, @NonNull Set<Throwable> encountered) {
         if (!encountered.add(t)) {
             s.append("<cycle to ").append(t).append(">\n");
@@ -1858,6 +1864,7 @@ public class Functions {
      * @param pw the log
      * @since 2.43
      */
+    @SuppressFBWarnings(value = "XSS_SERVLET", justification = "TODO needs triage")
     public static void printStackTrace(@CheckForNull Throwable t, @NonNull PrintWriter pw) {
         pw.println(printThrowable(t).trim());
     }
@@ -1988,7 +1995,15 @@ public class Functions {
      */
     public static @CheckForNull String getConsoleUrl(WithConsoleUrl withConsoleUrl) {
         String consoleUrl = withConsoleUrl.getConsoleUrl();
-        return consoleUrl != null ? Stapler.getCurrentRequest().getContextPath() + '/' + consoleUrl : null;
+        return consoleUrl != null ? Stapler.getCurrentRequest2().getContextPath() + '/' + consoleUrl : null;
+    }
+
+    /**
+     * @param run the run
+     * @return the Console Provider for the given run, if null, the default Console Provider
+     */
+    public static ConsoleUrlProvider getConsoleProviderFor(Run<?, ?> run) {
+        return Optional.ofNullable(ConsoleUrlProvider.getProvider(run)).orElse(new DefaultConsoleUrlProvider());
     }
 
     /**
@@ -2171,12 +2186,14 @@ public class Functions {
     /**
      * Generate a series of {@code <script>} tags to include {@code script.js}
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
+     *
+     * @see hudson.console.ConsoleAnnotatorFactory.RootAction
      */
     public static String generateConsoleAnnotationScriptAndStylesheet() {
         String cp = Stapler.getCurrentRequest2().getContextPath() + Jenkins.RESOURCE_PATH;
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
-            String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
+            String path = cp + "/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
                 buf.append("<script src='").append(path).append("/script.js'></script>");
             if (f.hasStylesheet())
@@ -2575,5 +2592,64 @@ public class Functions {
     @Restricted(NoExternalUse.class)
     public static String generateItemId() {
         return String.valueOf(Math.floor(Math.random() * 3000));
+    }
+
+    /**
+     * Returns a grouped list of Detail objects for the given Actionable object
+     */
+    @Restricted(NoExternalUse.class)
+    public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object) {
+        ExtensionList<DetailGroup> groupsExtensionList = ExtensionList.lookup(DetailGroup.class);
+        List<ExtensionComponent<DetailGroup>> components = groupsExtensionList.getComponents();
+        Map<String, Double> detailGroupOrdinal = components.stream()
+                .collect(Collectors.toMap(
+                        (k) -> k.getInstance().getClass().getName(),
+                        ExtensionComponent::ordinal
+                ));
+
+        Map<DetailGroup, List<Detail>> result = new TreeMap<>(Comparator.comparingDouble(d -> detailGroupOrdinal.get(d.getClass().getName())));
+        for (DetailFactory taf : DetailFactory.factoriesFor(object.getClass())) {
+            List<Detail> details = taf.createFor(object);
+            details.forEach(e -> result.computeIfAbsent(e.getGroup(), k -> new ArrayList<>()).add(e));
+        }
+
+        for (Map.Entry<DetailGroup, List<Detail>> entry : result.entrySet()) {
+            List<Detail> detailList = entry.getValue();
+            detailList.sort(Comparator.comparingInt(Detail::getOrder));
+        }
+
+        return result;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static ExtensionList<SearchFactory> getSearchFactories() {
+        return SearchFactory.all();
+    }
+
+    /**
+     * @param keyboardShortcut the shortcut to be translated
+     * @return the translated shortcut, e.g. CMD+K to ⌘+K for macOS, CTRL+K for Windows
+     */
+    @Restricted(NoExternalUse.class)
+    public static String translateModifierKeysForUsersPlatform(String keyboardShortcut) {
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse2());
+        String userAgent = currentRequest.getHeader("User-Agent");
+        if (userAgent != null) {
+          List<String> platformsThatUseCommand = List.of("MAC", "IPHONE", "IPAD");
+          boolean useCmdKey = platformsThatUseCommand.stream().anyMatch(e -> userAgent.toUpperCase().contains(e));
+          return keyboardShortcut.replace("CMD", useCmdKey ? "⌘" : "CTRL");
+        } else {
+          return keyboardShortcut;
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String formatMessage(String format, Object args) {
+        if (format == null) {
+            return args.toString();
+        }
+
+        return MessageFormat.format(format, args);
     }
 }

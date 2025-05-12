@@ -61,6 +61,7 @@ import jenkins.model.IComputer;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
+import jenkins.security.ExtendedReadRedaction;
 import jenkins.util.Timer;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
@@ -75,6 +76,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Serves as the top of {@link Computer}s in the URL hierarchy.
@@ -115,8 +117,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     /**
-     * @deprecated Use {@link #getComputers()} instead.
      * @return All {@link Computer} instances managed by this set.
+     * @deprecated Use {@link #getComputers()} instead.
      */
     @Deprecated(since = "2.480")
     public Computer[] get_all() {
@@ -291,8 +293,23 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                 }
             }
 
+            src.checkPermission(Computer.EXTENDED_READ);
+
             // copy through XStream
             String xml = Jenkins.XSTREAM.toXML(src);
+            if (!src.hasPermission(Computer.CONFIGURE)) {
+                final String redactedConfigDotXml = ExtendedReadRedaction.applyAll(xml);
+                if (!xml.equals(redactedConfigDotXml)) {
+                    // AccessDeniedException2 does not permit a custom message, and anyway redirecting the user to the login screen is obviously pointless.
+                    throw new AccessDeniedException(
+                            Messages.ComputerSet_may_not_copy_as_it_contains_secrets_and_(
+                                    src.getNodeName(),
+                                    Jenkins.getAuthentication2().getName(),
+                                    Computer.PERMISSIONS.title,
+                                    Computer.EXTENDED_READ.name,
+                                    Computer.CONFIGURE.name));
+                }
+            }
             Node result = (Node) Jenkins.XSTREAM.fromXML(xml);
             result.setNodeName(name);
             result.holdOffLaunchUntilSave = true;

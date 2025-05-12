@@ -3,7 +3,6 @@ package hudson.security.GlobalSecurityConfiguration
 import hudson.security.SecurityRealm
 import hudson.markup.MarkupFormatterDescriptor
 import hudson.security.AuthorizationStrategy
-import jenkins.AgentProtocol
 import hudson.Functions
 import hudson.model.Descriptor
 
@@ -11,7 +10,7 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate'), type:"one-column") {
+l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request2.getParameter('decorate'), type:"one-column") {
     l.main_panel {
         l.app_bar(title: my.displayName)
 
@@ -49,33 +48,6 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                         }
                     } else {
                         f.serverTcpPort()
-                    }
-                }
-                f.advanced(title: _("Agent protocols"), align:"left") {
-                    f.entry(title: _("Agent protocols"), help: '/descriptor/hudson.security.GlobalSecurityConfiguration/help/agentProtocol') {
-                        def agentProtocols = my.agentProtocols
-                        div() {
-                            for (AgentProtocol p : AgentProtocol.all()) {
-                                if (p.name != null && !p.required) {
-                                    f.block() {
-                                        f.checkbox(name: "agentProtocol",
-                                                title: p.displayName,
-                                                checked: agentProtocols.contains(p.name),
-                                                json: p.name)
-                                    }
-                                    div(class: "tr") {
-                                        div(class:"setting-description"){
-                                            st.include(from:p, page: "description", optional:true)
-                                            if (p.deprecated) {
-                                              br()
-                                              text(b(_("Deprecated. ")))
-                                              st.include(from:p, page: "deprecationCause", optional:true)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }

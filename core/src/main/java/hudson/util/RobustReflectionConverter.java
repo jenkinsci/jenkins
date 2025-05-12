@@ -464,7 +464,14 @@ public class RobustReflectionConverter implements Converter {
         return context.convertAnother(result, type, converter);
     }
 
-    private void writeValueToImplicitCollection(HierarchicalStreamReader reader, UnmarshallingContext context, Object value, Map<String, Collection<Object>> implicitCollections, Map<String, Class<?>> implicitCollectionElementTypes, Object result, String itemFieldName) {
+    private void writeValueToImplicitCollection(
+            HierarchicalStreamReader reader,
+            UnmarshallingContext context,
+            Object value,
+            Map<String, Collection<Object>> implicitCollections,
+            Map<String, Class<?>> implicitCollectionElementTypes,
+            Object result,
+            String itemFieldName) {
         String fieldName = mapper.getFieldNameForItemTypeAndName(context.getRequiredType(), value.getClass(), itemFieldName);
         if (fieldName != null) {
             Collection collection = implicitCollections.get(fieldName);

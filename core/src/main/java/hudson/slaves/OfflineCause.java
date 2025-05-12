@@ -30,7 +30,7 @@ import hudson.model.Computer;
 import hudson.model.User;
 import java.io.ObjectStreamException;
 import java.util.Collections;
-import java.util.Date;
+import jenkins.agents.IOfflineCause;
 import jenkins.model.Jenkins;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
@@ -51,26 +51,18 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @since 1.320
  */
 @ExportedBean
-public abstract class OfflineCause {
+public abstract class OfflineCause implements IOfflineCause {
     protected final long timestamp = System.currentTimeMillis();
 
     /**
-     * Timestamp in which the event happened.
+     * {@inheritDoc}
      *
      * @since 1.612
      */
     @Exported
+    @Override
     public long getTimestamp() {
         return timestamp;
-    }
-
-    /**
-     * Same as {@link #getTimestamp()} but in a different type.
-     *
-     * @since 1.612
-     */
-    public final @NonNull Date getTime() {
-        return new Date(timestamp);
     }
 
     /**
@@ -192,6 +184,24 @@ public abstract class OfflineCause {
             }
             return this;
         }
+
+        @Override
+        @NonNull
+        public String getComputerIcon() {
+            return "symbol-computer-disconnected";
+        }
+
+        @Override
+        @NonNull
+        public String getComputerIconAltText() {
+            return "[temporarily offline by user]";
+        }
+
+        @NonNull
+        @Override
+        public String getIcon() {
+            return "symbol-person";
+        }
     }
 
     public static class ByCLI extends UserCause {
@@ -211,6 +221,29 @@ public abstract class OfflineCause {
     public static class IdleOfflineCause extends SimpleOfflineCause {
         public IdleOfflineCause() {
             super(hudson.slaves.Messages._RetentionStrategy_Demand_OfflineIdle());
+        }
+
+        @Override
+        @NonNull
+        public String getComputerIcon() {
+            return "symbol-computer-paused";
+        }
+
+        @Override
+        @NonNull
+        public String getComputerIconAltText() {
+            return "[will connect automatically whenever needed]";
+        }
+
+        @Override
+        @NonNull
+        public String getIcon() {
+            return "symbol-pause";
+        }
+
+        @Override
+        public String getStatusClass() {
+            return "info";
         }
     }
 }

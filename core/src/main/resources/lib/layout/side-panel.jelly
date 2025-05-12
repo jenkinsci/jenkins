@@ -35,12 +35,7 @@ THE SOFTWARE.
 
   <j:if test="${mode=='side-panel'}">
     <div id="side-panel" class="app-page-body__sidebar ${attrs.sticky == 'true' ? 'app-page-body__sidebar--sticky' : ''}">
-        <d:invokeBody />
-      <!-- add YUI logger if debugging YUI -->
-      <j:if test="${h.yuiSuffix=='debug'}">
-        <!-- script to transform this into the Logger Console is done in hudson-behavior.js -->
-        <div id="yui-logreader" style="margin-top:1em"/>
-      </j:if>
+      <d:invokeBody />
     </div>
   </j:if>
 

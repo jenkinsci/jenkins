@@ -2,42 +2,65 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--section-padding);
+  margin-bottom: 0.875rem;
+  min-height: 2.875rem;
+  gap: var(--section-padding);
+  flex-wrap: wrap;
+
+  @media (width <= 800px) {
+    align-items: stretch;
+    flex-direction: column;
+  }
 
   .jenkins-app-bar__content {
     display: flex;
     justify-content: center;
     flex-direction: column;
-    width: 100%;
     min-height: 2.25rem;
+    flex-grow: 1;
   }
 
   .jenkins-app-bar__controls {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: var(--section-padding);
-    min-height: 2.25rem;
     gap: 0.75rem;
 
     .jenkins-search {
       min-width: 260px;
     }
+
+    @media (width <= 800px) {
+      justify-content: stretch;
+      flex-wrap: wrap;
+
+      & > * {
+        flex-grow: 1;
+        flex-basis: 0;
+      }
+
+      .jenkins-button:first-child {
+        width: 100%;
+        flex-basis: auto !important;
+      }
+    }
+
+    &:empty {
+      display: none;
+    }
   }
 
   &--sticky {
     position: sticky;
-    top: 40px;
-    padding-top: var(--section-padding);
-    margin-top: calc(var(--section-padding) * -1);
+    top: var(--header-height);
     z-index: 2;
 
     &::before,
     &::after {
       content: "";
       position: absolute;
-      inset: 0 calc(var(--section-padding) * -1)
-        calc(var(--section-padding) * -1);
+      inset: calc(var(--header-height) * -1)
+        calc(var(--section-padding) * -1) -0.875rem;
       z-index: -1;
       pointer-events: none;
     }
@@ -46,14 +69,10 @@
       background: var(--background);
       mask-image: linear-gradient(black 70%, transparent);
       opacity: 0.55;
-
-      @supports not (backdrop-filter: blur(15px)) {
-        opacity: 1;
-      }
     }
 
     &::after {
-      backdrop-filter: blur(15px);
+      backdrop-filter: blur(10px);
       mask-image: linear-gradient(black 50%, transparent);
     }
   }
@@ -83,5 +102,80 @@
   svg {
     width: 2rem !important;
     height: 2rem !important;
+  }
+
+  img {
+    width: 2.375rem;
+    height: 2.375rem;
+  }
+}
+
+.bottom-sticker,
+#bottom-sticker {
+  position: sticky;
+
+  // This has to be set to -1px so that IntersectionObserver can add the
+  // &--stuck class when the element is stuck to the bottom of the screen
+  // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
+  bottom: -1px;
+  margin-left: calc(var(--section-padding) * -1);
+  width: calc(
+    100% + calc(var(--section-padding) * 2)
+  ); /* it needs to occupy the entire width or else the underlying content will see through */
+
+  z-index: 998; /* behind top-sticker */
+}
+
+.bottom-sticker-inner {
+  position: relative;
+  padding: 1em var(--section-padding);
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--background);
+    opacity: 0;
+    z-index: -1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -30px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, var(--bottom-app-bar-shadow) 110%);
+    max-width: 100%;
+    height: 30px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      white var(--section-padding),
+      white calc(100% - var(--section-padding)),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  &--stuck {
+    .bottom-sticker-inner {
+      backdrop-filter: blur(15px);
+
+      &::before {
+        opacity: 0.75 !important;
+
+        @supports not (backdrop-filter: blur(15px)) {
+          opacity: 1 !important;
+        }
+      }
+
+      &::after {
+        opacity: 1 !important;
+      }
+    }
   }
 }

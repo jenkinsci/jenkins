@@ -11,34 +11,50 @@ const SELECTED_ITEM_CLASS = "jenkins-dropdown__item--selected";
  * @param element - the element to generate the dropdown for
  * @param callback - called to retrieve the list of dropdown items
  */
-function generateDropdown(element, callback, immediate) {
+function generateDropdown(element, callback, immediate, options = {}) {
   if (element._tippy && element._tippy.props.theme === "dropdown") {
     element._tippy.destroy();
   }
 
   tippy(
     element,
-    Object.assign({}, Templates.dropdown(), {
-      hideOnClick: element.dataset["hideOnClick"] !== "false",
-      onCreate(instance) {
-        const onload = () => {
-          if (instance.loaded) {
-            return;
+    Object.assign(
+      {},
+      Templates.dropdown(),
+      {
+        hideOnClick:
+          element.dataset["hideOnClick"] !== "false" ? "toggle" : false,
+        onCreate(instance) {
+          const onload = () => {
+            if (instance.loaded) {
+              return;
+            }
+
+            document.addEventListener("click", (event) => {
+              const isClickInAnyDropdown =
+                !!event.target.closest("[data-tippy-root]");
+              const isClickOnReference = instance.reference.contains(
+                event.target,
+              );
+
+              if (!isClickInAnyDropdown && !isClickOnReference) {
+                instance.hide();
+              }
+            });
+
+            callback(instance);
+          };
+          if (immediate) {
+            onload();
+          } else {
+            ["mouseenter", "focus"].forEach((event) => {
+              instance.reference.addEventListener(event, onload);
+            });
           }
-
-          instance.popper.addEventListener("click", () => {
-            instance.hide();
-          });
-
-          callback(instance);
-        };
-        if (immediate) {
-          onload();
-        } else {
-          instance.reference.addEventListener("mouseenter", onload);
-        }
+        },
       },
-    }),
+      options,
+    ),
   );
 }
 
@@ -206,8 +222,39 @@ function convertHtmlToItems(children) {
   return items;
 }
 
+function validateDropdown(e) {
+  if (e.targetUrl) {
+    const method = e.getAttribute("checkMethod") || "post";
+    try {
+      FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
+    } catch (x) {
+      console.warn(x);
+    }
+  }
+}
+
+function getMaxSuggestionCount(e, defaultValue) {
+  return parseInt(e.dataset["maxsuggestions"]) || defaultValue;
+}
+
+function debounce(callback) {
+  callback.running = false;
+  return () => {
+    if (!callback.running) {
+      callback.running = true;
+      setTimeout(() => {
+        callback();
+        callback.running = false;
+      }, 300);
+    }
+  };
+}
+
 export default {
   convertHtmlToItems,
   generateDropdown,
   generateDropdownItems,
+  validateDropdown,
+  getMaxSuggestionCount,
+  debounce,
 };

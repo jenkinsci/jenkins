@@ -7,21 +7,30 @@
   pointer-events: none;
   margin-bottom: var(--section-padding);
   overflow: hidden;
-  mask-border-source: url("data:image/svg+xml,%3Csvg width='45' height='45' viewBox='0 0 45 45' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 22.5C0 15.5109 0 12.0163 1.14181 9.25975C2.66422 5.58433 5.58433 2.66422 9.25975 1.14181C12.0163 0 15.5109 0 22.5 0C29.4891 0 32.9837 0 35.7402 1.14181C39.4157 2.66422 42.3358 5.58433 43.8582 9.25975C45 12.0163 45 15.5109 45 22.5C45 29.4891 45 32.9837 43.8582 35.7402C42.3358 39.4157 39.4157 42.3358 35.7402 43.8582C32.9837 45 29.4891 45 22.5 45C15.5109 45 12.0163 45 9.25975 43.8582C5.58433 42.3358 2.66422 39.4157 1.14181 35.7402C0 32.9837 0 29.4891 0 22.5Z' fill='%23D9D9D9'/%3E%3C/svg%3E%0A");
-  mask-border-slice: 49% fill;
+  border-radius: 1rem;
 
-  &::before {
+  &::before,
+  &::after {
     content: "";
     position: absolute;
+    z-index: 1;
+  }
+
+  &::before {
     width: 120%;
     aspect-ratio: 1;
-    z-index: 1;
     background: repeating-conic-gradient(
       var(--background) 0deg,
-      rgba(100, 100, 100, 0.25) 20deg
+      rgb(100 100 100 / 0.25) 20deg
     );
     animation: app-about-starburst 100s linear infinite;
     opacity: 0.25;
+  }
+
+  &::after {
+    inset: 0;
+    border: var(--jenkins-border--subtle);
+    border-radius: inherit;
   }
 
   img {
@@ -46,33 +55,27 @@
 
   &::before {
     background-color: var(--color);
-    background-image: radial-gradient(
-        at 40% 20%,
-        hsla(28, 100%, 74%, 1) 0,
-        transparent 50%
-      ),
-      radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 1) 0, transparent 50%),
-      radial-gradient(at 0% 50%, hsla(355, 85%, 93%, 1) 0, transparent 50%),
-      radial-gradient(at 80% 50%, hsl(359, 70%, 46%) 0, transparent 50%),
-      radial-gradient(at 0% 100%, hsla(22, 100%, 77%, 1) 0, transparent 50%),
-      radial-gradient(at 80% 100%, hsla(242, 100%, 70%, 1) 0, transparent 50%),
-      radial-gradient(at 0% 0%, hsla(343, 100%, 76%, 1) 0, transparent 50%);
+    background-image:
+      radial-gradient(at 40% 20%, hsl(28 100% 74% / 1) 0, transparent 50%),
+      radial-gradient(at 80% 0%, hsl(189 100% 56% / 1) 0, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(355 85% 93% / 1) 0, transparent 50%),
+      radial-gradient(at 80% 50%, hsl(359 70% 46%) 0, transparent 50%),
+      radial-gradient(at 0% 100%, hsl(22 100% 77% / 1) 0, transparent 50%),
+      radial-gradient(at 80% 100%, hsl(242 100% 70% / 1) 0, transparent 50%),
+      radial-gradient(at 0% 0%, hsl(343 100% 76% / 1) 0, transparent 50%);
     opacity: 0.4;
     animation: app-about-aurora-one 7s linear infinite;
   }
 
   &::after {
-    background-image: radial-gradient(
-        at 40% 20%,
-        hsla(212, 100%, 74%, 1) 0,
-        transparent 50%
-      ),
-      radial-gradient(at 80% 0%, hsla(13, 100%, 56%, 1) 0, transparent 50%),
-      radial-gradient(at 0% 50%, hsla(179, 85%, 93%, 1) 0, transparent 50%),
-      radial-gradient(at 80% 50%, hsla(164, 100%, 76%, 1) 0, transparent 50%),
-      radial-gradient(at 0% 100%, hsla(206, 100%, 77%, 1) 0, transparent 50%),
-      radial-gradient(at 80% 100%, hsla(66, 100%, 70%, 1) 0, transparent 50%),
-      radial-gradient(at 0% 0%, hsla(167, 100%, 76%, 1) 0, transparent 50%);
+    background-image:
+      radial-gradient(at 40% 20%, hsl(212 100% 74% / 1) 0, transparent 50%),
+      radial-gradient(at 80% 0%, hsl(13 100% 56% / 1) 0, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(179 85% 93% / 1) 0, transparent 50%),
+      radial-gradient(at 80% 50%, hsl(164 100% 76% / 1) 0, transparent 50%),
+      radial-gradient(at 0% 100%, hsl(206 100% 77% / 1) 0, transparent 50%),
+      radial-gradient(at 80% 100%, hsl(66 100% 70% / 1) 0, transparent 50%),
+      radial-gradient(at 0% 0%, hsl(167 100% 76% / 1) 0, transparent 50%);
     opacity: 0.2;
     animation: app-about-aurora-two 14s linear infinite;
   }
@@ -119,18 +122,18 @@
 .app-about-heading {
   font-weight: 600;
   font-family: Georgia, serif;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   margin-bottom: 0.5rem !important;
 }
 
 .app-about-version {
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
   color: var(--text-color-secondary);
   margin: 0;
 }
 
 .app-about-paragraph {
-  font-size: 1.125rem;
+  font-size: 1rem;
   margin-bottom: var(--section-padding);
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 }

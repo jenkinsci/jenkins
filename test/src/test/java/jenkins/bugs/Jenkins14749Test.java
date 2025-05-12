@@ -54,28 +54,17 @@ public class Jenkins14749Test {
         webClient.setCssErrorHandler(new CSSErrorHandler() {
             @Override
             public void warning(final CSSParseException exception) throws CSSException {
-                if (!ignore(exception)) {
-                    errors.addError(exception);
-                }
+                errors.addError(exception);
             }
 
             @Override
             public void error(final CSSParseException exception) throws CSSException {
-                if (!ignore(exception)) {
-                    errors.addError(exception);
-                }
+                errors.addError(exception);
             }
 
             @Override
             public void fatalError(final CSSParseException exception) throws CSSException {
-                if (!ignore(exception)) {
-                    errors.addError(exception);
-                }
-            }
-
-            private boolean ignore(final CSSParseException exception) {
-                // Keep in sync with HudsonTestCase/JenkinsRule
-                return exception.getURI().contains("/yui/");
+                errors.addError(exception);
             }
         });
         return webClient;

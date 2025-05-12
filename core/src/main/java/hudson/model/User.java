@@ -44,6 +44,7 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException2;
+import hudson.tasks.UserAvatarResolver;
 import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
@@ -71,12 +72,14 @@ import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.scm.RunWithSCM;
+import jenkins.search.SearchGroup;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -169,6 +172,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private static final String[] ILLEGAL_PERSISTED_USERNAMES = new String[]{ACL.ANONYMOUS_USERNAME,
             ACL.SYSTEM_USERNAME, UNKNOWN_USERNAME};
 
+    @SuppressFBWarnings(value = "SS_SHOULD_BE_STATIC", justification = "Reserved for future use")
     private final int version = 10; // Not currently used, but it may be helpful in the future to store a version.
     private String id;
     private volatile String fullName;
@@ -275,6 +279,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Override
     public @NonNull String getSearchUrl() {
         return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
+    }
+
+    @Override
+    public String getSearchIcon() {
+        return UserAvatarResolver.resolve(this, "48x48");
+    }
+
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.UserSearchGroup.class);
     }
 
     /**
@@ -673,9 +687,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * To be called from {@link Jenkins#reload} only.
+     * Called from {@link Jenkins#reload}.
      */
-    @Restricted(NoExternalUse.class)
+    @Restricted(Beta.class)
     public static void reload() throws IOException {
         UserIdMapper.getInstance().reload();
         AllUsers.reload();
@@ -1117,7 +1131,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @see FullNameIdResolver
      * @since 1.479
      */
-    public abstract static class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
+    public abstract static class CanonicalIdResolver implements Describable<CanonicalIdResolver>, ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
          * context key for realm (domain) where idOrFullName has been retrieved from.

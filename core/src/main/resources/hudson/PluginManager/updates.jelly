@@ -41,7 +41,7 @@ THE SOFTWARE.
                         placeholder="${%Search plugin updates}"
                         id="filter-box"
                         autofocus="true"
-                        value="${request.getParameter('filter')}"
+                        value="${request2.getParameter('filter')}"
                         enabled="${!empty(list)}" />
         </div>
         <div class="jenkins-app-bar__controls">
@@ -84,6 +84,14 @@ THE SOFTWARE.
                   <th initialSortDir="down">${%Name}</th>
                   <th>${%Released}</th>
                   <th>${%Installed}</th>
+                  <j:if test="${app.updateCenter.healthScoresAvailable}">
+                    <th>
+                      <j:set var="healthTooltip">${%healthTooltip}</j:set>
+                      <span data-html-tooltip="${healthTooltip}" data-tooltip-interactive="true">
+                        ${%Health}
+                      </span>
+                    </th>
+                  </j:if>
                 </tr>
               </thead>
                   <j:forEach var="p" items="${list}">
@@ -225,6 +233,20 @@ THE SOFTWARE.
                           </j:otherwise>
                         </j:choose>
                       </td>
+                      <j:if test="${app.updateCenter.healthScoresAvailable}">
+                        <td>
+                          <j:choose>
+                            <j:when test="${p.healthScore != null}">
+                              <a href="${p.wiki}/healthScore" class="jenkins-healthScore--badge jenkins-healthScore--${p.healthScoreClass}" target="_blank" rel="noopener noreferrer">
+                                <st:out value="${p.healthScore}"/>
+                              </a>
+                            </j:when>
+                            <j:otherwise>
+                              <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="${%No health score available}"/>
+                            </j:otherwise>
+                          </j:choose>
+                        </td>
+                      </j:if>
                     </tr>
                   </j:forEach>
             </table>

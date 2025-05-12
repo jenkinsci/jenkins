@@ -27,8 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-<l:layout title="${%Nodes}">
-  <st:include page="sidepanel.jelly" />
+<l:layout title="${%Nodes}" type="one-column">
   <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
   <l:main-panel>
     <l:app-bar title="${%Nodes}">
@@ -77,7 +76,7 @@ THE SOFTWARE.
         <tr id="node_${c.name}">
           <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
             <div class="jenkins-table__cell__button-wrapper">
-              <l:icon src="${c.iconClassName}" alt="${c.iconAltText}"/>
+              <l:icon src="${c.iconClassName}" alt="${c.iconAltText}" tooltip="${c.tooltip}"/>
             </div>
           </td>
 

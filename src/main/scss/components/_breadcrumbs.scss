@@ -1,131 +1,91 @@
 @use "../abstracts/mixins";
 
 .jenkins-breadcrumbs {
-  position: sticky;
-  top: 0;
-  z-index: 999;
   display: flex;
   align-items: center;
-  padding: 0.55rem 0.7rem 0.55rem 0.75rem;
-  backdrop-filter: blur(15px);
-  overflow-x: auto;
-  background: var(--breadcrumbs-bar-background);
+  gap: 0.625rem;
+  margin-left: 0.625rem;
+  overflow: hidden;
 
   &__list {
     display: contents;
-    list-style-type: none;
 
     & > * {
-      flex-shrink: 0;
+      z-index: 1;
     }
 
     &-item {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-color);
-      font-weight: 500;
-      font-size: 0.875rem;
-      padding: 0.2rem 0.4rem;
+      display: contents;
+
+      a::before {
+        content: "";
+        position: absolute;
+        inset: -0.5rem -0.75rem !important;
+        pointer-events: all !important;
+      }
 
       & > a {
-        @include mixins.item;
+        @include mixins.item($border: false);
 
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: inherit;
-        font-size: inherit;
-        margin: 0;
-        padding: 0;
-        color: var(--text-color);
-        text-decoration: none;
-        margin-right: 0 !important;
-        transition: var(--standard-transition);
+        --item-background: transparent;
+        --item-background--hover: transparent;
+        --item-background--active: transparent;
+        --item-box-shadow--focus: transparent;
+
+        transition: opacity var(--standard-transition);
 
         &::before,
         &::after {
-          inset: -0.25rem -0.6rem;
+          inset: -2px -6px;
+          border: none;
         }
 
-        &:hover,
-        &:active,
-        &:focus,
-        &:focus-visible {
-          color: var(--text-color);
-        }
-      }
-
-      & > .model-link {
-        @media (hover: none) {
-          margin-right: 30px !important;
+        &:hover {
+          opacity: 0.7;
         }
 
-        &:hover,
-        &--open {
-          margin-right: 30px !important;
-        }
-      }
-    }
-
-    // '>' separator between two items
-    .children,
-    .separator {
-      position: relative;
-      width: 1rem;
-      height: 1rem;
-      margin: 0.375rem 0.2rem;
-
-      &::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        transition: var(--standard-transition);
-        background: var(--text-color-secondary);
-        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
-        opacity: 0.6;
-      }
-    }
-
-    .separator {
-      &:last-of-type {
-        display: none;
-      }
-    }
-
-    .children {
-      cursor: pointer;
-
-      &:hover {
-        &::after {
-          opacity: 1;
-          transform: rotate(90deg);
+        &:active {
+          opacity: 0.4;
         }
       }
 
-      &:active {
-        &::after {
-          transform: translateY(2px) rotate(90deg);
-          opacity: 0.5;
-        }
+      & > a,
+      span {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-bold-weight);
+        margin: 0;
+        padding: 0;
+        color: inherit;
+        text-decoration: none;
+        text-wrap: nowrap;
+        flex-shrink: 0;
       }
 
-      &:hover,
-      &:active,
-      &:focus,
-      &:focus-visible {
-        &::after {
-          background: var(--text-color);
-        }
-      }
-
-      // Increase the hit target
+      // '/' separator between two items
       &::before {
         content: "";
-        position: absolute;
-        inset: -14px -5px;
-        background: transparent;
+        position: relative;
+        width: 1rem;
+        height: 1.25rem;
+        flex-shrink: 0;
+        mask-size: contain;
+        mask-position: center;
+        mask-repeat: no-repeat;
+        mask-image: url("data:image/svg+xml,%3Csvg width='10' height='20' viewBox='0 0 10 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 18L8 2' stroke='black' stroke-width='1.5px' stroke-linecap='round'/%3E%3C/svg%3E%0A");
+        background: color-mix(
+          in sRGB,
+          var(--text-color-secondary) 30%,
+          transparent
+        );
+
+        @media (prefers-contrast: more) {
+          background: var(--text-color);
+        }
       }
     }
   }
@@ -306,35 +266,9 @@
       .jenkins-menu-dropdown-chevron {
         &::after {
           opacity: 0.5;
+          display: none;
         }
       }
     }
-  }
-}
-
-// TODO: Remove when YUI dropdowns are removed
-
-#breadcrumb-menu .header {
-  font-weight: bold;
-  font-size: 0.875rem;
-  pointer-events: none;
-}
-
-#breadcrumb-menu .separator {
-  position: relative;
-  display: block !important;
-  color: transparent;
-  overflow: hidden;
-  width: 100%;
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: 9px;
-    left: -50vw;
-    right: -50vw;
-    background: var(--text-color);
-    height: 2px;
-    opacity: 0.1;
   }
 }

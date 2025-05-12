@@ -37,7 +37,7 @@ public class UserPropertyTest {
     public JenkinsRule j = new JenkinsRule();
 
     public User configRoundtrip(User u) throws Exception {
-        submit(j.createWebClient().goTo(u.getUrl()+"/account/").getFormByName("config"));
+        submit(j.createWebClient().goTo(u.getUrl() + "/account/").getFormByName("config"));
         return u;
     }
 
@@ -169,7 +169,7 @@ public class UserPropertyTest {
     /**
      * Class that should get setUser(User) object reference update.
      */
-    public static class InnerUserClass extends AbstractDescribableImpl<InnerUserClass> {
+    public static class InnerUserClass implements Describable<InnerUserClass> {
         private transient User user;
 
         private transient File userFile;
@@ -206,7 +206,7 @@ public class UserPropertyTest {
 
         @Override
         public DescriptorImpl getDescriptor() {
-            return (DescriptorImpl) super.getDescriptor();
+            return (DescriptorImpl) Describable.super.getDescriptor();
         }
 
         @TestExtension

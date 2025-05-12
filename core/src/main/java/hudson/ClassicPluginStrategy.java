@@ -279,7 +279,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * @deprecated since 2.459 use {@link #createClassLoader(String, List, ClassLoader, Attributes)}
      */
-    @Deprecated(since="2.459")
+    @Deprecated(since = "2.459")
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
         // generate a legacy id so at least we can track to something
         return createClassLoader("unidentified-" + UUID.randomUUID(), paths, parent, atts);

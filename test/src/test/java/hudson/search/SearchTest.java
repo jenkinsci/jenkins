@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.jvnet.hudson.test.QueryUtils.waitUntilStringIsPresent;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
@@ -38,7 +39,6 @@ import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +48,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import org.htmlunit.Page;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,15 +66,22 @@ public class SearchTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    /**
-     * No exact match should result in a failure status code.
-     */
+    private void searchWithoutNavigating(HtmlPage page, String query) throws IOException {
+        HtmlButton button = page.querySelector("#root-action-SearchAction");
+        button.click();
+
+        HtmlInput search = page.querySelector("#command-bar");
+        search.setValue(query);
+        page.executeJavaScript("document.querySelector('#command-bar').dispatchEvent(new Event(\"input\"))");
+    }
+
     @Test
     public void testFailure() throws Exception {
-        WebClient wc = j.createWebClient()
-                .withThrowExceptionOnFailingStatusCode(false);
-        HtmlPage resultPage = wc.search("no-such-thing");
-        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, resultPage.getWebResponse().getStatusCode());
+        HtmlPage page = j.createWebClient().goTo("");
+
+        searchWithoutNavigating(page, "no-such-thing");
+
+        waitUntilStringIsPresent(page, "No results for no-such-thing");
     }
 
     /**
@@ -81,13 +90,17 @@ public class SearchTest {
     @Issue("JENKINS-3415")
     @Test
     public void testXSS() throws Exception {
-        WebClient wc = j.createWebClient()
-                .withThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = j.createWebClient();
         wc.setAlertHandler((page, message) -> {
             throw new AssertionError();
         });
-        HtmlPage resultPage = wc.search("<script>alert('script');</script>");
-        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, resultPage.getWebResponse().getStatusCode());
+        FreeStyleProject freeStyleProject = j.createFreeStyleProject("Project");
+        freeStyleProject.setDisplayName("<script>alert('script');</script>");
+
+        Page result = wc.search("<script>alert('script');</script>");
+
+        assertNotNull(result);
+        assertEquals(j.getInstance().getRootUrl() + freeStyleProject.getUrl(), result.getUrl().toString());
     }
 
     @Test
@@ -102,7 +115,7 @@ public class SearchTest {
 
         // make sure we've fetched the testSearchByDisplayName project page
         String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
+        assertTrue(contents.contains(String.format("<title>%s - Jenkins</title>", projectName)));
     }
 
     @Issue("JENKINS-24433")
@@ -127,7 +140,7 @@ public class SearchTest {
         MockFolder myMockFolder = j.createFolder("my-folder-1");
         FreeStyleProject myFreeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "my-job-1");
 
-        Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q=" + myFreeStyleProject.getFullName());
+        Page result = j.search(myFreeStyleProject.getName());
 
         assertNotNull(result);
         j.assertGoodStatus(result);
@@ -149,7 +162,7 @@ public class SearchTest {
 
         // make sure we've fetched the testSearchByDisplayName project page
         String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+        assertTrue(contents.contains(String.format("<title>%s - Jenkins</title>", displayName)));
     }
 
     @Test
@@ -177,43 +190,8 @@ public class SearchTest {
 
         // make sure we've fetched the testSearchByDisplayName project page
         String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+        assertTrue(contents.contains(String.format("<title>%s - Jenkins</title>", displayName)));
         assertFalse(contents.contains(otherDisplayName));
-    }
-
-    @Test
-    public void testProjectNamePrecedesDisplayName() throws Exception {
-        final String project1Name = "foo";
-        final String project1DisplayName = "project1DisplayName";
-        final String project2Name = "project2Name";
-        final String project2DisplayName = project1Name;
-        final String project3Name = "project3Name";
-        final String project3DisplayName = "project3DisplayName";
-
-        // create 1 freestyle project with the name foo
-        FreeStyleProject project1 = j.createFreeStyleProject(project1Name);
-        project1.setDisplayName(project1DisplayName);
-
-        // create another with the display name foo
-        FreeStyleProject project2 = j.createFreeStyleProject(project2Name);
-        project2.setDisplayName(project2DisplayName);
-
-        // create a third project and make sure it's not picked up by search
-        FreeStyleProject project3 = j.createFreeStyleProject(project3Name);
-        project3.setDisplayName(project3DisplayName);
-
-        // search for foo
-        Page result = j.search(project1Name);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-
-        // make sure we get the project with the name foo
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", project1DisplayName)));
-        // make sure projects 2 and 3 were not picked up
-        assertFalse(contents.contains(project2Name));
-        assertFalse(contents.contains(project3Name));
-        assertFalse(contents.contains(project3DisplayName));
     }
 
     @Test
@@ -335,7 +313,7 @@ public class SearchTest {
 
             String name = (String) jsonSuggestion.get("name");
 
-            if (displayName2.equals(name)) {
+            if ("my-folder-1 » job-2".equals(name)) {
                 foundDisplayName = true;
             }
         }

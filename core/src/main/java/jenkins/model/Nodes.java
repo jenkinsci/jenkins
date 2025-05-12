@@ -43,12 +43,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -114,26 +112,31 @@ public class Nodes implements PersistenceRoot {
      * @throws IOException if the new list of nodes could not be persisted.
      */
     public void setNodes(final @NonNull Collection<? extends Node> nodes) throws IOException {
-        Set<String> toRemove = new HashSet<>();
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                toRemove.addAll(Nodes.this.nodes.keySet());
-                for (Node n : nodes) {
-                    final String name = n.getNodeName();
+        Map<String, Node> toRemove = new HashMap<>();
+        Queue.withLock(() -> {
+            toRemove.putAll(Nodes.this.nodes);
+            for (var node : nodes) {
+                final var name = node.getNodeName();
+                Nodes.this.nodes.put(name, node);
+                node.onLoad(Nodes.this, name);
+                var oldNode = toRemove.get(name);
+                if (oldNode != null) {
+                    NodeListener.fireOnUpdated(oldNode, node);
                     toRemove.remove(name);
-                    Nodes.this.nodes.put(name, n);
-                    n.onLoad(Nodes.this, name);
+                } else {
+                    NodeListener.fireOnCreated(node);
                 }
-                Nodes.this.nodes.keySet().removeAll(toRemove);
-                jenkins.updateComputerList();
-                jenkins.trimLabels();
             }
+            Nodes.this.nodes.keySet().removeAll(toRemove.keySet());
+            jenkins.updateComputerList();
+            jenkins.trimLabels();
         });
         save();
-        for (String name : toRemove) {
-            LOGGER.fine(() -> "deleting " + new File(getRootDir(), name));
-            Util.deleteRecursive(new File(getRootDir(), name));
+        for (var deletedNode : toRemove.values()) {
+            NodeListener.fireOnDeleted(deletedNode);
+            var nodeName = deletedNode.getNodeName();
+            LOGGER.fine(() -> "deleting " + new File(getRootDir(), nodeName));
+            Util.deleteRecursive(new File(getRootDir(), nodeName));
         }
     }
 
@@ -163,8 +166,12 @@ public class Nodes implements PersistenceRoot {
                     @Override
                     public void run() {
                         nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> old);
-                        jenkins.updateComputerList();
-                        jenkins.trimLabels(node, old);
+                        jenkins.updateComputers(node);
+                        if (old != null) {
+                            jenkins.trimLabels(node, old);
+                        } else {
+                            jenkins.trimLabels(node);
+                        }
                     }
                 });
                 throw e;
@@ -199,17 +206,18 @@ public class Nodes implements PersistenceRoot {
      * @since 1.634
      */
     public boolean updateNode(final @NonNull Node node) throws IOException {
+        return updateNode(node, true);
+    }
+
+    private boolean updateNode(final @NonNull Node node, boolean fireListener) throws IOException {
         boolean exists;
         try {
-            exists = Queue.withLock(new Callable<>() {
-                @Override
-                public Boolean call() throws Exception {
-                    if (node == nodes.get(node.getNodeName())) {
-                        jenkins.trimLabels(node);
-                        return true;
-                    }
-                    return false;
+            exists = Queue.withLock(() -> {
+                if (node == nodes.get(node.getNodeName())) {
+                    jenkins.trimLabels(node);
+                    return true;
                 }
+                return false;
             });
         } catch (RuntimeException e) {
             // should never happen, but if it does let's do the right thing
@@ -221,7 +229,9 @@ public class Nodes implements PersistenceRoot {
         if (exists) {
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             node.save();
-            // TODO should this fireOnUpdated?
+            if (fireListener) {
+                NodeListener.fireOnUpdated(node, node);
+            }
             return true;
         }
         return false;
@@ -248,13 +258,13 @@ public class Nodes implements PersistenceRoot {
                     newOne.onLoad(Nodes.this, newOne.getNodeName());
                 }
             });
-            updateNode(newOne);
+            updateNode(newOne, false);
             if (!newOne.getNodeName().equals(oldOne.getNodeName())) {
                 LOGGER.fine(() -> "deleting " + new File(getRootDir(), oldOne.getNodeName()));
                 Util.deleteRecursive(new File(getRootDir(), oldOne.getNodeName()));
             }
             Queue.withLock(() -> {
-                jenkins.updateComputerList();
+                jenkins.updateComputers(newOne);
                 jenkins.trimLabels(oldOne, newOne);
             });
             NodeListener.fireOnUpdated(oldOne, newOne);
@@ -291,7 +301,7 @@ public class Nodes implements PersistenceRoot {
             Util.deleteRecursive(new File(getRootDir(), node.getNodeName()));
 
             if (match.get()) {
-                jenkins.updateComputerList();
+                jenkins.updateComputers(node);
                 jenkins.trimLabels(node);
             }
             NodeListener.fireOnDeleted(node);
@@ -401,7 +411,7 @@ public class Nodes implements PersistenceRoot {
 
     public void load(File dir) throws IOException {
         Node n = load(dir, nodes);
-        jenkins.updateComputerList();
+        jenkins.updateComputers(n);
         jenkins.trimLabels(n);
     }
 
@@ -410,7 +420,7 @@ public class Nodes implements PersistenceRoot {
             AtomicBoolean match = new AtomicBoolean();
             Queue.withLock(() -> match.set(node == nodes.remove(node.getNodeName())));
             if (match.get()) {
-                jenkins.updateComputerList();
+                jenkins.updateComputers(node);
                 jenkins.trimLabels(node);
             }
         }

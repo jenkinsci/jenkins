@@ -40,6 +40,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
@@ -71,7 +72,6 @@ import hudson.util.XStream2;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -120,6 +120,10 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.DurationDetail;
+import jenkins.model.details.TimestampDetail;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.security.MasterToSlaveCallable;
@@ -131,6 +135,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -1069,6 +1074,11 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
+    @Restricted(DoNotUse.class) // Jelly
+    public final boolean hasCustomArtifactManager() {
+        return artifactManager != null;
+    }
+
     /**
      * Gets the directory where the artifacts are archived.
      * @deprecated Should only be used from {@link StandardArtifactManager} or subclasses.
@@ -1198,12 +1208,14 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /** {@link Run.ArtifactList} without the implicit link to {@link Run} */
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     private static final class SerializableArtifactList extends ArrayList<SerializableArtifact> {
         private static final long serialVersionUID = 1L;
         private LinkedHashMap<SerializableArtifact, String> tree = new LinkedHashMap<>();
         private int idSeq = 0;
     }
 
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     public final class ArtifactList extends ArrayList<Artifact> {
         private static final long serialVersionUID = 1L;
         /**
@@ -1459,19 +1471,34 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "method signature does not permit plumbing through the return value")
     public void writeLogTo(long offset, @NonNull XMLOutput out) throws IOException {
-        long start = offset;
+        AnnotatedLargeText<?> logText = getLogText();
         if (offset > 0) {
-            try (BufferedInputStream bufferedInputStream = new BufferedInputStream(getLogInputStream())) {
-                if (offset == bufferedInputStream.skip(offset)) {
-                    int r;
-                    do {
-                        r = bufferedInputStream.read();
-                        start = r == -1 ? 0 : start + 1;
-                    } while (r != -1 && r != '\n');
-                }
+            long _offset = offset;
+            try {
+                logText.writeRawLogTo(offset - 1, new OutputStream() {
+                    long pos = _offset;
+                    @Override
+                    public void write(int b) throws IOException {
+                        if (b == '\n') {
+                            throw new Halt(pos);
+                        } else {
+                            pos++;
+                        }
+                    }
+                });
+            } catch (Halt halt) {
+                offset = halt.offset;
             }
         }
-        getLogText().writeHtmlTo(start, out.asWriter());
+        logText.writeHtmlTo(offset, out.asWriter());
+    }
+
+    private static final class Halt extends IOException {
+        final long offset;
+
+        Halt(long offset) {
+            this.offset = offset;
+        }
     }
 
     /**
@@ -2667,6 +2694,19 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             PrintWriter out = rsp.getWriter();
             Util.printRedirect(req.getContextPath(), "..", "Not found", out);
             out.flush();
+        }
+    }
+
+    @Extension
+    public static final class BasicRunDetailFactory extends DetailFactory<Run> {
+
+        @Override
+        public Class<Run> type() {
+            return Run.class;
+        }
+
+        @NonNull @Override public List<? extends Detail> createFor(@NonNull Run target) {
+            return List.of(new TimestampDetail(target), new DurationDetail(target));
         }
     }
 }
