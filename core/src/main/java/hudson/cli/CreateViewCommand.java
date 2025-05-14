@@ -40,7 +40,7 @@ import org.kohsuke.args4j.Argument;
 @Extension
 public class CreateViewCommand extends CLICommand {
 
-    @Argument(usage = "Name of the view to use instead of the one in XML")
+    @Argument(usage = "Name of the view to use instead of the one in XML. Any '/' in the name is used to put the view into a folder.")
     @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public String viewName = null;
 
