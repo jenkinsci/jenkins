@@ -62,7 +62,7 @@ public class CreateViewCommand extends CLICommand {
                 String group = viewName.substring(0, i);
                 Item item = jenkins.getItemByFullName(group);
                 if (item == null) {
-                    throw new IllegalArgumentException("Unknown ItemGroup " + group);
+                    throw new IllegalArgumentException("Unknown folder " + group);
                 }
 
                 if (item instanceof ModifiableViewGroup) {
