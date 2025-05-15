@@ -1,5 +1,6 @@
 package hudson.node_monitors;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -12,6 +13,7 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.SlaveComputer;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.InboundAgentRule;
@@ -49,20 +51,14 @@ public class ResponseTimeMonitorTest {
         assertNull(ResponseTimeMonitor.DESCRIPTOR.monitor(c));
 
         // Retry to compensate for test being flaky in CI
-        int attempt = 0;
-        while (true) {
-            try {
+        await().atMost(10 * 500, TimeUnit.MILLISECONDS)
+            .ignoreException(ExecutionException.class)
+            .until(() -> {
                 // Now reconnect and make sure we get a non-null response.
                 c.connect(false).get(); // wait until it's connected
-                break;
-            } catch (ExecutionException ex) {
-                attempt++;
-                if (attempt >= 10) {
-                    throw ex;
-                }
-                Thread.sleep(attempt * 500L);
+                return true;
             }
-        }
+        );
 
         assertNotNull(ResponseTimeMonitor.DESCRIPTOR.monitor(c));
     }
