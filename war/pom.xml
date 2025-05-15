@@ -324,7 +324,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1371.ve334280b_d611</version>
+                  <version>1373.v7b_813f10efa_b_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -653,7 +653,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.0.20</version>
+        <version>12.0.21</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
