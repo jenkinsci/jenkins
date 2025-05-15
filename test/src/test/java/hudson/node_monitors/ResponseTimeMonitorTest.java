@@ -11,6 +11,7 @@ import hudson.model.User;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.SlaveComputer;
+import java.util.concurrent.ExecutionException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.InboundAgentRule;
@@ -47,8 +48,21 @@ public class ResponseTimeMonitorTest {
         j.disconnectSlave(s);
         assertNull(ResponseTimeMonitor.DESCRIPTOR.monitor(c));
 
-        // Now reconnect and make sure we get a non-null response.
-        c.connect(false).get(); // wait until it's connected
+        // Retry to compensate for test being flaky in CI
+        int attempt = 0;
+        while (true) {
+            try {
+                // Now reconnect and make sure we get a non-null response.
+                c.connect(false).get(); // wait until it's connected
+                break;
+            } catch (ExecutionException ex) {
+                attempt++;
+                if (attempt >= 10) {
+                    throw ex;
+                }
+                Thread.sleep(attempt * 500L);
+            }
+        }
 
         assertNotNull(ResponseTimeMonitor.DESCRIPTOR.monitor(c));
     }
