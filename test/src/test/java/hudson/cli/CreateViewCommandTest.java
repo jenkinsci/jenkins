@@ -155,7 +155,7 @@ public class CreateViewCommandTest {
 
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: Unknown ItemGroup"));
+        assertThat(result.stderr(), containsString("ERROR: Unknown folder"));
     }
 
     @Test public void createViewSpecifyingFolderShouldFailIfViewAlreadyExists() throws IOException {
