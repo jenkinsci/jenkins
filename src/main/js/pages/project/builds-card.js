@@ -71,6 +71,7 @@ function load(options = {}) {
 
         // Show the refreshed builds list
         contents.innerHTML = responseText;
+        noBuilds.style.display = "none";
         loadingBuilds.style.display = "none";
         behaviorShim.applySubtree(contents);
 

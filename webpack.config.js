@@ -29,6 +29,7 @@ module.exports = (env, argv) => ({
       ),
     ],
     app: [path.join(__dirname, "src/main/js/app.js")],
+    header: [path.join(__dirname, "src/main/js/components/header/index.js")],
     "pages/cloud-set": [
       path.join(__dirname, "src/main/js/pages/cloud-set/index.js"),
       path.join(__dirname, "src/main/js/pages/cloud-set/index.scss"),
