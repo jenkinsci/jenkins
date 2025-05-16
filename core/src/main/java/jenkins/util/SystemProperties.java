@@ -391,7 +391,7 @@ public class SystemProperties {
             try {
                 return DurationStyle.detectAndParse(v, unit);
             } catch (Exception e) {
-                LOGGER.log(logLevel, e, () -> "Property. Value is not a duration: " + name + " => " + v);
+                LOGGER.log(logLevel, e, () -> "Failed to convert %s to a valid duration for property %s, falling back to default %s".formatted(v, name, defaultValue));
             }
         }
         return defaultValue;
