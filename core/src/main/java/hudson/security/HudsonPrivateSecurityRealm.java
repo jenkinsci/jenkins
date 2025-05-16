@@ -26,13 +26,11 @@ package hudson.security;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
-import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
@@ -45,8 +43,6 @@ import hudson.security.captcha.CaptchaSupport;
 import hudson.util.FormValidation;
 import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
-import hudson.util.Scrambler;
-import hudson.util.XStream2;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -95,7 +91,6 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -104,6 +99,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
@@ -455,11 +451,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired());
         }
 
-        if (FIPS140.useCompliantAlgorithms()) {
-            if (si.password1.length() < FIPS_PASSWORD_LENGTH) {
-                si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid());
-            }
+        try {
+            PASSWORD_HASH_ENCODER.encode(si.password1);
+        }  catch (RuntimeException ex) {
+            si.errors.put("password1", ex.getMessage());
         }
+
         if (si.fullname == null || si.fullname.isEmpty()) {
             si.fullname = si.username;
         }
@@ -805,18 +802,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             }
         }
 
-        public static class ConverterImpl extends XStream2.PassthruConverter<Details> {
-            public ConverterImpl(XStream2 xstream) { super(xstream); }
-
-            @Override protected void callback(Details d, UnmarshallingContext context) {
-                // Convert to hashed password and report to monitor if we load old data
-                if (d.password != null && d.passwordHash == null) {
-                    d.passwordHash = PASSWORD_ENCODER.encode(Scrambler.descramble(d.password));
-                    OldDataMonitor.report(context, "1.283");
-                }
-            }
-        }
-
         @Extension @Symbol("password")
         public static final class DescriptorImpl extends UserPropertyDescriptor {
             @NonNull
@@ -837,10 +822,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 if (pwd == null || pwd2 == null) {
                     // one of the fields is empty
                     throw new FormException("Please confirm the password by typing it twice", "user.password2");
-                }
-
-                if (FIPS140.useCompliantAlgorithms() && pwd.length() < FIPS_PASSWORD_LENGTH) {
-                     throw new FormException(Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid(), "user.password");
                 }
 
                 // will be null if it wasn't encrypted
@@ -865,8 +846,16 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 if (data != null) {
                     String prefix = Stapler.getCurrentRequest2().getSession().getId() + ':';
                     if (data.startsWith(prefix)) {
+                        // The password is not being changed
                         return Details.fromHashedPassword(data.substring(prefix.length()));
                     }
+                }
+
+                // The password is being changed
+                try {
+                    PASSWORD_HASH_ENCODER.encode(pwd);
+                } catch (RuntimeException ex) {
+                    throw new FormException(ex.getMessage(), "user.password");
                 }
 
                 User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
@@ -933,11 +922,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    // TODO can we instead use BCryptPasswordEncoder from Spring Security, which has its own copy of BCrypt so we could drop the special library?
     /**
      * {@link PasswordHashEncoder} that uses jBCrypt.
      */
-    static class JBCryptEncoder implements PasswordHashEncoder {
+    static class JBCryptEncoder extends BCryptPasswordEncoder implements PasswordHashEncoder {
         // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
         // and for 18, it's "only" 20s
         @Restricted(NoExternalUse.class)
@@ -947,12 +935,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
-            return BCrypt.hashpw(rawPassword.toString(), BCrypt.gensalt());
-        }
-
-        @Override
-        public boolean matches(CharSequence rawPassword, String encodedPassword) {
-            return BCrypt.checkpw(rawPassword.toString(), encodedPassword);
+            try {
+                return super.encode(rawPassword);
+            } catch (IllegalArgumentException ex) {
+                if (ex.getMessage().equals("password cannot be more than 72 bytes")) {
+                    if (rawPassword.toString().matches("\\A\\p{ASCII}+\\z")) {
+                        throw new IllegalArgumentException(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong_ASCII());
+                    }
+                    throw new IllegalArgumentException(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong());
+                }
+                throw ex;
+            }
         }
 
         /**
@@ -994,6 +987,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
+            if (rawPassword.length() < FIPS_PASSWORD_LENGTH) {
+                throw new IllegalArgumentException(Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid());
+            }
             try {
                 return generatePasswordHashWithPBKDF2(rawPassword);
             } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {

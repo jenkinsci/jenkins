@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2025, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,25 +22,32 @@
  * THE SOFTWARE.
  */
 
-package hudson.util;
+package jenkins.diagnosis;
 
-import java.io.IOException;
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.diagnosis.MemoryUsageMonitor;
+import hudson.model.InvisibleAction;
+import hudson.model.RootAction;
+import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * {@link IOException} with linked exception.
+ * Expose {@link hudson.diagnosis.MemoryUsageMonitor#heap} at the {@code /hudson.diagnosis.MemoryUsageMonitor/heap} URL.
  *
- * @author Kohsuke Kawaguchi
- * @deprecated Just use {@link IOException}, which since Java 6 supports a cause.
+ * @since 2.505
  */
-@Deprecated
-public class IOException2 extends IOException  {
-
-    public IOException2(Throwable cause) {
-        super(cause);
+@Extension
+@Restricted(NoExternalUse.class)
+public class MemoryUsageMonitorAction extends InvisibleAction implements RootAction {
+    @Override
+    public String getUrlName() {
+        return MemoryUsageMonitorAction.class.getName();
     }
 
-    public IOException2(String s, Throwable cause) {
-        super(s, cause);
+    public MemoryUsageMonitor.MemoryGroup getHeap() {
+        Jenkins.get().checkAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
+        return ExtensionList.lookupSingleton(MemoryUsageMonitor.class).heap;
     }
-
 }

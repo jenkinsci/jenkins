@@ -35,7 +35,6 @@ import hudson.model.listeners.SaveableListener;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
 import hudson.util.NamingThreadFactory;
-import hudson.util.Scrambler;
 import hudson.util.Secret;
 import hudson.util.XStream2;
 import java.io.File;
@@ -286,10 +285,6 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
     }
 
     private Object readResolve() {
-        if (secretPassword == null)
-            // backward compatibility : get scrambled password and store it encrypted
-            secretPassword = Secret.fromString(Scrambler.descramble(password));
-        password = null;
         authenticator = newAuthenticator();
         userName = Util.fixEmptyAndTrim(userName);
         return this;
