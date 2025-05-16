@@ -54,7 +54,7 @@ public class SystemPropertiesTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    public LoggerRule logger = new LoggerRule().record(SystemProperties.class, Level.CONFIG);
+    public LoggerRule logger = new LoggerRule().record(SystemProperties.class, Level.WARNING);
 
     @Before
     public void setUp() {

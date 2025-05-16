@@ -344,7 +344,7 @@ public class SystemProperties {
      */
     @Nullable
     public static Duration getDuration(@NonNull String name, @CheckForNull Duration defaultValue) {
-        return getDuration(name, defaultValue, Level.CONFIG);
+        return getDuration(name, defaultValue, Level.WARNING);
     }
 
     /**
@@ -358,7 +358,7 @@ public class SystemProperties {
      */
     @Nullable
     public static Duration getDuration(@NonNull String name, @CheckForNull ChronoUnit unit, @CheckForNull Duration defaultValue) {
-        return getDuration(name, unit, defaultValue, Level.CONFIG);
+        return getDuration(name, unit, defaultValue, Level.WARNING);
     }
 
     /**
