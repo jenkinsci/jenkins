@@ -31,7 +31,7 @@ function generateJumplistAccessors() {
  */
 function generateDropdowns() {
   behaviorShim.specify(
-    ".hoverable-model-link",
+    ".hoverable-model-link, .hoverable-children-model-link",
     "-hoverable-dropdown-",
     1000,
     (element) =>
@@ -45,17 +45,65 @@ function generateDropdowns() {
             return;
           }
 
-          fetch(Path.combinePath(href, "contextMenu"))
-            .then((response) => response.json())
-            .then((json) =>
-              instance.setContent(
-                Utils.generateDropdownItems(
-                  mapChildrenItemsToDropdownItems(json.items),
-                ),
-              ),
-            )
-            .catch((error) => console.log(`Jumplist request failed: ${error}`))
-            .finally(() => (instance.loaded = true));
+          const hasModelLink = element.classList.contains(
+            "hoverable-model-link",
+          );
+          const hasChildrenLink = element.classList.contains(
+            "hoverable-children-model-link",
+          );
+
+          const sections = {
+            model: null,
+            children: null,
+          };
+
+          const fetchSection = function (urlSuffix) {
+            return fetch(Path.combinePath(href, urlSuffix))
+              .then((response) => response.json())
+              .then((json) => {
+                const items = mapChildrenItemsToDropdownItems(json.items);
+                const section = document.createElement("div");
+                section.appendChild(Utils.generateDropdownItems(items));
+                return section;
+              });
+          };
+
+          const promises = [];
+
+          if (hasModelLink) {
+            promises.push(
+              fetchSection("contextMenu").then((section) => {
+                sections.model = section;
+              }),
+            );
+          }
+
+          if (hasChildrenLink) {
+            promises.push(
+              fetchSection("childrenContextMenu").then((section) => {
+                sections.children = section;
+              }),
+            );
+          }
+
+          Promise.all(promises)
+            .then(() => {
+              const container = document.createElement("div");
+              container.className = "jenkins-dropdown__split-container";
+              if (sections.model) {
+                container.appendChild(sections.model);
+              }
+              if (sections.children) {
+                container.appendChild(sections.children);
+              }
+              instance.setContent(container);
+            })
+            .catch((error) => {
+              console.log(`Dropdown fetch failed: ${error}`);
+            })
+            .finally(() => {
+              instance.loaded = true;
+            });
         },
         false,
         {
@@ -74,6 +122,7 @@ function generateDropdowns() {
     (element) =>
       Utils.generateDropdown(element, (instance) => {
         const href = element.dataset.href;
+
         const jumplistType = !element.classList.contains("children")
           ? "contextMenu"
           : "childrenContextMenu";
