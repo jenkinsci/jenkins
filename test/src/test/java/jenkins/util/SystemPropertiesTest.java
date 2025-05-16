@@ -25,13 +25,16 @@
 package jenkins.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
 import jakarta.servlet.ServletContextEvent;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.logging.Level;
 import org.eclipse.jetty.ee9.webapp.WebAppContext;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -40,6 +43,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 
 /**
  * Tests of {@link SystemProperties}.
@@ -49,6 +53,8 @@ public class SystemPropertiesTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    public LoggerRule logger = new LoggerRule().record(SystemProperties.class, Level.CONFIG);
 
     @Before
     public void setUp() {
@@ -123,5 +129,13 @@ public class SystemPropertiesTest {
     protected void setWebAppInitParameter(String property, String value) {
         Assume.assumeThat(j.jenkins.getServletContext(), Matchers.instanceOf(WebAppContext.Context.class));
         ((WebAppContext.Context) j.jenkins.getServletContext()).getContextHandler().getInitParams().put(property, value);
+    }
+
+    @Test
+    public void invalid() {
+        logger.capture(10);
+        System.setProperty("abc.def", "invalid");
+        assertThat(SystemProperties.getDuration("abc.def"), Matchers.nullValue());
+        assertThat(logger.getMessages(), hasItem(containsString("Failed to convert \"invalid\" to a valid duration for property \"abc.def\", falling back to default \"null\"")));
     }
 }
