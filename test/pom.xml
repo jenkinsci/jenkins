@@ -80,7 +80,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>ionicons-api</artifactId>
-        <version>82.v0597178874e1</version>
+        <version>88.va_4187cb_eddf1</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -123,7 +123,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1371.ve334280b_d611</version>
+        <version>1373.v7b_813f10efa_b_</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -144,6 +144,11 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-core</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -178,7 +183,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2429.v843718995d1d</version>
+      <version>2447.v8a_ce9e0fca_32</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -230,7 +235,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1322.v1556dc1c59a_f</version>
+      <version>1334.vd3b_b_2094e438</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -248,7 +253,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>847.v88a_f90ff9f20</version>
+      <version>849.v0cd64ed7e531</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -350,7 +355,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>374.v9466b_9e00db_b_</version>
+                  <version>380.v552d32a_3b_8a_c</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>

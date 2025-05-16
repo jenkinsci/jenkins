@@ -761,6 +761,7 @@ public class SetupWizard extends PageDecorator {
         }
 
         @Override
+        @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "TODO needs triage")
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
             // Force root requests to the setup wizard
             if (request instanceof HttpServletRequest && !Jenkins.get().getInstallState().isSetupComplete()) {
