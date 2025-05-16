@@ -44,7 +44,8 @@ THE SOFTWARE.
           <j:if test="${anc.object != app}">
             <l:breadcrumb title="${anc.object.displayName}"
                           href="${anc.url}/"
-                          hasMenu="${h.isModelWithContextMenu(anc.object)}" />
+                          hasMenu="${h.isModelWithContextMenu(anc.object)}"
+                          hasChildrenMenu="${h.isModelWithChildren(anc.object)}" />
           </j:if>
         </j:if>
       </j:forEach>
