@@ -15,9 +15,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/cli@npm:7.27.1":
-  version: 7.27.1
-  resolution: "@babel/cli@npm:7.27.1"
+"@babel/cli@npm:7.27.2":
+  version: 7.27.2
+  resolution: "@babel/cli@npm:7.27.2"
   dependencies:
     "@jridgewell/trace-mapping": "npm:^0.3.25"
     "@nicolo-ribaudo/chokidar-2": "npm:2.1.8-no-fsevents.3"
@@ -38,7 +38,7 @@ __metadata:
   bin:
     babel: ./bin/babel.js
     babel-external-helpers: ./bin/babel-external-helpers.js
-  checksum: 10c0/1cfd358ea162dc91e74c0be0c09c752b044db7102d8ce5cd6a41516aa47db25dfa4d6d4f619853b75275a98e5f80d1cc314671f4f15072d1acf14f900898e458
+  checksum: 10c0/9a93b19249b54114deacfcbd47d36d2bad6be0e4b775df30bcde62666a83ab6048566400c8c3b7f532c758f697951874c9e4ea91ef4d7e53841e4a7b2e085a54
   languageName: node
   linkType: hard
 
@@ -53,10 +53,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/compat-data@npm:^7.22.6, @babel/compat-data@npm:^7.27.1":
-  version: 7.27.1
-  resolution: "@babel/compat-data@npm:7.27.1"
-  checksum: 10c0/03e3a01b6772858dc5064f332ad4dc16fbbc0353f2180fd663a2651e8305058e35b6db57114e345d925def9b73cd7a322e95a45913428b8db705a098fd3dd289
+"@babel/compat-data@npm:^7.22.6, @babel/compat-data@npm:^7.27.2":
+  version: 7.27.2
+  resolution: "@babel/compat-data@npm:7.27.2"
+  checksum: 10c0/077c9e01af3b90decee384a6a44dcf353898e980cee22ec7941f9074655dbbe97ec317345536cdc7ef7391521e1497930c522a3816af473076dd524be7fccd32
   languageName: node
   linkType: hard
 
@@ -105,16 +105,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/helper-compilation-targets@npm:^7.22.6, @babel/helper-compilation-targets@npm:^7.27.1":
-  version: 7.27.1
-  resolution: "@babel/helper-compilation-targets@npm:7.27.1"
+"@babel/helper-compilation-targets@npm:^7.22.6, @babel/helper-compilation-targets@npm:^7.27.1, @babel/helper-compilation-targets@npm:^7.27.2":
+  version: 7.27.2
+  resolution: "@babel/helper-compilation-targets@npm:7.27.2"
   dependencies:
-    "@babel/compat-data": "npm:^7.27.1"
+    "@babel/compat-data": "npm:^7.27.2"
     "@babel/helper-validator-option": "npm:^7.27.1"
     browserslist: "npm:^4.24.0"
     lru-cache: "npm:^5.1.1"
     semver: "npm:^6.3.1"
-  checksum: 10c0/1cfd3760a1bf1e367ea4a91214c041be7076197ba7a4f3c0710cab00fb5734eb010a2946efe6ecfb1ca9dc63e6c69644a1afa399db4082f374b9311e129f6f0b
+  checksum: 10c0/f338fa00dcfea931804a7c55d1a1c81b6f0a09787e528ec580d5c21b3ecb3913f6cb0f361368973ce953b824d910d3ac3e8a8ee15192710d3563826447193ad1
   languageName: node
   linkType: hard
 
@@ -757,16 +757,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-object-rest-spread@npm:^7.27.1":
-  version: 7.27.1
-  resolution: "@babel/plugin-transform-object-rest-spread@npm:7.27.1"
+"@babel/plugin-transform-object-rest-spread@npm:^7.27.2":
+  version: 7.27.2
+  resolution: "@babel/plugin-transform-object-rest-spread@npm:7.27.2"
   dependencies:
-    "@babel/helper-compilation-targets": "npm:^7.27.1"
+    "@babel/helper-compilation-targets": "npm:^7.27.2"
     "@babel/helper-plugin-utils": "npm:^7.27.1"
+    "@babel/plugin-transform-destructuring": "npm:^7.27.1"
     "@babel/plugin-transform-parameters": "npm:^7.27.1"
   peerDependencies:
     "@babel/core": ^7.0.0-0
-  checksum: 10c0/ac73caea178b51a64cc1c5e5ce1a67bacf89c1af664ef219aa1403d54258804113d6f267820c211768460e056f3aeb642c98ee14842c4fb548974c82f7dbe7dd
+  checksum: 10c0/5e255b262dd65c8700078d9f6ed87bd45f951a905dda6b3414be28d7b2781b18e6b812e9d71421e61360c9cf51e1e619c1d48348593bb7399496f61f5f221446
   languageName: node
   linkType: hard
 
@@ -989,12 +990,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/preset-env@npm:7.27.1":
-  version: 7.27.1
-  resolution: "@babel/preset-env@npm:7.27.1"
+"@babel/preset-env@npm:7.27.2":
+  version: 7.27.2
+  resolution: "@babel/preset-env@npm:7.27.2"
   dependencies:
-    "@babel/compat-data": "npm:^7.27.1"
-    "@babel/helper-compilation-targets": "npm:^7.27.1"
+    "@babel/compat-data": "npm:^7.27.2"
+    "@babel/helper-compilation-targets": "npm:^7.27.2"
     "@babel/helper-plugin-utils": "npm:^7.27.1"
     "@babel/helper-validator-option": "npm:^7.27.1"
     "@babel/plugin-bugfix-firefox-class-in-computed-class-key": "npm:^7.27.1"
@@ -1036,7 +1037,7 @@ __metadata:
     "@babel/plugin-transform-new-target": "npm:^7.27.1"
     "@babel/plugin-transform-nullish-coalescing-operator": "npm:^7.27.1"
     "@babel/plugin-transform-numeric-separator": "npm:^7.27.1"
-    "@babel/plugin-transform-object-rest-spread": "npm:^7.27.1"
+    "@babel/plugin-transform-object-rest-spread": "npm:^7.27.2"
     "@babel/plugin-transform-object-super": "npm:^7.27.1"
     "@babel/plugin-transform-optional-catch-binding": "npm:^7.27.1"
     "@babel/plugin-transform-optional-chaining": "npm:^7.27.1"
@@ -1064,7 +1065,7 @@ __metadata:
     semver: "npm:^6.3.1"
   peerDependencies:
     "@babel/core": ^7.0.0-0
-  checksum: 10c0/893b269f5e7e2084ee7fb60d3a1f154470c89169475170a8a595f1910cade9c9978b42df5405a46a699529dfdb1c6b0135cc4c0aa8f9e685ae230b1cb0172ad9
+  checksum: 10c0/fd7ec310832a9ff26ed8d56bc0832cdbdb3a188e022050b74790796650649fb8373568af05b320b58b3ff922507979bad50ff95a4d504ab0081134480103504e
   languageName: node
   linkType: hard
 
@@ -3626,14 +3627,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-prettier@npm:10.1.2":
-  version: 10.1.2
-  resolution: "eslint-config-prettier@npm:10.1.2"
+"eslint-config-prettier@npm:10.1.5":
+  version: 10.1.5
+  resolution: "eslint-config-prettier@npm:10.1.5"
   peerDependencies:
     eslint: ">=7.0.0"
   bin:
     eslint-config-prettier: bin/cli.js
-  checksum: 10c0/c22c8e29193cc8fd70becf1c2dd072513f2b3004a175c2a49404c79d1745ba4dc0edc2afd00d16b0e26d24f95813a0469e7445a25104aec218f6d84cdb1697e9
+  checksum: 10c0/5486255428e4577e8064b40f27db299faf7312b8e43d7b4bc913a6426e6c0f5950cd519cad81ae24e9aecb4002c502bc665c02e3b52efde57af2debcf27dd6e0
   languageName: node
   linkType: hard
 
@@ -4230,10 +4231,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:16.0.0":
-  version: 16.0.0
-  resolution: "globals@npm:16.0.0"
-  checksum: 10c0/8906d5f01838df64a81d6c2a7b7214312e2216cf65c5ed1546dc9a7d0febddf55ffa906cf04efd5b01eec2534d6f14859a89535d1a68241832810e41ef3fd5bb
+"globals@npm:16.1.0":
+  version: 16.1.0
+  resolution: "globals@npm:16.1.0"
+  checksum: 10c0/51df6319b5b9e679338baf058ecf1125af0d3148b97e57592deabd65fca5c5dcdcca321d7589282bd6afbea9f5a40bc7329c746f46d56780813d7d1c457209a2
   languageName: node
   linkType: hard
 
@@ -4679,18 +4680,18 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "jenkins-ui@workspace:."
   dependencies:
-    "@babel/cli": "npm:7.27.1"
+    "@babel/cli": "npm:7.27.2"
     "@babel/core": "npm:7.27.1"
-    "@babel/preset-env": "npm:7.27.1"
+    "@babel/preset-env": "npm:7.27.2"
     "@eslint/js": "npm:9.26.0"
     babel-loader: "npm:10.0.0"
     clean-webpack-plugin: "npm:4.0.0"
     css-loader: "npm:7.1.2"
     css-minimizer-webpack-plugin: "npm:7.0.2"
     eslint: "npm:9.26.0"
-    eslint-config-prettier: "npm:10.1.2"
+    eslint-config-prettier: "npm:10.1.5"
     eslint-formatter-checkstyle: "npm:8.40.0"
-    globals: "npm:16.0.0"
+    globals: "npm:16.1.0"
     handlebars: "npm:4.7.8"
     handlebars-loader: "npm:1.7.3"
     hotkeys-js: "npm:3.12.2"
@@ -4702,15 +4703,15 @@ __metadata:
     postcss-preset-env: "npm:10.1.6"
     postcss-scss: "npm:4.0.9"
     prettier: "npm:3.5.3"
-    sass: "npm:1.87.0"
+    sass: "npm:1.88.0"
     sass-loader: "npm:16.0.5"
     sortablejs: "npm:1.15.6"
     style-loader: "npm:4.0.0"
     stylelint: "npm:16.19.1"
     stylelint-checkstyle-reporter: "npm:1.0.0"
-    stylelint-config-standard-scss: "npm:14.0.0"
+    stylelint-config-standard-scss: "npm:15.0.0"
     tippy.js: "npm:6.3.7"
-    webpack: "npm:5.99.7"
+    webpack: "npm:5.99.8"
     webpack-cli: "npm:6.0.1"
     webpack-remove-empty-scripts: "npm:1.0.4"
     window-handle: "npm:1.0.1"
@@ -4905,13 +4906,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"known-css-properties@npm:^0.35.0":
-  version: 0.35.0
-  resolution: "known-css-properties@npm:0.35.0"
-  checksum: 10c0/04a4a2859d62670bb25b5b28091a1f03f6f0d3298a5ed3e7476397c5287b98c434f6dd9c004a0c67a53b7f21acc93f83c972e98c122f568d4d0bd21fd2b90fb6
-  languageName: node
-  linkType: hard
-
 "known-css-properties@npm:^0.36.0":
   version: 0.36.0
   resolution: "known-css-properties@npm:0.36.0"
@@ -5101,10 +5095,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdn-data@npm:^2.14.0":
-  version: 2.15.0
-  resolution: "mdn-data@npm:2.15.0"
-  checksum: 10c0/8a0c83198b013d43c2c43bd19c38d44e397b3fe097d269fa3c093d8c112acf12d0be4d892ba50a4802cccb91dd4f720218a66e675150ea2cc3d8aa0d32247e76
+"mdn-data@npm:^2.21.0":
+  version: 2.21.0
+  resolution: "mdn-data@npm:2.21.0"
+  checksum: 10c0/cd26902551af2cc29f06f130893cb04bca9ee278939fce3ffbcb759497cc80d53a6f4abdef2ae2f3ed3c95ac8d651f53fc141defd580ebf4ae2f93aea325957b
   languageName: node
   linkType: hard
 
@@ -6797,9 +6791,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.87.0":
-  version: 1.87.0
-  resolution: "sass@npm:1.87.0"
+"sass@npm:1.88.0":
+  version: 1.88.0
+  resolution: "sass@npm:1.88.0"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -6810,7 +6804,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10c0/bd245faf14e4783dc547765350cf05817edaac0d6d6f6e4da8ab751f3eb3cc3873afd563c0ce416a24aa6c9c4e9023b05096447fc006660a01f76adffb54fbc6
+  checksum: 10c0/dcb16dc29116bfa5a90485d24fd8020d2b0d95155bd2e31285901588729343b59fefe44365c5f146b2ba5a9ebadef90b23a7220b902507bdbd91ca2ba0a0b688
   languageName: node
   linkType: hard
 
@@ -7174,74 +7168,74 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint-config-recommended-scss@npm:^14.1.0":
-  version: 14.1.0
-  resolution: "stylelint-config-recommended-scss@npm:14.1.0"
+"stylelint-config-recommended-scss@npm:^15.0.0":
+  version: 15.0.0
+  resolution: "stylelint-config-recommended-scss@npm:15.0.0"
   dependencies:
     postcss-scss: "npm:^4.0.9"
-    stylelint-config-recommended: "npm:^14.0.1"
-    stylelint-scss: "npm:^6.4.0"
+    stylelint-config-recommended: "npm:^16.0.0"
+    stylelint-scss: "npm:^6.12.0"
   peerDependencies:
     postcss: ^8.3.3
-    stylelint: ^16.6.1
+    stylelint: ^16.16.0
   peerDependenciesMeta:
     postcss:
       optional: true
-  checksum: 10c0/0a1c1bb6d9f7a21acea82e12fee1b36a195181ae1dd0d8b59145a56f76232a80d5b706269bc4ca4929680d36f10371bd8a7d0aeeee468fa9119a3b56410b052f
+  checksum: 10c0/653d6760e26ac8fa11b55ac57617c86554fb77c5537319734dd437b7c8be07560c860fbe4daa5dd7d2d21834efc4ba853c6794207920765c325449d852ac40ce
   languageName: node
   linkType: hard
 
-"stylelint-config-recommended@npm:^14.0.1":
-  version: 14.0.1
-  resolution: "stylelint-config-recommended@npm:14.0.1"
+"stylelint-config-recommended@npm:^16.0.0":
+  version: 16.0.0
+  resolution: "stylelint-config-recommended@npm:16.0.0"
   peerDependencies:
-    stylelint: ^16.1.0
-  checksum: 10c0/a0a0ecd91f4d193bbe2cc3408228f8a2d8fcb2b2578d77233f86780c9247c796a04e16aad7a91d97cb918e2de34b6a8062bab66ee017c3835d855081d94f4828
+    stylelint: ^16.16.0
+  checksum: 10c0/b2b4ea2633a606a0f686521aa5e8908810c9dd21fd4525c86b34213de1e362b445fd5472b6e5ff251d46f999e2ca2c6c704f2efc1c08d5a532084427f4e1c9d8
   languageName: node
   linkType: hard
 
-"stylelint-config-standard-scss@npm:14.0.0":
-  version: 14.0.0
-  resolution: "stylelint-config-standard-scss@npm:14.0.0"
+"stylelint-config-standard-scss@npm:15.0.0":
+  version: 15.0.0
+  resolution: "stylelint-config-standard-scss@npm:15.0.0"
   dependencies:
-    stylelint-config-recommended-scss: "npm:^14.1.0"
-    stylelint-config-standard: "npm:^36.0.1"
+    stylelint-config-recommended-scss: "npm:^15.0.0"
+    stylelint-config-standard: "npm:^38.0.0"
   peerDependencies:
     postcss: ^8.3.3
-    stylelint: ^16.11.0
+    stylelint: ^16.18.0
   peerDependenciesMeta:
     postcss:
       optional: true
-  checksum: 10c0/b885f02d955060a8e0214fd8dc30bfc6d84cbdeb870d34ce0761b258914857bd22d537ac1c8ee9755bf4cd5b1f3b94f4ad0270c2ff4362df7d5eb8d95b35db5e
+  checksum: 10c0/96c9193b37bef83664829c35dea0a2aeb890ff6984e805146fe9ca8238ca05504e1c29bdc1b1e74a4aa939fa73a98106378f39bc178b8f12d8bdcd90ce1cbb84
   languageName: node
   linkType: hard
 
-"stylelint-config-standard@npm:^36.0.1":
-  version: 36.0.1
-  resolution: "stylelint-config-standard@npm:36.0.1"
+"stylelint-config-standard@npm:^38.0.0":
+  version: 38.0.0
+  resolution: "stylelint-config-standard@npm:38.0.0"
   dependencies:
-    stylelint-config-recommended: "npm:^14.0.1"
+    stylelint-config-recommended: "npm:^16.0.0"
   peerDependencies:
-    stylelint: ^16.1.0
-  checksum: 10c0/7f9b954694358e77be5110418f31335be579ce59dd952bc3c6a9449265297db3170ec520e0905769253b48b99c3109a95c71f5b985bf402e48fd6c89b5364cb2
+    stylelint: ^16.18.0
+  checksum: 10c0/8b52c7b7d6287c7495a8fe3a681e07ea9478374e7e66b28d61779072d46cd5b845530b2410df7496a008a8efafe834fb46cf07792f4cf57f996e39f24a801b90
   languageName: node
   linkType: hard
 
-"stylelint-scss@npm:^6.4.0":
-  version: 6.10.1
-  resolution: "stylelint-scss@npm:6.10.1"
+"stylelint-scss@npm:^6.12.0":
+  version: 6.12.0
+  resolution: "stylelint-scss@npm:6.12.0"
   dependencies:
     css-tree: "npm:^3.0.1"
     is-plain-object: "npm:^5.0.0"
-    known-css-properties: "npm:^0.35.0"
-    mdn-data: "npm:^2.14.0"
+    known-css-properties: "npm:^0.36.0"
+    mdn-data: "npm:^2.21.0"
     postcss-media-query-parser: "npm:^0.2.3"
     postcss-resolve-nested-selector: "npm:^0.1.6"
-    postcss-selector-parser: "npm:^7.0.0"
+    postcss-selector-parser: "npm:^7.1.0"
     postcss-value-parser: "npm:^4.2.0"
   peerDependencies:
     stylelint: ^16.0.2
-  checksum: 10c0/3fc9b456bff649840783b92365fc30f5e54539794711744f09df45020d2a3d86164e8e16948a35b3b167f6fc8109837d487253faebd8b1ac29800e67a7f7adc9
+  checksum: 10c0/c0ba314badd22118047e374febf8dabac56bd351d612ed9c9fc2da5dc760996c2768605aa8d4e483cf0b0fe649c35ae5a003c8a872ee5bec1bbc2d8d45673ff5
   languageName: node
   linkType: hard
 
@@ -7645,9 +7639,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.99.7":
-  version: 5.99.7
-  resolution: "webpack@npm:5.99.7"
+"webpack@npm:5.99.8":
+  version: 5.99.8
+  resolution: "webpack@npm:5.99.8"
   dependencies:
     "@types/eslint-scope": "npm:^3.7.7"
     "@types/estree": "npm:^1.0.6"
@@ -7678,7 +7672,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 10c0/e121880d921d5500e9dd61c3428f5d8dca4786c559e7f37488173186447cd22079be677d470a4db1643febf8031b9be900f501c9b95ba94ffe3d2065ad486d31
+  checksum: 10c0/c4852c3b795ed3fba799d2925802a4e259b2de7c2c597f0aaf0e228acfdc6755389ed8c29f1dad86610a9c6ad968c0b57c702b93891d60f09d302af63b2debe0
   languageName: node
   linkType: hard
 
