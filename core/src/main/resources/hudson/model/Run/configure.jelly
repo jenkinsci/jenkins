@@ -29,7 +29,7 @@ THE SOFTWARE.
     <l:breadcrumb title="${%Edit Build Information}" />
     <l:main-panel>
       <l:app-bar title="${%Edit Build Information}" />
-      <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
+      <l:skeleton />
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="readOnlyMode" value="${!h.hasPermission(it,it.UPDATE)}"/>
         <f:entry title="${%DisplayName}" help="/help/run-config/displayName.html">
