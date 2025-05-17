@@ -48,6 +48,8 @@ THE SOFTWARE.
           </l:notice>
         </j:when>
         <j:otherwise>
+          <l:skeleton />
+
           <f:form method="post" name="config" action="configure">
             <j:set var="instance" value="${it}" />
             <j:set var="descriptor" value="${instance.descriptor}" />
