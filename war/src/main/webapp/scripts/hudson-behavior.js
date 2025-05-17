@@ -1731,7 +1731,7 @@ function rowvgStartEachRow(recursive, f) {
   });
 
   Behaviour.specify(
-    "DIV.jenkins-form-skeleton",
+    "DIV.jenkins-form-skeleton, DIV.jenkins-side-panel-skeleton",
     "div-jenkins-form-skeleton",
     ++p,
     function (e) {

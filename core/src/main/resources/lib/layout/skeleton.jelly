@@ -25,31 +25,49 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
+    <st:attribute name="type" use="optional">
+      The type of skeleton, available options are 'form' and 'side-panel'.
+
+      Defaults to 'form'.
+    </st:attribute>
     Placeholder skeleton element, hiding the rest of its parent container until the page has loaded
   </st:documentation>
 
-  <div class="jenkins-form-skeleton">
-    <span />
-    <div />
-    <span />
-    <div />
-    <span />
-    <div />
-    <span />
-    <div />
-    <span />
-    <div />
-    <span />
-    <div />
-    <span />
-    <div />
-    <span />
-    <div />
-    <span />
-    <div />
-    <span />
-    <div />
-  </div>
+  <j:switch on="${attrs.type}">
+    <j:case value="side-panel">
+      <div class="jenkins-side-panel-skeleton">
+        <div />
+        <div />
+        <div />
+        <div />
+        <div />
+      </div>
+    </j:case>
+    <j:default>
+      <div class="jenkins-form-skeleton">
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+      </div>
+    </j:default>
+  </j:switch>
 
   <!-- :has isn't supported in HTMLUnit, so don't load the CSS in that case -->
   <j:if test="${!h.isUnitTest}">

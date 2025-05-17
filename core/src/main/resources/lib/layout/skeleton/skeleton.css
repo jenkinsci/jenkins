@@ -1,3 +1,4 @@
+.jenkins-side-panel-skeleton,
 .jenkins-form-skeleton {
   position: relative;
   display: flex;
@@ -61,6 +62,14 @@
   & > div {
     height: 2.375rem;
     margin-bottom: 1rem;
+  }
+}
+
+.jenkins-side-panel-skeleton {
+  gap: 0.125rem;
+
+  & > div {
+    margin: 0 -0.7rem;
   }
 }
 
