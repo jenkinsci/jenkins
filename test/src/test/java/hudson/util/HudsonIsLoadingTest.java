@@ -3,22 +3,29 @@ package hudson.util;
 import static jakarta.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.htmlunit.Page;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class HudsonIsLoadingTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class HudsonIsLoadingTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-55062")
-    public void withPrefix() throws Exception {
+    void withPrefix() throws Exception {
         j.jenkins.getServletContext().setAttribute("app", new HudsonIsLoading());
         JenkinsRule.WebClient wc = j.createWebClient()
                 // this is a failure page already
