@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright 2025 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,25 +22,18 @@
  * THE SOFTWARE.
  */
 
-package hudson.util;
-
-import java.io.IOException;
-
-/**
- * {@link IOException} with linked exception.
- *
- * @author Kohsuke Kawaguchi
- * @deprecated Just use {@link IOException}, which since Java 6 supports a cause.
- */
-@Deprecated
-public class IOException2 extends IOException  {
-
-    public IOException2(Throwable cause) {
-        super(cause);
-    }
-
-    public IOException2(String s, Throwable cause) {
-        super(s, cause);
-    }
-
-}
+// TODO package this logic into a generic utility like renderOnDemand/refreshPart with Behaviour.specify
+var e = document.querySelector(".artifact-list");
+fetch(
+  e.getAttribute("data-url") +
+    "?" +
+    new URLSearchParams({ caption: e.getAttribute("data-caption") }),
+).then((rsp) => {
+  if (rsp.ok) {
+    rsp.text().then((responseText) => {
+      e.innerHTML = responseText;
+      Behaviour.applySubtree(e);
+      layoutUpdateCallback.call();
+    });
+  }
+});

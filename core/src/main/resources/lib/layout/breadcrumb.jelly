@@ -37,20 +37,24 @@ THE SOFTWARE.
       This is useful for programmatically adding the context menu
     </st:attribute>
     <st:attribute name="hasMenu">
-      If true, this breadcrumb item will include a '⌄' symbol to display a dropdown menu with items
-      from the '{breadcrumb.href}/contextMenu' path. Since 2.361.
+      If true, this breadcrumb item will display a dropdown menu with items
+      from the '{breadcrumb.href}/contextMenu' path on hover. Since 2.361.
+    </st:attribute>
+    <st:attribute name="hasChildrenMenu">
+      If true, this breadcrumb item will display a dropdown menu with items
+      from the '{breadcrumb.href}/childrenContextMenu' path on hover. Since TODO.
     </st:attribute>
   </st:documentation>
 
   <j:if test="${mode=='breadcrumbs'}">
     <j:set var="hasLink" value="${attrs.href != null}" />
-    <li id="${attrs.id}" class="jenkins-breadcrumbs__list-item" aria-current="${hasLink ? null : 'page'}">
+    <li id="${attrs.id}" class="jenkins-breadcrumbs__list-item" data-type="breadcrumb-item" aria-current="${hasLink ? null : 'page'}">
       <j:choose>
         <j:when test="${!hasLink}">
-          ${attrs.title}
+          <span>${attrs.title}</span>
         </j:when>
         <j:otherwise>
-          <a href="${attrs.href}" class="${attrs.hasMenu ? 'model-link' : ''}">
+          <a href="${attrs.href}" class="${attrs.hasMenu ? 'hoverable-model-link' : ''} ${attrs.hasChildrenMenu ? 'hoverable-children-model-link' : ''}">
             ${attrs.title}
           </a>
         </j:otherwise>

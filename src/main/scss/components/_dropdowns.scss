@@ -10,7 +10,7 @@ $dropdown-padding: 0.375rem;
   background: color-mix(in sRGB, var(--card-background) 85%, transparent);
   backdrop-filter: var(--dropdown-backdrop-filter);
   max-width: unset !important;
-  max-height: 75vh;
+  max-height: 60vh;
   overflow-y: auto;
 
   .tippy-content {
@@ -286,5 +286,23 @@ $dropdown-padding: 0.375rem;
   svg {
     width: 1.25rem;
     height: 1.25rem;
+  }
+}
+
+.jenkins-dropdown__split-container {
+  display: grid;
+  grid-template-columns: auto auto;
+
+  & > * {
+    min-width: 215px;
+
+    &:not(:first-of-type) {
+      background: color-mix(
+        in sRGB,
+        var(--text-color-secondary) 5%,
+        transparent
+      );
+      border-left: var(--jenkins-border--subtle);
+    }
   }
 }
