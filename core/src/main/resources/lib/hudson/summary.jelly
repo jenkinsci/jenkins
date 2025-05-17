@@ -35,6 +35,9 @@ THE SOFTWARE.
     <st:attribute name="href">
       where the summary icon links to.
     </st:attribute>
+    <st:attribute name="newWindow" type="boolean">
+      if true, hyperlink will open in a new window.
+    </st:attribute>
     <st:attribute name="iconOnly" type="boolean">
       if true, hyperlink will only cover the icon, not the body.
     </st:attribute>
@@ -51,9 +54,18 @@ THE SOFTWARE.
         <td style="vertical-align:middle">
           <j:choose>
             <j:when test="${attrs.href!=null &amp;&amp; !attrs.iconOnly}">
-              <a href="${attrs.href}">
-                <d:invokeBody />
-              </a>
+              <j:choose>
+                <j:when test="${attrs.newWindow}">
+                  <a href="${attrs.href}" target="_blank" rel="noopener noreferrer">
+                    <d:invokeBody />
+                  </a>
+                </j:when>
+                <j:otherwise>
+                  <a href="${attrs.href}">
+                    <d:invokeBody />
+                  </a>
+                </j:otherwise>
+              </j:choose>
             </j:when>
             <j:otherwise>
               <d:invokeBody />
