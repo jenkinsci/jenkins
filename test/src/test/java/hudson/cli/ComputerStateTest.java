@@ -34,8 +34,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeThat;
 
 import hudson.cli.CLICommandInvoker.Result;
 import hudson.model.Computer;
@@ -108,9 +106,7 @@ public class ComputerStateTest {
             assertThat(userCause.toString(), endsWith("Custom cause message"));
             assertThat(userCause.getUser(), equalTo(command.user()));
         } else {
-            // Compensate for test being flaky in CI
-            assumeThat(cause, not(instanceOf(OfflineCause.ChannelTermination.class)));
-            fail("OfflineCause should have been UserCause or ChannelTermination, but was " + cause.getClass().getSimpleName() + " instead");
+            assertThat("seen occasionally in CI", cause, instanceOf(OfflineCause.ChannelTermination.class));
         }
     }
 
@@ -133,9 +129,7 @@ public class ComputerStateTest {
             assertThat(userCause.toString(), endsWith("Custom cause message"));
             assertThat(userCause.getUser(), equalTo(command.user()));
         } else {
-            // Compensate for test being flaky in CI
-            assumeThat(cause, not(instanceOf(OfflineCause.ChannelTermination.class)));
-            fail("OfflineCause should have been UserCause or ChannelTermination, but was " + cause.getClass().getSimpleName() + " instead");
+            assertThat("seen occasionally in CI", cause, instanceOf(OfflineCause.ChannelTermination.class));
         }
     }
 
