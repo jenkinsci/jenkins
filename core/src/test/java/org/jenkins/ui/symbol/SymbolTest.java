@@ -15,10 +15,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
-public class SymbolTest {
-    public static final String SCIENCE_PATH;
+class SymbolTest {
+    private static final String SCIENCE_PATH;
 
-    public static final String IMAGES_SYMBOLS_SCIENCE_PATH_XML = "/images/symbols/science.path.xml";
+    private static final String IMAGES_SYMBOLS_SCIENCE_PATH_XML = "/images/symbols/science.path.xml";
 
     static {
         try {

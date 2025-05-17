@@ -24,26 +24,26 @@
 
 package jenkins.util.java;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 
 @For(JavaUtils.class)
-public class JavaUtilsTest {
+class JavaUtilsTest {
 
     @Test
-    public void verifyJava8() {
-        assumeTrue("Test is for Java 8 only", System.getProperty("java.version").startsWith("1."));
-        assertFalse("isRunningWithPostJava8() should return false on Java 8 and below", JavaUtils.isRunningWithPostJava8());
+    void verifyJava8() {
+        assumeTrue(System.getProperty("java.version").startsWith("1."), "Test is for Java 8 only");
+        assertFalse(JavaUtils.isRunningWithPostJava8(), "isRunningWithPostJava8() should return false on Java 8 and below");
     }
 
     @Test
-    public void verifyPostJava8() {
-        assumeFalse("Test is for Java 9+ only", System.getProperty("java.version").startsWith("1."));
-        assertTrue("isRunningWithPostJava8() should return true on Java 9 and above", JavaUtils.isRunningWithPostJava8());
+    void verifyPostJava8() {
+        assumeFalse(System.getProperty("java.version").startsWith("1."), "Test is for Java 9+ only");
+        assertTrue(JavaUtils.isRunningWithPostJava8(), "isRunningWithPostJava8() should return true on Java 9 and above");
     }
 }
