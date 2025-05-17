@@ -27,9 +27,9 @@ package lib.form;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.htmlunit.HttpMethod.POST;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.FreeStyleProject;
@@ -47,11 +47,12 @@ import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTextArea;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
@@ -60,13 +61,19 @@ import org.w3c.dom.NodeList;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ExpandableTextboxTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class ExpandableTextboxTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-2816")
     @Test
-    public void testMultiline() throws Exception {
+    void testMultiline() throws Exception {
         // because attribute values are normalized, it's not very easy to encode multi-line string as @value. So let's use the system message here.
         j.jenkins.setSystemMessage("foo\nbar\nzot");
         HtmlPage page = evaluateAsHtml("<l:layout><l:main-panel><table><j:set var='instance' value='${it}'/><f:expandableTextbox field='systemMessage' /></table></l:main-panel></l:layout>");
@@ -90,7 +97,7 @@ public class ExpandableTextboxTest {
     }
 
     @Test
-    public void noInjectionArePossible() throws Exception {
+    void noInjectionArePossible() throws Exception {
         TestRootAction testParams = j.jenkins.getExtensionList(UnprotectedRootAction.class).get(TestRootAction.class);
         assertNotNull(testParams);
 
@@ -154,7 +161,7 @@ public class ExpandableTextboxTest {
 
     @Test
     @Issue("SECURITY-1498")
-    public void noXssUsingInputValue() throws Exception {
+    void noXssUsingInputValue() throws Exception {
         ExpandableTextBoxProperty xssProperty = new ExpandableTextBoxProperty("</textarea><h1>HACK</h1>");
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(xssProperty);
@@ -176,7 +183,7 @@ public class ExpandableTextboxTest {
 
     @Test
     @Issue("JENKINS-67627")
-    public void expandsIntoNewlines() throws Exception {
+    void expandsIntoNewlines() throws Exception {
         OptionalJobProperty property = new ExpandableTextBoxProperty("foo bar baz"); // A bit of a misnomer here, we're using code for an existing test
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(property);
@@ -196,6 +203,7 @@ public class ExpandableTextboxTest {
 
         private String theField;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public ExpandableTextBoxProperty(String theField) {
             this.theField = theField;
         }
