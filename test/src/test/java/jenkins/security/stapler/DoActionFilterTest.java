@@ -1,8 +1,8 @@
 package jenkins.security.stapler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -21,10 +21,11 @@ import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.CapturedParameterNames;
 import org.kohsuke.stapler.CrumbIssuer;
@@ -58,7 +59,8 @@ import org.kohsuke.stapler.verb.PUT;
  * It will disable the usage of {@link DoActionFilter}
  */
 @Issue("SECURITY-400")
-public class DoActionFilterTest extends StaplerAbstractTest {
+@WithJenkins
+class DoActionFilterTest extends StaplerAbstractTest {
 
     @TestExtension
     public static class TestAccessModifierUrl extends AbstractUnprotectedRootAction {
@@ -87,18 +89,18 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testProtectedMethodDispatch() throws Exception {
+    void testProtectedMethodDispatch() throws Exception {
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             try {
                 wc.goTo("testAccessModifierUrl/public/value", null);
             } catch (FailingHttpStatusCodeException e) {
                 throw new AssertionError("should have access to a public method", e);
             }
-            FailingHttpStatusCodeException x = assertThrows("should not have allowed protected access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/protected/value", null));
+            FailingHttpStatusCodeException x = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/protected/value", null), "should not have allowed protected access");
             assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
-            x = assertThrows("should not have allowed internal access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/internal/value", null));
+            x = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/internal/value", null), "should not have allowed internal access");
             assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
-            x = assertThrows("should not have allowed private access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/private/value", null));
+            x = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/private/value", null), "should not have allowed private access");
             assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
         }
     }
@@ -222,82 +224,82 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     //########### actual test methods ###########
     @Test
-    public void testMethodSignatureOk_staticWithRequest() throws Exception {
+    void testMethodSignatureOk_staticWithRequest() throws Exception {
         assertReachable("testNewRulesOk/staticWithRequest/");
     }
 
     @Test
-    public void testMethodSignatureOk_withRequest() throws Exception {
+    void testMethodSignatureOk_withRequest() throws Exception {
         assertReachable("testNewRulesOk/withRequest/");
     }
 
     @Test
-    public void testMethodSignatureOk_withRequestAndReturnString() throws Exception {
+    void testMethodSignatureOk_withRequestAndReturnString() throws Exception {
         assertReachable("testNewRulesOk/withRequestAndReturnString/");
     }
 
     @Test
-    public void testMethodSignatureOk_withHttpRequest() throws Exception {
+    void testMethodSignatureOk_withHttpRequest() throws Exception {
         assertReachable("testNewRulesOk/withHttpRequest/");
     }
 
     @Test
-    public void testMethodSignatureOk_withHttpResponse() throws Exception {
+    void testMethodSignatureOk_withHttpResponse() throws Exception {
         assertReachable("testNewRulesOk/withHttpResponse/");
     }
 
     @Test
-    public void testMethodSignatureOk_withResponse() throws Exception {
+    void testMethodSignatureOk_withResponse() throws Exception {
         assertReachable("testNewRulesOk/withResponse/");
     }
 
     @Test
-    public void testMethodSignatureOk_withThrowHttpResponseException() throws Exception {
+    void testMethodSignatureOk_withThrowHttpResponseException() throws Exception {
         assertReachable("testNewRulesOk/withThrowHttpResponseException/");
     }
 
     @Test
-    public void testMethodSignatureOk_withThrowHttpResponseExceptionChild() throws Exception {
+    void testMethodSignatureOk_withThrowHttpResponseExceptionChild() throws Exception {
         assertReachable("testNewRulesOk/withThrowHttpResponseExceptionChild/");
     }
 
     @Test
-    public void testMethodSignatureOk_withThrowExceptionImplementingOnlyHttpResponse() throws Exception {
+    void testMethodSignatureOk_withThrowExceptionImplementingOnlyHttpResponse() throws Exception {
         assertReachable("testNewRulesOk/withThrowExceptionImplementingOnlyHttpResponse/");
     }
 
     @Test
-    public void testMethodSignatureOk_withThrowOtherException() throws Exception {
+    void testMethodSignatureOk_withThrowOtherException() {
         assertNotReachable("testNewRulesOk/withThrowOtherException/");
     }
 
     @Test
-    public void testMethodSignatureOk_withReturnHttpResponse() throws Exception {
+    void testMethodSignatureOk_withReturnHttpResponse() throws Exception {
         assertReachable("testNewRulesOk/withReturnHttpResponse/");
     }
 
     @Test
-    public void testMethodSignatureOk_withReturnHttpResponseChild() throws Exception {
+    void testMethodSignatureOk_withReturnHttpResponseChild() throws Exception {
         assertReachable("testNewRulesOk/withReturnHttpResponseChild/");
     }
 
     @Test
-    public void testAnnotatedMethodOk_webMethodUrl() throws Exception {
+    void testAnnotatedMethodOk_webMethodUrl() throws Exception {
         assertReachable("testNewRulesOk/webMethodUrl/");
     }
 
     @Test
-    public void testAnnotatedMethodOk_webMethodUrl2() throws Exception {
+    void testAnnotatedMethodOk_webMethodUrl2() throws Exception {
         assertReachable("testNewRulesOk/webMethodUrl2/");
     }
 
     @Test
-    public void testAnnotatedMethodOk_annotatedGet() throws Exception {
+    void testAnnotatedMethodOk_annotatedGet() throws Exception {
         assertReachable("testNewRulesOk/annotatedGet/");
     }
 
     @Test
-    public void testAnnotatedMethodOk_annotatedPost() throws Exception {
+    void testAnnotatedMethodOk_annotatedPost() throws Exception {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedPost/"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody("");
@@ -305,7 +307,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testAnnotatedMethodOk_annotatedPut() throws Exception {
+    void testAnnotatedMethodOk_annotatedPut() throws Exception {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedPut/"));
         settings.setHttpMethod(HttpMethod.PUT);
         settings.setRequestBody("");
@@ -313,12 +315,12 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testAnnotatedMethodOk_annotatedDelete() throws Exception {
+    void testAnnotatedMethodOk_annotatedDelete() throws Exception {
         assertReachable("testNewRulesOk/annotatedDelete/", HttpMethod.DELETE);
     }
 
     @Test
-    public void testAnnotatedMethodOk_annotatedRequirePost() throws Exception {
+    void testAnnotatedMethodOk_annotatedRequirePost() throws Exception {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedRequirePost/"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody("");
@@ -326,7 +328,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testAnnotatedMethodOk_annotatedJavaScriptScriptMethod() throws Exception {
+    void testAnnotatedMethodOk_annotatedJavaScriptScriptMethod() throws Exception {
         webApp.setCrumbIssuer(new CrumbIssuer() {
             @Override
             public String issueCrumb(StaplerRequest2 request) {
@@ -348,12 +350,12 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testAnnotatedMethodOk_annotatedResponseSuccess() throws Exception {
+    void testAnnotatedMethodOk_annotatedResponseSuccess() throws Exception {
         assertReachable("testNewRulesOk/annotatedResponseSuccess/");
     }
 
     @Test
-    public void testAnnotatedMethodOk_annotatedJsonResponse() throws Exception {
+    void testAnnotatedMethodOk_annotatedJsonResponse() throws Exception {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedJsonResponse/"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody(JSONObject.fromObject(Collections.emptyMap()).toString());
@@ -364,7 +366,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testAnnotatedMethodOk_annotatedLimitedTo() {
+    void testAnnotatedMethodOk_annotatedLimitedTo() {
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), "testNewRulesOk/annotatedLimitedTo/")));
             assertEquals(500, e.getStatusCode());
@@ -373,26 +375,26 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testAnnotatedParameterOk_annotatedParamQueryParameter() throws Exception {
+    void testAnnotatedParameterOk_annotatedParamQueryParameter() throws Exception {
         // parameter is optional by default
         assertReachable("testNewRulesOk/annotatedParamQueryParameter/");
         assertReachable("testNewRulesOk/annotatedParamQueryParameter/?value=test");
     }
 
     @Test
-    public void testAnnotatedParameterOk_annotatedParamAncestorInPath() throws Exception {
+    void testAnnotatedParameterOk_annotatedParamAncestorInPath() throws Exception {
         assertReachable("testNewRulesOk/annotatedParamAncestorInPath/");
     }
 
     @Test
-    public void testAnnotatedParameterOk_annotatedParamHeader() throws Exception {
+    void testAnnotatedParameterOk_annotatedParamHeader() throws Exception {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedParamHeader/"));
         settings.setAdditionalHeader("test-header", "TestBrowser");
         assertReachableWithSettings(settings);
     }
 
     @Test
-    public void testAnnotatedParameterOk_annotatedParamJsonBody() throws Exception {
+    void testAnnotatedParameterOk_annotatedParamJsonBody() throws Exception {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedParamJsonBody/"));
         // WebClient forces us to use POST to have the possibility to send requestBody
         settings.setHttpMethod(HttpMethod.POST);
@@ -402,7 +404,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testAnnotatedParameterOk_annotatedParamSubmittedForm() throws Exception {
+    void testAnnotatedParameterOk_annotatedParamSubmittedForm() throws Exception {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedParamSubmittedForm/"));
         settings.setHttpMethod(HttpMethod.POST);
 
@@ -416,12 +418,12 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testOk__CallMeBecauseOfMyUnderscore() throws Exception {
+    void testOk__CallMeBecauseOfMyUnderscore() throws Exception {
         assertReachable("testNewRulesOk/_CallMeBecauseOfMyUnderscore/");
     }
 
     @Test
-    public void testOk_$CallMeBecauseOfMyDollar() throws Exception {
+    void testOk_$CallMeBecauseOfMyDollar() throws Exception {
         assertReachable("testNewRulesOk/$CallMeBecauseOfMyDollar/");
     }
 
@@ -445,7 +447,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testSpecialCasesOk() throws Exception {
+    void testSpecialCasesOk() throws Exception {
         assertReachable("testNewRulesOkDynamic/anyString/");
         assertReachable("testNewRulesOkIndex/");
         assertReachable("testNewRulesOkDoIndex/");
@@ -469,25 +471,25 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testNotOk_ntCallMeBecauseOfMyDont() throws Exception {
+    void testNotOk_ntCallMeBecauseOfMyDont() {
         assertNotReachable("testNewRulesNotOk/ntCallMeBecauseOfMyDont/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
 
     @Test
-    public void testNotOk_something() throws Exception {
+    void testNotOk_something() {
         assertNotReachable("testNewRulesNotOk/something/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
 
     @Test
-    public void testNotOk_returnString() throws Exception {
+    void testNotOk_returnString() {
         assertNotReachable("testNewRulesNotOk/returnString/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
 
     @Test
-    public void testNotOk_returnObject() throws Exception {
+    void testNotOk_returnObject() {
         assertNotReachable("testNewRulesNotOk/returnObject/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
@@ -513,31 +515,31 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testNotOkSpecialCases_withServletRequest() throws Exception {
+    void testNotOkSpecialCases_withServletRequest() {
         assertNotReachable("testNewRulesNotOkSpecialCases/withServletRequest/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
 
     @Test
-    public void testNotOkSpecialCases_withServletResponse() throws Exception {
+    void testNotOkSpecialCases_withServletResponse() {
         assertNotReachable("testNewRulesNotOkSpecialCases/withServletResponse/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
 
     @Test
-    public void testNotOkSpecialCases_withRequestImpl() throws Exception {
+    void testNotOkSpecialCases_withRequestImpl() {
         assertNotReachable("testNewRulesNotOkSpecialCases/withRequestImpl/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
 
     @Test
-    public void testNotOkSpecialCases_withResponseImpl() throws Exception {
+    void testNotOkSpecialCases_withResponseImpl() {
         assertNotReachable("testNewRulesNotOkSpecialCases/withResponseImpl/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
 
     @Test
-    public void testNotOkSpecialCases_annotatedResponseSuccess() throws Exception {
+    void testNotOkSpecialCases_annotatedResponseSuccess() {
         assertNotReachable("testNewRulesNotOkSpecialCases/annotatedResponseSuccess/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
@@ -593,28 +595,28 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testClassInheritance_notAnnotatedAtAll() throws Exception {
+    void testClassInheritance_notAnnotatedAtAll() {
         assertNotReachable("aBCase/notAnnotatedAtAll/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
 
     @Test
-    public void testClassInheritance_onlyAnnotatedInA() throws Exception {
+    void testClassInheritance_onlyAnnotatedInA() throws Exception {
         assertReachable("aBCase/onlyAnnotatedInA/");
     }
 
     @Test
-    public void testClassInheritance_onlyAnnotatedInB() throws Exception {
+    void testClassInheritance_onlyAnnotatedInB() throws Exception {
         assertReachable("aBCase/onlyAnnotatedInB/");
     }
 
     @Test
-    public void testClassInheritance_onlyAnnotatedInANotOverrided() throws Exception {
+    void testClassInheritance_onlyAnnotatedInANotOverrided() {
         assertNotReachable("aBCase/onlyAnnotatedInANotOverrided/");
     }
 
     @Test
-    public void testClassInheritance_annotatedButDifferent1() throws Exception {
+    void testClassInheritance_annotatedButDifferent1() {
         // only the last webMethod annotation is used
         //TODO it breaks the Liskov substitutability
 //        assertReachable("b/annotatedButDifferent1/");
@@ -622,7 +624,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testClassInheritance_annotatedButDifferent2() throws Exception {
+    void testClassInheritance_annotatedButDifferent2() throws Exception {
         assertReachable("aBCase/annotatedButDifferent2/");
     }
 
@@ -671,28 +673,28 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testInterfaceImplementation_notAnnotated() throws Exception {
+    void testInterfaceImplementation_notAnnotated() {
         assertNotReachable("iJCase/notAnnotated/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
 
     @Test
-    public void testInterfaceImplementation_annotatedBoth() throws Exception {
+    void testInterfaceImplementation_annotatedBoth() throws Exception {
         assertReachable("iJCase/annotatedBoth/");
     }
 
     @Test
-    public void testInterfaceImplementation_annotatedOnlyI() throws Exception {
+    void testInterfaceImplementation_annotatedOnlyI() throws Exception {
         assertReachable("iJCase/annotatedOnlyI/");
     }
 
     @Test
-    public void testInterfaceImplementation_annotatedOnlyJ() throws Exception {
+    void testInterfaceImplementation_annotatedOnlyJ() throws Exception {
         assertReachable("iJCase/annotatedOnlyJ/");
     }
 
     @Test
-    public void testInterfaceImplementation_annotatedButDifferent1() throws Exception {
+    void testInterfaceImplementation_annotatedButDifferent1() {
         // only the last webMethod annotation is used
         //TODO it breaks the Liskov substitutability
         // assertReachable("j/annotatedButDifferent1/");
@@ -700,7 +702,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testInterfaceImplementation_annotatedButDifferent2() throws Exception {
+    void testInterfaceImplementation_annotatedButDifferent2() throws Exception {
         assertReachable("iJCase/annotatedButDifferent2/");
     }
 }
