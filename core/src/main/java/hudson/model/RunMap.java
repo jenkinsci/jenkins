@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.SortedMap;
+import java.util.function.IntPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
@@ -240,6 +241,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
         return r.createReference();
     }
 
+    @Restricted(NoExternalUse.class)
     @Override
     protected boolean allowLoad(int buildNumber) {
         if (job == null) {
@@ -254,6 +256,27 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
         }
         LOGGER.finest(() -> "no RunListener declined to load " + buildNumber + " in " + job + " so proceeding");
         return true;
+    }
+
+    @Restricted(NoExternalUse.class)
+    @Override
+    protected IntPredicate createLoadAllower() {
+        if (job == null) {
+            LOGGER.fine(() -> "deprecated constructor without Job used on " + dir);
+            return buildNumber -> true;
+        }
+        @SuppressWarnings("unchecked")
+        var allowers = RunListener.all().stream().map(l -> l.createLoadAllower(job)).toList();
+        return buildNumber -> {
+            for (var allower : allowers) {
+                if (!allower.test(buildNumber)) {
+                    LOGGER.finer(() -> allower + " declined to load " + buildNumber + " in " + job);
+                    return false;
+                }
+            }
+            LOGGER.finest(() -> "no RunListener declined to load " + buildNumber + " in " + job + " so proceeding");
+            return true;
+        };
     }
 
     @Override
