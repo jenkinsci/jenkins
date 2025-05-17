@@ -1,24 +1,24 @@
 package hudson.util.jna;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.Functions;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class GNUCLibraryTest {
+class GNUCLibraryTest {
 
     private static final int O_CREAT = "Linux".equals(System.getProperty("os.name")) ? 64 : 512;
     private static final int O_RDWR = 2;
 
     @Test
-    public void openTest() throws IOException {
+    void openTest() throws IOException {
         assumeTrue(Functions.isGlibcSupported());
 
         int fd = GNUCLibrary.LIBC.open("/dev/null", 0);
@@ -42,7 +42,7 @@ public class GNUCLibraryTest {
     }
 
     @Test
-    public void closeTest() {
+    void closeTest() {
         assumeTrue(Functions.isGlibcSupported());
 
         int fd = GNUCLibrary.LIBC.open("/dev/null", 0);
@@ -53,7 +53,7 @@ public class GNUCLibraryTest {
     }
 
     @Test
-    public void fcntlTest() {
+    void fcntlTest() {
         assumeTrue(Functions.isGlibcSupported());
 
         int fd = GNUCLibrary.LIBC.open("/dev/null", 0);
@@ -72,7 +72,7 @@ public class GNUCLibraryTest {
     }
 
     @Test
-    public void renameTest() throws IOException {
+    void renameTest() throws IOException {
         assumeTrue(Functions.isGlibcSupported());
 
         Path oldFile = Files.createTempFile("renameTest", null);
