@@ -27,27 +27,24 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.Fingerprint.RangeSet;
 import java.io.File;
 import jenkins.fingerprints.FileFingerprintStorage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class FingerprintTest {
+class FingerprintTest {
 
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
-
-    @Test public void rangeSet() {
+    @Test
+    void rangeSet() {
         RangeSet rs = new RangeSet();
         assertFalse(rs.includes(0));
         assertFalse(rs.includes(3));
@@ -79,7 +76,8 @@ public class FingerprintTest {
         assertEquals("[3,7),[9,11)", rs.toString());
     }
 
-    @Test public void merge() {
+    @Test
+    void merge() {
         RangeSet x = new RangeSet();
         x.add(1);
         x.add(2);
@@ -98,7 +96,8 @@ public class FingerprintTest {
         assertEquals("[1,7)", x.toString());
     }
 
-    @Test public void merge2() {
+    @Test
+    void merge2() {
         RangeSet x = new RangeSet();
         x.add(1);
         x.add(2);
@@ -115,7 +114,8 @@ public class FingerprintTest {
         assertEquals("[1,7)", x.toString());
     }
 
-    @Test public void merge3() {
+    @Test
+    void merge3() {
         RangeSet x = new RangeSet();
         x.add(1);
         x.add(5);
@@ -132,7 +132,7 @@ public class FingerprintTest {
     }
 
     @Test
-    public void retainAll1() {
+    void retainAll1() {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
@@ -148,7 +148,7 @@ public class FingerprintTest {
     }
 
     @Test
-    public void retainAll2() {
+    void retainAll2() {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
@@ -164,7 +164,7 @@ public class FingerprintTest {
     }
 
     @Test
-    public void retainAll3() {
+    void retainAll3() {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
@@ -175,7 +175,7 @@ public class FingerprintTest {
     }
 
     @Test
-    public void removeAll1() {
+    void removeAll1() {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
@@ -191,7 +191,7 @@ public class FingerprintTest {
     }
 
     @Test
-    public void removeAll2() {
+    void removeAll2() {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
@@ -207,7 +207,7 @@ public class FingerprintTest {
     }
 
     @Test
-    public void removeAll3() {
+    void removeAll3() {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
@@ -216,7 +216,8 @@ public class FingerprintTest {
         assertFalse(x.removeAll(y));
     }
 
-    @Test public void deserialize() throws Exception {
+    @Test
+    void deserialize() throws Exception {
         assertEquals("Fingerprint["
                 + "original=stapler/org.kohsuke.stapler:stapler-jelly #123,"
                 + "hash=069484c9e963cc615c51278327da8eab,"
@@ -227,14 +228,16 @@ public class FingerprintTest {
                 FileFingerprintStorage.load(new File(FingerprintTest.class.getResource("fingerprint.xml").toURI())).toString());
     }
 
-    @Test public void loadFingerprintWithoutUsages() throws Exception {
+    @Test
+    void loadFingerprintWithoutUsages() throws Exception {
         Fingerprint fp = FileFingerprintStorage.load(new File(FingerprintTest.class.getResource("fingerprintWithoutUsages.xml").toURI()));
         assertNotNull(fp);
         assertEquals("test:jenkinsfile-example-1.0-SNAPSHOT.jar", fp.getFileName());
         assertNotNull(fp.getUsages());
     }
 
-    @Test public void fromString() {
+    @Test
+    void fromString() {
         //
         // Single
         //
