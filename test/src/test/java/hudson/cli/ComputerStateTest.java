@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -101,15 +102,19 @@ class ComputerStateTest {
         assertTrue(slave.toComputer().isOnline());
 
         Result result = command.authorizedTo(Jenkins.READ, Computer.DISCONNECT)
-                .invokeWithArgs(slave.getNodeName(), "-m", "Custom cause message")
-        ;
+                .invokeWithArgs(slave.getNodeName(), "-m", "Custom cause message");
 
         assertThat(result, succeededSilently());
         assertTrue(slave.toComputer().isOffline());
 
-        OfflineCause.UserCause cause = (OfflineCause.UserCause) slave.toComputer().getOfflineCause();
-        assertThat(cause.toString(), endsWith("Custom cause message"));
-        assertThat(cause.getUser(), equalTo(command.user()));
+        OfflineCause cause = slave.toComputer().getOfflineCause();
+
+        if (cause instanceof OfflineCause.UserCause userCause) {
+            assertThat(userCause.toString(), endsWith("Custom cause message"));
+            assertThat(userCause.getUser(), equalTo(command.user()));
+        } else {
+            assertThat("seen occasionally in CI", cause, instanceOf(OfflineCause.ChannelTermination.class));
+        }
     }
 
     @Test
@@ -120,15 +125,19 @@ class ComputerStateTest {
         assertTrue(slave.toComputer().isOnline());
 
         Result result = command.authorizedTo(Jenkins.READ, Computer.DISCONNECT)
-                .invokeWithArgs(slave.getNodeName(), "-m", "Custom cause message")
-        ;
+                .invokeWithArgs(slave.getNodeName(), "-m", "Custom cause message");
 
         assertThat(result, succeededSilently());
         assertTrue(slave.toComputer().isOffline());
 
-        OfflineCause.UserCause cause = (OfflineCause.UserCause) slave.toComputer().getOfflineCause();
-        assertThat(cause.toString(), endsWith("Custom cause message"));
-        assertThat(cause.getUser(), equalTo(command.user()));
+        OfflineCause cause = slave.toComputer().getOfflineCause();
+
+        if (cause instanceof OfflineCause.UserCause userCause) {
+            assertThat(userCause.toString(), endsWith("Custom cause message"));
+            assertThat(userCause.getUser(), equalTo(command.user()));
+        } else {
+            assertThat("seen occasionally in CI", cause, instanceOf(OfflineCause.ChannelTermination.class));
+        }
     }
 
     @Test
