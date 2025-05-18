@@ -148,7 +148,7 @@ td.tab {
 
 pre {
   white-space: pre-wrap;
-  word-wrap: break-word;
+  word-wrap: word-break;
   margin: 0 0 var(--section-padding);
   padding: 0.8rem 1rem;
   border-radius: var(--form-input-border-radius);
@@ -160,7 +160,7 @@ pre {
   line-height: 1.66;
 
   a {
-    word-wrap: break-word;
+    word-wrap: word-break;
   }
 }
 
@@ -290,7 +290,7 @@ pre.console {
   display: none; /* hidden until loaded */
   padding: 1rem;
   margin: 1rem 0;
-  word-break: break-word;
+  word-break: word-break;
   border-radius: var(--form-input-border-radius);
   background-color: var(--button-background);
   border: var(--jenkins-border--subtle);
@@ -380,7 +380,7 @@ img.icon-help {
   overflow-y: scroll;
   color: var(--text-color);
   border-radius: var(--form-input-border-radius);
-  box-shadow: 0 10px 20px rgba(black, 0.15);
+  box-shadow: 0 10px 20px rgb(black, 0.15);
   margin-top: 8px;
   margin-left: 3px;
   max-height: 300px;
