@@ -317,14 +317,14 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1322.v1556dc1c59a_f</version>
+                  <version>1335.v6b_a_a_e18534e1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1371.ve334280b_d611</version>
+                  <version>1373.v7b_813f10efa_b_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -533,7 +533,7 @@ THE SOFTWARE.
                   <!-- dependency of junit and matrix-auth -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>ionicons-api</artifactId>
-                  <version>87.ve74b_60c10b_57</version>
+                  <version>88.va_4187cb_eddf1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -653,7 +653,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.0.20</version>
+        <version>12.0.21</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
