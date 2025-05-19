@@ -39,7 +39,7 @@ THE SOFTWARE.
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <xmlunit.version>2.10.0</xmlunit.version>
+    <xmlunit.version>2.10.1</xmlunit.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
     <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
