@@ -24,12 +24,6 @@
       ]
     },
     {
-      "matchPackageNames": [
-        "node"
-      ],
-      "allowedVersions": "/20.[0-9]+.[0-9]+(.[0-9]+)?$/"
-    },
-    {
       "description": "Should be upgraded in lockstep in order to keep their corresponding Jetty versions aligned",
       "matchManagers": [
         "maven"
@@ -124,7 +118,7 @@
         "<node.version>(?<currentValue>.*?)</node.version>"
       ],
       "depNameTemplate": "node",
-      "datasourceTemplate": "npm"
+      "datasourceTemplate": "node-version"
     },
     {
       "customType": "regex",

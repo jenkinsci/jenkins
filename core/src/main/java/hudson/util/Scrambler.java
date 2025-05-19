@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-@Deprecated(since = "TODO")
+@Deprecated(since = "2.505")
 public class Scrambler {
     private static final Logger LOGGER = Logger.getLogger(Scrambler.class.getName());
 

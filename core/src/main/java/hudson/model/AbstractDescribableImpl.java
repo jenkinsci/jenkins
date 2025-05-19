@@ -30,5 +30,5 @@ package hudson.model;
  * @author Kohsuke Kawaguchi
  * @deprecated Implement {@link Describable} directly.
  */
-@Deprecated(since = "TODO")
+@Deprecated(since = "2.505")
 public abstract class AbstractDescribableImpl<T extends AbstractDescribableImpl<T>> implements Describable<T> {}

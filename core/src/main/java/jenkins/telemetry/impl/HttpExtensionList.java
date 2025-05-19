@@ -47,7 +47,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 /**
  * Collect information about which URLs in {@code /extensionList/} are being accessed.
  *
- * @since TODO
+ * @since 2.505
  */
 @Extension
 @Restricted(NoExternalUse.class)

@@ -2,7 +2,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--section-padding);
+  margin-bottom: 0.875rem;
+  min-height: 2.875rem;
   gap: var(--section-padding);
   flex-wrap: wrap;
 
@@ -51,17 +52,15 @@
 
   &--sticky {
     position: sticky;
-    top: 40px;
-    padding-top: var(--section-padding);
-    margin-top: calc(var(--section-padding) * -1);
+    top: var(--header-height);
     z-index: 2;
 
     &::before,
     &::after {
       content: "";
       position: absolute;
-      inset: 0 calc(var(--section-padding) * -1)
-        calc(var(--section-padding) * -1);
+      inset: calc(var(--header-height) * -1)
+        calc(var(--section-padding) * -1) -0.875rem;
       z-index: -1;
       pointer-events: none;
     }
@@ -70,14 +69,10 @@
       background: var(--background);
       mask-image: linear-gradient(black 70%, transparent);
       opacity: 0.55;
-
-      @supports not (backdrop-filter: blur(15px)) {
-        opacity: 1;
-      }
     }
 
     &::after {
-      backdrop-filter: blur(15px);
+      backdrop-filter: blur(10px);
       mask-image: linear-gradient(black 50%, transparent);
     }
   }

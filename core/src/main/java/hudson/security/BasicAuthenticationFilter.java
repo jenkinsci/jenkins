@@ -24,6 +24,7 @@
 
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -181,6 +182,7 @@ public class BasicAuthenticationFilter implements CompatibleFilter {
         d.include(req, rsp);
     }
 
+    @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "Authenticated by the container")
     private void prepareRedirect(HttpServletResponse rsp, String path) {
         rsp.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
         rsp.setHeader("Location", path);

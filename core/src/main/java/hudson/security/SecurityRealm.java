@@ -25,6 +25,7 @@
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -382,6 +383,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
         rsp.sendRedirect2(getPostLogOutUrl2(req, auth));
     }
 
+    @SuppressFBWarnings(value = "INSECURE_COOKIE", justification = "TODO needs triage")
     private void resetRememberMeCookie(StaplerRequest2 req, StaplerResponse2 rsp, String contextPath) {
         Cookie cookie = new Cookie(AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY, "");
         cookie.setMaxAge(0);

@@ -782,7 +782,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public RunList getBuilds() {
-        return RunList.fromJobs((Iterable) Jenkins.get().allItems(Job.class)).node(getNode());
+        return RunList.fromJobs((Iterable) Jenkins.get().allItems(AbstractProject.class)).node(getNode());
     }
 
     /**

@@ -977,6 +977,11 @@ public class SlaveComputer extends Computer {
         }
     }
 
+    @Override
+    public String toString() {
+        return nodeName != null ? super.toString() + "[" + nodeName + "]" : super.toString();
+    }
+
     /**
      * Grabs a {@link ComputerLauncher} out of {@link Node} to keep it in this {@link Computer}.
      * The returned launcher will be set to {@link #launcher} and used to carry out the actual launch operation.

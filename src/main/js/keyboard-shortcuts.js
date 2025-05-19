@@ -2,7 +2,7 @@ import hotkeys from "hotkeys-js";
 
 window.addEventListener("load", () => {
   const openCommandPaletteButton = document.querySelector(
-    "#button-open-command-palette",
+    "#root-action-SearchAction",
   );
   if (openCommandPaletteButton) {
     hotkeys(translateModifierKeysForUsersPlatform("CMD+K"), () => {

@@ -14,7 +14,7 @@ $colors: (
   "yellow": oklch(80% 0.17 76),
   "teal": oklch(60% 0.1122 216.72),
   "white": #fff,
-  "black": oklch(from var(--accent-color) 2% 0.075 h),
+  "black": oklch(from var(--accent-color) 5% 0.075 h),
 );
 $semantics: (
   "accent": var(--blue),
@@ -22,6 +22,7 @@ $semantics: (
   "error": var(--red),
   "warning": var(--orange),
   "success": var(--green),
+  "skipped": var(--text-color-secondary),
   "destructive": var(--red),
   "build": var(--green),
   "danger": var(--red),
@@ -70,16 +71,10 @@ $semantics: (
   --background: var(--white);
 
   // Header
-  --brand-link-color: var(--secondary);
-  --header-link-color: var(--white);
-  --header-bg-classic: var(--black);
-  --header-link-bg-classic-hover: #404040;
-  --header-link-bg-classic-active: #404040;
-
-  // Breadcrumbs bar
-  --breadcrumbs-bar-background: oklch(
-    from var(--text-color) 96.8% 0.005 h / 0.8
-  );
+  --header-background: var(--background);
+  --header-border: var(--text-color-secondary);
+  --header-color: var(--text-color);
+  --header-height: 4.125rem;
 
   // App bar
   --bottom-app-bar-shadow: color-mix(
@@ -161,6 +156,7 @@ $semantics: (
   }
 
   @media (prefers-contrast: more) {
+    --header-border: var(--text-color);
     --focus-input-border: var(--text-color);
     --jenkins-border-color: var(--text-color);
     --jenkins-border-color--subtle: var(--text-color);

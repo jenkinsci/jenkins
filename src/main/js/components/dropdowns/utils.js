@@ -11,43 +11,50 @@ const SELECTED_ITEM_CLASS = "jenkins-dropdown__item--selected";
  * @param element - the element to generate the dropdown for
  * @param callback - called to retrieve the list of dropdown items
  */
-function generateDropdown(element, callback, immediate) {
+function generateDropdown(element, callback, immediate, options = {}) {
   if (element._tippy && element._tippy.props.theme === "dropdown") {
     element._tippy.destroy();
   }
 
   tippy(
     element,
-    Object.assign({}, Templates.dropdown(), {
-      hideOnClick:
-        element.dataset["hideOnClick"] !== "false" ? "toggle" : false,
-      onCreate(instance) {
-        const onload = () => {
-          if (instance.loaded) {
-            return;
-          }
-
-          document.addEventListener("click", (event) => {
-            const isClickInAnyDropdown =
-              !!event.target.closest("[data-tippy-root]");
-            const isClickOnReference = instance.reference.contains(
-              event.target,
-            );
-
-            if (!isClickInAnyDropdown && !isClickOnReference) {
-              instance.hide();
+    Object.assign(
+      {},
+      Templates.dropdown(),
+      {
+        hideOnClick:
+          element.dataset["hideOnClick"] !== "false" ? "toggle" : false,
+        onCreate(instance) {
+          const onload = () => {
+            if (instance.loaded) {
+              return;
             }
-          });
 
-          callback(instance);
-        };
-        if (immediate) {
-          onload();
-        } else {
-          instance.reference.addEventListener("mouseenter", onload);
-        }
+            document.addEventListener("click", (event) => {
+              const isClickInAnyDropdown =
+                !!event.target.closest("[data-tippy-root]");
+              const isClickOnReference = instance.reference.contains(
+                event.target,
+              );
+
+              if (!isClickInAnyDropdown && !isClickOnReference) {
+                instance.hide();
+              }
+            });
+
+            callback(instance);
+          };
+          if (immediate) {
+            onload();
+          } else {
+            ["mouseenter", "focus"].forEach((event) => {
+              instance.reference.addEventListener(event, onload);
+            });
+          }
+        },
       },
-    }),
+      options,
+    ),
   );
 }
 

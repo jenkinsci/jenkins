@@ -72,7 +72,6 @@ import hudson.util.XStream2;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -136,6 +135,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -1074,6 +1074,11 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
+    @Restricted(DoNotUse.class) // Jelly
+    public final boolean hasCustomArtifactManager() {
+        return artifactManager != null;
+    }
+
     /**
      * Gets the directory where the artifacts are archived.
      * @deprecated Should only be used from {@link StandardArtifactManager} or subclasses.
@@ -1466,19 +1471,34 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "method signature does not permit plumbing through the return value")
     public void writeLogTo(long offset, @NonNull XMLOutput out) throws IOException {
-        long start = offset;
+        AnnotatedLargeText<?> logText = getLogText();
         if (offset > 0) {
-            try (BufferedInputStream bufferedInputStream = new BufferedInputStream(getLogInputStream())) {
-                if (offset == bufferedInputStream.skip(offset)) {
-                    int r;
-                    do {
-                        r = bufferedInputStream.read();
-                        start = r == -1 ? 0 : start + 1;
-                    } while (r != -1 && r != '\n');
-                }
+            long _offset = offset;
+            try {
+                logText.writeRawLogTo(offset - 1, new OutputStream() {
+                    long pos = _offset;
+                    @Override
+                    public void write(int b) throws IOException {
+                        if (b == '\n') {
+                            throw new Halt(pos);
+                        } else {
+                            pos++;
+                        }
+                    }
+                });
+            } catch (Halt halt) {
+                offset = halt.offset;
             }
         }
-        getLogText().writeHtmlTo(start, out.asWriter());
+        logText.writeHtmlTo(offset, out.asWriter());
+    }
+
+    private static final class Halt extends IOException {
+        final long offset;
+
+        Halt(long offset) {
+            this.offset = offset;
+        }
     }
 
     /**
