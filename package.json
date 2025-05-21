@@ -47,7 +47,7 @@
     "style-loader": "4.0.0",
     "stylelint": "16.19.1",
     "stylelint-checkstyle-reporter": "1.0.0",
-    "stylelint-config-standard-scss": "15.0.0",
+    "stylelint-config-standard-scss": "15.0.1",
     "webpack": "5.99.8",
     "webpack-cli": "6.0.1",
     "webpack-remove-empty-scripts": "1.0.4"

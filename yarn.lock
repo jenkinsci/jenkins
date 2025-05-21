@@ -4369,7 +4369,7 @@ __metadata:
     style-loader: "npm:4.0.0"
     stylelint: "npm:16.19.1"
     stylelint-checkstyle-reporter: "npm:1.0.0"
-    stylelint-config-standard-scss: "npm:15.0.0"
+    stylelint-config-standard-scss: "npm:15.0.1"
     tippy.js: "npm:6.3.7"
     webpack: "npm:5.99.8"
     webpack-cli: "npm:6.0.1"
@@ -6610,9 +6610,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint-config-recommended-scss@npm:^15.0.0":
-  version: 15.0.0
-  resolution: "stylelint-config-recommended-scss@npm:15.0.0"
+"stylelint-config-recommended-scss@npm:^15.0.1":
+  version: 15.0.1
+  resolution: "stylelint-config-recommended-scss@npm:15.0.1"
   dependencies:
     postcss-scss: "npm:^4.0.9"
     stylelint-config-recommended: "npm:^16.0.0"
@@ -6623,7 +6623,7 @@ __metadata:
   peerDependenciesMeta:
     postcss:
       optional: true
-  checksum: 10c0/653d6760e26ac8fa11b55ac57617c86554fb77c5537319734dd437b7c8be07560c860fbe4daa5dd7d2d21834efc4ba853c6794207920765c325449d852ac40ce
+  checksum: 10c0/8c5854e143145241dbff3d921298eb59e837aa695c0e6d7f08acf75de81f3f8307d39a931781bf8ac7cbe6bf9079a402fee89566206e9cfb1d728ef6b6486890
   languageName: node
   linkType: hard
 
@@ -6636,11 +6636,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint-config-standard-scss@npm:15.0.0":
-  version: 15.0.0
-  resolution: "stylelint-config-standard-scss@npm:15.0.0"
+"stylelint-config-standard-scss@npm:15.0.1":
+  version: 15.0.1
+  resolution: "stylelint-config-standard-scss@npm:15.0.1"
   dependencies:
-    stylelint-config-recommended-scss: "npm:^15.0.0"
+    stylelint-config-recommended-scss: "npm:^15.0.1"
     stylelint-config-standard: "npm:^38.0.0"
   peerDependencies:
     postcss: ^8.3.3
@@ -6648,7 +6648,7 @@ __metadata:
   peerDependenciesMeta:
     postcss:
       optional: true
-  checksum: 10c0/96c9193b37bef83664829c35dea0a2aeb890ff6984e805146fe9ca8238ca05504e1c29bdc1b1e74a4aa939fa73a98106378f39bc178b8f12d8bdcd90ce1cbb84
+  checksum: 10c0/85b4c85a9ecd97176ac104fb4590cd48047b6253b830d08749c024752b9bc8871bbf69eca592769d69cd4c6e3f90005960630f1c2cdaf85dbfabdb5621ecc55f
   languageName: node
   linkType: hard
 
