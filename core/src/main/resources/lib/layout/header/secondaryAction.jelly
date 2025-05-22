@@ -10,13 +10,27 @@
     </st:attribute>
   </st:documentation>
 
-  <j:set var="badge" value="${action.badge}"/>
-  <j:set var="badgeClazz" value="${badge != null ? 'jenkins-badge jenkins-!-${badge.severity}-color' : ''}"/>
+  <j:choose>
+    <j:when test="${h.hasView(action, 'action')}">
+      <j:scope>
+        <!--  Root actions expect to be in the context of Jenkins (as it) -->
+        <j:set var="it" value="${app}"/>
+        <j:set var="isInSecondaryHeader" value="true"/>
+        <st:include page="action.jelly" from="${action}" optional="true"/>
+      </j:scope>
+    </j:when>
+    <j:otherwise>
+      <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"/>
+      <j:if test="${icon != null}">
+        <j:set var="badge" value="${action.badge}"/>
+        <j:set var="badgeClazz" value="${badge != null ? 'jenkins-badge jenkins-!-${badge.severity}-color' : ''}"/>      
 
-  <dd:item icon="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"
-           text="${action.displayName}"
-           href="${h.getActionUrl(app.url, action)}"
-           clazz="${badgeClazz}">
-  </dd:item>
-
+        <dd:item icon="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"
+                 text="${action.displayName}"
+                 href="${h.getActionUrl(app.url, action)}"
+                 clazz="${badgeClazz}">
+        </dd:item>
+      </j:if>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
