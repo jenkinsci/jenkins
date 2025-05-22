@@ -81,10 +81,19 @@ public abstract class Header implements ExtensionPoint {
         return Jenkins.get()
                 .getActions()
                 .stream()
-                .filter(e -> e.getIconFileName() != null || (e instanceof IconSpec is && is.getIconClassName() != null))
+                //.filter(e -> e.getIconFileName() != null || (e instanceof IconSpec is && is.getIconClassName() != null))
                 .sorted(Comparator.comparingDouble(
                         a -> rootActionsOrdinal.getOrDefault(a.getClass().getName(), Double.MAX_VALUE)
                 ).reversed())
                 .toList();
+    }
+    
+    @Restricted(NoExternalUse.class)
+    public String getUrl() {
+        // tasks (using in actions) use it.URL and it is Header here.
+        // so return the root URL of Jenkins
+        // XXX HACK HACK - need to check why the tasks taglib calculates URLs as ${JENKINS_URL}/null/action.url 
+        // should probably set ${it} to Jenkins in the jelly instead but this hack is quick and easy for now
+        return "";
     }
 }
