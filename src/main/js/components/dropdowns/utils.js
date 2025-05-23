@@ -44,9 +44,10 @@ function generateDropdown(element, callback, immediate, options = {}) {
 
             instance.popper.addEventListener("mouseenter", () => {
               const handleMouseMove = () => {
-                const dropdowns = document.querySelectorAll("[data-tippy-root]");
-                const isMouseOverAnyDropdown = Array.from(dropdowns).some((dropdown) =>
-                  dropdown.matches(":hover")
+                const dropdowns =
+                  document.querySelectorAll("[data-tippy-root]");
+                const isMouseOverAnyDropdown = Array.from(dropdowns).some(
+                  (dropdown) => dropdown.matches(":hover"),
                 );
 
                 if (!isMouseOverAnyDropdown) {
@@ -70,11 +71,11 @@ function generateDropdown(element, callback, immediate, options = {}) {
         },
         onHide() {
           const dropdowns = document.querySelectorAll("[data-tippy-root]");
-          const isMouseOverAnyDropdown = Array.from(dropdowns).some((dropdown) =>
-            dropdown.matches(":hover")
+          const isMouseOverAnyDropdown = Array.from(dropdowns).some(
+            (dropdown) => dropdown.matches(":hover"),
           );
 
-          return isMouseOverAnyDropdown ? false : true
+          return !isMouseOverAnyDropdown;
         },
       },
       options,
