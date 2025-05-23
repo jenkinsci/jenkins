@@ -118,6 +118,11 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
                 default:    return this;
             }
         }
+
+        @Override
+        public String toString() {
+            return "ConsoleAnnotatorAggregator" + list;
+        }
     }
 
     /**

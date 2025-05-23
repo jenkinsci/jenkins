@@ -53,7 +53,7 @@ THE SOFTWARE.
                 </h1>
                 <div style="text-align: center">
                     <h2>${%title(jakarta.servlet.error.message?:'Not Found')}</h2>
-                    <a href="${h.inferHudsonURL(request)}">${%Back to Jenkins}</a>
+                    <a href="${h.inferHudsonURL(request2)}">${%Back to Jenkins}</a>
                 </div>
             </body>
         </html>

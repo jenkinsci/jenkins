@@ -30,7 +30,7 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <j:set var="buildUrl" value="${h.decompose(request)}" />
+      <j:set var="buildUrl" value="${h.decompose(request2)}" />
       <st:include page="tasks.jelly"/>
       <st:include page="delete.jelly" />
       <st:include page="actions.jelly" />

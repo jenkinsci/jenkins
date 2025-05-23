@@ -143,11 +143,11 @@ var repeatableSupport = {
   // called when 'add' button is clicked
   onAdd: function (n) {
     var addOnTop = false;
+    if (n.classList.contains("repeatable-add-top")) {
+      addOnTop = true;
+    }
     while (n.tag == null) {
       n = n.parentNode;
-      if (n.classList.contains("repeatable-add-top")) {
-        addOnTop = true;
-      }
     }
     n.tag.expand(addOnTop);
     // Hack to hide tool home when a new tool has some installers.

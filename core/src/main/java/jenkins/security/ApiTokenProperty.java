@@ -26,7 +26,6 @@ package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
@@ -39,6 +38,9 @@ import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -89,7 +91,6 @@ public class ApiTokenProperty extends UserProperty {
      *
      * @since 1.638
      */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ boolean SHOW_LEGACY_TOKEN_TO_ADMINS =
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
 
@@ -102,7 +103,6 @@ public class ApiTokenProperty extends UserProperty {
      *
      * @since 2.129
      */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ boolean ADMIN_CAN_GENERATE_NEW_TOKENS =
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".adminCanGenerateNewTokens");
 
@@ -175,7 +175,6 @@ public class ApiTokenProperty extends UserProperty {
 
     @NonNull
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Used to prevent use of pre-2013 API tokens, then returning the API token value")
     /*package*/ String getApiTokenInsecure() {
         if (apiToken == null) {
             return Messages.ApiTokenProperty_NoLegacyToken();
@@ -267,6 +266,68 @@ public class ApiTokenProperty extends UserProperty {
             this.useCounter = stats.getUseCounter();
             this.lastUseDate = stats.getLastUseDate();
             this.numDaysUse = stats.getNumDaysUse();
+        }
+
+        public String createdDaysAgo() {
+            LocalDate c = creationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            Period period = Period.between(c, now);
+            if (period.getYears() > 1) {
+                return Messages.ApiTokenProperty_createdYearsAgo(period.getYears());
+            }
+            if (period.getYears() == 1) {
+                return Messages.ApiTokenProperty_createdAYearAgo();
+            }
+            if (period.getMonths() > 1) {
+                return Messages.ApiTokenProperty_createdMonthsAgo(period.getMonths());
+            }
+            if (period.getMonths() == 1) {
+                return Messages.ApiTokenProperty_createdAMonthAgo();
+            }
+            if (period.getDays() > 14) {
+                return Messages.ApiTokenProperty_createdWeeksAgo(period.getDays() / 7);
+            }
+            if (period.getDays() >= 7) {
+                return Messages.ApiTokenProperty_createdAWeekAgo();
+            }
+            if (period.getDays() == 0) {
+                return Messages.ApiTokenProperty_createdToday();
+            }
+            if (period.getDays() == 1) {
+                return Messages.ApiTokenProperty_createdYesterday();
+            }
+            return Messages.ApiTokenProperty_createdDaysAgo(period.getDays());
+        }
+
+        public String lastUsedDaysAgo() {
+            LocalDate lu = lastUseDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            Period period = Period.between(lu, now);
+            if (period.getYears() > 1) {
+                return Messages.ApiTokenProperty_lastUsedYearsAgo(period.getYears());
+            }
+            if (period.getYears() == 1) {
+                return Messages.ApiTokenProperty_lastUsedAYearAgo();
+            }
+            if (period.getMonths() > 1) {
+                return Messages.ApiTokenProperty_lastUsedMonthsAgo(period.getMonths());
+            }
+            if (period.getMonths() == 1) {
+                return Messages.ApiTokenProperty_lastUsedAMonthAgo();
+            }
+            if (period.getDays() > 14) {
+                return Messages.ApiTokenProperty_lastUsedWeeksAgo(period.getDays() / 7);
+            }
+            if (period.getDays() >= 7) {
+                return Messages.ApiTokenProperty_lastUsedAWeekAgo();
+            }
+            if (period.getDays() == 0) {
+                return Messages.ApiTokenProperty_lastUsedToday();
+            }
+            if (period.getDays() == 1) {
+                return Messages.ApiTokenProperty_lastUsedYesterday();
+            }
+            return Messages.ApiTokenProperty_lastUsedDaysAgo(period.getDays());
         }
     }
 
@@ -580,12 +641,12 @@ public class ApiTokenProperty extends UserProperty {
             }
             if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
-                return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
+                return HttpResponses.errorJSON("The tokenUuid cannot be empty");
             }
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
-                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
+                return HttpResponses.errorJSON("The user does not have any ApiToken yet, try generating one before.");
             }
 
             boolean renameOk = p.tokenStore.renameToken(tokenUuid, newName);
@@ -597,7 +658,7 @@ public class ApiTokenProperty extends UserProperty {
 
             u.save();
 
-            return HttpResponses.ok();
+            return HttpResponses.okJSON();
         }
 
         @RequirePOST

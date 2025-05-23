@@ -30,7 +30,7 @@ import static org.junit.Assert.fail;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.RelativePath;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
@@ -101,7 +101,7 @@ public class ComboBoxTest {
     /**
      * Used in testCompoundFieldDependentCombobox for Issue("JENKINS-16719")
      */
-    public static class CompoundField extends AbstractDescribableImpl<CompoundField> {
+    public static class CompoundField implements Describable<CompoundField> {
         private final String abc;
         private final String xyz;
 

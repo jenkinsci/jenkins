@@ -66,11 +66,11 @@ THE SOFTWARE.
                     </td>
                     <td>
                       <input type="hidden" name="name" value="${cloud.name}" />
-                      <a href="${it.getCloudUrl(request,app,cloud)}" class="jenkins-table__link model-link inside">${cloud.name}</a>
+                      <a href="${it.getCloudUrl(request2,app,cloud)}" class="jenkins-table__link model-link inside">${cloud.name}</a>
                     </td>
                     <td class="jenkins-table__cell--tight">
                       <div class="jenkins-table__cell__button-wrapper">
-                        <a href="${it.getCloudUrl(request,app,cloud)}configure" class="jenkins-button">
+                        <a href="${it.getCloudUrl(request2,app,cloud)}configure" class="jenkins-button">
                           <l:icon src="symbol-settings"/>
                         </a>
                       </div>

@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import jenkins.model.Jenkins;
 import jenkins.security.SlaveToMasterCallable;
 import jenkins.slaves.RemotingWorkDirSettings;
 import org.htmlunit.Page;
@@ -59,6 +60,7 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.SimpleCommandLauncher;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -234,6 +236,18 @@ public class JNLPLauncherTest {
 
         Thread.sleep(500);
         assertTrue(c.isOffline());
+    }
+
+    @Test
+    public void changeLauncher() throws Exception {
+        Computer c = addTestAgent(false);
+        var name = c.getName();
+        var node = c.getNode();
+        assertThat(c.isLaunchSupported(), is(false));
+        var nodeCopy = (Slave) Jenkins.XSTREAM2.fromXML(Jenkins.XSTREAM2.toXML(node));
+        nodeCopy.setLauncher(new SimpleCommandLauncher("true"));
+        Jenkins.get().getNodesObject().replaceNode(node, nodeCopy);
+        assertThat(Jenkins.get().getComputer(name).isLaunchSupported(), is(true));
     }
 
     /**

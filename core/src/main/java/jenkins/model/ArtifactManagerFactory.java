@@ -26,7 +26,7 @@ package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Run;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -38,7 +38,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @see ArtifactManagerFactoryDescriptor
  * @since 1.532
  */
-public abstract class ArtifactManagerFactory extends AbstractDescribableImpl<ArtifactManagerFactory> implements ExtensionPoint {
+public abstract class ArtifactManagerFactory implements Describable<ArtifactManagerFactory>, ExtensionPoint {
 
     /**
      * Optionally creates a manager for a particular build.
@@ -50,7 +50,7 @@ public abstract class ArtifactManagerFactory extends AbstractDescribableImpl<Art
     public abstract @CheckForNull ArtifactManager managerFor(Run<?, ?> build);
 
     @Override public ArtifactManagerFactoryDescriptor getDescriptor() {
-        return (ArtifactManagerFactoryDescriptor) super.getDescriptor();
+        return (ArtifactManagerFactoryDescriptor) Describable.super.getDescriptor();
     }
 
 }

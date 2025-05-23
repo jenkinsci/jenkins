@@ -1,9 +1,11 @@
 package hudson.model.labels;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
 
 import hudson.model.Label;
 import hudson.model.Node;
@@ -12,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class LabelAtomTest {
@@ -67,6 +70,43 @@ public class LabelAtomTest {
         Cloud test = new TestCloud("test", "label2");
         j.jenkins.clouds.add(test);
         assertThat(l2.isEmpty(), is(false));
+    }
+
+    @Test
+    @Issue("JENKINS-68155")
+    public void changeNodeLabel() throws Exception {
+        var slave = j.createSlave("node", "label linux", null);
+        var label = Label.get("label");
+        assertNotNull(label);
+        assertThat(label.getNodes(), contains(slave));
+        var osLabel = Label.get("linux");
+        assertNotNull(osLabel);
+        assertThat(osLabel.getNodes(), contains(slave));
+        slave.setLabelString("label2 linux");
+        j.jenkins.updateNode(slave);
+        label = Label.get("label");
+        assertNotNull(label);
+        assertThat(label.getNodes(), empty());
+        var label2 = Label.get("label2");
+        assertNotNull(label2);
+        assertThat(label2.getNodes(), contains(slave));
+        osLabel = Label.get("linux");
+        assertNotNull(osLabel);
+        assertThat(osLabel.getNodes(), contains(slave));
+    }
+
+    @Test
+    @Issue("JENKINS-68155")
+    public void removeNodeLabel() throws Exception {
+        var slave = j.createSlave("node", "label", null);
+        var label = Label.get("label");
+        assertNotNull(label);
+        assertThat(label.getNodes(), contains(slave));
+        slave.setLabelString(null);
+        j.jenkins.updateNode(slave);
+        label = Label.get("label");
+        assertNotNull(label);
+        assertThat(label.getNodes(), empty());
     }
 
     private static class TestCloud extends Cloud {

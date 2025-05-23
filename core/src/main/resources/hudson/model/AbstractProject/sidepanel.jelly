@@ -36,7 +36,7 @@ THE SOFTWARE.
   </l:header>
   <l:side-panel>
     <l:tasks>
-      <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
+      <j:set var="url" value="${h.getNearestAncestorUrl(request2,it)}"/>
       <l:task contextMenu="false" href="${url}/" icon="symbol-details" title="${%Status}"/>
       <l:task href="${url}/changes" icon="symbol-changes" title="${%Changes}"/>
       <l:task icon="symbol-folder"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}">

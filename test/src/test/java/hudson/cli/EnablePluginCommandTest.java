@@ -139,7 +139,7 @@ public class EnablePluginCommandTest {
     @Issue("JENKINS-52950")
     public void enableNoPluginsWithRestartIsNoOp() {
         assumeNotWindows();
-        String name = "variant";
+        String name = "icon-shim";
         assertThat(installTestPlugin(name), succeeded());
         assertThat(enablePlugins("-restart", name), succeeded());
         assertJenkinsNotInQuietMode();

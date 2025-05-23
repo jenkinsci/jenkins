@@ -27,6 +27,10 @@ package hudson.model;
 import hudson.Extension;
 import hudson.Util;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import jenkins.management.AdministrativeMonitorsDecorator;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -40,11 +44,11 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 
 /**
- * Adds the "Manage Jenkins" link to the top page.
+ * Adds the "Manage Jenkins" link to the navigation bar.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal = 100) @Symbol("manageJenkins")
+@Extension(ordinal = 998) @Symbol("manageJenkins")
 public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelObjectWithContextMenu {
     @Override
     public String getIconFileName() {
@@ -87,5 +91,30 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
         }
         // If neither is the case, rewrite the relative URL to point to inside the /manage/ URL space
         menu.add("manage/" + url, icon, iconXml, text, post, requiresConfirmation, badge, message);
+    }
+
+    @Override
+    public Badge getBadge() {
+        Jenkins jenkins = Jenkins.get();
+        AdministrativeMonitorsDecorator decorator = jenkins.getExtensionList(PageDecorator.class)
+                .get(AdministrativeMonitorsDecorator.class);
+
+        if (decorator == null) {
+            return null;
+        }
+
+        Collection<AdministrativeMonitor> activeAdministrativeMonitors = Optional.ofNullable(decorator.getMonitorsToDisplay()).orElse(Collections.emptyList());
+        boolean anySecurity = activeAdministrativeMonitors.stream().anyMatch(AdministrativeMonitor::isSecurity);
+
+        if (activeAdministrativeMonitors.isEmpty()) {
+            return null;
+        }
+
+        int size = activeAdministrativeMonitors.size();
+        String tooltip = size > 1 ? Messages.ManageJenkinsAction_notifications(size) : Messages.ManageJenkinsAction_notification(size);
+
+        return new Badge(String.valueOf(size),
+                tooltip,
+                anySecurity ? Badge.Severity.DANGER : Badge.Severity.WARNING);
     }
 }

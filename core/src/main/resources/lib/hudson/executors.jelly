@@ -174,7 +174,9 @@ THE SOFTWARE.
           ${executorDetails}
         </span>
       </j:if>
-      <a class="collapse" href="${rootURL}/toggleCollapse?paneId=executors"
+      <st:adjunct includes="lib.form.link.link"/>
+      <!-- TODO improve l:link so the `a` can be changed to `l:link`. -->
+      <a class="collapse post" href="${rootURL}/toggleCollapse?paneId=executors"
          tooltip="${paneIsCollapsed ? '%Expand' : '%Collapse'}" data-tooltip-append-to-parent="true">
         <j:set var="svgIconId" value="${paneIsCollapsed ? 'chevron-up' : 'chevron-down'}" />
         <l:icon src="symbol-${svgIconId}" />
