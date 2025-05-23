@@ -93,7 +93,6 @@ import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -1541,7 +1540,7 @@ public class Queue extends ResourceController implements Saveable {
 
             { // blocked -> buildable
                 // copy as we'll mutate the list and we want to process in a potentially different order
-                List<BlockedItem> blockedItems = new ArrayList<>(blockedProjects.values());
+                List<BlockedItem> blockedItems = new ArrayList<>((blockedProjects));
                 // if facing a cycle of blocked tasks, ensure we process in the desired sort order
                 if (s != null) {
                     s.sortBlockedItems(blockedItems);
@@ -2954,29 +2953,8 @@ public class Queue extends ResourceController implements Saveable {
             return get(task) != null;
         }
 
-        public T remove(Task task) {
-            Iterator<T> it = iterator();
-            while (it.hasNext()) {
-                T t = it.next();
-                if (t.task.equals(task)) {
-                    it.remove();
-                    return t;
-                }
-            }
-            return null;
-        }
-
-        public void put(Task task, T item) {
-            assert item.task.equals(task);
-            add(item);
-        }
-
-        public ItemList<T> values() {
-            return this;
-        }
-
         /**
-         * Works like {@link #remove(Task)} but also marks the {@link Item} as cancelled.
+         * Removes a task and marks the {@link Item} as cancelled.
          */
         public T cancel(Task p) {
             T x = get(p);
