@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:x="jelly:xml" xmlns:dd="/lib/layout/dropdowns">
   <st:documentation> <![CDATA[
     This tag inside <l:tasks> tag renders the left navigation bar of Jenkins.
     Each <task> tag gets an icon and link.
@@ -157,29 +157,26 @@ THE SOFTWARE.
       icon attribute value as an icon "src" (Vs class spec).
       -->
 
-      <!-- <x:comment>${action.class.name} isInHader: {$isInHeader} enabled: ${enabled}</x:comment> -->
       <j:when test="${isInHeader==true}">
         <j:scope>
 
         <!--  we are rendering inside the modern header this is for compatability, so we do not need to worry about jumplists which was introduced in the new header -->
-        <!-- <x:comment>${action.class.name} rendering inside task.jelly</x:comment> -->
         <j:if test="${enabled != false}"> <!-- no rendering at all for disabled tasks in the header -->
 
             <!-- there was no custom action and we have no icon so this is intended to be hidden -->
             <j:if test="${icon != null}">
-              <!-- <x:comment>${action.class.name} has an icon</x:comment> -->
 
               <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
 
 
               <j:set var="jumplist">
                 <j:if test="${match}">
-                  <d:invokeBody />
+                  <j:scope>
+                    <j:set var="isInHeader" value="false" />
+                    <d:invokeBody />
+                  </j:scope>
                 </j:if>
               </j:set>
-
-              <!-- <x:comment escapeText="true">jumplist is xxxx${jumplist}xxxx</x:comment> -->
-
 
               <j:if test="${jumplist.length() == 0}">
                 <j:set var="tooltip">
@@ -191,6 +188,7 @@ THE SOFTWARE.
               </j:if>
 
               <j:set var="interactive" value="${jumplist.length() gt 0}" />
+
               <x:element name="${action.urlName == null ? 'button' : 'a'}">
                 <x:attribute name="data-dropdown">${interactive}</x:attribute>
                 <x:attribute name="id">root-action-${action.class.simpleName}</x:attribute>
@@ -229,16 +227,15 @@ THE SOFTWARE.
               <j:if test="${interactive}">
                 <template>
                   <div class="jenkins-dropdown">
-                    <j:out value="${jumplist}" />
+                    <!--  add the action title back into the dropdown -->
+                    <dd:header text="${title}"/>
+                    <!--  TODO we are missing some styling the icon and text have no space inbetween -->
+                    <dd:custom>
+                      <j:out value="${jumplist}" />
+                    </dd:custom>
                   </div>
                 </template>
               </j:if>
-            </j:if>
-
-            <!-- TODO should we just use the jumplist rather than add on icons ?-->
-            <j:if test="${match}">
-              <!--  include the subtasks -->
-              <d:invokeBody />
             </j:if>
           </j:if>
         </j:scope>
