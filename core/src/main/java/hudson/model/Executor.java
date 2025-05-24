@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Callable;
@@ -284,7 +285,14 @@ public class Executor extends Thread implements ModelObject, IExecutor {
             lock.writeLock().unlock();
         }
 
-        build.addAction(new InterruptedBuildAction(r));
+        InterruptedBuildAction action = build.getAction(InterruptedBuildAction.class);
+        if (action != null) {
+            Collection<CauseOfInterruption> combinedCauses = new LinkedHashSet<>(action.getCauses());
+            combinedCauses.addAll(r);
+            build.replaceAction(new InterruptedBuildAction(combinedCauses));
+        } else {
+            build.addAction(new InterruptedBuildAction(r));
+        }
         for (CauseOfInterruption c : r)
             c.print(listener);
     }
