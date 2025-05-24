@@ -28,7 +28,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.model.Item;
 import hudson.model.User;
@@ -36,19 +36,27 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import jenkins.model.Jenkins;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class CreateJobCommandTest {
+@WithJenkins
+class CreateJobCommandTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-22262")
-    @Test public void folderPermissions() throws Exception {
+    @Test
+    void folderPermissions() throws Exception {
         CLICommand cmd = new CreateJobCommand();
         CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
         final MockFolder d = r.createFolder("d");
@@ -65,7 +73,8 @@ public class CreateJobCommandTest {
     }
 
     @Issue("SECURITY-2424")
-    @Test public void cannotCreateJobWithTrailingDot_withoutOtherJob() {
+    @Test
+    void cannotCreateJobWithTrailingDot_withoutOtherJob() {
         CLICommand cmd = new CreateJobCommand();
         CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
         assertThat(r.jenkins.getItems(), Matchers.hasSize(0));
@@ -78,7 +87,8 @@ public class CreateJobCommandTest {
     }
 
     @Issue("SECURITY-2424")
-    @Test public void cannotCreateJobWithTrailingDot_withExistingJob() {
+    @Test
+    void cannotCreateJobWithTrailingDot_withExistingJob() {
         CLICommand cmd = new CreateJobCommand();
         CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
         assertThat(r.jenkins.getItems(), Matchers.hasSize(0));
@@ -93,7 +103,8 @@ public class CreateJobCommandTest {
     }
 
     @Issue("SECURITY-2424")
-    @Test public void cannotCreateJobWithTrailingDot_exceptIfEscapeHatchIsSet() {
+    @Test
+    void cannotCreateJobWithTrailingDot_exceptIfEscapeHatchIsSet() {
         String propName = Jenkins.NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP;
         String initialValue = System.getProperty(propName);
         System.setProperty(propName, "false");
@@ -103,8 +114,7 @@ public class CreateJobCommandTest {
             assertThat(r.jenkins.getItems(), Matchers.hasSize(0));
             assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("job1."), succeededSilently());
             assertThat(r.jenkins.getItems(), Matchers.hasSize(1));
-        }
-        finally {
+        } finally {
             if (initialValue == null) {
                 System.clearProperty(propName);
             } else {
