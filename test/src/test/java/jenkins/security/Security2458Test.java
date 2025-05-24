@@ -1,7 +1,7 @@
 package jenkins.security;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.ExtensionList;
 import hudson.remoting.Callable;
@@ -10,24 +10,26 @@ import java.util.Objects;
 import jenkins.agents.AgentComputerUtil;
 import jenkins.security.s2m.AdminWhitelistRule;
 import org.jenkinsci.remoting.RoleChecker;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class Security2458Test {
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+@WithJenkins
+class Security2458Test {
 
-    @Before
-    public void enableAgentToControllerProtections() {
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule jenkins) {
+        r = jenkins;
         AdminWhitelistRule rule = ExtensionList.lookupSingleton(AdminWhitelistRule.class);
         rule.setMasterKillSwitch(false);
     }
 
     @Test
-    public void rejectBadCallable() throws Throwable {
+    void rejectBadCallable() throws Throwable {
         // If the role check is empty, fail
         assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(r.createOnlineSlave().getChannel()).call(new CallableCaller(new BadCallable())));
 
@@ -98,8 +100,8 @@ public class Security2458Test {
             runnable.run();
         } catch (IOException ex) {
             final Throwable cause = ex.getCause();
-            assertTrue("IOException with message: '" + ex.getMessage() + "' wasn't caused by " + causeClass + ": " + (cause == null ? "(null)" : (cause.getClass().getName() + ": " + cause.getMessage())),
-                    cause != null && causeClass.isAssignableFrom(cause.getClass()));
+            assertTrue(cause != null && causeClass.isAssignableFrom(cause.getClass()),
+                    "IOException with message: '" + ex.getMessage() + "' wasn't caused by " + causeClass + ": " + (cause == null ? "(null)" : (cause.getClass().getName() + ": " + cause.getMessage())));
             return causeClass.cast(cause);
         } catch (Throwable t) {
             fail("Threw other Throwable: " + t.getClass() + " with message " + t.getMessage());

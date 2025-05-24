@@ -3,10 +3,10 @@ package jenkins.security;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.Cause;
 import hudson.model.Computer;
@@ -24,24 +24,24 @@ import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlPage;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class Security2278Test {
+@WithJenkins
+class Security2278Test {
 
-    @ClassRule
-    public static JenkinsRule j = new JenkinsRule();
+    private static JenkinsRule j;
     private static FreeStyleProject project;
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    @BeforeAll
+    static void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         final MockFolder folder = j.createFolder("foo");
@@ -63,7 +63,7 @@ public class Security2278Test {
     }
 
     @Test
-    public void testUi() throws Exception {
+    void testUi() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         final HtmlPage topPage = webClient.goTo("");
         final String contentAsString = topPage.getWebResponse().getContentAsString();
@@ -74,7 +74,7 @@ public class Security2278Test {
     }
 
     @Test
-    public void testUiWithPermission() throws Exception {
+    void testUiWithPermission() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient().login("alice");
         final HtmlPage topPage = webClient.goTo("");
         final String contentAsString = topPage.getWebResponse().getContentAsString();
@@ -85,9 +85,9 @@ public class Security2278Test {
     }
 
     @Test
-    public void testQueueCancelWithoutPermission() throws Exception {
+    void testQueueCancelWithoutPermission() throws Exception {
         final Queue.Item[] items = j.jenkins.getQueue().getItems();
-        Assert.assertEquals(1, items.length);
+        assertEquals(1, items.length);
         final long id = items[0].getId();
 
         final JenkinsRule.WebClient webClient = j.createWebClient();
@@ -96,11 +96,11 @@ public class Security2278Test {
 
         final Page stopResponse = webClient.getPage(addReferer(webClient.addCrumb(new WebRequest(new URL(j.jenkins.getRootUrl() + "/queue/cancelItem?id=" + id), HttpMethod.POST)), j.jenkins.getRootUrl()));
         assertEquals(404, stopResponse.getWebResponse().getStatusCode());
-        Assert.assertEquals(1, j.jenkins.getQueue().getItems().length);
+        assertEquals(1, j.jenkins.getQueue().getItems().length);
     }
 
     @Test
-    public void testWebMethodWithoutPermission() throws Exception {
+    void testWebMethodWithoutPermission() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.setThrowExceptionOnFailingStatusCode(false);
         webClient.setRedirectEnabled(false);
@@ -132,8 +132,8 @@ public class Security2278Test {
         return request;
     }
 
-    @AfterClass
-    public static void tearDown() throws Exception {
+    @AfterAll
+    static void tearDown() throws Exception {
         // clear out queue
         j.jenkins.getQueue().clear();
 
