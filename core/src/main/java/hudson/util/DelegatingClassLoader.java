@@ -1,0 +1,61 @@
+package hudson.util;
+
+/**
+ * A {@link ClassLoader} that does not define any classes itself but delegates class loading
+ * to other class loaders. It first attempts to load classes via its {@code getParent()} class loader,
+ * then falls back to {@code findClass} to allow for custom delegation logic.
+ * <p>
+ * This class can also serve as the parent class loader for other class loaders that follow
+ * the standard delegation model.
+ *
+ * @author Dmytro Ukhlov
+ */
+public class DelegatingClassLoader extends ClassLoader {
+    protected DelegatingClassLoader(String name, ClassLoader parent) {
+        super(name, parent);
+    }
+
+    public DelegatingClassLoader(ClassLoader parent) {
+        super(parent);
+    }
+
+    /**
+     * Overrides base implementation to skip unnecessary synchronization
+     *
+     * @param   name
+     *          The <a href="#binary-name">binary name</a> of the class
+     *
+     * @param   resolve
+     *          If {@code true} then resolve the class
+     *
+     * @return  The resulting {@code Class} object
+     *
+     * @throws  ClassNotFoundException
+     *          If the class could not be found
+     */
+    @Override
+    protected Class<?> loadClass(String name, boolean resolve)
+            throws ClassNotFoundException
+    {
+        Class<?> c = null;
+        try {
+            if (getParent() != null) {
+                c = getParent().loadClass(name);
+            }
+        } catch (ClassNotFoundException e) {
+            // ClassNotFoundException thrown if class not found
+            // from the non-null parent class loader
+        }
+
+        if (c == null) {
+            // If still not found, then invoke findClass in order
+            // to find the class.
+            c = findClass(name);
+        }
+
+        if (resolve) {
+            resolveClass(c);
+        }
+        return c;
+    }
+}

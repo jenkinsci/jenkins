@@ -69,8 +69,23 @@ public class URLClassLoader2 extends URLClassLoader implements JenkinsClassLoade
         return super.findLoadedClass(name);
     }
 
+    /**
+     * Use String.intern() to create ClassLoader/className unique lock object which can be GCed
+     *
+     * @param className
+     *         The name of the to-be-loaded class
+     *
+     * @return lock object, unique per classloader/classname combination
+     */
     @Override
     public Object getClassLoadingLock(String className) {
-        return super.getClassLoadingLock(className);
+        return new StringBuilder(128)
+                .append(getClass().getSimpleName())
+                .append("@")
+                .append(Integer.toHexString(System.identityHashCode(this)))
+                .append("-loadClassLock:")
+                .append(className)
+                .toString()
+                .intern();
     }
 }
