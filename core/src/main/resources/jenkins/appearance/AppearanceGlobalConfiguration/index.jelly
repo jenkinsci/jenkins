@@ -48,9 +48,7 @@ THE SOFTWARE.
           </l:notice>
         </j:when>
         <j:otherwise>
-          <div class="behavior-loading">
-            <l:spinner text="${%Loading}"/>
-          </div>
+          <l:skeleton />
 
           <f:form method="post" name="config" action="configure">
             <j:set var="instance" value="${it}" />
