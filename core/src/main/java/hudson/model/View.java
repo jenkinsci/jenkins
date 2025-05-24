@@ -575,18 +575,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Returns the transient {@link Action}s associated with the top page.
-     *
-     * <p>
-     * If views don't want to show top-level actions, this method
-     * can be overridden to return different objects.
-     *
-     * @see Jenkins#getActions()
      */
     public List<Action> getActions() {
-        List<Action> result = new ArrayList<>();
-        result.addAll(getOwner().getViewActions());
-        result.addAll(TransientViewActionFactory.createAllFor(this));
-        return result;
+        return TransientViewActionFactory.createAllFor(this);
     }
 
     /**
