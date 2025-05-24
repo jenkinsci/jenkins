@@ -52,12 +52,29 @@ class FlightRecorderInputStream extends InputStream {
         final ByteArrayOutputStream readAhead = new ByteArrayOutputStream();
         final IOException[] error = new IOException[1];
 
-        Thread diagnosisThread = new Thread(diagnosisName + " stream corruption diagnosis thread") {
+        Thread diagnosisThread = createDiagnosisThread(diagnosisName, readAhead, error);
+
+        diagnosisThread.start();
+        try {
+            diagnosisThread.join(1000);
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
+
+        if (diagnosisThread.isAlive()) {
+            diagnosisThread.interrupt();
+        }
+
+        IOException diagnosisProblem = error[0];
+        return new DiagnosedStreamCorruptionException(problem, diagnosisProblem, getRecord(), readAhead.toByteArray());
+    }
+
+    private Thread createDiagnosisThread(String diagnosisName, ByteArrayOutputStream readAhead, IOException[] error) {
+        return new Thread(diagnosisName + " stream corruption diagnosis thread") {
             @Override
             public void run() {
                 int b;
                 try {
-                    // not all InputStream will look for the thread interrupt flag, so check that explicitly to be defensive
                     while (!Thread.interrupted() && (b = source.read()) != -1) {
                         readAhead.write(b);
                     }
@@ -66,23 +83,6 @@ class FlightRecorderInputStream extends InputStream {
                 }
             }
         };
-
-        // wait up to 1 sec to grab as much data as possible
-        diagnosisThread.start();
-        try {
-            diagnosisThread.join(1000);
-        } catch (InterruptedException ignored) {
-            // we are only waiting for a fixed amount of time, so we'll pretend like we were in a busy loop
-            Thread.currentThread().interrupt();
-            // fall through
-        }
-
-        IOException diagnosisProblem = error[0]; // capture the error, if any, before we kill the thread
-        if (diagnosisThread.isAlive())
-            diagnosisThread.interrupt();    // if it's not dead, kill
-
-        return new DiagnosedStreamCorruptionException(problem, diagnosisProblem, getRecord(), readAhead.toByteArray());
-
     }
 
     @Override
