@@ -24,30 +24,32 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.io.File;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
 /**
  * Test for {@link FileParameterValue}.
  * @author Oleg Nenashev
  */
-public class FileParameterValueTest {
+class FileParameterValueTest {
 
     @Issue("JENKINS-19017")
-    @Test public void compareParamsWithSameName() {
+    @Test
+    void compareParamsWithSameName() {
         final String paramName = "MY_FILE_PARAM"; // Same paramName (location) reproduces the bug
         final FileParameterValue param1 = new FileParameterValue(paramName, new File("ws_param1.txt"), "param1.txt");
         final FileParameterValue param2 = new FileParameterValue(paramName, new File("ws_param2.txt"), "param2.txt");
 
-        assertNotEquals("Files with same locations should be considered as different", param1, param2);
-        assertNotEquals("Files with same locations should be considered as different", param2, param1);
+        assertNotEquals(param1, param2, "Files with same locations should be considered as different");
+        assertNotEquals(param2, param1, "Files with same locations should be considered as different");
     }
 
-    @Test public void compareNullParams() {
+    @Test
+    void compareNullParams() {
         final String paramName = "MY_FILE_PARAM";
         FileParameterValue nonNullParam = new FileParameterValue(paramName, new File("ws_param1.txt"), "param1.txt");
         FileParameterValue nullParam1 = new FileParameterValue(null, new File("null_param1.txt"), "null_param1.txt");
