@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.ComputerSet;
@@ -118,16 +119,20 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
         @DataBoundConstructor
         public Entry(String key, String value) {
-            this.key = key;
-            this.value = value;
+            this.key = Util.fixEmptyAndTrim(key);
+            this.value = Util.fixEmptyAndTrim(value);
         }
     }
 
     private static EnvVars toMap(List<Entry> entries) {
         EnvVars map = new EnvVars();
-        if (entries != null)
-            for (Entry entry : entries)
-                map.put(entry.key, entry.value);
+        if (entries != null) {
+            for (Entry entry : entries) {
+                if(entry.key != null && entry.value != null) {
+                    map.put(entry.key, entry.value);
+                }
+            }
+        }
         return map;
     }
 
