@@ -21,10 +21,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Restricted(NoExternalUse.class)
 public class PluginFirstClassLoader2 extends URLClassLoader2 {
-    static {
-        registerAsParallelCapable();
-    }
-
 
     public PluginFirstClassLoader2(String name, @NonNull URL[] urls, @NonNull ClassLoader parent) {
         super(name, Objects.requireNonNull(urls), Objects.requireNonNull(parent));

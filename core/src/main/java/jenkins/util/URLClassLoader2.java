@@ -12,11 +12,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Restricted(NoExternalUse.class)
 public class URLClassLoader2 extends URLClassLoader implements JenkinsClassLoader {
-
-    static {
-        registerAsParallelCapable();
-    }
-
     /**
      * @deprecated use {@link URLClassLoader2#URLClassLoader2(String, URL[])}
      */
