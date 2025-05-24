@@ -52,7 +52,7 @@ THE SOFTWARE.
             <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
           </j:if>
           <div tooltip="${linkTitleAttr}" data-tooltip-append-to-parent="true">
-            <i:formatDate value="${build.timestamp.time}" type="time" timeStyle="short" />
+            ${h.getDisambiguatedTime(build)}
             ${h.getUserTimeZonePostfix()}
           </div>
         </span>
