@@ -43,5 +43,10 @@ THE SOFTWARE.
       Or you can POST to <a href="../changeOfflineCause?offlineMessage=some%20text">this URL</a>
       to mark this node temporary offline, or adjust the offline cause message if it is already offline.
   </p>
+    <h2>Retrieving Agent Secret</h2>
+    <p>
+        To retrieve the agent secret via the API, you can access <a href="../agent-secret/">this URL</a>.
+        This requires the Agent/Connect permission and returns the plain text secret that can be used for agent authentication.
+    </p>
 
 </j:jelly>
