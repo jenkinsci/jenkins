@@ -58,6 +58,8 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
+import hudson.util.AbstractCachingClassLoader;
+import hudson.util.CompoundEnumeration;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.FormValidation;
@@ -106,13 +108,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
@@ -2396,76 +2396,111 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * {@link ClassLoader} that can see all plugins.
      */
-    public static final class UberClassLoader extends ClassLoader {
+    public static final class UberClassLoader extends AbstractCachingClassLoader {
+        // 100k entries is a reasonable default. ~20MB of memory.
+        private static final int MISSED_CLASS_CACHE_SIZE = Integer.parseInt(
+                System.getProperty(UberClassLoader.class.getName() + ".MISSED_CLASS_CACHE_SIZE", "100000"));
+
         private final List<PluginWrapper> activePlugins;
 
         /** Cache of loaded, or known to be unloadable, classes. */
-        private final ConcurrentMap<String, Optional<Class<?>>> loaded = new ConcurrentHashMap<>();
-
-        static {
-            registerAsParallelCapable();
-        }
-
         public UberClassLoader(List<PluginWrapper> activePlugins) {
-            super("UberClassLoader", PluginManager.class.getClassLoader());
+            super("UberClassLoader", PluginManager.class.getClassLoader(), MISSED_CLASS_CACHE_SIZE);
             this.activePlugins = activePlugins;
         }
 
         @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
-            if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
-                throw new ClassNotFoundException("ignoring " + name);
+        protected boolean isClassKnownAsMissed(String name) {
+            if (name.startsWith("SimpleTemplateScript") ||
+                    name.startsWith("groovy.tmp.")) { // cf. groovy.text.SimpleTemplateEngine
+                return true;
             }
-            return loaded.computeIfAbsent(name, this::computeValue).orElseThrow(() -> new ClassNotFoundException(name));
-        }
 
-        private Optional<Class<?>> computeValue(String name) {
-            for (PluginWrapper p : activePlugins) {
-                try {
-                    if (FAST_LOOKUP) {
-                        return Optional.of(ClassLoaderReflectionToolkit.loadClass(p.classLoader, name));
-                    } else {
-                        return Optional.of(p.classLoader.loadClass(name));
-                    }
-                } catch (ClassNotFoundException e) {
-                    // Not found. Try the next class loader.
-                }
-            }
-            // Not found in any of the class loaders. Delegate.
-            return Optional.empty();
+            return super.isClassKnownAsMissed(name);
         }
 
         @Override
-        protected URL findResource(String name) {
-            for (PluginWrapper p : activePlugins) {
-                URL url;
-                if (FAST_LOOKUP) {
-                    url = ClassLoaderReflectionToolkit._findResource(p.classLoader, name);
-                } else {
-                    url = p.classLoader.getResource(name);
+        protected Class<?> doLoadClass(String name) {
+            try {
+                return getParent().loadClass(name);
+            } catch (ClassNotFoundException e) {
+                // Not found. Try the next class loader.
+            }
+
+            if (FAST_LOOKUP) {
+                for (PluginWrapper p : activePlugins) {
+                    try {
+                        return ClassLoaderReflectionToolkit.loadClass(p.classLoader, name);
+                    } catch (ClassNotFoundException e) {
+                        // Not found. Try the next class loader.
+                    }
                 }
-                if (url != null) {
-                    return url;
+            } else {
+                for (PluginWrapper p : activePlugins) {
+                    try {
+                        return p.classLoader.loadClass(name);
+                    } catch (ClassNotFoundException e) {
+                        // Not found. Try the next class loader.
+                    }
                 }
             }
+
+            // Not found in any of the class loaders. Delegate.
             return null;
         }
 
         @Override
-        protected Enumeration<URL> findResources(String name) throws IOException {
-            List<URL> resources = new ArrayList<>();
-            for (PluginWrapper p : activePlugins) {
-                if (FAST_LOOKUP) {
-                    resources.addAll(Collections.list(ClassLoaderReflectionToolkit._findResources(p.classLoader, name)));
-                } else {
-                    resources.addAll(Collections.list(p.classLoader.getResources(name)));
+        public URL getResource(String name) {
+            URL url = getParent().getResource(name);
+            if (url != null) {
+                return url;
+            }
+
+            if (PluginManager.FAST_LOOKUP) {
+                for (PluginWrapper pw : activePlugins) {
+                    url = ClassLoaderReflectionToolkit._findResource(pw.classLoader, name);
+                    if (url != null) {
+                        return url;
+                    }
+                }
+            } else {
+                for (PluginWrapper pw : activePlugins) {
+                    url = pw.classLoader.getResource(name);
+                    if (url != null) {
+                        return url;
+                    }
                 }
             }
-            return Collections.enumeration(resources);
+
+            return null;
         }
 
-        void clearCacheMisses() {
-            loaded.values().removeIf(Optional::isEmpty);
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            ArrayList<Enumeration<? extends URL>> enumerations = new ArrayList<>();
+            Enumeration<URL> result;
+
+            if (PluginManager.FAST_LOOKUP) {
+                enumerations.add(getParent().getResources(name));
+
+                for (PluginWrapper pw : activePlugins) {
+                    enumerations.add(ClassLoaderReflectionToolkit._findResources(pw.classLoader, name));
+                }
+                result = new CompoundEnumeration<>(enumerations);
+            } else {
+                for (PluginWrapper pw : activePlugins) {
+                    enumerations.add(pw.classLoader.getResources(name));
+                }
+                result = new CompoundEnumeration<>(enumerations);
+                Set<URL> resultSet = new HashSet<>();
+                while (result.hasMoreElements()) {
+                    resultSet.add(result.nextElement());
+                }
+
+                result = Collections.enumeration(resultSet);
+            }
+
+            return result;
         }
 
         @Override

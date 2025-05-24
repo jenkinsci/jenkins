@@ -50,10 +50,6 @@ public class MaskingClassLoader extends ClassLoader {
 
     private final List<String> masksResources;
 
-    static {
-        registerAsParallelCapable();
-    }
-
     public MaskingClassLoader(ClassLoader parent, String... masks) {
         this(parent, Arrays.asList(masks));
     }
@@ -76,21 +72,26 @@ public class MaskingClassLoader extends ClassLoader {
                 throw new ClassNotFoundException();
         }
 
-        return super.loadClass(name, resolve);
+        Class<?> clazz = getParent().loadClass(name);
+
+        if (resolve) {
+            resolveClass(clazz);
+        }
+        return clazz;
     }
 
     @Override
     public URL getResource(String name) {
         if (isMasked(name)) return null;
 
-        return super.getResource(name);
+        return getParent().getResource(name);
     }
 
     @Override
     public Enumeration<URL> getResources(String name) throws IOException {
         if (isMasked(name)) return Collections.emptyEnumeration();
 
-        return super.getResources(name);
+        return getParent().getResources(name);
     }
 
     private boolean isMasked(String name) {

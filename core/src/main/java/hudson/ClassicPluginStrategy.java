@@ -31,6 +31,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin.DummyImpl;
 import hudson.PluginWrapper.Dependency;
 import hudson.model.Hudson;
+import hudson.util.AbstractCachingClassLoader;
+import hudson.util.CompoundEnumeration;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.IOUtils;
@@ -559,7 +561,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * Used to load classes from dependency plugins.
      */
-    static final class DependencyClassLoader extends ClassLoader {
+    static final class DependencyClassLoader extends AbstractCachingClassLoader {
         /**
          * This classloader is created for this plugin. Useful during debugging.
          */
@@ -574,12 +576,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
          */
         private volatile List<PluginWrapper> transitiveDependencies;
 
-        static {
-            registerAsParallelCapable();
-        }
-
         DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies, PluginManager pluginManager) {
-            super("dependency ClassLoader for " + archive.getPath(), parent);
+            super("dependency ClassLoader for " + archive.getPath(), parent, 10);
             this._for = archive;
             this.dependencies = List.copyOf(dependencies);
             this.pluginManager = pluginManager;
@@ -627,7 +625,14 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
 
         @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
+        protected Class<?> doLoadClass(String name) {
+
+            try {
+                return getParent().loadClass(name);
+            } catch (ClassNotFoundException ignored) {
+                // OK, try next
+            }
+
             if (PluginManager.FAST_LOOKUP) {
                 for (PluginWrapper pw : getTransitiveDependencies()) {
                     try {
@@ -649,49 +654,65 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
             }
 
-            throw new ClassNotFoundException(name);
+            return null;
         }
 
         @Override
         @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS",
                             justification = "Should not produce network overheads since the URL is local. JENKINS-53793 is a follow-up")
-        protected Enumeration<URL> findResources(String name) throws IOException {
-            HashSet<URL> result = new HashSet<>();
+        public Enumeration<URL> getResources(String name) throws IOException {
+            ArrayList<Enumeration<? extends URL>> enumerations = new ArrayList<>();
+
+            Enumeration<URL> result;
 
             if (PluginManager.FAST_LOOKUP) {
-                    for (PluginWrapper pw : getTransitiveDependencies()) {
-                        Enumeration<URL> urls = ClassLoaderReflectionToolkit._findResources(pw.classLoader, name);
-                        while (urls != null && urls.hasMoreElements())
-                            result.add(urls.nextElement());
-                    }
+                enumerations.add(getParent().getResources(name));
+
+                for (PluginWrapper pw : getTransitiveDependencies()) {
+                    enumerations.add(ClassLoaderReflectionToolkit._findResources(pw.classLoader, name));
+                }
+                result = new CompoundEnumeration<>(enumerations);
             } else {
                 for (Dependency dep : dependencies) {
                     PluginWrapper p = pluginManager.getPlugin(dep.shortName);
                     if (p != null) {
-                        Enumeration<URL> urls = p.classLoader.getResources(name);
-                        while (urls != null && urls.hasMoreElements())
-                            result.add(urls.nextElement());
+                        enumerations.add(p.classLoader.getResources(name));
                     }
                 }
+                result = new CompoundEnumeration<>(enumerations);
+                Set<URL> resultSet = new HashSet<>();
+                while (result.hasMoreElements()) {
+                    resultSet.add(result.nextElement());
+                }
+
+                result = Collections.enumeration(resultSet);
             }
 
-            return Collections.enumeration(result);
+            return result;
         }
 
         @Override
-        protected URL findResource(String name) {
+        public URL getResource(String name) {
+            URL url = getParent().getResource(name);
+            if (url != null) {
+                return url;
+            }
+
             if (PluginManager.FAST_LOOKUP) {
-                    for (PluginWrapper pw : getTransitiveDependencies()) {
-                        URL url = ClassLoaderReflectionToolkit._findResource(pw.classLoader, name);
-                        if (url != null)    return url;
+                for (PluginWrapper pw : getTransitiveDependencies()) {
+                    url = ClassLoaderReflectionToolkit._findResource(pw.classLoader, name);
+                    if (url != null) {
+                        return url;
                     }
+                }
             } else {
                 for (Dependency dep : dependencies) {
                     PluginWrapper p = pluginManager.getPlugin(dep.shortName);
                     if (p != null) {
-                        URL url = p.classLoader.getResource(name);
-                        if (url != null)
+                        url = p.classLoader.getResource(name);
+                        if (url != null) {
                             return url;
+                        }
                     }
                 }
             }
