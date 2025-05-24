@@ -58,8 +58,10 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
+import hudson.util.CheckingExistenceClassLoader;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.DelegatingClassLoader;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import hudson.util.Retrier;
@@ -2396,25 +2398,28 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * {@link ClassLoader} that can see all plugins.
      */
-    public static final class UberClassLoader extends ClassLoader {
+    public static final class UberClassLoader extends DelegatingClassLoader {
         private final List<PluginWrapper> activePlugins;
 
         /** Cache of loaded, or known to be unloadable, classes. */
         private final ConcurrentMap<String, Optional<Class<?>>> loaded = new ConcurrentHashMap<>();
 
-        static {
-            registerAsParallelCapable();
-        }
-
         public UberClassLoader(List<PluginWrapper> activePlugins) {
-            super("UberClassLoader", PluginManager.class.getClassLoader());
+            super("UberClassLoader", new CheckingExistenceClassLoader(PluginManager.class.getClassLoader()));
             this.activePlugins = activePlugins;
         }
 
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
-            if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
-                throw new ClassNotFoundException("ignoring " + name);
+            String[] namePrefixesToSkip = new String[] {
+                    "groovy.tmp.",          // temporary groovy classes that expected in scope of GroovyClassLoader only
+                    "SimpleTemplateScript"  // cf. groovy.text.SimpleTemplateEngine
+            };
+
+            for (String namePrefixToSkip : namePrefixesToSkip) {
+                if (name.startsWith(namePrefixToSkip)) {
+                    throw new ClassNotFoundException("ignoring " + name);
+                }
             }
             return loaded.computeIfAbsent(name, this::computeValue).orElseThrow(() -> new ClassNotFoundException(name));
         }
