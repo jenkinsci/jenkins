@@ -14,7 +14,6 @@
   // Override the defaults of codemirror.css
   pre {
     font-family: var(--font-family-mono) !important;
-    font-weight: 500 !important;
     line-height: 1.66 !important;
   }
 
@@ -50,6 +49,23 @@
   .CodeMirror-gutter-text {
     padding: 0.5rem calc(0.625rem * 0.5) 0.625rem 0.5rem;
     color: var(--text-color-secondary);
+  }
+
+  .CodeMirror-gutter {
+    background: transparent;
+    border-right: none;
+  }
+
+  .CodeMirror-cursor {
+    border-left-color: var(--text-color) !important;
+  }
+
+  .cm-property {
+    color: #FFC66D !important;
+  }
+
+  .CodeMirror-matchingbracket {
+    color: var(--green) !important;
   }
 }
 
