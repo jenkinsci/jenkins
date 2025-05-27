@@ -46,7 +46,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarInputStream;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -129,7 +128,6 @@ public class TarArchiverTest {
         }
     }
 
-    @Ignore("TODO fails to add empty directories to archive")
     @Issue("JENKINS-73837")
     @Test
     public void emptyDirectory() throws Exception {
