@@ -79,7 +79,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void testPBKDF2RegExp() {
+    void testPBKDF2RegExp() {
         PBKDF2PasswordEncoder encoder = new PBKDF2PasswordEncoder();
         String encoded = encoder.encode("thisIsMyPassword");
         assertTrue(encoder.isHashValid(encoded));
@@ -115,7 +115,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void testPBKDF2PasswordMatching() {
+    void testPBKDF2PasswordMatching() {
         PBKDF2PasswordEncoder encoder = new PBKDF2PasswordEncoder();
         String encoded = encoder.encode("thisIsMyPassword");
         assertTrue(encoder.matches("thisIsMyPassword", encoded));
@@ -123,7 +123,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void passwordPBKDF2WithMissingAgorithm() throws Exception {
+    void passwordPBKDF2WithMissingAgorithm() throws Exception {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
         try (var ignored = mockStatic(SecretKeyFactory.class)) {
             when(SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512")).thenThrow(NoSuchAlgorithmException.class);
@@ -135,7 +135,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void passwordPBKDF2HashWithInvalidKeySpec() throws Exception {
+    void passwordPBKDF2HashWithInvalidKeySpec() throws Exception {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
         try (var ignored = mockStatic(SecretKeyFactory.class)) {
             SecretKeyFactory skf = mock(SecretKeyFactory.class);
@@ -149,7 +149,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void testJBCryptPasswordMatching() {
+    void testJBCryptPasswordMatching() {
         JBCryptEncoder encoder = new JBCryptEncoder();
         String encoded = encoder.encode("thisIsMyPassword");
         assertTrue(encoder.matches("thisIsMyPassword", encoded));
