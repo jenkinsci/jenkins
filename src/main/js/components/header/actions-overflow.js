@@ -106,8 +106,8 @@ function generateOverflowButton() {
 
   // Generate an overflow menu to store actions
   const element =
-    createElementFromHtml(`<button id="${OVERFLOW_ID}" class="jenkins-button jenkins-button--tertiary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-<path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/>
+    createElementFromHtml(`<button id="${OVERFLOW_ID}" class="jenkins-button jenkins-button--tertiary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32" d="M80 160h352M80 256h352M80 352h352"/>
 </svg>
 </button>`);
 
