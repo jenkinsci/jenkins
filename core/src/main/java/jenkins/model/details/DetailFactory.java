@@ -36,7 +36,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 /**
  * Allows you to add multiple details to an Actionable object at once.
  * @param <T> the type of object to add to; typically an {@link Actionable} subtype
- * @since TODO
+ * @since 2.498
  */
 public abstract class DetailFactory<T extends Actionable> implements ExtensionPoint {
 

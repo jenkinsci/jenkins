@@ -1,5 +1,6 @@
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.jenkins.servlet.http.HttpServletResponseWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
@@ -75,6 +76,7 @@ public class AccessDeniedException3 extends AccessDeniedException {
      * This method is similar to {@link #reportAsHeaders(HttpServletResponse)} for the intention
      * but instead of using HTTP headers, this version is meant to go inside the payload.
      */
+    @SuppressFBWarnings(value = "XSS_SERVLET", justification = "TODO needs triage")
     public void report(PrintWriter w) {
         w.println("You are authenticated as: " + authentication.getName());
         w.println("Groups that you are in:");

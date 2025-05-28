@@ -28,7 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permission="${app.ADMINISTER}" title="${%threadDump}" type="one-column">
-    <f:breadcrumb-config-outline title="${%threadDump}" />
+    <l:breadcrumb title="${%threadDump}" />
     <l:main-panel>
       <h1>${%threadDumpTitle}</h1>
       <j:set var="tdumps" value="${it.getAllThreadDumps()}"/>

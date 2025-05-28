@@ -61,7 +61,7 @@ public class AjaxTest {
     @Test
     @Issue("JENKINS-65288")
     public void ajaxPageRenderingPossibleWithoutJellyTrace() throws Exception {
-        JenkinsRule.WebClient wc = r.createWebClient();
+        JenkinsRule.WebClient wc = r.createWebClient().withJavaScriptEnabled(false);
         HtmlPage htmlPage = wc.goTo(getExecutorsWidgetAjaxViewUrl());
         r.assertGoodStatus(htmlPage);
     }
@@ -76,7 +76,7 @@ public class AjaxTest {
         try {
             JellyFacet.TRACE = true;
 
-            JenkinsRule.WebClient wc = r.createWebClient();
+            JenkinsRule.WebClient wc = r.createWebClient().withJavaScriptEnabled(false);
             HtmlPage htmlPage = wc.goTo(getExecutorsWidgetAjaxViewUrl());
             r.assertGoodStatus(htmlPage);
         } finally {

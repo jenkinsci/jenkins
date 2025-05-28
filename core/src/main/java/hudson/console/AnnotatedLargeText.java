@@ -141,7 +141,10 @@ public class AnnotatedLargeText<T> extends LargeText {
      * and use this request attribute to differentiate.
      */
     private boolean isHtml() {
-        StaplerRequest2 req = Stapler.getCurrentRequest2();
+        return isHtml(Stapler.getCurrentRequest2());
+    }
+
+    private boolean isHtml(StaplerRequest2 req) {
         return req != null && req.getAttribute("html") != null;
     }
 
@@ -205,6 +208,11 @@ public class AnnotatedLargeText<T> extends LargeText {
             return writeHtmlTo(start, w);
         else
             return super.writeLogTo(start, w);
+    }
+
+    @Override
+    protected boolean delegateToWriteLogTo(StaplerRequest2 req, StaplerResponse2 rsp) {
+        return isHtml(req);
     }
 
     /**

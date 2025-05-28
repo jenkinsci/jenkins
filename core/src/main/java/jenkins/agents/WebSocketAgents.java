@@ -53,6 +53,7 @@ import jenkins.slaves.RemotingVersionInfo;
 import jenkins.websocket.WebSocketSession;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
+import org.jenkinsci.remoting.protocol.impl.ConnectionRefusalException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -104,7 +105,12 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             cookie = JnlpAgentReceiver.generateCookie();
         }
         properties.put(JnlpConnectionState.COOKIE_KEY, cookie);
-        state.fireAfterProperties(Collections.unmodifiableMap(properties));
+        try {
+            state.fireAfterProperties(Collections.unmodifiableMap(properties));
+        } catch (ConnectionRefusalException e) {
+            LOGGER.log(Level.WARNING, e.getMessage());
+            throw HttpResponses.errorWithoutStack(400, e.getMessage());
+        }
         Capability remoteCapability = Capability.fromASCII(remoteCapabilityStr);
         LOGGER.fine(() -> "received " + remoteCapability);
         rsp.setHeader(Capability.KEY, new Capability().toASCII());

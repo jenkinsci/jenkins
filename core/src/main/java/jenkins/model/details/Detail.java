@@ -15,7 +15,7 @@ import org.jenkins.ui.icon.IconSpec;
  *  <li>SCM information for the build</li>
  *  <li>who kicked the build off</li>
  * </ul>
- * @since TODO
+ * @since 2.498
  */
 public abstract class Detail implements ModelObject, IconSpec {
 

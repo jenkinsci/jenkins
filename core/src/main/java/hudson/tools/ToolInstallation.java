@@ -34,7 +34,7 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import hudson.model.Saveable;
@@ -86,7 +86,7 @@ import org.dom4j.io.SAXReader;
  * @author huybrechts
  * @since 1.286
  */
-public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInstallation> implements Serializable, ExtensionPoint {
+public abstract class ToolInstallation implements Describable<ToolInstallation>, Serializable, ExtensionPoint {
 
     private static final Logger LOGGER = Logger.getLogger(ToolInstallation.class.getName());
 

@@ -50,6 +50,7 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.TreeMap;
 import java.util.function.IntConsumer;
+import java.util.function.IntPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -343,6 +344,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
             kids = MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
         SortedIntList list = new SortedIntList(kids.length / 2);
+        var allower = createLoadAllower();
         for (String s : kids) {
             if (!BUILD_NUMBER.matcher(s).matches()) {
                 // not a build directory
@@ -350,7 +352,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
             }
             try {
                 int buildNumber = Integer.parseInt(s);
-                if (allowLoad(buildNumber)) {
+                if (allower.test(buildNumber)) {
                     list.add(buildNumber);
                 } else {
                     LOGGER.fine(() -> "declining to consider " + buildNumber + " in " + dir);
@@ -366,6 +368,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     @Restricted(NoExternalUse.class)
     protected boolean allowLoad(int buildNumber) {
         return true;
+    }
+
+    @Restricted(NoExternalUse.class)
+    protected IntPredicate createLoadAllower() {
+        return this::allowLoad;
     }
 
     /**

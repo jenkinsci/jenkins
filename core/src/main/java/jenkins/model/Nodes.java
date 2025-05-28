@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -167,8 +166,12 @@ public class Nodes implements PersistenceRoot {
                     @Override
                     public void run() {
                         nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> old);
-                        jenkins.updateComputerList();
-                        jenkins.trimLabels(node, old);
+                        jenkins.updateComputers(node);
+                        if (old != null) {
+                            jenkins.trimLabels(node, old);
+                        } else {
+                            jenkins.trimLabels(node);
+                        }
                     }
                 });
                 throw e;
@@ -203,17 +206,18 @@ public class Nodes implements PersistenceRoot {
      * @since 1.634
      */
     public boolean updateNode(final @NonNull Node node) throws IOException {
+        return updateNode(node, true);
+    }
+
+    private boolean updateNode(final @NonNull Node node, boolean fireListener) throws IOException {
         boolean exists;
         try {
-            exists = Queue.withLock(new Callable<>() {
-                @Override
-                public Boolean call() throws Exception {
-                    if (node == nodes.get(node.getNodeName())) {
-                        jenkins.trimLabels(node);
-                        return true;
-                    }
-                    return false;
+            exists = Queue.withLock(() -> {
+                if (node == nodes.get(node.getNodeName())) {
+                    jenkins.trimLabels(node);
+                    return true;
                 }
+                return false;
             });
         } catch (RuntimeException e) {
             // should never happen, but if it does let's do the right thing
@@ -225,7 +229,9 @@ public class Nodes implements PersistenceRoot {
         if (exists) {
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             node.save();
-            // TODO should this fireOnUpdated?
+            if (fireListener) {
+                NodeListener.fireOnUpdated(node, node);
+            }
             return true;
         }
         return false;
@@ -252,13 +258,13 @@ public class Nodes implements PersistenceRoot {
                     newOne.onLoad(Nodes.this, newOne.getNodeName());
                 }
             });
-            updateNode(newOne);
+            updateNode(newOne, false);
             if (!newOne.getNodeName().equals(oldOne.getNodeName())) {
                 LOGGER.fine(() -> "deleting " + new File(getRootDir(), oldOne.getNodeName()));
                 Util.deleteRecursive(new File(getRootDir(), oldOne.getNodeName()));
             }
             Queue.withLock(() -> {
-                jenkins.updateComputerList();
+                jenkins.updateComputers(newOne);
                 jenkins.trimLabels(oldOne, newOne);
             });
             NodeListener.fireOnUpdated(oldOne, newOne);
@@ -295,7 +301,7 @@ public class Nodes implements PersistenceRoot {
             Util.deleteRecursive(new File(getRootDir(), node.getNodeName()));
 
             if (match.get()) {
-                jenkins.updateComputerList();
+                jenkins.updateComputers(node);
                 jenkins.trimLabels(node);
             }
             NodeListener.fireOnDeleted(node);
@@ -405,7 +411,7 @@ public class Nodes implements PersistenceRoot {
 
     public void load(File dir) throws IOException {
         Node n = load(dir, nodes);
-        jenkins.updateComputerList();
+        jenkins.updateComputers(n);
         jenkins.trimLabels(n);
     }
 
@@ -414,7 +420,7 @@ public class Nodes implements PersistenceRoot {
             AtomicBoolean match = new AtomicBoolean();
             Queue.withLock(() -> match.set(node == nodes.remove(node.getNodeName())));
             if (match.get()) {
-                jenkins.updateComputerList();
+                jenkins.updateComputers(node);
                 jenkins.trimLabels(node);
             }
         }

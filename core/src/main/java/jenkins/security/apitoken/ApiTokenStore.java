@@ -304,7 +304,6 @@ public class ApiTokenStore {
      * @param tokenUuid The identifier of the token, could be retrieved directly from the {@link HashedToken#getUuid()}
      * @return the revoked token corresponding to the given {@code tokenUuid} if one was found, otherwise {@code null}
      */
-    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Only used during revocation.")
     public synchronized @CheckForNull HashedToken revokeToken(@NonNull String tokenUuid) {
         for (Iterator<HashedToken> iterator = tokenList.iterator(); iterator.hasNext(); ) {
             HashedToken token = iterator.next();

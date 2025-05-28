@@ -11,34 +11,75 @@ const SELECTED_ITEM_CLASS = "jenkins-dropdown__item--selected";
  * @param element - the element to generate the dropdown for
  * @param callback - called to retrieve the list of dropdown items
  */
-function generateDropdown(element, callback, immediate) {
+function generateDropdown(element, callback, immediate, options = {}) {
   if (element._tippy && element._tippy.props.theme === "dropdown") {
     element._tippy.destroy();
   }
 
   tippy(
     element,
-    Object.assign({}, Templates.dropdown(), {
-      hideOnClick: element.dataset["hideOnClick"] !== "false",
-      onCreate(instance) {
-        const onload = () => {
-          if (instance.loaded) {
-            return;
+    Object.assign(
+      {},
+      Templates.dropdown(),
+      {
+        hideOnClick:
+          element.dataset["hideOnClick"] !== "false" ? "toggle" : false,
+        onCreate(instance) {
+          const onload = () => {
+            if (instance.loaded) {
+              return;
+            }
+
+            document.addEventListener("click", (event) => {
+              const isClickInAnyDropdown =
+                !!event.target.closest("[data-tippy-root]");
+              const isClickOnReference = instance.reference.contains(
+                event.target,
+              );
+
+              if (!isClickInAnyDropdown && !isClickOnReference) {
+                instance.hide();
+              }
+            });
+
+            instance.popper.addEventListener("mouseenter", () => {
+              const handleMouseMove = () => {
+                const dropdowns =
+                  document.querySelectorAll("[data-tippy-root]");
+                const isMouseOverAnyDropdown = Array.from(dropdowns).some(
+                  (dropdown) => dropdown.matches(":hover"),
+                );
+
+                if (!isMouseOverAnyDropdown) {
+                  instance.hide();
+                  document.removeEventListener("mousemove", handleMouseMove);
+                }
+              };
+
+              document.addEventListener("mousemove", handleMouseMove);
+            });
+
+            callback(instance);
+          };
+          if (immediate) {
+            onload();
+          } else {
+            ["mouseenter", "focus"].forEach((event) => {
+              instance.reference.addEventListener(event, onload);
+            });
           }
+        },
+        onHide() {
+          const dropdowns = document.querySelectorAll("[data-tippy-root]");
+          const isMouseOverAnyDropdown = Array.from(dropdowns).some(
+            (dropdown) => dropdown.matches(":hover"),
+          );
 
-          instance.popper.addEventListener("click", () => {
-            instance.hide();
-          });
-
-          callback(instance);
-        };
-        if (immediate) {
-          onload();
-        } else {
-          instance.reference.addEventListener("mouseenter", onload);
-        }
+          return !isMouseOverAnyDropdown;
+        },
       },
-    }),
+      options,
+    ),
   );
 }
 

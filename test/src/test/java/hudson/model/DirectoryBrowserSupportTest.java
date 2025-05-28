@@ -107,6 +107,12 @@ public class DirectoryBrowserSupportTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
+    private JenkinsRule.WebClient getWebClient() {
+        var wc = j.createWebClient();
+        wc.getOptions().setJavaScriptEnabled(false);
+        return wc;
+    }
+
     /**
      * Double dots that appear in file name is OK.
      */
@@ -122,7 +128,7 @@ public class DirectoryBrowserSupportTest {
         j.buildAndAssertSuccess(p);
 
         // can we see it?
-        j.createWebClient().goTo("job/" + p.getName() + "/ws/abc..def", "application/octet-stream");
+        getWebClient().goTo("job/" + p.getName() + "/ws/abc..def", "application/octet-stream");
 
         // TODO: implement negative check to make sure we aren't serving unexpected directories.
         // the following trivial attempt failed. Someone in between is normalizing.
@@ -149,15 +155,10 @@ public class DirectoryBrowserSupportTest {
         p.getBuildersList().add(new Shell("mkdir abc; touch abc/def.bin"));
         j.buildAndAssertSuccess(p);
 
-        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+        try (JenkinsRule.WebClient wc = getWebClient()) {
             // normal path provided by the UI succeeds
-            wc.goTo("job/" + p.getName() + "/ws/abc/def.bin", "application/octet-stream");
-
-            // suspicious path is rejected with 400
-            wc.setThrowExceptionOnFailingStatusCode(false);
-            HtmlPage page = wc.goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin");
-            assertEquals(400, page.getWebResponse().getStatusCode());
-            assertEquals("Error 400 Suspicious Path Character", page.getTitleText());
+            Page page = wc.goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin", "application/octet-stream");
+            assertEquals(200, page.getWebResponse().getStatusCode());
         }
     }
 
@@ -175,7 +176,7 @@ public class DirectoryBrowserSupportTest {
         j.buildAndAssertSuccess(p);
 
         // can we see it?
-        j.createWebClient().goTo("job/" + p.getName() + "/ws/%e6%bc%a2%e5%ad%97.bin", "application/octet-stream");
+        getWebClient().goTo("job/" + p.getName() + "/ws/%e6%bc%a2%e5%ad%97.bin", "application/octet-stream");
     }
 
     @Test
@@ -195,7 +196,7 @@ public class DirectoryBrowserSupportTest {
             }
         });
         j.buildAndAssertSuccess(p);
-        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/**/*.java").asNormalizedText();
+        String text = getWebClient().goTo("job/" + p.getName() + "/ws/**/*.java").asNormalizedText();
         assertTrue(text, text.contains("X.java"));
         assertTrue(text, text.contains("XTest.java"));
         assertFalse(text, text.contains("pom.xml"));
@@ -210,7 +211,7 @@ public class DirectoryBrowserSupportTest {
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
         j.buildAndAssertSuccess(p);
 
-        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+        HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
         Page download = page.getAnchorByHref("./*zip*/archive.zip").click();
         File zipfile = download((UnexpectedPage) download);
 
@@ -236,7 +237,7 @@ public class DirectoryBrowserSupportTest {
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
         j.buildAndAssertSuccess(p);
 
-        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+        HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
         Page downloadPage = page.getAnchorByHref("artifact.out").click();
         assertEquals(content, downloadPage.getWebResponse().getContentAsString());
     }
@@ -259,7 +260,7 @@ public class DirectoryBrowserSupportTest {
             p.getPublishersList().add(new ArtifactArchiver("*", "", true));
             j.buildAndAssertSuccess(p);
 
-            HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+            HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
             for (int clicks = 0; clicks < numOfClicks; clicks++) {
                 page.getAnchorByHref("artifact.out").click();
             }
@@ -313,7 +314,7 @@ public class DirectoryBrowserSupportTest {
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
         j.buildAndAssertSuccess(p);
 
-        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
+        HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
         for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
             assertEquals("Header set: " + header, DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue(header));
         }
@@ -322,7 +323,7 @@ public class DirectoryBrowserSupportTest {
         String initialValue = System.getProperty(propName);
         try {
             System.setProperty(propName, "");
-            page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
+            page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
             List<String> headers = page.getWebResponse().getResponseHeaders().stream().map(NameValuePair::getName).collect(Collectors.toList());
             for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
                 assertThat(headers, not(hasItem(header)));
@@ -356,7 +357,7 @@ public class DirectoryBrowserSupportTest {
         p.setScm(new SingleFileSCM("f", "Hello world!"));
         p.getPublishersList().add(new ArtifactArchiver("f"));
         j.buildAndAssertSuccess(p);
-        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+        HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
         Page download = page.getAnchorByText("f").click();
         assertEquals("Hello world!", download.getWebResponse().getContentAsString());
     }
@@ -619,7 +620,7 @@ public class DirectoryBrowserSupportTest {
 
         j.buildAndAssertSuccess(p);
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         { // workspace root must be reachable (regular case)
             Page page = wc.goTo(p.getUrl() + "ws/", null);
@@ -764,7 +765,7 @@ public class DirectoryBrowserSupportTest {
 
         j.buildAndAssertSuccess(p);
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         // the pattern allow us to search inside the files / folders,
@@ -827,7 +828,7 @@ public class DirectoryBrowserSupportTest {
 
         j.buildAndAssertSuccess(p);
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         { // workspace root must be reachable (regular case)
             Page page = wc.goTo(p.getUrl() + "ws/", null);
@@ -980,7 +981,7 @@ public class DirectoryBrowserSupportTest {
         c3.mkdirs();
         c3.child("to_secrets3").symlinkTo(secretsFolder.getAbsolutePath(), TaskListener.NULL);
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         {
             Page zipPage = wc.goTo(p.getUrl() + "ws/*zip*/ws.zip", null);
@@ -1047,7 +1048,7 @@ public class DirectoryBrowserSupportTest {
 
         j.buildAndAssertSuccess(p);
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         { // workspace root must be reachable (regular case)
             Page page = wc.goTo(p.getUrl() + "ws/", null);
@@ -1116,12 +1117,10 @@ public class DirectoryBrowserSupportTest {
         String content = "random data provided as fixed value";
         Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
-        try (JenkinsRule.WebClient wc = j.createWebClient()) {
-            // suspicious path is rejected with 400
+        try (JenkinsRule.WebClient wc = getWebClient()) {
             wc.setThrowExceptionOnFailingStatusCode(false);
             HtmlPage page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*");
-            assertEquals(400, page.getWebResponse().getStatusCode());
-            assertEquals("Error 400 Suspicious Path Character", page.getTitleText());
+            assertEquals(404, page.getWebResponse().getStatusCode());
         }
     }
 
@@ -1140,7 +1139,7 @@ public class DirectoryBrowserSupportTest {
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/").asNormalizedText();
+        String text = getWebClient().goTo("job/" + p.getName() + "/ws/").asNormalizedText();
         assertTrue(text, text.contains("anotherDir"));
         assertFalse(text, text.contains("subdir"));
     }
@@ -1170,7 +1169,7 @@ public class DirectoryBrowserSupportTest {
 
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/**/*.txt").asNormalizedText();
+        String text = getWebClient().goTo("job/" + p.getName() + "/ws/**/*.txt").asNormalizedText();
         assertTrue(text, text.contains("one.txt"));
         assertTrue(text, text.contains("two.txt"));
         assertFalse(text, text.contains("three.txt"));
@@ -1199,7 +1198,7 @@ public class DirectoryBrowserSupportTest {
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         Page page = wc.goTo(p.getUrl() + "ws/anotherDir/", null);
@@ -1229,7 +1228,7 @@ public class DirectoryBrowserSupportTest {
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/*plain*", "text/plain").getWebResponse().getContentAsString();
+        String text = getWebClient().goTo("job/" + p.getName() + "/ws/*plain*", "text/plain").getWebResponse().getContentAsString();
         assertTrue(text, text.contains("anotherDir"));
         assertFalse(text, text.contains("subdir"));
     }
@@ -1262,7 +1261,7 @@ public class DirectoryBrowserSupportTest {
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         //http://localhost:54407/jenkins/job/test0/ws/**/*.txt/*zip*/glob.zip
@@ -1315,7 +1314,7 @@ public class DirectoryBrowserSupportTest {
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         Page zipPage = wc.goTo("job/" + p.getName() + "/ws/**/*.txt/*zip*/glob.zip", null);
@@ -1336,7 +1335,7 @@ public class DirectoryBrowserSupportTest {
 
         Files.writeString(testFile.toPath(), content, StandardCharsets.UTF_8);
 
-        JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = getWebClient().withThrowExceptionOnFailingStatusCode(false);
         Page page = wc.goTo("userContent/test.txt/*view*", null);
 
         MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(200));

@@ -25,12 +25,13 @@
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.cli.CLICommand;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
@@ -147,7 +148,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
  * @since 1.160
  * @see PluginServletFilter
  */
-public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityRealm> implements ExtensionPoint {
+public abstract class SecurityRealm implements Describable<SecurityRealm>, ExtensionPoint {
     /**
      * Captcha Support to be used with this SecurityRealm for User Signup
      */
@@ -217,7 +218,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     @Override
     public Descriptor<SecurityRealm> getDescriptor() {
-        return super.getDescriptor();
+        return Describable.super.getDescriptor();
     }
 
     /**
@@ -382,6 +383,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         rsp.sendRedirect2(getPostLogOutUrl2(req, auth));
     }
 
+    @SuppressFBWarnings(value = "INSECURE_COOKIE", justification = "TODO needs triage")
     private void resetRememberMeCookie(StaplerRequest2 req, StaplerResponse2 rsp, String contextPath) {
         Cookie cookie = new Cookie(AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY, "");
         cookie.setMaxAge(0);

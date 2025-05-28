@@ -155,7 +155,6 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             lr.load();
             recorders.add(lr);
         }
-        setRecorders(recorders); // ensure that legacy logRecorders field is synced on load
     }
 
     /**

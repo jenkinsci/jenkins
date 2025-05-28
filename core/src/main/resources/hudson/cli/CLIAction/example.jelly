@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:set var="content">java -jar jenkins-cli.jar -s ${h.inferHudsonURL(request)} <j:if test="${!it.webSocketSupported}">-http </j:if>${commandArgs}</j:set>
+  <j:set var="content">java -jar jenkins-cli.jar -s ${h.inferHudsonURL(request2)} <j:if test="${!it.webSocketSupported}">-http </j:if>${commandArgs}</j:set>
   <div class="jenkins-quote jenkins-quote--monospace" id="example">
     ${content}
     <l:copyButton text="${content}" iconOnly="true" />
