@@ -38,7 +38,7 @@ THE SOFTWARE.
 
     <l:side-panel sticky="true">
       <l:app-bar title="${%Configure}" />
-      <div id="tasks" />
+      <div id="tasks" class="tasks"/>
     </l:side-panel>
 
     <l:main-panel>
