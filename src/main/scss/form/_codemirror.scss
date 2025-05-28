@@ -57,7 +57,7 @@
   }
 
   .cm-property {
-    color: var(--yellow) !important;
+    color: var(--text-color) !important;
   }
 
   .CodeMirror-matchingbracket {
@@ -97,11 +97,11 @@
   }
 
   .cm-comment {
-    color: var(--brown) !important;
+    color: var(--text-color-secondary) !important;
   }
 
   .cm-string {
-    color: var(--red) !important;
+    color: var(--green) !important;
   }
 
   .cm-string-2 {
