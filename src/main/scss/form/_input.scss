@@ -14,10 +14,6 @@
     height 0s,
     padding 0s;
 
-  &::placeholder {
-    color: var(--text-color-secondary);
-  }
-
   &:not(:disabled) {
     &:hover {
       border-color: var(--input-border-hover);
