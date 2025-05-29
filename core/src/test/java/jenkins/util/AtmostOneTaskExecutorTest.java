@@ -8,13 +8,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AtmostOneTaskExecutorTest {
+class AtmostOneTaskExecutorTest {
 
     @SuppressWarnings("empty-statement")
     @Test
-    public void doubleBooking() throws Exception {
+    void doubleBooking() throws Exception {
         AtomicInteger counter = new AtomicInteger();
         OneShotEvent lock = new OneShotEvent();
         Future<?> f1, f2;
