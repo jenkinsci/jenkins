@@ -27,21 +27,21 @@ package hudson.util;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
-class DescribableListTest {
+public class DescribableListTest {
 
     @Issue("JENKINS-49054")
     @Test
-    void exceptionDuringUnmarshalling() {
+    public void exceptionDuringUnmarshalling() {
         Data data = new Data();
         data.list.add(new Datum(1));
         data.list.add(new Datum(2));
@@ -54,7 +54,7 @@ class DescribableListTest {
     }
 
     @Test
-    void replace() throws Exception {
+    public void replace() throws Exception {
         AtomicInteger count = new AtomicInteger();
         DescribableList<Datum, Descriptor<Datum>> list = new DescribableList<>((Saveable) count::incrementAndGet);
         list.add(new Datum(1));

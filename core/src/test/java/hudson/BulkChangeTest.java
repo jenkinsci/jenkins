@@ -24,18 +24,18 @@
 
 package hudson;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import hudson.model.Saveable;
 import java.io.IOException;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 /**
  * Tests {@link BulkChange}.
  *
  * @author Kohsuke Kawaguchi
  */
-class BulkChangeTest {
+public class BulkChangeTest {
 
     private static class Point implements Saveable {
         /**
@@ -72,7 +72,7 @@ class BulkChangeTest {
      * If there is no BulkChange, we should see two saves.
      */
     @Test
-    void noBulkChange() throws Exception {
+    public void noBulkChange() throws Exception {
         Point pt = new Point();
         pt.set(0, 0);
         assertEquals(2, pt.saveCount);
@@ -82,7 +82,7 @@ class BulkChangeTest {
      * With a {@link BulkChange}, this will become just one save.
      */
     @Test
-    void bulkChange() throws Exception {
+    public void bulkChange() throws Exception {
         Point pt = new Point();
         BulkChange bc = new BulkChange(pt);
         try {
@@ -97,7 +97,7 @@ class BulkChangeTest {
      * {@link BulkChange}s can be nested.
      */
     @Test
-    void nestedBulkChange() throws Exception {
+    public void nestedBulkChange() throws Exception {
         Point pt = new Point();
         Point pt2 = new Point();
         BulkChange bc1 = new BulkChange(pt);

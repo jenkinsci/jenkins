@@ -41,17 +41,17 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Kohsuke Kawaguchi
  */
-class EnvVarsTest {
+public class EnvVarsTest {
 
     @Test
-    void caseInsensitive() {
+    public void caseInsensitive() {
         EnvVars ev = new EnvVars(Map.of("Path", "A:B:C"));
         assertTrue(ev.containsKey("PATH"));
         assertEquals("A:B:C", ev.get("PATH"));
     }
 
     @Test
-    void overrideExpandingAll() {
+    public void overrideExpandingAll() {
         EnvVars env = new EnvVars();
         env.put("PATH", "orig");
         env.put("A", "Value1");
@@ -71,7 +71,7 @@ class EnvVarsTest {
     }
 
     @Test
-    void overrideOrderCalculatorSimple() {
+    public void overrideOrderCalculatorSimple() {
         EnvVars env = new EnvVars();
         EnvVars overrides = new EnvVars();
         overrides.put("A", "NoReference");
@@ -87,7 +87,7 @@ class EnvVarsTest {
     }
 
     @Test
-    void overrideOrderCalculatorInOrder() {
+    public void overrideOrderCalculatorInOrder() {
         EnvVars env = new EnvVars();
         EnvVars overrides = new EnvVars();
         overrides.put("A", "NoReference");
@@ -102,7 +102,7 @@ class EnvVarsTest {
     }
 
     @Test
-    void overrideOrderCalculatorMultiple() {
+    public void overrideOrderCalculatorMultiple() {
         EnvVars env = new EnvVars();
         EnvVars overrides = new EnvVars();
         overrides.put("A", "Noreference");
@@ -115,7 +115,7 @@ class EnvVarsTest {
     }
 
     @Test
-    void overrideOrderCalculatorSelfReference() {
+    public void overrideOrderCalculatorSelfReference() {
         EnvVars env = new EnvVars();
         EnvVars overrides = new EnvVars();
         overrides.put("PATH", "some;${PATH}");
@@ -126,7 +126,7 @@ class EnvVarsTest {
     }
 
     @Test
-    void overrideOrderCalculatorCyclic() {
+    public void overrideOrderCalculatorCyclic() {
         EnvVars env = new EnvVars();
         env.put("C", "Existing");
         EnvVars overrides = new EnvVars();
@@ -144,7 +144,7 @@ class EnvVarsTest {
     }
 
     @Test
-    void putIfNotNull() {
+    public void putIfNotNull() {
         EnvVars env = new EnvVars();
         env.putIfNotNull("foo", null);
         assertTrue(env.isEmpty());
@@ -153,7 +153,7 @@ class EnvVarsTest {
     }
 
     @Test
-    void putAllNonNull() {
+    public void putAllNonNull() {
         EnvVars env = new EnvVars();
         TreeMap<String, String> map = new TreeMap<>();
         map.put("A", "a");

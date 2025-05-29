@@ -24,23 +24,21 @@
 
 package hudson.util;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-class MultipartFormDataParserTest {
+public class MultipartFormDataParserTest {
 
     @Test
-    void testIsMultipart() {
-        assertFalse(MultipartFormDataParser.isMultiPartForm(null), "Wrongly identified \"multipart/form-data\"");
-        assertFalse(MultipartFormDataParser.isMultiPartForm("blah"), "Wrongly identified \"multipart/form-data\"");
+    public void testIsMultipart() {
+        Assert.assertFalse("Wrongly identified \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm(null));
+        Assert.assertFalse("Wrongly identified \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm("blah"));
 
-        assertTrue(MultipartFormDataParser.isMultiPartForm("multipart/form-data"), "Failed to identify \"multipart/form-data\"");
-        assertTrue(MultipartFormDataParser.isMultiPartForm("multipart/form-data;"), "Failed to identify \"multipart/form-data\"");
-        assertTrue(MultipartFormDataParser.isMultiPartForm("multipart/form-data; boundary=----WebKitFormBoundary8OOwv1Xp4c5XkBmD"), "Failed to identify \"multipart/form-data\"");
+        Assert.assertTrue("Failed to identify \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm("multipart/form-data"));
+        Assert.assertTrue("Failed to identify \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm("multipart/form-data;"));
+        Assert.assertTrue("Failed to identify \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm("multipart/form-data; boundary=----WebKitFormBoundary8OOwv1Xp4c5XkBmD"));
     }
 }

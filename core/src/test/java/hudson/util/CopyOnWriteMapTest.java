@@ -24,19 +24,19 @@
 
 package hudson.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 /**
  * @author Mike Dillon, Alan Harder
  */
-class CopyOnWriteMapTest {
+public class CopyOnWriteMapTest {
     public static final class HashData {
         CopyOnWriteMap.Hash<String, String> map1 = new CopyOnWriteMap.Hash<>();
         HashMap<String, String> map2 = new HashMap<>();
@@ -45,16 +45,14 @@ class CopyOnWriteMapTest {
     /**
      * Verify that serialization form of CopyOnWriteMap.Hash and HashMap are the same.
      */
-    @Test
-    void hashSerialization() {
+    @Test public void hashSerialization() {
         HashData td = new HashData();
         XStream2 xs = new XStream2();
 
         String out = xs.toXML(td);
-        assertEquals("<hudson.util.CopyOnWriteMapTest_-HashData>"
+        assertEquals("empty maps", "<hudson.util.CopyOnWriteMapTest_-HashData>"
                 + "<map1/><map2/></hudson.util.CopyOnWriteMapTest_-HashData>",
-                out.replaceAll("\\s+", ""),
-                "empty maps");
+                out.replaceAll("\\s+", ""));
         HashData td2 = (HashData) xs.fromXML(out);
         assertTrue(td2.map1.isEmpty());
         assertTrue(td2.map2.isEmpty());
@@ -62,12 +60,11 @@ class CopyOnWriteMapTest {
         td.map1.put("foo1", "bar1");
         td.map2.put("foo2", "bar2");
         out = xs.toXML(td);
-        assertEquals("<hudson.util.CopyOnWriteMapTest_-HashData><map1>"
+        assertEquals("maps", "<hudson.util.CopyOnWriteMapTest_-HashData><map1>"
                 + "<entry><string>foo1</string><string>bar1</string></entry></map1>"
                 + "<map2><entry><string>foo2</string><string>bar2</string></entry>"
                 + "</map2></hudson.util.CopyOnWriteMapTest_-HashData>",
-                out.replaceAll("\\s+", ""),
-                "maps");
+                out.replaceAll("\\s+", ""));
         td2 = (HashData) xs.fromXML(out);
         assertEquals("bar1", td2.map1.get("foo1"));
         assertEquals("bar2", td2.map2.get("foo2"));
@@ -92,17 +89,15 @@ class CopyOnWriteMapTest {
      * Verify that an empty CopyOnWriteMap.Tree can be serialized,
      * and that serialization form is the same as a standard TreeMap.
      */
-    @Test
-    void treeSerialization() {
+    @Test public void treeSerialization() {
         TreeData td = new TreeData();
         XStream2 xs = new XStream2();
 
         String out = xs.toXML(td);
-        assertEquals("<hudson.util.CopyOnWriteMapTest_-TreeData>"
+        assertEquals("empty maps", "<hudson.util.CopyOnWriteMapTest_-TreeData>"
                 + "<map1/><map2/>"
                 + "</hudson.util.CopyOnWriteMapTest_-TreeData>",
-                out.replaceAll("\\s+", ""),
-                "empty maps");
+                out.replaceAll("\\s+", ""));
         TreeData td2 = (TreeData) xs.fromXML(out);
         assertTrue(td2.map1.isEmpty());
         assertTrue(td2.map2.isEmpty());
@@ -111,22 +106,20 @@ class CopyOnWriteMapTest {
         td.map1.put("foo1", "bar1");
         td.map2.put("foo2", "bar2");
         out = xs.toXML(td);
-        assertEquals("<hudson.util.CopyOnWriteMapTest_-TreeData><map1>"
+        assertEquals("maps", "<hudson.util.CopyOnWriteMapTest_-TreeData><map1>"
                 + "<comparator class=\"java.lang.String$CaseInsensitiveComparator\"/>"
                 + "<entry><string>foo1</string><string>bar1</string></entry></map1>"
                 + "<map2><comparator class=\"java.lang.String$CaseInsensitiveComparator\""
                 + " reference=\"../../map1/comparator\"/>"
                 + "<entry><string>foo2</string><string>bar2</string></entry></map2>"
                 + "</hudson.util.CopyOnWriteMapTest_-TreeData>",
-                out.replaceAll(">\\s+<", "><"),
-                "maps");
+                out.replaceAll(">\\s+<", "><"));
         td2 = (TreeData) xs.fromXML(out);
         assertEquals("bar1", td2.map1.get("foo1"));
         assertEquals("bar2", td2.map2.get("foo2"));
     }
 
-    @Test
-    void equalsHashCodeToString() {
+    @Test public void equalsHashCodeToString() {
         Map<String, Integer> m1 = new TreeMap<>();
         Map<String, Integer> m2 = new CopyOnWriteMap.Tree<>();
         m1.put("foo", 5);

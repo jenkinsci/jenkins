@@ -1,17 +1,17 @@
 package hudson.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-class CompoundEnumerationTest {
+public class CompoundEnumerationTest {
 
     @Test
-    void smokes() {
+    public void smokes() {
         assertEquals(
                 rangeClosed(1, 12),
                 Collections.list(
@@ -22,7 +22,7 @@ class CompoundEnumerationTest {
     }
 
     @Test
-    void empty() {
+    public void empty() {
         assertEquals(Collections.emptyList(), Collections.list(new CompoundEnumeration<>()));
         assertEquals(
                 Collections.emptyList(),
@@ -42,7 +42,7 @@ class CompoundEnumerationTest {
     }
 
     @Test
-    void gaps() {
+    public void gaps() {
         assertEquals(
                 rangeClosed(1, 8),
                 Collections.list(

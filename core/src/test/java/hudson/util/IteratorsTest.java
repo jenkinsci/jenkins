@@ -28,23 +28,23 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import hudson.util.Iterators.CountingPredicate;
 import java.util.Iterator;
 import java.util.List;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-class IteratorsTest {
+public class IteratorsTest {
 
     @Test
-    void reverseSequence() {
+    public void reverseSequence() {
         List<Integer> lst = Iterators.reverseSequence(1, 4);
         assertEquals(3, (int) lst.get(0));
         assertEquals(2, (int) lst.get(1));
@@ -53,7 +53,7 @@ class IteratorsTest {
     }
 
     @Test
-    void sequence() {
+    public void sequence() {
         List<Integer> lst = Iterators.sequence(1, 4);
         assertEquals(1, (int) lst.get(0));
         assertEquals(2, (int) lst.get(1));
@@ -62,7 +62,7 @@ class IteratorsTest {
     }
 
     @Test
-    void wrap() {
+    public void wrap() {
         List<Integer> lst = Iterators.sequence(1, 4);
         Iterable<Integer> wrapped = Iterators.wrap(lst);
         assertThat(wrapped, not(instanceOf(List.class)));
@@ -77,7 +77,7 @@ class IteratorsTest {
     }
 
     @Test
-    void limit() {
+    public void limit() {
         assertEquals("[0]", com.google.common.collect.Iterators.toString(Iterators.limit(asList(0, 1, 2, 3, 4).iterator(), EVEN)));
         assertEquals("[]", com.google.common.collect.Iterators.toString(Iterators.limit(asList(1, 2, 4, 6).iterator(), EVEN)));
     }
@@ -86,7 +86,7 @@ class IteratorsTest {
 
     @Issue("JENKINS-51779")
     @Test
-    void skip() {
+    public void skip() {
         List<Integer> lst = Iterators.sequence(1, 4);
         Iterator<Integer> it = lst.iterator();
         Iterators.skip(it, 0);

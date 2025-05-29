@@ -1,9 +1,7 @@
 package hudson.util;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -11,13 +9,14 @@ import java.time.Instant;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
-class RetrierTest {
+public class RetrierTest {
     private static final Logger LOG = Logger.getLogger(RetrierTest.class.getName());
 
     @Test
-    void performedAtThirdAttemptTest() throws Exception {
+    public void performedAtThirdAttemptTest() throws Exception {
         final int SUCCESSFUL_ATTEMPT = 3;
         final String ACTION = "print";
 
@@ -46,14 +45,14 @@ class RetrierTest {
 
         // Begin the process
         Boolean finalResult = r.start();
-        assertTrue(finalResult != null && finalResult);
+        Assert.assertTrue(finalResult != null && finalResult);
 
         String text = Messages.Retrier_Success(ACTION, SUCCESSFUL_ATTEMPT);
-        assertTrue(handler.getView().stream().anyMatch(m -> m.getMessage().contains(text)), String.format("The log should contain '%s'", text));
+        assertTrue(String.format("The log should contain '%s'", text), handler.getView().stream().anyMatch(m -> m.getMessage().contains(text)));
     }
 
     @Test
-    void sleepWorksTest() throws Exception {
+    public void sleepWorksTest() throws Exception {
         final int SUCCESSFUL_ATTEMPT = 2;
         final String ACTION = "print";
         final int SLEEP = 500;
@@ -95,21 +94,21 @@ class RetrierTest {
         long timeElapsed = Duration.between(start, finish).toMillis();
 
         // Check delay works
-        assertTrue(timeElapsed >= SLEEP);
+        Assert.assertTrue(timeElapsed >= SLEEP);
 
         // Check result is true
-        assertTrue(finalResult != null && finalResult);
+        Assert.assertTrue(finalResult != null && finalResult);
 
         // Check the log tell us the sleep time
         String text = Messages.Retrier_Sleeping(SLEEP, ACTION);
-        assertTrue(handler.getView().stream().anyMatch(m -> m.getMessage().contains(text)), String.format("The log should contain '%s'", text));
+        assertTrue(String.format("The log should contain '%s'", text), handler.getView().stream().anyMatch(m -> m.getMessage().contains(text)));
 
         // recover log level
         retrierLogger.setLevel(currentLogLevel);
     }
 
     @Test
-    void failedActionAfterThreeAttemptsTest() throws Exception {
+    public void failedActionAfterThreeAttemptsTest() throws Exception {
         final int ATTEMPTS = 3;
         final String ACTION = "print";
 
@@ -139,15 +138,15 @@ class RetrierTest {
         // Begin the process
         Boolean finalResult = r.start();
 
-        assertFalse(finalResult != null && finalResult);
+        Assert.assertFalse(finalResult != null && finalResult);
 
         String text = Messages.Retrier_NoSuccess(ACTION, ATTEMPTS);
-        assertTrue(handler.getView().stream().anyMatch(m -> m.getMessage().contains(text)), String.format("The log should contain '%s'", text));
+        assertTrue(String.format("The log should contain '%s'", text), handler.getView().stream().anyMatch(m -> m.getMessage().contains(text)));
 
     }
 
     @Test
-    void failedActionWithExceptionAfterThreeAttemptsWithoutListenerTest() throws Exception {
+    public void failedActionWithExceptionAfterThreeAttemptsWithoutListenerTest() throws Exception {
         final int ATTEMPTS = 3;
         final String ACTION = "print";
 
@@ -175,18 +174,18 @@ class RetrierTest {
 
         // Begin the process without catching the allowed exceptions
         Boolean finalResult = r.start();
-        assertNull(finalResult);
+        Assert.assertNull(finalResult);
 
         String textNoSuccess = Messages.Retrier_NoSuccess(ACTION, ATTEMPTS);
-        assertTrue(handler.getView().stream().anyMatch(m -> m.getMessage().contains(textNoSuccess)), String.format("The log should contain '%s'", textNoSuccess));
+        assertTrue(String.format("The log should contain '%s'", textNoSuccess), handler.getView().stream().anyMatch(m -> m.getMessage().contains(textNoSuccess)));
 
         String testException = Messages.Retrier_ExceptionFailed(ATTEMPTS, ACTION);
-        assertTrue(handler.getView().stream().anyMatch(m -> m.getMessage().startsWith(testException)), String.format("The log should contain '%s'", testException));
+        assertTrue(String.format("The log should contain '%s'", testException), handler.getView().stream().anyMatch(m -> m.getMessage().startsWith(testException)));
 
     }
 
     @Test
-    void failedActionWithAllowedExceptionWithListenerChangingResultTest() throws Exception {
+    public void failedActionWithAllowedExceptionWithListenerChangingResultTest() throws Exception {
         final int ATTEMPTS = 1;
         final String ACTION = "print";
 
@@ -216,19 +215,19 @@ class RetrierTest {
 
         // Begin the process catching the allowed exception
         Boolean finalResult = r.start();
-        assertTrue(finalResult != null && finalResult);
+        Assert.assertTrue(finalResult != null && finalResult);
 
         // The action was a success
         String textSuccess = Messages.Retrier_Success(ACTION, ATTEMPTS);
-        assertTrue(handler.getView().stream().anyMatch(m -> m.getMessage().contains(textSuccess)), String.format("The log should contain '%s'", textSuccess));
+        assertTrue(String.format("The log should contain '%s'", textSuccess), handler.getView().stream().anyMatch(m -> m.getMessage().contains(textSuccess)));
 
         // And the message talking about the allowed raised is also there
         String testException = Messages.Retrier_ExceptionFailed(ATTEMPTS, ACTION);
-        assertTrue(handler.getView().stream().anyMatch(m -> m.getMessage().startsWith(testException)), String.format("The log should contain '%s'", testException));
+        assertTrue(String.format("The log should contain '%s'", testException), handler.getView().stream().anyMatch(m -> m.getMessage().startsWith(testException)));
     }
 
     @Test
-    void failedActionWithAllowedExceptionByInheritanceTest() throws Exception {
+    public void failedActionWithAllowedExceptionByInheritanceTest() throws Exception {
         final int ATTEMPTS = 1;
         final String ACTION = "print";
 
@@ -259,19 +258,19 @@ class RetrierTest {
 
         // Begin the process catching the allowed exception
         Boolean finalResult = r.start();
-        assertTrue(finalResult != null && finalResult);
+        Assert.assertTrue(finalResult != null && finalResult);
 
         // The action was a success
         String textSuccess = Messages.Retrier_Success(ACTION, ATTEMPTS);
-        assertTrue(handler.getView().stream().anyMatch(m -> m.getMessage().contains(textSuccess)), String.format("The log should contain '%s'", textSuccess));
+        assertTrue(String.format("The log should contain '%s'", textSuccess), handler.getView().stream().anyMatch(m -> m.getMessage().contains(textSuccess)));
 
         // And the message talking about the allowed raised is also there
         String testException = Messages.Retrier_ExceptionFailed(ATTEMPTS, ACTION);
-        assertTrue(handler.getView().stream().anyMatch(m -> m.getMessage().startsWith(testException)), String.format("The log should contain '%s'", testException));
+        assertTrue(String.format("The log should contain '%s'", testException), handler.getView().stream().anyMatch(m -> m.getMessage().startsWith(testException)));
     }
 
     @Test
-    void failedActionWithUnAllowedExceptionTest() {
+    public void failedActionWithUnAllowedExceptionTest() {
         final int ATTEMPTS = 1;
         final String ACTION = "print";
 
@@ -299,8 +298,8 @@ class RetrierTest {
                 .build();
 
         // Begin the process that raises an unexpected exception
-        assertThrows(IOException.class, r::start, "The process should be exited with an unexpected exception");
+        assertThrows("The process should be exited with an unexpected exception", IOException.class, r::start);
         String testFailure = Messages.Retrier_ExceptionThrown(ATTEMPTS, ACTION);
-        assertTrue(handler.getView().stream().anyMatch(m -> m.getMessage().contains(testFailure)), String.format("The log should contain '%s'", testFailure));
+        assertTrue(String.format("The log should contain '%s'", testFailure), handler.getView().stream().anyMatch(m -> m.getMessage().contains(testFailure)));
     }
 }

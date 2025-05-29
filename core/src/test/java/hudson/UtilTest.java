@@ -28,16 +28,16 @@ package hudson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeNoException;
+import static org.junit.Assume.assumeTrue;
 
 import hudson.model.TaskListener;
 import hudson.os.WindowsUtil;
@@ -62,20 +62,21 @@ import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-class UtilTest {
+public class UtilTest {
 
-    @TempDir
-    private File tmp;
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     @Test
-    void testReplaceMacro() {
+    public void testReplaceMacro() {
         Map<String, String> m = new HashMap<>();
         m.put("A", "a");
         m.put("A.B", "a-b");
@@ -110,7 +111,7 @@ class UtilTest {
     }
 
     @Test
-    void testTimeSpanString() {
+    public void testTimeSpanString() {
         // Check that amounts less than 365 days are not rounded up to a whole year.
         // In the previous implementation there were 360 days in a year.
         // We're still working on the assumption that a month is 30 days, so there will
@@ -143,8 +144,8 @@ class UtilTest {
         Locale.setDefault(Locale.GERMANY);
         try {
             // Just verifying no exception is thrown:
-            assertNotNull(Util.getTimeSpanString(1234), "German locale");
-            assertNotNull(Util.getTimeSpanString(123), "German locale <1 sec");
+            assertNotNull("German locale", Util.getTimeSpanString(1234));
+            assertNotNull("German locale <1 sec", Util.getTimeSpanString(123));
         }
         finally { Locale.setDefault(saveLocale); }
     }
@@ -154,7 +155,7 @@ class UtilTest {
      * Test that Strings that contain spaces are correctly URL encoded.
      */
     @Test
-    void testEncodeSpaces() {
+    public void testEncodeSpaces() {
         final String urlWithSpaces = "http://hudson/job/Hudson Job";
         String encoded = Util.encode(urlWithSpaces);
         assertEquals("http://hudson/job/Hudson%20Job", encoded);
@@ -164,7 +165,7 @@ class UtilTest {
      * Test the rawEncode() method.
      */
     @Test
-    void testRawEncode() {
+    public void testRawEncode() {
         String[] data = {  // Alternating raw,encoded
             "abcdefghijklmnopqrstuvwxyz",
             "abcdefghijklmnopqrstuvwxyz",
@@ -184,7 +185,7 @@ class UtilTest {
             "%C3%A9%20",
         };
         for (int i = 0; i < data.length; i += 2) {
-            assertEquals(data[i + 1], Util.rawEncode(data[i]), "test " + i);
+            assertEquals("test " + i, data[i + 1], Util.rawEncode(data[i]));
         }
     }
 
@@ -192,7 +193,7 @@ class UtilTest {
      * Test the fullEncode() method.
      */
     @Test
-    void testFullEncode() {
+    public void testFullEncode() {
         String[] data = {
                 "abcdefghijklmnopqrstuvwxyz",
                 "abcdefghijklmnopqrstuvwxyz",
@@ -212,7 +213,7 @@ class UtilTest {
                 "%C3%A9%20",
         };
         for (int i = 0; i < data.length; i += 2) {
-            assertEquals(data[i + 1], Util.fullEncode(data[i]), "test " + i);
+            assertEquals("test " + i, data[i + 1], Util.fullEncode(data[i]));
         }
     }
 
@@ -220,20 +221,20 @@ class UtilTest {
      * Test the tryParseNumber() method.
      */
     @Test
-    void testTryParseNumber() {
-        assertEquals(20, Util.tryParseNumber("20", 10).intValue(), "Successful parse did not return the parsed value");
-        assertEquals(10, Util.tryParseNumber("ss", 10).intValue(), "Failed parse did not return the default value");
-        assertEquals(10, Util.tryParseNumber("", 10).intValue(), "Parsing empty string did not return the default value");
-        assertEquals(10, Util.tryParseNumber(null, 10).intValue(), "Parsing null string did not return the default value");
+    public void testTryParseNumber() {
+        assertEquals("Successful parse did not return the parsed value", 20, Util.tryParseNumber("20", 10).intValue());
+        assertEquals("Failed parse did not return the default value", 10, Util.tryParseNumber("ss", 10).intValue());
+        assertEquals("Parsing empty string did not return the default value", 10, Util.tryParseNumber("", 10).intValue());
+        assertEquals("Parsing null string did not return the default value", 10, Util.tryParseNumber(null, 10).intValue());
     }
 
     @Test
-    void testSymlink() throws Exception {
+    public void testSymlink() throws Exception {
         assumeFalse(Functions.isWindows());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos, Charset.defaultCharset());
-        File d = tmp;
+        File d = tmp.getRoot();
         try {
             new FilePath(new File(d, "a")).touch(0);
             assertNull(Util.resolveSymlink(new File(d, "a")));
@@ -255,7 +256,7 @@ class UtilTest {
 
             // test linking from another directory
             File anotherDir = new File(d, "anotherDir");
-            assertTrue(anotherDir.mkdir(), "Couldn't create " + anotherDir);
+            assertTrue("Couldn't create " + anotherDir, anotherDir.mkdir());
 
             Util.createSymlink(d, "a", "anotherDir/link", l);
             assertEquals("a", Util.resolveSymlink(new File(d, "anotherDir/link")));
@@ -276,12 +277,12 @@ class UtilTest {
     }
 
     @Test
-    void testIsSymlink() throws IOException, InterruptedException {
+    public void testIsSymlink() throws IOException, InterruptedException {
         assumeFalse(Functions.isWindows());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos, Charset.defaultCharset());
-        File d = tmp;
+        File d = tmp.getRoot();
         try {
             new FilePath(new File(d, "original")).touch(0);
             assertFalse(Util.isSymlink(new File(d, "original")));
@@ -291,11 +292,11 @@ class UtilTest {
 
             // test linking to another directory
             File dir = new File(d, "dir");
-            assertTrue(dir.mkdir(), "Couldn't create " + dir);
+            assertTrue("Couldn't create " + dir, dir.mkdir());
             assertFalse(Util.isSymlink(new File(d, "dir")));
 
             File anotherDir = new File(d, "anotherDir");
-            assertTrue(anotherDir.mkdir(), "Couldn't create " + anotherDir);
+            assertTrue("Couldn't create " + anotherDir, anotherDir.mkdir());
 
             Util.createSymlink(d, "dir", "anotherDir/symlinkDir", l);
             // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work:
@@ -306,22 +307,22 @@ class UtilTest {
     }
 
     @Test
-    void testIsSymlink_onWindows_junction() throws Exception {
-        assumeTrue(Functions.isWindows(), "Uses Windows-specific features");
-        File targetDir = newFolder(tmp, "targetDir");
-        File d = newFolder(tmp, "dir");
+    public void testIsSymlink_onWindows_junction() throws Exception {
+        assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        File targetDir = tmp.newFolder("targetDir");
+        File d = tmp.newFolder("dir");
         File junction = WindowsUtil.createJunction(new File(d, "junction"), targetDir);
         assertTrue(Util.isSymlink(junction));
     }
 
     @Test
     @Issue("JENKINS-55448")
-    void testIsSymlink_ParentIsJunction() throws IOException, InterruptedException {
-        assumeTrue(Functions.isWindows(), "Uses Windows-specific features");
-        File targetDir = newFolder(tmp, "junit");
+    public void testIsSymlink_ParentIsJunction() throws IOException, InterruptedException {
+        assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        File targetDir = tmp.newFolder();
         File file = new File(targetDir, "test-file");
         new FilePath(file).touch(System.currentTimeMillis());
-        File dir = newFolder(tmp, "junit");
+        File dir = tmp.newFolder();
         File junction = WindowsUtil.createJunction(new File(dir, "junction"), targetDir);
 
         assertTrue(Util.isSymlink(junction));
@@ -330,19 +331,19 @@ class UtilTest {
 
     @Test
     @Issue("JENKINS-55448")
-    void testIsSymlink_ParentIsSymlink() throws IOException, InterruptedException {
+    public void testIsSymlink_ParentIsSymlink() throws IOException, InterruptedException {
         assumeFalse(Functions.isWindows());
-        File folder = newFolder(tmp, "junit");
+        File folder = tmp.newFolder();
         File file = new File(folder, "test-file");
         new FilePath(file).touch(System.currentTimeMillis());
-        Path link = tmp.toPath().resolve("sym-link");
+        Path link = tmp.getRoot().toPath().resolve("sym-link");
         Path pathWithSymlinkParent = Files.createSymbolicLink(link, folder.toPath()).resolve("test-file");
         assertTrue(Util.isSymlink(link));
         assertFalse(Util.isSymlink(pathWithSymlinkParent));
     }
 
     @Test
-    void testHtmlEscape() {
+    public void testHtmlEscape() {
         assertEquals("<br>", Util.escape("\n"));
         assertEquals("&lt;a&gt;", Util.escape("<a>"));
         assertEquals("&#039;&quot;", Util.escape("'\""));
@@ -355,7 +356,7 @@ class UtilTest {
      */
     @Issue("JENKINS-10346")
     @Test
-    void testDigestThreadSafety() throws InterruptedException {
+    public void testDigestThreadSafety() throws InterruptedException {
         String a = "abcdefgh";
         String b = "123456789";
 
@@ -404,7 +405,7 @@ class UtilTest {
 
     @Test
     @SuppressWarnings("deprecation")
-    void testIsAbsoluteUri() {
+    public void testIsAbsoluteUri() {
         assertTrue(Util.isAbsoluteUri("http://foobar/"));
         assertTrue(Util.isAbsoluteUri("mailto:kk@kohsuke.org"));
         assertTrue(Util.isAbsoluteUri("d123://test/"));
@@ -416,7 +417,7 @@ class UtilTest {
 
     @Test
     @Issue({"SECURITY-276", "SECURITY-3501"})
-    void testIsSafeToRedirectTo() {
+    public void testIsSafeToRedirectTo() {
         assertFalse(Util.isSafeToRedirectTo("http://foobar/"));
         assertFalse(Util.isSafeToRedirectTo("mailto:kk@kohsuke.org"));
         assertFalse(Util.isSafeToRedirectTo("d123://test/"));
@@ -439,7 +440,7 @@ class UtilTest {
     }
 
     @Test
-    void loadFile() throws IOException {
+    public void loadFile() throws IOException {
         // Standard character sets
         assertEquals(
                 "Iñtërnâtiônàlizætiøn",
@@ -472,17 +473,17 @@ class UtilTest {
     }
 
     @Test
-    void loadProperties() throws IOException {
+    public void loadProperties() throws IOException {
 
         assertEquals(0, Util.loadProperties("").size());
 
         Properties p = Util.loadProperties("k.e.y=va.l.ue");
-        assertEquals("va.l.ue", p.get("k.e.y"), p.toString());
-        assertEquals(1, p.size(), p.toString());
+        assertEquals(p.toString(), "va.l.ue", p.get("k.e.y"));
+        assertEquals(p.toString(), 1, p.size());
     }
 
     @Test
-    void isRelativePathUnix() {
+    public void isRelativePathUnix() {
         assertThat("/", not(aRelativePath()));
         assertThat("/foo/bar", not(aRelativePath()));
         assertThat("/foo/../bar", not(aRelativePath()));
@@ -495,7 +496,7 @@ class UtilTest {
     }
 
     @Test
-    void isRelativePathWindows() {
+    public void isRelativePathWindows() {
         assertThat("\\", aRelativePath());
         assertThat("\\foo\\bar", aRelativePath());
         assertThat("\\foo\\..\\bar", aRelativePath());
@@ -533,7 +534,7 @@ class UtilTest {
     }
 
     @Test
-    void testIsDescendant() throws IOException {
+    public void testIsDescendant() throws IOException {
         File root;
         File other;
         if (Functions.isWindows()) {
@@ -571,7 +572,7 @@ class UtilTest {
     }
 
     @Test
-    void testModeToPermissions() throws Exception {
+    public void testModeToPermissions() throws Exception {
         assertEquals(PosixFilePermissions.fromString("rwxrwxrwx"), Util.modeToPermissions(0777));
         assertEquals(PosixFilePermissions.fromString("rwxr-xrwx"), Util.modeToPermissions(0757));
         assertEquals(PosixFilePermissions.fromString("rwxr-x---"), Util.modeToPermissions(0750));
@@ -583,14 +584,14 @@ class UtilTest {
         assertEquals(PosixFilePermissions.fromString("-wxr--rw-"), Util.modeToPermissions(0346));
         assertEquals(PosixFilePermissions.fromString("---------"), Util.modeToPermissions(0000));
 
-        assertEquals(PosixFilePermissions.fromString("r-xr-----"), Util.modeToPermissions(0100540), "Non-permission bits should be ignored");
+        assertEquals("Non-permission bits should be ignored", PosixFilePermissions.fromString("r-xr-----"), Util.modeToPermissions(0100540));
 
-        Exception e = assertThrows(Exception.class, () -> Util.modeToPermissions(01777));
+        Exception e = Assert.assertThrows(Exception.class, () -> Util.modeToPermissions(01777));
         assertThat(e.getMessage(), startsWith("Invalid mode"));
     }
 
     @Test
-    void testPermissionsToMode() {
+    public void testPermissionsToMode() {
         assertEquals(0777, Util.permissionsToMode(PosixFilePermissions.fromString("rwxrwxrwx")));
         assertEquals(0757, Util.permissionsToMode(PosixFilePermissions.fromString("rwxr-xrwx")));
         assertEquals(0750, Util.permissionsToMode(PosixFilePermissions.fromString("rwxr-x---")));
@@ -604,7 +605,7 @@ class UtilTest {
     }
 
     @Test
-    void testDifferenceDays() throws Exception {
+    public void testDifferenceDays() throws Exception {
         Date may_6_10am = parseDate("2018-05-06 10:00:00");
         Date may_6_11pm55 = parseDate("2018-05-06 23:55:00");
         Date may_7_01am = parseDate("2018-05-07 01:00:00");
@@ -635,7 +636,7 @@ class UtilTest {
 
     @Test
     @Issue("SECURITY-904")
-    void resolveSymlinkToFile() throws Exception {
+    public void resolveSymlinkToFile() throws Exception {
         assumeFalse(Functions.isWindows());
         //  root
         //      /a
@@ -644,7 +645,7 @@ class UtilTest {
         //          /_b => symlink to /root/b
         //      /b
         //          /_a => symlink to /root/a
-        File root = tmp;
+        File root = tmp.getRoot();
         File a = new File(root, "a");
         File aa = new File(a, "aa");
         aa.mkdirs();
@@ -674,14 +675,14 @@ class UtilTest {
 
     @Test
     @Issue("JENKINS-67372")
-    void createDirectories() throws Exception {
+    public void createDirectories() throws Exception {
         assumeFalse(Functions.isWindows());
         //  root
         //      /a
         //          /a1
         //          /a2 => symlink to a1
         //      /b => symlink to a
-        Path root = tmp.toPath().toRealPath();
+        Path root = tmp.getRoot().toPath().toRealPath();
         Path a = root.resolve("a");
         Path a1 = a.resolve("a1");
         Files.createDirectories(a1);
@@ -705,7 +706,7 @@ class UtilTest {
 
     @Test
     @Issue("JENKINS-67372")
-    void createDirectoriesInRoot() throws Exception {
+    public void createDirectoriesInRoot() throws Exception {
         assumeFalse(Functions.isWindows());
         Path newDirInRoot = Paths.get("/new-dir-in-root");
         Path newSymlinkInRoot = Paths.get("/new-symlink-in-root");
@@ -715,30 +716,30 @@ class UtilTest {
             assertEquals(newDirInRoot.resolve("new2"), Util.createDirectories(newSymlinkInRoot.resolve("new2")).toRealPath());
         } catch (FileSystemException e) {
             // Not running as root
-            assumeTrue(false, e.toString());
+            assumeNoException(e);
         }
     }
 
     @Test
-    void ifOverriddenSuccess() {
+    public void ifOverriddenSuccess() {
         assertTrue(Util.ifOverridden(() -> true, BaseClass.class, DerivedClassSuccess.class, "method"));
     }
 
     @Test
-    void ifOverriddenFailure() {
-        AbstractMethodError error = assertThrows(AbstractMethodError.class, () -> Util.ifOverridden(() -> true, BaseClass.class, DerivedClassFailure.class, "method"));
+    public void ifOverriddenFailure() {
+        AbstractMethodError error = Assert.assertThrows(AbstractMethodError.class, () -> Util.ifOverridden(() -> true, BaseClass.class, DerivedClassFailure.class, "method"));
         assertEquals("The class " + DerivedClassFailure.class.getName() + " must override at least one of the BaseClass.method methods", error.getMessage());
     }
 
     @Test
-    void testGetHexOfSHA256DigestOf() {
+    public void testGetHexOfSHA256DigestOf() throws IOException {
         byte[] input = new byte[] {12, 34, 16};
         String str = Util.getHexOfSHA256DigestOf(input);
-        assertEquals("134fefbd329986726407a5208107ef07c9e33da779f5068bff191733268fe997", str);
+        assertEquals(str, "134fefbd329986726407a5208107ef07c9e33da779f5068bff191733268fe997");
     }
 
     @Test
-    void testGetSHA256DigestOf() {
+    public void testGetSHA256DigestOf() {
         byte[] input = new byte[] {12, 34, 16};
         byte[] sha256DigestActual = Util.getSHA256DigestOf(input);
 
@@ -752,7 +753,6 @@ class UtilTest {
         protected String method() {
             return "base";
         }
-
     }
 
     public static class DerivedClassFailure extends BaseClass {
@@ -764,15 +764,5 @@ class UtilTest {
         protected String method() {
             return DerivedClassSuccess.class.getName();
         }
-
-    }
-
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.exists() && !result.mkdirs()) {
-            throw new IOException("Couldn't create folders " + root);
-        }
-        return result;
     }
 }

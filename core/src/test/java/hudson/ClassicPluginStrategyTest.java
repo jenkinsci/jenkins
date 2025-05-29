@@ -37,10 +37,10 @@ import org.junit.jupiter.api.Test;
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-class ClassicPluginStrategyTest {
+public class ClassicPluginStrategyTest {
 
     @Test
-    void test_getDetachedPlugins() {
+    public void test_getDetachedPlugins() {
         List<DetachedPlugin> list = DetachedPluginsUtil.getDetachedPlugins(new VersionNumber("1.296"));
 
         assertTrue(list.size() >= 14); // There were 14 at the time of writing this test

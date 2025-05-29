@@ -58,13 +58,12 @@ import org.xml.sax.SAXException;
 /**
  * Tests of {@link PluginManager}.
  */
-class PluginManagerTest {
+public class PluginManagerTest {
 
-    @TempDir
-    private Path tmp;
+    @TempDir Path tmp;
 
     @Test
-    void parseRequestedPlugins() throws Exception {
+    public void parseRequestedPlugins() throws Exception {
         Path output = Files.createFile(
                 tmp.resolve("output.txt")
         );
@@ -74,19 +73,17 @@ class PluginManagerTest {
 
     @Issue("SECURITY-167")
     @Test
-    void parseInvalidRequestedPlugins() throws Exception {
-        String evilXML = """
-                <?xml version='1.0' encoding='UTF-8'?>
-                <!DOCTYPE project[<!ENTITY foo SYSTEM "file:///">]>
-                <root>
-                  <stuff plugin='stuff@1.0'>
-                &foo;\
-                    <more plugin='other@2.0'>
-                      <things plugin='stuff@1.2'/>
-                    </more>
-                  </stuff>
-                </root>
-                """;
+    public void parseInvalidRequestedPlugins() throws Exception {
+        String evilXML = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                "<!DOCTYPE project[<!ENTITY foo SYSTEM \"file:///\">]>\n" +
+                "<root>\n" +
+                "  <stuff plugin='stuff@1.0'>\n" +
+                "&foo;" +
+                "    <more plugin='other@2.0'>\n" +
+                "      <things plugin='stuff@1.2'/>\n" +
+                "    </more>\n" +
+                "  </stuff>\n" +
+                "</root>\n";
 
         PluginManager pluginManager = new LocalPluginManager(Util.createTempDir());
         final IOException ex = assertThrows(IOException.class,
@@ -98,7 +95,7 @@ class PluginManagerTest {
     }
 
     @Test
-    void shouldProperlyParseManifestFromJar() throws IOException {
+    public void shouldProperlyParseManifestFromJar() throws IOException {
         File jar = createHpiWithManifest();
         final Manifest manifest = PluginManager.parsePluginManifest(jar.toURI().toURL());
 
@@ -115,7 +112,7 @@ class PluginManagerTest {
     }
 
     @Test
-    void shouldProperlyRetrieveModificationDate() throws IOException {
+    public void shouldProperlyRetrieveModificationDate() throws IOException {
         File jar = createHpiWithManifest();
         URL url = toManifestUrl(jar);
         assertThat("Manifest last modified date should be equal to the file date",
@@ -126,7 +123,7 @@ class PluginManagerTest {
 
     @Test
     @Issue("JENKINS-70420")
-    void updateSiteURLCheckValidation() throws Exception {
+    public void updateSiteURLCheckValidation() throws Exception {
         LocalPluginManager pm = new LocalPluginManager(tmp.toFile());
 
         assertThat("ftp urls are not acceptable", pm.checkUpdateSiteURL("ftp://foo/bar"),
@@ -166,30 +163,29 @@ class PluginManagerTest {
 
     }
 
-    private static final String SAMPLE_MANIFEST_FILE = """
-            Manifest-Version: 1.0
-            Archiver-Version: Plexus Archiver
-            Created-By: Apache Maven
-            Built-By: jglick
-            Build-Jdk: 1.8.0_92
-            Extension-Name: matrix-auth
-            Specification-Title:\s
-             Offers matrix-based security\s
-             authorization strate
-             gies (global and per-project).
-            Implementation-Title: matrix-auth
-            Implementation-Version: 1.4
-            Group-Id: org.jenkins-ci.plugins
-            Short-Name: matrix-auth
-            Long-Name: Matrix Authorization Strategy Plugin
-            Url: http://wiki.jenkins-ci.org/display/JENKINS/Matrix+Authorization+S
-             trategy+Plugin
-            Plugin-Version: 1.4
-            Hudson-Version: 1.609.1
-            Jenkins-Version: 1.609.1
-            Plugin-Dependencies: icon-shim:2.0.3,cloudbees-folder:5.2.2;resolution
-             :=optional
-            Plugin-Developers:\s""";
+    private static final String SAMPLE_MANIFEST_FILE = "Manifest-Version: 1.0\n" +
+                "Archiver-Version: Plexus Archiver\n" +
+                "Created-By: Apache Maven\n" +
+                "Built-By: jglick\n" +
+                "Build-Jdk: 1.8.0_92\n" +
+                "Extension-Name: matrix-auth\n" +
+                "Specification-Title: \n" +
+                " Offers matrix-based security \n" +
+                " authorization strate\n" +
+                " gies (global and per-project).\n" +
+                "Implementation-Title: matrix-auth\n" +
+                "Implementation-Version: 1.4\n" +
+                "Group-Id: org.jenkins-ci.plugins\n" +
+                "Short-Name: matrix-auth\n" +
+                "Long-Name: Matrix Authorization Strategy Plugin\n" +
+                "Url: http://wiki.jenkins-ci.org/display/JENKINS/Matrix+Authorization+S\n" +
+                " trategy+Plugin\n" +
+                "Plugin-Version: 1.4\n" +
+                "Hudson-Version: 1.609.1\n" +
+                "Jenkins-Version: 1.609.1\n" +
+                "Plugin-Dependencies: icon-shim:2.0.3,cloudbees-folder:5.2.2;resolution\n" +
+                " :=optional\n" +
+                "Plugin-Developers: ";
 
     private File createHpiWithManifest() throws IOException {
         Path metaInf = tmp.resolve("META-INF");

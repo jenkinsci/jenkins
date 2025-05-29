@@ -28,10 +28,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
@@ -51,40 +51,38 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.xstream.CriticalXStreamException;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-class RobustReflectionConverterTest {
+public class RobustReflectionConverterTest {
     private final boolean originalRecordFailures = RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS;
 
     static {
         Logger.getLogger(RobustReflectionConverter.class.getName()).setLevel(Level.OFF);
     }
 
-    @BeforeEach
-    void before() {
+    @Before
+    public void before() {
         RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
     }
 
-    @AfterEach
-    void after() {
+    @After
+    public void after() {
         RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = originalRecordFailures;
     }
 
     @Test
-    void robustUnmarshalling() {
+    public void robustUnmarshalling() {
         Point p = read(new XStream2());
         assertEquals(1, p.x);
         assertEquals(2, p.y);
@@ -96,7 +94,7 @@ class RobustReflectionConverterTest {
     }
 
     @Test
-    void ifWorkaroundNeeded() {
+    public void ifWorkaroundNeeded() {
         XStream xs = new XStream(XStream2.getDefaultDriver());
         xs.allowTypes(new Class[] {Point.class});
         final ConversionException e = assertThrows(ConversionException.class, () -> read(xs));
@@ -104,7 +102,7 @@ class RobustReflectionConverterTest {
     }
 
     @Test
-    void classOwnership() {
+    public void classOwnership() {
         Enchufla s1 = new Enchufla();
         s1.number = 1;
         s1.direction = "North";
@@ -139,37 +137,35 @@ class RobustReflectionConverterTest {
     }
 
     @Test
-    void implicitCollection() {
+    public void implicitCollection() {
         XStream2 xs = new XStream2();
         xs.alias("hold", Hold.class);
         xs.addImplicitCollection(Hold.class, "items", "item", String.class);
         Hold h = (Hold) xs.fromXML("<hold><item>a</item><item>b</item></hold>");
         assertThat(h.items, Matchers.containsInAnyOrder("a", "b"));
-        assertEquals("""
-                <hold>
-                  <item>a</item>
-                  <item>b</item>
-                </hold>""", xs.toXML(h));
+        assertEquals("<hold>\n" +
+                "  <item>a</item>\n" +
+                "  <item>b</item>\n" +
+                "</hold>", xs.toXML(h));
     }
 
-    @Disabled("Throws an NPE in writeValueToImplicitCollection. Issue has existed since RobustReflectionConverter was created.")
+    @Ignore("Throws an NPE in writeValueToImplicitCollection. Issue has existed since RobustReflectionConverter was created.")
     @Test
-    void implicitCollectionsAllowNullElements() {
+    public void implicitCollectionsAllowNullElements() {
         XStream2 xs = new XStream2();
         xs.alias("hold", Hold.class);
         xs.addImplicitCollection(Hold.class, "items", "item", String.class);
         Hold h = (Hold) xs.fromXML("<hold><null/><item>b</item></hold>");
         assertThat(h.items, Matchers.containsInAnyOrder(null, "b"));
-        assertEquals("""
-                <hold>
-                  <null/>
-                  <item>b</item>
-                </hold>""", xs.toXML(h));
+        assertEquals("<hold>\n" +
+                "  <null/>\n" +
+                "  <item>b</item>\n" +
+                "</hold>", xs.toXML(h));
     }
 
     @Issue("JENKINS-63343")
     @Test
-    void robustAgainstImplicitCollectionElementsWithBadTypes() {
+    public void robustAgainstImplicitCollectionElementsWithBadTypes() {
         XStream2 xs = new XStream2();
         xs.alias("hold", Hold.class);
         // Note that the fix only matters for `addImplicitCollection` overloads like the following where the element type is not provided.
@@ -190,13 +186,13 @@ class RobustReflectionConverterTest {
         List<String> items;
 
         @Override
-        public void save() {
+        public void save() throws IOException {
             // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
         }
     }
 
     @Test
-    void implicitCollectionRawtypes() {
+    public void implicitCollectionRawtypes() {
         XStream2 xs = new XStream2();
         xs.alias("hold", HoldRaw.class);
         xs.addImplicitCollection(HoldRaw.class, "items");
@@ -263,10 +259,9 @@ class RobustReflectionConverterTest {
     @Owner("p4")
     public static class Jean extends Lover {}
 
-    @Test
-    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
+    @Test(timeout = 30 * 1000)
     @Issue("SECURITY-2602")
-    void robustDoesNotSwallowDosException() {
+    public void robustDoesNotSwallowDosException() {
         XStream2 xstream2 = new XStream2();
 
         Set<Object> set = preparePayload();
@@ -285,12 +280,11 @@ class RobustReflectionConverterTest {
         assertNotNull(cause);
         assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
-        assertTrue(ime.getMessage().contains("exceeds 5 seconds"), "Limit expected in message");
+        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
     }
 
-    @Test
-    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
-    void customConverter_useDefaultXStreamException() {
+    @Test(timeout = 30 * 1000)
+    public void customConverter_useDefaultXStreamException() {
         XStream2 xstream2 = new XStream2();
         xstream2.registerConverter(new CustomSet.ConverterImpl(xstream2.getMapper()));
 
@@ -300,13 +294,12 @@ class RobustReflectionConverterTest {
         final String xml = xstream2.toXML(customSet);
 
         InputManipulationException e = assertThrows(InputManipulationException.class, () -> xstream2.fromXML(xml));
-        assertTrue(e.getMessage().contains("exceeds 5 seconds"), "Limit expected in message");
+        assertTrue("Limit expected in message", e.getMessage().contains("exceeds 5 seconds"));
     }
 
-    @Test
-    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
+    @Test(timeout = 30 * 1000)
     @Issue("SECURITY-2602")
-    void customConverter_wrapped_useCriticalXStreamException() {
+    public void customConverter_wrapped_useCriticalXStreamException() {
         XStream2 xstream2 = new XStream2();
         xstream2.registerConverter(new CustomSet.ConverterImpl(xstream2.getMapper())); // TODO Fix test so it does not pass without this
 
@@ -326,7 +319,7 @@ class RobustReflectionConverterTest {
         assertNotNull(cause);
         assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
-        assertTrue(ime.getMessage().contains("exceeds 5 seconds"), "Limit expected in message");
+        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
     }
 
     private Set<Object> preparePayload() {

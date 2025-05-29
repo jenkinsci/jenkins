@@ -25,20 +25,20 @@
 package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.xmlunit.diff.DefaultNodeMatcher;
 import org.xmlunit.diff.ElementSelectors;
 
 /**
  * @author Kohsuke Kawaguchi, Alan Harder
  */
-class CopyOnWriteListTest {
+public class CopyOnWriteListTest {
 
     public static final class TestData {
         CopyOnWriteList list1 = new CopyOnWriteList();
@@ -49,7 +49,7 @@ class CopyOnWriteListTest {
      * Verify that the serialization form of List and CopyOnWriteList are the same.
      */
     @Test
-    void serialization() {
+    public void serialization() {
         XStream2 xs = new XStream2();
         TestData td = new TestData();
 

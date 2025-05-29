@@ -28,12 +28,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -55,26 +55,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
 /**
  * Tests for XML serialization of java objects.
  * @author Kohsuke Kawaguchi, Mike Dillon, Alan Harder, Richard Mortimer
  */
-class XStream2Test {
+public class XStream2Test {
 
     public static final class Foo {
         Result r1, r2;
     }
 
     @Test
-    void marshalValue() {
+    public void marshalValue() {
         Foo f = new Foo();
         f.r1 = f.r2 = Result.FAILURE;
         String xml = Run.XSTREAM.toXML(f);
         // we should find two "FAILURE"s as they should be written out twice
-        assertEquals(3, xml.split("FAILURE").length, xml);
+        assertEquals(xml, 3, xml.split("FAILURE").length);
     }
 
     private static class Bar {
@@ -85,7 +85,7 @@ class XStream2Test {
      * Test ability to read old XML from Hudson 1.105 or older.
      */
     @Test
-    void xStream11Compatibility() {
+    public void xStream11Compatibility() {
         Bar b = (Bar) new XStream2().fromXML(
                 "<hudson.util.XStream2Test-Bar><s>foo</s></hudson.util.XStream2Test-Bar>");
         assertEquals("foo", b.s);
@@ -102,19 +102,19 @@ class XStream2Test {
      */
     @Issue("JENKINS-5768")
     @Test
-    void xmlRoundTrip() {
+    public void xmlRoundTrip() {
         XStream2 xs = new XStream2();
         __Foo_Bar$Class b = new __Foo_Bar$Class();
 
         String xml = xs.toXML(b);
         __Foo_Bar$Class b2 = (__Foo_Bar$Class) xs.fromXML(xml);
 
-        assertEquals(b.under_1, b2.under_1, xml);
-        assertEquals(b.under__2, b2.under__2, xml);
-        assertEquals(b._leadUnder1, b2._leadUnder1, xml);
-        assertEquals(b.__leadUnder2, b2.__leadUnder2, xml);
-        assertEquals(b.$dollar, b2.$dollar, xml);
-        assertEquals(b.dollar$2, b2.dollar$2, xml);
+        assertEquals(xml, b.under_1, b2.under_1);
+        assertEquals(xml, b.under__2, b2.under__2);
+        assertEquals(xml, b._leadUnder1, b2._leadUnder1);
+        assertEquals(xml, b.__leadUnder2, b2.__leadUnder2);
+        assertEquals(xml, b.$dollar, b2.$dollar);
+        assertEquals(xml, b.dollar$2, b2.dollar$2);
     }
 
     private static class Baz {
@@ -128,7 +128,7 @@ class XStream2Test {
      */
     @Issue("JENKINS-5769")
     @Test
-    void unmarshalThrowableMissingField() {
+    public void unmarshalThrowableMissingField() {
         Level oldLevel = disableLogging();
 
         Baz baz = new Baz();
@@ -171,7 +171,7 @@ class XStream2Test {
     }
 
     @Test
-    void immutableMap() {
+    public void immutableMap() {
         XStream2 xs = new XStream2();
 
         roundtripImmutableMap(xs, ImmutableMap.of());
@@ -191,8 +191,8 @@ class XStream2Test {
         a.m = m;
         String xml = xs.toXML(a);
         //System.out.println(xml);
-        assertFalse(xml.contains("google"), "shouldn't contain the class name");
-        assertFalse(xml.contains("class"), "shouldn't contain the class name");
+        assertFalse("shouldn't contain the class name", xml.contains("google"));
+        assertFalse("shouldn't contain the class name", xml.contains("class"));
         a = (ImmutableMapHolder) xs.fromXML(xml);
 
         assertSame(m.getClass(), a.m.getClass());    // should get back the exact same type, not just a random map
@@ -204,7 +204,7 @@ class XStream2Test {
         a.m = m;
         String xml = xs.toXML(a);
         //System.out.println(xml);
-        assertTrue(xml.contains('\"' + ImmutableMap.class.getName() + '\"'), "XML should mention the class name");
+        assertTrue("XML should mention the class name", xml.contains('\"' + ImmutableMap.class.getName() + '\"'));
         a = (MapHolder) xs.fromXML(xml);
 
         assertSame(m.getClass(), a.m.getClass());    // should get back the exact same type, not just a random map
@@ -220,7 +220,7 @@ class XStream2Test {
     }
 
     @Test
-    void immutableList() {
+    public void immutableList() {
         XStream2 xs = new XStream2();
 
         roundtripImmutableList(xs, ImmutableList.of());
@@ -240,8 +240,8 @@ class XStream2Test {
         a.l = l;
         String xml = xs.toXML(a);
         //System.out.println(xml);
-        assertFalse(xml.contains("google"), "shouldn't contain the class name");
-        assertFalse(xml.contains("class"), "shouldn't contain the class name");
+        assertFalse("shouldn't contain the class name", xml.contains("google"));
+        assertFalse("shouldn't contain the class name", xml.contains("class"));
         a = (ImmutableListHolder) xs.fromXML(xml);
 
         assertSame(l.getClass(), a.l.getClass());    // should get back the exact same type, not just a random list
@@ -253,7 +253,7 @@ class XStream2Test {
         a.l = l;
         String xml = xs.toXML(a);
         //System.out.println(xml);
-        assertTrue(xml.contains('\"' + ImmutableList.class.getName() + '\"'), "XML should mention the class name");
+        assertTrue("XML should mention the class name", xml.contains('\"' + ImmutableList.class.getName() + '\"'));
         a = (ListHolder) xs.fromXML(xml);
 
         assertSame(l.getClass(), a.l.getClass());    // should get back the exact same type, not just a random list
@@ -262,14 +262,14 @@ class XStream2Test {
 
     @Issue("JENKINS-8006") // Previously a null entry in an array caused NPE
     @Test
-    void emptyStack() {
+    public void emptyStack() {
         assertEquals("<object-array><null/><null/></object-array>",
                      Run.XSTREAM.toXML(new Object[2]).replaceAll("[ \n\r\t]+", ""));
     }
 
     @Issue("JENKINS-9843")
     @Test
-    void compatibilityAlias() {
+    public void compatibilityAlias() {
         XStream2 xs = new XStream2();
         xs.addCompatibilityAlias("legacy.Point", Point.class);
         Point pt = (Point) xs.fromXML("<legacy.Point><x>1</x><y>2</y></legacy.Point>");
@@ -277,7 +277,7 @@ class XStream2Test {
         assertEquals(2, pt.y);
         String xml = xs.toXML(pt);
         //System.out.println(xml);
-        assertFalse(xml.contains("legacy"), "Shouldn't use the alias when writing back");
+        assertFalse("Shouldn't use the alias when writing back", xml.contains("legacy"));
     }
 
     public static class Point {
@@ -290,7 +290,7 @@ class XStream2Test {
 
     @Issue("SECURITY-105")
     @Test
-    void dynamicProxyBlocked() {
+    public void dynamicProxyBlocked() {
         assertThrows(
                 XStreamException.class,
                 () -> ((Runnable) new XStream2().fromXML(
@@ -298,7 +298,7 @@ class XStream2Test {
                                         + Hacked.class.getName()
                                         + "'/><action>oops</action></handler></dynamic-proxy>"))
                         .run());
-        assertFalse(Hacked.tripped, "should never have run that");
+        assertFalse("should never have run that", Hacked.tripped);
     }
 
     public static final class Hacked {
@@ -310,7 +310,7 @@ class XStream2Test {
     }
 
     @Test
-    void trimVersion() {
+    public void trimVersion() {
         assertEquals("3.2", XStream2.trimVersion("3.2"));
         assertEquals("3.2.1", XStream2.trimVersion("3.2.1"));
         assertEquals("3.2-SNAPSHOT", XStream2.trimVersion("3.2-SNAPSHOT (private-09/23/2012 12:26-jhacker)"));
@@ -318,42 +318,41 @@ class XStream2Test {
 
     @Issue("JENKINS-21017")
     @Test
-    void unmarshalToDefault_populated() {
-        String populatedXml = """
-                <hudson.util.XStream2Test_-WithDefaults>
-                  <stringDefaultValue>my string</stringDefaultValue>
-                  <stringDefaultNull>not null</stringDefaultNull>
-                  <arrayDefaultValue>
-                    <string>1</string>
-                    <string>2</string>
-                    <string>3</string>
-                  </arrayDefaultValue>
-                  <arrayDefaultEmpty>
-                    <string>1</string>
-                    <string>2</string>
-                    <string>3</string>
-                  </arrayDefaultEmpty>
-                  <arrayDefaultNull>
-                    <string>1</string>
-                    <string>2</string>
-                    <string>3</string>
-                  </arrayDefaultNull>
-                  <listDefaultValue>
-                    <string>1</string>
-                    <string>2</string>
-                    <string>3</string>
-                  </listDefaultValue>
-                  <listDefaultEmpty>
-                    <string>1</string>
-                    <string>2</string>
-                    <string>3</string>
-                  </listDefaultEmpty>
-                  <listDefaultNull>
-                    <string>1</string>
-                    <string>2</string>
-                    <string>3</string>
-                  </listDefaultNull>
-                </hudson.util.XStream2Test_-WithDefaults>""";
+    public void unmarshalToDefault_populated() {
+        String populatedXml = "<hudson.util.XStream2Test_-WithDefaults>\n"
+                + "  <stringDefaultValue>my string</stringDefaultValue>\n"
+                + "  <stringDefaultNull>not null</stringDefaultNull>\n"
+                + "  <arrayDefaultValue>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </arrayDefaultValue>\n"
+                + "  <arrayDefaultEmpty>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </arrayDefaultEmpty>\n"
+                + "  <arrayDefaultNull>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </arrayDefaultNull>\n"
+                + "  <listDefaultValue>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </listDefaultValue>\n"
+                + "  <listDefaultEmpty>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </listDefaultEmpty>\n"
+                + "  <listDefaultNull>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </listDefaultNull>\n"
+                + "</hudson.util.XStream2Test_-WithDefaults>";
 
         WithDefaults existingInstance = new WithDefaults("foobar",
                 "foobar",
@@ -378,21 +377,20 @@ class XStream2Test {
 
     @Issue("JENKINS-21017")
     @Test
-    void unmarshalToDefault_default() {
-        String defaultXml = """
-                <hudson.util.XStream2Test_-WithDefaults>
-                  <stringDefaultValue>defaultValue</stringDefaultValue>
-                  <arrayDefaultValue>
-                    <string>first</string>
-                    <string>second</string>
-                  </arrayDefaultValue>
-                  <arrayDefaultEmpty/>
-                  <listDefaultValue>
-                    <string>first</string>
-                    <string>second</string>
-                  </listDefaultValue>
-                  <listDefaultEmpty/>
-                </hudson.util.XStream2Test_-WithDefaults>""";
+    public void unmarshalToDefault_default() {
+        String defaultXml = "<hudson.util.XStream2Test_-WithDefaults>\n"
+                + "  <stringDefaultValue>defaultValue</stringDefaultValue>\n"
+                + "  <arrayDefaultValue>\n"
+                + "    <string>first</string>\n"
+                + "    <string>second</string>\n"
+                + "  </arrayDefaultValue>\n"
+                + "  <arrayDefaultEmpty/>\n"
+                + "  <listDefaultValue>\n"
+                + "    <string>first</string>\n"
+                + "    <string>second</string>\n"
+                + "  </listDefaultValue>\n"
+                + "  <listDefaultEmpty/>\n"
+                + "</hudson.util.XStream2Test_-WithDefaults>";
 
         WithDefaults existingInstance = new WithDefaults("foobar",
                 "foobar",
@@ -417,7 +415,7 @@ class XStream2Test {
 
     @Issue("JENKINS-21017")
     @Test
-    void unmarshalToDefault_empty() {
+    public void unmarshalToDefault_empty() {
         String emptyXml = "<hudson.util.XStream2Test_-WithDefaults/>";
 
         WithDefaults existingInstance = new WithDefaults("foobar",
@@ -457,11 +455,9 @@ class XStream2Test {
         private List<String> listDefaultEmpty = new ArrayList<>();
         private List<String> listDefaultNull;
 
-        @SuppressWarnings("checkstyle:redundantmodifier")
         public WithDefaults() {
         }
 
-        @SuppressWarnings("checkstyle:redundantmodifier")
         public WithDefaults(String stringDefaultValue, String stringDefaultNull, String[] arrayDefaultValue,
                             String[] arrayDefaultEmpty, String[] arrayDefaultNull,
                             List<String> listDefaultValue, List<String> listDefaultEmpty,
@@ -543,15 +539,15 @@ class XStream2Test {
 
     @Issue("SECURITY-503")
     @Test
-    void crashXstream() {
+    public void crashXstream() {
         assertThrows(XStreamException.class, () -> new XStream2().fromXML("<void/>"));
     }
 
     @Test
-    void annotations() {
-        assertEquals("<hudson.util.XStream2Test_-C1/>", Jenkins.XSTREAM2.toXML(new C1()), "not registered, so sorry");
-        assertEquals("<C-2/>", Jenkins.XSTREAM2.toXML(new C2()), "manually registered");
-        assertEquals("<C-3/>", Jenkins.XSTREAM2.toXML(new C3()), "manually processed");
+    public void annotations() {
+        assertEquals("not registered, so sorry", "<hudson.util.XStream2Test_-C1/>", Jenkins.XSTREAM2.toXML(new C1()));
+        assertEquals("manually registered", "<C-2/>", Jenkins.XSTREAM2.toXML(new C2()));
+        assertEquals("manually processed", "<C-3/>", Jenkins.XSTREAM2.toXML(new C3()));
         assertThrows(CannotResolveClassException.class, () -> Jenkins.XSTREAM2.fromXML("<C-4/>"));
 
         Jenkins.XSTREAM2.processAnnotations(C5.class);
@@ -582,7 +578,7 @@ class XStream2Test {
 
     @Issue("JENKINS-69129")
     @Test
-    void testEmoji() throws Exception {
+    public void testEmoji() throws Exception {
         Bar bar;
         try (InputStream is = getClass().getResource("XStream2Emoji.xml").openStream()) {
             bar = (Bar) new XStream2().fromXML(is);
@@ -592,7 +588,7 @@ class XStream2Test {
 
     @Issue("JENKINS-69129")
     @Test
-    void testEmojiEscaped() throws Exception {
+    public void testEmojiEscaped() throws Exception {
         Bar bar;
         try (InputStream is = getClass().getResource("XStream2EmojiEscaped.xml").openStream()) {
             bar = (Bar) new XStream2().fromXML(is);
@@ -602,7 +598,7 @@ class XStream2Test {
 
     @Issue("JENKINS-71182")
     @Test
-    void writeEmoji() {
+    public void writeEmoji() throws Exception {
         Bar b = new Bar();
         String text = "Fox 🦊";
         b.s = text;
@@ -617,7 +613,7 @@ class XStream2Test {
 
     @Issue("JENKINS-71139")
     @Test
-    void nullsWithoutEncodingDeclaration() {
+    public void nullsWithoutEncodingDeclaration() throws Exception {
         Bar b = new Bar();
         b.s = "x\u0000y";
         try {
@@ -630,7 +626,7 @@ class XStream2Test {
 
     @Issue("JENKINS-71139")
     @Test
-    void nullsWithEncodingDeclaration() throws Exception {
+    public void nullsWithEncodingDeclaration() throws Exception {
         Bar b = new Bar();
         b.s = "x\u0000y";
         try {

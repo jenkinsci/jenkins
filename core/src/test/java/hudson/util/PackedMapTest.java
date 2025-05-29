@@ -1,15 +1,15 @@
 package hudson.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 import java.util.TreeMap;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-class PackedMapTest {
+public class PackedMapTest {
 
     static class Holder {
         PackedMap pm;
@@ -18,7 +18,7 @@ class PackedMapTest {
     private XStream2 xs = new XStream2();
 
     @Test
-    void basic() {
+    public void basic() {
         Map<String, String> o = new TreeMap<>();
         o.put("a", "b");
         o.put("c", "d");
@@ -35,19 +35,18 @@ class PackedMapTest {
         h.pm = p;
         String xml = xs.toXML(h);
         assertEquals(
-                """
-                        <hudson.util.PackedMapTest_-Holder>
-                          <pm>
-                            <entry>
-                              <string>a</string>
-                              <string>b</string>
-                            </entry>
-                            <entry>
-                              <string>c</string>
-                              <string>d</string>
-                            </entry>
-                          </pm>
-                        </hudson.util.PackedMapTest_-Holder>""",
+                "<hudson.util.PackedMapTest_-Holder>\n" +
+                "  <pm>\n" +
+                "    <entry>\n" +
+                "      <string>a</string>\n" +
+                "      <string>b</string>\n" +
+                "    </entry>\n" +
+                "    <entry>\n" +
+                "      <string>c</string>\n" +
+                "      <string>d</string>\n" +
+                "    </entry>\n" +
+                "  </pm>\n" +
+                "</hudson.util.PackedMapTest_-Holder>",
                 xml);
 
         xs.fromXML(xml);

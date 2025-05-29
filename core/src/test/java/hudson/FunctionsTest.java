@@ -30,9 +30,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -56,18 +56,17 @@ import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.mockito.MockedStatic;
 
-class FunctionsTest {
-
+public class FunctionsTest {
     @Test
-    void testGetActionUrl_absoluteUriWithAuthority() {
+    public void testGetActionUrl_absoluteUriWithAuthority() {
         String[] uris = {
             "http://example.com/foo/bar",
             "https://example.com/foo/bar",
@@ -82,7 +81,7 @@ class FunctionsTest {
 
     @Test
     @Issue("JENKINS-7725")
-    void testGetActionUrl_absoluteUriWithoutAuthority() {
+    public void testGetActionUrl_absoluteUriWithoutAuthority() {
         String[] uris = {
             "mailto:nobody@example.com",
             "mailto:nobody@example.com?subject=hello",
@@ -95,7 +94,7 @@ class FunctionsTest {
     }
 
     @Test
-    void testGetActionUrl_absolutePath() {
+    public void testGetActionUrl_absolutePath() {
         String contextPath = "/jenkins";
         StaplerRequest2 req = createMockRequest(contextPath);
         String[] paths = {
@@ -113,7 +112,7 @@ class FunctionsTest {
     }
 
     @Test
-    void testGetActionUrl_relativePath() {
+    public void testGetActionUrl_relativePath() {
         String contextPath = "/jenkins";
         String itUrl = "iturl/";
         StaplerRequest2 req = createMockRequest(contextPath);
@@ -132,7 +131,7 @@ class FunctionsTest {
     }
 
     @Test
-    void testGetRelativeLinkTo_JobContainedInView() {
+    public void testGetRelativeLinkTo_JobContainedInView() {
         String contextPath = "/jenkins";
         StaplerRequest2 req = createMockRequest(contextPath);
         try (
@@ -154,7 +153,7 @@ class FunctionsTest {
     }
 
     @Test
-    void testGetRelativeLinkTo_JobFromComputer() {
+    public void testGetRelativeLinkTo_JobFromComputer() {
         String contextPath = "/jenkins";
         StaplerRequest2 req = createMockRequest(contextPath);
         try (
@@ -172,9 +171,9 @@ class FunctionsTest {
         }
     }
 
-    @Disabled("too expensive to make it correct")
+    @Ignore("too expensive to make it correct")
     @Test
-    void testGetRelativeLinkTo_JobNotContainedInView() {
+    public void testGetRelativeLinkTo_JobNotContainedInView() {
         String contextPath = "/jenkins";
         StaplerRequest2 req = createMockRequest(contextPath);
         try (
@@ -197,7 +196,7 @@ class FunctionsTest {
     private interface TopLevelItemAndItemGroup<T extends TopLevelItem> extends TopLevelItem, ItemGroup<T>, ViewGroup {}
 
     @Test
-    void testGetRelativeLinkTo_JobContainedInViewWithinItemGroup() {
+    public void testGetRelativeLinkTo_JobContainedInViewWithinItemGroup() {
         String contextPath = "/jenkins";
         StaplerRequest2 req = createMockRequest(contextPath);
         try (
@@ -220,8 +219,7 @@ class FunctionsTest {
     }
 
     @Issue("JENKINS-17713")
-    @Test
-    void getRelativeLinkTo_MavenModules() {
+    @Test public void getRelativeLinkTo_MavenModules() {
         StaplerRequest2 req = createMockRequest("/jenkins");
         try (
                 MockedStatic<Stapler> mocked = mockStatic(Stapler.class);
@@ -241,7 +239,7 @@ class FunctionsTest {
     }
 
     @Test
-    void testGetRelativeDisplayName() {
+    public void testGetRelativeDisplayName() {
         Item i = mock(Item.class);
         when(i.getName()).thenReturn("jobName");
         when(i.getFullDisplayName()).thenReturn("displayName");
@@ -249,7 +247,7 @@ class FunctionsTest {
     }
 
     @Test
-    void testGetRelativeDisplayNameInsideItemGroup() {
+    public void testGetRelativeDisplayNameInsideItemGroup() {
         Item i = mock(Item.class);
         when(i.getName()).thenReturn("jobName");
         when(i.getDisplayName()).thenReturn("displayName");
@@ -299,7 +297,7 @@ class FunctionsTest {
     }
 
     @Test
-    void testGetActionUrl_unparseable() {
+    public void testGetActionUrl_unparseable() {
         assertNull(Functions.getActionUrl(null, createMockAction("http://example.net/stuff?something=^woohoo")));
     }
 
@@ -317,7 +315,7 @@ class FunctionsTest {
 
     @Test
     @Issue("JENKINS-16630")
-    void testHumanReadableFileSize() {
+    public void testHumanReadableFileSize() {
         Locale defaultLocale = Locale.getDefault();
         try {
             Locale.setDefault(Locale.ENGLISH);
@@ -337,7 +335,7 @@ class FunctionsTest {
 
     @Issue("JENKINS-17030")
     @Test
-    void testBreakableString() {
+    public void testBreakableString() {
 
         assertBrokenAs("Hello world!", "Hello world!");
         assertBrokenAs("Hello-world!", "Hello", "-world!");
@@ -365,129 +363,110 @@ class FunctionsTest {
     }
 
     @Issue("JENKINS-20800")
-    @Test
-    void printLogRecordHtml() {
+    @Test public void printLogRecordHtml() {
         LogRecord lr = new LogRecord(Level.INFO, "Bad input <xml/>");
         lr.setLoggerName("test");
         assertEquals("Bad input &lt;xml/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);
     }
 
-    @Test
-    void printLogRecordHtmlNoLogger() {
+    @Test public void printLogRecordHtmlNoLogger() {
         LogRecord lr = new LogRecord(Level.INFO, "<discarded/>");
         assertEquals("&lt;discarded/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);
     }
 
     @Test
-    void extractPluginNameFromIconSrcHandlesNull() {
+    public void extractPluginNameFromIconSrcHandlesNull() {
         String result = Functions.extractPluginNameFromIconSrc(null);
 
         assertThat(result, is(emptyString()));
     }
 
     @Test
-    void extractPluginNameFromIconSrcHandlesEmptyString() {
+    public void extractPluginNameFromIconSrcHandlesEmptyString() {
         String result = Functions.extractPluginNameFromIconSrc("");
 
         assertThat(result, is(emptyString()));
     }
 
     @Test
-    void extractPluginNameFromIconSrcOnlyReturnsPluginFromStart() {
+    public void extractPluginNameFromIconSrcOnlyReturnsPluginFromStart() {
         String result = Functions.extractPluginNameFromIconSrc("symbol-plugin-mailer plugin-design-library");
 
         assertThat(result, is(equalTo("design-library")));
     }
 
     @Test
-    void extractPluginNameFromIconSrcExtractsPlugin() {
+    public void extractPluginNameFromIconSrcExtractsPlugin() {
         String result = Functions.extractPluginNameFromIconSrc("symbol-padlock plugin-design-library");
 
         assertThat(result, is(equalTo("design-library")));
     }
 
     @Test
-    void extractPluginNameFromIconSrcWhichContainsPluginWordInThePluginName() {
+    public void extractPluginNameFromIconSrcWhichContainsPluginWordInThePluginName() {
         String result = Functions.extractPluginNameFromIconSrc("symbol-padlock plugin-design-library-plugin");
 
         assertThat(result, is(equalTo("design-library-plugin")));
     }
 
     @Issue("JDK-6507809")
-    @Test
-    void printThrowable() {
+    @Test public void printThrowable() {
         // Basics: a single exception. No change.
         assertPrintThrowable(new Stack("java.lang.NullPointerException: oops", "p.C.method1:17", "m.Main.main:1"),
-                """
-                        java.lang.NullPointerException: oops
-                        \tat p.C.method1(C.java:17)
-                        \tat m.Main.main(Main.java:1)
-                        """,
-                """
-                        java.lang.NullPointerException: oops
-                        \tat p.C.method1(C.java:17)
-                        \tat m.Main.main(Main.java:1)
-                        """);
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\tat m.Main.main(Main.java:1)\n",
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\tat m.Main.main(Main.java:1)\n");
         // try {…} catch (Exception x) {throw new IllegalStateException(x);}
         assertPrintThrowable(new Stack("java.lang.IllegalStateException: java.lang.NullPointerException: oops", "p.C.method1:19", "m.Main.main:1").
                        cause(new Stack("java.lang.NullPointerException: oops", "p.C.method2:23", "p.C.method1:17", "m.Main.main:1")),
-                """
-                        java.lang.IllegalStateException: java.lang.NullPointerException: oops
-                        \tat p.C.method1(C.java:19)
-                        \tat m.Main.main(Main.java:1)
-                        Caused by: java.lang.NullPointerException: oops
-                        \tat p.C.method2(C.java:23)
-                        \tat p.C.method1(C.java:17)
-                        \t... 1 more
-                        """,
-                """
-                        java.lang.NullPointerException: oops
-                        \tat p.C.method2(C.java:23)
-                        \tat p.C.method1(C.java:17)
-                        Caused: java.lang.IllegalStateException
-                        \tat p.C.method1(C.java:19)
-                        \tat m.Main.main(Main.java:1)
-                        """);
+            "java.lang.IllegalStateException: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n" +
+            "Caused by: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\t... 1 more\n",
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "Caused: java.lang.IllegalStateException\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n");
         // try {…} catch (Exception x) {throw new IllegalStateException("more info");}
         assertPrintThrowable(new Stack("java.lang.IllegalStateException: more info", "p.C.method1:19", "m.Main.main:1").
                        cause(new Stack("java.lang.NullPointerException: oops", "p.C.method2:23", "p.C.method1:17", "m.Main.main:1")),
-                """
-                        java.lang.IllegalStateException: more info
-                        \tat p.C.method1(C.java:19)
-                        \tat m.Main.main(Main.java:1)
-                        Caused by: java.lang.NullPointerException: oops
-                        \tat p.C.method2(C.java:23)
-                        \tat p.C.method1(C.java:17)
-                        \t... 1 more
-                        """,
-                """
-                        java.lang.NullPointerException: oops
-                        \tat p.C.method2(C.java:23)
-                        \tat p.C.method1(C.java:17)
-                        Caused: java.lang.IllegalStateException: more info
-                        \tat p.C.method1(C.java:19)
-                        \tat m.Main.main(Main.java:1)
-                        """);
+            "java.lang.IllegalStateException: more info\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n" +
+            "Caused by: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\t... 1 more\n",
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "Caused: java.lang.IllegalStateException: more info\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n");
         // try {…} catch (Exception x) {throw new IllegalStateException("more info: " + x);}
         assertPrintThrowable(new Stack("java.lang.IllegalStateException: more info: java.lang.NullPointerException: oops", "p.C.method1:19", "m.Main.main:1").
                        cause(new Stack("java.lang.NullPointerException: oops", "p.C.method2:23", "p.C.method1:17", "m.Main.main:1")),
-                """
-                        java.lang.IllegalStateException: more info: java.lang.NullPointerException: oops
-                        \tat p.C.method1(C.java:19)
-                        \tat m.Main.main(Main.java:1)
-                        Caused by: java.lang.NullPointerException: oops
-                        \tat p.C.method2(C.java:23)
-                        \tat p.C.method1(C.java:17)
-                        \t... 1 more
-                        """,
-                """
-                        java.lang.NullPointerException: oops
-                        \tat p.C.method2(C.java:23)
-                        \tat p.C.method1(C.java:17)
-                        Caused: java.lang.IllegalStateException: more info
-                        \tat p.C.method1(C.java:19)
-                        \tat m.Main.main(Main.java:1)
-                        """);
+            "java.lang.IllegalStateException: more info: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n" +
+            "Caused by: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\t... 1 more\n",
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "Caused: java.lang.IllegalStateException: more info\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n");
         // Synthetic stack showing an exception made elsewhere, such as happens with hudson.remoting.Channel.attachCallSiteStackTrace.
         Throwable t = new Stack("remote.Exception: oops", "remote.Place.method:17", "remote.Service.run:9");
         StackTraceElement[] callSite = new Stack("wrapped.Exception", "local.Side.call:11", "local.Main.main:1").getStackTrace();
@@ -498,22 +477,18 @@ class FunctionsTest {
         System.arraycopy(callSite, 0, combined, original.length + 1, callSite.length);
         t.setStackTrace(combined);
         assertPrintThrowable(t,
-                """
-                        remote.Exception: oops
-                        \tat remote.Place.method(Place.java:17)
-                        \tat remote.Service.run(Service.java:9)
-                        \tat ......remote call(Native Method)
-                        \tat local.Side.call(Side.java:11)
-                        \tat local.Main.main(Main.java:1)
-                        """,
-                """
-                        remote.Exception: oops
-                        \tat remote.Place.method(Place.java:17)
-                        \tat remote.Service.run(Service.java:9)
-                        \tat ......remote call(Native Method)
-                        \tat local.Side.call(Side.java:11)
-                        \tat local.Main.main(Main.java:1)
-                        """);
+            "remote.Exception: oops\n" +
+            "\tat remote.Place.method(Place.java:17)\n" +
+            "\tat remote.Service.run(Service.java:9)\n" +
+            "\tat ......remote call(Native Method)\n" +
+            "\tat local.Side.call(Side.java:11)\n" +
+            "\tat local.Main.main(Main.java:1)\n",
+            "remote.Exception: oops\n" +
+            "\tat remote.Place.method(Place.java:17)\n" +
+            "\tat remote.Service.run(Service.java:9)\n" +
+            "\tat ......remote call(Native Method)\n" +
+            "\tat local.Side.call(Side.java:11)\n" +
+            "\tat local.Main.main(Main.java:1)\n");
         // Same but now using a cause on the remote side.
         t = new Stack("remote.Wrapper: remote.Exception: oops", "remote.Place.method2:19", "remote.Service.run:9").cause(new Stack("remote.Exception: oops", "remote.Place.method1:11", "remote.Place.method2:17", "remote.Service.run:9"));
         callSite = new Stack("wrapped.Exception", "local.Side.call:11", "local.Main.main:1").getStackTrace();
@@ -524,18 +499,16 @@ class FunctionsTest {
         System.arraycopy(callSite, 0, combined, original.length + 1, callSite.length);
         t.setStackTrace(combined);
         assertPrintThrowable(t,
-                """
-                        remote.Wrapper: remote.Exception: oops
-                        \tat remote.Place.method2(Place.java:19)
-                        \tat remote.Service.run(Service.java:9)
-                        \tat ......remote call(Native Method)
-                        \tat local.Side.call(Side.java:11)
-                        \tat local.Main.main(Main.java:1)
-                        Caused by: remote.Exception: oops
-                        \tat remote.Place.method1(Place.java:11)
-                        \tat remote.Place.method2(Place.java:17)
-                        \tat remote.Service.run(Service.java:9)
-                        """,
+            "remote.Wrapper: remote.Exception: oops\n" +
+            "\tat remote.Place.method2(Place.java:19)\n" +
+            "\tat remote.Service.run(Service.java:9)\n" +
+            "\tat ......remote call(Native Method)\n" +
+            "\tat local.Side.call(Side.java:11)\n" +
+            "\tat local.Main.main(Main.java:1)\n" +
+            "Caused by: remote.Exception: oops\n" +
+            "\tat remote.Place.method1(Place.java:11)\n" +
+            "\tat remote.Place.method2(Place.java:17)\n" +
+            "\tat remote.Service.run(Service.java:9)\n",
             "remote.Exception: oops\n" +
             "\tat remote.Place.method1(Place.java:11)\n" +
             "\tat remote.Place.method2(Place.java:17)\n" +
@@ -552,44 +525,40 @@ class FunctionsTest {
                   suppressed(new Stack("java.io.IOException: could not close", "p.C.close:99", "p.C.method1:18", "m.Main.main:1"),
                              new Stack("java.io.IOException: java.lang.NullPointerException", "p.C.flush:77", "p.C.method1:18", "m.Main.main:1").
                        cause(new Stack("java.lang.NullPointerException", "p.C.findFlushee:70", "p.C.flush:75", "p.C.method1:18", "m.Main.main:1"))),
-                """
-                        java.lang.IllegalStateException: java.lang.NullPointerException: oops
-                        \tat p.C.method1(C.java:19)
-                        \tat m.Main.main(Main.java:1)
-                        \tSuppressed: java.io.IOException: could not close
-                        \t\tat p.C.close(C.java:99)
-                        \t\tat p.C.method1(C.java:18)
-                        \t\t... 1 more
-                        \tSuppressed: java.io.IOException: java.lang.NullPointerException
-                        \t\tat p.C.flush(C.java:77)
-                        \t\tat p.C.method1(C.java:18)
-                        \t\t... 1 more
-                        \tCaused by: java.lang.NullPointerException
-                        \t\tat p.C.findFlushee(C.java:70)
-                        \t\tat p.C.flush(C.java:75)
-                        \t\t... 2 more
-                        Caused by: java.lang.NullPointerException: oops
-                        \tat p.C.method2(C.java:23)
-                        \tat p.C.method1(C.java:17)
-                        \t... 1 more
-                        """,
-                """
-                        java.lang.NullPointerException: oops
-                        \tat p.C.method2(C.java:23)
-                        \tat p.C.method1(C.java:17)
-                        Also:   java.io.IOException: could not close
-                        \t\tat p.C.close(C.java:99)
-                        \t\tat p.C.method1(C.java:18)
-                        Also:   java.lang.NullPointerException
-                        \t\tat p.C.findFlushee(C.java:70)
-                        \t\tat p.C.flush(C.java:75)
-                        \tCaused: java.io.IOException
-                        \t\tat p.C.flush(C.java:77)
-                        \t\tat p.C.method1(C.java:18)
-                        Caused: java.lang.IllegalStateException
-                        \tat p.C.method1(C.java:19)
-                        \tat m.Main.main(Main.java:1)
-                        """);
+            "java.lang.IllegalStateException: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n" +
+            "\tSuppressed: java.io.IOException: could not close\n" +
+            "\t\tat p.C.close(C.java:99)\n" +
+            "\t\tat p.C.method1(C.java:18)\n" +
+            "\t\t... 1 more\n" +
+            "\tSuppressed: java.io.IOException: java.lang.NullPointerException\n" +
+            "\t\tat p.C.flush(C.java:77)\n" +
+            "\t\tat p.C.method1(C.java:18)\n" +
+            "\t\t... 1 more\n" +
+            "\tCaused by: java.lang.NullPointerException\n" +
+            "\t\tat p.C.findFlushee(C.java:70)\n" +
+            "\t\tat p.C.flush(C.java:75)\n" +
+            "\t\t... 2 more\n" +
+            "Caused by: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\t... 1 more\n",
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "Also:   java.io.IOException: could not close\n" +
+            "\t\tat p.C.close(C.java:99)\n" +
+            "\t\tat p.C.method1(C.java:18)\n" +
+            "Also:   java.lang.NullPointerException\n" +
+            "\t\tat p.C.findFlushee(C.java:70)\n" +
+            "\t\tat p.C.flush(C.java:75)\n" +
+            "\tCaused: java.io.IOException\n" +
+            "\t\tat p.C.flush(C.java:77)\n" +
+            "\t\tat p.C.method1(C.java:18)\n" +
+            "Caused: java.lang.IllegalStateException\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n");
         // Custom printStackTrace implementations:
         assertPrintThrowable(new Throwable() {
             @Override
@@ -607,36 +576,28 @@ class FunctionsTest {
         if (getVersion().isNewerThanOrEqualTo(new VersionNumber("11.0.9")) ||
                 (getVersion().getDigitAt(0) == 8 && getVersion().isNewerThanOrEqualTo(new VersionNumber("8.0.272")))) {
             assertPrintThrowable(stack1,
-                    """
-                            p.Exc1
-                            \tat p.C.method1(C.java:17)
-                            Caused by: p.Exc2
-                            \tat p.C.method2(C.java:27)
-                            Caused by: [CIRCULAR REFERENCE: p.Exc1]
-                            """,
-                    """
-                            <cycle to p.Exc1>
-                            Caused: p.Exc2
-                            \tat p.C.method2(C.java:27)
-                            Caused: p.Exc1
-                            \tat p.C.method1(C.java:17)
-                            """);
+                    "p.Exc1\n" +
+                            "\tat p.C.method1(C.java:17)\n" +
+                            "Caused by: p.Exc2\n" +
+                            "\tat p.C.method2(C.java:27)\n" +
+                            "Caused by: [CIRCULAR REFERENCE: p.Exc1]\n",
+                    "<cycle to p.Exc1>\n" +
+                            "Caused: p.Exc2\n" +
+                            "\tat p.C.method2(C.java:27)\n" +
+                            "Caused: p.Exc1\n" +
+                            "\tat p.C.method1(C.java:17)\n");
         } else {
             assertPrintThrowable(stack1,
-                    """
-                            p.Exc1
-                            \tat p.C.method1(C.java:17)
-                            Caused by: p.Exc2
-                            \tat p.C.method2(C.java:27)
-                            \t[CIRCULAR REFERENCE:p.Exc1]
-                            """,
-                    """
-                            <cycle to p.Exc1>
-                            Caused: p.Exc2
-                            \tat p.C.method2(C.java:27)
-                            Caused: p.Exc1
-                            \tat p.C.method1(C.java:17)
-                            """);
+                    "p.Exc1\n" +
+                            "\tat p.C.method1(C.java:17)\n" +
+                            "Caused by: p.Exc2\n" +
+                            "\tat p.C.method2(C.java:27)\n" +
+                            "\t[CIRCULAR REFERENCE:p.Exc1]\n",
+                    "<cycle to p.Exc1>\n" +
+                            "Caused: p.Exc2\n" +
+                            "\tat p.C.method2(C.java:27)\n" +
+                            "Caused: p.Exc1\n" +
+                            "\tat p.C.method1(C.java:17)\n");
         }
     }
 
@@ -690,42 +651,42 @@ class FunctionsTest {
     }
 
     @Test
-    void tryGetIcon_shouldReturnNullForNull() {
+    public void tryGetIcon_shouldReturnNullForNull() throws Exception {
         assertThat(Functions.tryGetIcon(null), is(nullValue()));
     }
 
     @Test
-    void tryGetIcon_shouldReturnNullForSymbol() {
+    public void tryGetIcon_shouldReturnNullForSymbol() throws Exception {
         assertThat(Functions.tryGetIcon("symbol-search"), is(nullValue()));
     }
 
     @Test
-    void tryGetIcon_shouldReturnMetadataForExactSpec() {
+    public void tryGetIcon_shouldReturnMetadataForExactSpec() throws Exception {
         assertThat(Functions.tryGetIcon("icon-help icon-sm"), is(not(nullValue())));
     }
 
     @Test
-    void tryGetIcon_shouldReturnMetadataForExtraSpec() {
+    public void tryGetIcon_shouldReturnMetadataForExtraSpec() throws Exception {
         assertThat(Functions.tryGetIcon("icon-help icon-sm extra-class"), is(not(nullValue())));
     }
 
     @Test
-    void tryGetIcon_shouldReturnMetadataForFilename() {
+    public void tryGetIcon_shouldReturnMetadataForFilename() throws Exception {
         assertThat(Functions.tryGetIcon("help.svg"), is(not(nullValue())));
     }
 
     @Test
-    void tryGetIcon_shouldReturnMetadataForUrl() {
+    public void tryGetIcon_shouldReturnMetadataForUrl() throws Exception {
         assertThat(Functions.tryGetIcon("48x48/green.gif"), is(not(nullValue())));
     }
 
     @Test
-    void tryGetIcon_shouldReturnNullForUnknown() {
+    public void tryGetIcon_shouldReturnNullForUnknown() throws Exception {
         assertThat(Functions.tryGetIcon("icon-nosuchicon"), is(nullValue()));
     }
 
     @Test
-    void guessIcon() {
+    public void guessIcon() throws Exception {
         Jenkins.RESOURCE_PATH = "/static/12345678";
         assertEquals("/jenkins/static/12345678/images/48x48/green.gif", Functions.guessIcon("jenkins/images/48x48/green.gif", "/jenkins"));
         assertEquals("/jenkins/static/12345678/images/48x48/green.gif", Functions.guessIcon("/jenkins/images/48x48/green.gif", "/jenkins"));

@@ -40,10 +40,10 @@ import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.lang.Klass;
 
-class GetLocaleStaticHelpUrlTest {
+public class GetLocaleStaticHelpUrlTest {
 
     @Test
-    void getStaticHelpUrlAcceptEnResDefault() {
+    public void getStaticHelpUrlAcceptEnResDefault() {
         // Accept-Language: en
         StaplerRequest2 req = mockStaplerRequest2(
                 Locale.ENGLISH
@@ -58,7 +58,7 @@ class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    void getStaticHelpUrlAcceptDeResDeNoCountry() {
+    public void getStaticHelpUrlAcceptDeResDeNoCountry() {
         // Accept-Language: de-DE,de;q=0.9,en;q=0.8
         StaplerRequest2 req = mockStaplerRequest2(
                 Locale.GERMANY,
@@ -76,7 +76,7 @@ class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    void getStaticHelpUrlAcceptDeResDeCountry() {
+    public void getStaticHelpUrlAcceptDeResDeCountry() {
         // Accept-Language: de-DE,de;q=0.9,en;q=0.8
         StaplerRequest2 req = mockStaplerRequest2(
                 Locale.GERMANY,
@@ -94,7 +94,7 @@ class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    void getStaticHelpUrlAcceptDeResBoth() {
+    public void getStaticHelpUrlAcceptDeResBoth() {
         // Accept-Language: de-DE,de;q=0.9,en;q=0.8
         StaplerRequest2 req = mockStaplerRequest2(
                 Locale.GERMANY,
@@ -113,7 +113,7 @@ class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    void getStaticHelpUrlAcceptZhResDefault() {
+    public void getStaticHelpUrlAcceptZhResDefault() {
         // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
         StaplerRequest2 req = mockStaplerRequest2(
                 Locale.CHINESE,
@@ -132,7 +132,7 @@ class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    void getStaticHelpUrlAcceptZhResZhCountry() {
+    public void getStaticHelpUrlAcceptZhResZhCountry() {
         // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
         StaplerRequest2 req = mockStaplerRequest2(
                 Locale.CHINESE,
@@ -152,7 +152,7 @@ class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    void getStaticHelpUrlAcceptZhResBoth() {
+    public void getStaticHelpUrlAcceptZhResBoth() {
         // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
         StaplerRequest2 req = mockStaplerRequest2(
                 Locale.CHINESE,
@@ -172,7 +172,7 @@ class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    void getStaticHelpUrlAcceptZhResMore() {
+    public void getStaticHelpUrlAcceptZhResMore() {
         // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
         StaplerRequest2 req = mockStaplerRequest2(
                 Locale.CHINESE,
@@ -194,7 +194,7 @@ class GetLocaleStaticHelpUrlTest {
 
     @Issue("JENKINS-73246")
     @Test
-    void getStaticHelpUrlAcceptEnFirst() {
+    public void getStaticHelpUrlAcceptEnFirst() {
         // Accept-Language: en-US,en;q=0.9,de;q=0.8
         StaplerRequest2 req = mockStaplerRequest2(
                 Locale.US,

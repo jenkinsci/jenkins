@@ -34,10 +34,10 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Kohsuke Kawaguchi
  */
-class MarkupTextTest {
+public class MarkupTextTest {
 
     @Test
-    void test1() {
+    public void test1() {
         MarkupText t = new MarkupText("I fixed issue #155. The rest is trick text: xissue #155 issue #123x");
         for (SubText st : t.findTokens(pattern)) {
             assertEquals(1, st.groupCount());
@@ -48,7 +48,7 @@ class MarkupTextTest {
     }
 
     @Test
-    void boundary() {
+    public void boundary() {
         MarkupText t = new MarkupText("issue #155---issue #123");
         for (SubText st : t.findTokens(pattern))
             st.surroundWith("<$1>", "<$1>");
@@ -57,7 +57,7 @@ class MarkupTextTest {
     }
 
     @Test
-    void findTokensOnSubText() {
+    public void findTokensOnSubText() {
         MarkupText t = new MarkupText("Fixed 2 issues in this commit, fixing issue 155, 145");
         List<SubText> tokens = t.findTokens(Pattern.compile("issue .*"));
         assertEquals(1, tokens.size(), "Expected one token");
@@ -69,7 +69,7 @@ class MarkupTextTest {
     }
 
     @Test
-    void literalTextSurround() {
+    public void literalTextSurround() {
         MarkupText text = new MarkupText("AAA test AAA");
         for (SubText token : text.findTokens(Pattern.compile("AAA"))) {
             token.surroundWithLiteral("$9", "$9");
@@ -81,7 +81,7 @@ class MarkupTextTest {
      * Start/end tag nesting should be correct regardless of the order tags are added.
      */
     @Test
-    void addMarkupInOrder() {
+    public void addMarkupInOrder() {
         MarkupText text = new MarkupText("abcdef");
         text.addMarkup(0, 3, "$", "$");
         text.addMarkup(3, 6, "#", "#");
@@ -89,7 +89,7 @@ class MarkupTextTest {
     }
 
     @Test
-    void addMarkupInReversedOrder() {
+    public void addMarkupInReversedOrder() {
         MarkupText text = new MarkupText("abcdef");
         text.addMarkup(3, 6, "#", "#");
         text.addMarkup(0, 3, "$", "$");
@@ -97,7 +97,7 @@ class MarkupTextTest {
     }
 
     @Test
-    void escape() {
+    public void escape() {
         MarkupText text = new MarkupText("&&&");
         assertEquals("&amp;&amp;&amp;", text.toString(false));
 
@@ -107,7 +107,7 @@ class MarkupTextTest {
     }
 
     @Test
-    void preEscape() {
+    public void preEscape() {
         MarkupText text = new MarkupText("Line\n2   & 3\n<End>\n");
         assertEquals("Line\n2   &amp; 3\n&lt;End&gt;\n", text.toString(true));
         text.addMarkup(4, "<hr/>");
@@ -116,7 +116,7 @@ class MarkupTextTest {
 
     /* @Issue("JENKINS-6252") */
     @Test
-    void subTextSubText() {
+    public void subTextSubText() {
         MarkupText text = new MarkupText("abcdefgh");
         SubText sub = text.subText(2, 7);
         assertEquals("cdefg", sub.getText());

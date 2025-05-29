@@ -27,33 +27,31 @@ package hudson.util;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.thoughtworks.xstream.security.InputManipulationException;
 import hudson.model.Saveable;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import jenkins.util.xstream.CriticalXStreamException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
-class RobustMapConverterTest {
+public class RobustMapConverterTest {
     private final boolean originalRecordFailures = RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS;
 
-    @BeforeEach
-    void before() {
+    @Before
+    public void before() {
         RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
     }
 
-    @AfterEach
-    void after() {
+    @After
+    public void after() {
         RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = originalRecordFailures;
     }
 
@@ -62,10 +60,9 @@ class RobustMapConverterTest {
      * We had to patch it in order to not be impacted by CVE-2021-43859
      */
     // force timeout to prevent DoS due to test in the case the DoS prevention is broken
-    @Test
-    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
+    @Test(timeout = 30 * 1000)
     @Issue("SECURITY-2602")
-    void dosIsPrevented_customProgrammaticallyTimeout() {
+    public void dosIsPrevented_customProgrammaticallyTimeout() {
         XStream2 xstream2 = new XStream2();
 
         Map<Object, Object> map = preparePayload();
@@ -78,13 +75,12 @@ class RobustMapConverterTest {
         assertNotNull(cause);
         assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
-        assertTrue(ime.getMessage().contains("exceeds 3 seconds"), "Limit expected in message");
+        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 3 seconds"));
     }
 
-    @Test
-    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
+    @Test(timeout = 30 * 1000)
     @Issue("SECURITY-2602")
-    void dosIsPrevented_customPropertyTimeout() {
+    public void dosIsPrevented_customPropertyTimeout() {
         String currentValue = System.getProperty(XStream2.COLLECTION_UPDATE_LIMIT_PROPERTY_NAME);
         try {
             System.setProperty(XStream2.COLLECTION_UPDATE_LIMIT_PROPERTY_NAME, "4");
@@ -99,7 +95,7 @@ class RobustMapConverterTest {
             assertNotNull(cause);
             assertThat(cause, instanceOf(InputManipulationException.class));
             InputManipulationException ime = (InputManipulationException) cause;
-            assertTrue(ime.getMessage().contains("exceeds 4 seconds"), "Limit expected in message");
+            assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 4 seconds"));
         } finally {
             if (currentValue == null) {
                 System.clearProperty(XStream2.COLLECTION_UPDATE_LIMIT_PROPERTY_NAME);
@@ -110,10 +106,9 @@ class RobustMapConverterTest {
     }
 
     // force timeout to prevent DoS due to test in the case the DoS prevention is broken
-    @Test
-    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
+    @Test(timeout = 30 * 1000)
     @Issue("SECURITY-2602")
-    void dosIsPrevented_defaultTimeout() {
+    public void dosIsPrevented_defaultTimeout() {
         XStream2 xstream2 = new XStream2();
 
         Map<Object, Object> map = preparePayload();
@@ -124,7 +119,7 @@ class RobustMapConverterTest {
         assertNotNull(cause);
         assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
-        assertTrue(ime.getMessage().contains("exceeds 5 seconds"), "Limit expected in message");
+        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
     }
 
     // Inspired by https://github.com/x-stream/xstream/commit/e8e88621ba1c85ac3b8620337dd672e0c0c3a846#diff-9fde4ecf1bb4dc9850c031cb161960d2e61e069b386fa0b3db0d57e0e9f5baa
@@ -166,7 +161,7 @@ class RobustMapConverterTest {
     }
 
     @Test
-    void robustAgainstInvalidEntry() {
+    public void robustAgainstInvalidEntry() {
         RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
         XStream2 xstream2 = new XStream2();
         String xml =
@@ -186,7 +181,7 @@ class RobustMapConverterTest {
     }
 
     @Test
-    void robustAgainstInvalidEntryWithNoValue() {
+    public void robustAgainstInvalidEntryWithNoValue() {
         XStream2 xstream2 = new XStream2();
         String xml =
             """
@@ -208,7 +203,7 @@ class RobustMapConverterTest {
 
     @Issue("JENKINS-63343")
     @Test
-    void robustAgainstInvalidKeyType() {
+    public void robustAgainstInvalidKeyType() {
         XStream2 xstream2 = new XStream2();
         String xml =
             """
@@ -238,7 +233,7 @@ class RobustMapConverterTest {
 
     @Issue("JENKINS-63343")
     @Test
-    void robustAgainstInvalidValueType() {
+    public void robustAgainstInvalidValueType() {
         XStream2 xstream2 = new XStream2();
         String xml =
             """
@@ -267,7 +262,7 @@ class RobustMapConverterTest {
     }
 
     @Test
-    void rawtypes() {
+    public void rawtypes() {
         XStream2 xstream2 = new XStream2();
         String xml =
             """

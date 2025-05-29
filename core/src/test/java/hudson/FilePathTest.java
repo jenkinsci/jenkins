@@ -26,14 +26,14 @@ package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,10 +41,6 @@ import static org.mockito.Mockito.when;
 import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
 import hudson.os.WindowsUtil;
-import hudson.remoting.Channel;
-import hudson.remoting.ChannelBuilder;
-import hudson.remoting.FastPipedInputStream;
-import hudson.remoting.FastPipedOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.WorkspaceList;
 import hudson.util.StreamTaskListener;
@@ -55,7 +51,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.io.UncheckedIOException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -84,66 +79,29 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-class FilePathTest {
+public class FilePathTest {
 
-    @TempDir
-    private File temp;
+    @Rule public ChannelRule channels = new ChannelRule();
+    @Rule public TemporaryFolder temp = new TemporaryFolder();
 
-    /**
-     * Two channels that are connected to each other, but shares the same classloader.
-     */
-    private Channel french;
-    private Channel british;
-    private ExecutorService executors;
-
-    @BeforeEach
-    void setUp() throws Exception {
-        executors = Executors.newCachedThreadPool();
-        final FastPipedInputStream p1i = new FastPipedInputStream();
-        final FastPipedInputStream p2i = new FastPipedInputStream();
-        final FastPipedOutputStream p1o = new FastPipedOutputStream(p1i);
-        final FastPipedOutputStream p2o = new FastPipedOutputStream(p2i);
-
-        Future<Channel> f1 = executors.submit(() -> new ChannelBuilder("This side of the channel", executors).withMode(Channel.Mode.BINARY).build(p1i, p2o));
-        Future<Channel> f2 = executors.submit(() -> new ChannelBuilder("The other side of the channel", executors).withMode(Channel.Mode.BINARY).build(p2i, p1o));
-        french = f1.get();
-        british = f2.get();
-    }
-
-    @AfterEach
-    void tearDown() {
-        try {
-            french.close(); // this will automatically initiate the close on the other channel, too.
-            french.join();
-            british.join();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        } catch (InterruptedException x) {
-            throw new AssertionError(x);
-        }
-        executors.shutdownNow();
-    }
-
-    @Test
-    void copyTo() throws Exception {
-        File tmp = File.createTempFile("junit", null, temp);
-        FilePath f = new FilePath(french, tmp.getPath());
+    @Test public void copyTo() throws Exception {
+        File tmp = temp.newFile();
+        FilePath f = new FilePath(channels.french, tmp.getPath());
         try (OutputStream out = OutputStream.nullOutputStream()) {
             f.copyTo(out);
         }
-        assertTrue(tmp.exists(), "target does not exist");
-        assertTrue(tmp.delete(), "could not delete target " + tmp.getPath());
+        assertTrue("target does not exist", tmp.exists());
+        assertTrue("could not delete target " + tmp.getPath(), tmp.delete());
     }
 
     /**
@@ -152,13 +110,12 @@ class FilePathTest {
      */
     // TODO: this test is much too slow to be a traditional unit test. Should be extracted into some stress test
     // which is no part of the default test harness?
-    @Test
-    void noFileLeakInCopyTo() throws Exception {
+    @Test public void noFileLeakInCopyTo() throws Exception {
         for (int j = 0; j < 2500; j++) {
-            File tmp = File.createTempFile("junit", null, temp);
+            File tmp = temp.newFile();
             FilePath f = new FilePath(tmp);
-            File tmp2 = File.createTempFile("junit", null, temp);
-            FilePath f2 = new FilePath(british, tmp2.getPath());
+            File tmp2 = temp.newFile();
+            FilePath f2 = new FilePath(channels.british, tmp2.getPath());
 
             f.copyTo(f2);
 
@@ -180,9 +137,8 @@ class FilePathTest {
      * Also see JENKINS-7897
      */
     @Issue("JENKINS-7871")
-    @Test
-    void noRaceConditionInCopyTo() throws Exception {
-        final File tmp = File.createTempFile("junit", null, temp);
+    @Test public void noRaceConditionInCopyTo() throws Exception {
+        final File tmp = temp.newFile();
 
            int fileSize = 90000;
 
@@ -241,7 +197,7 @@ class FilePathTest {
                     }
                 }
 
-                FilePath f = new FilePath(french, file.getPath());
+                FilePath f = new FilePath(channels.french, file.getPath());
                 Sink sink = new Sink();
                 f.copyTo(sink);
                 return sink.count.get();
@@ -256,12 +212,11 @@ class FilePathTest {
         }
     }
 
-    @Test
-    void repeatCopyRecursiveTo() throws Exception {
+    @Test public void repeatCopyRecursiveTo() throws Exception {
         // local->local copy used to return 0 if all files were "up to date"
         // should return number of files processed, whether or not they were copied or already current
-        File src = newFolder(temp, "src");
-        File dst = newFolder(temp, "dst");
+        File src = temp.newFolder("src");
+        File dst = temp.newFolder("dst");
             File.createTempFile("foo", ".tmp", src);
             FilePath fp = new FilePath(src);
             assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
@@ -270,12 +225,11 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-9540")
-    @Test
-    void errorMessageInRemoteCopyRecursive() throws Exception {
-        File src = newFolder(temp, "src");
-        File dst = newFolder(temp, "dst");
+    @Test public void errorMessageInRemoteCopyRecursive() throws Exception {
+        File src = temp.newFolder("src");
+        File dst = temp.newFolder("dst");
             FilePath from = new FilePath(src);
-            FilePath to = new FilePath(british, dst.getAbsolutePath());
+            FilePath to = new FilePath(channels.british, dst.getAbsolutePath());
             for (int i = 0; i < 10000; i++) {
                 // TODO is there a simpler way to force the TarOutputStream to be flushed and the reader to start?
                 // Have not found a way to make the failure guaranteed.
@@ -303,9 +257,8 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-4039")
-    @Test
-    void archiveBug() throws Exception {
-            FilePath d = new FilePath(french, temp.getPath());
+    @Test public void archiveBug() throws Exception {
+            FilePath d = new FilePath(channels.french, temp.getRoot().getPath());
             d.child("test").touch(0);
             try (OutputStream out = OutputStream.nullOutputStream()) {
                 d.zip(out);
@@ -315,8 +268,7 @@ class FilePathTest {
             }
     }
 
-    @Test
-    void normalization() {
+    @Test public void normalization() {
         compare("abc/def\\ghi", "abc/def\\ghi"); // allow mixed separators
 
         { // basic '.' trimming
@@ -370,8 +322,7 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-6494")
-    @Test
-    void getParent() {
+    @Test public void getParent() {
         FilePath fp = new FilePath((VirtualChannel) null, "/abc/def");
         assertEquals("/abc", (fp = fp.getParent()).getRemote());
         assertEquals("/", (fp = fp.getParent()).getRemote());
@@ -401,8 +352,7 @@ class FilePathTest {
      * Performs round-trip archiving for Tar handling methods.
      * @throws Exception test failure
      */
-    @Test
-    void compressTarUntarRoundTrip() throws Exception {
+    @Test public void compressTarUntarRoundTrip() throws Exception {
         checkTarUntarRoundTrip("compressTarUntarRoundTrip_zero", 0);
         checkTarUntarRoundTrip("compressTarUntarRoundTrip_small", 100);
         checkTarUntarRoundTrip("compressTarUntarRoundTrip_medium", 50000);
@@ -415,16 +365,15 @@ class FilePathTest {
      * @throws Exception test failure
      */
     @Issue("JENKINS-10629")
-    @Disabled
-    @Test
-    void archiveBigFile() throws Exception {
+    @Ignore
+    @Test public void archiveBigFile() throws Exception {
         final long largeFileSize = 9000000000L; // >8589934591 bytes
         final String filePrefix = "JENKINS-10629";
         checkTarUntarRoundTrip(filePrefix, largeFileSize);
     }
 
     private void checkTarUntarRoundTrip(String filePrefix, long fileSize) throws Exception {
-        final File tmpDir = newFolder(temp, filePrefix);
+        final File tmpDir = temp.newFolder(filePrefix);
         final File tempFile =  new File(tmpDir, filePrefix + ".log");
         RandomAccessFile file = new RandomAccessFile(tempFile, "rw");
         final File tarFile = new File(tmpDir, filePrefix + ".tar");
@@ -436,18 +385,18 @@ class FilePathTest {
         // Compress archive
         final FilePath tmpDirPath = new FilePath(tmpDir);
         int tar = tmpDirPath.tar(Files.newOutputStream(tarFile.toPath()), tempFile.getName());
-        assertEquals(1, tar, "One file should have been compressed");
+        assertEquals("One file should have been compressed", 1, tar);
 
         // Decompress
-        FilePath outDir = new FilePath(newFolder(temp, filePrefix + "_out"));
+        FilePath outDir = new FilePath(temp.newFolder(filePrefix + "_out"));
         final FilePath outFile = outDir.child(tempFile.getName());
         tmpDirPath.child(tarFile.getName()).untar(outDir, TarCompression.NONE);
-        assertEquals(new FilePath(tempFile).digest(), outFile.digest(), "Result file after the roundtrip differs from the initial file");
+        assertEquals("Result file after the roundtrip differs from the initial file",
+                new FilePath(tempFile).digest(), outFile.digest());
     }
 
-    @Test
-    void list() throws Exception {
-        File baseDir = temp;
+    @Test public void list() throws Exception {
+        File baseDir = temp.getRoot();
             final Set<FilePath> expected = new HashSet<>();
             expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
             expected.add(createFilePath(baseDir, "top", "sub", "trace.log"));
@@ -457,9 +406,8 @@ class FilePathTest {
             assertEquals(expected, new HashSet<>(Arrays.asList(result)));
     }
 
-    @Test
-    void listWithExcludes() throws Exception {
-        File baseDir = temp;
+    @Test public void listWithExcludes() throws Exception {
+        File baseDir = temp.getRoot();
             final Set<FilePath> expected = new HashSet<>();
             expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
             createFilePath(baseDir, "top", "sub", "trace.log");
@@ -469,9 +417,8 @@ class FilePathTest {
             assertEquals(expected, new HashSet<>(Arrays.asList(result)));
     }
 
-    @Test
-    void listWithDefaultExcludes() throws Exception {
-        File baseDir = temp;
+    @Test public void listWithDefaultExcludes() throws Exception {
+        File baseDir = temp.getRoot();
             final Set<FilePath> expected = new HashSet<>();
             expected.add(createFilePath(baseDir, "top", "sub", "backup~"));
             expected.add(createFilePath(baseDir, "top", "CVS", "somefile,v"));
@@ -483,8 +430,7 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-11073")
-    @Test
-    void isUnix() {
+    @Test public void isUnix() {
         VirtualChannel dummy = Mockito.mock(VirtualChannel.class);
         FilePath winPath = new FilePath(dummy,
                 " c:\\app\\hudson\\workspace\\3.8-jelly-db\\jdk/jdk1.6.0_21/label/sqlserver/profile/sqlserver\\acceptance-tests\\distribution.zip");
@@ -507,9 +453,8 @@ class FilePathTest {
      * Also tries to check that a problem with setting the last-modified date on Windows doesn't fail the whole copy
      * - well at least when running this test on a Windows OS. See JENKINS-11073
      */
-    @Test
-    void copyToWithPermission() throws IOException, InterruptedException {
-        File tmp = temp;
+    @Test public void copyToWithPermission() throws IOException, InterruptedException {
+        File tmp = temp.getRoot();
             File child = new File(tmp, "child");
             FilePath childP = new FilePath(child);
             childP.touch(4711);
@@ -520,7 +465,7 @@ class FilePathTest {
             chmodTask.setPerm("0400");
             chmodTask.execute();
 
-            FilePath copy = new FilePath(british, tmp.getPath()).child("copy");
+            FilePath copy = new FilePath(channels.british, tmp.getPath()).child("copy");
             childP.copyToWithPermission(copy);
 
             assertEquals(childP.mode(), copy.mode());
@@ -532,16 +477,15 @@ class FilePathTest {
             // Windows seems to have random failures when setting the timestamp on newly generated
             // files. So test that:
             for (int i = 0; i < 100; i++) {
-                copy = new FilePath(british, tmp.getPath()).child("copy" + i);
+                copy = new FilePath(channels.british, tmp.getPath()).child("copy" + i);
                 childP.copyToWithPermission(copy);
             }
     }
 
-    @Test
-    void symlinkInTar() throws Exception {
+    @Test public void symlinkInTar() throws Exception {
         assumeFalse(Functions.isWindows());
 
-        FilePath tmp = new FilePath(temp);
+        FilePath tmp = new FilePath(temp.getRoot());
             FilePath in = tmp.child("in");
             in.mkdirs();
             in.child("c").touch(0);
@@ -557,8 +501,7 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-13649")
-    @Test
-    void multiSegmentRelativePaths() {
+    @Test public void multiSegmentRelativePaths() {
         VirtualChannel d = Mockito.mock(VirtualChannel.class);
         FilePath winPath = new FilePath(d, "c:\\app\\jenkins\\workspace");
         FilePath nixPath = new FilePath(d, "/opt/jenkins/workspace");
@@ -571,10 +514,9 @@ class FilePathTest {
         assertEquals("/opt/jenkins/workspace/foo/bar/manchu", new FilePath(nixPath, "foo/bar/manchu").getRemote());
     }
 
-    @Test
-    void validateAntFileMask() throws Exception {
-        File tmp = temp;
-            FilePath d = new FilePath(french, tmp.getPath());
+    @Test public void validateAntFileMask() throws Exception {
+        File tmp = temp.getRoot();
+            FilePath d = new FilePath(channels.french, tmp.getPath());
             d.child("d1/d2/d3").mkdirs();
             d.child("d1/d2/d3/f.txt").touch(0);
             d.child("d1/d2/d3/f.html").touch(0);
@@ -595,10 +537,9 @@ class FilePathTest {
 
     @Issue("JENKINS-7214")
     @SuppressWarnings("deprecation")
-    @Test
-    void validateAntFileMaskBounded() throws Exception {
-        File tmp = temp;
-            FilePath d = new FilePath(french, tmp.getPath());
+    @Test public void validateAntFileMaskBounded() throws Exception {
+        File tmp = temp.getRoot();
+            FilePath d = new FilePath(channels.french, tmp.getPath());
             FilePath d2 = d.child("d1/d2");
             d2.mkdirs();
             for (int i = 0; i < 100; i++) {
@@ -613,11 +554,10 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-5253")
-    @Test
-    void testValidateCaseSensitivity() throws Exception {
+    @Test public void testValidateCaseSensitivity() throws Exception {
         File tmp = Util.createTempDir();
         try {
-            FilePath d = new FilePath(french, tmp.getPath());
+            FilePath d = new FilePath(channels.french, tmp.getPath());
             d.child("d1/d2/d3").mkdirs();
             d.child("d1/d2/d3/f.txt").touch(0);
             d.child("d1/d2/d3/f.html").touch(0);
@@ -633,10 +573,9 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-15418")
-    @Test
-    void deleteLongPathOnWindows() throws Exception {
-        File tmp = temp;
-            FilePath d = new FilePath(french, tmp.getPath());
+    @Test public void deleteLongPathOnWindows() throws Exception {
+        File tmp = temp.getRoot();
+            FilePath d = new FilePath(channels.french, tmp.getPath());
 
             // construct a very long path
             StringBuilder sb = new StringBuilder();
@@ -653,13 +592,12 @@ class FilePathTest {
             File firstDirectory = new File(tmp.getAbsolutePath() + "/very");
             Util.deleteRecursive(firstDirectory);
 
-            assertFalse(firstDirectory.exists(), "Could not delete directory!");
+            assertFalse("Could not delete directory!", firstDirectory.exists());
     }
 
     @Issue("JENKINS-16215")
-    @Test
-    void installIfNecessaryAvoidsExcessiveDownloadsByUsingIfModifiedSince() throws Exception {
-        File tmp = temp;
+    @Test public void installIfNecessaryAvoidsExcessiveDownloadsByUsingIfModifiedSince() throws Exception {
+        File tmp = temp.getRoot();
             final FilePath d = new FilePath(tmp);
 
             d.child(".timestamp").touch(123000);
@@ -676,9 +614,8 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-16215")
-    @Test
-    void installIfNecessaryPerformsInstallation() throws Exception {
-        File tmp = temp;
+    @Test public void installIfNecessaryPerformsInstallation() throws Exception {
+        File tmp = temp.getRoot();
             final FilePath d = new FilePath(tmp);
 
             final HttpURLConnection con = mock(HttpURLConnection.class);
@@ -694,9 +631,8 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-26196")
-    @Test
-    void installIfNecessarySkipsDownloadWhenErroneous() throws Exception {
-        File tmp = temp;
+    @Test public void installIfNecessarySkipsDownloadWhenErroneous() throws Exception {
+        File tmp = temp.getRoot();
         final FilePath d = new FilePath(tmp);
         d.child(".timestamp").touch(123000);
         final HttpURLConnection con = mock(HttpURLConnection.class);
@@ -709,14 +645,13 @@ class FilePathTest {
         assertFalse(d.installIfNecessaryFrom(url, new StreamTaskListener(baos, Charset.defaultCharset()), message));
         verify(con).setIfModifiedSince(123000);
         String log = baos.toString(Charset.defaultCharset());
-        assertFalse(log.contains(message), log);
-        assertTrue(log.contains("504 Gateway Timeout"), log);
+        assertFalse(log, log.contains(message));
+        assertTrue(log, log.contains("504 Gateway Timeout"));
     }
 
     @Issue("JENKINS-23507")
-    @Test
-    void installIfNecessaryFollowsRedirects() throws Exception {
-        File tmp = temp;
+    @Test public void installIfNecessaryFollowsRedirects() throws Exception {
+        File tmp = temp.getRoot();
         final FilePath d = new FilePath(tmp);
         FilePath.UrlFactory urlFactory = mock(FilePath.UrlFactory.class);
         d.setUrlFactory(urlFactory);
@@ -736,15 +671,13 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-72469")
-    @Test
-    void installIfNecessaryWithoutLastModifiedStrongValidator() throws Exception {
+    @Test public void installIfNecessaryWithoutLastModifiedStrongValidator() throws Exception {
         String strongValidator = "\"An-ETag-strong-validator\"";
         installIfNecessaryWithoutLastModified(strongValidator);
     }
 
     @Issue("JENKINS-72469")
-    @Test
-    void installIfNecessaryWithoutLastModifiedStrongValidatorNoQuotes() throws Exception {
+    @Test public void installIfNecessaryWithoutLastModifiedStrongValidatorNoQuotes() throws Exception {
         // This ETag is a violation of the spec at https://httpwg.org/specs/rfc9110.html#field.etag
         // However, better safe to handle without quotes as well, just in case
         String strongValidator = "An-ETag-strong-validator-without-quotes";
@@ -752,23 +685,20 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-72469")
-    @Test
-    void installIfNecessaryWithoutLastModifiedWeakValidator() throws Exception {
+    @Test public void installIfNecessaryWithoutLastModifiedWeakValidator() throws Exception {
         String weakValidator = "W/\"An-ETag-weak-validator\"";
         installIfNecessaryWithoutLastModified(weakValidator);
     }
 
     @Issue("JENKINS-72469")
-    @Test
-    void installIfNecessaryWithoutLastModifiedStrongAndWeakValidators() throws Exception {
+    @Test public void installIfNecessaryWithoutLastModifiedStrongAndWeakValidators() throws Exception {
         String strongValidator = "\"An-ETag-validator\"";
         String weakValidator = "W/" + strongValidator;
         installIfNecessaryWithoutLastModified(strongValidator, weakValidator);
     }
 
     @Issue("JENKINS-72469")
-    @Test
-    void installIfNecessaryWithoutLastModifiedWeakAndStrongValidators() throws Exception {
+    @Test public void installIfNecessaryWithoutLastModifiedWeakAndStrongValidators() throws Exception {
         String strongValidator = "\"An-ETag-validator\"";
         String weakValidator = "W/" + strongValidator;
         installIfNecessaryWithoutLastModified(weakValidator, strongValidator);
@@ -788,7 +718,7 @@ class FilePathTest {
 
         final URL url = someUrlToZipFile(con);
 
-        File tmp = temp;
+        File tmp = temp.getRoot();
         final FilePath d = new FilePath(tmp);
 
         /* Initial download expected to occur */
@@ -834,9 +764,8 @@ class FilePathTest {
     }
 
     @Issue("JENKINS-16846")
-    @Test
-    void moveAllChildrenTo() throws IOException, InterruptedException {
-        File tmp = temp;
+    @Test public void moveAllChildrenTo() throws IOException, InterruptedException {
+        File tmp = temp.getRoot();
             final String dirname = "sub";
             final File top = new File(tmp, "test");
             final File sub = new File(top, dirname);
@@ -858,8 +787,8 @@ class FilePathTest {
 
     @Issue("JENKINS-10629")
     @Test
-    void testEOFbrokenFlush() throws IOException, InterruptedException {
-        final File srcFolder = newFolder(temp, "src");
+    public void testEOFbrokenFlush() throws IOException, InterruptedException {
+        final File srcFolder = temp.newFolder("src");
         // simulate magic structure with magic sizes:
         // |- dir/pom.xml   (2049)
         // |- pom.xml       (2049)
@@ -872,15 +801,15 @@ class FilePathTest {
         givenSomeContentInFile(pomFile, 2049);
         FileUtils.copyFileToDirectory(pomFile, srcFolder);
 
-        final File archive = File.createTempFile("archive.tar", null, temp);
+        final File archive = temp.newFile("archive.tar");
 
         // Compress archive
         final FilePath tmpDirPath = new FilePath(srcFolder);
         int tarred = tmpDirPath.tar(Files.newOutputStream(archive.toPath()), "**");
-        assertEquals(3, tarred, "One file should have been compressed");
+        assertEquals("One file should have been compressed", 3, tarred);
 
         // Decompress
-        final File dstFolder = newFolder(temp, "dst");
+        final File dstFolder = temp.newFolder("dst");
         dstFolder.mkdirs();
         FilePath outDir = new FilePath(dstFolder);
         // and now fail when flush is bad!
@@ -888,9 +817,9 @@ class FilePathTest {
     }
 
     @Test
-    void chmod() throws Exception {
+    public void chmod() throws Exception {
         assumeFalse(Functions.isWindows());
-        File f = File.createTempFile("file", null, temp);
+        File f = temp.newFile("file");
         FilePath fp = new FilePath(f);
         int prevMode = fp.mode();
         assertEquals(0400, chmodAndMode(fp, 0400));
@@ -900,12 +829,12 @@ class FilePathTest {
     }
 
     @Test
-    void chmodInvalidPermissions() throws Exception {
+    public void chmodInvalidPermissions() throws Exception {
         assumeFalse(Functions.isWindows());
-        File f = newFolder(temp, "folder");
+        File f = temp.newFolder("folder");
         FilePath fp = new FilePath(f);
         int invalidMode = 01770; // Full permissions for owner and group plus sticky bit.
-        final IOException e = assertThrows(IOException.class, () -> chmodAndMode(fp, invalidMode), "Setting sticky bit should fail");
+        final IOException e = assertThrows("Setting sticky bit should fail", IOException.class, () -> chmodAndMode(fp, invalidMode));
         assertEquals("Invalid mode: " + invalidMode, e.getMessage());
     }
 
@@ -916,42 +845,41 @@ class FilePathTest {
 
     @Issue("JENKINS-48227")
     @Test
-    void testCreateTempDir() throws IOException, InterruptedException  {
-        final File srcFolder = newFolder(temp, "src");
+    public void testCreateTempDir() throws IOException, InterruptedException  {
+        final File srcFolder = temp.newFolder("src");
         final FilePath filePath = new FilePath(srcFolder);
         FilePath x = filePath.createTempDir("jdk", "dmg");
         FilePath y = filePath.createTempDir("jdk", "pkg");
         FilePath z = filePath.createTempDir("jdk", null);
 
-        assertNotNull(x, "FilePath x should not be null");
-        assertNotNull(y, "FilePath y should not be null");
-        assertNotNull(z, "FilePath z should not be null");
+        assertNotNull("FilePath x should not be null", x);
+        assertNotNull("FilePath y should not be null", y);
+        assertNotNull("FilePath z should not be null", z);
 
         assertTrue(x.getName().contains("jdk.dmg"));
         assertTrue(y.getName().contains("jdk.pkg"));
         assertTrue(z.getName().contains("jdk.tmp"));
     }
 
-    @Test
-    void deleteRecursiveOnUnix() throws Exception {
+    @Test public void deleteRecursiveOnUnix() throws Exception {
         assumeFalse(Functions.isWindows());
-        Path targetDir = newFolder(temp, "target").toPath();
+        Path targetDir = temp.newFolder("target").toPath();
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
-        Path toDelete = newFolder(temp, "toDelete").toPath();
+        Path toDelete = temp.newFolder("toDelete").toPath();
         Util.createSymlink(toDelete.toFile(), "../targetDir", "link", TaskListener.NULL);
         Files.createFile(toDelete.resolve("foo"));
         Files.createFile(toDelete.resolve("bar"));
         FilePath f = new FilePath(toDelete.toFile());
         f.deleteRecursive();
-        assertTrue(Files.exists(targetDir), "symlink target should not be deleted");
-        assertTrue(Files.exists(targetContents), "symlink target contents should not be deleted");
-        assertFalse(Files.exists(toDelete), "could not delete target");
+        assertTrue("symlink target should not be deleted", Files.exists(targetDir));
+        assertTrue("symlink target contents should not be deleted", Files.exists(targetContents));
+        assertFalse("could not delete target", Files.exists(toDelete));
     }
 
     @Test
     @Issue("JENKINS-44909")
-    void deleteSuffixesRecursive() throws Exception {
-        File deleteSuffixesRecursiveFolder = newFolder(temp, "deleteSuffixesRecursive");
+    public void deleteSuffixesRecursive() throws Exception {
+        File deleteSuffixesRecursiveFolder = temp.newFolder("deleteSuffixesRecursive");
         FilePath filePath = new FilePath(deleteSuffixesRecursiveFolder);
         FilePath suffix = filePath.withSuffix(WorkspaceList.COMBINATOR + "suffixed");
         FilePath textTempFile = suffix.createTextTempFile("tmp", null, "dummy", true);
@@ -962,58 +890,55 @@ class FilePathTest {
         assertThat(textTempFile.exists(), is(false));
     }
 
-    @Test
-    void deleteRecursiveOnWindows() throws Exception {
-        assumeTrue(Functions.isWindows(), "Uses Windows-specific features");
-        Path targetDir = newFolder(temp, "targetDir").toPath();
+    @Test public void deleteRecursiveOnWindows() throws Exception {
+        assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        Path targetDir = temp.newFolder("targetDir").toPath();
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
-        Path toDelete = newFolder(temp, "toDelete").toPath();
+        Path toDelete = temp.newFolder("toDelete").toPath();
         File junction = WindowsUtil.createJunction(toDelete.resolve("junction").toFile(), targetDir.toFile());
         Files.createFile(toDelete.resolve("foo"));
         Files.createFile(toDelete.resolve("bar"));
         FilePath f = new FilePath(toDelete.toFile());
         f.deleteRecursive();
-        assertTrue(Files.exists(targetDir), "junction target should not be deleted");
-        assertTrue(Files.exists(targetContents), "junction target contents should not be deleted");
-        assertFalse(junction.exists(), "could not delete junction");
-        assertFalse(Files.exists(toDelete), "could not delete target");
+        assertTrue("junction target should not be deleted", Files.exists(targetDir));
+        assertTrue("junction target contents should not be deleted", Files.exists(targetContents));
+        assertFalse("could not delete junction", junction.exists());
+        assertFalse("could not delete target", Files.exists(toDelete));
     }
 
     @Issue("JENKINS-13128")
-    @Test
-    void copyRecursivePreservesPosixFilePermissions() throws Exception {
+    @Test public void copyRecursivePreservesPosixFilePermissions() throws Exception {
         assumeFalse(Functions.isWindows());
-        File src = newFolder(temp, "src");
-        File dst = newFolder(temp, "dst");
+        File src = temp.newFolder("src");
+        File dst = temp.newFolder("dst");
         Path sourceFile = Files.createFile(src.toPath().resolve("test-file"));
         Set<PosixFilePermission> allRWX = EnumSet.allOf(PosixFilePermission.class);
         Files.setPosixFilePermissions(sourceFile, allRWX);
         FilePath f = new FilePath(src);
         f.copyRecursiveTo(new FilePath(dst));
         Path destinationFile = dst.toPath().resolve("test-file");
-        assertTrue(Files.exists(destinationFile), "file was not copied");
+        assertTrue("file was not copied", Files.exists(destinationFile));
         Set<PosixFilePermission> destinationPermissions = Files.getPosixFilePermissions(destinationFile);
-        assertEquals(allRWX, destinationPermissions, "file permissions not copied");
+        assertEquals("file permissions not copied", allRWX, destinationPermissions);
     }
 
     @Issue("JENKINS-13128")
-    @Test
-    void copyRecursivePreservesLastModifiedTime() throws Exception {
-        File src = newFolder(temp, "src");
-        File dst = newFolder(temp, "dst");
+    @Test public void copyRecursivePreservesLastModifiedTime() throws Exception {
+        File src = temp.newFolder("src");
+        File dst = temp.newFolder("dst");
         Path sourceFile = Files.createFile(src.toPath().resolve("test-file"));
         FileTime mtime = FileTime.from(42L, TimeUnit.SECONDS);
         Files.setLastModifiedTime(sourceFile, mtime);
         FilePath f = new FilePath(src);
         f.copyRecursiveTo(new FilePath(dst));
         Path destinationFile = dst.toPath().resolve("test-file");
-        assertTrue(Files.exists(destinationFile), "file was not copied");
-        assertEquals(mtime, Files.getLastModifiedTime(destinationFile), "file mtime was not preserved");
+        assertTrue("file was not copied", Files.exists(destinationFile));
+        assertEquals("file mtime was not preserved", mtime, Files.getLastModifiedTime(destinationFile));
     }
 
     @Test
     @Issue("SECURITY-904")
-    void isDescendant_regularFiles() throws IOException, InterruptedException {
+    public void isDescendant_regularFiles() throws IOException, InterruptedException {
         //  root
         //      /workspace
         //          /sub
@@ -1021,7 +946,7 @@ class FilePathTest {
         //          regular.txt
         //      /protected
         //          secret.txt
-        FilePath rootFolder = new FilePath(newFolder(temp, "root"));
+        FilePath rootFolder = new FilePath(temp.newFolder("root"));
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath subFolder = workspaceFolder.child("sub");
         FilePath protectedFolder = rootFolder.child("protected");
@@ -1063,7 +988,7 @@ class FilePathTest {
 
     @Test
     @Issue("SECURITY-904")
-    void isDescendant_regularSymlinks() throws IOException, InterruptedException {
+    public void isDescendant_regularSymlinks() throws IOException, InterruptedException {
         assumeFalse(Functions.isWindows());
         //  root
         //      /workspace
@@ -1079,7 +1004,7 @@ class FilePathTest {
         //          _secrettxt => symlink to ../protected/secret.txt (illegal)
         //      /protected
         //          secret.txt
-        FilePath rootFolder = new FilePath(newFolder(temp, "root"));
+        FilePath rootFolder = new FilePath(temp.newFolder("root"));
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
@@ -1127,7 +1052,7 @@ class FilePathTest {
 
     @Test
     @Issue("SECURITY-904")
-    void isDescendant_windowsSpecificSymlinks() throws Exception {
+    public void isDescendant_windowsSpecificSymlinks() throws Exception {
         assumeTrue(Functions.isWindows());
         //  root
         //      /workspace
@@ -1142,7 +1067,7 @@ class FilePathTest {
         //          _protected => junction to ../protected (illegal)
         //      /protected
         //          secret.txt
-        File root = newFolder(temp, "root");
+        File root = temp.newFolder("root");
         FilePath rootFolder = new FilePath(root);
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
@@ -1193,7 +1118,7 @@ class FilePathTest {
     @Issue("SECURITY-904")
     public void isDescendant_throwIfParentDoesNotExist_symlink() throws Exception {
         assumeFalse(Functions.isWindows());
-        FilePath rootFolder = new FilePath(newFolder(temp, "root"));
+        FilePath rootFolder = new FilePath(temp.newFolder("root"));
         FilePath aFolder = rootFolder.child("a");
         aFolder.mkdirs();
         FilePath linkToNonexistent = aFolder.child("linkToNonexistent");
@@ -1204,22 +1129,22 @@ class FilePathTest {
 
     @Issue("SECURITY-904")
     public void isDescendant_throwIfParentDoesNotExist_directNonexistent() throws Exception {
-        FilePath rootFolder = new FilePath(newFolder(temp, "root"));
+        FilePath rootFolder = new FilePath(temp.newFolder("root"));
         FilePath nonexistent = rootFolder.child("nonexistent");
         assertThat(nonexistent.isDescendant("."), is(false));
     }
 
     @Test
     @Issue("SECURITY-904")
-    void isDescendant_throwIfAbsolutePathGiven() throws Exception {
-        FilePath rootFolder = new FilePath(newFolder(temp, "root"));
+    public void isDescendant_throwIfAbsolutePathGiven() throws Exception {
+        FilePath rootFolder = new FilePath(temp.newFolder("root"));
         rootFolder.mkdirs();
-        assertThrows(IllegalArgumentException.class, () -> rootFolder.isDescendant(File.createTempFile("junit", null, temp).getAbsolutePath()));
+        assertThrows(IllegalArgumentException.class, () -> rootFolder.isDescendant(temp.newFile().getAbsolutePath()));
     }
 
     @Test
     @Issue("SECURITY-904")
-    void isDescendant_worksEvenInSymbolicWorkspace() throws Exception {
+    public void isDescendant_worksEvenInSymbolicWorkspace() throws Exception {
         assumeFalse(Functions.isWindows());
         //  root
         //      /w
@@ -1237,7 +1162,7 @@ class FilePathTest {
         //          _secrettxt => symlink to ../protected/secret.txt (illegal)
         //      /protected
         //          secret.txt
-        FilePath rootFolder = new FilePath(newFolder(temp, "root"));
+        FilePath rootFolder = new FilePath(temp.newFolder("root"));
         FilePath workspaceFolder = rootFolder.child("workspace");
         FilePath aFolder = workspaceFolder.child("a");
         FilePath bFolder = workspaceFolder.child("b");
@@ -1287,14 +1212,5 @@ class FilePathTest {
         assertFalse(symbolicWorkspace.isDescendant("_secrettxt"));
         assertFalse(symbolicWorkspace.isDescendant("./_secrettxt"));
         assertFalse(symbolicWorkspace.isDescendant("_secrettxt2"));
-    }
-
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            throw new IOException("Couldn't create folders " + root);
-        }
-        return result;
     }
 }

@@ -1,6 +1,6 @@
 package hudson.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -8,17 +8,18 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-class TextFileTest {
+public class TextFileTest {
 
-    @TempDir
-    private File tmp;
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     @Test
-    void head() throws Exception {
-        File f = File.createTempFile("junit", null, tmp);
+    public void head() throws Exception {
+        File f = tmp.newFile();
         FileUtils.copyURLToFile(getClass().getResource("ascii.txt"), f);
 
         TextFile t = new TextFile(f);
@@ -28,8 +29,8 @@ class TextFileTest {
     }
 
     @Test
-    void shortHead() throws Exception {
-        File f = File.createTempFile("junit", null, tmp);
+    public void shortHead() throws Exception {
+        File f = tmp.newFile();
         Files.writeString(f.toPath(), "hello", Charset.defaultCharset());
 
         TextFile t = new TextFile(f);
@@ -37,8 +38,8 @@ class TextFileTest {
     }
 
     @Test
-    void tail() throws Exception {
-        File f = File.createTempFile("junit", null, tmp);
+    public void tail() throws Exception {
+        File f = tmp.newFile();
         FileUtils.copyURLToFile(getClass().getResource("ascii.txt"), f);
         String whole = Files.readString(f.toPath(), Charset.defaultCharset());
         TextFile t = new TextFile(f);
@@ -47,8 +48,8 @@ class TextFileTest {
     }
 
     @Test
-    void shortTail() throws Exception {
-        File f = File.createTempFile("junit", null, tmp);
+    public void shortTail() throws Exception {
+        File f = tmp.newFile();
         Files.writeString(f.toPath(), "hello", Charset.defaultCharset());
 
         TextFile t = new TextFile(f);
@@ -62,8 +63,8 @@ class TextFileTest {
      * careful, we'll parse the text incorrectly.
      */
     @Test
-    void tailShiftJIS() throws Exception {
-        File f = File.createTempFile("junit", null, tmp);
+    public void tailShiftJIS() throws Exception {
+        File f = tmp.newFile();
 
         TextFile t = new TextFile(f);
 
