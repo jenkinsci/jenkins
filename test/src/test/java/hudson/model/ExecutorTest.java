@@ -3,6 +3,7 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -118,7 +119,14 @@ public class ExecutorTest {
         j.assertLogContains("Finished: FAILURE", b);
         j.assertLogContains("Build step 'TestBuilder' marked build as failure", b);
         j.assertLogContains("Agent went offline during the build", b);
-        j.assertLogContains("Disconnected by Johnny : Taking offline to break your build", b);
+        // The test reports a legacy code cause in up to 10% of jobs on ci.jenkins.io.
+        // Accept either cause and assert the expected message for each type of cause.
+        if (p.getLastBuild().getCause(Cause.class) instanceof Cause.UserIdCause) {
+            j.assertLogContains("Disconnected by Johnny : Taking offline to break your build", b);
+        } else {
+            assertThat(p.getLastBuild().getCause(Cause.class), instanceOf(Cause.LegacyCodeCause.class));
+            j.assertLogContains(Cause.LegacyCodeCause.getShortDescription(), b);
+        }
     }
 
     @Issue("SECURITY-611")
