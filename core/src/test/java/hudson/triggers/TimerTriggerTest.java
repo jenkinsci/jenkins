@@ -24,36 +24,38 @@
 
 package hudson.triggers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import hudson.scheduler.CronTabList;
 import hudson.scheduler.Hash;
 import java.util.TimeZone;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kanstantsin Shautsou
  */
-public class TimerTriggerTest {
+class TimerTriggerTest {
+
     @Issue("JENKINS-29790")
     @Test
-    public void testNoNPE() {
+    void testNoNPE() {
         new TimerTrigger("").run();
     }
 
     @Issue("JENKINS-43328")
     @Test
-    public void testTimeZoneOffset() throws Exception {
+    void testTimeZoneOffset() {
         TimeZone defaultTz = TimeZone.getDefault();
         TimeZone.setDefault(TimeZone.getTimeZone("Europe/Berlin"));
         try {
             String cron = "TZ=GMT\nH 0 * * *";
             CronTabList ctl = CronTabList.create(cron, Hash.from("whatever"));
-            Assert.assertEquals("previous occurrence is in GMT", "GMT", ctl.previous().getTimeZone().getID());
+            assertEquals("GMT", ctl.previous().getTimeZone().getID(), "previous occurrence is in GMT");
 
             cron = "TZ=America/Denver\nH 0 * * *";
             ctl = CronTabList.create(cron, Hash.from("whatever"));
-            Assert.assertEquals("next occurrence is in America/Denver", "America/Denver", ctl.next().getTimeZone().getID());
+            assertEquals("America/Denver", ctl.next().getTimeZone().getID(), "next occurrence is in America/Denver");
         } finally {
             TimeZone.setDefault(defaultTz);
         }

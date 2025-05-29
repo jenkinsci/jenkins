@@ -31,17 +31,22 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
+import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -55,36 +60,69 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.Timeout;
+import org.apache.commons.lang.StringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
-public class PathRemoverTest {
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
+class PathRemoverTest {
 
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
-    @Rule public Timeout timeout = new Timeout(30, TimeUnit.SECONDS);
-    @Rule public FileLockerRule locker = new FileLockerRule();
+    @TempDir
+    private File tmp;
+
+    private final Map<File, Closeable> locks = new HashMap<>();
+
+    @AfterEach
+    void tearDown() {
+        List<IOException> exceptions = new ArrayList<>();
+        Iterator<Closeable> it = locks.values().iterator();
+        while (it.hasNext()) {
+            try (Closeable ignored = it.next()) {
+                it.remove();
+            } catch (IOException e) {
+                exceptions.add(e);
+            }
+        }
+        assertTrue(exceptions.isEmpty(), "Could not unlock all files" + StringUtils.join(exceptions, '\n'));
+    }
+
+    private synchronized void acquireLock(@NonNull File file) throws IOException {
+        assertTrue(Functions.isWindows());
+        assertThat(file + " is already locked.", locks, not(hasKey(file)));
+        Closeable lock = new FileInputStream(file);
+        locks.put(file, lock);
+    }
+
+    private synchronized void releaseLock(@NonNull File file) throws Exception {
+        assertTrue(Functions.isWindows());
+        assertThat(file + " is not locked.", locks, hasKey(file));
+        locks.remove(file).close();
+    }
 
     @Test
-    public void testForceRemoveFile() throws IOException {
-        File file = tmp.newFile();
+    void testForceRemoveFile() throws IOException {
+        File file = File.createTempFile("junit", null, tmp);
         touchWithFileName(file);
 
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(file.toPath());
 
-        assertFalse("Unable to delete file: " + file, file.exists());
+        assertFalse(file.exists(), "Unable to delete file: " + file);
     }
 
     @Test
-    public void testForceRemoveFile_LockedFile() throws Exception {
+    void testForceRemoveFile_LockedFile() throws Exception {
         String filename = "/var/lock/jenkins.lock";
         File file = mock(File.class);
         Path path = mock(Path.class);
@@ -114,8 +152,7 @@ public class PathRemoverTest {
         for (; t != null; t = t.getCause()) {
             hierarchy.add(t.getClass());
             // with a composite exception, we might be hiding some other causes
-            if (t instanceof CompositeIOException) {
-                CompositeIOException e = (CompositeIOException) t;
+            if (t instanceof CompositeIOException e) {
                 e.getExceptions().forEach(ex -> hierarchy.addAll(calcExceptionHierarchy(ex)));
             }
         }
@@ -123,81 +160,81 @@ public class PathRemoverTest {
     }
 
     @Test
-    public void testForceRemoveFile_ReadOnly() throws IOException {
-        File dir = tmp.newFolder();
+    void testForceRemoveFile_ReadOnly() throws IOException {
+        File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File file = new File(dir, "file.tmp");
         touchWithFileName(file);
-        assertTrue("Unable to make file read-only: " + file, file.setWritable(false));
+        assertTrue(file.setWritable(false), "Unable to make file read-only: " + file);
 
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(file.toPath());
 
-        assertFalse("Unable to delete file: " + file, file.exists());
+        assertFalse(file.exists(), "Unable to delete file: " + file);
     }
 
     @Test
-    public void testForceRemoveFile_DoesNotExist() throws IOException {
-        File dir = tmp.newFolder();
+    void testForceRemoveFile_DoesNotExist() throws IOException {
+        File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File file = new File(dir, "invalid.file");
         assertFalse(file.exists());
 
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(file.toPath());
 
-        assertFalse("Unable to delete file: " + file, file.exists());
+        assertFalse(file.exists(), "Unable to delete file: " + file);
     }
 
     @Test
-    public void testForceRemoveFile_SymbolicLink() throws IOException {
+    void testForceRemoveFile_SymbolicLink() throws IOException {
         assumeFalse(Functions.isWindows());
-        File file = tmp.newFile();
+        File file = File.createTempFile("junit", null, tmp);
         touchWithFileName(file);
-        Path link = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("test-link"), file.toPath());
+        Path link = Files.createSymbolicLink(tmp.toPath().resolve("test-link"), file.toPath());
 
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(link);
 
-        assertTrue("Unable to delete symbolic link: " + link, Files.notExists(link, LinkOption.NOFOLLOW_LINKS));
-        assertTrue("Should not have deleted target file: " + file, file.exists());
+        assertTrue(Files.notExists(link, LinkOption.NOFOLLOW_LINKS), "Unable to delete symbolic link: " + link);
+        assertTrue(file.exists(), "Should not have deleted target file: " + file);
     }
 
     @Test
     @Issue("JENKINS-55448")
-    public void testForceRemoveFile_DotsInPath() throws IOException {
-        Path folder = tmp.newFolder().toPath();
-        File test = tmp.newFile("test");
+    void testForceRemoveFile_DotsInPath() throws IOException {
+        Path folder = newFolder(tmp, "junit-" + System.currentTimeMillis()).toPath();
+        File test = File.createTempFile("test", null, tmp);
         touchWithFileName(test);
-        Path path = folder.resolve("../test");
+        Path path = folder.resolve("../" + test.getName());
 
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(path);
 
-        assertTrue("Unable to delete file: " + path, Files.notExists(path));
+        assertTrue(Files.notExists(path), "Unable to delete file: " + path);
         assertFalse(test.exists());
-        assertTrue("Should not have deleted directory: " + folder, Files.exists(folder));
+        assertTrue(Files.exists(folder), "Should not have deleted directory: " + folder);
     }
 
     @Test
     @Issue("JENKINS-55448")
-    public void testForceRemoveFile_ParentIsSymbolicLink() throws IOException {
+    void testForceRemoveFile_ParentIsSymbolicLink() throws IOException {
         assumeFalse(Functions.isWindows());
-        Path realParent = tmp.newFolder().toPath();
+        Path realParent = newFolder(tmp, "junit-" + System.currentTimeMillis()).toPath();
         Path path = realParent.resolve("test-file");
         touchWithFileName(path.toFile());
-        Path symParent = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("sym-parent"), realParent);
+        Path symParent = Files.createSymbolicLink(tmp.toPath().resolve("sym-parent"), realParent);
         Path toDelete = symParent.resolve("test-file");
 
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveFile(toDelete);
 
-        assertTrue("Unable to delete file: " + toDelete, Files.notExists(toDelete));
-        assertTrue("Should not have deleted directory: " + realParent, Files.exists(realParent));
-        assertTrue("Should not have deleted symlink: " + symParent, Files.exists(symParent, LinkOption.NOFOLLOW_LINKS));
+        assertTrue(Files.notExists(toDelete), "Unable to delete file: " + toDelete);
+        assertTrue(Files.exists(realParent), "Should not have deleted directory: " + realParent);
+        assertTrue(Files.exists(symParent, LinkOption.NOFOLLOW_LINKS), "Should not have deleted symlink: " + symParent);
     }
 
     @Test
-    public void testForceRemoveDirectoryContents() throws IOException {
-        File dir = tmp.newFolder();
+    void testForceRemoveDirectoryContents() throws IOException {
+        File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File d1 = new File(dir, "d1");
         File d2 = new File(dir, "d2");
         File f1 = new File(dir, "f1");
@@ -216,9 +253,9 @@ public class PathRemoverTest {
     }
 
     @Test
-    public void testForceRemoveDirectoryContents_LockedFile() throws Exception {
+    void testForceRemoveDirectoryContents_LockedFile() throws Exception {
         assumeTrue(Functions.isWindows());
-        File dir = tmp.newFolder();
+        File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File d1 = new File(dir, "d1");
         File d2 = new File(dir, "d2");
         File f1 = new File(dir, "f1");
@@ -226,7 +263,7 @@ public class PathRemoverTest {
         File d2f2 = new File(d2, "d1f2");
         mkdirs(d1, d2);
         touchWithFileName(f1, d1f1, d2f2);
-        locker.acquireLock(d1f1);
+        acquireLock(d1f1);
         PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> retriesAttempted < 1);
         Exception e = assertThrows(IOException.class, () -> remover.forceRemoveDirectoryContents(dir.toPath()));
         assertThat(e.getMessage(), allOf(containsString(dir.getPath()), containsString("Tried 1 time.")));
@@ -236,8 +273,8 @@ public class PathRemoverTest {
     }
 
     @Test
-    public void testForceRemoveRecursive() throws IOException {
-        File dir = tmp.newFolder();
+    void testForceRemoveRecursive() throws IOException {
+        File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File d1 = new File(dir, "d1");
         File d2 = new File(dir, "d2");
         File f1 = new File(dir, "f1");
@@ -253,9 +290,9 @@ public class PathRemoverTest {
     }
 
     @Test
-    public void testForceRemoveRecursive_DeletesAsMuchAsPossibleWithLockedFiles() throws Exception {
+    void testForceRemoveRecursive_DeletesAsMuchAsPossibleWithLockedFiles() throws Exception {
         assumeTrue(Functions.isWindows());
-        File dir = tmp.newFolder();
+        File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File d1 = new File(dir, "d1");
         File d2 = new File(dir, "d2");
         File f1 = new File(dir, "f1");
@@ -264,7 +301,7 @@ public class PathRemoverTest {
         mkdirs(d1, d2);
         touchWithFileName(f1, d1f1, d2f2);
 
-        locker.acquireLock(d1f1);
+        acquireLock(d1f1);
         PathRemover remover = PathRemover.newSimpleRemover();
         Exception e = assertThrows(IOException.class, () -> remover.forceRemoveRecursive(dir.toPath()));
         assertThat(e.getMessage(), containsString(dir.getPath()));
@@ -277,9 +314,9 @@ public class PathRemoverTest {
     }
 
     @Test
-    public void testForceRemoveRecursive_RetryOnFailure() throws Exception {
+    void testForceRemoveRecursive_RetryOnFailure() throws Exception {
         assumeTrue(Functions.isWindows());
-        File dir = tmp.newFolder();
+        File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File d1 = new File(dir, "d1");
         File d2 = new File(dir, "d2");
         File f1 = new File(dir, "f1");
@@ -287,14 +324,14 @@ public class PathRemoverTest {
         File d2f2 = new File(d2, "d1f2");
         mkdirs(d1, d2);
         touchWithFileName(f1, d1f1, d2f2);
-        locker.acquireLock(d2f2);
+        acquireLock(d2f2);
         CountDownLatch unlockLatch = new CountDownLatch(1);
         CountDownLatch deleteLatch = new CountDownLatch(1);
         AtomicBoolean lockedFileExists = new AtomicBoolean();
         Thread thread = new Thread(() -> {
             try {
                 unlockLatch.await();
-                locker.releaseLock(d2f2);
+                releaseLock(d2f2);
                 deleteLatch.countDown();
             } catch (Exception ignored) {
             }
@@ -320,9 +357,9 @@ public class PathRemoverTest {
     }
 
     @Test
-    public void testForceRemoveRecursive_FailsWhenInterrupted() throws Exception {
+    void testForceRemoveRecursive_FailsWhenInterrupted() throws Exception {
         assumeTrue(Functions.isWindows());
-        File dir = tmp.newFolder();
+        File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File d1 = new File(dir, "d1");
         File d2 = new File(dir, "d2");
         File f1 = new File(dir, "f1");
@@ -330,7 +367,7 @@ public class PathRemoverTest {
         File d2f2 = new File(d2, "d1f2");
         mkdirs(d1, d2);
         touchWithFileName(f1, d1f1, d2f2);
-        locker.acquireLock(d1f1);
+        acquireLock(d1f1);
         AtomicReference<InterruptedException> interrupted = new AtomicReference<>();
         AtomicReference<IOException> removed = new AtomicReference<>();
         PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> {
@@ -362,31 +399,31 @@ public class PathRemoverTest {
     }
 
     @Test
-    public void testForceRemoveRecursive_ContainsSymbolicLinks() throws IOException {
+    void testForceRemoveRecursive_ContainsSymbolicLinks() throws IOException {
         assumeFalse(Functions.isWindows());
-        File folder = tmp.newFolder();
+        File folder = newFolder(tmp, "junit" + System.currentTimeMillis());
         File d1 = new File(folder, "d1");
         File d1f1 = new File(d1, "d1f1");
         File f2 = new File(folder, "f2");
         mkdirs(d1);
         touchWithFileName(d1f1, f2);
-        Path path = tmp.newFolder().toPath();
+        Path path = newFolder(tmp, "junit-" + System.currentTimeMillis()).toPath();
         Files.createSymbolicLink(path.resolve("sym-dir"), d1.toPath());
         Files.createSymbolicLink(path.resolve("sym-file"), f2.toPath());
 
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveRecursive(path);
 
-        assertTrue("Unable to delete directory: " + path, Files.notExists(path));
+        assertTrue(Files.notExists(path), "Unable to delete directory: " + path);
         for (File file : Arrays.asList(d1, d1f1, f2)) {
-            assertTrue("Should not have deleted target: " + file, file.exists());
+            assertTrue(file.exists(), "Should not have deleted target: " + file);
         }
     }
 
     @Test
     @Issue("JENKINS-55448")
-    public void testForceRemoveRecursive_ContainsDotPath() throws IOException {
-        File folder = tmp.newFolder();
+    void testForceRemoveRecursive_ContainsDotPath() throws IOException {
+        File folder = newFolder(tmp, "junit" + System.currentTimeMillis());
         File d1 = new File(folder, "d1");
         File d1f1 = new File(d1, "d1f1");
         File f2 = new File(folder, "f2");
@@ -397,44 +434,44 @@ public class PathRemoverTest {
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveRecursive(path);
 
-        assertTrue("Unable to delete directory: " + folder, Files.notExists(path));
+        assertTrue(Files.notExists(path), "Unable to delete directory: " + folder);
     }
 
     @Test
     @Issue("JENKINS-55448")
-    public void testForceRemoveRecursive_ParentIsSymbolicLink() throws IOException {
+    void testForceRemoveRecursive_ParentIsSymbolicLink() throws IOException {
         assumeFalse(Functions.isWindows());
-        File folder = tmp.newFolder();
+        File folder = newFolder(tmp, "junit" + System.currentTimeMillis());
         File d1 = new File(folder, "d1");
         File d1f1 = new File(d1, "d1f1");
         File f2 = new File(folder, "f2");
         mkdirs(d1);
         touchWithFileName(d1f1, f2);
-        Path symlink = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("linked"), folder.toPath());
+        Path symlink = Files.createSymbolicLink(tmp.toPath().resolve("linked"), folder.toPath());
         Path d1p = symlink.resolve("d1");
 
         PathRemover remover = PathRemover.newSimpleRemover();
         remover.forceRemoveRecursive(d1p);
 
-        assertTrue("Unable to delete directory: " + d1p, Files.notExists(d1p));
+        assertTrue(Files.notExists(d1p), "Unable to delete directory: " + d1p);
         assertFalse(d1.exists());
     }
 
     @Test
     @Issue("JENKINS-55448")
-    public void testForceRemoveRecursive_TruncatesNumberOfExceptions() throws IOException {
+    void testForceRemoveRecursive_TruncatesNumberOfExceptions() throws IOException {
         assumeTrue(Functions.isWindows());
         final int maxExceptions = CompositeIOException.EXCEPTION_LIMIT;
         final int lockedFiles = maxExceptions + 5;
         final int totalFiles = lockedFiles + 5;
-        File dir = tmp.newFolder();
+        File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File[] files = new File[totalFiles];
         for (int i = 0; i < totalFiles; i++) {
             files[i] = new File(dir, "f" + i);
         }
         touchWithFileName(files);
         for (int i = 0; i < lockedFiles; i++) {
-            locker.acquireLock(files[i]);
+            acquireLock(files[i]);
         }
 
         final CompositeIOException e = assertThrows(CompositeIOException.class,
@@ -448,7 +485,7 @@ public class PathRemoverTest {
 
     private static void mkdirs(File... dirs) {
         for (File dir : dirs) {
-            assertTrue("Could not mkdir " + dir, dir.mkdir());
+            assertTrue(dir.mkdir(), "Could not mkdir " + dir);
             assertTrue(dir.isDirectory());
         }
     }
@@ -460,6 +497,15 @@ public class PathRemoverTest {
             }
             assertTrue(file.isFile());
         }
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.exists() && !result.mkdirs()) {
+            throw new IOException("Couldn't create folders " + root);
+        }
+        return result;
     }
 
 }
