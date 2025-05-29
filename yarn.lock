@@ -2528,10 +2528,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansis@npm:1.5.2":
-  version: 1.5.2
-  resolution: "ansis@npm:1.5.2"
-  checksum: 10c0/b51616fcc952ca91b72779a7c3d61b395e71063e8d26a00d2809db7ce1ad415c905af5bbbf7ddd56a551c307fe2fdc21576e75aa17562f8e2d4153c66db4c9dc
+"ansis@npm:4.0.0-node10":
+  version: 4.0.0-node10
+  resolution: "ansis@npm:4.0.0-node10"
+  checksum: 10c0/7d6f4a6c1fbe405ee088421a17ea7cf1abd94ebee46ee69a6a739f8777e1ccfe1cd81abeee19f8e9a303963180556c222e1f1b97d25b0b601ea231c119463982
   languageName: node
   linkType: hard
 
@@ -4373,7 +4373,7 @@ __metadata:
     tippy.js: "npm:6.3.7"
     webpack: "npm:5.99.9"
     webpack-cli: "npm:6.0.1"
-    webpack-remove-empty-scripts: "npm:1.0.4"
+    webpack-remove-empty-scripts: "npm:1.1.1"
     window-handle: "npm:1.0.1"
   languageName: unknown
   linkType: soft
@@ -7031,14 +7031,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-remove-empty-scripts@npm:1.0.4":
-  version: 1.0.4
-  resolution: "webpack-remove-empty-scripts@npm:1.0.4"
+"webpack-remove-empty-scripts@npm:1.1.1":
+  version: 1.1.1
+  resolution: "webpack-remove-empty-scripts@npm:1.1.1"
   dependencies:
-    ansis: "npm:1.5.2"
+    ansis: "npm:4.0.0-node10"
   peerDependencies:
     webpack: ">=5.32.0"
-  checksum: 10c0/9a0dbb7506c705abdee55de2ec887e3b655c703ea81e925bfcca456bab4299804024c81ca114aa9f0fc3505f4a1f397810d62bf7b72f3213ed9ed5cd8705ffed
+  checksum: 10c0/2354cdb55117a645852b596f2e8ddb25ac041e0aea2c17d4c253b1a7f6c4d8f819e3d6bf08757e3b971b22a9248a39925838c3568ac4e0ce16c6478709f864b1
   languageName: node
   linkType: hard
 

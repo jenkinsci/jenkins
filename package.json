@@ -50,7 +50,7 @@
     "stylelint-config-standard-scss": "15.0.1",
     "webpack": "5.99.9",
     "webpack-cli": "6.0.1",
-    "webpack-remove-empty-scripts": "1.0.4"
+    "webpack-remove-empty-scripts": "1.1.1"
   },
   "dependencies": {
     "handlebars": "4.7.8",
