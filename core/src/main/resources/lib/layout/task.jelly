@@ -231,7 +231,9 @@ THE SOFTWARE.
                     <dd:header text="${title}"/>
                     <!--  TODO we are missing some styling the icon and text have no space inbetween -->
                     <dd:custom>
-                      <j:out value="${jumplist}" />
+                      <div class="tasks">
+                        <j:out value="${jumplist}" />
+                      </div>
                     </dd:custom>
                   </div>
                 </template>
