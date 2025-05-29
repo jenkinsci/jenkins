@@ -4,6 +4,7 @@
   border: var(--jenkins-border-width) solid var(--input-border);
   border-radius: var(--form-input-border-radius);
   width: 100%;
+  max-width: var(--form-item-max-width);
   box-shadow: var(--form-input-glow);
   transition:
     var(--standard-transition),
