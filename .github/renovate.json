@@ -106,6 +106,16 @@
       ],
       "enabled": false,
       "description": "maven-metadata.xml is missing for this really old package which is required by renovate"
+    },
+    {
+      "description": "Jackson 2.19.0 causes issues with Kubernetes client. See https://github.com/jenkinsci/bom/pull/5114",
+      "matchManagers": [
+        "maven"
+      ],
+      "allowedVersions": "<2.19.0",
+      "matchPackageNames": [
+        "org.jenkins-ci.plugins:jackson2-api"
+      ]
     }
   ],
   "customManagers": [
@@ -175,16 +185,6 @@
       ],
       "depNameTemplate": "org.apache.maven.skins:maven-fluido-skin",
       "datasourceTemplate": "maven"
-    },
-    {
-      "description": "Jackson 2.19.0 causes issues with Kubernetes client. See https://github.com/jenkinsci/bom/pull/5114",
-      "matchManagers": [
-        "maven"
-      ],
-      "allowedVersions": "<2.19.0",
-      "matchPackageNames": [
-        "org.jenkins-ci.plugins:jackson2-api"
-      ]
     }
   ],
   "labels": [
