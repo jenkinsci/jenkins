@@ -125,7 +125,7 @@ public class ExecutorTest {
             j.assertLogContains("Disconnected by Johnny : Taking offline to break your build", b);
         } else {
             assertThat(p.getLastBuild().getCause(Cause.class), instanceOf(Cause.LegacyCodeCause.class));
-            j.assertLogContains(Cause.LegacyCodeCause.getShortDescription(), b);
+            j.assertLogContains((new Cause.LegacyCodeCause()).getShortDescription(), b);
         }
     }
 
