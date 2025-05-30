@@ -3,6 +3,7 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,7 +17,9 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.OneShotEvent;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
@@ -228,4 +231,34 @@ public class ExecutorTest {
             }
         }
     }
+
+    @Test
+    public void recordCauseOfInterruption() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(TestBuilder.of((build, launcher, listener) -> {
+            Executor exec = build.getExecutor();
+            exec.interrupt(Result.NOT_BUILT, new TestCauseOfInterruption("one"), new TestCauseOfInterruption("two"));
+            exec.recordCauseOfInterruption(build, listener);
+            exec.interrupt(Result.NOT_BUILT, new TestCauseOfInterruption("three"), new TestCauseOfInterruption("four"));
+            exec.recordCauseOfInterruption(build, listener);
+        }));
+        FreeStyleBuild b = j.buildAndAssertStatus(Result.NOT_BUILT, p);
+        assertThat(b.getActions(InterruptedBuildAction.class).stream().map(iba -> iba.getCauses().stream().map(CauseOfInterruption::getShortDescription).toList()).toList(), is(List.of(List.of("one", "two", "three", "four"))));
+    }
+
+    private static final class TestCauseOfInterruption extends CauseOfInterruption {
+        private final String msg;
+
+        TestCauseOfInterruption(String msg) {
+            this.msg = msg;
+
+        }
+
+        @Override
+        public String getShortDescription() {
+            return msg;
+        }
+    }
+
+
 }
