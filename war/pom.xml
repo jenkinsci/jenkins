@@ -428,7 +428,7 @@ THE SOFTWARE.
                   <!-- dependency of scm-api and workflow-step-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>structs</artifactId>
-                  <version>343.vdcf37b_a_c81d5</version>
+                  <version>350.v3b_30f09f2363</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
