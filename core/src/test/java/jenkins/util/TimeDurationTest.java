@@ -1,15 +1,15 @@
 package jenkins.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
 @Issue("JENKINS-44052")
-public class TimeDurationTest {
+class TimeDurationTest {
 
     @Test
-    public void fromString() {
+    void fromString() {
         assertEquals(1, TimeDuration.fromString("1").getTimeInMillis());
 
         assertEquals(1000, TimeDuration.fromString("1sec").getTimeInMillis());

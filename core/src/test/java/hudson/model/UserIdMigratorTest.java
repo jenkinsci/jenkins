@@ -37,58 +37,63 @@ import java.nio.file.Paths;
 import java.util.Map;
 import jenkins.model.IdStrategy;
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
-public class UserIdMigratorTest {
+class UserIdMigratorTest {
 
     private static final String BASE_RESOURCE_PATH = "src/test/resources/hudson/model/";
 
-    @Rule
-    public TestName name = new TestName();
+    private TestInfo info;
+
+    @BeforeEach
+    void setUp(TestInfo testInfo) {
+        info = testInfo;
+    }
+
 
     @Test
-    public void needsMigrationBasic() throws IOException {
+    void needsMigrationBasic() throws IOException {
         UserIdMigrator migrator = createUserIdMigrator();
         assertThat(migrator.needsMigration(), is(true));
     }
 
     @Test
-    public void needsMigrationFalse() throws IOException {
+    void needsMigrationFalse() throws IOException {
         UserIdMigrator migrator = createUserIdMigrator();
         assertThat(migrator.needsMigration(), is(false));
     }
 
     @Test
-    public void needsMigrationNoneExisting() throws IOException {
+    void needsMigrationNoneExisting() throws IOException {
         UserIdMigrator migrator = createUserIdMigrator();
         assertThat(migrator.needsMigration(), is(false));
     }
 
     @Test
-    public void needsMigrationNoUserConfigFiles() throws IOException {
+    void needsMigrationNoUserConfigFiles() throws IOException {
         UserIdMigrator migrator = createUserIdMigrator();
         assertThat(migrator.needsMigration(), is(false));
     }
 
     @Test
-    public void scanExistingUsersNone() throws IOException {
-        File usersDirectory = createTestDirectory(getClass(), name);
+    void scanExistingUsersNone() throws IOException {
+        File usersDirectory = createTestDirectory(getClass(), info);
         UserIdMigrator migrator = new UserIdMigrator(usersDirectory, IdStrategy.CASE_INSENSITIVE);
         Map<String, File> userMappings = migrator.scanExistingUsers();
         assertThat(userMappings.keySet(), empty());
     }
 
     @Test
-    public void scanExistingUsersNoUsersDirectory() throws IOException {
+    void scanExistingUsersNoUsersDirectory() throws IOException {
         UserIdMigrator migrator = createUserIdMigrator();
         Map<String, File> userMappings = migrator.scanExistingUsers();
         assertThat(userMappings.keySet(), empty());
     }
 
     @Test
-    public void scanExistingUsersBasic() throws IOException {
+    void scanExistingUsersBasic() throws IOException {
         UserIdMigrator migrator = createUserIdMigrator();
         Map<String, File> userMappings = migrator.scanExistingUsers();
         assertThat(userMappings.keySet(), hasSize(2));
@@ -96,7 +101,7 @@ public class UserIdMigratorTest {
     }
 
     @Test
-    public void scanExistingUsersLegacy() throws IOException {
+    void scanExistingUsersLegacy() throws IOException {
         UserIdMigrator migrator = createUserIdMigrator();
         Map<String, File> userMappings = migrator.scanExistingUsers();
         assertThat(userMappings.keySet(), hasSize(8));
@@ -104,7 +109,7 @@ public class UserIdMigratorTest {
     }
 
     @Test
-    public void scanExistingUsersOldLegacy() throws IOException {
+    void scanExistingUsersOldLegacy() throws IOException {
         UserIdMigrator migrator = createUserIdMigrator();
         Map<String, File> userMappings = migrator.scanExistingUsers();
         assertThat(userMappings.keySet(), hasSize(4));
@@ -112,7 +117,7 @@ public class UserIdMigratorTest {
     }
 
     @Test
-    public void emptyUsernameConfigScanned() throws IOException {
+    void emptyUsernameConfigScanned() throws IOException {
         UserIdMigrator migrator = createUserIdMigrator();
         Map<String, File> userMappings = migrator.scanExistingUsers();
         assertThat(userMappings.keySet(), hasSize(2));
@@ -120,8 +125,8 @@ public class UserIdMigratorTest {
     }
 
     @Test
-    public void scanExistingUsersCaseSensitive() throws IOException {
-        File usersDirectory = createTestDirectory(getClass(), name);
+    void scanExistingUsersCaseSensitive() throws IOException {
+        File usersDirectory = createTestDirectory(getClass(), info);
         UserIdMigrator migrator = new UserIdMigrator(usersDirectory, new IdStrategy.CaseSensitive());
         Map<String, File> userMappings = migrator.scanExistingUsers();
         assertThat(userMappings.keySet(), hasSize(3));
@@ -129,8 +134,8 @@ public class UserIdMigratorTest {
     }
 
     @Test
-    public void migrateSimpleUser() throws IOException {
-        File usersDirectory = createTestDirectory(getClass(), name);
+    void migrateSimpleUser() throws IOException {
+        File usersDirectory = createTestDirectory(getClass(), info);
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         UserIdMigrator migrator = new UserIdMigrator(usersDirectory, idStrategy);
         TestUserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
@@ -143,8 +148,8 @@ public class UserIdMigratorTest {
     }
 
     @Test
-    public void migrateMultipleUsers() throws IOException {
-        File usersDirectory = createTestDirectory(getClass(), name);
+    void migrateMultipleUsers() throws IOException {
+        File usersDirectory = createTestDirectory(getClass(), info);
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         UserIdMigrator migrator = new UserIdMigrator(usersDirectory, idStrategy);
         TestUserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
@@ -159,8 +164,8 @@ public class UserIdMigratorTest {
     }
 
     @Test
-    public void migrateUsersXml() throws IOException {
-        File usersDirectory = createTestDirectory(getClass(), name);
+    void migrateUsersXml() throws IOException {
+        File usersDirectory = createTestDirectory(getClass(), info);
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         UserIdMigrator migrator = new UserIdMigrator(usersDirectory, idStrategy);
         TestUserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
@@ -173,8 +178,8 @@ public class UserIdMigratorTest {
     }
 
     @Test
-    public void migrateEntireDirectory() throws IOException {
-        File usersDirectory = createTestDirectory(getClass(), name);
+    void migrateEntireDirectory() throws IOException {
+        File usersDirectory = createTestDirectory(getClass(), info);
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         UserIdMigrator migrator = new UserIdMigrator(usersDirectory, idStrategy);
         TestUserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
@@ -186,22 +191,22 @@ public class UserIdMigratorTest {
         assertThat(originalFredDirectory.exists(), is(false));
     }
 
-    static File createTestDirectory(Class clazz, TestName testName) throws IOException {
+    static File createTestDirectory(Class clazz, TestInfo info) throws IOException {
         File tempDirectory = Files.createTempDirectory(Paths.get("target"), "userIdMigratorTest").toFile();
         tempDirectory.deleteOnExit();
-        copyTestDataIfExists(clazz, testName, tempDirectory);
+        copyTestDataIfExists(clazz, info, tempDirectory);
         return new File(tempDirectory, "users");
     }
 
-    static void copyTestDataIfExists(Class clazz, TestName testName, File tempDirectory) throws IOException {
-        File resourcesDirectory = new File(BASE_RESOURCE_PATH + clazz.getSimpleName(), testName.getMethodName());
+    static void copyTestDataIfExists(Class clazz, TestInfo info, File tempDirectory) throws IOException {
+        File resourcesDirectory = new File(BASE_RESOURCE_PATH + clazz.getSimpleName(), info.getTestMethod().orElseThrow().getName());
         if (resourcesDirectory.exists()) {
             FileUtils.copyDirectory(resourcesDirectory, tempDirectory);
         }
     }
 
     private UserIdMigrator createUserIdMigrator() throws IOException {
-        File usersDirectory = createTestDirectory(getClass(), name);
+        File usersDirectory = createTestDirectory(getClass(), info);
         return new UserIdMigrator(usersDirectory, IdStrategy.CASE_INSENSITIVE);
     }
 

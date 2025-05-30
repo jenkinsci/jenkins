@@ -10,40 +10,39 @@ import hudson.model.Computer;
 import hudson.model.Job;
 import hudson.model.TaskListener;
 import java.io.File;
-import java.io.IOException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 
-public class CoreEnvironmentContributorTest {
-    CoreEnvironmentContributor instance;
+class CoreEnvironmentContributorTest {
+    private CoreEnvironmentContributor instance;
 
     private AutoCloseable mocks;
 
     @Mock
-    Job job;
+    private Job job;
 
     @Mock
-    TaskListener listener;
+    private TaskListener listener;
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         mocks.close();
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         mocks = MockitoAnnotations.openMocks(this);
         instance = new CoreEnvironmentContributor();
     }
 
     @Issue("JENKINS-19307")
     @Test
-    public void buildEnvironmentForJobShouldntUseCurrentComputer() throws IOException, InterruptedException {
+    void buildEnvironmentForJobShouldntUseCurrentComputer() throws Exception {
         Computer computer = mock(Computer.class);
         Jenkins jenkins = mock(Jenkins.class);
         try (
