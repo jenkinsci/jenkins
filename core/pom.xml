@@ -39,7 +39,6 @@ THE SOFTWARE.
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <xmlunit.version>2.10.1</xmlunit.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
     <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
@@ -52,6 +51,13 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>jenkins-bom</artifactId>
         <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.xmlunit</groupId>
+        <artifactId>xmlunit-bom</artifactId>
+        <version>2.10.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -447,7 +453,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
+      <artifactId>mockito-junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -458,13 +464,11 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.xmlunit</groupId>
       <artifactId>xmlunit-core</artifactId>
-      <version>${xmlunit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.xmlunit</groupId>
       <artifactId>xmlunit-matchers</artifactId>
-      <version>${xmlunit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
