@@ -2,7 +2,7 @@ package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,26 +10,26 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-class FileChannelWriterTest {
+public class FileChannelWriterTest {
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    @TempDir
-    private File temporaryFolder;
+    File file;
+    FileChannelWriter writer;
 
-    private File file;
-    private FileChannelWriter writer;
-
-    @BeforeEach
-    void setUp() throws Exception {
-        file = File.createTempFile("junit", null, temporaryFolder);
+    @Before
+    public void setUp() throws Exception {
+        file = temporaryFolder.newFile();
         writer = new FileChannelWriter(file.toPath(), StandardCharsets.UTF_8, true, true,  StandardOpenOption.WRITE);
     }
 
     @Test
-    void write() throws Exception {
+    public void write() throws Exception {
         writer.write("helloooo");
         writer.close();
 
@@ -38,7 +38,7 @@ class FileChannelWriterTest {
 
 
     @Test
-    void flush() throws Exception {
+    public void flush() throws Exception {
         writer.write("hello é è à".toCharArray());
 
         writer.flush();
@@ -46,7 +46,7 @@ class FileChannelWriterTest {
     }
 
     @Test
-    void close() throws Exception {
+    public void close() throws Exception {
         writer.write("helloooo");
         writer.close();
 
