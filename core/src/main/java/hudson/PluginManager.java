@@ -58,8 +58,11 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
+import hudson.util.CachingClassLoader;
+import hudson.util.CheckingExistenceClassLoader;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.DelegatingClassLoader;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import hudson.util.Retrier;
@@ -106,13 +109,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
@@ -356,7 +357,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     // implementation is minimal --- just enough to run XStream
     // and load plugin-contributed classes.
-    public final ClassLoader uberClassLoader = new UberClassLoader(activePlugins);
+    public final ClassLoader uberClassLoader = new CachingClassLoader("Caching UberClassLoader",
+            new UberClassLoader(activePlugins)) {
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            // basic check before use cache-based loading
+            if (name.startsWith("SimpleTemplateScript") || // cf. groovy.text.SimpleTemplateEngine
+                    name.startsWith("groovy.tmp.")) {
+                throw new ClassNotFoundException("ignoring " + name);
+            }
+
+            return super.loadClass(name, resolve);
+        }
+    };
 
     /**
      * Once plugin is uploaded, this flag becomes true.
@@ -538,7 +551,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                         for (PluginWrapper p : cgd.getSorted()) {
                                             if (p.isActive()) {
                                                 activePlugins.add(p);
-                                                ((UberClassLoader) uberClassLoader).clearCacheMisses();
+                                                ((CachingClassLoader) uberClassLoader).clearCacheMisses();
                                             }
                                         }
                                     } catch (CycleDetectedException e) { // TODO this should be impossible, since we override reactOnCycle to not throw the exception
@@ -660,7 +673,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             } catch (IOException e) {
                 failedPlugins.add(new FailedPlugin(arc.getName(), e));
             }
-
         }
     }
 
@@ -973,7 +985,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             plugins.add(p);
             if (p.isActive()) {
                 activePlugins.add(p);
-                ((UberClassLoader) uberClassLoader).clearCacheMisses();
+                ((CachingClassLoader) uberClassLoader).clearCacheMisses();
             }
 
             // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
@@ -2396,43 +2408,29 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * {@link ClassLoader} that can see all plugins.
      */
-    public static final class UberClassLoader extends ClassLoader {
+    public static final class UberClassLoader extends DelegatingClassLoader {
         private final List<PluginWrapper> activePlugins;
 
-        /** Cache of loaded, or known to be unloadable, classes. */
-        private final ConcurrentMap<String, Optional<Class<?>>> loaded = new ConcurrentHashMap<>();
-
-        static {
-            registerAsParallelCapable();
-        }
-
         public UberClassLoader(List<PluginWrapper> activePlugins) {
-            super("UberClassLoader", PluginManager.class.getClassLoader());
+            super("UberClassLoader", new CheckingExistenceClassLoader(PluginManager.class.getClassLoader()));
             this.activePlugins = activePlugins;
         }
 
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
-            if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
-                throw new ClassNotFoundException("ignoring " + name);
-            }
-            return loaded.computeIfAbsent(name, this::computeValue).orElseThrow(() -> new ClassNotFoundException(name));
-        }
-
-        private Optional<Class<?>> computeValue(String name) {
             for (PluginWrapper p : activePlugins) {
                 try {
                     if (FAST_LOOKUP) {
-                        return Optional.of(ClassLoaderReflectionToolkit.loadClass(p.classLoader, name));
+                        return ClassLoaderReflectionToolkit.loadClass(p.classLoader, name);
                     } else {
-                        return Optional.of(p.classLoader.loadClass(name));
+                        return p.classLoader.loadClass(name);
                     }
                 } catch (ClassNotFoundException e) {
                     // Not found. Try the next class loader.
                 }
             }
-            // Not found in any of the class loaders. Delegate.
-            return Optional.empty();
+
+            throw new ClassNotFoundException(name);
         }
 
         @Override
@@ -2464,31 +2462,28 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return Collections.enumeration(resources);
         }
 
-        void clearCacheMisses() {
-            loaded.values().removeIf(Optional::isEmpty);
-        }
 
         @Override
         public String toString() {
             // only for debugging purpose
             return "classLoader " +  getClass().getName();
         }
+    }
 
-        // TODO Remove this once we require post 2024-07 remoting minimum version and deleted ClassLoaderProxy#fetchJar(URL)
-        @SuppressFBWarnings(
-                value = "DMI_COLLECTION_OF_URLS",
-                justification = "All URLs point to local files, so no DNS lookup.")
-        @Restricted(NoExternalUse.class)
-        public boolean isPluginJar(URL jarUrl) {
-            for (PluginWrapper plugin : activePlugins) {
-                if (plugin.classLoader instanceof URLClassLoader) {
-                    if (Set.of(((URLClassLoader) plugin.classLoader).getURLs()).contains(jarUrl)) {
-                        return true;
-                    }
+    // TODO Remove this once we require post 2024-07 remoting minimum version and deleted ClassLoaderProxy#fetchJar(URL)
+    @SuppressFBWarnings(
+            value = "DMI_COLLECTION_OF_URLS",
+            justification = "All URLs point to local files, so no DNS lookup.")
+    @Restricted(NoExternalUse.class)
+    public boolean isPluginJar(URL jarUrl) {
+        for (PluginWrapper plugin : activePlugins) {
+            if (plugin.classLoader instanceof URLClassLoader) {
+                if (Set.of(((URLClassLoader) plugin.classLoader).getURLs()).contains(jarUrl)) {
+                    return true;
                 }
             }
-            return false;
         }
+        return false;
     }
 
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
