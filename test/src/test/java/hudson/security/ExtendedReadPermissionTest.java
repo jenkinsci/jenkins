@@ -1,6 +1,6 @@
 package hudson.security;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.Item;
 import java.net.HttpURLConnection;
@@ -8,35 +8,40 @@ import jenkins.model.Jenkins;
 import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  *
  * @author dty
  */
-public class ExtendedReadPermissionTest {
-
-    @Rule public JenkinsRule r = new JenkinsRule();
+@WithJenkins
+class ExtendedReadPermissionTest {
 
     private static boolean enabled;
 
-    @BeforeClass public static void saveEnabled() {
+    private JenkinsRule r;
+
+    @BeforeAll
+    static void saveEnabled() {
         // TODO potential race condition since other test suites might be running concurrently
         enabled = Item.EXTENDED_READ.getEnabled();
     }
 
-    @AfterClass public static void restoreEnabled() {
+    @AfterAll
+    static void restoreEnabled() {
         Item.EXTENDED_READ.setEnabled(enabled);
     }
 
-    @Before public void security() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        r = rule;
         r.createFreeStyleProject("a");
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
@@ -50,7 +55,8 @@ public class ExtendedReadPermissionTest {
         Item.EXTENDED_READ.setEnabled(enabled);
     }
 
-    @Test public void readOnlyConfigAccessWithPermissionEnabled() throws Exception {
+    @Test
+    void readOnlyConfigAccessWithPermissionEnabled() throws Exception {
         setPermissionEnabled(true);
 
         JenkinsRule.WebClient wc = r.createWebClient();
@@ -62,11 +68,12 @@ public class ExtendedReadPermissionTest {
         assertNull(saveButton);
     }
 
-    @Ignore(
+    @Disabled(
             "This was actually testing a design of matrix-auth rather than core: that permissions, though formerly granted, are ignored if currently disabled."
-                + " Permission.enabled Javadoc only discusses visibility."
-                + " MockAuthorizationStrategy does not implement this check.")
-    @Test public void readOnlyConfigAccessWithPermissionDisabled() throws Exception {
+                    + " Permission.enabled Javadoc only discusses visibility."
+                    + " MockAuthorizationStrategy does not implement this check.")
+    @Test
+    void readOnlyConfigAccessWithPermissionDisabled() throws Exception {
         setPermissionEnabled(false);
 
         JenkinsRule.WebClient wc = r.createWebClient();
@@ -75,7 +82,8 @@ public class ExtendedReadPermissionTest {
         wc.assertFails("job/a/configure", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
-    @Test public void noConfigAccessWithPermissionEnabled() throws Exception {
+    @Test
+    void noConfigAccessWithPermissionEnabled() throws Exception {
         setPermissionEnabled(true);
 
         JenkinsRule.WebClient wc = r.createWebClient();

@@ -24,36 +24,46 @@
 
 package hudson.security;
 
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.model.Hudson;
 import hudson.model.Messages;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PermissionGroupTest {
+@WithJenkins
+class PermissionGroupTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     /**
      * "Overall" permission group should be always the first.
      */
     @Email("http://jenkins-ci.361315.n4.nabble.com/Master-slave-refactor-tp391495.html")
-    @Test public void order() {
+    @Test
+    void order() {
         assertSame(Jenkins.PERMISSIONS, PermissionGroup.getAll().get(0));
     }
 
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    @Test public void duplicatedGroups() {
+    @Test
+    void duplicatedGroups() {
         assertThrows(IllegalStateException.class, () -> new PermissionGroup(Hudson.class, Messages._Hudson_Permissions_Title()));
     }
 
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    @Test public void duplicatedPermissions() {
+    @Test
+    void duplicatedPermissions() {
         assertThrows(IllegalStateException.class, () -> new Permission(Jenkins.PERMISSIONS, "Read", Messages._Hudson_ReadPermission_Description(), Permission.READ, PermissionScope.JENKINS));
     }
 
