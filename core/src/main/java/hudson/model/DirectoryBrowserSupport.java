@@ -203,15 +203,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     }
 
     private void serveFile(StaplerRequest2 req, StaplerResponse2 rsp, VirtualFile root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
-        // handle form submission
-        String pattern = req.getParameter("pattern");
-        if (pattern == null)
-            pattern = req.getParameter("path"); // compatibility with Hudson<1.129
-        if (pattern != null && Util.isSafeToRedirectTo(pattern)) { // avoid open redirect
-            rsp.sendRedirect2(pattern);
-            return;
-        }
-
         String path = getPath(req);
         if (path.replace('\\', '/').contains("/../")) {
             // don't serve anything other than files in the artifacts dir
