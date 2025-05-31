@@ -3,6 +3,7 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.matrix.MatrixProject;
 import hudson.tasks.BuildStepDescriptor;
@@ -14,18 +15,18 @@ import org.htmlunit.html.DomNodeUtil;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Click all the help links and make sure they resolve to some text, not 404.
  *
  * @author Kohsuke Kawaguchi
  */
-@Ignore
+@Disabled
 /*
     Excluding test to be able to ship 2.0 beta 1
     Jenkins confirms that this test is now taking 45mins to complete.
@@ -64,23 +65,28 @@ import org.jvnet.hudson.test.JenkinsRule;
 
     Maybe this is related to the scrollspy changes?
  */
-public class HelpLinkTest {
+@WithJenkins
+class HelpLinkTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void systemConfig() throws Exception {
+    void systemConfig() throws Exception {
         clickAllHelpLinks(j.createWebClient().goTo("configure"));
     }
 
     @Test
-    public void freestyleConfig() throws Exception {
+    void freestyleConfig() throws Exception {
         clickAllHelpLinks(j.createFreeStyleProject());
     }
 
     @Test
-    public void matrixConfig() throws Exception {
+    void matrixConfig() throws Exception {
         clickAllHelpLinks(j.jenkins.createProject(MatrixProject.class, "mp"));
     }
 
@@ -128,7 +134,7 @@ public class HelpLinkTest {
      * Intentionally put 404 and verify that it's detected.
      */
     @Test
-    public void negative() throws Exception {
+    void negative() throws Exception {
         HelpNotFoundBuilder.DescriptorImpl d = new HelpNotFoundBuilder.DescriptorImpl();
         Publisher.all().add(d);
         try {
@@ -142,7 +148,7 @@ public class HelpLinkTest {
 
             statusListener.assertHasResponses();
             String contentAsString = statusListener.getResponses().get(0).getContentAsString();
-            Assert.assertTrue(contentAsString.contains(d.getHelpFile()));
+            assertTrue(contentAsString.contains(d.getHelpFile()));
         } finally {
             Publisher.all().remove(d);
         }

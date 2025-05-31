@@ -24,11 +24,11 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.Node.Mode;
 import hudson.search.SearchTest;
@@ -50,30 +50,35 @@ import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-@Category(SmokeTest.class)
-public class HudsonTest {
+@Tag("SmokeTest")
+@WithJenkins
+class HudsonTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Tests the basic UI sanity and HtmlUnit set up.
      */
     @Test
-    public void globalConfigRoundtrip() throws Exception {
+    void globalConfigRoundtrip() throws Exception {
         j.jenkins.setQuietPeriod(10);
         j.jenkins.setScmCheckoutRetryCount(9);
         j.jenkins.setNumExecutors(8);
@@ -90,7 +95,7 @@ public class HudsonTest {
     @Test
     @LocalData
     @Email("http://www.nabble.com/Hudson.configure-calling-deprecated-Descriptor.configure-td19051815.html")
-    public void simpleConfigSubmit() throws Exception {
+    void simpleConfigSubmit() throws Exception {
         // just load the page and resubmit
         HtmlPage configPage = j.createWebClient().goTo("configure");
         HtmlForm form = configPage.getFormByName("config");
@@ -135,7 +140,7 @@ public class HudsonTest {
      *      This test makes sure that a failure will result in an exception
      */
     @Test
-    public void searchIndex() throws Exception {
+    void searchIndex() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         Page jobPage = j.search(p.getName());
 
@@ -148,7 +153,7 @@ public class HudsonTest {
      * Top page should have zero items in the breadcrumb.
      */
     @Test
-    public void breadcrumb() throws Exception {
+    void breadcrumb() throws Exception {
         HtmlPage root = j.createWebClient().goTo("");
         DomElement navbar = root.getElementById("breadcrumbs");
         assertEquals(0, navbar.querySelectorAll(".jenkins-breadcrumbs__list-item").size());
@@ -159,7 +164,7 @@ public class HudsonTest {
      */
     @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
-    public void computerConfigureLink() throws Exception {
+    void computerConfigureLink() throws Exception {
         HtmlPage page = j.createWebClient().goTo("computer/(built-in)/configure");
         j.submit(page.getFormByName("config"));
     }
@@ -169,11 +174,11 @@ public class HudsonTest {
      */
     @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
-    public void deleteHudsonComputer() throws Exception {
+    void deleteHudsonComputer() throws Exception {
         WebClient wc = j.createWebClient();
         HtmlPage page = wc.goTo("computer/(built-in)/");
         for (HtmlAnchor a : page.getAnchors()) {
-            assertFalse(a.getHrefAttribute(), a.getHrefAttribute().endsWith("delete"));
+            assertFalse(a.getHrefAttribute().endsWith("delete"), a.getHrefAttribute());
         }
 
         wc.setThrowExceptionOnFailingStatusCode(false);
@@ -192,7 +197,7 @@ public class HudsonTest {
      */
     @Test
     @Email("http://www.nabble.com/1.286-version-and-description-The-requested-resource-%28%29-is-not--available.-td22233801.html")
-    public void legacyDescriptorLookup() {
+    void legacyDescriptorLookup() {
         Descriptor dummy = new Descriptor(HudsonTest.class) {};
 
         BuildStep.PUBLISHERS.addRecorder(dummy);
@@ -207,14 +212,14 @@ public class HudsonTest {
      */
     @Test
     @Issue("JENKINS-6938")
-    public void invalidPrimaryView() throws Exception {
+    void invalidPrimaryView() throws Exception {
         Field pv = Jenkins.class.getDeclaredField("primaryView");
         pv.setAccessible(true);
         String value = null;
         pv.set(j.jenkins, value);
-        assertNull("null primaryView", j.jenkins.getView(value));
+        assertNull(j.jenkins.getView(value), "null primaryView");
         value = "some bogus name";
         pv.set(j.jenkins, value);
-        assertNull("invalid primaryView", j.jenkins.getView(value));
+        assertNull(j.jenkins.getView(value), "invalid primaryView");
     }
 }

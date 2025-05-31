@@ -32,8 +32,8 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.cli.CLICommandInvoker.Result;
 import hudson.model.Computer;
@@ -43,20 +43,27 @@ import hudson.slaves.OfflineCause;
 import jenkins.model.Jenkins;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author ogondza
  */
-public class ComputerStateTest {
+@WithJenkins
+class ComputerStateTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void connect() throws Exception {
+    void connect() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, "connect-node");
 
         Slave slave = j.createSlave();
@@ -72,7 +79,7 @@ public class ComputerStateTest {
     }
 
     @Test
-    public void online() throws Exception {
+    void online() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, "online-node");
 
         Slave slave = j.createSlave();
@@ -88,7 +95,7 @@ public class ComputerStateTest {
     }
 
     @Test
-    public void disconnect() throws Exception {
+    void disconnect() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, "disconnect-node");
 
         Slave slave = j.createOnlineSlave();
@@ -111,7 +118,7 @@ public class ComputerStateTest {
     }
 
     @Test
-    public void offline() throws Exception {
+    void offline() throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, "offline-node");
 
         Slave slave = j.createOnlineSlave();
@@ -134,7 +141,7 @@ public class ComputerStateTest {
     }
 
     @Test
-    public void testUiForConnected() throws Exception {
+    void testUiForConnected() throws Exception {
         DumbSlave slave = j.createOnlineSlave();
         Computer computer = slave.toComputer();
 
@@ -175,8 +182,8 @@ public class ComputerStateTest {
 
     private void assertLinkDoesNotExist(HtmlPage page, String text) {
         assertThrows(
-                text + " link should not exist",
                 ElementNotFoundException.class,
-                () -> page.getAnchorByText(text));
+                () -> page.getAnchorByText(text),
+                text + " link should not exist");
     }
 }
