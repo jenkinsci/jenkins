@@ -34,53 +34,53 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class QuotedStringTokenizerTest {
+class QuotedStringTokenizerTest {
 
     @Test
-    public void test1() {
+    void test1() {
         check("foo bar",
               "foo", "bar");
     }
 
     @Test
-    public void test2() {
+    void test2() {
         check("foo \"bar zot\"",
               "foo", "bar zot");
     }
 
     @Test
-    public void test3() {
+    void test3() {
         check("foo bar=\"quote zot\"",
               "foo", "bar=quote zot");
     }
 
     @Test
-    public void test4() {
+    void test4() {
         check("foo\\\"",
               "foo\"");
     }
 
     @Test
-    public void test5() {
+    void test5() {
         check("foo\\ bar",
               "foo bar");
     }
 
     @Test
-    public void test6() {
+    void test6() {
         check("foo\\\\ bar",
               "foo\\", "bar");
     }
 
     // see http://www.nabble.com/Error-parsing-%22-in-msbuild-task-to20535754.html
     @Test
-    public void test7() {
+    void test7() {
         check("foo=\"bar\\zot\"",
               "foo=bar\\zot");
     }
 
     @Test
-    public void testHasMoreToken() {
+    void testHasMoreToken() {
         QuotedStringTokenizer tokenizer = new QuotedStringTokenizer("");
         assertFalse(tokenizer.hasMoreTokens());
         tokenizer = new QuotedStringTokenizer("one");
