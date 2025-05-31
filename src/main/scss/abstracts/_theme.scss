@@ -137,7 +137,7 @@ $semantics: (
   );
   --jenkins-border-color--subtle: color-mix(
     in sRGB,
-    currentColor 1.5%,
+    var(--text-color) 2%,
     transparent
   );
 
@@ -148,7 +148,7 @@ $semantics: (
   /* This is a subtle border - for increasing contrast on elements, such as buttons, menu and more */
   --jenkins-border--subtle: var(--jenkins-border-width) solid
     var(--jenkins-border-color--subtle);
-  --jenkins-border--subtle-shadow: 0 0 0 1.5px
+  --jenkins-border--subtle-shadow: 0 0 0 var(--jenkins-border-width)
     var(--jenkins-border-color--subtle);
 
   @media (resolution <= 1x) {
