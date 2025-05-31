@@ -4,22 +4,29 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import hudson.model.FreeStyleProject;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class Security2780Test {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class Security2780Test {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void buildButtonTooltipHasNoXss() throws Exception {
+    void buildButtonTooltipHasNoXss() throws Exception {
         FreeStyleProject project = this.j.createFreeStyleProject();
         project.setDisplayName("<img src=x onerror=alert(1)>");
         JenkinsRule.WebClient wc = this.j.createWebClient();
@@ -36,6 +43,6 @@ public class Security2780Test {
 
         assertThat("No unsafe HTML expected in the tooltip", jsResultString, not(containsString("<img")));
         assertThat("Safe HTML expected in the tooltip", jsResultString, containsString("Schedule a Build for &lt;img"));
-        Assert.assertFalse("No alert expected", alertTriggered.get());
+        assertFalse(alertTriggered.get(), "No alert expected");
     }
 }

@@ -1,13 +1,15 @@
 package jenkins.security.stapler;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @Issue("SECURITY-595")
 @For({StaplerDispatchable.class, StaplerNotDispatchable.class, TypedFilter.class})
-public class StaplerRoutableFieldTest extends StaplerAbstractTest {
+@WithJenkins
+class StaplerRoutableFieldTest extends StaplerAbstractTest {
     @TestExtension
     public static class TestRootAction extends AbstractUnprotectedRootAction {
         @Override
@@ -56,7 +58,7 @@ public class StaplerRoutableFieldTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testFieldNotAnnotated() throws Exception {
+    void testFieldNotAnnotated() throws Exception {
         assertReachable("test/renderableNotAnnotated/");
         assertReachable("test/renderableNotAnnotated/valid/");
 
@@ -69,7 +71,7 @@ public class StaplerRoutableFieldTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testFieldNotAnnotated_escapeHatch() throws Exception {
+    void testFieldNotAnnotated_escapeHatch() throws Exception {
         boolean currentValue = TypedFilter.SKIP_TYPE_CHECK;
         try {
             TypedFilter.SKIP_TYPE_CHECK = true;
@@ -90,7 +92,7 @@ public class StaplerRoutableFieldTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testFieldAnnotatedOk() throws Exception {
+    void testFieldAnnotatedOk() throws Exception {
         assertReachable("test/renderableAnnotatedOk/");
         assertReachable("test/renderableAnnotatedOk/valid/");
 
@@ -99,7 +101,7 @@ public class StaplerRoutableFieldTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testFieldAnnotatedKo() throws Exception {
+    void testFieldAnnotatedKo() {
         assertNotReachable("test/renderableAnnotatedKo/");
         assertNotReachable("test/renderableAnnotatedKo/valid/");
 
@@ -108,7 +110,7 @@ public class StaplerRoutableFieldTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testFieldDoubleAnnotated() throws Exception {
+    void testFieldDoubleAnnotated() {
         assertNotReachable("test/renderableDoubleAnnotated/");
         assertNotReachable("test/renderableDoubleAnnotated/valid/");
 
@@ -117,7 +119,7 @@ public class StaplerRoutableFieldTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testStaticFieldNotAnnotated() throws Exception {
+    void testStaticFieldNotAnnotated() {
         assertNotReachable("test/staticRenderableNotAnnotated/");
         assertNotReachable("test/staticRenderableNotAnnotated/valid/");
 
@@ -126,7 +128,7 @@ public class StaplerRoutableFieldTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testStaticFieldNotAnnotated_escapeHatch() throws Exception {
+    void testStaticFieldNotAnnotated_escapeHatch() throws Exception {
         boolean currentValue = TypedFilter.PROHIBIT_STATIC_ACCESS;
         try {
             TypedFilter.PROHIBIT_STATIC_ACCESS = false;
@@ -146,7 +148,7 @@ public class StaplerRoutableFieldTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testStaticFieldAnnotatedOk() throws Exception {
+    void testStaticFieldAnnotatedOk() throws Exception {
         assertReachable("test/staticRenderableAnnotatedOk/");
         assertReachable("test/staticRenderableAnnotatedOk/valid/");
 

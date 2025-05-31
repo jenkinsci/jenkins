@@ -6,18 +6,25 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import hudson.model.Item;
 import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.xml.sax.SAXException;
 
-public class NewJobCopyFromTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class NewJobCopyFromTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void checkLabel() throws IOException, SAXException {
+    void checkLabel() throws IOException, SAXException {
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             // no items - validate assertion
             assertThat(wc.goTo("newJob").getElementById("from"), is(nullValue()));

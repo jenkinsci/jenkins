@@ -24,7 +24,7 @@
 
 package jenkins.console;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleBuild;
@@ -34,22 +34,24 @@ import hudson.model.User;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ConsoleUrlProviderTest {
-    @ClassRule
-    public static BuildWatcher watcher = new BuildWatcher();
+@WithJenkins
+class ConsoleUrlProviderTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void getRedirectUrl() throws Exception {
+    void getRedirectUrl() throws Exception {
         ConsoleUrlProviderGlobalConfiguration.get().setProviders(list(new CustomConsoleUrlProvider()));
         FreeStyleProject p = r.createProject(FreeStyleProject.class);
         // Default URL
@@ -72,7 +74,7 @@ public class ConsoleUrlProviderTest {
     }
 
     @Test
-    public void getUserSpecificRedirectUrl() throws Exception {
+    void getUserSpecificRedirectUrl() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         User admin = User.getById("admin", true);
         // Admin choses custom, user overrides to default
@@ -95,7 +97,7 @@ public class ConsoleUrlProviderTest {
     }
 
     @Test
-    public void useGlobalProvidersIfUserProvidersDontReturnValidUrl() throws Exception {
+    void useGlobalProvidersIfUserProvidersDontReturnValidUrl() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         User admin = User.getById("admin", true);
         // Admin choses custom, user chooses a provider that ignores everything, so global choice still gets used.
@@ -108,7 +110,7 @@ public class ConsoleUrlProviderTest {
     }
 
     @Test
-    public void invalidRedirectUrls() throws Exception {
+    void invalidRedirectUrls() throws Exception {
         ConsoleUrlProviderGlobalConfiguration.get().setProviders(list(new CustomConsoleUrlProvider()));
         FreeStyleProject p = r.createProject(FreeStyleProject.class);
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
@@ -118,11 +120,11 @@ public class ConsoleUrlProviderTest {
         assertCustomConsoleUrl(r.contextPath + "/" + b.getUrl() + "console", b);
     }
 
-    public void assertCustomConsoleUrl(String expectedUrl, Run<?, ?> run) throws Exception {
+    private void assertCustomConsoleUrl(String expectedUrl, Run<?, ?> run) throws Exception {
         assertCustomConsoleUrl(expectedUrl, null, run);
     }
 
-    public void assertCustomConsoleUrl(String expectedUrl, User user, Run<?, ?> run) throws Exception {
+    private void assertCustomConsoleUrl(String expectedUrl, User user, Run<?, ?> run) throws Exception {
         JenkinsRule.WebClient wc = r.createWebClient();
         if (user != null) {
             wc.login(user.getId(), user.getId());
@@ -132,6 +134,7 @@ public class ConsoleUrlProviderTest {
     }
 
     // Like List.of, but avoids JEP-200 class filter warnings.
+    @SafeVarargs
     private static <T> List<T> list(T... items) {
         return new ArrayList<>(Arrays.asList(items));
     }
@@ -139,10 +142,12 @@ public class ConsoleUrlProviderTest {
     public static class CustomConsoleUrlProvider implements ConsoleUrlProvider {
         private final String suffix;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public CustomConsoleUrlProvider() {
             this.suffix = "";
         }
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public CustomConsoleUrlProvider(String suffix) {
             this.suffix = suffix;
         }

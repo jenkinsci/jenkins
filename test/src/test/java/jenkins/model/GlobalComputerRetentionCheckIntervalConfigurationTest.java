@@ -1,6 +1,6 @@
 package jenkins.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.Descriptor;
 import java.io.File;
@@ -9,10 +9,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Stapler;
 
 
@@ -21,11 +22,17 @@ import org.kohsuke.stapler.Stapler;
  *
  * @author Jakob Ackermann
  */
-public class GlobalComputerRetentionCheckIntervalConfigurationTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-    @Rule
-    public LoggerRule logging = new LoggerRule();
+@WithJenkins
+class GlobalComputerRetentionCheckIntervalConfigurationTest {
+
+    private final LogRecorder logging = new LogRecorder();
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     private File getConfig(GlobalComputerRetentionCheckIntervalConfiguration c) {
         return new File(j.jenkins.getRootDir(), c.getId() + ".xml");
@@ -36,12 +43,12 @@ public class GlobalComputerRetentionCheckIntervalConfigurationTest {
     }
 
     @Test
-    public void bootWithMissingCfg() {
+    void bootWithMissingCfg() {
         recordWarnings();
         GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
         c.load();
-        assertEquals("default", 60, c.getComputerRetentionCheckInterval());
-        assertEquals("no fallback message", logging.getRecords().size(), 0);
+        assertEquals(60, c.getComputerRetentionCheckInterval(), "default");
+        assertEquals(0, logging.getRecords().size(), "no fallback message");
     }
 
     private void writeConfig(GlobalComputerRetentionCheckIntervalConfiguration c, int interval) throws IOException {
@@ -58,44 +65,44 @@ public class GlobalComputerRetentionCheckIntervalConfigurationTest {
         GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
         writeConfig(c, interval);
         c.load();
-        assertEquals("uses default", 60, c.getComputerRetentionCheckInterval());
-        assertEquals("prints one fallback message", 1, logging.getRecords().size());
-        assertEquals("fallback message content", "computerRetentionCheckInterval must be greater than zero, falling back to 60s", logging.getRecords().get(0).getMessage());
+        assertEquals(60, c.getComputerRetentionCheckInterval(), "uses default");
+        assertEquals(1, logging.getRecords().size(), "prints one fallback message");
+        assertEquals("computerRetentionCheckInterval must be greater than zero, falling back to 60s", logging.getRecords().get(0).getMessage(), "fallback message content");
     }
 
     @Test
-    public void bootWithNegative() throws IOException {
+    void bootWithNegative() throws IOException {
         checkUsesFallbackAfterLoadOf(-1);
     }
 
     @Test
-    public void bootWithZero() throws IOException {
+    void bootWithZero() throws IOException {
         checkUsesFallbackAfterLoadOf(0);
     }
 
     @Test
-    public void bootWithPositive() throws IOException {
+    void bootWithPositive() throws IOException {
         recordWarnings();
         GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
         writeConfig(c, 1);
         c.load();
-        assertEquals("uses custom value", 1, c.getComputerRetentionCheckInterval());
-        assertEquals("no fallback message", 0, logging.getRecords().size());
+        assertEquals(1, c.getComputerRetentionCheckInterval(), "uses custom value");
+        assertEquals(0, logging.getRecords().size(), "no fallback message");
     }
 
     @Test
-    public void bootWithTooLargeValue() throws IOException {
+    void bootWithTooLargeValue() throws IOException {
         recordWarnings();
         GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
         writeConfig(c, 1337);
         c.load();
-        assertEquals("uses default", 60, c.getComputerRetentionCheckInterval());
-        assertEquals("prints one fallback message", 1, logging.getRecords().size());
-        assertEquals("fallback message content", "computerRetentionCheckInterval is limited to 60s", logging.getRecords().get(0).getMessage());
+        assertEquals(60, c.getComputerRetentionCheckInterval(), "uses default");
+        assertEquals(1, logging.getRecords().size(), "prints one fallback message");
+        assertEquals("computerRetentionCheckInterval is limited to 60s", logging.getRecords().get(0).getMessage(), "fallback message content");
     }
 
     @Test
-    public void saveCycle() {
+    void saveCycle() {
         recordWarnings();
         GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
 
@@ -106,12 +113,12 @@ public class GlobalComputerRetentionCheckIntervalConfigurationTest {
         } catch (Descriptor.FormException e) {
             throw new RuntimeException(e);
         }
-        assertEquals("stores value", 5, c.getComputerRetentionCheckInterval());
+        assertEquals(5, c.getComputerRetentionCheckInterval(), "stores value");
 
         GlobalComputerRetentionCheckIntervalConfiguration c2 = new GlobalComputerRetentionCheckIntervalConfiguration();
         c2.load();
-        assertEquals("round trip value", 5, c2.getComputerRetentionCheckInterval());
-        assertEquals("no fallback message", 0, logging.getRecords().size());
+        assertEquals(5, c2.getComputerRetentionCheckInterval(), "round trip value");
+        assertEquals(0, logging.getRecords().size(), "no fallback message");
     }
 
     private void checkSaveInvalidValueOf(int interval, String message) {
@@ -126,21 +133,21 @@ public class GlobalComputerRetentionCheckIntervalConfigurationTest {
         } catch (Descriptor.FormException e) {
             assertEquals(e.getMessage(), message);
         }
-        assertEquals("does not store value", 60, c.getComputerRetentionCheckInterval());
+        assertEquals(60, c.getComputerRetentionCheckInterval(), "does not store value");
 
         GlobalComputerRetentionCheckIntervalConfiguration c2 = new GlobalComputerRetentionCheckIntervalConfiguration();
         c2.load();
-        assertEquals("does not persist value", 60, c2.getComputerRetentionCheckInterval());
-        assertEquals("no fallback message", 0, logging.getRecords().size());
+        assertEquals(60, c2.getComputerRetentionCheckInterval(), "does not persist value");
+        assertEquals(0, logging.getRecords().size(), "no fallback message");
     }
 
     @Test
-    public void saveInvalidValueTooLow() {
+    void saveInvalidValueTooLow() {
         checkSaveInvalidValueOf(0, "java.lang.IllegalArgumentException: interval must be greater than zero");
     }
 
     @Test
-    public void saveInvalidValueTooHigh() {
+    void saveInvalidValueTooHigh() {
         checkSaveInvalidValueOf(1337, "java.lang.IllegalArgumentException: interval must be below or equal 60s");
     }
 }
