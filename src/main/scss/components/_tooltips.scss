@@ -5,7 +5,6 @@
   box-shadow: var(--tooltip-box-shadow);
   font-size: 0.75rem;
   line-height: 1.6;
-  max-width: min(50vw, 1000px) !important;
   white-space: pre-line;
   z-index: 0;
   background: color-mix(in sRGB, var(--card-background) 85%, transparent);
