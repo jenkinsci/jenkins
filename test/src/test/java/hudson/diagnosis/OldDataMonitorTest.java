@@ -26,6 +26,8 @@ package hudson.diagnosis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import hudson.XmlFile;
 import hudson.model.FreeStyleBuild;
@@ -143,6 +145,16 @@ public class OldDataMonitorTest {
         odm.doDiscard(null, null);
         assertEquals(Collections.emptySet(), odm.getData().keySet());
 
+    }
+
+    @Issue("JENKINS-63372")
+    @Test public void referToTest() {
+        FreeStyleBuild build = mock(FreeStyleBuild.class);
+        when(build.getParent()).thenReturn(null);
+
+        OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
+        OldDataMonitor.report(build, (String) null);
+        assertEquals(Set.of(build), odm.getData().keySet());
     }
 
     public static final class BadAction extends InvisibleAction {

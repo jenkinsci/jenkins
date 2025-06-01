@@ -390,7 +390,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private static SaveableReference referTo(Saveable s) {
         if (s instanceof Run) {
             Job parent = ((Run) s).getParent();
-            if (Jenkins.get().getItemByFullName(parent.getFullName()) == parent) {
+            if (parent != null && Jenkins.get().getItemByFullName(parent.getFullName()) == parent) {
                 return new RunSaveableReference((Run) s);
             }
         }
