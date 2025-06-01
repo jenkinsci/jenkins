@@ -40,7 +40,10 @@ THE SOFTWARE.
       </div>
       <j:if test="${app.shouldShowStackTrace()}">
         <p>${%checkJIRA} ${%vote} ${%pleaseReport} ${%stackTracePlease} ${%checkML}</p>
-        <h2>${%Stack trace}</h2>
+        <h2>
+            ${%Stack trace}
+            <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${h.printThrowable(request2.getAttribute('jakarta.servlet.error.exception'))}"/>
+        </h2>
         <pre style="margin:2em; clear:both">${h.printThrowable(request2.getAttribute('jakarta.servlet.error.exception'))}</pre>
       </j:if>
     </l:main-panel>
