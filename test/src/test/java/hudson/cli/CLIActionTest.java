@@ -3,6 +3,7 @@ package hudson.cli;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
@@ -43,7 +44,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -136,7 +136,7 @@ public class CLIActionTest {
         assertEquals(code, proc.join());
     }
 
-    @Ignore("TODO flaky test") @Test public void authenticationFailed() throws Exception {
+    @Test public void authenticationFailed() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
         var jar = tmp.newFile("jenkins-cli.jar");
@@ -145,20 +145,21 @@ public class CLIActionTest {
         var exitStatus = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), "-auth", "user:bogustoken", "who-am-i"
         ).stdout(baos).start().join();
-        assertThat(baos.toString(), allOf(containsString("status code 401"), containsString("Server: Jetty")));
+        assertThat(baos.toString(), allOf(containsString("status code 401"), containsStringIgnoringCase("server: Jetty")));
         assertThat(exitStatus, is(15));
     }
 
     @Issue("JENKINS-41745")
     @Test
     public void encodingAndLocale() throws Exception {
+        logging.record(CLIAction.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-Dfile.encoding=ISO-8859-2", "-Duser.language=cs", "-Duser.country=CZ", "-jar", jar.getAbsolutePath(),
                 "-s", j.getURL().toString()./* just checking */replaceFirst("/$", ""), "test-diagnostic").
-            stdout(baos).stderr(System.err).join());
+            stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).join());
         assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString(Charset.forName("ISO-8859-2")).trim());
         // TODO test that stdout/stderr are in expected encoding (not true of -remoting mode!)
         // -ssh mode does not pass client locale or encoding

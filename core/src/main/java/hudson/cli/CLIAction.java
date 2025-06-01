@@ -157,6 +157,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 LOGGER.log(Level.FINE, () -> "Rejecting origin: " + actualOrigin + "; expected was from request: " + expectedOrigin);
                 return statusWithExplanation(HttpServletResponse.SC_FORBIDDEN, "Unexpected request origin (check your reverse proxy settings)");
             }
+            LOGGER.fine(() -> "accepting Origin: " + actualOrigin);
         } else if (!ALLOW_WEBSOCKET) {
             return statusWithExplanation(HttpServletResponse.SC_FORBIDDEN, "WebSocket support for CLI disabled for this controller");
         }
