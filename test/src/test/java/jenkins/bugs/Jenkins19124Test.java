@@ -1,6 +1,6 @@
 package jenkins.bugs;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -17,23 +17,30 @@ import org.htmlunit.WebClientUtil;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSelect;
 import org.htmlunit.html.HtmlTextInput;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.QueryParameter;
 
-public class Jenkins19124Test {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class Jenkins19124Test {
 
     @Inject
     public Foo.DescriptorImpl d;
 
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
     @Issue("JENKINS-19124")
     @Test
-    public void interrelatedFormValidation() throws Exception {
+    void interrelatedFormValidation() throws Exception {
         j.jenkins.getInjector().injectMembers(this);
 
         FreeStyleProject p = j.createFreeStyleProject();
