@@ -26,9 +26,9 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Launcher;
 import hudson.model.Descriptor.PropertyType;
@@ -41,34 +41,43 @@ import java.util.concurrent.Callable;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.htmlunit.FailingHttpStatusCodeException;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest2;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
+@WithJenkins
 public class DescriptorTest {
 
-    public @Rule JenkinsRule rule = new JenkinsRule();
+    private JenkinsRule rule;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        this.rule = rule;
+    }
 
     @Issue("JENKINS-12307")
-    @Test public void getItemTypeDescriptorOrDie() {
+    @Test
+    void getItemTypeDescriptorOrDie() {
         Describable<?> instance = new Shell("echo hello");
         Descriptor<?> descriptor = instance.getDescriptor();
         PropertyType propertyType = descriptor.getPropertyType(instance, "command");
         AssertionError x = assertThrows(AssertionError.class, () -> propertyType.getItemTypeDescriptorOrDie());
         for (String text : new String[]{"hudson.tasks.CommandInterpreter", "getCommand", "java.lang.String", "collection"}) {
-            assertTrue(text + " mentioned in " + x, x.toString().contains(text));
+            assertTrue(x.toString().contains(text), text + " mentioned in " + x);
         }
     }
 
     @Issue("JENKINS-26781")
-    @Test public void overriddenId() throws Exception {
+    @Test
+    void overriddenId() throws Exception {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(new BuilderImpl("builder-a"));
         rule.configRoundtrip(p);
@@ -128,7 +137,8 @@ public class DescriptorTest {
     @TestExtension("overriddenId") public static final BuildStepDescriptor<Builder> builderB = new DescriptorImpl("builder-b");
 
     @Issue("JENKINS-28110")
-    @Test public void nestedDescribableOverridingId() throws Exception {
+    @Test
+    void nestedDescribableOverridingId() throws Exception {
         FreeStyleProject p = rule.createFreeStyleProject("p");
         p.getBuildersList().add(new B1(Arrays.asList(new D1(), new D2())));
         rule.configRoundtrip(p);
@@ -176,9 +186,10 @@ public class DescriptorTest {
         @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 
-    @Ignore("never worked: TypePair.convertJSON looks for @DataBoundConstructor on D3 (Stapler does not grok Descriptor)")
+    @Disabled("never worked: TypePair.convertJSON looks for @DataBoundConstructor on D3 (Stapler does not grok Descriptor)")
     @Issue("JENKINS-28110")
-    @Test public void nestedDescribableSharingClass() throws Exception {
+    @Test
+    void nestedDescribableSharingClass() throws Exception {
         FreeStyleProject p = rule.createFreeStyleProject("p");
         p.getBuildersList().add(new B2(Arrays.asList(new D3("d3a"), new D3("d3b"))));
         rule.configRoundtrip(p);
@@ -237,7 +248,7 @@ public class DescriptorTest {
     }
 
     @Test
-    public void presentStacktraceFromFormException() {
+    void presentStacktraceFromFormException() {
         NullPointerException cause = new NullPointerException();
         final Descriptor.FormException fe = new Descriptor.FormException("My Message", cause, "fake");
         FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () ->

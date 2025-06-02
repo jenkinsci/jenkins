@@ -35,27 +35,34 @@ import java.io.IOException;
 import java.io.StringReader;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AbstractItemSecurityTest {
+@WithJenkins
+class AbstractItemSecurityTest {
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    private JenkinsRule jenkinsRule;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        jenkinsRule = rule;
+    }
 
     @Issue("SECURITY-167")
     @Test
-    public void testUpdateByXmlDoesNotProcessForeignResources() throws Exception {
-        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-                "<!DOCTYPE project[\n" +
-                "  <!ENTITY foo SYSTEM \"file:///\">\n" +
-                "]>\n" +
-                "<project>\n" +
-                "  <description>&foo;</description>\n" +
-                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
-                "</project>";
+    void testUpdateByXmlDoesNotProcessForeignResources() throws Exception {
+        final String xml = """
+                <?xml version='1.0' encoding='UTF-8'?>
+                <!DOCTYPE project[
+                  <!ENTITY foo SYSTEM "file:///">
+                ]>
+                <project>
+                  <description>&foo;</description>
+                  <scm class="hudson.scm.NullSCM"/>
+                </project>""";
 
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
         project.setDescription("Wibble");
@@ -73,12 +80,13 @@ public class AbstractItemSecurityTest {
 
     @Issue("SECURITY-167")
     @Test
-    public void testUpdateByXmlDoesNotFail() throws Exception {
-        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-                "<project>\n" +
-                "  <description>&amp;</description>\n" +
-                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
-                "</project>";
+    void testUpdateByXmlDoesNotFail() throws Exception {
+        final String xml = """
+                <?xml version='1.0' encoding='UTF-8'?>
+                <project>
+                  <description>&amp;</description>
+                  <scm class="hudson.scm.NullSCM"/>
+                </project>""";
 
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
         project.updateByXml((Source) new StreamSource(new StringReader(xml)));

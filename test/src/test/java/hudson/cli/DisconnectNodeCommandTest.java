@@ -38,28 +38,29 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import java.util.ArrayList;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author pjanouse
  */
-public class DisconnectNodeCommandTest {
+@WithJenkins
+class DisconnectNodeCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, "disconnect-node");
     }
 
     @Test
-    public void disconnectNodeShouldFailWithoutComputerDisconnectPermission() throws Exception {
+    void disconnectNodeShouldFailWithoutComputerDisconnectPermission() throws Exception {
         j.createSlave("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
@@ -72,7 +73,7 @@ public class DisconnectNodeCommandTest {
     }
 
     @Test
-    public void disconnectNodeShouldFailIfNodeDoesNotExist() {
+    void disconnectNodeShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -83,7 +84,7 @@ public class DisconnectNodeCommandTest {
     }
 
     @Test
-    public void disconnectNodeShouldSucceed() throws Exception {
+    void disconnectNodeShouldSucceed() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         assertOnline(slave);
 
@@ -110,7 +111,7 @@ public class DisconnectNodeCommandTest {
     }
 
     @Test
-    public void disconnectNodeShouldSucceedWithCause() throws Exception {
+    void disconnectNodeShouldSucceedWithCause() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         assertOnline(slave);
 
@@ -137,7 +138,7 @@ public class DisconnectNodeCommandTest {
     }
 
     @Test
-    public void disconnectNodeManyShouldSucceed() throws Exception {
+    void disconnectNodeManyShouldSucceed() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         DumbSlave slave3 = j.createSlave("aNode3", "", null);
@@ -155,7 +156,7 @@ public class DisconnectNodeCommandTest {
     }
 
     @Test
-    public void disconnectNodeManyShouldSucceedWithCause() throws Exception {
+    void disconnectNodeManyShouldSucceedWithCause() throws Exception {
         int n = 3;
         var agents = new ArrayList<DumbSlave>();
         for (int i = 1; i <= n; i++) {
@@ -181,7 +182,7 @@ public class DisconnectNodeCommandTest {
     }
 
     @Test
-    public void disconnectNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
+    void disconnectNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         assertOnline(slave1);
@@ -199,7 +200,7 @@ public class DisconnectNodeCommandTest {
     }
 
     @Test
-    public void disconnectNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
+    void disconnectNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         assertOnline(slave1);
