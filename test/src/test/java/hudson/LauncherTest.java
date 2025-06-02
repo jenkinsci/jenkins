@@ -28,8 +28,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.LineTransformationOutputStream;
@@ -54,26 +54,32 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Serial;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-@Category(SmokeTest.class)
-public class LauncherTest {
+@Tag("SmokeTest")
+@WithJenkins
+class LauncherTest {
 
-    @Rule
-    public JenkinsRule rule = new JenkinsRule();
+    private JenkinsRule rule;
+
+    @BeforeEach
+    void setUp(JenkinsRule j) {
+        rule = j;
+    }
 
     @Issue("JENKINS-19488")
     @Test
-    public void correctlyExpandEnvVars() throws Exception {
+    void correctlyExpandEnvVars() throws Exception {
         FreeStyleProject project = rule.createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("A", "aaa"),
@@ -93,7 +99,7 @@ public class LauncherTest {
 
     @Issue("JENKINS-19926")
     @Test
-    public void overwriteSystemEnvVars() throws Exception {
+    void overwriteSystemEnvVars() throws Exception {
         Map<String, String> env = new HashMap<>();
         env.put("jenkins_19926", "original value");
         Slave slave = rule.createSlave(new EnvVars(env));
@@ -113,7 +119,8 @@ public class LauncherTest {
     }
 
     @Issue("JENKINS-23027")
-    @Test public void quiet() throws Exception {
+    @Test
+    void quiet() throws Exception {
         Slave s = rule.createSlave();
         boolean windows = Functions.isWindows();
         FreeStyleProject p = rule.createFreeStyleProject();
@@ -185,7 +192,8 @@ public class LauncherTest {
     }
 
     @Issue("JENKINS-52729")
-    @Test public void remotable() throws Exception {
+    @Test
+    void remotable() throws Exception {
         try (var baos = new ByteArrayOutputStream()) {
             var listener = new RemotableBuildListener(new StreamTaskListener(baos, StandardCharsets.UTF_8));
             Launcher.ProcStarter ps = rule.createOnlineSlave().createLauncher(listener).launch();
@@ -202,6 +210,7 @@ public class LauncherTest {
     }
 
     private static class RemotableBuildListener implements BuildListener {
+        @Serial
         private static final long serialVersionUID = 1;
         /** actual implementation */
         private final TaskListener delegate;
@@ -231,6 +240,7 @@ public class LauncherTest {
             return logger;
         }
 
+        @Serial
         private Object writeReplace() {
             Thread.dumpStack();
             String name = Channel.current().getName();
@@ -239,7 +249,8 @@ public class LauncherTest {
     }
 
     @Issue("JENKINS-52729")
-    @Test public void multipleStdioCalls() throws Exception {
+    @Test
+    void multipleStdioCalls() throws Exception {
         Node master = rule.jenkins;
         Node agent = rule.createOnlineSlave();
         for (Node node : new Node[] {master, agent}) {
@@ -273,7 +284,7 @@ public class LauncherTest {
         message = node.getDisplayName() + ": " + message;
         Launcher launcher = node.createLauncher(StreamTaskListener.fromStderr());
         Launcher.ProcStarter ps = launcher.launch();
-        assumeFalse("should not be platform-dependent, not bothering for now", Functions.isWindows());
+        assumeFalse(Functions.isWindows(), "should not be platform-dependent, not bothering for now");
         if (emitStderr) {
             ps.cmds("sh", "-c", "echo hello >&2").quiet(true);
         } else {
@@ -283,7 +294,7 @@ public class LauncherTest {
         ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
         TaskListener listener = new StreamTaskListener(baos2, Charset.defaultCharset());
         psCustomizer.run(ps, baos1, baos2, listener);
-        assertEquals(message, 0, ps.join());
+        assertEquals(0, ps.join(), message);
         if (outputIn2) {
             assertThat(message, baos2.toString(Charset.defaultCharset()), containsString("hello"));
             assertThat(message, baos1.toString(Charset.defaultCharset()), is(emptyString()));

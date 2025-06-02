@@ -29,23 +29,30 @@ import static org.hamcrest.Matchers.equalTo;
 
 import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Stapler;
 
 /**
  * Tests of {@link GlobalSCMRetryCountConfiguration}.
  * @author Panagiotis Galatsanos
  */
-public class GlobalSCMRetryCountConfigurationTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class GlobalSCMRetryCountConfigurationTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-36387")
-    public void shouldExceptOnNullScmRetryCount() throws Exception {
+    void shouldExceptOnNullScmRetryCount() {
         try {
             JSONObject json = new JSONObject();
             GlobalSCMRetryCountConfiguration gc = (GlobalSCMRetryCountConfiguration)

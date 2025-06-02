@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 import jakarta.servlet.ServletContextEvent;
 import java.time.Duration;
@@ -37,51 +38,48 @@ import java.time.temporal.ChronoUnit;
 import java.util.logging.Level;
 import org.eclipse.jetty.ee9.webapp.WebAppContext;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests of {@link SystemProperties}.
  * @author Oleg Nenashev
  */
-public class SystemPropertiesTest {
+@WithJenkins
+class SystemPropertiesTest {
+    private final LogRecorder logging = new LogRecorder().record(SystemProperties.class, Level.WARNING);
+    private JenkinsRule j;
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
-    public LoggerRule logger = new LoggerRule().record(SystemProperties.class, Level.WARNING);
-
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         new SystemProperties.Listener().contextInitialized(new ServletContextEvent(j.jenkins.getServletContext()));
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         System.clearProperty("foo.bar");
     }
 
-
     @Test
-    public void shouldReturnNullIfUndefined() throws Exception {
+    void shouldReturnNullIfUndefined() {
         assertThat("Properties should be null by default",
                 SystemProperties.getString("foo.bar"), nullValue());
     }
 
     @Test
-    public void shouldInitializeFromSystemProperty() throws Exception {
+    void shouldInitializeFromSystemProperty() {
         System.setProperty("foo.bar", "myVal");
         assertThat("System property should assign the value",
                 SystemProperties.getString("foo.bar"), equalTo("myVal"));
     }
 
     @Test
-    public void shouldInitializeFromWebAppProperty() throws Exception {
+    void shouldInitializeFromWebAppProperty() {
         assertThat("Property is undefined before test",
                 SystemProperties.getString("foo.bar"), equalTo(null));
         setWebAppInitParameter("foo.bar", "myVal");
@@ -90,7 +88,7 @@ public class SystemPropertiesTest {
     }
 
     @Test
-    public void shouldUseSystemPropertyAsAHighPriority() throws Exception {
+    void shouldUseSystemPropertyAsAHighPriority() {
         setWebAppInitParameter("install-wizard-path", "myVal1");
         System.setProperty("install-wizard-path", "myVal2");
         assertThat("System property should take system property with a high priority",
@@ -98,7 +96,7 @@ public class SystemPropertiesTest {
     }
 
     @Test
-    public void shouldReturnWebAppPropertyIfSystemPropertyNotSetAndDefaultIsSet() throws Exception {
+    void shouldReturnWebAppPropertyIfSystemPropertyNotSetAndDefaultIsSet() {
         assertThat("Property is undefined before test",
                 SystemProperties.getString("foo.bar"), equalTo(null));
         setWebAppInitParameter("foo.bar", "myVal");
@@ -127,15 +125,15 @@ public class SystemPropertiesTest {
      * @param value value of the property
      */
     protected void setWebAppInitParameter(String property, String value) {
-        Assume.assumeThat(j.jenkins.getServletContext(), Matchers.instanceOf(WebAppContext.Context.class));
+        assumeTrue(j.jenkins.getServletContext() instanceof WebAppContext.Context);
         ((WebAppContext.Context) j.jenkins.getServletContext()).getContextHandler().getInitParams().put(property, value);
     }
 
     @Test
     public void invalid() {
-        logger.capture(10);
+        logging.capture(10);
         System.setProperty("abc.def", "invalid");
         assertThat(SystemProperties.getDuration("abc.def"), Matchers.nullValue());
-        assertThat(logger.getMessages(), hasItem(containsString("Failed to convert \"invalid\" to a valid duration for property \"abc.def\", falling back to default \"null\"")));
+        assertThat(logging.getMessages(), hasItem(containsString("Failed to convert \"invalid\" to a valid duration for property \"abc.def\", falling back to default \"null\"")));
     }
 }
