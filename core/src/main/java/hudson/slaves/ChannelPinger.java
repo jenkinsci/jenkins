@@ -67,7 +67,7 @@ public class ChannelPinger extends ComputerListener {
     /**
      * Timeout for the ping in seconds.
      */
-    private Duration pingTimeout = SystemProperties.getDuration(TIMEOUT_SECONDS_PROPERTY, ChronoUnit.SECONDS, Duration.ofSeconds(PING_TIMEOUT_SECONDS_DEFAULT), Level.WARNING);
+    private Duration pingTimeout = SystemProperties.getDuration(TIMEOUT_SECONDS_PROPERTY, ChronoUnit.SECONDS, Duration.ofSeconds(PING_TIMEOUT_SECONDS_DEFAULT));
 
     /**
      * Interval for the ping in seconds.
@@ -76,11 +76,11 @@ public class ChannelPinger extends ComputerListener {
 
     public ChannelPinger() {
 
-        Duration interval = SystemProperties.getDuration(INTERVAL_SECONDS_PROPERTY, ChronoUnit.SECONDS, null, Level.WARNING);
+        Duration interval = SystemProperties.getDuration(INTERVAL_SECONDS_PROPERTY, ChronoUnit.SECONDS, null);
 
         // if interval wasn't set we read the deprecated property in minutes
         if (interval == null) {
-            interval = SystemProperties.getDuration(INTERVAL_MINUTES_PROPERTY_DEPRECATED, ChronoUnit.MINUTES, null, Level.WARNING);
+            interval = SystemProperties.getDuration(INTERVAL_MINUTES_PROPERTY_DEPRECATED, ChronoUnit.MINUTES, null);
             if (interval != null) {
                 LOGGER.warning(INTERVAL_MINUTES_PROPERTY_DEPRECATED + " property is deprecated, " + INTERVAL_SECONDS_PROPERTY + " should be used");
             }

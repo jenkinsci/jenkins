@@ -344,7 +344,7 @@ public class SystemProperties {
      */
     @Nullable
     public static Duration getDuration(@NonNull String name, @CheckForNull Duration defaultValue) {
-        return getDuration(name, defaultValue, Level.WARNING);
+        return getDuration(name, null, defaultValue);
     }
 
     /**
@@ -358,40 +358,12 @@ public class SystemProperties {
      */
     @Nullable
     public static Duration getDuration(@NonNull String name, @CheckForNull ChronoUnit unit, @CheckForNull Duration defaultValue) {
-        return getDuration(name, unit, defaultValue, Level.WARNING);
-    }
-
-    /**
-     * Determines the duration value of the system property with the specified name, or a default value.
-     * @param name property name.
-     * @param defaultValue a default value
-     * @param logLevel the level of the log if the provided system property name cannot be parsed into Duration.
-     * @return the property value as a duration.
-     * @since TODO
-     */
-    @Nullable
-    public static Duration getDuration(@NonNull String name, @CheckForNull Duration defaultValue, @NonNull Level logLevel) {
-        return getDuration(name, null, defaultValue, logLevel);
-    }
-
-    /**
-     * Determines the duration value of the system property with the specified name, or a default value.
-     *
-     * @param name         property name.
-     * @param unit         the duration unit to use if the value doesn't specify one (defaults to `ms`)
-     * @param defaultValue a default value
-     * @param logLevel     the level of the log if the provided system property name cannot be parsed into Duration.
-     * @return the property value as a duration.
-     * @since TODO
-     */
-    @Nullable
-    public static Duration getDuration(@NonNull String name, @CheckForNull ChronoUnit unit, @CheckForNull Duration defaultValue, @NonNull Level logLevel) {
         String v = getString(name);
         if (v != null) {
             try {
                 return DurationStyle.detectAndParse(v, unit);
             } catch (Exception e) {
-                LOGGER.log(logLevel, e, () -> "Failed to convert \"%s\" to a valid duration for property \"%s\", falling back to default \"%s\"".formatted(v, name, defaultValue));
+                LOGGER.log(Level.WARNING, e, () -> "Failed to convert \"%s\" to a valid duration for property \"%s\", falling back to default \"%s\"".formatted(v, name, defaultValue));
             }
         }
         return defaultValue;
