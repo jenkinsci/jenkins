@@ -196,17 +196,16 @@ $semantics: (
   // Dialogs
   --dialog-background: var(--card-background);
   --dialog-box-shadow:
-    var(--jenkins-border--subtle-shadow),
-    0 5px 25px rgb(0 0 10 / 0.025),
-    0 0 1.5px color-mix(in srgb, var(--text-color) 20%, transparent),
+    var(--jenkins-border--subtle-shadow), 0 5px 25px rgb(0 0 10 / 0.025),
+    0 0 1.5px color-mix(in sRGB, var(--text-color) 20%, transparent),
     inset 0 0 0 1px rgb(255 255 255 / 0.05);
 
   ::backdrop {
     --dialog-backdrop-backdrop-filter: blur(0.25px);
     --dialog-backdrop-background: color-mix(
       in sRGB,
-      var(--black) 7.5%,
-      color-mix(in sRGB, var(--background) 50%, transparent)
+      var(--black) 10%,
+      color-mix(in sRGB, var(--background) 55%, transparent)
     );
   }
 

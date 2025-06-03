@@ -15,7 +15,11 @@ $jenkins-dialog-font-size: 0.9375rem;
   outline: none;
 
   &::backdrop {
-    background: color-mix(in srgb, var(--black) 20%, var(--dialog-backdrop-background));
+    background: color-mix(
+      in sRGB,
+      var(--black) 25%,
+      var(--dialog-backdrop-background)
+    );
     backdrop-filter: var(--dialog-backdrop-backdrop-filter);
     animation: jenkins-dialog-backdrop-animate-in 0.15s;
   }
