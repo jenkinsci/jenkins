@@ -28,4 +28,8 @@ THE SOFTWARE.
     description="${%description}">
     <f:select field="primaryViewName"/>
   </f:entry>
+  <j:invokeStatic var="allViewsTabBar" className="hudson.views.ViewsTabBar" method="all"/>
+  <j:if test="${allViewsTabBar.size() > 1}">
+    <f:dropdownDescriptorSelector field="viewsTabBar" title="${%Views Tab Bar}"/>
+  </j:if>
 </j:jelly>

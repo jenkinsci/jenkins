@@ -126,10 +126,6 @@ $dropdown-padding: 0.375rem;
   }
 
   &__item {
-    --item-background--hover: var(--button-background--hover);
-    --item-background--active: var(--button-background--active);
-    --item-box-shadow--focus: var(--button-box-shadow--focus);
-
     @include mixins.item($border: false);
 
     appearance: none;
@@ -176,36 +172,15 @@ $dropdown-padding: 0.375rem;
     }
 
     &[class*="color"] {
-      background: transparent;
-      color: var(--color) !important;
+      --item-background--hover: oklch(from currentColor l c h / 0.15);
+      --item-background--active: oklch(from currentColor l c h / 0.25);
+      --item-box-shadow--focus: oklch(from currentColor l c h / 0.125);
 
       &::before {
-        background: currentColor !important;
-        opacity: 0;
+        border: var(--jenkins-border--inherit-subtle);
       }
 
-      &::after {
-        box-shadow: 0 0 0 0.66rem currentColor;
-        opacity: 0;
-      }
-
-      &:hover {
-        &::before {
-          opacity: 0.15;
-        }
-      }
-
-      &:active,
-      &:focus {
-        &::before {
-          opacity: 0.2;
-        }
-
-        &::after {
-          box-shadow: 0 0 0 0.33rem currentColor;
-          opacity: 0.1;
-        }
-      }
+      color: var(--color) !important;
     }
 
     &__badge {

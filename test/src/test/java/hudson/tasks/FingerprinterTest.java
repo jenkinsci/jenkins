@@ -27,11 +27,11 @@ package hudson.tasks;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Functions;
 import hudson.Launcher;
@@ -57,11 +57,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -69,7 +69,8 @@ import org.jvnet.hudson.test.recipes.LocalData;
  * @author dty
  */
 @SuppressWarnings("rawtypes")
-public class FingerprinterTest {
+@WithJenkins
+class FingerprinterTest {
     private static final String[] singleContents = {
         "abcdef",
     };
@@ -94,14 +95,16 @@ public class FingerprinterTest {
     private static final String renamedProject1 = "renamed project 1";
     private static final String renamedProject2 = "renamed project 2";
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @BeforeClass
-    public static void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         Fingerprinter.enableFingerprintsInDependencyGraph = true;
     }
 
-    @Test public void fingerprintDependencies() throws Exception {
+    @Test
+    void fingerprintDependencies() throws Exception {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
@@ -127,7 +130,8 @@ public class FingerprinterTest {
         }
     }
 
-    @Test public void presentFingerprintActionIsReused() throws Exception {
+    @Test
+    void presentFingerprintActionIsReused() throws Exception {
         FreeStyleProject project = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         project.getBuildersList().add(new FingerprintAddingBuilder());
 
@@ -139,7 +143,8 @@ public class FingerprinterTest {
         assertThat(action.getRecords().keySet(), containsInAnyOrder(singleFiles2[0], singleFiles[0]));
     }
 
-    @Test public void multipleUpstreamDependencies() throws Exception {
+    @Test
+    void multipleUpstreamDependencies() throws Exception {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject upstream2 = createFreeStyleProjectWithFingerprints(singleContents2, singleFiles2);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(doubleContents, doubleFiles);
@@ -162,7 +167,8 @@ public class FingerprinterTest {
         assertTrue(downstreamProjects.contains(downstream));
     }
 
-    @Test public void multipleDownstreamDependencies() throws Exception {
+    @Test
+    void multipleDownstreamDependencies() throws Exception {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(doubleContents, doubleFiles);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream2 = createFreeStyleProjectWithFingerprints(singleContents2, singleFiles2);
@@ -186,7 +192,8 @@ public class FingerprinterTest {
         assertTrue(downstreamProjects.contains(downstream2));
     }
 
-    @Test public void dependencyExclusion() throws Exception {
+    @Test
+    void dependencyExclusion() throws Exception {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
@@ -204,7 +211,8 @@ public class FingerprinterTest {
         assertEquals(0, downstreamProjects.size());
     }
 
-    @Test public void circularDependency() throws Exception {
+    @Test
+    void circularDependency() throws Exception {
         FreeStyleProject p = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
         j.buildAndAssertSuccess(p);
@@ -219,7 +227,8 @@ public class FingerprinterTest {
         assertEquals(0, downstreamProjects.size());
     }
 
-    @Test public void matrixDependency() throws Exception {
+    @Test
+    void matrixDependency() throws Exception {
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "p");
         matrixProject.setAxes(new AxisList(new Axis("foo", "a", "b")));
         FreeStyleProject freestyleProject = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
@@ -234,7 +243,7 @@ public class FingerprinterTest {
         j.jenkins.rebuildDependencyGraph();
 
         RunList<FreeStyleBuild> builds = freestyleProject.getBuilds();
-        assertEquals("There should only be one FreestyleBuild", 1, builds.size());
+        assertEquals(1, builds.size(), "There should only be one FreestyleBuild");
         FreeStyleBuild build = builds.iterator().next();
         assertEquals(Result.SUCCESS, build.getResult());
         List<AbstractProject> downstream = j.jenkins.getDependencyGraph().getDownstream(matrixProject);
@@ -243,7 +252,8 @@ public class FingerprinterTest {
         assertTrue(upstream.contains(matrixProject));
     }
 
-    @Test public void projectRename() throws Exception {
+    @Test
+    void projectRename() throws Exception {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
@@ -302,7 +312,8 @@ public class FingerprinterTest {
 
     @Issue("JENKINS-17125")
     @LocalData
-    @Test public void actionSerialization() throws Exception {
+    @Test
+    void actionSerialization() throws Exception {
         FreeStyleProject job = j.jenkins.getItemByFullName(Functions.isWindows() ? "j-windows" : "j", FreeStyleProject.class);
         assertNotNull(job);
         FreeStyleBuild build = job.getBuildByNumber(2);
@@ -334,7 +345,7 @@ public class FingerprinterTest {
     // TODO randomly fails: for p3.upstreamProjects expected:<[hudson.model.FreeStyleProject@590e5b8[test0]]> but was:<[]>
     @Issue("JENKINS-18417")
     @Test
-    public void fingerprintCleanup() throws Exception {
+    void fingerprintCleanup() throws Exception {
         // file names shouldn't matter
         FreeStyleProject p1 = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject p2 = createFreeStyleProjectWithFingerprints(singleContents, singleFiles2);

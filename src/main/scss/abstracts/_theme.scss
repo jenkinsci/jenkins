@@ -90,14 +90,8 @@ $semantics: (
     var(--success-color) 10%,
     transparent
   );
-  --alert-success-border-color: color-mix(
-    in sRGB,
-    var(--success-color) 5%,
-    transparent
-  );
   --alert-info-text-color: var(--blue);
   --alert-info-bg-color: color-mix(in sRGB, var(--blue) 10%, transparent);
-  --alert-info-border-color: color-mix(in sRGB, var(--blue) 5%, transparent);
   --alert-warning-text-color: color-mix(
     in sRGB,
     var(--warning-color) 80%,
@@ -108,20 +102,10 @@ $semantics: (
     var(--warning-color) 10%,
     transparent
   );
-  --alert-warning-border-color: color-mix(
-    in sRGB,
-    var(--warning-color) 5%,
-    transparent
-  );
   --alert-danger-text-color: var(--error-color);
   --alert-danger-bg-color: color-mix(
     in sRGB,
     var(--error-color) 10%,
-    transparent
-  );
-  --alert-danger-border-color: color-mix(
-    in sRGB,
-    var(--error-color) 5%,
     transparent
   );
 
@@ -137,9 +121,10 @@ $semantics: (
   );
   --jenkins-border-color--subtle: color-mix(
     in sRGB,
-    currentColor 1.5%,
+    var(--text-color) 2%,
     transparent
   );
+  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.06);
 
   /* This is a harsher border - for dividers, content blocks and more */
   --jenkins-border: var(--jenkins-border-width) solid
@@ -148,7 +133,9 @@ $semantics: (
   /* This is a subtle border - for increasing contrast on elements, such as buttons, menu and more */
   --jenkins-border--subtle: var(--jenkins-border-width) solid
     var(--jenkins-border-color--subtle);
-  --jenkins-border--subtle-shadow: 0 0 0 1.5px
+  --jenkins-border--inherit-subtle: var(--jenkins-border-width) solid
+    var(--jenkins-border-color--inherit-subtle);
+  --jenkins-border--subtle-shadow: 0 0 0 var(--jenkins-border-width)
     var(--jenkins-border-color--subtle);
 
   @media (resolution <= 1x) {
@@ -160,6 +147,7 @@ $semantics: (
     --focus-input-border: var(--text-color);
     --jenkins-border-color: var(--text-color);
     --jenkins-border-color--subtle: var(--text-color);
+    --jenkins-border-color--inherit-subtle: var(--text-color);
   }
 
   // Table

@@ -1,9 +1,9 @@
 package hudson.tasks;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.Functions;
 import hudson.Launcher.ProcStarter;
@@ -16,13 +16,14 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assume;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FakeLauncher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.PretendSlave;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -30,26 +31,31 @@ import org.jvnet.hudson.test.recipes.LocalData;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ShellTest {
+@WithJenkins
+class ShellTest {
 
-    @Rule
-    public JenkinsRule rule = new JenkinsRule();
+    private JenkinsRule rule;
+
+    @BeforeEach
+    void setUp(JenkinsRule j) {
+        rule = j;
+    }
 
     @Test
-    public void validateShellCommandEOL() {
+    void validateShellCommandEOL() {
         Shell obj = new Shell("echo A\r\necho B\recho C");
         rule.assertStringContains(obj.getCommand(), "echo A\necho B\necho C");
     }
 
     @Test
-    public void validateShellContents() {
+    void validateShellContents() {
         Shell obj = new Shell("echo A\r\necho B\recho C");
         rule.assertStringContains(obj.getContents(), "\necho A\necho B\necho C");
     }
 
     @Test
-    public void testBasic() throws Exception {
-        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
+    void testBasic() throws Exception {
+        Assumptions.assumeFalse(Functions.isWindows(), "If we're on Windows, don't bother doing this");
 
         // TODO: define a FakeLauncher implementation with easymock so that this kind of assertions can be simplified.
         PretendSlave s = rule.createPretendSlave(p -> {
@@ -108,7 +114,7 @@ public class ShellTest {
 
     @Test
     @Issue("JENKINS-23786")
-    public void unixExitCodes1To255ShouldMakeBuildUnstable() throws Exception {
+    void unixExitCodes1To255ShouldMakeBuildUnstable() throws Exception {
         assumeFalse(Functions.isWindows());
         for (int exitCode : new int [] {1, 2, 255}) {
             nonZeroExitCodeShouldMakeBuildUnstable(exitCode);
@@ -133,7 +139,7 @@ public class ShellTest {
 
     @Test
     @Issue("JENKINS-23786")
-    public void unixExitCodes1To255ShouldBreakTheBuildByDefault() throws Exception {
+    void unixExitCodes1To255ShouldBreakTheBuildByDefault() throws Exception {
         assumeFalse(Functions.isWindows());
 
         for (int exitCode : new int [] {1, 2, 255}) {
@@ -154,7 +160,7 @@ public class ShellTest {
 
     @Test
     @Issue("JENKINS-23786")
-    public void unixExitCodes1To255ShouldBreakTheBuildIfNotMatching() throws Exception {
+    void unixExitCodes1To255ShouldBreakTheBuildIfNotMatching() throws Exception {
         assumeFalse(Functions.isWindows());
         for (int exitCode : new int [] {1, 2, 255}) {
             nonZeroExitCodeShouldBreakTheBuildIfNotMatching(exitCode);
@@ -163,7 +169,7 @@ public class ShellTest {
 
     @Test
     @Issue("JENKINS-23786")
-    public void unixExitCodes0ShouldNeverMakeTheBuildUnstable() throws Exception {
+    void unixExitCodes0ShouldNeverMakeTheBuildUnstable() throws Exception {
         assumeFalse(Functions.isWindows());
 
         PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(0));
@@ -177,7 +183,7 @@ public class ShellTest {
 
     @Issue("JENKINS-23786")
     @Test
-    public void unixUnstableCodeZeroIsSameAsUnset() {
+    void unixUnstableCodeZeroIsSameAsUnset() {
         assumeFalse(Functions.isWindows());
 
         /* Creating unstable=0 produces unstable=null */
@@ -187,10 +193,10 @@ public class ShellTest {
     @Issue("JENKINS-40894")
     @Test
     @LocalData
-    public void canLoadUnstableReturnFromDisk() {
+    void canLoadUnstableReturnFromDisk() {
         FreeStyleProject p = (FreeStyleProject) rule.jenkins.getItemByFullName("test");
         Shell shell = (Shell) p.getBuildersList().get(0);
-        assertEquals("unstable return", (Integer) 1, shell.getUnstableReturn());
+        assertEquals((Integer) 1, shell.getUnstableReturn(), "unstable return");
     }
 
 }

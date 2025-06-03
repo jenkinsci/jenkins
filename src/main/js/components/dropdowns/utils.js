@@ -42,6 +42,23 @@ function generateDropdown(element, callback, immediate, options = {}) {
               }
             });
 
+            instance.popper.addEventListener("mouseenter", () => {
+              const handleMouseMove = () => {
+                const dropdowns =
+                  document.querySelectorAll("[data-tippy-root]");
+                const isMouseOverAnyDropdown = Array.from(dropdowns).some(
+                  (dropdown) => dropdown.matches(":hover"),
+                );
+
+                if (!isMouseOverAnyDropdown) {
+                  instance.hide();
+                  document.removeEventListener("mousemove", handleMouseMove);
+                }
+              };
+
+              document.addEventListener("mousemove", handleMouseMove);
+            });
+
             callback(instance);
           };
           if (immediate) {
@@ -51,6 +68,14 @@ function generateDropdown(element, callback, immediate, options = {}) {
               instance.reference.addEventListener(event, onload);
             });
           }
+        },
+        onHide() {
+          const dropdowns = document.querySelectorAll("[data-tippy-root]");
+          const isMouseOverAnyDropdown = Array.from(dropdowns).some(
+            (dropdown) => dropdown.matches(":hover"),
+          );
+
+          return !isMouseOverAnyDropdown;
         },
       },
       options,

@@ -33,23 +33,26 @@ import static org.hamcrest.Matchers.equalTo;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class SetBuildDisplayNameCommandTest {
+@WithJenkins
+class SetBuildDisplayNameCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before public void setUp() {
-
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, new SetBuildDisplayNameCommand());
     }
 
-    @Test public void referencingBuildThatDoesNotExistsShouldFail() throws Exception {
+    @Test
+    void referencingBuildThatDoesNotExistsShouldFail() throws Exception {
 
         j.createFreeStyleProject("project");
 
@@ -62,7 +65,8 @@ public class SetBuildDisplayNameCommandTest {
         assertThat(result, failedWith(3));
     }
 
-    @Test public void setDescriptionSuccessfully() throws Exception {
+    @Test
+    void setDescriptionSuccessfully() throws Exception {
 
         FreeStyleProject job = j.createFreeStyleProject("project");
         FreeStyleBuild build = j.buildAndAssertSuccess(job);

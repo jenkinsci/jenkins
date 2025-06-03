@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -25,26 +25,26 @@ import java.util.Set;
 import jenkins.model.Jenkins;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-public class ListJobsCommandTest {
+class ListJobsCommandTest {
 
     private /*final*/ ListJobsCommand command;
     private final ByteArrayOutputStream stdout = new ByteArrayOutputStream();
     private final ByteArrayOutputStream stderr = new ByteArrayOutputStream();
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         command = mock(ListJobsCommand.class, Mockito.CALLS_REAL_METHODS);
         command.stdout = new PrintStream(stdout);
         command.stderr = new PrintStream(stderr);
     }
 
     @Test
-    public void failForNonexistentName() {
+    void failForNonexistentName() {
         Jenkins jenkins = mock(Jenkins.class);
 
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
@@ -59,7 +59,7 @@ public class ListJobsCommandTest {
     }
 
     @Test
-    public void getAllJobsForEmptyName() throws Exception {
+    void getAllJobsForEmptyName() throws Exception {
 
         final List<TopLevelItem> jenkinsJobs = Arrays.asList(
                 job("some-job"), job("some-other-job")
@@ -76,7 +76,7 @@ public class ListJobsCommandTest {
     }
 
     @Test
-    public void getJobsFromView() throws Exception {
+    void getJobsFromView() throws Exception {
 
         final Collection<TopLevelItem> viewJobs = Arrays.asList(
                 job("some-job"), job("some-other-job")
@@ -97,7 +97,7 @@ public class ListJobsCommandTest {
     }
 
     @Test
-    public void getJobsRecursivelyFromViewGroup() throws Exception {
+    void getJobsRecursivelyFromViewGroup() throws Exception {
 
         final CompositeView rootView = mock(CompositeView.class);
         when(rootView.getAllItems()).thenCallRealMethod();
