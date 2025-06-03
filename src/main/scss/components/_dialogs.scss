@@ -15,7 +15,7 @@ $jenkins-dialog-font-size: 0.9375rem;
   outline: none;
 
   &::backdrop {
-    background: var(--dialog-backdrop-background);
+    background: color-mix(in srgb, var(--black) 20%, var(--dialog-backdrop-background));
     backdrop-filter: var(--dialog-backdrop-backdrop-filter);
     animation: jenkins-dialog-backdrop-animate-in 0.15s;
   }
@@ -26,7 +26,7 @@ $jenkins-dialog-font-size: 0.9375rem;
     padding: 0 $jenkins-dialog-padding;
     color: var(--text-color);
     overflow-wrap: anywhere;
-    text-box-trim: trim-both;
+    text-box: cap alphabetic;
   }
 
   &__contents {
@@ -57,14 +57,13 @@ $jenkins-dialog-font-size: 0.9375rem;
 
   &__buttons {
     display: flex;
-    justify-content: stretch;
     padding: 0 $jenkins-dialog-padding $jenkins-dialog-padding;
+    justify-content: right;
     flex-direction: row-reverse;
     gap: 1.25rem;
 
     .jenkins-button {
       min-width: 100px;
-      flex-grow: 1;
     }
   }
 
