@@ -28,9 +28,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
@@ -49,18 +49,26 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class TransientActionFactoryTest {
+@WithJenkins
+class TransientActionFactoryTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
 
-    @Test public void addedToAbstractItem() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
+
+    @Test
+    void addedToAbstractItem() throws Exception {
         assertNotNull(r.createFolder("d").getAction(MyAction.class));
         assertNotNull(r.createFreeStyleProject().getAction(MyAction.class));
     }
@@ -93,7 +101,8 @@ public class TransientActionFactoryTest {
         }
     }
 
-    @Test public void laziness() throws Exception {
+    @Test
+    void laziness() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         // testing getAction(Class)
         assertNull(p.getAction(FoldableAction.class));
@@ -148,7 +157,8 @@ public class TransientActionFactoryTest {
         }
     }
 
-    @Test public void compatibility() throws Exception {
+    @Test
+    void compatibility() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         // testing getAction(Class)
         assertNull(p.getAction(FoldableAction.class));
@@ -184,7 +194,7 @@ public class TransientActionFactoryTest {
 
     @Issue("JENKINS-51584")
     @Test
-    public void transientActionsAreNotPersistedOnQueueItems() throws Exception {
+    void transientActionsAreNotPersistedOnQueueItems() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         FreeStyleBuild build = r.buildAndAssertSuccess(p);
         // MyProminentProjectAction is only added via the TransientActionFactory and should never be persisted.

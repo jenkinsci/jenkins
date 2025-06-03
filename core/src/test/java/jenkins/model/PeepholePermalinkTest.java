@@ -30,18 +30,17 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import hudson.model.PermalinkProjectAction;
 import hudson.model.Run;
 import java.util.stream.Collectors;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class PeepholePermalinkTest {
+class PeepholePermalinkTest {
 
     @Test
-    public void classLoadingDeadlock() throws Exception {
+    void classLoadingDeadlock() throws Exception {
         PeepholePermalink.initialized();
-        Thread t = new Thread(() -> {
+        Thread t = new Thread(() ->
             assertThat("successfully loaded permalinks",
                 PermalinkProjectAction.Permalink.BUILTIN.stream().map(PermalinkProjectAction.Permalink::getId).collect(Collectors.toSet()),
-                containsInAnyOrder("lastBuild", "lastStableBuild", "lastSuccessfulBuild", "lastFailedBuild", "lastUnstableBuild", "lastUnsuccessfulBuild", "lastCompletedBuild"));
-        });
+                containsInAnyOrder("lastBuild", "lastStableBuild", "lastSuccessfulBuild", "lastFailedBuild", "lastUnstableBuild", "lastUnsuccessfulBuild", "lastCompletedBuild")));
         t.start();
         new PeepholePermalink() {
             @Override

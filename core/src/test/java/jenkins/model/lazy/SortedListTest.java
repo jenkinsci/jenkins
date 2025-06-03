@@ -24,22 +24,22 @@
 
 package jenkins.model.lazy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class SortedListTest {
-    SortedList<String> l = new SortedList<>(new ArrayList<>(Arrays.asList("B", "D", "F")));
+class SortedListTest {
+    private SortedList<String> l = new SortedList<>(new ArrayList<>(Arrays.asList("B", "D", "F")));
 
     @Test
-    public void testCeil() {
+    void testCeil() {
         assertEquals(0, l.ceil("A"));
         assertEquals(0, l.ceil("B"));
         assertEquals(1, l.ceil("C"));
@@ -50,7 +50,7 @@ public class SortedListTest {
     }
 
     @Test
-    public void testFloor() {
+    void testFloor() {
         assertEquals(-1, l.floor("A"));
         assertEquals(0, l.floor("B"));
         assertEquals(0, l.floor("C"));
@@ -61,7 +61,7 @@ public class SortedListTest {
     }
 
     @Test
-    public void testLower() {
+    void testLower() {
         assertEquals(-1, l.lower("A"));
         assertEquals(-1, l.lower("B"));
         assertEquals(0, l.lower("C"));
@@ -72,7 +72,7 @@ public class SortedListTest {
     }
 
     @Test
-    public void testHigher() {
+    void testHigher() {
         assertEquals(0, l.higher("A"));
         assertEquals(1, l.higher("B"));
         assertEquals(1, l.higher("C"));
@@ -83,7 +83,7 @@ public class SortedListTest {
     }
 
     @Test
-    public void testRange() {
+    void testRange() {
         assertTrue(l.isInRange(0));
         assertTrue(l.isInRange(1));
         assertTrue(l.isInRange(2));
@@ -93,7 +93,7 @@ public class SortedListTest {
     }
 
     @Test
-    public void remove() {
+    void remove() {
         l.remove("nosuchthing");
         assertEquals(3, l.size());
 
@@ -104,7 +104,7 @@ public class SortedListTest {
     }
 
     @Test
-    public void testClone() {
+    void testClone() {
         final int originalSize = l.size();
         SortedList<String> l2 = new SortedList<>(l);
         assertEquals(originalSize, l2.size());
