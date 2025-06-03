@@ -196,6 +196,7 @@ $semantics: (
   // Dialogs
   --dialog-background: var(--card-background);
   --dialog-box-shadow:
+    var(--jenkins-border--subtle-shadow),
     0 5px 25px rgb(0 0 10 / 0.025),
     0 0 1.5px color-mix(in srgb, var(--text-color) 20%, transparent),
     inset 0 0 0 1px rgb(255 255 255 / 0.05);
