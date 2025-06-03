@@ -7,18 +7,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class InitMilestoneTest {
+@WithJenkins
+class InitMilestoneTest {
 
-    @Rule
-    public JenkinsRule r  = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void testInitMilestones() {
+    void testInitMilestones() {
 
         List<InitMilestone> attained = r.jenkins.getExtensionList(Initializers.class).get(0).getAttained();
 

@@ -6,10 +6,10 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.Functions;
 import hudson.Launcher;
@@ -24,26 +24,27 @@ import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
+@WithJenkins
 public class ExecutorTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-4756")
-    public void whenAnExecutorDiesHardANewExecutorTakesItsPlace() throws Exception {
+    void whenAnExecutorDiesHardANewExecutorTakesItsPlace() throws Exception {
         j.jenkins.setNumExecutors(1);
 
         Computer c = j.jenkins.toComputer();
@@ -85,7 +86,7 @@ public class ExecutorTest {
      * Makes sure that the cause of interruption is properly recorded.
      */
     @Test
-    public void abortCause() throws Exception {
+    void abortCause() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         FreeStyleBuild b = startBlockingBuild(p);
@@ -106,7 +107,7 @@ public class ExecutorTest {
     }
 
     @Test
-    public void disconnectCause() throws Exception {
+    void disconnectCause() throws Exception {
         DumbSlave slave = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(slave);
@@ -134,7 +135,7 @@ public class ExecutorTest {
 
     @Issue("SECURITY-611")
     @Test
-    public void apiPermissions() throws Exception {
+    void apiPermissions() throws Exception {
         DumbSlave slave = new DumbSlave("slave", j.jenkins.getRootDir().getAbsolutePath(), j.createComputerLauncher(null));
         slave.setNumExecutors(2);
         j.jenkins.addNode(slave);
@@ -171,7 +172,7 @@ public class ExecutorTest {
 
     @Test
     @Issue("SECURITY-2120")
-    public void disconnectCause_WithoutTrace() throws Exception {
+    void disconnectCause_WithoutTrace() throws Exception {
         DumbSlave slave = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(slave);

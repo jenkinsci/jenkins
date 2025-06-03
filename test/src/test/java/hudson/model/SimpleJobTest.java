@@ -1,29 +1,32 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.logging.Level;
 import jenkins.model.lazy.LazyBuildMixIn;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Unit test for {@link Job}.
  */
-@SuppressWarnings("rawtypes")
-public class SimpleJobTest {
+@WithJenkins
+class SimpleJobTest {
 
-    @ClassRule
-    public static JenkinsRule r = new JenkinsRule();
+    private final LogRecorder logging = new LogRecorder().record(LazyBuildMixIn.class, Level.FINE);
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(LazyBuildMixIn.class, Level.FINE);
+    private static JenkinsRule r;
+
+    @BeforeAll
+    static void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void testGetEstimatedDuration() throws Exception {
+    void testGetEstimatedDuration() throws Exception {
         var project = r.createFreeStyleProject("testGetEstimatedDuration");
 
         var b1 = r.buildAndAssertSuccess(project);
@@ -40,7 +43,7 @@ public class SimpleJobTest {
     }
 
     @Test
-    public void testGetEstimatedDurationWithOneRun() throws Exception {
+    void testGetEstimatedDurationWithOneRun() throws Exception {
         var project = r.createFreeStyleProject("testGetEstimatedDurationWithOneRun");
 
         var b1 = r.buildAndAssertSuccess(project);
@@ -49,7 +52,7 @@ public class SimpleJobTest {
     }
 
     @Test
-    public void testGetEstimatedDurationWithFailedRun() throws Exception {
+    void testGetEstimatedDurationWithFailedRun() throws Exception {
         var project = r.createFreeStyleProject("testGetEstimatedDurationWithFailedRun");
 
         var b1 = r.buildAndAssertSuccess(project);
@@ -59,14 +62,14 @@ public class SimpleJobTest {
     }
 
     @Test
-    public void testGetEstimatedDurationWithNoRuns() throws Exception {
+    void testGetEstimatedDurationWithNoRuns() throws Exception {
         var project = r.createFreeStyleProject("testGetEstimatedDurationWithNoRuns");
 
         assertEquals(-1, project.getEstimatedDuration());
     }
 
     @Test
-    public void testGetEstimatedDurationIfPrevious3BuildsFailed() throws Exception {
+    void testGetEstimatedDurationIfPrevious3BuildsFailed() throws Exception {
         var project = r.createFreeStyleProject("testGetEstimatedDurationIfPrevious3BuildsFailed");
 
         var b1 = r.buildAndAssertSuccess(project);
@@ -99,7 +102,7 @@ public class SimpleJobTest {
     }
 
     @Test
-    public void testGetEstimatedDurationIfNoSuccessfulBuildTakeDurationOfFailedBuild() throws Exception {
+    void testGetEstimatedDurationIfNoSuccessfulBuildTakeDurationOfFailedBuild() throws Exception {
         var project = r.createFreeStyleProject("testGetEstimatedDurationIfNoSuccessfulBuildTakeDurationOfFailedBuild");
 
         var b1 = r.buildAndAssertSuccess(project);
