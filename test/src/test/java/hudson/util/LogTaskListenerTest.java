@@ -24,28 +24,33 @@
 
 package hudson.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.console.HyperlinkNote;
 import hudson.model.TaskListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.MasterToSlaveCallable;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class LogTaskListenerTest {
+@WithJenkins
+class LogTaskListenerTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private final LogRecorder logging = new LogRecorder().record("LogTaskListenerTest", Level.ALL).capture(100);
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record("LogTaskListenerTest", Level.ALL).capture(100);
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void annotations() throws Exception {
+    void annotations() throws Exception {
         TaskListener l = new LogTaskListener(Logger.getLogger("LogTaskListenerTest"), Level.FINE);
         l.getLogger().println("plain line");
         String url = "http://nowhere.net/";
@@ -58,7 +63,7 @@ public class LogTaskListenerTest {
     }
 
     @Test
-    public void serialization() throws Exception {
+    void serialization() throws Exception {
         TaskListener l = new LogTaskListener(Logger.getLogger("LogTaskListenerTest"), Level.INFO);
         r.createOnlineSlave().getChannel().call(new Log(l));
         assertEquals("[from agent]", logging.getMessages().toString());

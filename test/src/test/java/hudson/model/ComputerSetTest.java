@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
@@ -42,24 +42,30 @@ import jenkins.widgets.HasWidgetHelper;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ComputerSetTest {
+@WithJenkins
+class ComputerSetTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-2821")
-    public void pageRendering() throws Exception {
+    void pageRendering() throws Exception {
         WebClient client = j.createWebClient();
         j.createSlave();
         client.goTo("computer");
@@ -69,14 +75,14 @@ public class ComputerSetTest {
      * Tests the basic UI behavior of the node monitoring
      */
     @Test
-    public void configuration() throws Exception {
+    void configuration() throws Exception {
         WebClient client = j.createWebClient();
         HtmlForm form = client.goTo("computer/configure").getFormByName("config");
         j.submit(form);
     }
 
     @Test
-    public void nodeOfflineCli() throws Exception {
+    void nodeOfflineCli() throws Exception {
         DumbSlave s = j.createSlave();
 
         assertThat(new CLICommandInvoker(j, "wait-node-offline").invokeWithArgs("xxx"), CLICommandInvoker.Matcher.failedWith(/* IllegalArgumentException from NodeOptionHandler */ 3));
@@ -88,7 +94,7 @@ public class ComputerSetTest {
     }
 
     @Test
-    public void getComputerNames() throws Exception {
+    void getComputerNames() throws Exception {
         assertThat(ComputerSet.getComputerNames(), is(empty()));
         j.createSlave("anAnotherNode", "", null);
         assertThat(ComputerSet.getComputerNames(), contains("anAnotherNode"));
@@ -97,7 +103,7 @@ public class ComputerSetTest {
     }
 
     @Test
-    public void managePermissionCanConfigure() throws Exception {
+    void managePermissionCanConfigure() throws Exception {
         final String USER = "user";
         final String MANAGER = "manager";
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -139,7 +145,7 @@ public class ComputerSetTest {
 
     @Test
     @Issue("SECURITY-2120")
-    public void testTerminatedNodeStatusPageDoesNotShowTrace() throws Exception {
+    void testTerminatedNodeStatusPageDoesNotShowTrace() throws Exception {
         DumbSlave agent = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
@@ -161,7 +167,7 @@ public class ComputerSetTest {
 
     @Test
     @Issue("SECURITY-2120")
-    public void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
+    void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
         DumbSlave agent = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);

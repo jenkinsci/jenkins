@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.htmlunit.html.HtmlFormUtil.submit;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,30 +20,36 @@ import java.util.List;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class UserPropertyTest {
+@WithJenkins
+class UserPropertyTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    public User configRoundtrip(User u) throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    private User configRoundtrip(User u) throws Exception {
         submit(j.createWebClient().goTo(u.getUrl() + "/account/").getFormByName("config"));
         return u;
     }
 
     @Test
     @Issue("JENKINS-9062")
-    public void test() throws Exception {
+    void test() throws Exception {
         User u = User.get("foo");
         u.addProperty(new UserProperty1());
         configRoundtrip(u);
@@ -78,7 +84,7 @@ public class UserPropertyTest {
 
     @Test
     @LocalData
-    public void nestedUserReference() throws Exception {
+    void nestedUserReference() throws Exception {
         // first time it loads from FS into object
         User user = User.get("nestedUserReference", false, emptyMap());
         assertThat("nested reference should be updated after jenkins start", user, nestedUserSet());
@@ -97,7 +103,7 @@ public class UserPropertyTest {
         assertThat(fileLines, hasSize(1));
     }
 
-    public static Matcher<User> nestedUserSet() {
+    private static Matcher<User> nestedUserSet() {
         return new BaseMatcher<>() {
             @Override
             public boolean matches(Object item) {
@@ -129,6 +135,7 @@ public class UserPropertyTest {
     public static class SetUserUserProperty extends UserProperty {
         private InnerUserClass innerUserClass = new InnerUserClass();
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public SetUserUserProperty() {
         }
@@ -174,6 +181,7 @@ public class UserPropertyTest {
 
         private transient File userFile;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public InnerUserClass() {
         }
