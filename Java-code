@@ -1,0 +1,59 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class CalculatorApp {
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Simple Calculator");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(300, 400);
+        frame.setLayout(new GridLayout(5, 2));
+
+        JTextField num1 = new JTextField();
+        JTextField num2 = new JTextField();
+        JLabel result = new JLabel("Result: ");
+
+        JButton addButton = new JButton("+");
+        JButton subtractButton = new JButton("-");
+        JButton multiplyButton = new JButton("*");
+        JButton divideButton = new JButton("/");
+
+        ActionListener calcListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    double number1 = Double.parseDouble(num1.getText());
+                    double number2 = Double.parseDouble(num2.getText());
+                    double output = 0;
+
+                    if (e.getSource() == addButton) output = number1 + number2;
+                    if (e.getSource() == subtractButton) output = number1 - number2;
+                    if (e.getSource() == multiplyButton) output = number1 * number2;
+                    if (e.getSource() == divideButton) output = number1 / number2;
+
+                    result.setText("Result: " + output);
+                } catch (Exception ex) {
+                    result.setText("Invalid input!");
+                }
+            }
+        };
+
+        addButton.addActionListener(calcListener);
+        subtractButton.addActionListener(calcListener);
+        multiplyButton.addActionListener(calcListener);
+        divideButton.addActionListener(calcListener);
+
+        frame.add(new JLabel("Enter Number 1:"));
+        frame.add(num1);
+        frame.add(new JLabel("Enter Number 2:"));
+        frame.add(num2);
+        frame.add(addButton);
+        frame.add(subtractButton);
+        frame.add(multiplyButton);
+        frame.add(divideButton);
+        frame.add(result);
+
+        frame.setVisible(true);
+    }
+}
