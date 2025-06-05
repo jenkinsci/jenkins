@@ -1,0 +1,22 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
+
+
+  <st:documentation> <![CDATA[
+    Used inside <h:actions> to render primaryActions.
+    ]]>
+    <st:attribute name="action" use="required">
+      The action to render
+    </st:attribute>
+  </st:documentation>
+
+  <j:set var="badge" value="${action.badge}"/>
+  <j:set var="badgeClazz" value="${badge != null ? '' : 'jenkins-badge jenkins-!-${badge.severity}-color'}"/>
+
+  <dd:item icon="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"
+           text="${action.displayName}"
+           href="${h.getActionUrl(app.url, action)}"
+           clazz="${badgeClazz}">
+  </dd:item>
+
+</j:jelly>
