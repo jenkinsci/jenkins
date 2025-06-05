@@ -26,6 +26,8 @@ package jenkins.model.navigation;
 
 import hudson.Extension;
 import hudson.model.RootAction;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * TODO
@@ -46,5 +48,10 @@ public class SearchAction implements RootAction {
     @Override
     public String getUrlName() {
         return null;
+    }
+
+    @Override
+    public boolean isPrimaryAction() {
+        return true;
     }
 }
