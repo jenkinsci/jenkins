@@ -38,12 +38,12 @@ THE SOFTWARE.
 
     <l:side-panel sticky="true">
       <l:app-bar title="${%Configure}" />
-      <div id="tasks" />
+      <div id="tasks">
+        <l:skeleton type="side-panel" />
+      </div>
     </l:side-panel>
 
     <l:main-panel>
-      <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
-
       <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
         <l:app-bar title="${%General}" headingLevel="h2">
           <p:config-disableBuild />
@@ -51,6 +51,8 @@ THE SOFTWARE.
 
         <j:set var="descriptor" value="${it.descriptor}" />
         <j:set var="instance" value="${it}" />
+
+        <l:skeleton />
 
         <div class="jenkins-section jenkins-section--no-border jenkins-!-margin-top-3">
           <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
