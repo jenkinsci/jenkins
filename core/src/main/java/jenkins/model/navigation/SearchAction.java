@@ -26,8 +26,6 @@ package jenkins.model.navigation;
 
 import hudson.Extension;
 import hudson.model.RootAction;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * TODO
