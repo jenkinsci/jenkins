@@ -83,12 +83,10 @@ public class JarURLValidatorImpl extends ChannelConfigurator implements JarURLVa
             value = "DMI_COLLECTION_OF_URLS",
             justification = "All URLs point to local files, so no DNS lookup.")
     private static boolean isAllowedJar(URL url) {
-        final ClassLoader classLoader = Jenkins.get().getPluginManager().uberClassLoader;
-        if (classLoader instanceof PluginManager.UberClassLoader uberClassLoader) {
-            if (uberClassLoader.isPluginJar(url)) {
-                LOGGER.log(Level.FINER, () -> "Determined to be plugin jar: " + url);
-                return true;
-            }
+        final PluginManager pluginManager = Jenkins.get().getPluginManager();
+        if (pluginManager.isPluginJar(url)) {
+            LOGGER.log(Level.FINER, () -> "Determined to be plugin jar: " + url);
+            return true;
         }
 
         final ClassLoader coreClassLoader = Jenkins.class.getClassLoader();
