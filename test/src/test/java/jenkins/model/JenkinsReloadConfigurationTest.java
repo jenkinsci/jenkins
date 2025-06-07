@@ -2,7 +2,7 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.Util;
 import hudson.model.FreeStyleProject;
@@ -16,21 +16,28 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Ensure direct configuration change on disk is reflected after reload.
  *
  * @author ogondza
  */
-public class JenkinsReloadConfigurationTest {
+@WithJenkins
+class JenkinsReloadConfigurationTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void reloadBuiltinNodeConfig() throws Exception {
+    void reloadBuiltinNodeConfig() throws Exception {
         Node node = j.jenkins;
         node.setLabelString("oldLabel");
 
@@ -40,7 +47,7 @@ public class JenkinsReloadConfigurationTest {
     }
 
     @Test
-    public void reloadAgentConfig() throws Exception {
+    void reloadAgentConfig() throws Exception {
         Node node = j.createSlave("an_agent", "oldLabel", null);
 
         modifyNode(node);
@@ -58,7 +65,7 @@ public class JenkinsReloadConfigurationTest {
     }
 
     @Test
-    public void reloadUserConfigUsingGlobalReload() throws Exception {
+    void reloadUserConfigUsingGlobalReload() throws Exception {
         String originalName = "oldName";
         String temporaryName = "newName";
         {
@@ -77,7 +84,7 @@ public class JenkinsReloadConfigurationTest {
     }
 
     @Test
-    public void reloadJobConfig() throws Exception {
+    void reloadJobConfig() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("a_project");
         project.setDescription("oldDescription");
 
@@ -92,7 +99,7 @@ public class JenkinsReloadConfigurationTest {
     }
 
     @Test
-    public void reloadViewConfig() throws Exception {
+    void reloadViewConfig() throws Exception {
         ListView view = new ListView("a_view");
         j.jenkins.addView(view);
 
@@ -110,7 +117,7 @@ public class JenkinsReloadConfigurationTest {
     }
 
     @Test
-    public void reloadDescriptorConfig() {
+    void reloadDescriptorConfig() {
         Mailer.DescriptorImpl desc = mailerDescriptor();
         desc.setDefaultSuffix("@oldSuffix");
         desc.save();
@@ -125,7 +132,7 @@ public class JenkinsReloadConfigurationTest {
     }
 
     @Test
-    public void loadExecutorsConfig() throws Exception {
+    void loadExecutorsConfig() throws Exception {
         assertThat(j.jenkins.getNumExecutors(), is(2));
         assertThat(j.jenkins.toComputer().getNumExecutors(), is(2));
         replace("config.xml", "<numExecutors>2</numExecutors>", "<numExecutors>0</numExecutors>");

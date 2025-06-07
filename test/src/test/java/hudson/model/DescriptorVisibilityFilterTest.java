@@ -16,21 +16,29 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class DescriptorVisibilityFilterTest {
+@WithJenkins
+class DescriptorVisibilityFilterTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private final LogRecorder logger = new LogRecorder();
 
-    @Rule public LoggerRule logger = new LoggerRule();
+    private JenkinsRule j;
 
-    @Test @Issue("JENKINS-40545")
-    public void jenkins40545() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    @Test
+    @Issue("JENKINS-40545")
+    void jenkins40545() throws Exception {
         logger.record("hudson.ExpressionFactory2$JexlExpression", Level.WARNING);
         logger.record("hudson.model.DescriptorVisibilityFilter", Level.WARNING);
         logger.capture(10);
@@ -48,8 +56,9 @@ public class DescriptorVisibilityFilterTest {
         assertThat(page.getWebResponse().getContentAsString(), containsString("descriptors found: .")); // No output written from expression
     }
 
-    @Test @Issue("JENKINS-49044")
-    public void securityRealmAndAuthStrategyHidden() throws Exception {
+    @Test
+    @Issue("JENKINS-49044")
+    void securityRealmAndAuthStrategyHidden() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(AuthorizationStrategy.UNSECURED);
         HtmlPage page = j.createWebClient().goTo("configureSecurity");

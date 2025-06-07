@@ -29,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.net.Proxy;
 import org.junit.jupiter.api.Test;
 
-public class ProxyConfigurationTest {
+class ProxyConfigurationTest {
 
     @Test
-    public void noProxyHost() {
+    void noProxyHost() {
         String noProxyHost = "*.example.com|192.168.*";
         assertEquals(Proxy.Type.HTTP, ProxyConfiguration.createProxy("test.example.co.jp", "proxy.example.com", 8080, noProxyHost).type());
         assertEquals(Proxy.Type.DIRECT, ProxyConfiguration.createProxy("test.example.com", "proxy.example.com", 8080, noProxyHost).type());

@@ -1,5 +1,7 @@
 package jenkins.widgets;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Result;
@@ -13,11 +15,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.function.Consumer;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.Mockito;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
@@ -27,25 +29,30 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
  * Search in case insensitive mode is tested by unit tests in HistoryPageFilterTest.
  */
 @Issue({"JENKINS-40718", "JENKINS-42645"})
-public class HistoryPageFilterCaseSensitiveSearchTest {
+@WithJenkins
+class HistoryPageFilterCaseSensitiveSearchTest {
 
     private static final String TEST_USER_NAME = "testUser";
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void should_search_case_sensitively_when_enabled_for_user() throws IOException {
+    void should_search_case_sensitively_when_enabled_for_user() throws IOException {
         setCaseSensitiveSearchForUserAndCheckAssertionForGivenSearchString("FAILURE", historyPageFilter -> {
-                Assert.assertEquals(1, historyPageFilter.runs.size());
-                Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+                assertEquals(1, historyPageFilter.runs.size());
+                assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
         });
     }
 
     @Test
-    public void should_skip_result_with_different_capitalization_when_case_sensitively_search_is_enabled_for_user() throws IOException {
+    void should_skip_result_with_different_capitalization_when_case_sensitively_search_is_enabled_for_user() throws IOException {
         setCaseSensitiveSearchForUserAndCheckAssertionForGivenSearchString(
-                "failure", historyPageFilter -> Assert.assertEquals(0, historyPageFilter.runs.size()));
+                "failure", historyPageFilter -> assertEquals(0, historyPageFilter.runs.size()));
     }
 
     private void setCaseSensitiveSearchForUserAndCheckAssertionForGivenSearchString(final String searchString,

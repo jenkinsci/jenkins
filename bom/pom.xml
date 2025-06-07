@@ -38,10 +38,10 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
+    <commons-fileupload2.version>2.0.0-M3</commons-fileupload2.version>
     <groovy.version>2.4.21</groovy.version>
     <jelly.version>1.1-jenkins-20250108</jelly.version>
-    <stapler.version>1982.vc1cb_57843281</stapler.version>
+    <stapler.version>1990.v99d303a_82457</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -63,7 +63,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>6.2.6</version>
+        <version>6.2.7</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -71,7 +71,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/reference/6.3/getting-spring-security.html#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>6.4.5</version>
+        <version>6.5.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -104,7 +104,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-beanutils</groupId>
         <artifactId>commons-beanutils</artifactId>
-        <version>1.10.1</version>
+        <version>1.11.0</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>

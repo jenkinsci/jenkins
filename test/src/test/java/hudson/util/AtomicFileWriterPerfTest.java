@@ -1,15 +1,23 @@
 package hudson.util;
 
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AtomicFileWriterPerfTest {
+@WithJenkins
+class AtomicFileWriterPerfTest {
 
-    @ClassRule
-    public static final JenkinsRule rule = new JenkinsRule();
+    private static JenkinsRule rule;
+
+    @BeforeAll
+    static void setUp(JenkinsRule j) {
+        rule = j;
+    }
 
     /**
      * This test is meant to catch huge regressions in terms of serialization performance.
@@ -24,10 +32,11 @@ public class AtomicFileWriterPerfTest {
      * So using slightly more than the worse value obtained above should avoid making this flaky and still catch
      * <strong>really</strong> bad performance regressions.
      */
-    @Ignore("TODO often fails in CI")
+    @Disabled("TODO often fails in CI")
     @Issue("JENKINS-34855")
-    @Test(timeout = 50 * 1000L)
-    public void poorManPerformanceTestBed() throws Exception {
+    @Test
+    @Timeout(value = 50 * 1000L, unit = TimeUnit.MILLISECONDS)
+    void poorManPerformanceTestBed() throws Exception {
         int count = 1000;
         while (count-- > 0) {
             rule.jenkins.save();
