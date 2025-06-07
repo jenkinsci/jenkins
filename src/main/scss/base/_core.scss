@@ -11,6 +11,20 @@ body {
   display: flex;
   flex-direction: column;
   background-color: var(--background);
+
+  // &::after {
+  //  content: "";
+  //  position: fixed;
+  //  top: 0;
+  //  left: calc(var(--section-padding));
+  //  bottom: 0;
+  //  opacity: 0.5;
+  //  width: 1.625rem;
+  //  background: var(--text-color);
+  //  box-shadow: 0 0 0 6px red;
+  //  z-index: 100;
+  //  pointer-events: none;
+  // }
 }
 
 *,
