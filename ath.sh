@@ -6,7 +6,7 @@ set -o xtrace
 cd "$(dirname "$0")"
 
 # https://github.com/jenkinsci/acceptance-test-harness/releases
-export ATH_VERSION=6180.v889d0fe56785
+export ATH_VERSION=6254.vca_87b_2b_59e5a_
 
 if [[ $# -eq 0 ]]; then
 	export JDK=17
@@ -26,20 +26,35 @@ fi
 mkdir -p target/ath-reports
 chmod a+rwx target/ath-reports
 
-# obtain the groupId to grant to access the docker socket to run tests needing docker
-dockergid=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ubuntu:noble stat -c %g /var/run/docker.sock)
+curl \
+	--fail \
+	--silent \
+	--show-error \
+	--output /tmp/ath.yml \
+	--location "https://raw.githubusercontent.com/jenkinsci/acceptance-test-harness/refs/tags/${ATH_VERSION}/docker-compose.yml"
 
-exec docker run --rm \
+sed -i -e "s/jenkins\/ath:latest/jenkins\/ath:${ATH_VERSION}/g" /tmp/ath.yml
+
+# obtain the groupId to grant to access the docker socket to run tests needing docker
+if [[ -z ${DOCKER_GID:-} ]]; then
+	DOCKER_GID=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ubuntu:noble stat -c %g /var/run/docker.sock) || exit 1
+	export DOCKER_GID
+fi
+
+trap 'docker-compose --file /tmp/ath.yml kill && docker-compose --file /tmp/ath.yml down' EXIT
+
+exec docker-compose \
+	--file /tmp/ath.yml \
+	run \
 	--env JDK \
 	--env ATH_VERSION \
 	--env BROWSER \
-	--shm-size 2g `# avoid selenium.WebDriverException exceptions like 'Failed to decode response from marionette' and webdriver closed` \
-	--group-add ${dockergid} \
+	--name mvn \
+	--no-TTY \
+	--rm \
 	--volume "$(pwd)"/war/target/jenkins.war:/jenkins.war:ro \
-	--volume /var/run/docker.sock:/var/run/docker.sock:rw \
 	--volume "$(pwd)"/target/ath-reports:/reports:rw \
-	--interactive \
-	jenkins/ath:"$ATH_VERSION" \
+	mvn \
 	bash <<-'INSIDE'
 		set -o errexit
 		set -o nounset
@@ -47,12 +62,10 @@ exec docker run --rm \
 		set -o xtrace
 		cd
 		set-java.sh "${JDK}"
-		# Start the VNC system provided by the image from the default user home directory
-		eval "$(vnc.sh)"
 		env | sort
-		git clone --branch "$ATH_VERSION" --depth 1 https://github.com/jenkinsci/acceptance-test-harness
+		git clone --branch "${ATH_VERSION}" --depth 1 https://github.com/jenkinsci/acceptance-test-harness
 		cd acceptance-test-harness
-		run.sh "$BROWSER" /jenkins.war \
+		run.sh "remote-webdriver-${BROWSER}" /jenkins.war \
 			-Dmaven.test.failure.ignore \
 			-DforkCount=1 \
 			-Dgroups=org.jenkinsci.test.acceptance.junit.SmokeTest

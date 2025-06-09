@@ -24,19 +24,20 @@
 
 package hudson.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.HashMap;
 import java.util.Map;
 import net.sf.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class JSONObjectResponseTest {
+class JSONObjectResponseTest {
 
     @Test
-    public void test() {
+    void test() {
         Map<String, String> data = new HashMap<>();
 
         data.put("val_1", "1");
@@ -44,13 +45,13 @@ public class JSONObjectResponseTest {
         HttpResponses.JSONObjectResponse response = new HttpResponses.JSONObjectResponse(data);
         JSONObject payload = response.getJsonObject();
 
-        Assert.assertEquals("ok", payload.getString("status"));
+        assertEquals("ok", payload.getString("status"));
         JSONObject payloadData = payload.getJSONObject("data");
-        Assert.assertEquals("1", payloadData.getString("val_1"));
+        assertEquals("1", payloadData.getString("val_1"));
 
         // change it to an error
         response.error("a message");
-        Assert.assertEquals("error", payload.getString("status"));
-        Assert.assertEquals("a message", payload.getString("message"));
+        assertEquals("error", payload.getString("status"));
+        assertEquals("a message", payload.getString("message"));
     }
 }

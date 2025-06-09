@@ -27,11 +27,11 @@ package lib.form;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
@@ -50,11 +50,12 @@ import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
 
@@ -63,12 +64,18 @@ import org.kohsuke.stapler.StaplerRequest2;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ValidateButtonTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class ValidateButtonTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testValidateIsCalled() throws Exception {
+    void testValidateIsCalled() throws Exception {
         TestValidateIsCalled.DescriptorImpl d = j.jenkins.getDescriptorByType(TestValidateIsCalled.DescriptorImpl.class);
         assertNotNull(d);
 
@@ -128,7 +135,7 @@ public class ValidateButtonTest {
     }
 
     @Test
-    public void noInjectionArePossible() throws Exception {
+    void noInjectionArePossible() throws Exception {
         NoInjectionArePossible.DescriptorImpl d = j.jenkins.getDescriptorByType(NoInjectionArePossible.DescriptorImpl.class);
         assertNotNull(d);
 
@@ -222,13 +229,13 @@ public class ValidateButtonTest {
 
 
     @Test
-    public void regularUsageOfUsingDescriptorUrl() throws Exception {
+    void regularUsageOfUsingDescriptorUrl() throws Exception {
         checkValidateButtonWork("okName");
     }
 
     @Test
     @Issue("SECURITY-1327")
-    public void xssUsingDescriptorUrl() throws Exception {
+    void xssUsingDescriptorUrl() throws Exception {
         checkValidateButtonWork("TESTawsCC','a',this)+alert(1)+validateButton('aaa");
     }
 
