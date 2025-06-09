@@ -121,10 +121,10 @@ $semantics: (
   );
   --jenkins-border-color--subtle: color-mix(
     in sRGB,
-    var(--text-color) 2%,
+    var(--text-color) 3.5%,
     transparent
   );
-  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.06);
+  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.07);
 
   /* This is a harsher border - for dividers, content blocks and more */
   --jenkins-border: var(--jenkins-border-width) solid
