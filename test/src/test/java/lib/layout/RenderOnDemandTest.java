@@ -24,9 +24,9 @@
 
 package lib.layout;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
@@ -37,31 +37,38 @@ import java.util.logging.Level;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.WebClientUtil;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests &lt;renderOnDemand> tag.
  *
  * @author Kohsuke Kawaguchi
  */
-public class RenderOnDemandTest {
+@WithJenkins
+class RenderOnDemandTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
-    @Rule public LoggerRule logging = new LoggerRule().record(RenderOnDemandClosure.class, Level.FINE);
+    private JenkinsRule j;
+    private LogRecorder logging = new LogRecorder().record(RenderOnDemandClosure.class, Level.FINE);
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Makes sure that the behavior rules are applied to newly inserted nodes,
      * even when multiple nodes are added.
      */
     @Test
-    public void testBehaviour() throws Exception {
+    void testBehaviour() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/testBehaviour");
 
         p.executeJavaScript("renderOnDemand(document.getElementsBySelector('.lazy')[0])");
@@ -73,7 +80,7 @@ public class RenderOnDemandTest {
         assertEquals("AlphaBravoCharlie", r.getJavaScriptResult().toString());
     }
 
-    @Ignore("just informational")
+    @Disabled("just informational")
     @Issue("JENKINS-16341")
     @Test
     public void testMemoryConsumption() throws Exception {
@@ -112,7 +119,7 @@ public class RenderOnDemandTest {
      * Makes sure that scripts get evaluated.
      */
     @Test
-    public void testScript() throws Exception {
+    void testScript() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/testScript");
         assertNull(p.getElementById("loaded"));
 

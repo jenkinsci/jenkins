@@ -4,31 +4,37 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.UnprotectedRootAction;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.htmlunit.AlertHandler;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class Security2779Test {
-    public static final String URL_NAME = "security2779";
+@WithJenkins
+class Security2779Test {
+    private static final String URL_NAME = "security2779";
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void noXssInHelpLinkPanel() throws Exception {
+    void noXssInHelpLinkPanel() throws Exception {
         noCrossSiteScriptingInHelp("#link-panel a");
     }
 
     @Test
-    public void noXssInHelpIconPanel() throws Exception {
+    void noXssInHelpIconPanel() throws Exception {
         noCrossSiteScriptingInHelp("#icon-panel svg");
     }
 
@@ -40,7 +46,7 @@ public class Security2779Test {
         page.executeJavaScript("document.querySelector('" + selector + "')._tippy.show()");
         webClient.waitForBackgroundJavaScript(2000);
         // Assertion includes the selector for easier diagnosis
-        Assert.assertEquals("Alert with selector '" + selector + "'", 0, alerts.get());
+        assertEquals(0, alerts.get(), "Alert with selector '" + selector + "'");
 
         final ScriptResult innerHtmlScript = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML");
         Object jsResult = innerHtmlScript.getJavaScriptResult();

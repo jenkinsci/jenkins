@@ -27,7 +27,7 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import java.net.URL;
@@ -37,25 +37,30 @@ import net.sf.json.JSONObject;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerRequest2;
 
-public class ParametersDefinitionPropertyTest {
+@WithJenkins
+class ParametersDefinitionPropertyTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private final LogRecorder logs = new LogRecorder();
 
-    @Rule
-    public LoggerRule logs = new LoggerRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-31458")
     @Test
-    public void customNewInstance() throws Exception {
+    void customNewInstance() throws Exception {
         logs.record(Descriptor.class, Level.ALL);
         KrazyParameterDefinition kpd = new KrazyParameterDefinition("kpd", "desc", "KrAzY");
         FreeStyleProject p = r.createFreeStyleProject();
@@ -73,6 +78,7 @@ public class ParametersDefinitionPropertyTest {
         public final String field;
 
         // not @DataBoundConstructor
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public KrazyParameterDefinition(String name, String description, String field) {
             super(name, description);
             this.field = field;
@@ -102,7 +108,7 @@ public class ParametersDefinitionPropertyTest {
 
     @Issue("JENKINS-66105")
     @Test
-    public void statusCodes() throws Exception {
+    void statusCodes() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
         FreeStyleProject p = r.createFreeStyleProject("p");

@@ -2,26 +2,32 @@ package hudson.core;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.PluginManagerStaplerOverride;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Verify that the PluginManagerStaplerOverride extensions register and allow safely modifying PluginManager views
  * @author Sam Van Oort
  */
-public class PluginManagerOverrideTest {
+@WithJenkins
+class PluginManagerOverrideTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testViewOverrides() throws Exception {
+    void testViewOverrides() throws Exception {
         // Verify extension registered correctly and comes back in overrides
         assertEquals(1, PluginManagerStaplerOverride.all().size());
         assertThat(PluginManagerStaplerOverride.all().get(0), instanceOf(BasicPluginManagerOverride.class));

@@ -36,33 +36,29 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.util.OneShotEvent;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author pjanouse
  */
-public class CancelQuietDownCommandTest {
+@WithJenkins
+class CancelQuietDownCommandTest {
 
     private CLICommandInvoker command;
 
-    @ClassRule
-    public static final BuildWatcher buildWatcher = new BuildWatcher();
+    private JenkinsRule j;
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
-
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, "cancel-quiet-down");
     }
 
     @Test
-    public void cancelQuietDownShouldFailWithoutAdministerPermission() {
+    void cancelQuietDownShouldFailWithoutAdministerPermission() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invoke();
@@ -72,7 +68,7 @@ public class CancelQuietDownCommandTest {
     }
 
     @Test
-    public void cancelQuietDownShouldSuccessOnNoQuietDownedJenkins() {
+    void cancelQuietDownShouldSuccessOnNoQuietDownedJenkins() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invoke();
@@ -81,7 +77,7 @@ public class CancelQuietDownCommandTest {
     }
 
     @Test
-    public void cancelQuietDownShouldSuccessOnQuietDownedJenkins() {
+    void cancelQuietDownShouldSuccessOnQuietDownedJenkins() {
         j.jenkins.doQuietDown();
         QuietDownCommandTest.assertJenkinsInQuietMode(j);
         final CLICommandInvoker.Result result = command
@@ -92,7 +88,7 @@ public class CancelQuietDownCommandTest {
     }
 
     @Test
-    public void cancelQuietDownShouldResetQuietReason() throws Exception {
+    void cancelQuietDownShouldResetQuietReason() throws Exception {
         final String testReason = "reason";
         Jenkins.get().doQuietDown(false, 0, testReason, false);
         QuietDownCommandTest.assertJenkinsInQuietMode(j);
@@ -110,7 +106,7 @@ public class CancelQuietDownCommandTest {
     // Result - CLI call result is available immediately, execution won't be affected
     //
     @Test
-    public void cancelQuietDownShouldSuccessOnNoQuietDownedJenkinsAndRunningExecutor() throws Exception {
+    void cancelQuietDownShouldSuccessOnNoQuietDownedJenkinsAndRunningExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
         OneShotEvent finish = new OneShotEvent();
         FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
@@ -140,7 +136,7 @@ public class CancelQuietDownCommandTest {
     // Result - CLI call result is available immediately, execution won't be affected
     //
     @Test
-    public void cancelQuietDownShouldSuccessOnQuietDownedJenkinsAndRunningExecutor() throws Exception {
+    void cancelQuietDownShouldSuccessOnQuietDownedJenkinsAndRunningExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
         OneShotEvent finish = new OneShotEvent();
         FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);

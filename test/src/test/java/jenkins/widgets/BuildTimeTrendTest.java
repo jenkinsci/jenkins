@@ -26,9 +26,9 @@ package jenkins.widgets;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
@@ -51,21 +51,27 @@ import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTable;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class BuildTimeTrendTest {
+@WithJenkins
+class BuildTimeTrendTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void withAbstractJob_OnBuiltInNode() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+    void withAbstractJob_OnBuiltInNode() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         FreeStyleProject p = j.createFreeStyleProject();
         j.buildAndAssertSuccess(p);
 
@@ -79,8 +85,8 @@ public class BuildTimeTrendTest {
     }
 
     @Test
-    public void withAbstractJob_OnAgentNode() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+    void withAbstractJob_OnAgentNode() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         DumbSlave agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
@@ -99,8 +105,8 @@ public class BuildTimeTrendTest {
     }
 
     @Test
-    public void withAbstractJob_OnBoth() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+    void withAbstractJob_OnBoth() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         DumbSlave agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -133,8 +139,8 @@ public class BuildTimeTrendTest {
 
     @Test
     @LocalData("localDataNonAbstractJob")
-    public void withNonAbstractJob_withoutAgents() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+    void withNonAbstractJob_withoutAgents() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         JenkinsRule.WebClient wc = j.createWebClient();
         TopLevelItem p = j.jenkins.getItem("job0");
         assertThat(p, instanceOf(NonAbstractJob.class));
@@ -153,8 +159,8 @@ public class BuildTimeTrendTest {
     @Test
     @LocalData("localDataNonAbstractJob")
     @Issue("JENKINS-63232")
-    public void withNonAbstractJob_withAgents() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+    void withNonAbstractJob_withAgents() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         // just to trigger data-is-distributed-build-enabled = true
         j.createSlave();
 
@@ -186,6 +192,7 @@ public class BuildTimeTrendTest {
     }
 
     public static class NonAbstractJob extends Job<NonAbstractJob, NonAbstractBuild> implements TopLevelItem {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public NonAbstractJob(ItemGroup parent, String name) {
             super(parent, name);
         }
