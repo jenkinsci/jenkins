@@ -234,7 +234,7 @@ $semantics: (
   --card-background: var(--background);
   --card-background--hover: transparent;
   --card-background--active: transparent;
-  --card-border-color: color-mix(in oklch, var(--text-color-secondary) 15%, var(--background));
+  --card-border-color: var(--jenkins-border-color);
   --card-border-color--hover: oklch(
     from var(--text-color-secondary) l c h / 0.3
   );
