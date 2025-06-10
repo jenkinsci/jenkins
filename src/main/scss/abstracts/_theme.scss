@@ -124,7 +124,7 @@ $semantics: (
     var(--text-color) 3.5%,
     transparent
   );
-  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.07);
+  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.08);
 
   /* This is a harsher border - for dividers, content blocks and more */
   --jenkins-border: var(--jenkins-border-width) solid
@@ -151,7 +151,7 @@ $semantics: (
   }
 
   // Table
-  --table-background: oklch(from var(--text-color-secondary) l c h / 0.075);
+  --table-background: color-mix(in oklch, var(--text-color-secondary) 7.5%, var(--background));
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
@@ -234,7 +234,7 @@ $semantics: (
   --card-background: var(--background);
   --card-background--hover: transparent;
   --card-background--active: transparent;
-  --card-border-color: oklch(from var(--text-color-secondary) l c h / 0.15);
+  --card-border-color: color-mix(in oklch, var(--text-color-secondary) 15%, var(--background));
   --card-border-color--hover: oklch(
     from var(--text-color-secondary) l c h / 0.3
   );
@@ -248,7 +248,7 @@ $semantics: (
   }
 
   // Tab bar
-  --tabs-background: oklch(from var(--text-color-secondary) l c h / 0.1);
+  --tabs-background: color-mix(in oklch, var(--text-color-secondary) 7.5%, var(--background));
   --tabs-item-background: transparent;
   --tabs-item-foreground: color-mix(
     in sRGB,
