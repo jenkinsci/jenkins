@@ -62,12 +62,13 @@ public class ListNodesCommand extends CLICommand {
     private record NodeInfo(
         String displayName,
         boolean isOnline,
+        boolean isTemporarilyOffline,
+        String offlineCauseReason,
         Set<String> labels,
         int numExecutors,
         String osDescription,
         String architecture,
         String javaVersion,
-        String offlineCauseReason,
         String connectedSince,
         String clockDifference
     ) {}
@@ -76,7 +77,7 @@ public class ListNodesCommand extends CLICommand {
      * Node status filter options.
      */
     enum Status {
-        ONLINE, OFFLINE, ALL
+        ONLINE, OFFLINE, TEMP_OFFLINE, ALL
     }
 
     /**
@@ -96,9 +97,9 @@ public class ListNodesCommand extends CLICommand {
     // Command-line options
 
     /**
-     * Filter nodes by status: ONLINE, OFFLINE, or ALL (default).
+     * Filter nodes by status: ONLINE, OFFLINE (all offline nodes, including temporarily offline), TEMP_OFFLINE (temporarily offline nodes only), or ALL (default).
      */
-    @Option(name = "-status", usage = "Filter nodes by status: ONLINE, OFFLINE, or ALL")
+    @Option(name = "-status", usage = "Filter nodes by status: ONLINE, OFFLINE (all offline nodes, including temporarily offline), TEMP_OFFLINE (temporarily offline nodes only), or ALL")
     private Status status = Status.ALL;
 
     /**
@@ -138,10 +139,10 @@ public class ListNodesCommand extends CLICommand {
     private OutputFormat format = OutputFormat.PLAIN;
 
     /**
-     * Include detailed information for each node, such as OS, architecture, Java version, offline cause, clock difference, and connected since timestamp.
+     * Include detailed information for each node, such as OS, architecture, Java version, clock difference, and connected since timestamp.
      * Requires {@link Computer#EXTENDED_READ} permission.
      */
-    @Option(name = "-verbose", usage = "Include detailed information for each node (e.g., OS, architecture, Java version, offline cause, clock difference, connected since timestamp). Requires 'Extended Read' permission on the node(s).")
+    @Option(name = "-verbose", usage = "Include detailed information for each node (e.g., OS, architecture, Java version, clock difference, connected since timestamp). Requires 'Extended Read' permission on the node(s).")
     private boolean verbose = false;
 
     /**
@@ -308,6 +309,8 @@ public class ListNodesCommand extends CLICommand {
      */
     private boolean matchesStatus(Computer computer) {
         switch (status) {
+            case TEMP_OFFLINE:
+                return computer.isTemporarilyOffline();
             case ONLINE:
                 return computer.isOnline();
             case OFFLINE:
@@ -361,10 +364,10 @@ public class ListNodesCommand extends CLICommand {
     private NodeInfo mapComputerToNodeInfo(Computer computer) {
             String displayName = "";
             boolean isOnline = false;
+            boolean isTemporarilyOffline = false;
+            String offlineCauseReason = "N/A";
             int numExecutors = 0;
             Set<String> labels = Set.of();
-
-            String offlineCauseReason = "N/A";
 
             String osDescription = "N/A";
             String architecture = "N/A";
@@ -375,17 +378,20 @@ public class ListNodesCommand extends CLICommand {
         try {
             displayName = computer.getDisplayName();
             isOnline = computer.isOnline();
+            isTemporarilyOffline = computer.isTemporarilyOffline();
+
+            if (!isOnline) {
+                offlineCauseReason = computer.getOfflineCauseReason();
+            }
+
             numExecutors = computer.getNumExecutors();
 
             labels = computer.getAssignedLabels().stream()
             .map(label -> label.getName())
             .collect(Collectors.toUnmodifiableSet());
 
-            if (computer.hasPermission(Computer.EXTENDED_READ)) {
-                if (!isOnline) {
-                    offlineCauseReason = computer.getOfflineCauseReason();
-                }
 
+            if (computer.hasPermission(Computer.EXTENDED_READ)) {
                 if (verbose && isOnline) {
                     connectedSince = formatTimestamp(computer.getConnectTime());
                     clockDifferenceStr = getClockDifference(computer);
@@ -417,7 +423,7 @@ public class ListNodesCommand extends CLICommand {
             stderr.println("Error: Failed to fetch node '" + displayName + "'.");
         }
 
-        return new NodeInfo(displayName, isOnline, labels, numExecutors, osDescription, architecture, javaVersion, offlineCauseReason, connectedSince, clockDifferenceStr);
+        return new NodeInfo(displayName, isOnline, isTemporarilyOffline, offlineCauseReason, labels, numExecutors, osDescription, architecture, javaVersion, connectedSince, clockDifferenceStr);
     }
 
     /**
@@ -508,6 +514,8 @@ public class ListNodesCommand extends CLICommand {
 
             json.put("displayName", node.displayName());
             json.put("isOnline", node.isOnline());
+            json.put("isTemporarilyOffline", node.isTemporarilyOffline());
+            json.put("offlineCauseReason", node.offlineCauseReason());
             json.put("numExecutors", node.numExecutors());
             json.put("labels", node.labels());
 
@@ -515,7 +523,6 @@ public class ListNodesCommand extends CLICommand {
                 json.put("osDescription", node.osDescription());
                 json.put("architecture", node.architecture());
                 json.put("javaVersion", node.javaVersion());
-                json.put("offlineCauseReason", node.offlineCauseReason());
                 json.put("connectedSince", node.connectedSince());
                 json.put("clockDifference", node.clockDifference());
             }
@@ -540,6 +547,8 @@ public class ListNodesCommand extends CLICommand {
 
             sb.append("Node: ").append(node.displayName()).append(NL);
             sb.append("  Online: ").append(node.isOnline() ? "Yes" : "No").append(NL);
+            sb.append("  isTemporarilyOffline: ").append(node.isTemporarilyOffline() ? "Yes" : "No").append(NL);
+            sb.append("  Offline Reason: ").append(node.offlineCauseReason()).append(NL);
             sb.append("  Executors: ").append(node.numExecutors()).append(NL);
             sb.append("  Labels:").append(NL);
 
@@ -551,7 +560,6 @@ public class ListNodesCommand extends CLICommand {
                 sb.append("  OS: ").append(node.osDescription()).append(NL);
                 sb.append("  Architecture: ").append(node.architecture()).append(NL);
                 sb.append("  Java Version: ").append(node.javaVersion()).append(NL);
-                sb.append("  Offline Reason: ").append(node.offlineCauseReason()).append(NL);
                 sb.append("  Connected Since: ").append(node.connectedSince()).append(NL);
                 sb.append("  Clock Difference: ").append(node.clockDifference()).append(NL);
 
