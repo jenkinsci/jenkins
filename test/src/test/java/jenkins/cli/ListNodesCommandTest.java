@@ -98,26 +98,48 @@ public class ListNodesCommandTest {
 
         @Test
         void shouldListOfflineNodeWhenStatusIsOffline() throws Exception {
+            DumbSlave tempOfflineNode = j.createOnlineSlave();
+            tempOfflineNode.toComputer().setTemporaryOfflineCause(new OfflineCause.ByCLI("Testing temporarily offline node"));
+
             DumbSlave offlineNode = j.createOnlineSlave();
-            offlineNode.toComputer().setTemporaryOfflineCause(new OfflineCause.ByCLI("Testing offline node"));
+            offlineNode.toComputer().disconnect(null);
 
             CLICommandInvoker.Result result = command.invokeWithArgs("-status", "OFFLINE");
 
+            assertThat(result.stdout(), containsString(tempOfflineNode.getNodeName()));
             assertThat(result.stdout(), containsString(offlineNode.getNodeName()));
             assertThat(result.stderr(), is(emptyString()));
             assertThat(result.returnCode(), is(0));
         }
 
         @Test
-        void shouldListBothOnlineAndOfflineNodesWhenStatusIsAll() throws Exception {
+        void shouldListTemporarilyOfflineNodeWhenStatusIsTemporarilyOffline() throws Exception {
+            DumbSlave tempOfflineNode = j.createOnlineSlave();
+            tempOfflineNode.toComputer().setTemporaryOfflineCause(new OfflineCause.ByCLI("Testing temporarily offline node"));
+
+            CLICommandInvoker.Result result = command.invokeWithArgs("-status", "TEMP_OFFLINE");
+
+            assertThat(result.stdout(), containsString(tempOfflineNode.getNodeName()));
+            assertThat(result.stdout(), containsString("Testing temporarily offline node"));
+            assertThat(result.stderr(), is(emptyString()));
+            assertThat(result.returnCode(), is(0));
+        }
+
+        @Test
+        void shouldListAllNodesWhenStatusIsAll() throws Exception {
             // Create online node
             DumbSlave onlineNode = j.createOnlineSlave();
             String onlineNodeName = onlineNode.getNodeName();
 
             // Create offline node
             DumbSlave offlineNode = j.createOnlineSlave();
-            offlineNode.toComputer().setTemporaryOfflineCause(new OfflineCause.ByCLI("Testing offline node"));
+            offlineNode.toComputer().disconnect(null);
             String offlineNodeName = offlineNode.getNodeName();
+
+            // Create temporarily offline node
+            DumbSlave tempOfflineNode = j.createOnlineSlave();
+            tempOfflineNode.toComputer().setTemporaryOfflineCause(new OfflineCause.ByCLI("Testing temporarily offline node"));
+            String tempOfflineNodeName = tempOfflineNode.getNodeName();
 
             // Invoke command with -status ALL
             CLICommandInvoker.Result result = command.invokeWithArgs("-status", "ALL");
@@ -125,6 +147,7 @@ public class ListNodesCommandTest {
             // Verify both nodes are listed
             assertThat(result.stdout(), containsString(onlineNodeName));
             assertThat(result.stdout(), containsString(offlineNodeName));
+            assertThat(result.stdout(), containsString(tempOfflineNodeName));
             assertThat(result.stderr(), is(emptyString()));
             assertThat(result.returnCode(), is(0));
         }
@@ -386,7 +409,7 @@ public class ListNodesCommandTest {
             node.setLabelString("test-node");
 
             // Make node offline
-            node.toComputer().setTemporaryOfflineCause(new OfflineCause.ByCLI("Testing offline node"));
+            node.toComputer().disconnect(null);
 
             CLICommandInvoker.Result result = command.invokeWithArgs("-verbose", "-labels", "test-node");
 
@@ -394,7 +417,6 @@ public class ListNodesCommandTest {
 
             // Basic checks
             assertThat(output, containsString(node.getNodeName()));
-            assertThat(output, containsString("Offline Reason:")); // offlineCauseReason shown
             assertThat(output, containsString("Connected Since: N/A")); // should say N/A
             assertThat(output, containsString("Clock Difference: N/A")); // should say N/A
 
