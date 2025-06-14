@@ -171,7 +171,7 @@ public class ListNodesCommandTest {
     @Nested
     class LabelTests {
         @Test
-        void shouldFilterNodesBySingleLabel() throws Exception {
+        void shouldMatchNodeWithSingleLabelExpression() throws Exception {
             DumbSlave labeledNode = j.createOnlineSlave();
             labeledNode.setLabelString("my-label");
 
@@ -183,19 +183,19 @@ public class ListNodesCommandTest {
         }
 
         @Test
-        void shouldFilterNodesByMultipleLabels() throws Exception {
-            DumbSlave labeledNode = j.createOnlineSlave();
-            labeledNode.setLabelString("my-label another-label");
+        void shouldMatchNodeWithAndLabelExpression() throws Exception {
+            DumbSlave node1 = j.createOnlineSlave();
+            node1.setLabelString("my-label another-label");
 
-            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "my-label,another-label");
+            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "my-label && another-label");
 
-            assertThat(result.stdout(), containsString(labeledNode.getNodeName()));
+            assertThat(result.stdout(), containsString(node1.getNodeName()));
             assertThat(result.stderr(), is(emptyString()));
             assertThat(result.returnCode(), is(0));
         }
 
         @Test
-        public void shouldShowNoNodesWhenLabelFilterDoesNotMatch() throws Exception {
+        public void shouldNotMatchNodeWhenLabelExpressionDoesNotMatch() throws Exception {
             // Create an online node with label "existing-label"
             DumbSlave onlineNode = j.createOnlineSlave();
             onlineNode.setLabelString("existing-label");
@@ -209,7 +209,7 @@ public class ListNodesCommandTest {
         }
 
         @Test
-        void shouldHandleEmptyLabels() throws Exception {
+        void shouldMatchAllNodesWhenLabelExpressionIsEmpty() throws Exception {
             DumbSlave node = j.createOnlineSlave();
             node.setLabelString("test-label");
 
@@ -221,7 +221,78 @@ public class ListNodesCommandTest {
         }
 
         @Test
-        void shouldRejectLabelInputThatIsTooLong() {
+        void shouldMatchNodeWithOrLabelExpression() throws Exception {
+            DumbSlave node = j.createOnlineSlave();
+            node.setLabelString("linux docker");
+
+            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "docker||gpu");
+
+            assertThat(result.stdout(), containsString(node.getNodeName()));
+            assertThat(result.stderr(), is(emptyString()));
+            assertThat(result.returnCode(), is(0));
+        }
+
+        @Test
+        void shouldNotMatchNodeWhenNoLabelInOrExpressionMatches() throws Exception {
+            DumbSlave node = j.createOnlineSlave();
+            node.setLabelString("windows");
+
+            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "gpu||mac");
+
+            assertThat(result.stdout(), not(containsString(node.getNodeName())));
+            assertThat(result.returnCode(), is(0));
+        }
+
+        @Test
+        void shouldMatchNodeWithAllLabelsInAndExpression() throws Exception {
+            DumbSlave node1 = j.createOnlineSlave();
+            node1.setLabelString("linux docker");
+            DumbSlave node2 = j.createOnlineSlave();
+            node2.setLabelString("linux");
+
+            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "linux&&docker");
+
+            assertThat(result.stdout(), containsString(node1.getNodeName()));
+            assertThat(result.stdout(), not(containsString(node2.getNodeName())));
+            assertThat(result.stderr(), is(emptyString()));
+            assertThat(result.returnCode(), is(0));
+        }
+
+        @Test
+        void shouldNotMatchNodeWhenNotAllLabelsInAndExpressionMatch() throws Exception {
+            DumbSlave node = j.createOnlineSlave();
+            node.setLabelString("linux docker");
+
+            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "linux&&gpu");
+
+            assertThat(result.stdout(), not(containsString(node.getNodeName())));
+            assertThat(result.returnCode(), is(0));
+        }
+
+        @Test
+        void shouldExcludeNodeWithNegatedLabelExpression() throws Exception {
+            DumbSlave node = j.createOnlineSlave();
+            node.setLabelString("linux");
+
+            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "!linux");
+
+            assertThat(result.stdout(), not(containsString(node.getNodeName())));
+            assertThat(result.returnCode(), is(0));
+        }
+
+        @Test
+        void shouldIncludeNodeWithoutExcludedLabel() throws Exception {
+            DumbSlave node = j.createOnlineSlave();
+            node.setLabelString("windows");
+
+            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "!linux");
+
+            assertThat(result.stdout(), containsString(node.getNodeName()));
+            assertThat(result.returnCode(), is(0));
+        }
+
+        @Test
+        void shouldRejectTooLongLabelExpression() {
             String longLabel = "a".repeat(1001); // exceeds MAX_LABELS_LENGTH
 
             CLICommandInvoker.Result result = command.invokeWithArgs("-labels", longLabel);
@@ -230,52 +301,11 @@ public class ListNodesCommandTest {
             assertThat(result.returnCode(), is(1));
         }
 
-        // label mode tests
-
         @Test
-        void shouldMatchNodeWhenAnyLabelMatches() throws Exception {
-            DumbSlave node = j.createOnlineSlave();
-            node.setLabelString("linux docker");
-
-            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "docker,gpu", "-labels-mode", "ANY");
-
-            assertThat(result.stdout(), containsString(node.getNodeName()));
-            assertThat(result.stderr(), is(emptyString()));
-            assertThat(result.returnCode(), is(0));
-        }
-
-        @Test
-        void shouldNotMatchNodeWhenAnyLabelDoesNotMatch() throws Exception {
-            DumbSlave node = j.createOnlineSlave();
-            node.setLabelString("windows");
-
-            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "gpu,mac", "-labels-mode", "ANY");
-
-            assertThat(result.stdout(), not(containsString(node.getNodeName())));
-            assertThat(result.returnCode(), is(0));
-        }
-
-        @Test
-        void shouldMatchNodeWhenAllLabelsMatch() throws Exception {
-            DumbSlave node = j.createOnlineSlave();
-            node.setLabelString("linux docker");
-
-            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "linux,docker", "-labels-mode", "ALL");
-
-            assertThat(result.stdout(), containsString(node.getNodeName()));
-            assertThat(result.stderr(), is(emptyString()));
-            assertThat(result.returnCode(), is(0));
-        }
-
-        @Test
-        void shouldNotMatchNodeWhenAllLabelsDoNotMatch() throws Exception {
-            DumbSlave node = j.createOnlineSlave();
-            node.setLabelString("linux docker");
-
-            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "linux,gpu", "-labels-mode", "ALL");
-
-            assertThat(result.stdout(), not(containsString(node.getNodeName())));
-            assertThat(result.returnCode(), is(0));
+        void shouldRejectInvalidLabelExpressionSyntax() {
+            CLICommandInvoker.Result result = command.invokeWithArgs("-labels", "linux&&&&");
+            assertThat(result.stderr(), containsString("Invalid input"));
+            assertThat(result.returnCode(), is(1));
         }
     }
 
@@ -607,7 +637,7 @@ public class ListNodesCommandTest {
             j.jenkins.setAuthorizationStrategy(auth);
 
             // Run command with verbose and labels to include both nodes
-            CLICommandInvoker.Result result = command.asUser("user").invokeWithArgs("-verbose", "-labels", "node-with-permission,node-without-permission", "-labels-mode", "ANY");
+            CLICommandInvoker.Result result = command.asUser("user").invokeWithArgs("-verbose", "-labels", "node-with-permission || node-without-permission");
 
             // Verify the command runs successfully
             assertThat(result.returnCode(), is(0));
@@ -653,7 +683,7 @@ public class ListNodesCommandTest {
             j.jenkins.setAuthorizationStrategy(auth);
 
             // Run command with JSON format, verbose, and labels to include both nodes
-            CLICommandInvoker.Result result = command.asUser("user").invokeWithArgs("-format", "JSON", "-verbose", "-labels", "node-with-permission,node-without-permission", "-labels-mode", "ANY");
+            CLICommandInvoker.Result result = command.asUser("user").invokeWithArgs("-format", "JSON", "-verbose", "-labels", "node-with-permission || node-without-permission");
 
             // Verify the command runs successfully
             assertThat(result.returnCode(), is(0));
