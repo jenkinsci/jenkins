@@ -27,6 +27,7 @@ package jenkins.cli;
 import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.model.Computer;
+import hudson.model.Label;
 import hudson.model.Node;
 import java.io.IOException;
 import java.time.Instant;
@@ -87,13 +88,6 @@ public class ListNodesCommand extends CLICommand {
         JSON, PLAIN
     }
 
-    /**
-     * Label match mode: ANY label must match, or ALL labels must match.
-     */
-    enum LabelMatchMode {
-        ANY, ALL
-    }
-
     // Command-line options
 
     /**
@@ -103,16 +97,10 @@ public class ListNodesCommand extends CLICommand {
     private Status status = Status.ALL;
 
     /**
-     * Filter nodes by labels, using a comma-separated list (no spaces) (e.g., label1,label2,label3).
+     * Filter nodes by a label expression (e.g., 'label1 && label2 || !label3'). If not specified, all nodes are included.
      */
-    @Option(name = "-labels", usage = "Filter nodes by labels (comma-separated, no spaces) (e.g., label1,label2,label3)", metaVar = "label1,label2,...")
+    @Option(name = "-labels", usage = "Filter nodes by a label expression (e.g., 'label1 && label2 || !label3')", metaVar = "label1 && label2 || !label3")
     private String labels = null;
-
-    /**
-     * Label matching mode: ANY (at least one label matches) or ALL (all labels must match).
-     */
-    @Option(name = "-labels-mode", usage = "Label matching mode: ANY (at least one label matches) (Default) or ALL (all labels must match)")
-    private LabelMatchMode labelMode = LabelMatchMode.ANY;
 
     /**
      * Limit the number of nodes returned (positive integer, default: no limit).
@@ -160,10 +148,10 @@ public class ListNodesCommand extends CLICommand {
     private boolean countOnly = false;
 
     /**
-     * Set of labels to filter nodes by, initialized based on the provided labels input.
-     * This is used to efficiently check if a node matches the specified label criteria.
+     * Label expression parsed from the command-line input.
+     * This is used to filter nodes based on their labels.
      */
-    private Set<String> labelFilterSet = null;
+    private Label labelExpression;
 
     @Override
     public String getShortDescription() {
@@ -186,8 +174,6 @@ public class ListNodesCommand extends CLICommand {
         if (!validateInputs()) {
             return 1;
         }
-
-        initializeLabelFilter();
 
         Computer[] computers = jenkins.getComputers();
         if (computers == null) {
@@ -261,23 +247,37 @@ public class ListNodesCommand extends CLICommand {
 
                 return false;
             }
+
+            if (!parseLabelExpression()) {
+                return false; // label parsing fails, return false
+            }
         }
 
         return true;
     }
 
     /**
-     * Initializes the label filter set based on the provided labels input.
-     * Splits the labels by comma, trims whitespace, and converts to lowercase.
+     * Parses the label expression from the command-line input.
+     * If the expression is invalid, it prints an error message and returns false.
+     *
+     * @return true if the label expression is valid; false otherwise.
      */
-    private void initializeLabelFilter() {
-        if (labels != null && !labels.trim().isEmpty()) {
-            labelFilterSet = Arrays.stream(labels.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .map(String::toLowerCase)
-                .collect(Collectors.toUnmodifiableSet());
+    private boolean parseLabelExpression() {
+        try {
+            labelExpression = Label.parseExpression(labels.trim());
+
+            if (labelExpression == null) {
+                stderr.println("Invalid input: The label expression '" + labels + "' is not valid.");
+
+                return false;
+            }
+        } catch (IllegalArgumentException e) {
+            stderr.println("Invalid input: The label expression '" + labels + "' is not valid. " + e.getMessage());
+
+            return false;
         }
+
+        return true;
     }
 
     /**
@@ -322,26 +322,20 @@ public class ListNodesCommand extends CLICommand {
     }
 
     /**
-     * Checks if the computer matches the specified label filter based on the selected label mode.
+     * Checks if the computer matches the specified label expression.
      * If no labels are specified, it returns true (no label filter applied).
      *
      * @param computer The computer to check.
-     * @return true if the computer matches the label filter, false otherwise.
+     * @return true if the computer matches the label expression, false otherwise.
      */
     private boolean matchesLabels(Computer computer) {
         if (labels == null || labels.trim().isEmpty()) {
             return true;
         }
 
-        Set<String> assignedLabels = computer.getAssignedLabels().stream()
-            .map(label -> label.getName().toLowerCase())
-            .collect(Collectors.toSet());
+        Node node = computer.getNode();
 
-        if (labelMode == LabelMatchMode.ALL) {
-            return labelFilterSet.stream().allMatch(assignedLabels::contains);
-        } else {
-            return labelFilterSet.stream().anyMatch(assignedLabels::contains);
-        }
+        return node != null && labelExpression.matches(node);
     }
 
     /**
