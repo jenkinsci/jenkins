@@ -5,12 +5,10 @@ import { toId } from "@/util/dom";
  * sections on the page (if using <f:breadcrumb-config-outline />)
  */
 function init() {
-  const inpageNavigationBreadcrumb = document.querySelector("#inpage-nav");
+  const inpageNavigationBreadcrumb = document.querySelector("#inpage-nav span");
 
   if (inpageNavigationBreadcrumb) {
-    const chevron = document.createElement("li");
-    chevron.classList.add("children");
-    chevron.items = Array.from(
+    inpageNavigationBreadcrumb.items = Array.from(
       document.querySelectorAll(
         "form > div > .jenkins-section > .jenkins-section__title",
       ),
@@ -18,8 +16,6 @@ function init() {
       section.id = toId(section.textContent);
       return { label: section.textContent, url: "#" + section.id };
     });
-
-    inpageNavigationBreadcrumb.after(chevron);
   }
 }
 
