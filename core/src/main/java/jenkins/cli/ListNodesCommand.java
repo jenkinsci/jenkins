@@ -451,7 +451,7 @@ public class ListNodesCommand extends CLICommand {
         }
 
         Instant instant = Instant.ofEpochMilli(millis);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")
             .withZone(ZoneId.of("UTC"));
 
         return formatter.format(instant);
