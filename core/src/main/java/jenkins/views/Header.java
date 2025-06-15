@@ -4,6 +4,7 @@ import hudson.ExtensionComponent;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Action;
+import hudson.model.ManageJenkinsAction;
 import hudson.model.RootAction;
 import java.util.Comparator;
 import java.util.List;
@@ -11,6 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
+import jenkins.model.navigation.SearchAction;
+import jenkins.model.navigation.UserAction;
 import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -64,7 +67,7 @@ public abstract class Header implements ExtensionPoint {
     }
 
     /**
-     * @return a list of {@link Action} to show in the header, defaults to {@link hudson.model.RootAction} extensions
+     * @return a list of {@link Action} to show in the header, defaults to {@link Jenkins#getActions()} with the {@link SearchAction}, {@link ManageJenkinsAction} and {@link UserAction} removed
      */
     @Restricted(NoExternalUse.class)
     public List<Action> getActions() {

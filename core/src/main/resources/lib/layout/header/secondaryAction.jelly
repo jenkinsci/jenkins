@@ -1,0 +1,23 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
+
+
+  <st:documentation> <![CDATA[
+    Used inside <h:actions> to render primaryActions.
+    ]]>
+    <st:attribute name="action" use="required">
+      The action to render
+    </st:attribute>
+  </st:documentation>
+
+  <x:comment>rendering secondary action: ${action.class.name}</x:comment>
+
+
+  <!--  TODO Badge handling? or should things show on the main header if they have a badge? -->
+  <dd:item icon="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"
+           text="${action.displayName}"
+           href="/${action.urlName}"> <!--  we prepend "/" as RootActions (which is what we are) do not start with a slash! -->
+           
+  </dd:item>
+
+</j:jelly>
