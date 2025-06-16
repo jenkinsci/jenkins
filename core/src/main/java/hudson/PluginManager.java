@@ -1870,11 +1870,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         @Override
         public void copy(File target) throws IOException {
-            try {
-                fileItem.write(Util.fileToPath(target));
-            } catch (UncheckedIOException e) {
-                throw e.getCause();
-            }
+            fileItem.write(Util.fileToPath(target));
         }
 
         @Override
