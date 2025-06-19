@@ -11,7 +11,7 @@
   </st:documentation>
 
   <j:set var="badge" value="${action.badge}"/>
-  <j:set var="badgeClazz" value="${badge != null ? '' : 'jenkins-badge jenkins-!-${badge.severity}-color'}"/>
+  <j:set var="badgeClazz" value="${badge != null ? 'jenkins-badge jenkins-!-${badge.severity}-color' : ''}"/>
 
   <dd:item icon="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"
            text="${action.displayName}"
