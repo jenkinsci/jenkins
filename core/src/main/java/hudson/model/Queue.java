@@ -1532,7 +1532,11 @@ public class Queue extends ResourceController implements Saveable {
                     }
                     p.isPending = false;
                     pendings.remove(p);
-                    makeBuildable(p); // TODO whatever this is for, the return value is being ignored, so this does nothing at all
+                    var r = makeBuildable(p);
+                    if (r != null) {
+                        LOGGER.log(Level.FINEST, "Executing runnable {0}", p.task.getFullDisplayName());
+                        r.run();
+                    }
                 }
             }
 
