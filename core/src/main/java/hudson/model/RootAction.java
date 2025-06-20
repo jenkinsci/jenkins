@@ -52,10 +52,11 @@ public interface RootAction extends Action, ExtensionPoint {
     }
 
     /**
-     * Identifies if the action as a primary action.
-     * Primary actions may be handled differently in the UI (for existence by always showing on the header rather than in an actions dropdown).
+     * Identifies if the action is a primary action.
+     * Primary actions may be handled differently in the UI (for example, by always showing on the header rather than in an actions dropdown).
      * In almost all cases this should return {@code false} which is the default
      * @return {@code true} iff this action should be considered primary.
+     * @since TODO
      */
     default boolean isPrimaryAction() {
         return false;
