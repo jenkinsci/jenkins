@@ -1534,7 +1534,7 @@ public class Queue extends ResourceController implements Saveable {
                     pendings.remove(p);
                     var r = makeBuildable(p);
                     if (r != null) {
-                        LOGGER.log(Level.FINEST, "Executing runnable {0}", p.task.getFullDisplayName());
+                        LOGGER.fine(() -> "Executing lost runnable " + p.task.getFullDisplayName());
                         r.run();
                     }
                 }
