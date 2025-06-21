@@ -69,6 +69,11 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
     }
 
     @Override
+    public boolean isPrimaryAction() {
+        return true;
+    }
+
+    @Override
     public Object getStaplerFallback() {
         return Jenkins.get();
     }
