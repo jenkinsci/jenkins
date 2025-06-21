@@ -30,6 +30,7 @@ import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
+import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
@@ -328,6 +329,11 @@ public class Executor extends Thread implements ModelObject, IExecutor {
         } finally {
             lock.writeLock().unlock();
         }
+    }
+
+    @VisibleForTesting
+    long getStartTime() {
+        return startTime;
     }
 
     @Override

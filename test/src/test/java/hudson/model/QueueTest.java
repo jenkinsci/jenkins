@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
@@ -71,8 +72,11 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.security.SparseACL;
+import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
+import hudson.slaves.RetentionStrategy;
+import hudson.slaves.SlaveComputer;
 import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
@@ -107,6 +111,7 @@ import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.QueueIdStrategy;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.util.Timer;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
@@ -1328,5 +1333,65 @@ public class QueueTest {
         public void run() {
             execute(new BuildExecution());
         }
+    }
+
+    private static class SlowSlave extends Slave {
+        SlowSlave(String name, File remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
+            super(name, remoteFS.getAbsolutePath(), launcher);
+        }
+
+        @Override public Computer createComputer() {
+            return new SlowComputer(this);
+        }
+    }
+
+    private static class SlowComputer extends SlaveComputer {
+        SlowComputer(SlowSlave slave) {
+            super(slave);
+        }
+
+        @Override
+        public boolean isOffline() {
+            try {
+                // This delay is just big enough to allow the test to simulate a computer failure at the time we expect.
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+            return super.isOffline();
+        }
+    }
+
+    @Test
+    void computerFailsJustAfterCreatingExecutor() throws Throwable {
+        r.jenkins.setNumExecutors(0);
+        var p = r.createFreeStyleProject();
+        p.setAssignedLabel(r.jenkins.getLabel("agent"));
+        Slave onlineSlave = new SlowSlave("special", new File(r.jenkins.getRootDir(), "agent-work-dirs/special"), r.createComputerLauncher(null));
+        onlineSlave.setLabelString("agent");
+        onlineSlave.setRetentionStrategy(RetentionStrategy.NOOP);
+        r.jenkins.addNode(onlineSlave);
+        r.waitOnline(onlineSlave);
+
+        var computer = onlineSlave.toComputer();
+        Timer.get().execute(() -> {
+            // Simulate a computer failure just after the executor is created
+            while (computer.getExecutors().get(0).getStartTime() == 0) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
+            computer.disconnect(new OfflineCause.ChannelTermination(new IllegalStateException()));
+        });
+        var f = p.scheduleBuild2(0);
+        await().until(computer::isOffline);
+        Thread.sleep(1000);
+        assertFalse(r.jenkins.getQueue().isEmpty(), "Queue item should be back as the executor got killed before it could be picked up");
+        // Put the computer back online
+        r.waitOnline(onlineSlave);
+        r.assertBuildStatusSuccess(f);
+        assertTrue(r.jenkins.getQueue().isEmpty());
     }
 }
