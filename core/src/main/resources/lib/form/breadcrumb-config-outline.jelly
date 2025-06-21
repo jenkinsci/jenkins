@@ -32,5 +32,5 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <l:breadcrumb title="${attrs.title?:'%configuration'}" id="inpage-nav" />
+  <l:breadcrumb title="${attrs.title?:'%configuration'}" id="inpage-nav" hasMenu="true" />
 </j:jelly>
