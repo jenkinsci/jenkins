@@ -116,9 +116,7 @@ class DirectoryBrowserSupportTest {
     }
 
     private JenkinsRule.WebClient getWebClient() {
-        var wc = j.createWebClient();
-        wc.getOptions().setJavaScriptEnabled(false);
-        return wc;
+        return j.createWebClient();
     }
 
     /**
