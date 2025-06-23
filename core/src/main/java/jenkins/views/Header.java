@@ -64,7 +64,8 @@ public abstract class Header implements ExtensionPoint {
     }
 
     /**
-     * @return a list of {@link Action} to show in the header, defaults to {@link hudson.model.RootAction} extensions
+     * @return a list of {@link Action} to show in the header.
+     * The default implementation returns an {@link Jenkins#getActions()} that should be displayed (ie have an icon).
      */
     @Restricted(NoExternalUse.class)
     public List<Action> getActions() {
