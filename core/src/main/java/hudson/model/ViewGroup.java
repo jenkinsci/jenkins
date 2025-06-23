@@ -164,7 +164,7 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * Returns the ViewsTabBar that the user has configured.
      *
      * @return users TabBar
-     * @since TODO
+     * @since 2.513
      */
     default ViewsTabBar getUserViewsTabBar() {
         User user = User.current();
