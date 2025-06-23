@@ -26,6 +26,8 @@ package jenkins.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +58,7 @@ public abstract class WebSocketSession {
      * Certain services may have their own “keep alive” semantics,
      * but for example {@link hudson.remoting.PingThread} may be too infrequent.
      */
-    private static long PING_INTERVAL_SECONDS = SystemProperties.getLong("jenkins.websocket.pingInterval", 30L);
+    private static Duration PING_INTERVAL = SystemProperties.getDuration("jenkins.websocket.pingInterval", ChronoUnit.SECONDS, Duration.ofSeconds(30));
 
     private static final Logger LOGGER = Logger.getLogger(WebSocketSession.class.getName());
 
@@ -66,7 +68,7 @@ public abstract class WebSocketSession {
     protected WebSocketSession() {}
 
     void startPings() {
-        if (PING_INTERVAL_SECONDS != 0) {
+        if (PING_INTERVAL.compareTo(Duration.ZERO) > 0) {
             pings = Timer.get().scheduleAtFixedRate(() -> {
                 try {
                     Future<Void> f = handler.sendPing(ByteBuffer.wrap(new byte[0]));
@@ -75,7 +77,7 @@ public abstract class WebSocketSession {
                     error(x);
                     pings.cancel(true);
                 }
-            }, PING_INTERVAL_SECONDS / 2, PING_INTERVAL_SECONDS, TimeUnit.SECONDS);
+            }, PING_INTERVAL.dividedBy(2).toSeconds(), PING_INTERVAL.toSeconds(), TimeUnit.SECONDS);
         }
     }
 
