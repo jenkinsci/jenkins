@@ -8,7 +8,7 @@
     <!--  first render all primary actions (except the user login )-->
     <j:forEach var="action" items="${allActions}">
       <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
-      <j:set var="isPrimary" value="${action.isPrimaryAction()}"/>
+      <j:set var="isPrimary" value="${h.showInPrimaryHeader(action)}"/>
 
       <j:if test="${isCurrent or isPrimary}">
         <!-- do not show the user avatar -->
@@ -23,7 +23,7 @@
     <j:set var="hamburgerEntries">
       <j:forEach var="action" items="${allActions}">
         <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
-        <j:set var="isPrimary" value="${action.isPrimaryAction()}"/>
+        <j:set var="isPrimary" value="${h.showInPrimaryHeader(action)}"/>
         <j:if test="${!isCurrent and !isPrimary}">
           <h:secondaryAction action="${action}"/>
         </j:if>
