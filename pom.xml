@@ -98,7 +98,7 @@ THE SOFTWARE.
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>8.10</winstone.version>
-    <node.version>22.16.0</node.version>
+    <node.version>22.17.0</node.version>
   </properties>
 
   <!--
