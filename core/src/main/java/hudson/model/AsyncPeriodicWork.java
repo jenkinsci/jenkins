@@ -92,7 +92,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
         try {
             if (thread != null && thread.isAlive()) {
                 if (queueIfAlreadyRunning()) {
-                    logger.log(Level.FINE, "Scheduling another run of {0} since it is already running", name);
+                    logger.log(this.getSlowLoggingLevel(), "Scheduling another run of {0} since it is already running", name);
                     pending.set(true);
                 } else {
                     logger.log(this.getSlowLoggingLevel(), "{0} thread is still running. Execution aborted.", name);
@@ -121,7 +121,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                 logger.log(Level.FINE, "Finished {0}. {1,number} ms",
                         new Object[]{name, stopTime - startTime});
                 thread = null;
-                if (queueIfAlreadyRunning() && pending.getAndSet(false)) {
+                if (pending.getAndSet(false)) {
                     logger.log(this.getSlowLoggingLevel(), "An execution of {0} was requested while it was running, scheduling another run now", name);
                     doRun();
                 }

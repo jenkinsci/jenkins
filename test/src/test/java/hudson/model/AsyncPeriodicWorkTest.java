@@ -39,7 +39,7 @@ public class AsyncPeriodicWorkTest {
         await("The second call has been queued and executed later").until(instance::getCount, is(2));
     }
 
-    @TestExtension({"extraCallGetsIgnored", "extraCallGetsQueued"})
+    @TestExtension
     public static class AsyncPeriodicWorkTestImpl extends AsyncPeriodicWork {
         private boolean queueIfAlreadyRunning;
         private int count = 0;
