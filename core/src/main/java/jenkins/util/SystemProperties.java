@@ -316,7 +316,7 @@ public class SystemProperties {
      * Determines the duration value of the system property with the specified name.
      * @param name property name.
      * @return the property value as a duration.
-     * @since TODO
+     * @since 2.516
      */
     @CheckForNull
     public static Duration getDuration(@NonNull String name) {
@@ -328,7 +328,7 @@ public class SystemProperties {
      * @param name property name.
      * @param unit the duration unit to use if the value doesn't specify one (defaults to `ms`)
      * @return the property value as a duration.
-     * @since TODO
+     * @since 2.516
      */
     @CheckForNull
     public static Duration getDuration(@NonNull String name, @CheckForNull ChronoUnit unit) {
@@ -340,7 +340,7 @@ public class SystemProperties {
      * @param name property name.
      * @param defaultValue a default value
      * @return the property value as a duration.
-     * @since TODO
+     * @since 2.516
      */
     @Nullable
     public static Duration getDuration(@NonNull String name, @CheckForNull Duration defaultValue) {
@@ -354,7 +354,7 @@ public class SystemProperties {
      * @param unit         the duration unit to use if the value doesn't specify one (defaults to `ms`)
      * @param defaultValue a default value
      * @return the property value as a duration.
-     * @since TODO
+     * @since 2.516
      */
     @Nullable
     public static Duration getDuration(@NonNull String name, @CheckForNull ChronoUnit unit, @CheckForNull Duration defaultValue) {
