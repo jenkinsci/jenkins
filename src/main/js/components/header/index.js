@@ -13,7 +13,7 @@ function init() {
     }
   });
 
-  window.addEventListener("computeOverflow", () => {
+  window.addEventListener("computeHeaderOverflow", () => {
     computeOverflow();
   });
 
