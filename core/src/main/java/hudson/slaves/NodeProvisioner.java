@@ -42,6 +42,8 @@ import hudson.model.PeriodicWork;
 import hudson.model.Queue;
 import java.awt.Color;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -801,9 +803,9 @@ public class NodeProvisioner {
          * can be brought online before we start allocating more.
          */
         @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-        public static int INITIALDELAY = SystemProperties.getInteger(NodeProvisioner.class.getName() + ".initialDelay", LoadStatistics.CLOCK * 10);
+        public static int INITIALDELAY = (int) SystemProperties.getDuration(NodeProvisioner.class.getName() + ".initialDelay", ChronoUnit.MILLIS, Duration.ofMillis((long) LoadStatistics.CLOCK * 10)).toMillis();
         @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-        public static int RECURRENCEPERIOD = SystemProperties.getInteger(NodeProvisioner.class.getName() + ".recurrencePeriod", LoadStatistics.CLOCK);
+        public static int RECURRENCEPERIOD = (int) SystemProperties.getDuration(NodeProvisioner.class.getName() + ".recurrencePeriod", ChronoUnit.MILLIS, Duration.ofMillis(LoadStatistics.CLOCK)).toMillis();
 
         @Override
         public long getInitialDelay() {

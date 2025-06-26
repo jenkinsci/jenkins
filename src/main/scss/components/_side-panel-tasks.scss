@@ -4,6 +4,7 @@
 $background-outset: 0.7rem;
 
 #tasks,
+.tasks,
 .subtasks {
   display: flex;
   flex-direction: column;
@@ -44,68 +45,71 @@ $background-outset: 0.7rem;
   }
 }
 
-#tasks .task {
-  margin: 0 calc($background-outset * -1);
-}
+#tasks,
+.tasks {
+  .task {
+    margin: 0 calc($background-outset * -1);
 
-#tasks .task .task-link {
-  @include mixins.item;
+    .task-link {
+      @include mixins.item;
 
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 0.5rem $background-outset;
-  gap: 0.65rem;
-  width: 100%;
-  font-size: var(--font-size-sm);
-  color: var(--text-color);
-  margin: 0;
-  transition: opacity var(--standard-transition);
-
-  .task-icon-link {
-    display: inline-flex;
-
-    svg,
-    img {
-      width: 1.375rem !important;
-      height: 1.375rem !important;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0.5rem $background-outset;
+      gap: 0.65rem;
+      width: 100%;
+      font-size: var(--font-size-sm);
       color: var(--text-color);
+      margin: 0;
+      transition: opacity var(--standard-transition);
 
-      * {
-        transition: stroke-width var(--standard-transition);
+      .task-icon-link {
+        display: inline-flex;
+
+        svg,
+        img {
+          width: 1.375rem !important;
+          height: 1.375rem !important;
+          color: var(--text-color);
+
+          * {
+            transition: stroke-width var(--standard-transition);
+          }
+        }
       }
-    }
-  }
 
-  .task-icon-badge {
-    margin-left: auto;
-  }
+      .task-icon-badge {
+        margin-left: auto;
+      }
 
-  .task-link-text {
-    display: contents;
-    word-break: word-break;
-  }
+      .task-link-text {
+        display: contents;
+        word-break: word-break;
+      }
 
-  &--active {
-    font-weight: 450;
-    cursor: default;
+      &--active {
+        font-weight: 450;
+        cursor: default;
 
-    svg * {
-      stroke-width: 35px;
-    }
+        svg * {
+          stroke-width: 35px;
+        }
 
-    &::before {
-      background-color: var(--item-background--active) !important;
-    }
+        &::before {
+          background-color: var(--item-background--active) !important;
+        }
 
-    &::after {
-      box-shadow: none !important;
-    }
-  }
+        &::after {
+          box-shadow: none !important;
+        }
+      }
 
-  &:not(:hover, &:active, &:focus, &--active) {
-    &::before {
-      border-color: transparent;
+      &:not(:hover, &:active, &:focus, &--active) {
+        &::before {
+          border-color: transparent;
+        }
+      }
     }
   }
 }
