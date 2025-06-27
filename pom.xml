@@ -73,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.517</revision>
+    <revision>2.516.1</revision>
     <changelist>-SNAPSHOT</changelist>
     <project.build.outputTimestamp>2025-06-24T13:05:44Z</project.build.outputTimestamp>
 
