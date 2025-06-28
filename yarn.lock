@@ -4377,7 +4377,7 @@ __metadata:
     postcss-loader: "npm:8.1.1"
     postcss-preset-env: "npm:10.2.3"
     postcss-scss: "npm:4.0.9"
-    prettier: "npm:3.6.0"
+    prettier: "npm:3.6.1"
     sass: "npm:1.89.2"
     sass-loader: "npm:16.0.5"
     sortablejs: "npm:1.15.6"
@@ -6086,12 +6086,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.6.0":
-  version: 3.6.0
-  resolution: "prettier@npm:3.6.0"
+"prettier@npm:3.6.1":
+  version: 3.6.1
+  resolution: "prettier@npm:3.6.1"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/636897c8084b71ef1f740a46199df0d8f6ed896aa497212cc8cc229d3026b9dca82fa92f61e55924c4708cea11e39a88478e2d93c4818741c55b7408a9ac6d91
+  checksum: 10c0/cf54254b9ddf1a8dff12f84bf0089e6aef3eeb9d0ce9d0344e39549ddc4f5c290fc5060d7d5a597848b9617e53e05b33a4118e37cd560f9e132ecc19c211300a
   languageName: node
   linkType: hard
 
