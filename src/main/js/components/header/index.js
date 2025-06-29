@@ -13,6 +13,10 @@ function init() {
     }
   });
 
+  window.addEventListener("computeHeaderOverflow", () => {
+    computeOverflow();
+  });
+
   // Fade in the page header on scroll, increasing opacity and intensity of the backdrop blur
   window.addEventListener("scroll", () => {
     const navigation = document.querySelector("#page-header");
