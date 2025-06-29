@@ -212,11 +212,18 @@ public class Queue extends ResourceController implements Saveable {
     private transient volatile Snapshot snapshot = new Snapshot(waitingList, blockedProjects, buildables, pendings);
 
     /**
+     * Seconds before left items expire, by default 300 (5 minutes).
+     * Needs to strike a balance between availability to API callers and memory use on high throughput instances.
+     * Since {@link #leftItems} reads this only once, it can be final, no use modifying it in script console.
+     */
+    private static final long LEFT_ITEMS_CACHE_SECONDS = SystemProperties.getLong(Queue.class.getName() + ".LEFT_ITEMS_CACHE_SECONDS", 5 * 60L);
+
+    /**
      * Items that left queue would stay here for a while to enable tracking via {@link Item#getId()}.
      *
      * This map is forgetful, since we can't remember everything that executed in the past.
      */
-    private final Cache<Long, LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(5 * 60, TimeUnit.SECONDS).build();
+    private final Cache<Long, LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(LEFT_ITEMS_CACHE_SECONDS, TimeUnit.SECONDS).build();
 
     /**
      * Data structure created for each idle {@link Executor}.
