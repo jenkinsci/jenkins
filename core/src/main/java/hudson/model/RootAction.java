@@ -54,8 +54,11 @@ public interface RootAction extends Action, ExtensionPoint {
     /**
      * Identifies if the action is a primary action.
      * Primary actions may be handled differently in the UI (for example, by always showing on the header rather than in an actions dropdown).
-     * In almost all cases this should return {@code false} which is the default
-     * @return {@code true} iff this action should be considered primary.
+     * In almost all cases this should return {@code false} which is the default.
+     * Examples of a Primary action would be where actions would be used regularly or they would need to be prominent to convey some status.
+     * As a concrete example, an action that provides a Help action with a submenu containing various different links, would be a prime candidate for this to return {@code true}.
+     * If your action has the possibility of a {@link #getBadge() badge} then this is another indicator that the action should return {@code true} (or otherwise restructured).
+     * @return {@code true} if and only if this action should be considered primary.
      * @since 2.516
      */
     default boolean isPrimaryAction() {
