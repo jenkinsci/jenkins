@@ -38,12 +38,12 @@ function generateDropdowns() {
       Utils.generateDropdown(
         element,
         (instance) => {
-          const href = element.href;
-
           if (element.items) {
             instance.setContent(Utils.generateDropdownItems(element.items));
             return;
           }
+
+          const href = element.href;
 
           const hasModelLink = element.classList.contains(
             "hoverable-model-link",
@@ -105,7 +105,7 @@ function generateDropdowns() {
               instance.loaded = true;
             });
         },
-        false,
+        element.items != null,
         {
           trigger: "mouseenter",
           offset: [-16, 10],
