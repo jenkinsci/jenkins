@@ -117,12 +117,11 @@ $bottom-app-bar-padding: 0.875rem;
 
   position: sticky;
   height: calc(
-    2.375rem + $bottom-app-bar-padding + $bottom-app-bar-padding + 1px + var(--jenkins-border-width)
+    2.375rem + $bottom-app-bar-padding + $bottom-app-bar-padding + 1px +
+      var(--jenkins-border-width)
   );
   bottom: -1px;
-  margin-bottom: calc(
-    (2.375rem + $bottom-app-bar-padding) * -1
-  );
+  margin-bottom: calc((2.375rem + $bottom-app-bar-padding) * -1);
   backdrop-filter: blur(20px);
   background: linear-gradient(
     to right,
@@ -139,7 +138,7 @@ $bottom-app-bar-padding: 0.875rem;
     left: 0;
     right: 0;
     transition: opacity var(--standard-transition);
-    top: -2rem;
+    top: calc((2rem + var(--jenkins-border-width)) * -1);
     height: 2rem;
     pointer-events: none;
     background: linear-gradient(transparent, var(--bottom-app-bar-shadow));
