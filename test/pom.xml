@@ -241,7 +241,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>489.vd4b_25144138f</version>
+      <version>509.vc54d23fc427e</version>
       <scope>test</scope>
     </dependency>
     <dependency>
