@@ -112,7 +112,7 @@ $exit-animation: 0.2s;
     }
 
     &::before {
-      border: 1px solid color-mix(in sRGB, currentColor 2.5%, transparent);
+      border: var(--jenkins-border--inherit-subtle);
     }
 
     // Center and overlap SVG and text content
