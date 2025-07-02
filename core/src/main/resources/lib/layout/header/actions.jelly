@@ -3,68 +3,44 @@
   <div class="jenkins-header__actions">
     <st:include page="suffix" optional="true" />
 
-    <j:forEach var="action" items="${it.actions}">
+    <j:set var="allActions" value="${it.actions}"/>
+
+    <!--  first render all primary actions (except the user login )-->
+    <j:forEach var="action" items="${allActions}">
       <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
+      <j:set var="isPrimary" value="${h.showInPrimaryHeader(action)}"/>
 
-      <j:set var="jumplist">
-        <st:include it="${action}" page="jumplist.jelly" optional="true" />
-      </j:set>
-
-      <j:if test="${jumplist.length() == 0}">
-        <j:set var="tooltip">
-          <st:include it="${action}" page="tooltip.jelly" optional="true" />
-        </j:set>
-      </j:if>
-
-      <j:set var="badge" value="${action.badge}" />
-      <j:if test="${jumplist.length() == 0 and tooltip.length() == 0}">
-        <j:set var="tooltip">
-          <div style="text-align: center;">${action.displayName}</div>
-          <j:if test="${badge != null}">
-            <div style="text-align: center; color: var(--text-color-secondary)">${badge.tooltip}</div>
-          </j:if>
-        </j:set>
-      </j:if>
-
-      <j:set var="interactive" value="${jumplist.length() gt 0}" />
-      <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"/>
-      <x:element name="${action.urlName == null ? 'button' : 'a'}">
-        <x:attribute name="data-dropdown">${interactive}</x:attribute>
-        <x:attribute name="id">root-action-${action.class.simpleName}</x:attribute>
-        <x:attribute name="href">${h.getActionUrl(app.url, action)}</x:attribute>
-        <j:if test="${interactive}">
-          <x:attribute name="data-tippy-offset">[0, 10]</x:attribute>
+      <j:if test="${isCurrent or isPrimary}">
+        <!-- do not show the user avatar -->
+        <j:if test="${action.class.name != 'jenkins.model.navigation.UserAction'}">
+          <h:primaryAction action="${action}" isCurrent="${isCurrent}"/>
         </j:if>
-        <j:if test="${!interactive}">
-          <x:attribute name="data-html-tooltip" escapeText="false"><j:out value="${tooltip}" /></x:attribute>
-        </j:if>
-        <x:attribute name="data-tooltip-interactive">${interactive}</x:attribute>
-        <x:attribute name="data-tippy-animation">tooltip</x:attribute>
-        <x:attribute name="data-tippy-theme">${interactive ? 'dropdown' : 'tooltip'}</x:attribute>
-        <x:attribute name="data-tippy-trigger">mouseenter focus</x:attribute>
-        <x:attribute name="data-tippy-touch">${interactive}</x:attribute>
-        <x:attribute name="data-type">header-action</x:attribute>
-        <x:attribute name="draggable">false</x:attribute>
-        <x:attribute name="class">jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'}</x:attribute>
-        <l:icon src="${icon}" class="${action.class.name == 'jenkins.model.navigation.UserAction' ? 'jenkins-avatar' : ''}"/>
-        <span class="jenkins-visually-hidden" data-type="action-label">${action.displayName}</span>
-        <j:if test="${badge != null}">
-          <span class="jenkins-badge jenkins-!-${badge.severity}-color" />
-        </j:if>
-      </x:element>
-
-      <j:if test="${interactive}">
-        <template>
-          <div class="jenkins-dropdown">
-            <j:out value="${jumplist}" />
-          </div>
-        </template>
       </j:if>
-
-      <j:set var="jumplist" />
-      <j:set var="tooltip" />
     </j:forEach>
 
+    <!--  we only want the hamburger menu if there is something to display -->
+    <!--  render all non primary non current actions -->
+    <j:set var="hamburgerEntries">
+      <j:forEach var="action" items="${allActions}">
+        <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
+        <j:set var="isPrimary" value="${h.showInPrimaryHeader(action)}"/>
+        <j:if test="${!isCurrent and !isPrimary}">
+          <h:secondaryAction action="${action}"/>
+        </j:if>
+      </j:forEach>
+    </j:set>
+    <j:if test="${hamburgerEntries.length() gt 0}">
+      <l:overflowButton icon="symbol-menu-hamburger" id="header-more-actions">
+        <j:out value="${hamburgerEntries}" />
+      </l:overflowButton>
+    </j:if>
+
+    <!--  finally the user avatar or login button (if required) -->
+    <j:forEach var="action" items="${allActions}">
+      <j:if test="${action.class.name == 'jenkins.model.navigation.UserAction'}">
+        <h:primaryAction action="${action}" isCurrent="${h.hyperlinkMatchesCurrentPage(action.urlName)}"/>
+      </j:if>
+    </j:forEach>
     <h:login/>
   </div>
 </j:jelly>

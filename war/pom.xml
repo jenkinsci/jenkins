@@ -282,7 +282,7 @@ THE SOFTWARE.
                   <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>489.vd4b_25144138f</version>
+                  <version>509.vc54d23fc427e</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -345,7 +345,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>checks-api</artifactId>
-                  <version>370.vb_61a_c57328f3</version>
+                  <version>373.vfe7645102093</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -653,7 +653,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.0.21</version>
+        <version>12.0.22</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)

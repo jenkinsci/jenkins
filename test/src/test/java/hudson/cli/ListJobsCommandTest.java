@@ -37,25 +37,30 @@ import hudson.model.DirectlyModifiableView;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.ListView;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ListJobsCommandTest {
+@WithJenkins
+class ListJobsCommandTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
     private CLICommand listJobsCommand;
     private CLICommandInvoker command;
 
-    @Before public void setUp() {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         listJobsCommand = new ListJobsCommand();
         command = new CLICommandInvoker(j, listJobsCommand);
     }
 
-    @Test public void getAllJobsFromView() throws Exception {
+    @Test
+    void getAllJobsFromView() throws Exception {
         MockFolder folder = j.createFolder("Folder");
         MockFolder nestedFolder = folder.createProject(MockFolder.class, "NestedFolder");
         FreeStyleProject job = folder.createProject(FreeStyleProject.class, "job");
@@ -76,7 +81,8 @@ public class ListJobsCommandTest {
     }
 
     @Issue("JENKINS-48220")
-    @Test public void getAllJobsFromFolder() throws Exception {
+    @Test
+    void getAllJobsFromFolder() throws Exception {
         MockFolder folder = j.createFolder("Folder");
         MockFolder nestedFolder = folder.createProject(MockFolder.class, "NestedFolder");
 
@@ -91,7 +97,8 @@ public class ListJobsCommandTest {
     }
 
     @Issue("JENKINS-18393")
-    @Test public void getAllJobsFromFolderWithMatrixProject() throws Exception {
+    @Test
+    void getAllJobsFromFolderWithMatrixProject() throws Exception {
         MockFolder folder = j.createFolder("Folder");
 
         FreeStyleProject job1 = folder.createProject(FreeStyleProject.class, "job1");
@@ -114,7 +121,8 @@ public class ListJobsCommandTest {
     }
 
     @Issue("JENKINS-18393")
-    @Test public void failForMatrixProject() throws Exception {
+    @Test
+    void failForMatrixProject() throws Exception {
         MatrixProject matrixProject = j.createProject(MatrixProject.class, "mp");
 
         CLICommandInvoker.Result result = command.invokeWithArgs("MatrixJob");

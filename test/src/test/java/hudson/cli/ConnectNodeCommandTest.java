@@ -35,25 +35,29 @@ import static org.hamcrest.Matchers.not;
 import hudson.model.Computer;
 import hudson.slaves.DumbSlave;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author pjanouse
  */
-public class ConnectNodeCommandTest {
+@WithJenkins
+class ConnectNodeCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, "connect-node");
     }
 
-    @Test public void connectNodeShouldFailWithoutComputerConnectPermission() throws Exception {
+    @Test
+    void connectNodeShouldFailWithoutComputerConnectPermission() throws Exception {
         j.createSlave("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
@@ -65,7 +69,8 @@ public class ConnectNodeCommandTest {
         assertThat(result.stderr(), not(containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT)));
     }
 
-    @Test public void connectNodeShouldFailIfNodeDoesNotExist() {
+    @Test
+    void connectNodeShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -75,7 +80,8 @@ public class ConnectNodeCommandTest {
         assertThat(result.stderr(), not(containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT)));
     }
 
-    @Test public void connectNodeShouldSucceed() throws Exception {
+    @Test
+    void connectNodeShouldSucceed() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
 
         CLICommandInvoker.Result result = command
@@ -102,7 +108,8 @@ public class ConnectNodeCommandTest {
         assertThat(slave.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void connectNodeShouldSucceedWithForce() throws Exception {
+    @Test
+    void connectNodeShouldSucceedWithForce() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().connect(false).get(); // avoid a race condition in the test
 
@@ -130,7 +137,8 @@ public class ConnectNodeCommandTest {
         assertThat(slave.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void connectNodeManyShouldSucceed() throws Exception {
+    @Test
+    void connectNodeManyShouldSucceed() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         DumbSlave slave3 = j.createSlave("aNode3", "", null);
@@ -145,7 +153,8 @@ public class ConnectNodeCommandTest {
     }
 
 
-    @Test public void connectNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
+    @Test
+    void connectNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
 
@@ -160,7 +169,8 @@ public class ConnectNodeCommandTest {
         assertThat(slave2.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void connectNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
+    @Test
+    void connectNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
 
@@ -172,7 +182,8 @@ public class ConnectNodeCommandTest {
         assertThat(slave2.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void connectNodeShouldSucceedOnMaster() {
+    @Test
+    void connectNodeShouldSucceedOnMaster() {
         final Computer masterComputer = j.jenkins.getComputer("");
 
         CLICommandInvoker.Result result = command
