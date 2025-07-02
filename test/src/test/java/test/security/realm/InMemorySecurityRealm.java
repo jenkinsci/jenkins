@@ -36,8 +36,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
- * Accept any password
- * Allow creation and removal of users
+ *  This class provides an in-memory implementation of Jenkin's SecurityRealm for testing. 
+ *  It allows the creation and removal of users, and accepts any password for authentication.
+ *  It maintains an in-memory storage of user accounts in a HashMap-userStorage and allows for creation and deletion of users 
+ *  by modifying this hashmap.
+ *  The user also gets authenticated with any password as the only thing validated is presence of username entry in the hashmap
+ *  
+ *    
  */
 public class InMemorySecurityRealm extends AbstractPasswordBasedSecurityRealm {
     private Map<String, UserDetails> userStorage = new HashMap<>();
