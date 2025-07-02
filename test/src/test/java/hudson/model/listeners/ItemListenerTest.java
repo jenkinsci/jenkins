@@ -25,32 +25,33 @@
 package hudson.model.listeners;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.cli.CLICommandInvoker;
 import hudson.model.Item;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests for ItemListener events.
  * @author Alan.Harder@sun.com
  */
-public class ItemListenerTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class ItemListenerTest {
 
     private StringBuffer events = new StringBuffer();
 
-    @Before
-    public void setUp() {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         ItemListener listener = new ItemListener() {
             @Override public void onCreated(Item item) {
                 events.append('C');
@@ -70,18 +71,18 @@ public class ItemListenerTest {
     }
 
     @Test
-    public void onCreatedViaCLI() {
+    void onCreatedViaCLI() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "create-job").
                 withStdin(new ByteArrayInputStream("<project><actions/><builders/><publishers/><buildWrappers/></project>".getBytes(Charset.defaultCharset()))).
                 invokeWithArgs("testJob");
         assertThat(result, CLICommandInvoker.Matcher.succeeded());
-        assertNotNull("job should be created: " + result, j.jenkins.getItem("testJob"));
-        assertEquals("onCreated event should be triggered: " + result, "C", events.toString());
+        assertNotNull(j.jenkins.getItem("testJob"), "job should be created: " + result);
+        assertEquals("C", events.toString(), "onCreated event should be triggered: " + result);
     }
 
     @Issue("JENKINS-64553")
     @Test
-    public void onUpdatedViaCLI() {
+    void onUpdatedViaCLI() {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "create-job").
                 withStdin(new ByteArrayInputStream("<project/>".getBytes(Charset.defaultCharset()))).
                 invokeWithArgs("testJob");
@@ -90,6 +91,6 @@ public class ItemListenerTest {
                 withStdin(new ByteArrayInputStream("<project><actions/><builders/><publishers/><buildWrappers/></project>".getBytes(Charset.defaultCharset()))).
                 invokeWithArgs("testJob");
         assertThat(result, CLICommandInvoker.Matcher.succeeded());
-        assertEquals("onUpdated event should be triggered: " + result, "CU", events.toString());
+        assertEquals("CU", events.toString(), "onUpdated event should be triggered: " + result);
     }
 }

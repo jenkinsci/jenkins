@@ -1,31 +1,38 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.TimeZone;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Test cases for TimeZoneProperty
  */
-public class TimeZonePropertyTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class TimeZonePropertyTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testEnsureTimeZoneIsNullByDefault() {
+    void testEnsureTimeZoneIsNullByDefault() {
         String timeZone = TimeZoneProperty.forCurrentUser();
         assertNull(timeZone);
     }
 
     @Test
-    public void testEnsureInvalidTimeZoneDefaultsToNull() throws IOException {
+    void testEnsureInvalidTimeZoneDefaultsToNull() throws IOException {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.get("John Smith", true, Collections.emptyMap());
@@ -38,7 +45,7 @@ public class TimeZonePropertyTest {
     }
 
     @Test
-    public void testSetUserDefinedTimeZone() throws IOException {
+    void testSetUserDefinedTimeZone() throws IOException {
         String timeZone = TimeZone.getDefault().getID();
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 

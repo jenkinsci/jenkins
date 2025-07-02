@@ -37,27 +37,31 @@ import hudson.model.ListView;
 import hudson.model.View;
 import java.io.IOException;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author ogondza, pjanouse
  */
-public class DeleteViewCommandTest {
+@WithJenkins
+class DeleteViewCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         command = new CLICommandInvoker(j, new DeleteViewCommand()).asUser("user");
     }
 
-    @Test public void deleteViewShouldFailWithoutViewDeletePermission() throws IOException {
+    @Test
+    void deleteViewShouldFailWithoutViewDeletePermission() throws IOException {
 
         j.jenkins.addView(new ListView("aView"));
 
@@ -71,7 +75,8 @@ public class DeleteViewCommandTest {
         assertThat(result.stderr(), containsString("ERROR: user is missing the View/Delete permission"));
     }
 
-    @Test public void deleteViewShouldFailWithoutViewReadPermission() throws IOException {
+    @Test
+    void deleteViewShouldFailWithoutViewReadPermission() throws IOException {
 
         j.jenkins.addView(new ListView("aView"));
 
@@ -85,7 +90,8 @@ public class DeleteViewCommandTest {
         assertThat(result.stderr(), containsString("ERROR: user is missing the View/Read permission"));
     }
 
-    @Test public void deleteViewShouldSucceed() throws Exception {
+    @Test
+    void deleteViewShouldSucceed() throws Exception {
 
         j.jenkins.addView(new ListView("aView"));
 
@@ -98,7 +104,8 @@ public class DeleteViewCommandTest {
         assertThat(j.jenkins.getView("aView"), nullValue());
     }
 
-    @Test public void deleteViewShouldFailIfViewDoesNotExist() {
+    @Test
+    void deleteViewShouldFailIfViewDoesNotExist() {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("never_created")
@@ -110,7 +117,8 @@ public class DeleteViewCommandTest {
     }
 
     // ViewGroup.canDelete()
-    @Test public void deleteViewShouldFailIfViewGroupDoesNotAllowDeletion() {
+    @Test
+    void deleteViewShouldFailIfViewGroupDoesNotAllowDeletion() {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs(AllView.DEFAULT_VIEW_NAME)
@@ -122,7 +130,8 @@ public class DeleteViewCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Jenkins does not allow to delete '" + AllView.DEFAULT_VIEW_NAME + "' view"));
     }
 
-    @Test public void deleteViewShouldFailIfViewNameIsEmpty() {
+    @Test
+    void deleteViewShouldFailIfViewNameIsEmpty() {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("")
@@ -133,7 +142,8 @@ public class DeleteViewCommandTest {
         assertThat(result.stderr(), containsString("ERROR: View name is empty"));
     }
 
-    @Test public void deleteViewShouldFailIfViewNameIsSpace() {
+    @Test
+    void deleteViewShouldFailIfViewNameIsSpace() {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs(" ")
@@ -144,7 +154,8 @@ public class DeleteViewCommandTest {
         assertThat(result.stderr(), containsString("ERROR: No view named   inside view Jenkins"));
     }
 
-    @Test public void deleteViewManyShouldSucceed() throws Exception {
+    @Test
+    void deleteViewManyShouldSucceed() throws Exception {
 
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
@@ -160,7 +171,8 @@ public class DeleteViewCommandTest {
         assertThat(j.jenkins.getView("aView3"), nullValue());
     }
 
-    @Test public void deleteViewManyShouldFailIfFirstViewDoesNotExist() throws Exception {
+    @Test
+    void deleteViewManyShouldFailIfFirstViewDoesNotExist() throws Exception {
 
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
@@ -179,7 +191,8 @@ public class DeleteViewCommandTest {
         assertThat(j.jenkins.getView("never_created"), nullValue());
     }
 
-    @Test public void deleteViewManyShouldFailIfMiddleViewDoesNotExist() throws Exception {
+    @Test
+    void deleteViewManyShouldFailIfMiddleViewDoesNotExist() throws Exception {
 
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
@@ -198,7 +211,8 @@ public class DeleteViewCommandTest {
         assertThat(j.jenkins.getView("never_created"), nullValue());
     }
 
-    @Test public void deleteViewManyShouldFailIfLastViewDoesNotExist() throws Exception {
+    @Test
+    void deleteViewManyShouldFailIfLastViewDoesNotExist() throws Exception {
 
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
@@ -217,7 +231,8 @@ public class DeleteViewCommandTest {
         assertThat(j.jenkins.getView("never_created"), nullValue());
     }
 
-    @Test public void deleteViewManyShouldFailIfMoreViewsDoNotExist() throws Exception {
+    @Test
+    void deleteViewManyShouldFailIfMoreViewsDoNotExist() throws Exception {
 
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
@@ -238,7 +253,8 @@ public class DeleteViewCommandTest {
         assertThat(j.jenkins.getView("never_created2"), nullValue());
     }
 
-    @Test public void deleteViewManyShouldSucceedEvenAViewSpecifiedTwice() throws Exception {
+    @Test
+    void deleteViewManyShouldSucceedEvenAViewSpecifiedTwice() throws Exception {
 
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
@@ -252,7 +268,8 @@ public class DeleteViewCommandTest {
         assertThat(j.jenkins.getView("aView2"), nullValue());
     }
 
-    @Test public void deleteViewManyShouldFailWithoutViewDeletePermissionButOthersShouldBeDeleted() throws Exception {
+    @Test
+    void deleteViewManyShouldFailWithoutViewDeletePermissionButOthersShouldBeDeleted() throws Exception {
 
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));

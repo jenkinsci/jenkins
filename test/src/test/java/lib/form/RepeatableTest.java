@@ -24,10 +24,10 @@
 
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
@@ -49,25 +49,27 @@ import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSelect;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author Alan.Harder@sun.com
  */
-public class RepeatableTest {
-
-    @Rule public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class RepeatableTest {
 
     private RootActionImpl rootAction;
 
-    @Before
-    public void setUp() {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
     }
 
@@ -84,7 +86,7 @@ public class RepeatableTest {
     }
 
     @Test
-    public void testSimple() throws Exception {
+    void testSimple() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
@@ -100,7 +102,7 @@ public class RepeatableTest {
      * Test count of buttons in form
      */
     @Test
-    public void testSimpleCheckNumberOfButtons() throws Exception {
+    void testSimpleCheckNumberOfButtons() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testSimpleWithDeleteButton");
         HtmlForm f = p.getFormByName("config");
@@ -116,7 +118,7 @@ public class RepeatableTest {
      * Test count of buttons in form
      */
     @Test
-    public void testSimpleCheckNumberOfButtonsEnabledTopButton() throws Exception {
+    void testSimpleCheckNumberOfButtonsEnabledTopButton() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testSimpleWithDeleteButtonTopButton");
         HtmlForm f = p.getFormByName("config");
@@ -134,6 +136,7 @@ public class RepeatableTest {
         public String txt;
         public boolean bool;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public Foo(String txt, boolean bool) {
             this.txt = txt;
@@ -149,7 +152,7 @@ public class RepeatableTest {
     }
 
     @Test
-    public void testSimple_ExistingData() throws Exception {
+    void testSimple_ExistingData() throws Exception {
         addData();
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testSimple");
@@ -163,7 +166,7 @@ public class RepeatableTest {
     }
 
     @Test
-    public void testMinimum() throws Exception {
+    void testMinimum() throws Exception {
         rootAction.minimum = 3;
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testSimple");
@@ -180,7 +183,7 @@ public class RepeatableTest {
     }
 
     @Test
-    public void testMinimum_ExistingData() throws Exception {
+    void testMinimum_ExistingData() throws Exception {
         addData();
         rootAction.minimum = 3;
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -196,7 +199,7 @@ public class RepeatableTest {
     }
 
     @Test
-    public void testNoData() throws Exception {
+    void testNoData() throws Exception {
         rootAction.list = null;
         rootAction.defaults = null;
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -208,25 +211,25 @@ public class RepeatableTest {
     }
 
     @Test
-    public void testItemsWithDefaults() throws Exception {
+    void testItemsWithDefaults() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         assertWithDefaults("defaultForItems", wc);
     }
 
     @Test
-    public void testItemsDefaultsIgnoredIfFieldHasData() throws Exception {
+    void testItemsDefaultsIgnoredIfFieldHasData() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         assertDefaultsIgnoredIfHaveData("defaultForItems", wc);
     }
 
     @Test
-    public void testFieldWithDefaults() throws Exception {
+    void testFieldWithDefaults() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         assertWithDefaults("defaultForField", wc);
     }
 
     @Test
-    public void testFieldDefaultsIgnoredIfFieldHasData() throws Exception {
+    void testFieldDefaultsIgnoredIfFieldHasData() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         assertDefaultsIgnoredIfHaveData("defaultForField", wc);
     }
@@ -266,7 +269,7 @@ public class RepeatableTest {
     // hudson-behavior uniquifies radiobutton names so the browser properly handles each group,
     // then converts back to original names when submitting form.
     @Test
-    public void testRadio() throws Exception {
+    void testRadio() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testRadio");
         HtmlForm f = p.getFormByName("config");
@@ -285,14 +288,14 @@ public class RepeatableTest {
     public static class FooRadio {
         public String txt, radio;
 
-        public FooRadio(String txt, String radio) {
+        FooRadio(String txt, String radio) {
             this.txt = txt;
             this.radio = radio;
         }
     }
 
     @Test
-    public void testRadio_ExistingData() throws Exception {
+    void testRadio_ExistingData() throws Exception {
         rootAction.list.add(new FooRadio("1", "one"));
         rootAction.list.add(new FooRadio("2", "two"));
         rootAction.list.add(new FooRadio("three", "one"));
@@ -311,7 +314,7 @@ public class RepeatableTest {
     // hudson-behavior uniquifies radiobutton names so the browser properly handles each group,
     // then converts back to original names when submitting form.
     @Test
-    public void testRadioBlock() throws Exception {
+    void testRadioBlock() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testRadioBlock");
         HtmlForm f = p.getFormByName("config");
@@ -344,7 +347,7 @@ public class RepeatableTest {
     }
 
     public static class FruitDescriptor extends Descriptor<Fruit> {
-        public FruitDescriptor(Class<? extends Fruit> clazz) {
+        FruitDescriptor(Class<? extends Fruit> clazz) {
             super(clazz);
         }
     }
@@ -352,6 +355,7 @@ public class RepeatableTest {
     public static class Apple extends Fruit {
         private int seeds;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor public Apple(int seeds) {
             super("Apple");
             this.seeds = seeds;
@@ -365,6 +369,7 @@ public class RepeatableTest {
     public static class Banana extends Fruit {
         private boolean yellow;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor public Banana(boolean yellow) {
             super("Banana");
             this.yellow = yellow;
@@ -379,7 +384,9 @@ public class RepeatableTest {
         public Fruit fruit;
         public String word;
 
-        @DataBoundConstructor public Fruity(Fruit fruit, String word) {
+        @SuppressWarnings("checkstyle:redundantmodifier")
+        @DataBoundConstructor
+        public Fruity(Fruit fruit, String word) {
             this.fruit = fruit;
             this.word = word;
         }
@@ -388,7 +395,7 @@ public class RepeatableTest {
     }
 
     @Test
-    public void testDropdownList() throws Exception {
+    void testDropdownList() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testDropdownList");
         HtmlForm f = p.getFormByName("config");
@@ -403,17 +410,18 @@ public class RepeatableTest {
         String xml = f.asXml();
         rootAction.bindClass = Fruity.class;
         j.submit(f);
-        assertEquals(rootAction.formData + "\n" + xml,
-                     "[Apple with 17 seeds pie, Yellow Banana split]", rootAction.bindResult.toString());
+        assertEquals("[Apple with 17 seeds pie, Yellow Banana split]", rootAction.bindResult.toString(), rootAction.formData + "\n" + xml);
     }
 
     // ========================================================================
 
     public static class FooList {
         public String title;
-        public Foo[] list = new Foo[0];
+        public Foo[] list;
 
-        @DataBoundConstructor public FooList(String title, Foo[] foo) {
+        @SuppressWarnings("checkstyle:redundantmodifier")
+        @DataBoundConstructor
+        public FooList(String title, Foo[] foo) {
             this.title = title;
             this.list = foo;
         }
@@ -431,7 +439,7 @@ public class RepeatableTest {
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
     @Test
-    public void testNested() throws Exception {
+    void testNested() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testNested");
         HtmlForm f = p.getFormByName("config");
@@ -460,7 +468,7 @@ public class RepeatableTest {
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
     @Test
-    public void testNestedEnabledTopButton() throws Exception {
+    void testNestedEnabledTopButton() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testNestedTopButton");
         HtmlForm f = p.getFormByName("config");
@@ -489,7 +497,7 @@ public class RepeatableTest {
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
     @Test
-    public void testNestedEnabledTopButtonInner() throws Exception {
+    void testNestedEnabledTopButtonInner() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testNestedTopButtonInner");
         HtmlForm f = p.getFormByName("config");
@@ -518,7 +526,7 @@ public class RepeatableTest {
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
     @Test
-    public void testNestedEnabledTopButtonOuter() throws Exception {
+    void testNestedEnabledTopButtonOuter() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testNestedTopButtonOuter");
         HtmlForm f = p.getFormByName("config");
@@ -551,7 +559,7 @@ public class RepeatableTest {
     }
 
     @Test
-    public void testNestedRadio() throws Exception {
+    void testNestedRadio() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testNestedRadio");
         HtmlForm f = p.getFormByName("config");
@@ -580,7 +588,7 @@ public class RepeatableTest {
     }
 
     @Test
-    public void testNestedRadioEnabledTopButton() throws Exception {
+    void testNestedRadioEnabledTopButton() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testNestedRadioTopButton");
         HtmlForm f = p.getFormByName("config");
@@ -639,8 +647,7 @@ public class RepeatableTest {
      */
     private static List<?> getButtonsList(HtmlForm form, String buttonCaption) {
         return form.getByXPath(
-                String.format("//button[text() = '%s'] | //button[@tooltip = '%s']", buttonCaption, buttonCaption, buttonCaption
-                )
+                String.format("//button[text() = '%s'] | //button[@tooltip = '%s']", buttonCaption, buttonCaption)
         );
     }
 

@@ -1,17 +1,18 @@
 package jenkins.model.lazy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class SortedIntListTest {
+class SortedIntListTest {
+
     @Test
-    public void testLower() {
+    void testLower() {
         SortedIntList l = new SortedIntList(5);
         l.add(0);
         l.add(5);
@@ -19,7 +20,8 @@ public class SortedIntListTest {
         assertEquals(2, l.lower(Integer.MAX_VALUE));
     }
 
-    @Test public void ceil() {
+    @Test
+    void ceil() {
         SortedIntList l = new SortedIntList(5);
         l.add(1);
         l.add(3);
@@ -37,7 +39,8 @@ public class SortedIntListTest {
         assertFalse(l.isInRange(3));
     }
 
-    @Test public void max() {
+    @Test
+    void max() {
         SortedIntList l = new SortedIntList(5);
         assertEquals(0, l.max());
         l.add(1);

@@ -2,46 +2,49 @@ package hudson.tasks;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class CommandInterpreterTest {
+@WithJenkins
+class CommandInterpreterTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-63168")
     @Test
     @LocalData
-    public void ensurePluginCommandInterpretersCanBeLoaded() {
+    void ensurePluginCommandInterpretersCanBeLoaded() {
         final Builder builder = j.jenkins.getItemByFullName("a", FreeStyleProject.class).getBuildersList().get(0);
         assertThat(builder, instanceOf(TestCommandInterpreter.class));
 
-        try {
+        assertDoesNotThrow(() -> {
             ((TestCommandInterpreter) builder).getConfiguredLocalRules().isEmpty();
-        } catch (NullPointerException ex) {
-            Assert.fail("getConfiguredLocalRules must not return null");
-        }
-        try {
+        }, "getConfiguredLocalRules must not return null");
+        assertDoesNotThrow(() -> {
             ((TestCommandInterpreter) builder).buildEnvVarsFilterRules();
-        } catch (NullPointerException ex) {
-            Assert.fail("buildEnvVarsFilterRules must not throw");
-        }
+        }, "buildEnvVarsFilterRules must not throw");
     }
 
     // This doesn't need a UI etc., we just need to be able to load old data with it
     public static class TestCommandInterpreter extends CommandInterpreter {
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public TestCommandInterpreter(String command) {
             super(command);

@@ -24,20 +24,28 @@
 
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class ProxyConfigurationManagerTest {
+@WithJenkins
+class ProxyConfigurationManagerTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @LocalData
-    @Test public void serialForm() throws Exception {
+    @Test
+    void serialForm() {
         /* Set up this way:
         r.jenkins.proxy = new ProxyConfiguration("proxy.mycorp", 80);
         r.jenkins.proxy.save();

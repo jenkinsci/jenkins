@@ -2,7 +2,7 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -11,26 +11,32 @@ import hudson.model.Run;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.logging.Level;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PeepholePermalinkTest {
+@WithJenkins
+class PeepholePermalinkTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(PeepholePermalink.class, Level.FINE);
+    private final LogRecorder logging = new LogRecorder().record(PeepholePermalink.class, Level.FINE);
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Basic operation of the permalink generation.
      */
     @Issue("JENKINS-56809")
     @Test
-    public void basics() throws Exception {
+    void basics() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         FreeStyleBuild b1 = j.buildAndAssertSuccess(p);
 

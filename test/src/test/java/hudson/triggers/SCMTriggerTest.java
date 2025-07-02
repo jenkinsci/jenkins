@@ -24,10 +24,10 @@
 
 package hudson.triggers;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
@@ -53,20 +53,26 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import jenkins.scm.SCMDecisionHandler;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Alan Harder
  */
-public class SCMTriggerTest {
+@WithJenkins
+class SCMTriggerTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Make sure that SCMTrigger doesn't trigger another build when a build has just started,
@@ -74,7 +80,7 @@ public class SCMTriggerTest {
      */
     @Test
     @Issue("JENKINS-2671")
-    public void simultaneousPollAndBuild() throws Exception {
+    void simultaneousPollAndBuild() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         // used to coordinate polling and check out
@@ -85,7 +91,7 @@ public class SCMTriggerTest {
         Future<FreeStyleBuild> build = p.scheduleBuild2(0, new Cause.UserCause());
         assertNotNull(build);
         checkoutStarted.block();
-        assertFalse("SCM-poll after build has started should wait until that build finishes SCM-update", p.pollSCMChanges(StreamTaskListener.fromStdout()));
+        assertFalse(p.pollSCMChanges(StreamTaskListener.fromStdout()), "SCM-poll after build has started should wait until that build finishes SCM-update");
         build.get();  // let mock build finish
     }
 
@@ -94,7 +100,7 @@ public class SCMTriggerTest {
      */
     @Test
     @Issue("JENKINS-36123")
-    public void pollingExcludedByExtensionPoint() throws Exception {
+    void pollingExcludedByExtensionPoint() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         PollDecisionHandlerImpl handler =
@@ -106,9 +112,9 @@ public class SCMTriggerTest {
 
         p.setScm(new TestSCM(checkoutStarted));
 
-        assertFalse("SCM-poll with blacklist should report no changes", p.pollSCMChanges(StreamTaskListener.fromStdout()));
+        assertFalse(p.pollSCMChanges(StreamTaskListener.fromStdout()), "SCM-poll with blacklist should report no changes");
         handler.blacklist.remove(p);
-        assertTrue("SCM-poll with blacklist removed should report changes", p.pollSCMChanges(StreamTaskListener.fromStdout()));
+        assertTrue(p.pollSCMChanges(StreamTaskListener.fromStdout()), "SCM-poll with blacklist removed should report changes");
     }
 
     private static class TestSCM extends NullSCM {
@@ -138,7 +144,7 @@ public class SCMTriggerTest {
      */
     @Test
     @Issue("JENKINS-7649")
-    public void multiplePollingOneBuildAction() throws Exception {
+    void multiplePollingOneBuildAction() throws Exception {
         final OneShotEvent buildStarted = new OneShotEvent();
         final OneShotEvent buildShouldComplete = new OneShotEvent();
         FreeStyleProject p = j.createFreeStyleProject();
@@ -173,7 +179,7 @@ public class SCMTriggerTest {
 
         List<BuildAction> ba = build.getActions(BuildAction.class);
 
-        assertEquals("There should only be one BuildAction.", 1, ba.size());
+        assertEquals(1, ba.size(), "There should only be one BuildAction.");
     }
 
     @TestExtension
