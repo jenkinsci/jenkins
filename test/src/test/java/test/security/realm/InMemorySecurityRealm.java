@@ -41,7 +41,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  *  It maintains an in-memory storage of user accounts in a HashMap-userStorage and allows for creation and deletion of users 
  *  by modifying this hashmap.
  *  The user also gets authenticated with any password as the only thing validated is presence of username entry in the hashmap
- *  
+ *  It implements the loadUserByUsername2 method which simply returns the user from the in memory storage based on username passed
+ *  A dummy implementation for UserDetails is provided in class InMemoryUserDetails which contains no roles and only username is returned
  *    
  */
 public class InMemorySecurityRealm extends AbstractPasswordBasedSecurityRealm {
