@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <t:scriptConsole layout="two-column">
+  <t:scriptConsole>
     <pre>println System.getenv("PATH")</pre>
     <pre>println "uname -a".execute().text</pre>
     <p>

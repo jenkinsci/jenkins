@@ -31,12 +31,13 @@ THE SOFTWARE.
     <st:attribute name="layout" use="optional">
       Specify which layout to be use for the page.
       See the type in layout for more details.
-      By default, it is `one-column`.
+      By default, it is `two-column`.
     </st:attribute>
   </st:documentation>
 
-  <l:layout permission="${app.ADMINISTER}" title="${%scriptConsole}" type="${attrs.layout != null ? attrs.layout : 'one-column'}">
-    <j:if test="${attrs.layout == 'two-column'}">
+  <j:set var="layout" value="${attrs.layout != null ? attrs.layout : 'two-columns'}" />
+  <l:layout permission="${app.ADMINISTER}" title="${%scriptConsole}" type="${layout}">
+    <j:if test="${layout == 'two-column'}">
       <st:include page="sidepanel.jelly" />
     </j:if>
 
