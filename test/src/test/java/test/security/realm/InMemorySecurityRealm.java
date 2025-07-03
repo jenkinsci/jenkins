@@ -44,6 +44,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  *  <p>
  *  The user also gets authenticated with any password as the only thing validated is presence
  *  of username entry in the hashmap.
+ *  The {@link #createAccount(String)} is used to populate the in-memory storage.
  *  It implements the {@link #loadUserByUsername2(String)} method which simply returns the user from the
  *  in memory storage based on username passed.
  *  <p>
