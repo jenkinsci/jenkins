@@ -68,7 +68,7 @@ $semantics: (
   --unstable-build-icon-color: var(--orange);
 
   // Background colors
-  --background: var(--white);
+  --background: rgb(254 254 254);
 
   // Header
   --header-background: var(--background);
@@ -151,7 +151,7 @@ $semantics: (
   }
 
   // Table
-  --table-background: color-mix(in oklch, var(--text-color-secondary) 7.5%, var(--background));
+  --table-background: color-mix(in oklch, var(--text-color-secondary) 7.5%, var(--white));
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
@@ -231,7 +231,7 @@ $semantics: (
   --pane-link-color--visited: black;
 
   // Cards
-  --card-background: var(--background);
+  --card-background: var(--white);
   --card-background--hover: transparent;
   --card-background--active: transparent;
   --card-border-color: var(--jenkins-border-color);
@@ -248,7 +248,6 @@ $semantics: (
   }
 
   // Tab bar
-  --tabs-background: color-mix(in oklch, var(--text-color-secondary) 7.5%, var(--background));
   --tabs-item-background: transparent;
   --tabs-item-foreground: color-mix(
     in sRGB,
@@ -270,11 +269,7 @@ $semantics: (
 
   // Form
   --section-padding: 1.625rem;
-  --input-color: color-mix(
-    in sRGB,
-    var(--text-color-secondary) 1.5%,
-    var(--background)
-  );
+  --input-color: var(--white);
   --input-border: color-mix(
     in sRGB,
     var(--text-color-secondary) 25%,
