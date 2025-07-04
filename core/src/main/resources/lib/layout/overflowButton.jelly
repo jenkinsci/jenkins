@@ -32,7 +32,7 @@ THE SOFTWARE.
       Optional text to be displayed on the button
     </st:attribute>
     <st:attribute name="html">
-      Optional html to be displayed on the button (only used it text is null)
+      Optional html to be displayed on the button (only used if 'text' is not provided)
     </st:attribute>
 
     <st:attribute name="tooltip">
