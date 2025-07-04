@@ -31,12 +31,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import hudson.console.ConsoleAnnotatorFactory.RootAction;
 import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.Item;
@@ -58,6 +60,9 @@ import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
@@ -306,6 +311,13 @@ class FunctionsTest {
     private static Action createMockAction(String uri) {
         Action action = mock(Action.class);
         when(action.getUrlName()).thenReturn(uri);
+        return action;
+    }
+
+    private static RootAction createMockRootAction(String uri, boolean primary) {
+        RootAction action = mock(RootAction.class);
+        when(action.getUrlName()).thenReturn(uri);
+        when(action.isPrimaryAction()).thenReturn(primary);
         return action;
     }
 
@@ -741,4 +753,47 @@ class FunctionsTest {
         assertEquals("http://acme.com/icon.svg", Functions.guessIcon("http://acme.com/icon.svg", "/jenkins"));
         assertEquals("https://acme.com/icon.svg", Functions.guessIcon("https://acme.com/icon.svg", "/jenkins"));
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/myAction", "/myAction/", "/myAction/subPath"})
+    void showInPrimaryHeader_shouldReturnTrueForCurrentAction(String path) {
+        StaplerRequest2 req = mock(StaplerRequest2.class);
+        when(req.getPathInfo()).thenReturn(path);
+
+        Action action = createMockAction("myAction");
+        try (MockedStatic<Stapler> mocked = mockStatic(Stapler.class)) {
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
+            assertTrue(Functions.showInPrimaryHeader(action));
+        }
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"/myAction", "/myAction/", "/myAction/subPath"})
+    void showInPrimaryHeader_shouldReturnTrueForPrimaryActions(String path) {
+        StaplerRequest2 req = mock(StaplerRequest2.class);
+        when(req.getPathInfo()).thenReturn(path);
+
+        RootAction action = createMockRootAction("anything", true);
+
+        try (MockedStatic<Stapler> mocked = mockStatic(Stapler.class)) {
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
+            assertTrue(Functions.showInPrimaryHeader(action));
+        }
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"/myAction", "/myAction/", "/myAction/subPath"})
+    void showInPrimaryHeader_shouldReturnFalseForNonPrimaryNonCurrentAction(String path) {
+        StaplerRequest2 req = mock(StaplerRequest2.class);
+        when(req.getPathInfo()).thenReturn(path);
+
+        Action action = createMockRootAction("myAct", false);
+        try (MockedStatic<Stapler> mocked = mockStatic(Stapler.class)) {
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
+            assertFalse(Functions.showInPrimaryHeader(action));
+        }
+    }
+
 }

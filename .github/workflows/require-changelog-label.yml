@@ -11,7 +11,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: mheap/github-action-required-labels@fb29a14a076b0f74099f6198f77750e8fc236016 # v5
+      - uses: mheap/github-action-required-labels@8afbe8ae6ab7647d0c9f0cfa7c2f939650d22509 # v5
         with:
           mode: minimum
           count: 1
