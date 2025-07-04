@@ -83,6 +83,10 @@ body:has(.jenkins-form-skeleton) {
   section,
   .jenkins-form-item,
   #bottom-sticker {
-    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 }

@@ -70,12 +70,12 @@
   --button-background: transparent !important;
 
   &:not(
-      :hover,
-      &:active,
-      &:focus,
-      &[aria-describedby],
-      &[aria-expanded="true"]
-    ) {
+    :hover,
+    &:active,
+    &:focus,
+    &[aria-describedby],
+    &[aria-expanded="true"]
+  ) {
     &::before {
       border-color: transparent;
     }
