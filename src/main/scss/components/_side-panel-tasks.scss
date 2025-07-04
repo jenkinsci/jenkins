@@ -88,7 +88,7 @@ $background-outset: 0.5rem;
   }
 
   &--active {
-    font-weight: 450;
+    font-weight: var(--font-bold-weight);
     cursor: default;
 
     svg * {
