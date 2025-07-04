@@ -24,24 +24,30 @@
 
 package jenkins.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AssetManagerTest {
+@WithJenkins
+class AssetManagerTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-58736")
-    public void emptyAssetDoesNotThrowError() throws Exception {
+    void emptyAssetDoesNotThrowError() throws Exception {
         URL url = new URI(j.getURL() + "assets").toURL();
         HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, httpCon.getResponseCode());

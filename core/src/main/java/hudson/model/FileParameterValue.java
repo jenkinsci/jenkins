@@ -35,7 +35,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -406,25 +405,17 @@ public class FileParameterValue extends ParameterValue {
         }
 
         @Override
-        public byte[] get() {
-            try {
-                return Files.readAllBytes(file.toPath());
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+        public byte[] get() throws IOException {
+            return Files.readAllBytes(file.toPath());
         }
 
         @Override
         public String getString(Charset toCharset) throws IOException {
-            try {
-                return new String(get(), toCharset);
-            } catch (UncheckedIOException e) {
-                throw e.getCause();
-            }
+            return new String(get(), toCharset);
         }
 
         @Override
-        public String getString() {
+        public String getString() throws IOException {
             return new String(get(), Charset.defaultCharset());
         }
 

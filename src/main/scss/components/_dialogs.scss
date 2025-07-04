@@ -1,9 +1,10 @@
-$jenkins-dialog-padding: 1.25rem;
+$jenkins-dialog-padding: 1.5rem;
+$jenkins-dialog-font-size: 0.9375rem;
 
 .jenkins-dialog {
-  border-radius: var(--form-input-border-radius);
+  border-radius: 1rem;
   border: none;
-  background-color: var(--card-background);
+  background-color: var(--dialog-background);
   box-shadow: var(--dialog-box-shadow);
   animation: jenkins-dialog-animate-in 0.25s cubic-bezier(0, 0.68, 0.5, 1.5);
   overflow: hidden;
@@ -14,7 +15,12 @@ $jenkins-dialog-padding: 1.25rem;
   outline: none;
 
   &::backdrop {
-    background: var(--dialog-backdrop-background);
+    background: color-mix(
+      in sRGB,
+      var(--black) 25%,
+      var(--dialog-backdrop-background)
+    );
+    backdrop-filter: var(--dialog-backdrop-backdrop-filter);
     animation: jenkins-dialog-backdrop-animate-in 0.15s;
   }
 
@@ -24,6 +30,7 @@ $jenkins-dialog-padding: 1.25rem;
     padding: 0 $jenkins-dialog-padding;
     color: var(--text-color);
     overflow-wrap: anywhere;
+    text-box: cap alphabetic;
   }
 
   &__contents {
@@ -31,12 +38,16 @@ $jenkins-dialog-padding: 1.25rem;
     overflow-wrap: break-word;
     padding: 0 $jenkins-dialog-padding;
     max-height: 75vh;
-    font-size: 1rem;
+    font-size: $jenkins-dialog-font-size;
     color: var(--text-color-secondary);
 
     &--modal {
       padding-bottom: $jenkins-dialog-padding;
       color: var(--text-color);
+    }
+
+    .jenkins-dialog__buttons {
+      padding-inline: 0;
     }
   }
 
@@ -44,14 +55,16 @@ $jenkins-dialog-padding: 1.25rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 0 $jenkins-dialog-padding 1rem;
+    padding: 0 $jenkins-dialog-padding;
     color: var(--text-color-secondary);
   }
 
   &__buttons {
+    display: flex;
     padding: 0 $jenkins-dialog-padding $jenkins-dialog-padding;
     justify-content: right;
     flex-direction: row-reverse;
+    gap: 1.25rem;
 
     .jenkins-button {
       min-width: 100px;
@@ -74,6 +87,14 @@ $jenkins-dialog-padding: 1.25rem;
     padding: 0;
     border-radius: 100%;
   }
+
+  &[closing] {
+    animation: jenkins-dialog-animate-out 0.1s linear;
+
+    &::backdrop {
+      animation: jenkins-dialog-backdrop-animate-out 0.1s linear;
+    }
+  }
 }
 
 @keyframes jenkins-dialog-backdrop-animate-in {
@@ -91,6 +112,13 @@ $jenkins-dialog-padding: 1.25rem;
 @keyframes jenkins-dialog-animate-in {
   from {
     scale: 85%;
+    opacity: 0;
+  }
+}
+
+@keyframes jenkins-dialog-animate-out {
+  to {
+    scale: 95%;
     opacity: 0;
   }
 }

@@ -1,7 +1,7 @@
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
@@ -9,24 +9,30 @@ import java.io.IOException;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.xml.sax.SAXException;
 
 /**
  * Tests for lib/form.jelly.
  */
-public class FormTest {
+@WithJenkins
+class FormTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-18435")
-    public void autocompleteOffByDefault() throws IOException, SAXException {
+    void autocompleteOffByDefault() throws IOException, SAXException {
         HtmlPage page = j.createWebClient().goTo("autocompleteOffByDefault");
         HtmlForm form = page.getFormByName("config");
         String autocomplete = form.getAttribute("autocomplete");
@@ -36,7 +42,7 @@ public class FormTest {
 
     @Test
     @Issue("JENKINS-18435")
-    public void autocompleteOnWhenTrue() throws IOException, SAXException {
+    void autocompleteOnWhenTrue() throws IOException, SAXException {
         HtmlPage page = j.createWebClient().goTo("autocompleteOnWhenTrue");
         HtmlForm form = page.getFormByName("config");
         String autocomplete = form.getAttribute("autocomplete");
@@ -46,7 +52,7 @@ public class FormTest {
 
     @Test
     @Issue("JENKINS-18435")
-    public void inputsCanSetAutocomplete() throws IOException, SAXException {
+    void inputsCanSetAutocomplete() throws IOException, SAXException {
         HtmlPage page = j.createWebClient().goTo("inputsCanSetAutocomplete");
         HtmlForm form = page.getFormByName("config");
         HtmlInput a = form.getInputByName("a");

@@ -1,15 +1,20 @@
-import computeActions from "@/components/header/actions-overflow";
+import updateActionsForTouch from "@/components/header/actions-touch";
 import computeBreadcrumbs from "@/components/header/breadcrumbs-overflow";
 
 function init() {
   // Recompute what actions and breadcrumbs should be visible when the viewport size is changed
   computeOverflow();
+  updateActionsForTouch();
   let lastWidth = window.innerWidth;
   window.addEventListener("resize", () => {
     if (window.innerWidth !== lastWidth) {
       lastWidth = window.innerWidth;
       computeOverflow();
     }
+  });
+
+  window.addEventListener("computeHeaderOverflow", () => {
+    computeOverflow();
   });
 
   // Fade in the page header on scroll, increasing opacity and intensity of the backdrop blur
@@ -59,7 +64,6 @@ function init() {
 }
 
 function computeOverflow() {
-  computeActions();
   computeBreadcrumbs();
 }
 

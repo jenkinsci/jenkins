@@ -2,6 +2,6 @@
   <extension>
     <groupId>io.jenkins.tools.incrementals</groupId>
     <artifactId>git-changelist-maven-extension</artifactId>
-    <version>1.8</version>
+    <version>1.10</version>
   </extension>
 </extensions>

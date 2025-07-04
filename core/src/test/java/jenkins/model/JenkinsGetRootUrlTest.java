@@ -32,31 +32,30 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.net.URL;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-public class JenkinsGetRootUrlTest {
+class JenkinsGetRootUrlTest {
 
     private Jenkins jenkins;
     private StaplerRequest2 staplerRequest;
     private JenkinsLocationConfiguration config;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         jenkins = mock(Jenkins.class, Mockito.CALLS_REAL_METHODS);
         config = mock(JenkinsLocationConfiguration.class);
         staplerRequest = mock(StaplerRequest2.class);
     }
 
     @Test
-    public void getConfiguredRootUrl() {
+    void getConfiguredRootUrl() {
         try (
                 MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
                 MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
@@ -71,7 +70,7 @@ public class JenkinsGetRootUrlTest {
     }
 
     @Test
-    public void getAccessedRootUrl() {
+    void getAccessedRootUrl() {
         try (
                 MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
                 MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
@@ -86,7 +85,7 @@ public class JenkinsGetRootUrlTest {
     }
 
     @Test
-    public void preferConfiguredOverAccessed() {
+    void preferConfiguredOverAccessed() {
         try (
                 MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
                 MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
@@ -102,7 +101,7 @@ public class JenkinsGetRootUrlTest {
 
     @Issue("JENKINS-16368")
     @Test
-    public void doNotInheritProtocolWhenDispatchingRequest() {
+    void doNotInheritProtocolWhenDispatchingRequest() {
         try (
                 MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
                 MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
@@ -118,7 +117,7 @@ public class JenkinsGetRootUrlTest {
 
     @Issue("JENKINS-16511")
     @Test
-    public void doNotInheritProtocolWhenDispatchingRequest2() {
+    void doNotInheritProtocolWhenDispatchingRequest2() {
         try (
                 MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
                 MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
@@ -133,7 +132,7 @@ public class JenkinsGetRootUrlTest {
 
     @Issue("JENKINS-10675")
     @Test
-    public void useForwardedProtoWhenPresent() {
+    void useForwardedProtoWhenPresent() {
         try (
                 MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
                 MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
@@ -174,7 +173,7 @@ public class JenkinsGetRootUrlTest {
 
     @Issue("JENKINS-58041")
     @Test
-    public void useForwardedProtoWithIPv6WhenPresent() {
+    void useForwardedProtoWithIPv6WhenPresent() {
         try (
                 MockedStatic<JenkinsLocationConfiguration> mocked = mockStatic(JenkinsLocationConfiguration.class);
                 MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class)
@@ -232,12 +231,10 @@ public class JenkinsGetRootUrlTest {
         when(req.getServerName()).thenReturn(url.getHost());
         when(req.getServerPort()).thenReturn(url.getPort() == -1 ? "https".equals(url.getProtocol()) ? 443 : 80 : url.getPort());
         when(req.getContextPath()).thenReturn(url.getPath().replaceAll("/$", ""));
-        when(req.getIntHeader(anyString())).thenAnswer(new Answer<Integer>() {
-            @Override public Integer answer(InvocationOnMock invocation) {
-                String name = (String) invocation.getArguments()[0];
-                String value = ((StaplerRequest2) invocation.getMock()).getHeader(name);
-                return value != null ? Integer.parseInt(value) : -1;
-            }
+        when(req.getIntHeader(anyString())).thenAnswer((Answer<Integer>) invocation -> {
+            String name = (String) invocation.getArguments()[0];
+            String value = ((StaplerRequest2) invocation.getMock()).getHeader(name);
+            return value != null ? Integer.parseInt(value) : -1;
         });
 
         when(Stapler.getCurrentRequest2()).thenReturn(req);

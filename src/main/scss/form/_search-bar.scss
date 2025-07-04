@@ -13,10 +13,6 @@
     padding: 0 0.25rem 0 calc(var(--search-bar-height) * 0.9);
     height: var(--search-bar-height);
 
-    &::placeholder {
-      color: var(--text-color-secondary);
-    }
-
     // Safari adds unwanted padding - let's remove it
     &::-webkit-search-decoration {
       -webkit-appearance: none;

@@ -153,7 +153,11 @@ public class MultipartFormDataParser implements AutoCloseable {
     public String get(String key) {
         FileItem fi = byName.get(key);
         if (fi == null)    return null;
-        return fi.getString();
+        try {
+            return fi.getString();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public FileItem getFileItem2(String key) {

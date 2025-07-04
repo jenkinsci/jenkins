@@ -1731,10 +1731,23 @@ function rowvgStartEachRow(recursive, f) {
   });
 
   Behaviour.specify(
+    "DIV.jenkins-form-skeleton, DIV.jenkins-side-panel-skeleton",
+    "div-jenkins-form-skeleton",
+    ++p,
+    function (e) {
+      e.remove();
+    },
+  );
+
+  Behaviour.specify(
     "DIV.behavior-loading",
     "div-behavior-loading",
     ++p,
     function (e) {
+      console.warn(
+        ".behavior-loading is deprecated, use <l:skeleton /> instead - since TODO",
+        e,
+      );
       e.classList.add("behavior-loading--hidden");
     },
   );

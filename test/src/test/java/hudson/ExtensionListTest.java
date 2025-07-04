@@ -1,10 +1,10 @@
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -13,19 +13,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
+@WithJenkins
 public class ExtensionListTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
 
 //
 //
@@ -46,7 +44,7 @@ public class ExtensionListTest {
 
 
     @Test
-    public void autoDiscovery() {
+    void autoDiscovery(JenkinsRule j) {
         ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
         assertEquals(2, list.size());
         assertNotNull(list.get(Dog.class));
@@ -55,14 +53,14 @@ public class ExtensionListTest {
 
     @Test
     @WithoutJenkins
-    public void nullJenkinsInstance() {
+    void nullJenkinsInstance() {
         ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
         assertEquals(0, list.size());
         assertFalse(list.iterator().hasNext());
     }
 
     @Test
-    public void extensionListView() {
+    void extensionListView(JenkinsRule j) {
         // this is how legacy list like UserNameResolver.LIST gets created.
         List<Animal> LIST = ExtensionListView.createList(Animal.class);
 
@@ -117,7 +115,7 @@ public class ExtensionListTest {
      * Verifies that the automated {@link Descriptor} lookup works.
      */
     @Test
-    public void descriptorLookup() {
+    void descriptorLookup(JenkinsRule j) {
         Descriptor<Fish> d = new Sishamo().getDescriptor();
 
         DescriptorExtensionList<Fish, Descriptor<Fish>> list = j.jenkins.getDescriptorList(Fish.class);
@@ -127,7 +125,7 @@ public class ExtensionListTest {
     }
 
     @Test
-    public void fishDiscovery() {
+    void fishDiscovery(JenkinsRule j) {
         // imagine that this is a static instance, like it is in many LIST static field in Hudson.
         DescriptorList<Fish> LIST = new DescriptorList<>(Fish.class);
 
@@ -156,7 +154,7 @@ public class ExtensionListTest {
     }
 
     @Test
-    public void legacyDescriptorList() {
+    void legacyDescriptorList(JenkinsRule j) {
         // created in a legacy fashion without any tie to ExtensionList
         DescriptorList<Fish> LIST = new DescriptorList<>();
 
@@ -199,7 +197,7 @@ public class ExtensionListTest {
      * Makes sure sorting of the components work as expected.
      */
     @Test
-    public void ordinals() {
+    void ordinals(JenkinsRule j) {
         ExtensionList<Car> list = j.jenkins.getExtensionList(Car.class);
         assertEquals("honda", list.get(0).name);
         assertEquals("mazda", list.get(1).name);
@@ -208,7 +206,7 @@ public class ExtensionListTest {
 
     @Issue("JENKINS-39520")
     @Test
-    public void removeAll() {
+    void removeAll(JenkinsRule j) {
         ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
         assertTrue(list.removeAll(new ArrayList<>(list)));
         assertEquals(0, list.size());
@@ -218,7 +216,7 @@ public class ExtensionListTest {
 
     @Issue("JENKINS-62056")
     @Test
-    public void checkSort() {
+    void checkSort(JenkinsRule j) {
         ExtensionList.lookup(Object.class).get(0); // exceptions are a problem
     }
 }

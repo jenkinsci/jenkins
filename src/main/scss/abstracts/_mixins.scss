@@ -124,7 +124,7 @@
   }
 
   @if $border == false {
-    &:not(:hover, &:active, &:focus) {
+    &:not(:hover, &:active, &:focus, &[aria-expanded="true"]) {
       &::before {
         border-color: transparent;
       }
