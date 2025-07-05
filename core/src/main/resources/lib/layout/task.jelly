@@ -253,7 +253,7 @@ THE SOFTWARE.
             <dd:item icon="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"
                      text="${action.displayName}"
                      href="${href}"
-                     clazz="${badgeClazz}">
+                     badge="${action.badge}">
             </dd:item>
           </j:otherwise>
         </j:choose>
