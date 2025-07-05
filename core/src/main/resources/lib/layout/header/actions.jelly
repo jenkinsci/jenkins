@@ -60,7 +60,7 @@
           </j:when>
         </j:choose>
       </j:set>
-      <l:overflowButton icon="symbol-menu-hamburger" id="header-more-actions" html="${hamburgerBadge}">
+      <l:overflowButton icon="symbol-menu-hamburger" id="header-more-actions" html="${hamburgerBadge}" clazz="jenkins-button--tertiary">
         <j:out value="${hamburgerEntries}" />
       </l:overflowButton>
     </j:if>
