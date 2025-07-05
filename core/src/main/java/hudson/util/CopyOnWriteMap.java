@@ -31,13 +31,16 @@ import com.thoughtworks.xstream.converters.collections.TreeMapConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
@@ -60,13 +63,17 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
         update(core);
     }
 
-    protected CopyOnWriteMap() {
-        update(Collections.emptyMap());
+    protected Map<K, V> getView() {
+        return view;
+    }
+
+    protected Map<K, V> createView() {
+        return Collections.unmodifiableMap(core);
     }
 
     protected void update(Map<K, V> m) {
         core = m;
-        view = Collections.unmodifiableMap(core);
+        view = createView();
     }
 
     /**
@@ -123,7 +130,7 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public synchronized void putAll(Map<? extends K, ? extends V> t) {
+    public synchronized void putAll(@NonNull Map<? extends K, ? extends V> t) {
         Map<K, V> m = copy();
         m.putAll(t);
         update(m);
@@ -133,13 +140,14 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
 
     @Override
     public synchronized void clear() {
-        update(Collections.emptyMap());
+        update(Collections.emptyNavigableMap());
     }
 
     /**
      * This method will return a read-only {@link Set}.
      */
     @Override
+    @NonNull
     public Set<K> keySet() {
         return view.keySet();
     }
@@ -148,6 +156,7 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
      * This method will return a read-only {@link Collection}.
      */
     @Override
+    @NonNull
     public Collection<V> values() {
         return view.values();
     }
@@ -156,6 +165,7 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
      * This method will return a read-only {@link Set}.
      */
     @Override
+    @NonNull
     public Set<Entry<K, V>> entrySet() {
         return view.entrySet();
     }
@@ -182,6 +192,7 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
         }
 
         public Hash() {
+            super(Collections.emptyMap());
         }
 
         @Override
@@ -201,12 +212,12 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
 
             @Override
             public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-                return new Hash((Map) super.unmarshal(reader, context));
+                return new Hash<>((Map<?, ?>) super.unmarshal(reader, context));
             }
 
             @Override
             public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-                super.marshal(((Hash) source).core, writer, context);
+                super.marshal(((Hash<?, ?>) source).core, writer, context);
             }
         }
     }
@@ -214,33 +225,78 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
     /**
      * {@link CopyOnWriteMap} backed by {@link TreeMap}.
      */
-    public static final class Tree<K, V> extends CopyOnWriteMap<K, V> {
-        private final Comparator<K> comparator;
+    public static final class Tree<K, V> extends CopyOnWriteMap<K, V> implements SortedMap<K, V> {
+        private final Comparator<? super K> comparator;
 
-        public Tree(Map<K, V> core, Comparator<K> comparator) {
-            this(comparator);
-            putAll(core);
-        }
-
-        public Tree(Comparator<K> comparator) {
-            super(new TreeMap<>(comparator));
+        public Tree(Map<K, V> core, Comparator<? super K> comparator) {
+            super(core);
             this.comparator = comparator;
         }
 
+        public Tree(NavigableMap<K, V> m) {
+            this(m, m.comparator());
+        }
+
+        public Tree(Comparator<? super K> comparator) {
+            this(Collections.emptyNavigableMap(), comparator);
+        }
+
         public Tree() {
-            this(null);
+            this(Collections.emptyNavigableMap());
         }
 
         @Override
-        protected Map<K, V> copy() {
+        protected NavigableMap<K, V> createView() {
+            return Collections.unmodifiableNavigableMap((NavigableMap<K, V>) core);
+        }
+
+        @Override
+        protected TreeMap<K, V> copy() {
             TreeMap<K, V> m = new TreeMap<>(comparator);
             m.putAll(core);
             return m;
         }
 
         @Override
-        public synchronized void clear() {
-            update(new TreeMap<>(comparator));
+        public NavigableMap<K, V> getView() {
+            return (NavigableMap<K, V>) super.getView();
+        }
+
+        public NavigableMap<K, V> descendingMap() {
+            return getView().descendingMap();
+        }
+
+        @Override
+        public Comparator<? super K> comparator() {
+            return getView().comparator();
+        }
+
+        @Override
+        @NonNull
+        public SortedMap<K, V> subMap(K fromKey, K toKey) {
+            return getView().subMap(fromKey, toKey);
+        }
+
+        @Override
+        @NonNull
+        public SortedMap<K, V> headMap(K toKey) {
+            return getView().headMap(toKey);
+        }
+
+        @Override
+        @NonNull
+        public SortedMap<K, V> tailMap(K fromKey) {
+            return getView().tailMap(fromKey);
+        }
+
+        @Override
+        public K firstKey() {
+            return getView().firstKey();
+        }
+
+        @Override
+        public K lastKey() {
+            return getView().lastKey();
         }
 
         public static class ConverterImpl extends TreeMapConverter {
@@ -255,13 +311,12 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
 
             @Override
             public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-                TreeMap tm = (TreeMap) super.unmarshal(reader, context);
-                return new Tree(tm, tm.comparator());
+                return new Tree<>((TreeMap<?, ?>) super.unmarshal(reader, context));
             }
 
             @Override
             public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-                super.marshal(((Tree) source).core, writer, context);
+                super.marshal(((Tree<?, ?>) source).core, writer, context);
             }
         }
     }
