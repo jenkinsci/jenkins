@@ -22,8 +22,6 @@ function generateDropdown(element, callback, immediate, options = {}) {
       {},
       Templates.dropdown(),
       {
-        hideOnClick:
-          element.dataset["hideOnClick"] !== "false" ? "toggle" : false,
         onCreate(instance) {
           const onload = () => {
             if (instance.loaded) {
@@ -31,32 +29,14 @@ function generateDropdown(element, callback, immediate, options = {}) {
             }
 
             document.addEventListener("click", (event) => {
-              const isClickInAnyDropdown =
-                !!event.target.closest("[data-tippy-root]");
               const isClickOnReference = instance.reference.contains(
                 event.target,
               );
 
-              if (!isClickInAnyDropdown && !isClickOnReference) {
+              if (!isClickOnReference) {
+                instance.clickToHide = true;
                 instance.hide();
               }
-            });
-
-            instance.popper.addEventListener("mouseenter", () => {
-              const handleMouseMove = () => {
-                const dropdowns =
-                  document.querySelectorAll("[data-tippy-root]");
-                const isMouseOverAnyDropdown = Array.from(dropdowns).some(
-                  (dropdown) => dropdown.matches(":hover"),
-                );
-
-                if (!isMouseOverAnyDropdown) {
-                  instance.hide();
-                  document.removeEventListener("mousemove", handleMouseMove);
-                }
-              };
-
-              document.addEventListener("mousemove", handleMouseMove);
             });
 
             callback(instance);
@@ -69,13 +49,19 @@ function generateDropdown(element, callback, immediate, options = {}) {
             });
           }
         },
-        onHide() {
-          const dropdowns = document.querySelectorAll("[data-tippy-root]");
-          const isMouseOverAnyDropdown = Array.from(dropdowns).some(
-            (dropdown) => dropdown.matches(":hover"),
-          );
+        onHide(instance) {
+          if (
+            instance.props.trigger === "mouseenter" &&
+            !instance.clickToHide
+          ) {
+            const dropdowns = document.querySelectorAll("[data-tippy-root]");
+            const isMouseOverAnyDropdown = Array.from(dropdowns).some(
+              (dropdown) => dropdown.matches(":hover"),
+            );
 
-          return !isMouseOverAnyDropdown;
+            return !isMouseOverAnyDropdown;
+          }
+          instance.clickToHide = false;
         },
       },
       options,
