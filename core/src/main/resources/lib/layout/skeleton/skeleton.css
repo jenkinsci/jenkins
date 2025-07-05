@@ -69,7 +69,11 @@
   gap: 0.125rem;
 
   & > div {
-    margin: 0 -0.7rem;
+    margin: 0 0 0 -0.5rem;
+
+    &:not(:first-of-type) {
+      opacity: 0.5;
+    }
   }
 }
 
