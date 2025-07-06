@@ -20,17 +20,47 @@
 
     <!--  we only want the hamburger menu if there is something to display -->
     <!--  render all non primary non current actions -->
+    <j:set var="hamburgerHasBadgeWithSeverityError" value="false" />
+    <j:set var="hamburgerHasBadgeWithSeverityWarning" value="false" />
+    <j:set var="hamburgerHasBadgeWithSeverityInfo" value="false" />
     <j:set var="hamburgerEntries">
       <j:forEach var="action" items="${allActions}">
         <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
         <j:set var="isPrimary" value="${h.showInPrimaryHeader(action)}"/>
         <j:if test="${!isCurrent and !isPrimary}">
           <h:secondaryAction action="${action}"/>
+          <j:set var="currentBadge" value="${action.badge}"/>
+          <j:if test="${currentBadge != null}">
+            <j:choose>
+              <j:when test="${currentBadge.severity == 'danger'}">
+                <j:set var="hamburgerHasBadgeWithSeverityError" value="true" />
+              </j:when>
+              <j:when test="${currentBadge.severity == 'warning'}">
+                <j:set var="hamburgerHasBadgeWithSeverityWarning" value="true" />
+              </j:when>
+              <j:otherwise>
+                <j:set var="hamburgerHasBadgeWithSeverityInfo" value="true" />
+              </j:otherwise>
+            </j:choose>
+          </j:if>
         </j:if>
       </j:forEach>
     </j:set>
     <j:if test="${hamburgerEntries.length() gt 0}">
-      <l:overflowButton icon="symbol-menu-hamburger" id="header-more-actions" clazz="jenkins-button--tertiary">
+      <j:set var="hamburgerBadge">
+        <j:choose>
+          <j:when test="${hamburgerHasBadgeWithSeverityError}">
+            <span class="jenkins-badge jenkins-!-danger-color" />
+          </j:when>
+          <j:when test="${hamburgerHasBadgeWithSeverityWarning}">
+            <span class="jenkins-badge jenkins-!-warning-color" />
+          </j:when>
+          <j:when test="${hamburgerHasBadgeWithSeverityInfo}">
+            <span class="jenkins-badge jenkins-!-info-color" />
+          </j:when>
+        </j:choose>
+      </j:set>
+      <l:overflowButton icon="symbol-menu-hamburger" id="header-more-actions" html="${hamburgerBadge}" clazz="jenkins-button--tertiary">
         <j:out value="${hamburgerEntries}" />
       </l:overflowButton>
     </j:if>
