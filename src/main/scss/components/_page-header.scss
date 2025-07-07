@@ -48,7 +48,7 @@
     align-items: center;
     justify-content: center;
     align-self: center;
-    gap: 1rem;
+    gap: 0.875rem;
     color: var(--header-color);
     transition: opacity var(--standard-transition);
 
@@ -79,8 +79,7 @@
     }
 
     #jenkins-head-icon {
-      height: 2.125rem;
-      margin-left: 0.15rem;
+      width: 1.625rem;
     }
   }
 
