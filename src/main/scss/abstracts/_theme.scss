@@ -151,7 +151,11 @@ $semantics: (
   }
 
   // Table
-  --table-background: color-mix(in oklch, var(--text-color-secondary) 7.5%, var(--white));
+  --table-background: color-mix(
+    in oklch,
+    var(--text-color-secondary) 7.5%,
+    var(--white)
+  );
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
