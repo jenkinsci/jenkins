@@ -145,5 +145,5 @@ $icon-size: 1.375rem;
   padding: 0.5rem;
   border: var(--jenkins-border);
   border-radius: var(--form-input-border-radius);
-  width: 100%;
+  max-width: 100%;
 }
