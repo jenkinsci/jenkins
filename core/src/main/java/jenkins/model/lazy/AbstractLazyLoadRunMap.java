@@ -87,7 +87,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * <p>
  * Some of the {@link SortedMap} operations are inefficiently implemented, by
- * {@linkplain #all() loading all the build records eagerly}. We hope to replace
+ * loading all the build records eagerly. We hope to replace
  * these implementations by more efficient lazy-loading ones as we go.
  *
  * <p>
@@ -604,13 +604,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     }
 
     /**
-     * Loads all the build records to fully populate the map.
-     * Calling this method results in eager loading everything,
-     * so the whole point of this class is to avoid this call as much as possible
-     * for typical code path.
+     * Return underlining {@link BuildReference} core map.
      *
      * @return
-     *      fully populated map.
+     *      full build reference map.
      */
     /*package*/ SortedMap<Integer, BuildReference<R>> all() {
         return core;
