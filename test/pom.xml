@@ -223,7 +223,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.1023.v4fcb_72152519</version>
+      <version>6.1026.ve06dfa_cf31c3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -241,7 +241,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>489.vd4b_25144138f</version>
+      <version>509.vc54d23fc427e</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -355,7 +355,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>392.v39c9a_b_da_4e71</version>
+                  <version>396.vf49a_1b_d203a_9</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
@@ -371,7 +371,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.5-1</version>
+                  <version>5.3.7-1</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>bootstrap5-api.jpi</destFileName>
