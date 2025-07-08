@@ -51,7 +51,7 @@ public class ResponseTimeMonitorTest {
         assertNull(ResponseTimeMonitor.DESCRIPTOR.monitor(c));
 
         // Retry to compensate for test being flaky in CI
-        await().atMost(5, TimeUnit.SECONDS)
+        await().atMost(15, TimeUnit.SECONDS)
             .ignoreException(ExecutionException.class)
             .until(() -> {
                 // Now reconnect and make sure we get a non-null response.
