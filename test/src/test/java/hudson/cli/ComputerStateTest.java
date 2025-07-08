@@ -154,6 +154,9 @@ class ComputerStateTest {
 
         slave.toComputer().disconnect(null);
 
+        // Test fails sometimes because agent is not yet disconnected
+        // Wait 1 second for disconnect to complete
+        Thread.sleep(1009);
         HtmlPage page = wc.getPage(slave);
 
         assertLinkDoesNotExist(page, "Disconnect");
