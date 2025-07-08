@@ -196,6 +196,9 @@ class RunTest  {
 
         // keeping the minimum to validate it's working and it's not exploitable as there are some modifications
         // like adding double quotes
+        // Some test flakes due to JavaScript objects not yet available
+        // Wait 2 seconds before checking the assertion
+        Thread.sleep(2003);
         ensureXssIsPrevented(up, "Down", "<img");
     }
 
