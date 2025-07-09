@@ -252,19 +252,12 @@ $semantics: (
   }
 
   // Tab bar
-  --tabs-item-background: transparent;
   --tabs-item-foreground: color-mix(
     in sRGB,
     var(--text-color-secondary),
     var(--text-color)
   );
-  --tabs-item-background--hover: rgb(0 0 0 / 0.05);
-  --tabs-item-foreground--hover: var(--text-color);
-  --tabs-item-background--active: rgb(0 0 0 / 0.1);
-  --tabs-item-foreground--active: var(--text-color);
-  --tabs-item-background--selected: white;
-  --tabs-item-foreground--selected: var(--link-color);
-  --tabs-border-radius: calc((10px + 34px) / 2);
+  --tabs-item-background--selected: var(--white);
 
   // Side panel
   --side-panel-width: 340px;
