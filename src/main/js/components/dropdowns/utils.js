@@ -61,7 +61,9 @@ function generateDropdown(element, callback, immediate, options = {}) {
 
             return !isMouseOverAnyDropdown;
           }
+
           instance.clickToHide = false;
+          return true;
         },
       },
       options,
