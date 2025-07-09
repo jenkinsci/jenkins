@@ -278,7 +278,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
     /**
      * @return true if a new run should be queued if it is already running while called.
-     * @since TODO
+     * @since 2.517
      */
     protected boolean queueIfAlreadyRunning() {
         return false;

@@ -206,6 +206,13 @@ function convertHtmlToItems(children) {
         } else {
           item.type = "button";
         }
+        if (attributes.dropdownBadgeSeverity) {
+          item.badge = {
+            text: attributes.dropdownBadgeText,
+            tooltip: attributes.dropdownBadgeTooltip,
+            severity: attributes.dropdownBadgeSeverity,
+          };
+        }
 
         items.push(item);
         break;
