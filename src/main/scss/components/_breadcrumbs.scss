@@ -24,13 +24,14 @@
         pointer-events: all !important;
       }
 
-      & > a {
+      & > a,
+      .dropdown-indicator {
         @include mixins.item($border: false);
 
         --item-background: transparent;
-        --item-background--hover: transparent;
-        --item-background--active: transparent;
-        --item-box-shadow--focus: transparent;
+        --item-background--hover: var(--button-background--hover);
+        --item-background--active: var(--button-background--active);
+        --item-box-shadow--focus: var(--button-box-shadow--focus);
 
         transition: opacity var(--standard-transition);
 
@@ -70,8 +71,8 @@
       &::before {
         content: "";
         position: relative;
-        width: 1rem;
-        height: 1.25rem;
+        width: 16px;
+        height: 20px;
         flex-shrink: 0;
         mask-size: contain;
         mask-position: center;
@@ -86,23 +87,6 @@
         @media (prefers-contrast: more) {
           background: var(--text-color);
         }
-      }
-
-      &:has(a)::after {
-        content: "";
-        position: relative !important;
-
-        /* create a small triangle */
-        width: 0;
-        height: 0;
-        border: 0.4em solid currentColor !important; /* ▼ by default */
-        transform: rotate(270deg);
-        transition: transform 0.25s ease; /* smooth rotation */
-        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
-      }
-
-      &:has(a[aria-expanded="true"])::after {
-        transform: rotate(90deg);
       }
     }
   }

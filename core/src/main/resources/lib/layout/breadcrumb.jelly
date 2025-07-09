@@ -54,9 +54,14 @@ THE SOFTWARE.
           <span>${attrs.title}</span>
         </j:when>
         <j:otherwise>
-          <a href="${attrs.href}" class="${attrs.hasMenu ? 'hoverable-model-link' : ''} ${attrs.hasChildrenMenu ? 'hoverable-children-model-link' : ''}">
-            ${attrs.title}
-          </a>
+            <a href="${attrs.href}">
+              ${attrs.title}
+            </a>
+          <j:if test="${attrs.hasMenu or attrs.hasChildrenMenu}">
+            <div tabindex="0" class="dropdown-indicator" data-href="${attrs.href}" data-model="${attrs.hasMenu}" data-children="${attrs.hasChildrenMenu}" >
+              <l:icon class="icon-sm" src="symbol-chevron-down" />
+            </div>
+          </j:if>
         </j:otherwise>
       </j:choose>
     </li>
