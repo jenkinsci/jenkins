@@ -36,7 +36,6 @@ function dropdown() {
     animation: "dropdown",
     duration: 250,
     onShow: (instance) => {
-      console.log(instance)
       // Make sure only one instance is visible at all times in case of breadcrumb
       if(instance.reference.classList.contains('hoverable-model-link') || instance.reference.classList.contains('hoverable-cildren-model-link')) {
         const dropdowns = document.querySelectorAll("[data-tippy-root]");
