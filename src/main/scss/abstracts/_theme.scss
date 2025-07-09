@@ -138,7 +138,7 @@ $semantics: (
   --jenkins-border--subtle-shadow: 0 0 0 var(--jenkins-border-width)
     var(--jenkins-border-color--subtle);
 
-  @media (resolution <= 1x) {
+  @media (resolution <= 1dppx) {
     --jenkins-border-width: 2px;
   }
 
