@@ -47,19 +47,21 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:if test="${mode=='breadcrumbs'}">
+    <j:set var="baseUrl" value="${request2.originalRequestURI}" />
     <j:set var="hasLink" value="${attrs.href != null}" />
-    <li id="${attrs.id}" class="jenkins-breadcrumbs__list-item" data-type="breadcrumb-item" aria-current="${hasLink ? null : 'page'}">
+    <j:set var="isCurrent" value="${baseUrl == attrs.href}" />
+    <li aria-current="${(isCurrent or !hasLink)? 'page' : null}"  id="${attrs.id}" class="jenkins-breadcrumbs__list-item" data-type="breadcrumb-item">
       <j:choose>
-        <j:when test="${!hasLink}">
-          <span>${attrs.title}</span>
+        <j:when test="${!hasLink or isCurrent}">
+          <span title="${attrs.title}">${attrs.title}</span>
         </j:when>
         <j:otherwise>
-            <a href="${attrs.href}">
+            <a title="${attrs.title}" href="${attrs.href}">
               ${attrs.title}
             </a>
           <j:if test="${attrs.hasMenu or attrs.hasChildrenMenu}">
-            <div tabindex="0" class="dropdown-indicator" data-href="${attrs.href}" data-model="${attrs.hasMenu}" data-children="${attrs.hasChildrenMenu}" >
-              <l:icon class="icon-sm" src="symbol-chevron-down" />
+            <div data-iscurrent="${isCurrent}" data-href="${attrs.href}" data-base="${baseUrl}" tabindex="0" class="dropdown-indicator" data-model="${attrs.hasMenu}" data-children="${attrs.hasChildrenMenu}" >
+              <l:icon class="icon-sm jenkins-!-text-color-secondary" src="symbol-chevron-down" />
             </div>
           </j:if>
         </j:otherwise>
