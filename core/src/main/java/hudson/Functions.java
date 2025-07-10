@@ -55,6 +55,7 @@ import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.PasswordParameterDefinition;
+import hudson.model.RootAction;
 import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.model.TimeZoneProperty;
@@ -2095,6 +2096,46 @@ public class Functions {
         if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
 
         return url.endsWith(href);
+    }
+
+    /**
+     * If the given {@code Action} is a {@link RootAction#isPrimaryAction() primary} {code RootAction}, or a parent of the current page, return {@code true}.
+     * Used in {@code actions.jelly} to decide if the action should shown in the main header or the hamburger.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean showInPrimaryHeader(Action action) {
+        // regular Actions can be injected into Jenkins via a factory.
+        if (action instanceof RootAction ra) {
+            if (ra.isPrimaryAction()) {
+                return true;
+            }
+        }
+        String path = Stapler.getCurrentRequest2().getPathInfo();
+        if (path == null || path.equals("/")) {
+            // we are in the root page so there is nothing current
+            return false;
+        }
+
+        String actionPath = action.getUrlName();
+        if (actionPath == null) {
+            // we are not a primary action and can not ever be current when we have no URL
+            return false;
+        }
+
+        // RootActions are not expected to start with a `/` but some do and some do, and not all Actions will be RootActions
+        // but path will always start with a "/"
+        if (!actionPath.startsWith("/")) {
+            actionPath = '/' + actionPath;
+        }
+
+        // the action /foo should not match /foobar but should match /foo/bar
+        if (!actionPath.endsWith("/")) {
+            actionPath = actionPath + '/';
+        }
+        if (!path.endsWith("/")) {
+            path = path + '/';
+        }
+        return path.startsWith(actionPath);
     }
 
     /**

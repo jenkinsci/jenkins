@@ -282,7 +282,7 @@ THE SOFTWARE.
                   <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>489.vd4b_25144138f</version>
+                  <version>509.vc54d23fc427e</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -338,14 +338,14 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.5-1</version>
+                  <version>5.3.7-1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>checks-api</artifactId>
-                  <version>370.vb_61a_c57328f3</version>
+                  <version>373.vfe7645102093</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -368,7 +368,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>5.6.0-4</version>
+                  <version>5.6.0-5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -463,7 +463,7 @@ THE SOFTWARE.
                   <!-- detached after 2.281 -->
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>sshd</artifactId>
-                  <version>3.353.v2b_d33c46e970</version>
+                  <version>3.372.v5d04a_e92d8cf</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -653,7 +653,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.0.22</version>
+        <version>12.0.23</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
