@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jenkins.model.AddressableModelObject;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -41,7 +42,7 @@ import org.springframework.security.access.AccessDeniedException;
  * @author Kohsuke Kawaguchi
  * @see ItemGroupMixIn
  */
-public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject {
+public interface ItemGroup<T extends Item> extends PersistenceRoot, AddressableModelObject {
     /**
      * Gets the full name of this {@link ItemGroup}.
      *
@@ -85,12 +86,6 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
     default Stream<T> getItemsStream(Predicate<T> pred) {
         return getItemsStream().filter(pred);
     }
-
-    /**
-     * Returns the path relative to the context root,
-     * like "foo/bar/zot/". Note no leading slash but trailing slash.
-     */
-    String getUrl();
 
     /**
      * Gets the URL token that prefixes the URLs for child {@link Item}s.

@@ -67,6 +67,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import jenkins.model.AddressableModelObject;
 import jenkins.model.IComputer;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
@@ -89,7 +90,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @see Jenkins#getLabel(String)
  */
 @ExportedBean
-public abstract class Label extends Actionable implements Comparable<Label>, ModelObjectWithChildren {
+public abstract class Label extends Actionable implements AddressableModelObject, Comparable<Label>, ModelObjectWithChildren {
     /**
      * Display name of this label.
      */
@@ -149,6 +150,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Relative URL from the context path, that ends with '/'.
      */
+    @NonNull
     public String getUrl() {
         return "label/" + Util.rawEncode(name) + '/';
     }

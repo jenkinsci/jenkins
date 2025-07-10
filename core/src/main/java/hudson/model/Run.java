@@ -111,6 +111,7 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import jenkins.console.ConsoleUrlProvider;
 import jenkins.console.WithConsoleUrl;
+import jenkins.model.AddressableModelObject;
 import jenkins.model.ArtifactManager;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.ArtifactManagerFactory;
@@ -165,7 +166,7 @@ import org.springframework.security.core.Authentication;
  */
 @ExportedBean
 public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster, StaplerProxy, HistoricalBuild, WithConsoleUrl {
+        extends Actionable implements ExtensionPoint, Comparable<RunT>, AddressableModelObject, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster, StaplerProxy, HistoricalBuild, WithConsoleUrl {
 
     /**
      * The original {@link Queue.Item#getId()} has not yet been mapped onto the {@link Run} instance.

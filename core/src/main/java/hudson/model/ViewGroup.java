@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import jenkins.model.AddressableModelObject;
 import jenkins.model.Jenkins;
 import jenkins.views.ViewsTabBarUserProperty;
 
@@ -41,7 +42,7 @@ import jenkins.views.ViewsTabBarUserProperty;
  * @author Kohsuke Kawaguchi
  * @since 1.269
  */
-public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
+public interface ViewGroup extends Saveable, AddressableModelObject, AccessControlled {
     /**
      * Determine whether a view may be deleted.
      * @since 1.365
@@ -101,12 +102,6 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
     default View getPrimaryView() {
         return null;
     }
-
-    /**
-     * Returns the path of this group, relative to the context root,
-     * like "foo/bar/zot/". Note no leading slash but trailing slash.
-     */
-    String getUrl();
 
     /**
      * {@link View} calls this method when it's renamed.

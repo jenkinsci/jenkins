@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -56,7 +57,8 @@ import java.util.List;
  *
  * @since 2.128
  */
-public class SimplePageDecorator extends Descriptor<SimplePageDecorator> implements ExtensionPoint, Describable<SimplePageDecorator> {
+// TODO simply extend PageDecorator ?
+public class SimplePageDecorator extends Descriptor<SimplePageDecorator> implements ExtensionPoint, Describable<SimplePageDecorator>, Addressable {
 
     protected SimplePageDecorator()  {
         super(self());
@@ -74,6 +76,8 @@ public class SimplePageDecorator extends Descriptor<SimplePageDecorator> impleme
      * This method returns such an URL.
      */
 
+    @Override
+    @NonNull
     public final String getUrl() {
         return "descriptor/" + clazz.getName();
     }

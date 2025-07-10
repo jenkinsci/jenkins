@@ -27,6 +27,7 @@ package hudson.model.queue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Queue;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
@@ -75,9 +76,10 @@ class AbstractQueueTaskTest {
             return false;
         }
 
+        @NonNull
         @Override
         public String getUrl() {
-            return null;
+            return "";
         }
 
         @Override
