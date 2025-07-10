@@ -132,7 +132,7 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
 
     const promises = [];
 
-    if (hasModelLink) {
+    if (hasModelLink === "true") {
       promises.push(
         fetchSection("contextMenu").then((section) => {
           const dContainer = section;
@@ -146,7 +146,7 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
       );
     }
 
-    if (hasChildrenLink) {
+    if (hasChildrenLink === "true") {
       promises.push(
         fetchSection("childrenContextMenu").then((section) => {
           const dContainer = section;

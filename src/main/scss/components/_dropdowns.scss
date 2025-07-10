@@ -129,7 +129,6 @@ $dropdown-padding: 0.375rem;
     @include mixins.item($border: false);
 
     appearance: none;
-    display: inline-flex;
     align-items: center;
     justify-content: flex-start;
     border: none;
@@ -144,10 +143,14 @@ $dropdown-padding: 0.375rem;
     border-radius: calc($dropdown-border-radius - $dropdown-padding);
     cursor: pointer;
     min-height: 36px;
-    white-space: nowrap;
     gap: 1.2ch;
     min-width: 180px;
     user-select: none;
+    display: block;
+    overflow: hidden;
+    max-width: 25ch;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
     &__icon {
       display: inline-flex;

@@ -42,6 +42,7 @@ export default function computeBreadcrumbs() {
 
         return {
           type: "link",
+          title: e.textContent,
           label: e.textContent,
           url: href,
         };
@@ -51,7 +52,7 @@ export default function computeBreadcrumbs() {
     },
     true,
     {
-      trigger: "mouseenter focus",
+      trigger: "click focus",
       offset: [0, 10],
       animation: "tooltip",
     },
