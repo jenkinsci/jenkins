@@ -30,9 +30,8 @@ import hudson.Extension;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
-import java.util.List;
-
 import hudson.model.userproperty.UserPropertyCategory;
+import java.util.List;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
