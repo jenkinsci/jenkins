@@ -3,9 +3,9 @@ package jenkins.model.queue;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Cause;
-import hudson.model.ModelObject;
 import hudson.model.Queue;
 import hudson.model.Run;
+import jenkins.model.FullyNameableModelObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -14,7 +14,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since 2.405
  */
 @Restricted(Beta.class)
-public interface QueueItem extends ModelObject {
+public interface QueueItem extends FullyNameableModelObject {
     /**
      * @return true if the item is starving for an executor for too long.
      */
@@ -73,6 +73,15 @@ public interface QueueItem extends ModelObject {
     @CheckForNull
     @Override
     default String getDisplayName() {
+        // TODO review usage of this method and replace with getFullDisplayName() where appropriate
+        return getTask().getFullDisplayName();
+    }
+
+    /**
+     * @return the full display name for this queue item; by default, {@link Queue.Task#getFullDisplayName()}
+     */
+    @Override
+    default String getFullDisplayName() {
         return getTask().getFullDisplayName();
     }
 }
