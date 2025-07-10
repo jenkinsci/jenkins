@@ -118,8 +118,7 @@ $bottom-app-bar-padding: 0.875rem;
 
   position: sticky;
   height: calc(
-    2.375rem + $bottom-app-bar-padding + $bottom-app-bar-padding + 1px +
-      var(--jenkins-border-width)
+    2.375rem + ($bottom-app-bar-padding * 2) + 1px + var(--jenkins-border-width)
   );
   bottom: -1px;
   margin-bottom: calc((2.375rem + $bottom-app-bar-padding) * -1);
