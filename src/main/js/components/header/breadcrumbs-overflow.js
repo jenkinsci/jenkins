@@ -42,6 +42,7 @@ export default function computeBreadcrumbs() {
 
         return {
           type: "link",
+          clazz: "jenkins-breadcrumbs__overflow-item",
           title: e.textContent,
           label: e.textContent,
           url: href,
