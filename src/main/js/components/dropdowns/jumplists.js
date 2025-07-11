@@ -121,9 +121,9 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
       children: null,
     };
 
-    const fetchSection = async function (urlSuffix) {
-      const response = await fetch(Path.combinePath(href, urlSuffix));
-      const json = await response.json();
+    const fetchSection = function (urlSuffix) {
+      const response = fetch(Path.combinePath(href, urlSuffix));
+      const json = response.json();
       const items = Utils.generateDropdownItems(
         mapChildrenItemsToDropdownItems(json.items),
       );
