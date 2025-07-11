@@ -122,12 +122,14 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
     };
 
     const fetchSection = function (urlSuffix) {
-      const response = fetch(Path.combinePath(href, urlSuffix));
-      const json = response.json();
-      const items = Utils.generateDropdownItems(
-        mapChildrenItemsToDropdownItems(json.items),
-      );
-      return items;
+      return fetch(Path.combinePath(href, urlSuffix))
+        .then((response) => response.json())
+        .then((json) => {
+          const items = Utils.generateDropdownItems(
+            mapChildrenItemsToDropdownItems(json.items),
+          );
+          return items;
+        });
     };
 
     const promises = [];
