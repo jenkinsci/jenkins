@@ -610,6 +610,28 @@ public class PluginManagerTest {
         Assert.assertSame(FormValidation.Kind.OK, uc.getSite("default").updateDirectlyNow().kind);
     }
 
+    @Test
+    public void searchCommonTermFirstHitIsExactName() throws Exception {
+        Jenkins.get().getPluginManager().doCheckUpdatesServer();
+        JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=repo&limit=50");
+        JSONObject json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        JSONArray data = json.getJSONArray("data");
+        assertEquals("repo plugin should be first hit", "repo", data.getJSONObject(0).get("name"));
+        assertEquals("50 results matching limit", 50, data.size());
+    }
+
+    @Test
+    public void r() throws Exception {
+        Jenkins.get().getPluginManager().doCheckUpdatesServer();
+        JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=r&limit=50");
+        JSONObject json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        JSONArray data = json.getJSONArray("data");
+        assertEquals("r plugin should be first hit", "r", data.getJSONObject(0).get("name"));
+        assertEquals("50 results matching limit", 50, data.size());
+    }
+
     @Test @Issue("JENKINS-64840")
     public void searchMultipleUpdateSites() throws Exception {
         assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
