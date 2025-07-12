@@ -38,6 +38,7 @@ import hudson.security.PermissionScope;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.util.Collection;
+import jenkins.model.AddressableModelObject;
 import jenkins.model.Jenkins;
 import jenkins.search.SearchGroup;
 import jenkins.util.SystemProperties;
@@ -73,7 +74,7 @@ import org.kohsuke.stapler.StaplerRequest2;
  * @see Items
  * @see ItemVisitor
  */
-public interface Item extends PersistenceRoot, SearchableModelObject, AccessControlled, OnMaster {
+public interface Item extends AddressableModelObject, PersistenceRoot, SearchableModelObject, AccessControlled, OnMaster {
     /**
      * Gets the parent that contains this item.
      */
@@ -171,6 +172,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * @return
      *      URL that ends with '/'.
      */
+    @NonNull
     String getUrl();
 
     /**

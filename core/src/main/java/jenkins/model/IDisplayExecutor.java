@@ -34,19 +34,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since 2.480
  */
 @Restricted(Beta.class)
-public interface IDisplayExecutor {
-    /**
-     * @return The UI label for this executor.
-     */
-    @NonNull
-    String getDisplayName();
-
-    /**
-     * @return the URL where to reach specifically this executor, relative to Jenkins URL.
-     */
-    @NonNull
-    String getUrl();
-
+public interface IDisplayExecutor extends AddressableModelObject {
     /**
      * @return the executor this display information is for.
      */
