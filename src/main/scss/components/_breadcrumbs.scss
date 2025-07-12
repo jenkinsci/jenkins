@@ -24,13 +24,14 @@
         pointer-events: all !important;
       }
 
-      & > a {
+      & > a,
+      .dropdown-indicator {
         @include mixins.item($border: false);
 
         --item-background: transparent;
-        --item-background--hover: transparent;
-        --item-background--active: transparent;
-        --item-box-shadow--focus: transparent;
+        --item-background--hover: var(--button-background--hover);
+        --item-background--active: var(--button-background--active);
+        --item-box-shadow--focus: var(--button-box-shadow--focus);
 
         transition: opacity var(--standard-transition);
 
@@ -52,10 +53,6 @@
       & > a,
       span {
         position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
         font-size: var(--font-size-sm);
         font-weight: var(--font-bold-weight);
         margin: 0;
@@ -64,14 +61,18 @@
         text-decoration: none;
         text-wrap: nowrap;
         flex-shrink: 0;
+        overflow: hidden;
+        max-width: 25ch;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       // '/' separator between two items
       &::before {
         content: "";
         position: relative;
-        width: 1rem;
-        height: 1.25rem;
+        width: 16px;
+        height: 20px;
         flex-shrink: 0;
         mask-size: contain;
         mask-position: center;

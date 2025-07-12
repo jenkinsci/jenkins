@@ -42,6 +42,8 @@ export default function computeBreadcrumbs() {
 
         return {
           type: "link",
+          clazz: "jenkins-breadcrumbs__overflow-item",
+          title: e.textContent,
           label: e.textContent,
           url: href,
         };
@@ -51,7 +53,7 @@ export default function computeBreadcrumbs() {
     },
     true,
     {
-      trigger: "mouseenter focus",
+      trigger: "click focus",
       offset: [0, 10],
       animation: "tooltip",
     },
