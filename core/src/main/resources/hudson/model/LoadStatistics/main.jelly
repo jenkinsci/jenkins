@@ -47,7 +47,7 @@ THE SOFTWARE.
   </div>
   <noscript>
     <!-- The noscript alternative does not have the possibility to adjust the image to the available space -->
-    <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" srcset="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300&amp;scale=2 2x" alt="[${%Load statistics graph}]" />
+    <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" srcset="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300&amp;scale=2 2x" alt="[${%Load statistics graph}]" class="jenkins-graph-card" />
   </noscript>
   <p>
     ${%blurb}

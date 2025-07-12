@@ -11,7 +11,7 @@ $border-radius: 19px;
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-  background: var(--button-background);
+  background: var(--table-background);
   border-radius: $border-radius;
   padding: 2px;
   margin-bottom: var(--section-padding);
@@ -20,7 +20,7 @@ $border-radius: 19px;
     content: "";
     position: absolute;
     inset: 0;
-    border: var(--jenkins-border--subtle);
+    border: var(--jenkins-border-width) solid var(--card-border-color);
     border-radius: inherit;
     pointer-events: none;
   }
