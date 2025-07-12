@@ -10,7 +10,8 @@ var jenkins = {};
 
 // gets the base Jenkins URL including context path
 jenkins.baseUrl = function () {
-  var u = $("head").attr("data-rooturl");
+  const head = document.querySelector("head");
+  let u = head ? head.getAttribute("data-rooturl") : "";
   if (!u) {
     u = "";
   }
