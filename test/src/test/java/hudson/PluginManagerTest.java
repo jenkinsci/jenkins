@@ -119,6 +119,11 @@ public class PluginManagerTest {
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
     @Rule public FlagRule<Boolean> signatureCheck = new FlagRule<>(() -> DownloadService.signatureCheck, x -> DownloadService.signatureCheck = x);
 
+    // a simple plugin with ideally no dependencies so the tests run quickly
+    private static final String TEST_PLUGIN_NAME = "commons-lang3-api";
+    private static final String TEST_PLUGIN = TEST_PLUGIN_NAME + ".jpi";
+    private static final String TEST_PLUGIN_HPI = TEST_PLUGIN_NAME + ".hpi";
+
     /**
      * Manual submission form.
      */
@@ -126,12 +131,12 @@ public class PluginManagerTest {
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = tmp.newFolder();
-        File plugin = new File(dir, "htmlpublisher.jpi");
-        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi"), plugin);
+        File plugin = new File(dir, TEST_PLUGIN);
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/" + TEST_PLUGIN), plugin);
         f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
-        assertTrue(new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi").exists());
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/" + TEST_PLUGIN).exists());
     }
 
     /**
@@ -141,22 +146,22 @@ public class PluginManagerTest {
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = tmp.newFolder();
-        File plugin = new File(dir, "legacy.hpi");
-        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/legacy.hpi"), plugin);
+        File plugin = new File(dir, TEST_PLUGIN_HPI);
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/" + TEST_PLUGIN), plugin);
         f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
         // uploaded legacy plugins get renamed to *.jpi
-        assertTrue(new File(r.jenkins.getRootDir(), "plugins/legacy.jpi").exists());
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/" + TEST_PLUGIN).exists());
     }
 
     @Test public void deployJpiFromUrl() throws Exception {
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
-        f.getInputByName("pluginUrl").setValue(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
+        f.getInputByName("pluginUrl").setValue(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/" + TEST_PLUGIN);
         r.submit(f);
 
-        assertTrue(new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi").exists());
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/" + TEST_PLUGIN).exists());
     }
 
     @TestExtension("deployJpiFromUrl")
@@ -180,16 +185,16 @@ public class PluginManagerTest {
         public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("application/octet-stream");
             staplerResponse.setStatus(200);
-            staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
+            staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/" + TEST_PLUGIN));
         }
     }
 
     /**
      * Tests the effect of {@link WithPlugin}.
      */
-    @WithPlugin("htmlpublisher.jpi")
+    @WithPlugin(TEST_PLUGIN)
     @Test public void withRecipeJpi() {
-        assertNotNull(r.jenkins.getPlugin("htmlpublisher"));
+        assertNotNull(r.jenkins.getPlugin("commons-lang3-api"));
     }
 
     /**
@@ -718,8 +723,8 @@ public class PluginManagerTest {
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = tmp.newFolder();
-        File plugin = new File(dir, "htmlpublisher.jpi");
-        FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
+        File plugin = new File(dir, TEST_PLUGIN);
+        FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/" + TEST_PLUGIN)), plugin);
         f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
@@ -784,7 +789,7 @@ public class PluginManagerTest {
 
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
-        f.getInputByName("pluginUrl").setValue(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
+        f.getInputByName("pluginUrl").setValue(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/" + TEST_PLUGIN);
         r.submit(f);
 
         File filesRef = Files.createTempFile("tmp", ".tmp").toFile();
@@ -869,7 +874,7 @@ public class PluginManagerTest {
         public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("application/octet-stream");
             staplerResponse.setStatus(200);
-            staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
+            staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/" + TEST_PLUGIN));
         }
     }
 
