@@ -109,6 +109,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.console.WithConsoleUrl;
+import jenkins.model.FullyNameableModelObject;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.model.queue.CompositeCauseOfBlockage;
@@ -1882,7 +1883,7 @@ public class Queue extends ResourceController implements Saveable {
      * design, a {@link Task} must have at least one sub-task.)
      * Most of the time, the primary subtask is the only sub task.
      */
-    public interface Task extends ModelObject, SubTask {
+    public interface Task extends FullyNameableModelObject, SubTask {
         /**
          * Returns true if the execution should be blocked
          * for temporary reasons.
@@ -1927,11 +1928,6 @@ public class Queue extends ResourceController implements Saveable {
          * This method is no longer used, left here for compatibility. Just return {@link #getDisplayName()}.
          */
         String getName();
-
-        /**
-         * @see hudson.model.Item#getFullDisplayName()
-         */
-        String getFullDisplayName();
 
         /**
          * Returns task-specific key which is used by the {@link LoadBalancer} to choose one particular executor

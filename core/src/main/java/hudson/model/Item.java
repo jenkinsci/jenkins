@@ -38,7 +38,10 @@ import hudson.security.PermissionScope;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.util.Collection;
+import jenkins.model.FullyNameable;
+import jenkins.model.FullyNameableModelObject;
 import jenkins.model.Jenkins;
+import jenkins.model.Nameable;
 import jenkins.search.SearchGroup;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
@@ -73,7 +76,7 @@ import org.kohsuke.stapler.StaplerRequest2;
  * @see Items
  * @see ItemVisitor
  */
-public interface Item extends PersistenceRoot, SearchableModelObject, AccessControlled, OnMaster {
+public interface Item extends PersistenceRoot, FullyNameableModelObject, SearchableModelObject, FullyNameable, Nameable, AccessControlled, OnMaster {
     /**
      * Gets the parent that contains this item.
      */
@@ -97,6 +100,8 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *
      * @see #getFullName()
      */
+    @NonNull
+    @Override
     String getName();
 
     /**
@@ -110,6 +115,8 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *
      * @see jenkins.model.Jenkins#getItemByFullName(String,Class)
      */
+    @NonNull
+    @Override
     String getFullName();
 
     /**
@@ -126,13 +133,6 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      */
     @Override
     String getDisplayName();
-
-    /**
-     * Works like {@link #getDisplayName()} but return
-     * the full path that includes all the display names
-     * of the ancestors.
-     */
-    String getFullDisplayName();
 
     /**
      * Gets the relative name to this item from the specified group.
