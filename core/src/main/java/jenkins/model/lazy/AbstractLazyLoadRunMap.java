@@ -494,7 +494,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
             }
             return null;
         case DESC:
-            // TODO again could be made more efficient
             Iterator<Integer> iterator = core.keySet().iterator();
             while (iterator.hasNext()) {
                 int m = iterator.next();
