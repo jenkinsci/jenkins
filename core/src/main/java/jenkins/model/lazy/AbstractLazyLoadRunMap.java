@@ -485,7 +485,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         case ASC:
             for (int m : core.descendingMap().keySet()) {
                 if (m < n) {
-                    // TODO could be made more efficient with numberOnDisk.find
                     continue;
                 }
                 R r = getByNumber(m);
