@@ -375,7 +375,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         TreeMap<Integer, BuildReference<R>> res = new TreeMap<>(Comparator.reverseOrder());
         for (var entry : this.core.entrySet()) {
             BuildReference<R> buildRef = entry.getValue();
-
             if (buildRef.isSet() && !buildRef.isUnloadable()) {
                 res.put(entry.getKey(), buildRef);
             }
@@ -526,18 +525,15 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         if (ref == null || ref.isUnloadable()) {
             return null;
         }
-
         R v;
         if ((v = ref.get()) != null) {
             return v; // already in memory
         }
         // otherwise fall through to load
-
         synchronized (this) {
             if ((v = ref.get()) != null) {
                 return v; // already in memory
             }
-
             int n = ref.number;
             if (allowLoad(n)) {
                 v = load(n);
@@ -619,7 +615,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     private R load(int n) {
         assert Thread.holdsLock(this);
         assert dir != null;
-
         return load(new File(dir, String.valueOf(n)));
     }
 
