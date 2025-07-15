@@ -4408,7 +4408,7 @@ __metadata:
     sortablejs: "npm:1.15.6"
     style-loader: "npm:4.0.0"
     stylelint: "npm:16.21.1"
-    stylelint-checkstyle-reporter: "npm:1.0.0"
+    stylelint-checkstyle-reporter: "npm:1.1.1"
     stylelint-config-standard-scss: "npm:15.0.1"
     tippy.js: "npm:6.3.7"
     webpack: "npm:5.100.1"
@@ -6646,15 +6646,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint-checkstyle-reporter@npm:1.0.0":
-  version: 1.0.0
-  resolution: "stylelint-checkstyle-reporter@npm:1.0.0"
+"stylelint-checkstyle-reporter@npm:1.1.1":
+  version: 1.1.1
+  resolution: "stylelint-checkstyle-reporter@npm:1.1.1"
   dependencies:
     get-stdin: "npm:9.0.0"
     xmlbuilder2: "npm:3.1.1"
   bin:
     stylelint-checkstyle-reporter: dist/reporter-with-stdin.mjs
-  checksum: 10c0/26d45528ab75ad4129abdf34436578a2a0e6a10c552e53b1bb19fb7eff8433f1fd77ab3fb6698b295802df54f9005d8031791451b695fa86269e20385b978a9b
+  checksum: 10c0/e003714d6877b2296cd79831ac7859c88b49e4b57ec7e01e0b46aa5169b8bdcd98422be80a79ac48e25f9fe2258fc0e0977b70584a11de39ae28e09267b75461
   languageName: node
   linkType: hard
 
