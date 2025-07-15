@@ -68,7 +68,7 @@ $semantics: (
   --unstable-build-icon-color: var(--orange);
 
   // Background colors
-  --background: var(--white);
+  --background: rgb(254 254 254);
 
   // Header
   --header-background: var(--background);
@@ -121,10 +121,10 @@ $semantics: (
   );
   --jenkins-border-color--subtle: color-mix(
     in sRGB,
-    var(--text-color) 2%,
+    var(--text-color) 3.5%,
     transparent
   );
-  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.06);
+  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.08);
 
   /* This is a harsher border - for dividers, content blocks and more */
   --jenkins-border: var(--jenkins-border-width) solid
@@ -138,7 +138,7 @@ $semantics: (
   --jenkins-border--subtle-shadow: 0 0 0 var(--jenkins-border-width)
     var(--jenkins-border-color--subtle);
 
-  @media (resolution <= 1x) {
+  @media (resolution <= 1dppx) {
     --jenkins-border-width: 2px;
   }
 
@@ -151,7 +151,11 @@ $semantics: (
   }
 
   // Table
-  --table-background: oklch(from var(--text-color-secondary) l c h / 0.075);
+  --table-background: color-mix(
+    in oklch,
+    var(--text-color-secondary) 7.5%,
+    var(--white)
+  );
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
@@ -231,10 +235,10 @@ $semantics: (
   --pane-link-color--visited: black;
 
   // Cards
-  --card-background: var(--background);
+  --card-background: var(--white);
   --card-background--hover: transparent;
   --card-background--active: transparent;
-  --card-border-color: oklch(from var(--text-color-secondary) l c h / 0.15);
+  --card-border-color: var(--jenkins-border-color);
   --card-border-color--hover: oklch(
     from var(--text-color-secondary) l c h / 0.3
   );
@@ -248,20 +252,12 @@ $semantics: (
   }
 
   // Tab bar
-  --tabs-background: oklch(from var(--text-color-secondary) l c h / 0.1);
-  --tabs-item-background: transparent;
   --tabs-item-foreground: color-mix(
     in sRGB,
     var(--text-color-secondary),
     var(--text-color)
   );
-  --tabs-item-background--hover: rgb(0 0 0 / 0.05);
-  --tabs-item-foreground--hover: var(--text-color);
-  --tabs-item-background--active: rgb(0 0 0 / 0.1);
-  --tabs-item-foreground--active: var(--text-color);
-  --tabs-item-background--selected: white;
-  --tabs-item-foreground--selected: var(--link-color);
-  --tabs-border-radius: calc((10px + 34px) / 2);
+  --tabs-item-background--selected: var(--white);
 
   // Side panel
   --side-panel-width: 340px;
@@ -270,11 +266,7 @@ $semantics: (
 
   // Form
   --section-padding: 1.625rem;
-  --input-color: color-mix(
-    in sRGB,
-    var(--text-color-secondary) 1.5%,
-    var(--background)
-  );
+  --input-color: var(--white);
   --input-border: color-mix(
     in sRGB,
     var(--text-color-secondary) 25%,

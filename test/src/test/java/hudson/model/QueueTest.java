@@ -462,6 +462,13 @@ public class QueueTest {
         p.setAssignedLabel(label);
         p.scheduleBuild2(0);
 
+        // Wait 3 seconds if job is not already in the queue, reduce test flakes
+        if (!p.isInQueue()) {
+            Thread.sleep(3000);
+        }
+
+        assertTrue(p.isInQueue(), "Build not queued");
+
         JenkinsRule.WebClient webclient = r.createWebClient();
 
         XmlPage queueItems = webclient.goToXml("queue/api/xml");
