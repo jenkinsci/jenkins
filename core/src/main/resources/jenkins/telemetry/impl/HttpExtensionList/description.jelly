@@ -1,9 +1,0 @@
-<?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-    <p>
-        ${%blurb}
-    </p>
-    <p>
-        ${%blurb2}
-    </p>
-</j:jelly>
