@@ -14,10 +14,27 @@
 
   .jenkins-app-bar__content {
     display: flex;
-    justify-content: center;
-    flex-direction: column;
+    align-items: center;
+    justify-content: start;
     min-height: 2.25rem;
     flex-grow: 1;
+    gap: 0.875rem;
+    max-width: 1200px;
+    text-overflow: ellipsis;
+
+    // Jobs have their SVGs nested inside of a link
+    & > a > svg,
+    & > svg {
+      width: 2rem !important;
+      height: 2rem !important;
+      margin-left: -0.1875rem;
+    }
+
+    & > img {
+      width: 2.375rem;
+      height: 2.375rem;
+      margin-left: -0.375rem;
+    }
   }
 
   .jenkins-app-bar__controls {
@@ -86,28 +103,6 @@
   &__subtitle {
     color: var(--text-color-secondary);
     margin-left: 0.5ch;
-  }
-}
-
-.jenkins-build-caption {
-  display: flex;
-  flex-direction: row !important;
-  align-items: center;
-  justify-content: start !important;
-  gap: 0.875rem;
-  max-width: 1200px;
-  text-overflow: ellipsis;
-
-  svg {
-    width: 2rem !important;
-    height: 2rem !important;
-    margin-left: -0.1875rem;
-  }
-
-  img {
-    width: 2.375rem;
-    height: 2.375rem;
-    margin-left: -0.375rem;
   }
 }
 

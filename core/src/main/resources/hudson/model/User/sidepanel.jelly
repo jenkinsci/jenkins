@@ -30,14 +30,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:header />
   <l:side-panel>
-    <div class="jenkins-app-bar">
-      <div class="jenkins-app-bar__content jenkins-build-caption">
-        <l:icon src="${h.getUserAvatar(it, '96x96')}" class="jenkins-avatar" />
-        <h1>
-          ${it.fullName}
-        </h1>
-      </div>
-    </div>
+    <l:app-bar title="${it.fullName}" icon="${h.getUserAvatar(it, '96x96')}" />
+
     <l:tasks>
       <l:task contextMenu="false" href="${rootURL}/${it.url}/" icon="symbol-person" title="${%Profile}"/>
       <l:task href="${rootURL}/${it.url}/builds" icon="symbol-build-history" title="${%Builds}"/>
