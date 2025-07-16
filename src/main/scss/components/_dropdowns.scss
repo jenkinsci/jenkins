@@ -281,10 +281,11 @@ $dropdown-padding: 0.375rem;
     }
   }
 }
-.jenkins-breadcrumbs__overflow-item{
-    display: block;
-    overflow: hidden;
-    max-width: 25ch;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+
+.jenkins-breadcrumbs__overflow-item {
+  display: block;
+  overflow: hidden;
+  max-width: 25ch;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
