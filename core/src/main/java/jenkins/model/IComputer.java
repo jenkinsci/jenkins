@@ -45,7 +45,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since 2.480
  */
 @Restricted(Beta.class)
-public interface IComputer extends AccessControlled, IconSpec, ModelObject, Nameable {
+public interface IComputer extends AccessControlled, IconSpec, ModelObject, Named {
     /**
      * Used to render the list of executors.
      * @return a snapshot of the executor display information

@@ -5,7 +5,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Cause;
 import hudson.model.Queue;
 import hudson.model.Run;
-import jenkins.model.FullyNameableModelObject;
+import jenkins.model.FullyNamedModelObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -14,7 +14,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since 2.405
  */
 @Restricted(Beta.class)
-public interface QueueItem extends FullyNameableModelObject {
+public interface QueueItem extends FullyNamedModelObject {
     /**
      * @return true if the item is starving for an executor for too long.
      */

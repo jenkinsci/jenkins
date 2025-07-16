@@ -49,7 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import jenkins.model.Nameable;
+import jenkins.model.Named;
 
 /**
  * Defines a mapping problem for answering "where do we execute this task?"
@@ -116,7 +116,7 @@ public class MappingWorksheet {
         }
     }
 
-    public final class ExecutorChunk extends ReadOnlyList<ExecutorSlot> implements Nameable {
+    public final class ExecutorChunk extends ReadOnlyList<ExecutorSlot> implements Named {
         public final int index;
         public final Computer computer;
         public final Node node;

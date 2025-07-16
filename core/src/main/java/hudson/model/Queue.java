@@ -109,7 +109,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.console.WithConsoleUrl;
-import jenkins.model.FullyNameableModelObject;
+import jenkins.model.FullyNamedModelObject;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.model.queue.CompositeCauseOfBlockage;
@@ -1883,7 +1883,7 @@ public class Queue extends ResourceController implements Saveable {
      * design, a {@link Task} must have at least one sub-task.)
      * Most of the time, the primary subtask is the only sub task.
      */
-    public interface Task extends FullyNameableModelObject, SubTask {
+    public interface Task extends FullyNamedModelObject, SubTask {
         /**
          * Returns true if the execution should be blocked
          * for temporary reasons.

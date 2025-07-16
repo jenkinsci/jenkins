@@ -8,7 +8,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * This interface is used to provide a consistent way to retrieve the name of an object in Jenkins.
  * It is typically implemented by objects that need to be identified by a name, such as tasks, nodes, or other model objects.
  */
-public interface Nameable {
+public interface Named {
     /**
      * Returns the name of this object.
      *

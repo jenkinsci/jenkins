@@ -27,14 +27,14 @@ package jenkins.model.queue;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Item;
 import hudson.security.AccessControlled;
-import jenkins.model.FullyNameableModelObject;
+import jenkins.model.FullyNamedModelObject;
 
 /**
  * A task that can be displayed in the executors widget.
  *
  * @since 2.480
  */
-public interface ITask extends FullyNameableModelObject {
+public interface ITask extends FullyNamedModelObject {
     /**
      * @return {@code true} if the current user can cancel the current task.
      *

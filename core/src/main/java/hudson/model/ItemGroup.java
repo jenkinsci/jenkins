@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import jenkins.model.FullyNameable;
-import jenkins.model.FullyNameableModelObject;
+import jenkins.model.FullyNamed;
+import jenkins.model.FullyNamedModelObject;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -43,7 +43,7 @@ import org.springframework.security.access.AccessDeniedException;
  * @author Kohsuke Kawaguchi
  * @see ItemGroupMixIn
  */
-public interface ItemGroup<T extends Item> extends FullyNameable, FullyNameableModelObject, PersistenceRoot {
+public interface ItemGroup<T extends Item> extends FullyNamed, FullyNamedModelObject, PersistenceRoot {
     /**
      * Gets all the items in this collection in a read-only view.
      */

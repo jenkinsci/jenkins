@@ -13,7 +13,7 @@ import jenkins.security.stapler.StaplerAccessibleType;
  * @see ModelObject
  */
 @StaplerAccessibleType
-public interface FullyNameableModelObject extends ModelObject {
+public interface FullyNamedModelObject extends ModelObject {
     /**
      * Works like {@link #getDisplayName()} but return
      * the full path that includes all the display names

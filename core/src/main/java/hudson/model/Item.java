@@ -38,10 +38,10 @@ import hudson.security.PermissionScope;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.util.Collection;
-import jenkins.model.FullyNameable;
-import jenkins.model.FullyNameableModelObject;
+import jenkins.model.FullyNamed;
+import jenkins.model.FullyNamedModelObject;
 import jenkins.model.Jenkins;
-import jenkins.model.Nameable;
+import jenkins.model.Named;
 import jenkins.search.SearchGroup;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
@@ -76,7 +76,7 @@ import org.kohsuke.stapler.StaplerRequest2;
  * @see Items
  * @see ItemVisitor
  */
-public interface Item extends PersistenceRoot, FullyNameableModelObject, SearchableModelObject, FullyNameable, Nameable, AccessControlled, OnMaster {
+public interface Item extends PersistenceRoot, FullyNamedModelObject, SearchableModelObject, FullyNamed, Named, AccessControlled, OnMaster {
     /**
      * Gets the parent that contains this item.
      */

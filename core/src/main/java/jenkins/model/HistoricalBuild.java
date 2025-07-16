@@ -47,7 +47,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since 2.477
  */
 @Restricted(Beta.class)
-public interface HistoricalBuild extends FullyNameableModelObject {
+public interface HistoricalBuild extends FullyNamedModelObject {
 
     /**
      * @return A build number
