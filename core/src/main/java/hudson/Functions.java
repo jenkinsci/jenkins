@@ -921,11 +921,11 @@ public class Functions {
         return buf.toString();
     }
 
-    public static void checkPermission(Permission permission) throws IOException, ServletException {
+    public static void checkPermission(Permission permission) {
         checkPermission(Jenkins.get(), permission);
     }
 
-    public static void checkPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
+    public static void checkPermission(AccessControlled object, Permission permission) {
         if (permission != null) {
             object.checkPermission(permission);
         }
@@ -936,7 +936,7 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
-    public static void checkPermission(Object object, Permission permission) throws IOException, ServletException {
+    public static void checkPermission(Object object, Permission permission) {
         if (permission == null)
             return;
 
@@ -961,7 +961,7 @@ public class Functions {
      * @param permission
      *      If null, returns true. This defaulting is convenient in making the use of this method terse.
      */
-    public static boolean hasPermission(Permission permission) throws IOException, ServletException {
+    public static boolean hasPermission(Permission permission) {
         return hasPermission(Jenkins.get(), permission);
     }
 
@@ -969,7 +969,7 @@ public class Functions {
      * This version is so that the 'hasPermission' can degrade gracefully
      * if "it" is not an {@link AccessControlled} object.
      */
-    public static boolean hasPermission(Object object, Permission permission) throws IOException, ServletException {
+    public static boolean hasPermission(Object object, Permission permission) {
         if (permission == null)
             return true;
         if (object instanceof AccessControlled)
@@ -1298,7 +1298,7 @@ public class Functions {
      *
      * @since 2.238
      */
-    public static boolean hasAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+    public static boolean hasAnyPermission(Object object, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
             return true;
         }
@@ -1336,7 +1336,7 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
-    public static void checkAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+    public static void checkAnyPermission(Object object, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
             return;
         }
