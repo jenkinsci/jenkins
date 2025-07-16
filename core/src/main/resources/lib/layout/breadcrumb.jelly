@@ -50,7 +50,7 @@ THE SOFTWARE.
     <j:set var="baseUrl" value="${request2.originalRequestURI}" />
     <j:set var="hasLink" value="${attrs.href != null}" />
     <j:set var="isCurrent" value="${baseUrl == attrs.href}" />
-    <j:set var="shouldShowTitle" value="${attrs.title.length() > 25}" />
+    <j:set var="shouldShowTitle" value="${attrs.title.length() > 26}" />
 
     <li aria-current="${(isCurrent or !hasLink)? 'page' : null}"  id="${attrs.id}" class="jenkins-breadcrumbs__list-item" data-type="breadcrumb-item">
       <j:choose>
