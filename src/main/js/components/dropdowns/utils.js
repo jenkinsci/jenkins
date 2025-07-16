@@ -32,8 +32,10 @@ function generateDropdown(element, callback, immediate, options = {}) {
               const isClickOnReference = instance.reference.contains(
                 event.target,
               );
+              // Don't close the dropdown if the user is interacting with a SELECT menu inside of it
+              const isSelect = event.target.tagName === "SELECT";
 
-              if (!isClickOnReference) {
+              if (!isClickOnReference && !isSelect) {
                 instance.clickToHide = true;
                 instance.hide();
               }
