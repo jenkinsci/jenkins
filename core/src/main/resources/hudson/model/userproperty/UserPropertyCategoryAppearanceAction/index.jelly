@@ -32,7 +32,7 @@ THE SOFTWARE.
         <l:main-panel>
             <l:app-bar title="${%title}" />
 
-            <f:form method="post" action="configSubmit" name="config">
+            <f:form method="post" action="configSubmit" name="config" class="jenkins-form">
                 <j:set var="instance" value="${it}"/>
                 <j:set var="descriptors" value="${it.myCategoryDescriptors}" />
                 <j:set var="instances" value="${it.targetUser.properties}" />
@@ -42,7 +42,7 @@ THE SOFTWARE.
                     <j:when test="${hasItems}">
                         <j:forEach var="d" items="${descriptors}" varStatus="loop">
                             <j:if test="${d.enabled}">
-                                <f:section title="${d.displayName}">
+                                <f:section title="${d.displayName}" description="${d.description}">
                                     <j:set var="it" value="${thisAction.targetUser}" />
                                     <j:set var="descriptor" value="${d}" />
                                     <j:set var="instance" value="${instances[d]}" />
