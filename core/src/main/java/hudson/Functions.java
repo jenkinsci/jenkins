@@ -41,7 +41,6 @@ import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
-import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
@@ -97,11 +96,9 @@ import hudson.util.jna.GNUCLibrary;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import io.jenkins.servlet.http.CookieWrapper;
 import io.jenkins.servlet.http.HttpServletRequestWrapper;
 import io.jenkins.servlet.http.HttpServletResponseWrapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -190,8 +187,6 @@ import org.kohsuke.stapler.RawHtmlArgument;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -983,36 +978,6 @@ public class Functions {
                 }
             }
             return Jenkins.get().hasPermission(permission);
-        }
-    }
-
-    /**
-     * @since 2.475
-     */
-    public static void adminCheck(StaplerRequest2 req, StaplerResponse2 rsp, Object required, Permission permission) throws IOException, ServletException {
-        // this is legacy --- all views should be eventually converted to
-        // the permission based model.
-        if (required != null && !Hudson.adminCheck(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp))) {
-            // check failed. commit the FORBIDDEN response, then abort.
-            rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            rsp.getOutputStream().close();
-            throw new ServletException("Unauthorized access");
-        }
-
-        // make sure the user owns the necessary permission to access this page.
-        if (permission != null)
-            checkPermission(permission);
-    }
-
-   /**
-     * @deprecated use {@link #adminCheck(StaplerRequest2, StaplerResponse2, Object, Permission)}
-     */
-    @Deprecated
-    public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, javax.servlet.ServletException {
-        try {
-            adminCheck(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), required, permission);
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
         }
     }
 
