@@ -109,6 +109,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.console.WithConsoleUrl;
+import jenkins.model.FullyNamed;
 import jenkins.model.FullyNamedModelObject;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
@@ -1935,10 +1936,16 @@ public class Queue extends ResourceController implements Saveable {
          * NOTE: To be able to re-use the same node during the next run this key should not change from one run to
          * another. You probably want to compute that key based on the job's name.
          *
-         * @return by default: {@link #getFullDisplayName()}
+         * @return by default: {@link FullyNamed#getFullName()} if implements {@link FullyNamed} or {@link #getFullDisplayName()} otherwise.
          * @see hudson.model.LoadBalancer
          */
-        default String getAffinityKey() { return getFullDisplayName(); }
+        default String getAffinityKey() {
+            if (this instanceof FullyNamed fullyNamed) {
+                return fullyNamed.getFullName();
+            } else {
+                return getFullDisplayName();
+            }
+        }
 
         /**
          * Checks the permission to see if the current user can abort this executable.
