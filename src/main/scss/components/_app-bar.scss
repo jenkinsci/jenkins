@@ -131,6 +131,7 @@ $bottom-app-bar-padding: 0.875rem;
     var(--background)
   );
   border-top: var(--jenkins-border-width) solid var(--jenkins-border-color);
+  z-index: 997;
 
   &::after {
     content: "";
