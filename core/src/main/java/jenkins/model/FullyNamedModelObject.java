@@ -17,7 +17,7 @@ public interface FullyNamedModelObject extends ModelObject {
     /**
      * Works like {@link #getDisplayName()} but return
      * the full path that includes all the display names
-     * of the ancestors.
+     * of the ancestors in an unspecified format.
      */
     String getFullDisplayName();
 }
