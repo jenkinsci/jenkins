@@ -10,7 +10,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.OpenOption;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -141,12 +144,28 @@ public abstract class DirScanner implements Serializable {
             fs.setDefaultexcludes(useDefaultExcludes);
 
             if (dir.exists()) {
+                Set<String> allPaths = new TreeSet<>();
+
                 DirectoryScanner ds = fs.getDirectoryScanner(new Project());
-                for (String f : ds.getIncludedFiles()) {
-                    File file = new File(dir, f);
-                    scanSingle(file, f, visitor);
+                for (String d : ds.getIncludedDirectories()) {
+                    if (!d.isEmpty()) allPaths.add(d);
                 }
+
+                allPaths.addAll(List.of(ds.getIncludedFiles()));
+
+                for (String path : allPaths) {
+                    File file = new File(dir, path);
+
+                    // skip non-empty dirs
+                    String [] contents = file.list();
+                    if (contents != null && contents.length > 0) continue;
+
+                    scanSingle(file, path, visitor);
+                }
+
+
             }
+
         }
 
         private static final long serialVersionUID = 1L;
