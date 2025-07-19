@@ -66,6 +66,11 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
         return true;
     }
 
+    @Override
+    public boolean isActivationFake() {
+        return true;
+    }
+
     @Restricted(DoNotUse.class) // WebOnly
     @RestrictedSince("2.235")
     public HttpResponse doTest(StaplerRequest2 request, @QueryParameter boolean testWithContext) {

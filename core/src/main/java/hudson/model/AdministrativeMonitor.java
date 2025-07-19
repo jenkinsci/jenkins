@@ -160,6 +160,11 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     public abstract boolean isActivated();
 
+    @Restricted(NoExternalUse.class)
+    public boolean isActivationFake() {
+        return false;
+    }
+
     /**
      * Returns true if this monitor is security related.
      *
