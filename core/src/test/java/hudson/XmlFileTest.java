@@ -19,17 +19,29 @@ import org.junit.jupiter.api.Test;
 class XmlFileTest {
 
     @Test
-    void canReadXml1_0Test() throws IOException {
+    public void canReadXml1_0WhenFileExists() throws IOException {
         URL configUrl = getClass().getResource("/hudson/config_1_0.xml");
-        XStream2  xs = new XStream2();
+        XStream2 xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
 
-        XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
-        if (xmlFile.exists()) {
-            Node n = (Node) xmlFile.read();
-            assertThat(n.getNumExecutors(), is(2));
-            assertThat(n.getMode().toString(), is("NORMAL"));
-        }
+        XmlFile xmlFile = new XmlFile(xs, new File(configUrl.getFile()));
+
+        assertThat(xmlFile.exists(), is(true));
+
+        Node n = (Node) xmlFile.read();
+        assertThat(n.getNumExecutors(), is(2));
+        assertThat(n.getMode().toString(), is("NORMAL"));
+    }
+
+    @Test
+    public void shouldHandleNonExistentXml1_0() throws IOException {
+        URL configUrl = getClass().getResource("/hudson/non_existent_config.xml");
+        XStream2 xs = new XStream2();
+        xs.alias("hudson", Jenkins.class);
+
+        XmlFile xmlFile = new XmlFile(xs, new File(configUrl.getFile()));
+
+        assertThat(xmlFile.exists(), is(false));
     }
 
     @Test
