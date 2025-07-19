@@ -152,6 +152,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     }
 
     ///// ViewGroup methods /////
+    @NonNull
     @Override
     public String getUrl() {
         return user.getUrl() + "/my-views/";

@@ -89,6 +89,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import jenkins.model.AddressableModelObject;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -144,7 +145,7 @@ import org.xml.sax.SAXException;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner, HasWidgets {
+public abstract class View extends AbstractModelObject implements AccessControlled, AddressableModelObject, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner, HasWidgets {
 
     /**
      * Container of this view. Set right after the construction
@@ -542,6 +543,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Doesn't start with '/' but ends with '/' (except returns
      * empty string when this is the default view).
      */
+    @NonNull
     public String getUrl() {
         return isDefault() ? (owner != null ? owner.getUrl() : "") : getViewUrl();
     }

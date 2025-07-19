@@ -67,6 +67,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.AddressableModelObject;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
@@ -119,7 +120,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Loadable, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
+public class User extends AbstractModelObject implements AddressableModelObject, AccessControlled, DescriptorByNameOwner, Loadable, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
 
     public static final XStream2 XSTREAM = new XStream2();
     private static final Logger LOGGER = Logger.getLogger(User.class.getName());

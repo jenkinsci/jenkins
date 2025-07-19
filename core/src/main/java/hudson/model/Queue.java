@@ -109,6 +109,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.console.WithConsoleUrl;
+import jenkins.model.AddressableModelObject;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.model.queue.CompositeCauseOfBlockage;
@@ -1882,7 +1883,7 @@ public class Queue extends ResourceController implements Saveable {
      * design, a {@link Task} must have at least one sub-task.)
      * Most of the time, the primary subtask is the only sub task.
      */
-    public interface Task extends ModelObject, SubTask {
+    public interface Task extends AddressableModelObject, SubTask {
         /**
          * Returns true if the execution should be blocked
          * for temporary reasons.
@@ -1969,6 +1970,7 @@ public class Queue extends ResourceController implements Saveable {
          * @return
          *      URL that ends with '/'.
          */
+        @NonNull
         @Override
         String getUrl();
 
@@ -2316,6 +2318,7 @@ public class Queue extends ResourceController implements Saveable {
          *      URL that ends with '/'.
          * @since 1.519
          */
+        @NonNull
         @Exported
         public String getUrl() {
             return "queue/item/" + id + '/';
