@@ -1754,12 +1754,12 @@ function rowvgStartEachRow(recursive, f) {
 
   window.addEventListener("load", function () {
     // Add a class to the bottom bar when it's stuck to the bottom of the screen
-    const el = document.querySelector("#bottom-sticker");
+    const el = document.querySelector(".jenkins-bottom-app-bar__shadow");
     if (el) {
       const observer = new IntersectionObserver(
         ([e]) =>
           e.target.classList.toggle(
-            "bottom-sticker-inner--stuck",
+            "jenkins-bottom-app-bar__shadow--stuck",
             e.intersectionRatio < 1,
           ),
         { threshold: [1] },
