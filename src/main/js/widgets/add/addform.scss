@@ -8,6 +8,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--section-padding);
+
+    #bottom-sticker {
+      margin-top: calc(var(--section-padding) * -1);
+    }
   }
 
   .item-copy {
