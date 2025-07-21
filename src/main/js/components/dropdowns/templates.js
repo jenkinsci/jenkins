@@ -36,6 +36,21 @@ function dropdown() {
     animation: "dropdown",
     duration: 250,
     onShow: (instance) => {
+      // Make sure only one instance is visible at all times in case of breadcrumb
+      if (
+        instance.reference.classList.contains("hoverable-model-link") ||
+        instance.reference.classList.contains("hoverable-children-model-link")
+      ) {
+        const dropdowns = document.querySelectorAll("[data-tippy-root]");
+        Array.from(dropdowns).forEach((element) => {
+          // Check if the Tippy.js instance exists
+          if (element && element._tippy) {
+            // To just hide the dropdown
+            element._tippy.hide();
+          }
+        });
+      }
+
       const referenceParent = instance.reference.parentNode;
 
       if (referenceParent.classList.contains("model-link")) {

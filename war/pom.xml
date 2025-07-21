@@ -324,7 +324,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1373.v7b_813f10efa_b_</version>
+                  <version>1380.ve03e7a_63d139</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -338,7 +338,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.5-1</version>
+                  <version>5.3.7-1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -368,7 +368,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>5.6.0-4</version>
+                  <version>5.6.0-5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -414,7 +414,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, plugin-util-api, workflow-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>700.v6e45cb_a_5a_a_21</version>
+                  <version>704.ve4f0967e98fa_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -463,7 +463,7 @@ THE SOFTWARE.
                   <!-- detached after 2.281 -->
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>sshd</artifactId>
-                  <version>3.353.v2b_d33c46e970</version>
+                  <version>3.372.v5d04a_e92d8cf</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -512,7 +512,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api, checks-api, commons-text-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-lang3-api</artifactId>
-                  <version>3.17.0-87.v5cf526e63b_8b_</version>
+                  <version>3.18.0-98.v3a_674c06072d</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -653,7 +653,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.0.22</version>
+        <version>12.0.23</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
