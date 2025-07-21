@@ -381,7 +381,9 @@ public abstract class Slave extends Node implements Serializable {
     @Override
     protected Set<LabelAtom> getLabelAtomSet() {
         if (labelAtomSet == null) {
-            warnPlugin();
+            if (!insideReadResolve.get()) {
+                warnPlugin();
+            }
             this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
         }
         return labelAtomSet;
@@ -627,6 +629,8 @@ public abstract class Slave extends Node implements Serializable {
         return name.hashCode();
     }
 
+    private static final ThreadLocal<Boolean> insideReadResolve = ThreadLocal.withInitial(() -> false);
+
     /**
      * Invoked by XStream when this object is read into memory.
      */
@@ -634,7 +638,12 @@ public abstract class Slave extends Node implements Serializable {
         if (nodeProperties == null)
             nodeProperties = new DescribableList<>(this);
         previouslyAssignedLabels = new HashSet<>();
-        _setLabelString(label);
+        insideReadResolve.set(true);
+        try {
+            _setLabelString(label);
+        } finally {
+            insideReadResolve.set(false);
+        }
         return this;
     }
 
