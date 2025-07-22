@@ -191,8 +191,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * By default {@link Jenkins#ADMINISTER}, but {@link Jenkins#SYSTEM_READ} or {@link Jenkins#MANAGE} are also supported.
      * <p>
      *     Changing this permission check to return {@link Jenkins#SYSTEM_READ} will make the active
-     *     administrative monitor appear on {@code manage.jelly} and on the globally visible
-     *     {@link jenkins.management.AdministrativeMonitorsDecorator} to users without Administer permission.
+     *     administrative monitor appear on {@link ManageJenkinsAction} to users without Administer permission.
      *     {@link #doDisable(StaplerRequest2, StaplerResponse2)} will still always require Administer permission.
      * </p>
      * <p>
