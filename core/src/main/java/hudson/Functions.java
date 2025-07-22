@@ -2099,7 +2099,7 @@ public class Functions {
     }
 
     /**
-     * If the given {@code Action} is a {@link RootAction#isPrimaryAction() primary} {code RootAction}, or a parent of the current page, return {@code true}.
+     * If the given {@code Action} is a {@link RootAction#isPrimaryAction() primary} {@code RootAction}, or a parent of the current page, return {@code true}.
      * Used in {@code actions.jelly} to decide if the action should shown in the main header or the hamburger.
      */
     @Restricted(NoExternalUse.class)
