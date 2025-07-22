@@ -205,10 +205,6 @@ public interface IComputer extends AccessControlled, IconSpec {
 
     /**
      * Indicates whether the agent is actually connected to the controller.
-     * <p>
-     * This default implementation helps maintain compatibility across Jenkins versions.
-     * The core {@link Computer#isConnected()} returns {@code true} if the agent is connected.
-     *
      * @return {@code true} if the agent is connected to the controller.
      */
     default boolean isConnected() {
