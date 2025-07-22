@@ -27,6 +27,7 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -102,6 +103,7 @@ import org.kohsuke.stapler.StaplerResponse2;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(value = "DESERIALIZATION_GADGET", justification = "unhappy about existence of readResolve?")
 public abstract class Slave extends Node implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(Slave.class.getName());
