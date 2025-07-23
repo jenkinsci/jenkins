@@ -36,7 +36,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import jenkins.model.IdStrategy;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -85,7 +88,7 @@ class UserIdMapperTest {
 
     @Test
     void testMultipleSaved() throws IOException {
-        File usersDirectory = UserIdMigratorTest.createTestDirectory(getClass(), info);
+        File usersDirectory = createTestDirectory(getClass(), info);
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         UserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
         mapper.init();
@@ -162,7 +165,7 @@ class UserIdMapperTest {
 
     @Test
     void testRemoveAfterSave() throws IOException {
-        File usersDirectory = UserIdMigratorTest.createTestDirectory(getClass(), info);
+        File usersDirectory = createTestDirectory(getClass(), info);
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         UserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
         mapper.init();
@@ -311,10 +314,26 @@ class UserIdMapperTest {
     }
 
     private UserIdMapper createUserIdMapper(IdStrategy idStrategy) throws IOException {
-        File usersDirectory = UserIdMigratorTest.createTestDirectory(getClass(), info);
+        File usersDirectory = createTestDirectory(getClass(), info);
         TestUserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
         mapper.init();
         return mapper;
     }
 
+    private static File createTestDirectory(Class clazz, TestInfo info) throws IOException {
+        // TODO better to use java.io.tmpdir, and TestName rule; or TemporaryFolder rule
+        File tempDirectory = Files.createTempDirectory(Paths.get("target"), "userIdMapperTest").toFile();
+        tempDirectory.deleteOnExit();
+        copyTestDataIfExists(clazz, info, tempDirectory);
+        return new File(tempDirectory, "users");
+    }
+
+    private static final String BASE_RESOURCE_PATH = "src/test/resources/hudson/model/";
+
+    private static void copyTestDataIfExists(Class clazz, TestInfo info, File tempDirectory) throws IOException {
+        File resourcesDirectory = new File(BASE_RESOURCE_PATH + clazz.getSimpleName(), info.getTestMethod().orElseThrow().getName());
+        if (resourcesDirectory.exists()) {
+            FileUtils.copyDirectory(resourcesDirectory, tempDirectory);
+        }
+    }
 }
