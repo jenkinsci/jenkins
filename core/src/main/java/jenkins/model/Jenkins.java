@@ -2837,7 +2837,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      For URL access to descriptors, see {@link hudson.model.DescriptorByNameOwner}.
      *      For URL access to specific other {@link hudson.Extension} annotated elements, create your own {@link hudson.model.Action}, like {@link hudson.console.ConsoleAnnotatorFactory.RootAction}.
      */
-    @Deprecated(since = "TODO")
+    @Deprecated(since = "2.519")
     public ExtensionList getExtensionList(String extensionType) throws ClassNotFoundException {
         return getExtensionList(pluginManager.uberClassLoader.loadClass(extensionType));
     }

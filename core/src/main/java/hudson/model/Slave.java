@@ -27,6 +27,7 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -102,6 +103,7 @@ import org.kohsuke.stapler.StaplerResponse2;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(value = "DESERIALIZATION_GADGET", justification = "unhappy about existence of readResolve?")
 public abstract class Slave extends Node implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(Slave.class.getName());
@@ -381,7 +383,9 @@ public abstract class Slave extends Node implements Serializable {
     @Override
     protected Set<LabelAtom> getLabelAtomSet() {
         if (labelAtomSet == null) {
-            warnPlugin();
+            if (!insideReadResolve.get()) {
+                warnPlugin();
+            }
             this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
         }
         return labelAtomSet;
@@ -627,6 +631,8 @@ public abstract class Slave extends Node implements Serializable {
         return name.hashCode();
     }
 
+    private static final ThreadLocal<Boolean> insideReadResolve = ThreadLocal.withInitial(() -> false);
+
     /**
      * Invoked by XStream when this object is read into memory.
      */
@@ -634,7 +640,12 @@ public abstract class Slave extends Node implements Serializable {
         if (nodeProperties == null)
             nodeProperties = new DescribableList<>(this);
         previouslyAssignedLabels = new HashSet<>();
-        _setLabelString(label);
+        insideReadResolve.set(true);
+        try {
+            _setLabelString(label);
+        } finally {
+            insideReadResolve.set(false);
+        }
         return this;
     }
 
