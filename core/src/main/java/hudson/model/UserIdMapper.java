@@ -180,24 +180,14 @@ public class UserIdMapper {
     }
 
     private void load() throws IOException {
-        UserIdMigrator migrator = new UserIdMigrator(usersDirectory, getIdStrategy());
-        if (migrator.needsMigration()) {
-            try {
-                migrator.migrateUsers(this);
-            } catch (IOException ioe) {
-                LOGGER.log(Level.SEVERE, "Error migrating users.", ioe);
-                throw ioe;
-            }
-        } else {
-            XmlFile config = getXmlConfigFile();
-            try {
-                config.unmarshal(this);
-            } catch (NoSuchFileException e) {
-                LOGGER.log(Level.FINE, "User id mapping file does not exist. It will be created when a user is saved.");
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to load " + config, e);
-                throw e;
-            }
+        XmlFile config = getXmlConfigFile();
+        try {
+            config.unmarshal(this);
+        } catch (NoSuchFileException e) {
+            LOGGER.log(Level.FINE, "User id mapping file does not exist. It will be created when a user is saved.");
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to load " + config, e);
+            throw e;
         }
     }
 
