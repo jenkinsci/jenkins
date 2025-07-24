@@ -25,7 +25,6 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -38,7 +37,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,14 +55,11 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class UserIdMapper {
 
     private static final XStream2 XSTREAM = new XStream2();
-    static final String MAPPING_FILE = "users.xml";
     private static final Logger LOGGER = Logger.getLogger(UserIdMapper.class.getName());
     private static final int PREFIX_MAX = 15;
     private static final Pattern PREFIX_PATTERN = Pattern.compile("[^A-Za-z0-9]");
-    @SuppressFBWarnings(value = "SS_SHOULD_BE_STATIC", justification = "Reserved for future use")
-    private final int version = 1; // Not currently used, but it may be helpful in the future to store a version.
 
-    private transient File usersDirectory;
+    private File usersDirectory;
     private Map<String, String> idToDirectoryNameMap = new ConcurrentHashMap<>();
 
     static UserIdMapper getInstance() {
@@ -71,7 +69,7 @@ public class UserIdMapper {
     public UserIdMapper() {
     }
 
-    @Initializer(after = InitMilestone.PLUGINS_STARTED, before = InitMilestone.JOB_LOADED)
+    @Initializer(after = InitMilestone.SYSTEM_CONFIG_ADAPTED, before = InitMilestone.JOB_LOADED)
     public File init() throws IOException {
         usersDirectory = createUsersDirectoryAsNeeded();
         load();
@@ -83,7 +81,7 @@ public class UserIdMapper {
         return directoryName == null ? null : new File(usersDirectory, directoryName);
     }
 
-    File putIfAbsent(String userId, boolean saveToDisk) throws IOException {
+    File putIfAbsent(String userId) throws IOException {
         String idKey = getIdStrategy().keyFor(userId);
         String directoryName = idToDirectoryNameMap.get(idKey);
         File directory = null;
@@ -94,9 +92,6 @@ public class UserIdMapper {
                     directory = createDirectoryForNewUser(userId);
                     directoryName = directory.getName();
                     idToDirectoryNameMap.put(idKey, directoryName);
-                    if (saveToDisk) {
-                        save();
-                    }
                 }
             }
         }
@@ -113,7 +108,6 @@ public class UserIdMapper {
 
     void remove(String userId) throws IOException {
         idToDirectoryNameMap.remove(getIdStrategy().keyFor(userId));
-        save();
     }
 
     void clear() {
@@ -131,15 +125,6 @@ public class UserIdMapper {
 
     protected File getUsersDirectory() {
         return User.getRootDir();
-    }
-
-    private XmlFile getXmlConfigFile() {
-        File file = getConfigFile(usersDirectory);
-        return new XmlFile(XSTREAM, file);
-    }
-
-    static File getConfigFile(File usersDirectory) {
-        return new File(usersDirectory, MAPPING_FILE);
     }
 
     private File createDirectoryForNewUser(String userId) throws IOException {
@@ -170,33 +155,43 @@ public class UserIdMapper {
         return usersDirectory;
     }
 
-    synchronized void save() throws IOException {
-        try {
-            getXmlConfigFile().write(this);
-        } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, "Error saving userId mapping file.", ioe);
-            throw ioe;
-        }
-    }
-
     private void load() throws IOException {
-        UserIdMigrator migrator = new UserIdMigrator(usersDirectory, getIdStrategy());
-        if (migrator.needsMigration()) {
-            try {
-                migrator.migrateUsers(this);
-            } catch (IOException ioe) {
-                LOGGER.log(Level.SEVERE, "Error migrating users.", ioe);
-                throw ioe;
+        try { // in case users.xml exists, load it, as UserIdMigrator neglected to resave users/…/config.xml with <id>…</id>
+            new XmlFile(XSTREAM, new File(usersDirectory, "users.xml")).unmarshal(this);
+        } catch (NoSuchFileException x) {
+            // normal for new $JENKINS_HOME
+        }
+        var children = usersDirectory.listFiles();
+        if (children == null) {
+            return;
+        }
+        var idStrategy = getIdStrategy();
+        Arrays.sort(children);
+        var directoryNames = new HashSet<>(idToDirectoryNameMap.values());
+        for (var d : children) {
+            var dirName = d.getName();
+            if (directoryNames.contains(dirName)) {
+                continue; // was handled by users.xml, above
             }
-        } else {
-            XmlFile config = getXmlConfigFile();
-            try {
-                config.unmarshal(this);
-            } catch (NoSuchFileException e) {
-                LOGGER.log(Level.FINE, "User id mapping file does not exist. It will be created when a user is saved.");
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to load " + config, e);
-                throw e;
+            var xmlFile = new XmlFile(User.XSTREAM, new File(d, User.CONFIG_XML));
+            if (xmlFile.exists()) {
+                String id;
+                try {
+                    id = ((User) xmlFile.read()).getId();
+                } catch (Exception x) {
+                    LOGGER.log(Level.WARNING, null, x);
+                    continue;
+                }
+                if (id != null) {
+                    var idKey = idStrategy.keyFor(id);
+                    var prev = idToDirectoryNameMap.put(idKey, dirName);
+                    if (prev != null) {
+                        LOGGER.warning(() -> id + " ~ " + idKey + " seems to be registered under both " + prev + " and " + dirName);
+                    }
+                } else {
+                    LOGGER.warning(() -> "Missing both <id> and users.xml for " + d); // @LocalData?
+                    idToDirectoryNameMap.put(dirName, dirName);
+                }
             }
         }
     }

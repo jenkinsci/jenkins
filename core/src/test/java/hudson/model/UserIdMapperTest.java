@@ -32,11 +32,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import jenkins.model.IdStrategy;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -65,7 +68,7 @@ class UserIdMapperTest {
     void testSimplePutGet() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         assertThat(directory, is(mapper.getDirectory(user1)));
     }
 
@@ -73,11 +76,11 @@ class UserIdMapperTest {
     void testMultiple() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory1 = mapper.putIfAbsent(user1, true);
+        File directory1 = mapper.putIfAbsent(user1);
         String user2 = "user2";
-        File directory2 = mapper.putIfAbsent(user2, true);
+        File directory2 = mapper.putIfAbsent(user2);
         String user3 = "user3";
-        File directory3 = mapper.putIfAbsent(user3, true);
+        File directory3 = mapper.putIfAbsent(user3);
         assertThat(directory1, is(mapper.getDirectory(user1)));
         assertThat(directory2, is(mapper.getDirectory(user2)));
         assertThat(directory3, is(mapper.getDirectory(user3)));
@@ -85,16 +88,16 @@ class UserIdMapperTest {
 
     @Test
     void testMultipleSaved() throws IOException {
-        File usersDirectory = UserIdMigratorTest.createTestDirectory(getClass(), info);
+        File usersDirectory = createTestDirectory(getClass(), info);
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         UserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
         mapper.init();
         String user1 = "user1";
-        File directory1 = mapper.putIfAbsent(user1, true);
+        File directory1 = createUser(mapper, user1);
         String user2 = "user2";
-        File directory2 = mapper.putIfAbsent(user2, true);
+        File directory2 = createUser(mapper, user2);
         String user3 = "user3";
-        File directory3 = mapper.putIfAbsent(user3, true);
+        File directory3 = createUser(mapper, user3);
         mapper = new TestUserIdMapper(usersDirectory, idStrategy);
         mapper.init();
         assertThat(directory1, is(mapper.getDirectory(user1)));
@@ -102,12 +105,18 @@ class UserIdMapperTest {
         assertThat(directory3, is(mapper.getDirectory(user3)));
     }
 
+    private static File createUser(UserIdMapper mapper, String id) throws IOException {
+        File directory = mapper.putIfAbsent(id);
+        FileUtils.write(new File(directory, User.CONFIG_XML), "<user><id>" + id + "</id></user>", StandardCharsets.UTF_8);
+        return directory;
+    }
+
     @Test
     void testRepeatPut() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory1 = mapper.putIfAbsent(user1, true);
-        File directory2 = mapper.putIfAbsent(user1, true);
+        File directory1 = mapper.putIfAbsent(user1);
+        File directory2 = mapper.putIfAbsent(user1);
         assertThat(directory1, is(directory2));
     }
 
@@ -121,7 +130,7 @@ class UserIdMapperTest {
     void testIsMapped() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         assertThat(mapper.isMapped(user1), is(true));
     }
 
@@ -135,7 +144,7 @@ class UserIdMapperTest {
     void testSingleUserIds() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         assertThat(mapper.getConvertedUserIds(), hasSize(1));
         assertThat(mapper.getConvertedUserIds().iterator().next(), is(user1));
     }
@@ -144,9 +153,9 @@ class UserIdMapperTest {
     void testMultipleUserIds() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         String user2 = "user2";
-        File directory2 = mapper.putIfAbsent(user2, true);
+        File directory2 = mapper.putIfAbsent(user2);
         assertThat(mapper.getConvertedUserIds(), hasSize(2));
         assertThat(mapper.getConvertedUserIds(), hasItems(user1, user2));
     }
@@ -155,19 +164,19 @@ class UserIdMapperTest {
     void testRemove() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         mapper.remove(user1);
         assertThat(mapper.isMapped(user1), is(false));
     }
 
     @Test
     void testRemoveAfterSave() throws IOException {
-        File usersDirectory = UserIdMigratorTest.createTestDirectory(getClass(), info);
+        File usersDirectory = createTestDirectory(getClass(), info);
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         UserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
         mapper.init();
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         mapper = new TestUserIdMapper(usersDirectory, idStrategy);
         mapper.init();
         mapper.remove(user1);
@@ -179,7 +188,7 @@ class UserIdMapperTest {
     void testPutGetCaseInsensitive() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         assertThat(mapper.getDirectory(user1.toUpperCase()), notNullValue());
     }
 
@@ -188,7 +197,7 @@ class UserIdMapperTest {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
         UserIdMapper mapper = createUserIdMapper(idStrategy);
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         assertThat(mapper.getDirectory(user1.toUpperCase()), nullValue());
     }
 
@@ -196,7 +205,7 @@ class UserIdMapperTest {
     void testIsMappedCaseInsensitive() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         assertThat(mapper.isMapped(user1.toUpperCase()), is(true));
     }
 
@@ -205,7 +214,7 @@ class UserIdMapperTest {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
         UserIdMapper mapper = createUserIdMapper(idStrategy);
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         assertThat(mapper.isMapped(user1.toUpperCase()), is(false));
     }
 
@@ -213,7 +222,7 @@ class UserIdMapperTest {
     void testRemoveCaseInsensitive() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         mapper.remove(user1.toUpperCase());
         assertThat(mapper.isMapped(user1), is(false));
     }
@@ -223,7 +232,7 @@ class UserIdMapperTest {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
         UserIdMapper mapper = createUserIdMapper(idStrategy);
         String user1 = "user1";
-        File directory = mapper.putIfAbsent(user1, true);
+        File directory = mapper.putIfAbsent(user1);
         mapper.remove(user1.toUpperCase());
         assertThat(mapper.isMapped(user1), is(true));
     }
@@ -232,7 +241,7 @@ class UserIdMapperTest {
     void testRepeatRemove() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory1 = mapper.putIfAbsent(user1, true);
+        File directory1 = mapper.putIfAbsent(user1);
         mapper.remove(user1);
         mapper.remove(user1);
         assertThat(mapper.isMapped(user1), is(false));
@@ -242,7 +251,7 @@ class UserIdMapperTest {
     void testClear() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory1 = mapper.putIfAbsent(user1, true);
+        File directory1 = mapper.putIfAbsent(user1);
         mapper.clear();
         assertThat(mapper.isMapped(user1), is(false));
         assertThat(mapper.getConvertedUserIds(), empty());
@@ -252,7 +261,7 @@ class UserIdMapperTest {
     void testReload() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
-        File directory1 = mapper.putIfAbsent(user1, true);
+        File directory1 = createUser(mapper, user1);
         mapper.reload();
         assertThat(mapper.isMapped(user1), is(true));
         assertThat(mapper.getConvertedUserIds(), hasSize(1));
@@ -262,7 +271,7 @@ class UserIdMapperTest {
     void testDirectoryFormatBasic() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "1user";
-        File directory1 = mapper.putIfAbsent(user1, true);
+        File directory1 = mapper.putIfAbsent(user1);
         assertThat(directory1.getName(), startsWith(user1 + '_'));
     }
 
@@ -270,7 +279,7 @@ class UserIdMapperTest {
     void testDirectoryFormatLongerUserId() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "muchlongeruserid";
-        File directory1 = mapper.putIfAbsent(user1, true);
+        File directory1 = mapper.putIfAbsent(user1);
         assertThat(directory1.getName(), startsWith("muchlongeruser_"));
     }
 
@@ -278,7 +287,7 @@ class UserIdMapperTest {
     void testDirectoryFormatAllSuppressedCharacters() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "!@#$%^";
-        File directory1 = mapper.putIfAbsent(user1, true);
+        File directory1 = mapper.putIfAbsent(user1);
         assertThat(directory1.getName(), startsWith("_"));
     }
 
@@ -286,7 +295,7 @@ class UserIdMapperTest {
     void testDirectoryFormatSingleCharacter() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = ".";
-        File directory1 = mapper.putIfAbsent(user1, true);
+        File directory1 = mapper.putIfAbsent(user1);
         assertThat(directory1.getName(), startsWith("_"));
     }
 
@@ -294,27 +303,31 @@ class UserIdMapperTest {
     void testDirectoryFormatMixed() throws IOException {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "a$b!c^d~e@f";
-        File directory1 = mapper.putIfAbsent(user1, true);
+        File directory1 = mapper.putIfAbsent(user1);
         assertThat(directory1.getName(), startsWith("abcdef_"));
     }
 
-    @Test
-    void testXmlFileCorrupted() {
-        assertThrows(IOException.class, () -> createUserIdMapper(IdStrategy.CASE_INSENSITIVE));
-    }
-
-    @Test
-    void testDuplicatedUserId() throws IOException {
-        UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
-        assertThat(mapper.isMapped("user2"), is(true));
-        assertThat(mapper.isMapped("user1"), is(true));
-    }
-
     private UserIdMapper createUserIdMapper(IdStrategy idStrategy) throws IOException {
-        File usersDirectory = UserIdMigratorTest.createTestDirectory(getClass(), info);
+        File usersDirectory = createTestDirectory(getClass(), info);
         TestUserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
         mapper.init();
         return mapper;
     }
 
+    private static File createTestDirectory(Class clazz, TestInfo info) throws IOException {
+        // TODO better to use java.io.tmpdir, and TestName rule; or TemporaryFolder rule
+        File tempDirectory = Files.createTempDirectory(Paths.get("target"), "userIdMapperTest").toFile();
+        tempDirectory.deleteOnExit();
+        copyTestDataIfExists(clazz, info, tempDirectory);
+        return new File(tempDirectory, "users");
+    }
+
+    private static final String BASE_RESOURCE_PATH = "src/test/resources/hudson/model/";
+
+    private static void copyTestDataIfExists(Class clazz, TestInfo info, File tempDirectory) throws IOException {
+        File resourcesDirectory = new File(BASE_RESOURCE_PATH + clazz.getSimpleName(), info.getTestMethod().orElseThrow().getName());
+        if (resourcesDirectory.exists()) {
+            FileUtils.copyDirectory(resourcesDirectory, tempDirectory);
+        }
+    }
 }

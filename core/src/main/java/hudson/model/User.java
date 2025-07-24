@@ -862,7 +862,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private File putUserFolderIfAbsent() throws IOException {
-        return UserIdMapper.getInstance().putIfAbsent(id, true);
+        return UserIdMapper.getInstance().putIfAbsent(id);
     }
 
     /**
