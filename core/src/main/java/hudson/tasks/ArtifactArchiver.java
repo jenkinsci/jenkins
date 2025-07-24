@@ -40,10 +40,13 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
 import hudson.remoting.VirtualChannel;
+import hudson.util.DirScanner;
+import hudson.util.FileVisitor;
 import hudson.util.FormValidation;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -117,6 +120,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
      */
     @NonNull
     private Boolean followSymlinks = true;
+
+    /**
+     * Indicate whether empty directories should be included
+     */
+    @NonNull
+    private Boolean includeEmptyDirs = false;
 
     @DataBoundConstructor public ArtifactArchiver(String artifacts) {
         this.artifacts = artifacts.trim();
@@ -228,9 +237,13 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     public boolean isFollowSymlinks() {
         return followSymlinks;
     }
-
+    public boolean isIncludeEmptyDirs() { return includeEmptyDirs; }
     @DataBoundSetter public final void setFollowSymlinks(boolean followSymlinks) {
         this.followSymlinks = followSymlinks;
+    }
+
+    @DataBoundSetter public final void setIncludeEmptyDirs(boolean includeEmptyDirs) {
+        this.includeEmptyDirs = includeEmptyDirs;
     }
 
     @Override
@@ -252,7 +265,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 artifacts = environment.expand(artifacts);
             }
 
-            Map<String, String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive, followSymlinks));
+            Map<String, String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive, followSymlinks, includeEmptyDirs));
             if (!files.isEmpty()) {
                 build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
@@ -298,13 +311,15 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         private final boolean defaultExcludes;
         private final boolean caseSensitive;
         private final boolean followSymlinks;
+        private final boolean includeEmptyDirs;
 
-        ListFiles(String includes, String excludes, boolean defaultExcludes, boolean caseSensitive, boolean followSymlinks) {
+        ListFiles(String includes, String excludes, boolean defaultExcludes, boolean caseSensitive, boolean followSymlinks, boolean includeEmptyDirs) {
             this.includes = includes;
             this.excludes = excludes;
             this.defaultExcludes = defaultExcludes;
             this.caseSensitive = caseSensitive;
             this.followSymlinks = followSymlinks;
+            this.includeEmptyDirs = includeEmptyDirs;
         }
 
         @Override public Map<String, String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
@@ -315,10 +330,31 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             fileSet.setCaseSensitive(caseSensitive);
             fileSet.setFollowSymlinks(followSymlinks);
 
+            System.out.println(fileSet);
+
             for (String f : fileSet.getDirectoryScanner().getIncludedFiles()) {
                 f = f.replace(File.separatorChar, '/');
                 r.put(f, f);
             }
+
+
+            if (!includeEmptyDirs) return r;
+
+            DirScanner dirScanner  = new DirScanner.Glob(includes, excludes);
+            dirScanner.scan(basedir, new FileVisitor() {
+                @Override
+                public void visit(File f, String relativePath) throws IOException {
+                    String path = relativePath.replace(File.separatorChar, '/');
+
+                    // If directory, append trailing slash
+                    if (f.isDirectory()) {
+                        path = path.endsWith("/") ? path : path + "/";
+                    }
+                    r.put(path, path);
+                }
+            });
+
+
             return r;
         }
     }

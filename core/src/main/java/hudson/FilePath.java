@@ -2862,11 +2862,18 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     private static class CopyRecursiveLocal extends MasterToSlaveFileCallable<Integer> {
         private final FilePath target;
         private final DirScanner scanner;
+        private final boolean includeEmptyDirs;
 
-        CopyRecursiveLocal(FilePath target, DirScanner scanner) {
+        CopyRecursiveLocal(FilePath target, DirScanner scanner, boolean includeEmptyDirs) {
             this.target = target;
             this.scanner = scanner;
+            this.includeEmptyDirs = includeEmptyDirs;
         }
+
+        CopyRecursiveLocal(FilePath target, DirScanner scanner) {
+            this(target, scanner, false);
+        }
+
 
         private static final long serialVersionUID = 1L;
 
@@ -2886,6 +2893,15 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "TODO needs triage")
                 @Override
                 public void visit(File f, String relativePath) throws IOException {
+                    if (f.isDirectory()) {
+                        File targetDir = new File(dest, relativePath);
+                        if (!targetDir.exists()) {
+                            if (!targetDir.mkdirs()) {
+                                throw new IOException("Failed to create directory: " + targetDir);
+                            }
+                        }
+                    }
+
                     if (f.isFile()) {
                         File target = new File(dest, relativePath);
                         mkdirsE(target.getParentFile());
