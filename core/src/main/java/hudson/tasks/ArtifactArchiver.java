@@ -46,7 +46,6 @@ import hudson.util.FormValidation;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -237,7 +236,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     public boolean isFollowSymlinks() {
         return followSymlinks;
     }
+
     public boolean isIncludeEmptyDirs() { return includeEmptyDirs; }
+
     @DataBoundSetter public final void setFollowSymlinks(boolean followSymlinks) {
         this.followSymlinks = followSymlinks;
     }

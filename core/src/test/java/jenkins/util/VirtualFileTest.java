@@ -267,6 +267,10 @@ class VirtualFileTest {
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
         Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
         assertThat(children, containsInAnyOrder(
+                "a",
+                "a/aa",
+                "a/ab",
+                "b/ba",
                 "a/aa/aa.txt",
                 "a/ab/ab.txt",
                 "b/ba/ba.txt"
@@ -518,7 +522,7 @@ class VirtualFileTest {
         VirtualFile symlinkVirtualPath = VirtualFile.forFilePath(symlinkPath);
         VirtualFile symlinkChildVirtualPath = symlinkVirtualPath.child("aa");
         Collection<String> children = symlinkChildVirtualPath.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, contains("aa.txt"));
+        assertThat(children, containsInAnyOrder( "aaa", "aa.txt"));
     }
 
     @Test
@@ -533,7 +537,7 @@ class VirtualFileTest {
         VirtualFile symlinkVirtualFile = VirtualFile.forFile(symlinkFile);
         VirtualFile symlinkChildVirtualFile = symlinkVirtualFile.child("aa");
         Collection<String> children = symlinkChildVirtualFile.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, contains("aa.txt"));
+        assertThat(children, containsInAnyOrder( "aaa", "aa.txt"));
     }
 
     @Test
