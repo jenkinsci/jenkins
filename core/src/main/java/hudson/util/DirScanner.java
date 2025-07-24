@@ -154,11 +154,6 @@ public abstract class DirScanner implements Serializable {
 
                 for (String path : allPaths) {
                     File file = new File(dir, path);
-
-                    // skip non-empty dirs
-                    String [] contents = file.list();
-                    if (contents != null && contents.length > 0) continue;
-
                     scanSingle(file, path, visitor);
                 }
 
