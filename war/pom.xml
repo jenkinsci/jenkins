@@ -324,7 +324,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1373.v7b_813f10efa_b_</version>
+                  <version>1380.ve03e7a_63d139</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -390,7 +390,7 @@ THE SOFTWARE.
                   <!-- dependency of script-security and workflow-support -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>caffeine-api</artifactId>
-                  <version>3.2.0-166.v72a_6d74b_870f</version>
+                  <version>3.2.2-178.v353b_8428ed56</version>
                   <type>hpi</type>
                 </artifactItem>
 
