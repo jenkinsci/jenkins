@@ -14,11 +14,10 @@
 
   .jenkins-app-bar__content {
     display: flex;
-    align-items: center;
-    justify-content: start;
+    justify-content: center;
+    flex-direction: column;
     min-height: 2.25rem;
     flex-grow: 1;
-    gap: 0.875rem;
     max-width: 1200px;
     text-overflow: ellipsis;
 
@@ -94,6 +93,16 @@
     }
   }
 
+  // This would ideally use :has instead but HTMLUnit doesn't support it
+  &--with-icon {
+    .jenkins-app-bar__content {
+      align-items: center;
+      justify-content: start;
+      flex-direction: row;
+      gap: 0.875rem;
+    }
+  }
+
   h1,
   h2 {
     margin: 0;
@@ -104,6 +113,16 @@
     color: var(--text-color-secondary);
     margin-left: 0.5ch;
   }
+}
+
+.jenkins-build-caption {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: start !important;
+  gap: 0.875rem;
+  max-width: 1200px;
+  text-overflow: ellipsis;
 }
 
 .bottom-sticker,
