@@ -497,7 +497,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.encoding = encoding;
     }
 
-    protected @NonNull Charset getClientCharset() throws IOException, InterruptedException {
+    public @NonNull Charset getClientCharset() throws IOException, InterruptedException {
         if (encoding != null) {
             return encoding;
         }
