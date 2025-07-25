@@ -73,17 +73,13 @@ $dropdown-padding: 0.375rem;
     border-bottom: var(--jenkins-border);
 
     &-input {
-      &:focus {
-        outline: none;
-      }
-
-      &::placeholder {
-        color: var(--text-color-secondary);
-      }
-
-      width: 100%;
-      border: none;
-      background-color: unset;
+      outline: none !important;
+      border: none !important;
+      background-color: unset !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      min-height: 0 !important;
+      border-radius: 0 !important;
     }
 
     svg {
