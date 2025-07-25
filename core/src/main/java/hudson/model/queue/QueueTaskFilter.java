@@ -25,6 +25,7 @@
 package hudson.model.queue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
@@ -105,6 +106,7 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.hasAbortPermission();
     }
 
+    @NonNull
     @Override
     public String getUrl() {
         return base.getUrl();
