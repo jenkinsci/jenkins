@@ -68,18 +68,21 @@ $dropdown-padding: 0.375rem;
   &__filter {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 1.2ch;
     padding: 0.6rem 1rem;
-    border-bottom: 1px solid var(--input-border);
+    border-bottom: var(--jenkins-border);
 
     &-input {
       &:focus {
         outline: none;
       }
 
+      &::placeholder {
+        color: var(--text-color-secondary);
+      }
+
       width: 100%;
       border: none;
-      color: var(--text-color-secondary);
       background-color: unset;
     }
 
