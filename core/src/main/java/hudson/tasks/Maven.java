@@ -633,10 +633,17 @@ public class Maven extends Builder {
             public String call() throws IOException {
                 File exe = getExeFile("mvn", rawHome);
                 if (exe.exists()) {
+                    // Maven 2.x and earlier
+                    return exe.getPath();
+                }
+                exe = getExeFile("mvnd", rawHome);
+                if (exe.exists()) {
+                    // Maven Daemon
                     return exe.getPath();
                 }
                 exe = getExeFile("maven", rawHome);
                 if (exe.exists()) {
+                    // Maven 1.x
                     return exe.getPath();
                 }
                 return null;
