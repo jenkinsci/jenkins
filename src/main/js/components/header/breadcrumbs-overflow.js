@@ -36,14 +36,18 @@ export default function computeBreadcrumbs() {
     (instance) => {
       const mappedItems = items.map((e) => {
         let href = e.querySelector("a");
+        let tooltip;
         if (href) {
+          tooltip = href.getAttribute("tooltip");
           href = href.href;
         }
 
         return {
           type: "link",
+          clazz: "jenkins-breadcrumbs__overflow-item",
           label: e.textContent,
           url: href,
+          tooltip,
         };
       });
 
@@ -51,7 +55,7 @@ export default function computeBreadcrumbs() {
     },
     true,
     {
-      trigger: "mouseenter focus",
+      trigger: "click focus",
       offset: [0, 10],
       animation: "tooltip",
     },
