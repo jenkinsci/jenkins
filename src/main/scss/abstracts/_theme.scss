@@ -79,7 +79,7 @@ $semantics: (
   // App bar
   --bottom-app-bar-shadow: color-mix(
     in sRGB,
-    var(--text-color-secondary) 7.5%,
+    var(--text-color-secondary) 8%,
     transparent
   );
 
@@ -116,7 +116,7 @@ $semantics: (
   --jenkins-border-width: 1.5px;
   --jenkins-border-color: color-mix(
     in sRGB,
-    var(--text-color-secondary) 15%,
+    var(--text-color-secondary) 17.5%,
     var(--card-background)
   );
   --jenkins-border-color--subtle: color-mix(
