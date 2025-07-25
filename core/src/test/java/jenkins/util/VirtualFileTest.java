@@ -269,6 +269,7 @@ class VirtualFileTest {
         assertThat(children, containsInAnyOrder(
                 "a",
                 "a/aa",
+                "a/aa/aaa",
                 "a/ab",
                 "b/ba",
                 "a/aa/aa.txt",
