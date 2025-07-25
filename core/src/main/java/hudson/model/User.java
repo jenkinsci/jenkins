@@ -691,7 +691,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Restricted(Beta.class)
     public static void reload() throws IOException {
-        UserIdMapper.getInstance().reload();
+        UserIdMapper.getInstance().clear();
         AllUsers.reload();
     }
 
@@ -1077,7 +1077,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         private final ConcurrentMap<String, User> byName = new ConcurrentHashMap<>();
 
         @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
-        public static void scanAll() {
+        public static void scanAll() throws IOException {
+            UserIdMapper.getInstance().load();
             for (String userId : UserIdMapper.getInstance().getConvertedUserIds()) {
                 User user = new User(userId, userId);
                 getInstance().byName.putIfAbsent(idStrategy().keyFor(userId), user);
@@ -1094,7 +1095,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return ExtensionList.lookupSingleton(AllUsers.class);
         }
 
-        private static void reload() {
+        private static void reload() throws IOException {
             getInstance().byName.clear();
             UserDetailsCache.get().invalidateAll();
             scanAll();

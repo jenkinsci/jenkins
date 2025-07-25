@@ -100,6 +100,7 @@ class UserIdMapperTest {
         File directory3 = createUser(mapper, user3);
         mapper = new TestUserIdMapper(usersDirectory, idStrategy);
         mapper.init();
+        mapper.load();
         assertThat(directory1, is(mapper.getDirectory(user1)));
         assertThat(directory2, is(mapper.getDirectory(user2)));
         assertThat(directory3, is(mapper.getDirectory(user3)));
@@ -262,7 +263,8 @@ class UserIdMapperTest {
         UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
         String user1 = "user1";
         File directory1 = createUser(mapper, user1);
-        mapper.reload();
+        mapper.clear();
+        mapper.load();
         assertThat(mapper.isMapped(user1), is(true));
         assertThat(mapper.getConvertedUserIds(), hasSize(1));
     }

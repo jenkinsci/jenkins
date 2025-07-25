@@ -69,10 +69,9 @@ public class UserIdMapper {
     public UserIdMapper() {
     }
 
-    @Initializer(after = InitMilestone.SYSTEM_CONFIG_ADAPTED, before = InitMilestone.JOB_LOADED)
+    @Initializer(after = InitMilestone.PLUGINS_STARTED, before = InitMilestone.JOB_LOADED)
     public File init() throws IOException {
         usersDirectory = createUsersDirectoryAsNeeded();
-        load();
         return usersDirectory;
     }
 
@@ -114,11 +113,6 @@ public class UserIdMapper {
         idToDirectoryNameMap.clear();
     }
 
-    void reload() throws IOException {
-        clear();
-        load();
-    }
-
     protected IdStrategy getIdStrategy() {
         return User.idStrategy();
     }
@@ -155,7 +149,7 @@ public class UserIdMapper {
         return usersDirectory;
     }
 
-    private void load() throws IOException {
+    void load() throws IOException {
         try { // in case users.xml exists, load it, as UserIdMigrator neglected to resave users/…/config.xml with <id>…</id>
             new XmlFile(XSTREAM, new File(usersDirectory, "users.xml")).unmarshal(this);
         } catch (NoSuchFileException x) {
