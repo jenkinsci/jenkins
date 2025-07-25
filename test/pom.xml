@@ -126,7 +126,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1373.v7b_813f10efa_b_</version>
+        <version>1380.ve03e7a_63d139</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -232,7 +232,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1415.v831096eb_5534</version>
+      <version>1417.vd854994a_f6b_e</version>
       <scope>test</scope>
     </dependency>
     <dependency>
