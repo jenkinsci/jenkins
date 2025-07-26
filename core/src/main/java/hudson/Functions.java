@@ -41,7 +41,6 @@ import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
-import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
@@ -55,6 +54,7 @@ import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.PasswordParameterDefinition;
+import hudson.model.RootAction;
 import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.model.TimeZoneProperty;
@@ -96,11 +96,9 @@ import hudson.util.jna.GNUCLibrary;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import io.jenkins.servlet.http.CookieWrapper;
 import io.jenkins.servlet.http.HttpServletRequestWrapper;
 import io.jenkins.servlet.http.HttpServletResponseWrapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -189,8 +187,6 @@ import org.kohsuke.stapler.RawHtmlArgument;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -920,11 +916,11 @@ public class Functions {
         return buf.toString();
     }
 
-    public static void checkPermission(Permission permission) throws IOException, ServletException {
+    public static void checkPermission(Permission permission) {
         checkPermission(Jenkins.get(), permission);
     }
 
-    public static void checkPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
+    public static void checkPermission(AccessControlled object, Permission permission) {
         if (permission != null) {
             object.checkPermission(permission);
         }
@@ -935,7 +931,7 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
-    public static void checkPermission(Object object, Permission permission) throws IOException, ServletException {
+    public static void checkPermission(Object object, Permission permission) {
         if (permission == null)
             return;
 
@@ -960,7 +956,7 @@ public class Functions {
      * @param permission
      *      If null, returns true. This defaulting is convenient in making the use of this method terse.
      */
-    public static boolean hasPermission(Permission permission) throws IOException, ServletException {
+    public static boolean hasPermission(Permission permission) {
         return hasPermission(Jenkins.get(), permission);
     }
 
@@ -968,7 +964,7 @@ public class Functions {
      * This version is so that the 'hasPermission' can degrade gracefully
      * if "it" is not an {@link AccessControlled} object.
      */
-    public static boolean hasPermission(Object object, Permission permission) throws IOException, ServletException {
+    public static boolean hasPermission(Object object, Permission permission) {
         if (permission == null)
             return true;
         if (object instanceof AccessControlled)
@@ -982,36 +978,6 @@ public class Functions {
                 }
             }
             return Jenkins.get().hasPermission(permission);
-        }
-    }
-
-    /**
-     * @since 2.475
-     */
-    public static void adminCheck(StaplerRequest2 req, StaplerResponse2 rsp, Object required, Permission permission) throws IOException, ServletException {
-        // this is legacy --- all views should be eventually converted to
-        // the permission based model.
-        if (required != null && !Hudson.adminCheck(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp))) {
-            // check failed. commit the FORBIDDEN response, then abort.
-            rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            rsp.getOutputStream().close();
-            throw new ServletException("Unauthorized access");
-        }
-
-        // make sure the user owns the necessary permission to access this page.
-        if (permission != null)
-            checkPermission(permission);
-    }
-
-   /**
-     * @deprecated use {@link #adminCheck(StaplerRequest2, StaplerResponse2, Object, Permission)}
-     */
-    @Deprecated
-    public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, javax.servlet.ServletException {
-        try {
-            adminCheck(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), required, permission);
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
         }
     }
 
@@ -1297,7 +1263,7 @@ public class Functions {
      *
      * @since 2.238
      */
-    public static boolean hasAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+    public static boolean hasAnyPermission(Object object, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
             return true;
         }
@@ -1335,7 +1301,7 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
-    public static void checkAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+    public static void checkAnyPermission(Object object, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
             return;
         }
@@ -2095,6 +2061,46 @@ public class Functions {
         if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
 
         return url.endsWith(href);
+    }
+
+    /**
+     * If the given {@code Action} is a {@link RootAction#isPrimaryAction() primary} {@code RootAction}, or a parent of the current page, return {@code true}.
+     * Used in {@code actions.jelly} to decide if the action should shown in the main header or the hamburger.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean showInPrimaryHeader(Action action) {
+        // regular Actions can be injected into Jenkins via a factory.
+        if (action instanceof RootAction ra) {
+            if (ra.isPrimaryAction()) {
+                return true;
+            }
+        }
+        String path = Stapler.getCurrentRequest2().getPathInfo();
+        if (path == null || path.equals("/")) {
+            // we are in the root page so there is nothing current
+            return false;
+        }
+
+        String actionPath = action.getUrlName();
+        if (actionPath == null) {
+            // we are not a primary action and can not ever be current when we have no URL
+            return false;
+        }
+
+        // RootActions are not expected to start with a `/` but some do and some do, and not all Actions will be RootActions
+        // but path will always start with a "/"
+        if (!actionPath.startsWith("/")) {
+            actionPath = '/' + actionPath;
+        }
+
+        // the action /foo should not match /foobar but should match /foo/bar
+        if (!actionPath.endsWith("/")) {
+            actionPath = actionPath + '/';
+        }
+        if (!path.endsWith("/")) {
+            path = path + '/';
+        }
+        return path.startsWith(actionPath);
     }
 
     /**
