@@ -34,10 +34,10 @@ THE SOFTWARE.
       <script src="${resURL}/jsbundles/section-to-sidebar-items.js" type="text/javascript" defer="true" />
     </l:header>
 
-    <l:breadcrumb title="${%Configure}" />
+    <l:breadcrumb title="${readOnlyMode ? '%Configuration' : '%Configure'}" />
 
     <l:side-panel sticky="true">
-      <l:app-bar title="${%Configure}" />
+      <l:app-bar title="${readOnlyMode ? '%Configuration' : '%Configure'}" />
       <div id="tasks">
         <l:skeleton type="side-panel" />
       </div>
