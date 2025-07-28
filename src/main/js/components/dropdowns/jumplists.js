@@ -45,7 +45,7 @@ function generateDropdowns() {
           element.classList.contains("hoverable-children-model-link"),
           element.href,
         ),
-        false,
+        element.items != null,
         {
           trigger: "mouseenter",
           offset: [-16, 10],
@@ -68,7 +68,7 @@ function generateDropdowns() {
           element.getAttribute("data-children"),
           element.getAttribute("data-href"),
         ),
-        false,
+        element.items != null,
         {
           trigger: "click focus",
           offset: [-16, 10],
