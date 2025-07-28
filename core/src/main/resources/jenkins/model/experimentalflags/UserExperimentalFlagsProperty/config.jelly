@@ -23,20 +23,19 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
     <j:set var="userProperty" value="${instance}"/>
     <f:entry field="experimentalFlags">
         <j:invokeStatic var="flagConfigs" className="jenkins.model.experimentalflags.UserExperimentalFlag"
                         method="all"/>
     
         <j:if test="${empty(flagConfigs)}">
-            <div class="jenkins-form-item">
-                ${%NoFlagInfo}
-            </div>
+            <l:notice icon="symbol-flask"
+                      title="${%NoFlagInfo}" />
         </j:if>
         <j:if test="${!empty(flagConfigs)}">
             <f:rowSet name="flags">
-                <table class="jenkins-table sortable">
+                <table class="jenkins-table sortable jenkins-!-margin-0">
                     <thead>
                         <tr>
                             <th>${%FlagDisplayName}</th>
