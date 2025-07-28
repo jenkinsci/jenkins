@@ -50,7 +50,7 @@ THE SOFTWARE.
     <j:set var="baseUrl" value="${request2.originalRequestURI}" />
     <j:set var="hasLink" value="${attrs.href != null}" />
     <j:set var="isCurrent" value="${baseUrl == attrs.href}" />
-    <j:set var="isSystem" value="${baseUrl.contains('manage/configure')}" />
+    <j:set var="inPageNav" value="${attrs.id.contains('inpage-nav')}" />
     <j:set var="shouldShowTitle" value="${attrs.title.length() > 26}" />
 
     <li aria-current="${(isCurrent or !hasLink)? 'page' : null}"
@@ -58,7 +58,7 @@ THE SOFTWARE.
         data-type="breadcrumb-item" data-has-menu="${attrs.hasMenu}"
     >
       <j:choose>
-        <j:when test="${(!hasLink and !attrs.hasMenu)  or (isCurrent and !isSystem)}">
+        <j:when test="${(!hasLink and !attrs.hasMenu)  or (isCurrent and !inPageNav)}">
           <j:choose>
             <j:when test="${shouldShowTitle}">
               <span tooltip="${attrs.title}">${attrs.title}</span>
