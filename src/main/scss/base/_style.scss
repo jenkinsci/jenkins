@@ -290,7 +290,8 @@ pre.console {
   display: none; /* hidden until loaded */
   padding: 1rem;
   margin: 1rem 0;
-  word-break: break-word;
+  overflow-wrap: anywhere;
+  word-break: normal;
   border-radius: var(--form-input-border-radius);
   background-color: var(--button-background);
   border: var(--jenkins-border--subtle);
