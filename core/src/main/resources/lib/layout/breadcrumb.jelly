@@ -71,18 +71,18 @@ THE SOFTWARE.
         <j:otherwise>
           <j:choose>
             <j:when test="${shouldShowTitle}">
-              <a aria-label="path element" tooltip="${attrs.title}" href="${attrs.href}">
+              <a tooltip="${attrs.title}" href="${attrs.href}">
                 ${attrs.title}
               </a>
             </j:when>
             <j:otherwise>
-              <a aria-label="path element" href="${attrs.href}">
+              <a href="${attrs.href}">
                 ${attrs.title}
               </a>
             </j:otherwise>
           </j:choose>
           <j:if test="${attrs.hasMenu or attrs.hasChildrenMenu}">
-            <div aria-label="dropdown menu for path" data-iscurrent="${isCurrent}" data-href="${attrs.href}" data-base="${baseUrl}" tabindex="0" class="dropdown-indicator" data-model="${attrs.hasMenu}" data-children="${attrs.hasChildrenMenu}" >
+            <div aria-label="dropdown menu for ${attrs.title}" data-iscurrent="${isCurrent}" data-href="${attrs.href}" data-base="${baseUrl}" tabindex="0" class="dropdown-indicator" data-model="${attrs.hasMenu}" data-children="${attrs.hasChildrenMenu}" >
               <l:icon class="icon-sm jenkins-!-text-color-secondary" src="symbol-chevron-down" />
             </div>
           </j:if>
