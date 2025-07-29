@@ -38,8 +38,10 @@ export default function computeBreadcrumbs() {
         let href = e.querySelector("a");
         let tooltip;
         if (href) {
-          tooltip = href.getAttribute("tooltip");
           href = href.href;
+        }
+        if(e.textContent.length>26) {
+          tooltip = e.textContent;
         }
 
         return {
