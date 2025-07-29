@@ -194,7 +194,7 @@ public class PluginManagerTest {
      */
     @WithPlugin(TEST_PLUGIN)
     @Test public void withRecipeJpi() {
-        assertNotNull(r.jenkins.getPlugin("commons-lang3-api"));
+        assertNotNull(r.jenkins.getPlugin(TEST_PLUGIN_NAME));
     }
 
     /**
