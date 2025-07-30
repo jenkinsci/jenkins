@@ -44,14 +44,9 @@ public final class FieldUtils {
 
     public static void setProtectedFieldValue(String protectedField, Object object, Object newValue) {
         try {
-            // acgegi would silently fail to write to final fields
-            // FieldUtils.writeField(Object, field, true) only sets accessible on *non* public fields
-            // and then fails with IllegalAccessException (even if you make the field accessible in the interim!
-            // for backwards compatability we need to use a few steps
             Field field = getField(object.getClass(), protectedField);
-            field.setAccessible(true);
             field.set(object, newValue);
-        } catch (Exception x) {
+        } catch (IllegalAccessException x) {
             throw new RuntimeException(x);
         }
     }
