@@ -42,7 +42,7 @@ public final class FieldUtils {
         }
     }
 
-    public static void setProtectedFieldValue(String protectedField, Object object, Object newValue) {
+    public static void setProtectedFieldValue(@NonNull String protectedField, @NonNull Object object, @NonNull Object newValue) {
         try {
             Field field = getField(object.getClass(), protectedField);
             field.set(object, newValue);
