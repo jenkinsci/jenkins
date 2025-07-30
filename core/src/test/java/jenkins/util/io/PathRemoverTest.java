@@ -68,12 +68,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
+import org.opentest4j.MultipleFailuresError;
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 class PathRemoverTest {
@@ -94,7 +94,11 @@ class PathRemoverTest {
                 exceptions.add(e);
             }
         }
-        assertTrue(exceptions.isEmpty(), "Could not unlock all files" + StringUtils.join(exceptions, '\n'));
+        if (!exceptions.isEmpty()) {
+            MultipleFailuresError e = new MultipleFailuresError("Could not unlock all files", exceptions);
+            exceptions.forEach(e::addSuppressed);
+            throw e;
+        }
     }
 
     private synchronized void acquireLock(@NonNull File file) throws IOException {
