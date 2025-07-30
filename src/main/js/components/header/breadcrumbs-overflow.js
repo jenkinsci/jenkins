@@ -40,7 +40,7 @@ export default function computeBreadcrumbs() {
         if (href) {
           href = href.href;
         }
-        if(e.textContent.length>26) {
+        if (e.textContent.length > 26) {
           tooltip = e.textContent;
         }
 
