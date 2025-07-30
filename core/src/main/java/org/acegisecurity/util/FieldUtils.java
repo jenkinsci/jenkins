@@ -28,7 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.lang.reflect.Field;
 
 /**
- * @deprecated use {@code org.apache.commons.lang.reflect.FieldUtils}
+ * @deprecated use {@code org.apache.commons.lang3.reflect.FieldUtils}
  */
 @Deprecated
 public final class FieldUtils {
