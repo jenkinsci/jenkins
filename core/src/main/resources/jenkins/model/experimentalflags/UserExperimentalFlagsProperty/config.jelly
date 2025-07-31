@@ -28,12 +28,12 @@ THE SOFTWARE.
     <j:invokeStatic var="flagConfigs" className="jenkins.model.experimentalflags.UserExperimentalFlag"
                     method="all"/>
 
-    <j:if test="${!empty(flagConfigs)}">
+    <j:if test="${empty(flagConfigs)}">
         <l:notice icon="symbol-flask"
                   title="${%NoFlagInfo}" />
     </j:if>
 
-    <j:if test="${empty(flagConfigs)}">
+    <j:if test="${!empty(flagConfigs)}">
         <f:entry field="experimentalFlags">
             <f:rowSet name="flags">
                 <table class="jenkins-table sortable jenkins-!-margin-0">
