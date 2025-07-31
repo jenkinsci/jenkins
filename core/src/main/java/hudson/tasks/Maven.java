@@ -542,8 +542,16 @@ public class Maven extends Builder {
             if (home == null) {
                 return;
             }
-            env.put("M2_HOME", home);
-            env.put("MAVEN_HOME", home);
+            if (isMavenDaemon()) {
+                // Maven is installed in Maven Daemon subdirectory
+                final String embeddedMavenHome = home + "/mvn";
+                env.put("M2_HOME", embeddedMavenHome);
+                env.put("MAVEN_HOME", embeddedMavenHome);
+            } else {
+                env.put("M2_HOME", home);
+                env.put("MAVEN_HOME", home);
+            }
+            // executable (mvn or mvnd) must be in PATH+MAVEN path
             env.put("PATH+MAVEN", home + "/bin");
         }
 
@@ -613,6 +621,16 @@ public class Maven extends Builder {
          */
         public boolean isMaven2_1(Launcher launcher) throws IOException, InterruptedException {
             return meetsMavenReqVersion(launcher, MAVEN_21);
+        }
+
+        /**
+         * Is this Maven Daemon?
+         *
+         * @param launcher
+         *      Represents the node on which we evaluate the path.
+         */
+        private boolean isMavenDaemon() {
+            return getExeFile("mvnd", getHome()).exists();
         }
 
         /**
