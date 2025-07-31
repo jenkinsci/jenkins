@@ -75,7 +75,7 @@ import org.springframework.security.core.Authentication;
 import org.xml.sax.SAXException;
 
 @WithJenkins
-public class BuildTriggerTest {
+class BuildTriggerTest {
 
     private JenkinsRule j;
 
