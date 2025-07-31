@@ -148,7 +148,7 @@ td.tab {
 
 pre {
   white-space: pre-wrap;
-  word-wrap: word-break;
+  overflow-wrap: break-word;
   margin: 0 0 var(--section-padding);
   padding: 0.8rem 1rem;
   border-radius: var(--form-input-border-radius);
@@ -160,7 +160,7 @@ pre {
   line-height: 1.66;
 
   a {
-    word-wrap: word-break;
+    overflow-wrap: break-word;
   }
 }
 
@@ -290,7 +290,8 @@ pre.console {
   display: none; /* hidden until loaded */
   padding: 1rem;
   margin: 1rem 0;
-  word-break: word-break;
+  overflow-wrap: anywhere;
+  word-break: normal;
   border-radius: var(--form-input-border-radius);
   background-color: var(--button-background);
   border: var(--jenkins-border--subtle);

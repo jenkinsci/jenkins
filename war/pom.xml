@@ -166,6 +166,7 @@ THE SOFTWARE.
                     <exclude>org.jvnet.hudson:commons-jelly-tags-define</exclude>
                     <exclude>org.jvnet.winp:winp</exclude>
                     <exclude>org.kohsuke:access-modifier-annotation</exclude>
+                    <exclude>org.kohsuke.stapler:json-lib</exclude>
                     <exclude>org.kohsuke.stapler:stapler</exclude>
                     <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
                     <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
@@ -310,7 +311,7 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1373.vb_b_4a_a_c26fa_00</version>
+                  <version>1378.vf25626395f49</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -414,14 +415,14 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, plugin-util-api, workflow-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>704.ve4f0967e98fa_</version>
+                  <version>706.v518c5dcb_24c0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>704.v3ce5c542825a_</version>
+                  <version>707.v749f968369d4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -505,7 +506,7 @@ THE SOFTWARE.
                   <!-- dependency of scm-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>asm-api</artifactId>
-                  <version>9.8-135.vb_2239d08ee90</version>
+                  <version>9.8-163.vb_2a_96d3f9c3c</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -519,14 +520,14 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api, checks-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-text-api</artifactId>
-                  <version>1.13.1-176.v74d88f22034b_</version>
+                  <version>1.14.0-194.v804a_dc3a_1b_d8</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>gson-api</artifactId>
-                  <version>2.13.1-139.v4569c2ef303f</version>
+                  <version>2.13.1-153.vb_3d0c48a_a_b_4a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -554,7 +555,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>json-api</artifactId>
-                  <version>20250517-153.vc8a_a_d87c0ce3</version>
+                  <version>20250517-163.v1c5da_e99c775</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
