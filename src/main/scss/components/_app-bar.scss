@@ -111,47 +111,38 @@
   }
 }
 
-.bottom-sticker,
-#bottom-sticker {
+$bottom-app-bar-padding: 0.875rem;
+
+.jenkins-bottom-app-bar__shadow {
+  --semi-translucent: color-mix(in sRGB, var(--background) 75%, transparent);
+
   position: sticky;
-
-  // This has to be set to -1px so that IntersectionObserver can add the
-  // &--stuck class when the element is stuck to the bottom of the screen
-  // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
+  height: calc(
+    2.375rem + ($bottom-app-bar-padding * 2) + 1px + var(--jenkins-border-width)
+  );
   bottom: -1px;
-  margin-left: calc(var(--section-padding) * -1);
-  width: calc(
-    100% + calc(var(--section-padding) * 2)
-  ); /* it needs to occupy the entire width or else the underlying content will see through */
-
-  z-index: 998; /* behind top-sticker */
-}
-
-.bottom-sticker-inner {
-  position: relative;
-  padding: 1em var(--section-padding);
-  z-index: 0;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--background);
-    opacity: 0;
-    z-index: -1;
-  }
+  margin-bottom: calc((2.375rem + $bottom-app-bar-padding) * -1);
+  backdrop-filter: blur(20px);
+  background: linear-gradient(
+    to right,
+    var(--background),
+    var(--semi-translucent) 3rem,
+    var(--semi-translucent) calc(100% - 3rem),
+    var(--background)
+  );
+  border-top: var(--jenkins-border-width) solid var(--jenkins-border-color);
+  z-index: 997;
 
   &::after {
     content: "";
     position: absolute;
-    top: -30px;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, var(--bottom-app-bar-shadow) 110%);
-    max-width: 100%;
-    height: 30px;
-    opacity: 0;
-    transition: var(--standard-transition);
+    transition: opacity var(--standard-transition);
+    top: calc((2rem + var(--jenkins-border-width)) * -1);
+    height: 2rem;
+    pointer-events: none;
+    background: linear-gradient(transparent, var(--bottom-app-bar-shadow));
     mask-image: linear-gradient(
       to right,
       transparent,
@@ -159,24 +150,24 @@
       white calc(100% - var(--section-padding)),
       transparent
     );
-    pointer-events: none;
+    opacity: 0;
   }
 
   &--stuck {
-    .bottom-sticker-inner {
-      backdrop-filter: blur(15px);
-
-      &::before {
-        opacity: 0.75 !important;
-
-        @supports not (backdrop-filter: blur(15px)) {
-          opacity: 1 !important;
-        }
-      }
-
-      &::after {
-        opacity: 1 !important;
-      }
+    &::after {
+      opacity: 1 !important;
     }
   }
+}
+
+.bottom-sticker,
+#bottom-sticker {
+  position: sticky;
+  bottom: 0;
+  z-index: 998;
+}
+
+.bottom-sticker-inner {
+  position: relative;
+  padding: $bottom-app-bar-padding 0;
 }
