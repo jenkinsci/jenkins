@@ -72,13 +72,13 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-text-api</artifactId>
-        <version>1.13.1-176.v74d88f22034b_</version>
+        <version>1.14.0-194.v804a_dc3a_1b_d8</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.7.2-1</version>
+        <version>7.0.0-1</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -115,13 +115,13 @@ THE SOFTWARE.
         <!-- Required by workflow-support -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>scm-api</artifactId>
-        <version>704.v3ce5c542825a_</version>
+        <version>707.v749f968369d4</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1373.vb_b_4a_a_c26fa_00</version>
+        <version>1378.vf25626395f49</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -131,7 +131,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-step-api</artifactId>
-        <version>704.ve4f0967e98fa_</version>
+        <version>706.v518c5dcb_24c0</version>
       </dependency>
       <dependency>
         <!-- Required by plugin-util-api -->
@@ -186,7 +186,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2462.v7cd38b_7a_361b_</version>
+      <version>2478.v665cca_da_f20c</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -226,13 +226,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.1036.vb_94fd035b_287</version>
+      <version>6.1037.v4cb_8573b_72a_a_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1417.vd854994a_f6b_e</version>
+      <version>1419.v2337d1ceceef</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -358,7 +358,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>401.v039b_f35ed022</version>
+                  <version>403.v0787db_1c972b_</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
