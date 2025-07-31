@@ -52,6 +52,7 @@ THE SOFTWARE.
 
     <!-- Filled in by maven-hpi-plugin with "-javaagent:/path/to/mockito-core-<version>.jar" -->
     <jenkins.javaAgent />
+    <test>hudson.AboutJenkinsTest</test>
   </properties>
 
   <dependencyManagement>
