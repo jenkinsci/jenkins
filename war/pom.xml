@@ -283,7 +283,7 @@ THE SOFTWARE.
                   <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>509.vc54d23fc427e</version>
+                  <version>515.vd788654779b_1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
