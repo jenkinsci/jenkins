@@ -530,6 +530,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     public void onCopiedFrom(Item src) {
     }
 
+    @NonNull
     @Override
     public final String getUrl() {
         // try to stick to the current view if possible

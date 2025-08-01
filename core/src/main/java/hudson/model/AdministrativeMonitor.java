@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
@@ -33,6 +34,7 @@ import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 import java.io.IOException;
 import java.util.Set;
+import jenkins.model.AddressableModelObject;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -89,7 +91,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see Jenkins#administrativeMonitors
  */
 @LegacyInstancesAreScopedToHudson
-public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint, StaplerProxy {
+public abstract class AdministrativeMonitor extends AbstractModelObject implements AddressableModelObject, ExtensionPoint, StaplerProxy {
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.
      *
@@ -110,6 +112,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     /**
      * Returns the URL of this monitor, relative to the context path, like "administrativeMonitor/foobar".
      */
+    @NonNull
     public String getUrl() {
         return "administrativeMonitor/" + id;
     }
