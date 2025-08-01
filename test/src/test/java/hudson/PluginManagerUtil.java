@@ -26,36 +26,63 @@ package hudson;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class PluginManagerUtil {
 
-    public static JenkinsRule newJenkinsRule() {
-        return new JenkinsRule() {
-            @Override
-            public void before() throws Throwable {
-                setPluginManager(null);
-                super.before();
-            }
-        };
-    }
+    public static JenkinsSessionExtension newJenkinsSessionExtension() {
+        return new JenkinsSessionExtension() {
+            private int port;
+            private Description description;
 
-    public static RestartableJenkinsRule newRestartableJenkinsRule() {
-        return new RestartableJenkinsRule() {
             @Override
-            public JenkinsRule createJenkinsRule(Description description) {
-                return newJenkinsRule();
+            public void beforeEach(ExtensionContext context) {
+                super.beforeEach(context);
+                description = Description.createTestDescription(
+                        context.getTestClass().map(Class::getName).orElse(null),
+                        context.getTestMethod().map(Method::getName).orElse(null),
+                        context.getTestMethod().map(Method::getAnnotations).orElse(null));
+            }
+
+            @Override
+            public void then(Step s) throws Throwable {
+                CustomJenkinsRule r = new CustomJenkinsRule(getHome(), port);
+                r.apply(
+                        new Statement() {
+                            @Override
+                            public void evaluate() throws Throwable {
+                                port = r.getPort();
+                                s.run(r);
+                            }
+                        },
+                        description
+                ).evaluate();
+            }
+
+            private static final class CustomJenkinsRule extends JenkinsRule {
+                CustomJenkinsRule(File home, int port) {
+                    setPluginManager(null);
+                    with(() -> home);
+                    localPort = port;
+                }
+
+                int getPort() {
+                    return localPort;
+                }
             }
         };
     }

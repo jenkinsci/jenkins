@@ -35,26 +35,29 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
 import jenkins.agents.WebSocketAgentsTest;
 import jenkins.slaves.JnlpSlaveAgentProtocol4;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.For;
-import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.PrefixedOutputStream;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 
 @For({JNLPLauncher.class, JnlpSlaveAgentProtocol4.class})
-public class JNLPLauncherRealTest {
+class JNLPLauncherRealTest {
 
     private static final String STATIC_AGENT_NAME = "static";
 
-    @Rule public RealJenkinsRule rr = new RealJenkinsRule().withColor(PrefixedOutputStream.Color.BLUE);
+    @RegisterExtension
+    private final RealJenkinsExtension rr = new RealJenkinsExtension().withColor(PrefixedOutputStream.Color.BLUE);
 
-    @Rule public InboundAgentRule iar = new InboundAgentRule();
+    @RegisterExtension
+    private final InboundAgentExtension iar = new InboundAgentExtension();
 
     @Issue("JEP-230")
-    @Test public void smokes() throws Throwable {
+    @Test
+    void smokes() throws Throwable {
         /* Since RealJenkinsRuleInit.jpi will load detached and test scope plugins, to reproduce a failure use:
         rr.includeTestClasspathPlugins(false);
         FileUtils.touch(new File(rr.getHome(), "plugins/instance-identity.jpi.disabled"));
@@ -66,14 +69,15 @@ public class JNLPLauncherRealTest {
      * Simplified version of {@link WebSocketAgentsTest#smokes} just checking Jetty/Winstone.
      */
     @Issue("JENKINS-68933")
-    @Test public void webSocket() throws Throwable {
+    @Test
+    void webSocket() throws Throwable {
         then(true);
     }
 
     private void then(boolean websocket) throws Throwable {
         try {
             rr.startJenkins();
-            InboundAgentRule.Options.Builder options = InboundAgentRule.Options.newBuilder().name(STATIC_AGENT_NAME).color(PrefixedOutputStream.Color.RED);
+            InboundAgentExtension.Options.Builder options = InboundAgentExtension.Options.newBuilder().name(STATIC_AGENT_NAME).color(PrefixedOutputStream.Color.RED);
             if (websocket) {
                 options = options.webSocket();
             }
@@ -84,7 +88,7 @@ public class JNLPLauncherRealTest {
         }
     }
 
-    private static class RunJobStep implements RealJenkinsRule.Step {
+    private static class RunJobStep implements RealJenkinsExtension.Step {
         private final String agentName;
         private final boolean webSocket;
 

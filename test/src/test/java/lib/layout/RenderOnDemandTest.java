@@ -56,7 +56,7 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 class RenderOnDemandTest {
 
     private JenkinsRule j;
-    private LogRecorder logging = new LogRecorder().record(RenderOnDemandClosure.class, Level.FINE);
+    private final LogRecorder logging = new LogRecorder().record(RenderOnDemandClosure.class, Level.FINE);
 
     @BeforeEach
     void setUp(JenkinsRule rule) {
@@ -83,7 +83,7 @@ class RenderOnDemandTest {
     @Disabled("just informational")
     @Issue("JENKINS-16341")
     @Test
-    public void testMemoryConsumption() throws Exception {
+    void testMemoryConsumption() throws Exception {
         var wc = j.createWebClient();
         callTestBehaviour(wc); // prime caches
         int total = 0;

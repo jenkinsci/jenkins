@@ -33,18 +33,18 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import jenkins.model.GlobalConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
-public class XStream2AnnotationTest {
+class XStream2AnnotationTest {
 
-    @Rule
-    public JenkinsSessionRule rr = new JenkinsSessionRule();
+    @RegisterExtension
+    public JenkinsSessionExtension rr = new JenkinsSessionExtension();
 
     @Test
-    public void xStreamAlias() throws Throwable {
+    void xStreamAlias() throws Throwable {
         rr.then(r -> {
             AnnotatedProcessed annotatedProcessed = AnnotatedProcessed.get();
             annotatedProcessed.x = 1;
@@ -78,6 +78,7 @@ public class XStream2AnnotationTest {
 
         int x;
 
+        @SuppressWarnings(value = "checkstyle:redundantmodifier")
         public AnnotatedProcessed() {
             getConfigFile().getXStream().processAnnotations(AnnotatedProcessed.class);
             load();
@@ -97,6 +98,7 @@ public class XStream2AnnotationTest {
 
         int x;
 
+        @SuppressWarnings(value = "checkstyle:redundantmodifier")
         public AnnotatedUnprocessed() {
             load();
         }
@@ -118,6 +120,7 @@ public class XStream2AnnotationTest {
 
         int x;
 
+        @SuppressWarnings(value = "checkstyle:redundantmodifier")
         public Programmatic() {
             getConfigFile().getXStream().alias("myconf-programmatic", Programmatic.class);
             load();

@@ -65,13 +65,12 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import net.sf.json.JSONObject;
-import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -118,7 +117,7 @@ class BuildCommandTest {
      * Tests synchronous execution.
      */
     @Test
-    @Category(SmokeTest.class)
+    @Tag("SmokeTest")
     void sync() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping 127.0.0.1") : new Shell("sleep 3"));

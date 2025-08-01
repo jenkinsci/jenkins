@@ -24,8 +24,8 @@
 
 package jenkins.agents;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.Functions;
 import hudson.model.FreeStyleProject;
@@ -39,35 +39,41 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.SlaveToMasterCallable;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
-import org.jvnet.hudson.test.InboundAgentRule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.junit.jupiter.BuildWatcherExtension;
+import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @Issue("JEP-222")
+@WithJenkins
 public class WebSocketAgentsTest {
 
     private static final Logger LOGGER = Logger.getLogger(WebSocketAgentsTest.class.getName());
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
+    @RegisterExtension
+    private static final BuildWatcherExtension buildWatcher = new BuildWatcherExtension();
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    @RegisterExtension
+    private final InboundAgentExtension inboundAgents = new InboundAgentExtension();
 
-    @Rule
-    public InboundAgentRule inboundAgents = new InboundAgentRule();
-
-    @Rule
-    public LoggerRule logging = new LoggerRule().
+    private final LogRecorder logging = new LogRecorder().
         record(Slave.class, Level.FINE).
         record(SlaveComputer.class, Level.FINEST).
         record(WebSocketAgents.class, Level.FINEST).
         record(Engine.class, Level.FINEST);
+
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     /**
      * Verify basic functionality of an agent in {@code -webSocket} mode.
@@ -77,8 +83,8 @@ public class WebSocketAgentsTest {
      * @see hudson.remoting.Launcher
      */
     @Test
-    public void smokes() throws Exception {
-        Slave s = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().secret().webSocket().build());
+    void smokes() throws Exception {
+        Slave s = inboundAgents.createAgent(r, InboundAgentExtension.Options.newBuilder().webSocket().build());
         try {
             assertEquals("response", s.getChannel().call(new DummyTask()));
             assertNotNull(s.getChannel().call(new FatTask()));

@@ -3,7 +3,7 @@ package hudson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Collection;
 import jenkins.plugins.dependee.Dependee;
@@ -12,16 +12,17 @@ import jenkins.plugins.dynamic_extension_loading.CustomExtensionLoadedViaConstru
 import jenkins.plugins.dynamic_extension_loading.CustomExtensionLoadedViaListener;
 import jenkins.plugins.dynamic_extension_loading.CustomPeriodicWork;
 import jenkins.plugins.optional_depender.OptionalDepender;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RealJenkinsRule;
-import org.jvnet.hudson.test.RealJenkinsRule.SyntheticPlugin;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension.SyntheticPlugin;
 
-public class ExtensionListRjrTest {
-    @Rule
-    public RealJenkinsRule rjr = new RealJenkinsRule();
+class ExtensionListRjrTest {
+
+    @RegisterExtension
+    public RealJenkinsExtension rjr = new RealJenkinsExtension();
 
     /**
      * Check that dynamically loading a plugin does not lead to extension lists with duplicate entries.
@@ -30,7 +31,7 @@ public class ExtensionListRjrTest {
      */
     @Test
     @Issue("JENKINS-75232")
-    public void checkDynamicLoad_singleRegistration() throws Throwable {
+    void checkDynamicLoad_singleRegistration() throws Throwable {
         var pluginJpi = rjr.createSyntheticPlugin(new SyntheticPlugin(CustomPeriodicWork.class.getPackage())
                 .shortName("dynamic-extension-loading")
                 .header("Plugin-Dependencies", "variant:0"));
@@ -57,8 +58,8 @@ public class ExtensionListRjrTest {
     }
 
     @Test
-    @Issue({ "JENKINS-50336", "JENKINS-60449" })
-    public void installDependedOptionalPluginWithoutRestart() throws Throwable {
+    @Issue({"JENKINS-50336", "JENKINS-60449"})
+    void installDependedOptionalPluginWithoutRestart() throws Throwable {
         var optionalDependerJpi = rjr.createSyntheticPlugin(new SyntheticPlugin(OptionalDepender.class.getPackage())
                 .header("Plugin-Dependencies", "variant:0,dependee:0;resolution:=optional"));
         var dependeeJpi = rjr.createSyntheticPlugin(new SyntheticPlugin(Dependee.class.getPackage()).shortName("dependee"));

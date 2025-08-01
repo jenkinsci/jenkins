@@ -29,8 +29,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import jakarta.servlet.ServletContextEvent;
 import java.time.Duration;
@@ -51,7 +51,9 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
  */
 @WithJenkins
 class SystemPropertiesTest {
+
     private final LogRecorder logging = new LogRecorder().record(SystemProperties.class, Level.WARNING);
+
     private JenkinsRule j;
 
     @BeforeEach
@@ -105,7 +107,7 @@ class SystemPropertiesTest {
     }
 
     @Test
-    public void duration() {
+    void duration() {
         System.setProperty("foo.bar", "1s");
         assertEquals(Duration.ofSeconds(1), SystemProperties.getDuration("foo.bar"));
         System.setProperty("foo.bar", "2m");
@@ -130,7 +132,7 @@ class SystemPropertiesTest {
     }
 
     @Test
-    public void invalid() {
+    void invalid() {
         logging.capture(10);
         System.setProperty("abc.def", "invalid");
         assertThat(SystemProperties.getDuration("abc.def"), Matchers.nullValue());

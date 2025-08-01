@@ -45,29 +45,36 @@ import jenkins.security.SlaveToMasterCallable;
 import jenkins.slaves.JnlpSlaveAgentProtocol4;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol4ProxyHandler;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.InboundAgentRule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Example server counterpart to {@link JnlpProtocol4ProxyHandler}.
  */
-public final class JnlpProtocol4ProxyHandlerTest {
+@WithJenkins
+class JnlpProtocol4ProxyHandlerTest {
 
     private static final Logger LOGGER = Logger.getLogger(JnlpProtocol4ProxyHandlerTest.class.getName());
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    @RegisterExtension
+    private final InboundAgentExtension inboundAgents = new InboundAgentExtension();
 
-    @Rule
-    public InboundAgentRule inboundAgents = new InboundAgentRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void smokes() throws Exception {
+    void smokes() throws Exception {
         // withLogger(JnlpProtocol4ProxyHandler.class, Level.FINE) pointless since log dumper is set up after these messages are printed
-        Slave s = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().secret().build());
+        Slave s = inboundAgents.createAgent(r, InboundAgentExtension.Options.newBuilder().build());
         try {
             assertThat(s.getChannel().call(new DummyTask()), is("response"));
             s.toComputer().getLogText().writeLogTo(0, System.out);

@@ -35,13 +35,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.ExtensionList;
 import hudson.Functions;
@@ -101,17 +101,17 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
@@ -123,17 +123,23 @@ import org.mockito.Mockito;
  * @see Jenkins
  * @see JenkinsRule
  */
-@Category(SmokeTest.class)
+@Tag("SmokeTest")
+@WithJenkins
 public class JenkinsTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    @TempDir
+    private File tmp;
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("SECURITY-3498")
-    public void testPaneToggleCollapse() throws Exception {
+    void testPaneToggleCollapse() {
         try (WebClient wc = j.createWebClient()) {
             final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("toggleCollapse?paneId=foo"));
             // @POST responds 404 when the verb is wrong; @RequirePOST would respond 405.
@@ -143,12 +149,12 @@ public class JenkinsTest {
 
     @Test
     @Issue("SECURITY-3073")
-    public void verifyUploadedFingerprintFilePermission() throws Exception {
+    void verifyUploadedFingerprintFilePermission() throws Exception {
         assumeFalse(Functions.isWindows());
 
         HtmlPage page = j.createWebClient().goTo("fingerprintCheck");
         HtmlForm form = page.getForms().get(0);
-        File dir = tmp.newFolder();
+        File dir = newFolder(tmp, "junit");
         File plugin = new File(dir, "htmlpublisher.jpi");
         // We're using a plugin to have a file above DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD
         FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
@@ -179,12 +185,12 @@ public class JenkinsTest {
 
     @Issue("SECURITY-406")
     @Test
-    public void testUserCreationFromUrlForAdmins() throws Exception {
+    void testUserCreationFromUrlForAdmins() throws Exception {
         WebClient wc = j.createWebClient();
 
-        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+        assertNull(User.getById("nonexistent", false), "User not supposed to exist");
         wc.assertFails("user/nonexistent", 404);
-        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+        assertNull(User.getById("nonexistent", false), "User not supposed to exist");
 
         try {
             User.ALLOW_USER_CREATION_VIA_URL = true;
@@ -192,7 +198,7 @@ public class JenkinsTest {
             // expected to work
             wc.goTo("user/nonexistent2");
 
-            assertNotNull("User supposed to exist", User.getById("nonexistent2", false));
+            assertNotNull(User.getById("nonexistent2", false), "User supposed to exist");
 
         } finally {
             User.ALLOW_USER_CREATION_VIA_URL = false;
@@ -200,7 +206,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testIsDisplayNameUniqueTrue() throws Exception {
+    void testIsDisplayNameUniqueTrue() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
@@ -215,7 +221,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testIsDisplayNameUniqueFalse() throws Exception {
+    void testIsDisplayNameUniqueFalse() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         final String displayName = "displayName";
@@ -231,7 +237,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testIsDisplayNameUniqueSameAsCurrentJob() throws Exception {
+    void testIsDisplayNameUniqueSameAsCurrentJob() throws Exception {
         final String curJobName = "curJobName";
         final String displayName = "currentProjectDisplayName";
 
@@ -244,7 +250,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testIsNameUniqueTrue() throws Exception {
+    void testIsNameUniqueTrue() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         j.createFreeStyleProject(curJobName);
@@ -255,7 +261,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testIsNameUniqueFalse() throws Exception {
+    void testIsNameUniqueFalse() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         j.createFreeStyleProject(curJobName);
@@ -266,7 +272,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testIsNameUniqueSameAsCurrentJob() throws Exception {
+    void testIsNameUniqueSameAsCurrentJob() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         j.createFreeStyleProject(curJobName);
@@ -278,7 +284,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testDoCheckDisplayNameUnique() throws Exception {
+    void testDoCheckDisplayNameUnique() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
@@ -293,7 +299,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testDoCheckDisplayNameSameAsDisplayName() throws Exception {
+    void testDoCheckDisplayNameSameAsDisplayName() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         final String displayName = "displayName";
@@ -309,7 +315,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testDoCheckDisplayNameSameAsJobName() throws Exception {
+    void testDoCheckDisplayNameSameAsJobName() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         final String displayName = "displayName";
@@ -325,7 +331,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testDoCheckViewName_GoodName() throws Exception {
+    void testDoCheckViewName_GoodName() {
         String[] viewNames = new String[] {
             "",
             "Jenkins",
@@ -339,7 +345,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testDoCheckViewName_NotGoodName() throws Exception {
+    void testDoCheckViewName_NotGoodName() {
         String[] viewNames = new String[] {
             "Jenkins?",
             "Jenkins*",
@@ -365,8 +371,9 @@ public class JenkinsTest {
     /**
      * Makes sure access to "/foobar" for UnprotectedRootAction gets through.
      */
-    @Test @Issue("JENKINS-14113")
-    public void testUnprotectedRootAction() throws Exception {
+    @Test
+    @Issue("JENKINS-14113")
+    void testUnprotectedRootAction() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
         WebClient wc = j.createWebClient();
@@ -381,7 +388,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testDoScript() throws Exception {
+    void testDoScript() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
@@ -411,7 +418,7 @@ public class JenkinsTest {
 
     @Test
     @Issue("JENKINS-58548")
-    public void testDoScriptTextDoesNotOutputExtraWhitespace() throws Exception {
+    void testDoScriptTextDoesNotOutputExtraWhitespace() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         WebClient wc = j.createWebClient().login("admin");
         TextPage page = wc.getPage(new WebRequest(wc.createCrumbedUrl("scriptText?script=print 'hello'"), HttpMethod.POST));
@@ -419,7 +426,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testDoEval() throws Exception {
+    void testDoEval() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
@@ -435,15 +442,15 @@ public class JenkinsTest {
 
         wc.withBasicApiToken(User.getById("bob", true));
         Page page = eval(wc);
-        assertEquals("bob has only READ",
-                HttpURLConnection.HTTP_FORBIDDEN,
-                page.getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN,
+                page.getWebResponse().getStatusCode(),
+                "bob has only READ");
 
         wc.withBasicApiToken(User.getById("charlie", true));
         page = eval(wc);
-        assertEquals("charlie has ADMINISTER and READ",
-                HttpURLConnection.HTTP_OK,
-                page.getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_OK,
+                page.getWebResponse().getStatusCode(),
+                "charlie has ADMINISTER and READ");
     }
 
     private Page eval(WebClient wc) throws Exception {
@@ -491,8 +498,9 @@ public class JenkinsTest {
         }
     }
 
-    @Test @Issue("JENKINS-20866")
-    public void testErrorPageShouldBeAnonymousAccessible() throws Exception {
+    @Test
+    @Issue("JENKINS-20866")
+    void testErrorPageShouldBeAnonymousAccessible() throws Exception {
         HudsonPrivateSecurityRealm s = new HudsonPrivateSecurityRealm(false, false, null);
         User alice = s.createAccount("alice", "alice");
         j.jenkins.setSecurityRealm(s);
@@ -507,7 +515,7 @@ public class JenkinsTest {
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("error/reportError");
 
-        assertEquals(p.asNormalizedText(), HttpURLConnection.HTTP_BAD_REQUEST, p.getWebResponse().getStatusCode());  // not 403 forbidden
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, p.getWebResponse().getStatusCode(), p.asNormalizedText());  // not 403 forbidden
         assertTrue(p.getWebResponse().getContentAsString().contains("My car is black"));
     }
 
@@ -534,8 +542,9 @@ public class JenkinsTest {
         }
     }
 
-    @Test @Issue("JENKINS-23551")
-    public void testComputerListenerNotifiedOnRestart() {
+    @Test
+    @Issue("JENKINS-23551")
+    void testComputerListenerNotifiedOnRestart() {
         // Simulate restart calling listeners
         for (RestartListener listener : RestartListener.all())
             listener.onRestart();
@@ -549,7 +558,7 @@ public class JenkinsTest {
     public static final ComputerListener listenerMock = Mockito.mock(ComputerListener.class);
 
     @Test
-    public void runScriptOnOfflineComputer() throws Exception {
+    void runScriptOnOfflineComputer() throws Exception {
         DumbSlave slave = j.createSlave(true);
         j.disconnectSlave(slave);
 
@@ -568,7 +577,7 @@ public class JenkinsTest {
 
     @Test
     @Issue("JENKINS-38487")
-    public void startupShouldNotFailOnIOExceptionOnlineListener() {
+    void startupShouldNotFailOnIOExceptionOnlineListener() {
         // We do nothing, IOExceptionOnOnlineListener & JenkinsRule should cause the
         // boot failure if the issue is not fixed.
 
@@ -589,7 +598,7 @@ public class JenkinsTest {
 
     @Test
     @Issue("JENKINS-57111")
-    public void startupShouldNotFailOnRuntimeExceptionOnlineListener() {
+    void startupShouldNotFailOnRuntimeExceptionOnlineListener() {
         // We do nothing, RuntimeExceptionOnOnlineListener & JenkinsRule should cause the
         // boot failure if the issue is not fixed.
         assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
@@ -608,7 +617,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void getComputers() throws Exception {
+    void getComputers() throws Exception {
         List<Slave> agents = new ArrayList<>();
         for (String n : List.of("zestful", "bilking", "grouchiest")) {
             agents.add(j.createSlave(n, null, null));
@@ -622,7 +631,7 @@ public class JenkinsTest {
 
     @Issue("JENKINS-42577")
     @Test
-    public void versionIsSavedInSave() throws Exception {
+    void versionIsSavedInSave() throws Exception {
         Jenkins.VERSION = "1.0";
         j.jenkins.save();
         VersionNumber storedVersion = Jenkins.getStoredVersion();
@@ -635,27 +644,28 @@ public class JenkinsTest {
         assertNull(nullVersion);
     }
 
+    // Sources: https://github.com/Vlatombe/jenkins-47406
     @Issue("JENKINS-47406")
     @Test
-    @WithPlugin("jenkins-47406.hpi") // Sources: https://github.com/Vlatombe/jenkins-47406
-    public void jobCreatedByInitializerIsRetained() {
-        assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
+    @WithPlugin("jenkins-47406.hpi")
+    void jobCreatedByInitializerIsRetained() {
+        assertNotNull(j.jenkins.getItem("JENKINS-47406"), "JENKINS-47406 should exist");
     }
 
     @Issue("SECURITY-2047")
     @Test
-    public void testLogin123() throws Exception {
+    void testLogin123() {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         WebClient wc = j.createWebClient();
 
-        FailingHttpStatusCodeException e = assertThrows("Page should be protected.", FailingHttpStatusCodeException.class, () -> wc.goTo("login123"));
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("login123"), "Page should be protected.");
         assertThat(e.getStatusCode(), is(403));
     }
 
     @Issue("SECURITY-2047")
     @Test
-    public void testLogin123WithRead() throws Exception {
+    void testLogin123WithRead() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
                 grant(Jenkins.READ).everywhere().to("bob"));
@@ -668,7 +678,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testLogin() throws Exception {
+    void testLogin() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
                 grant(Jenkins.READ).everywhere().to("bob"));
@@ -681,7 +691,7 @@ public class JenkinsTest {
 
     @Issue("JENKINS-68055")
     @Test
-    public void testTrimLabelsRetainsLabelExpressions() throws Exception {
+    void testTrimLabelsRetainsLabelExpressions() throws Exception {
         Node n = j.createOnlineSlave();
         n.setLabelString("test expression");
 
@@ -695,11 +705,11 @@ public class JenkinsTest {
     }
 
     @Test
-    public void reloadShouldNotSaveConfig() throws Exception {
+    void reloadShouldNotSaveConfig() throws Exception {
         SaveableListenerImpl saveListener = ExtensionList.lookupSingleton(SaveableListenerImpl.class);
         saveListener.reset();
         j.jenkins.reload();
-        assertFalse("Jenkins object should not have been saved.", saveListener.wasCalled());
+        assertFalse(saveListener.wasCalled(), "Jenkins object should not have been saved.");
     }
 
     @TestExtension("reloadShouldNotSaveConfig")
@@ -741,7 +751,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void checkInitialView() {
+    void checkInitialView() {
         assertTrue(CheckInitialViewExtension.hasPrimaryView);
     }
 
@@ -772,7 +782,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void reloadViews() throws Exception {
+    void reloadViews() throws Exception {
         assertThat(j.jenkins.getPrimaryView(), isA(AllView.class));
         assertThat(j.jenkins.getViews(), contains(isA(AllView.class)));
         Files.writeString(j.jenkins.getConfigFile().getFile().toPath(), "<broken");
@@ -780,6 +790,15 @@ public class JenkinsTest {
         j.createWebClient().goTo("manage/");
         assertThat(j.jenkins.getPrimaryView(), isA(AllView.class));
         assertThat(j.jenkins.getViews(), contains(isA(AllView.class)));
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            throw new IOException("Couldn't create folders " + root);
+        }
+        return result;
     }
 
 }

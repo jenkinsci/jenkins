@@ -26,10 +26,8 @@ package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeThat;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
@@ -43,31 +41,36 @@ import java.nio.charset.Charset;
 import java.util.logging.Level;
 import jenkins.util.SystemProperties;
 import org.apache.tools.ant.util.JavaEnvUtils;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ArgumentListBuilder2Test {
+@WithJenkins
+class ArgumentListBuilder2Test {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
-    @Rule
-    public LoggerRule logging = new LoggerRule().
+    private final LogRecorder logging = new LogRecorder().
         record(StreamTaskListener.class, Level.FINE).
         record(SystemProperties.class, Level.FINE);
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Makes sure {@link RemoteLauncher} properly masks arguments.
      */
     @Test
     @Email("http://n4.nabble.com/Password-masking-when-running-commands-on-a-slave-tp1753033p1753033.html")
-    public void slaveMask() throws Exception {
+    void slaveMask() throws Exception {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add("java");
         args.addMasked("-version");
@@ -81,7 +84,7 @@ public class ArgumentListBuilder2Test {
     }
 
     @Test
-    public void ensureArgumentsArePassedViaCmdExeUnmodified() throws Exception {
+    void ensureArgumentsArePassedViaCmdExeUnmodified() throws Exception {
         assumeTrue(Functions.isWindows());
 
         String[] specials = new String[] {
@@ -147,7 +150,7 @@ public class ArgumentListBuilder2Test {
         int code = p.join();
         listener.close();
 
-        assumeThat("Failed to run " + args, code, equalTo(0));
+        assumeTrue(code == 0, "Failed to run " + args);
         return out.toString(Charset.defaultCharset());
     }
 }

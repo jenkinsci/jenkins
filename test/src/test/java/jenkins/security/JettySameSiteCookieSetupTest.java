@@ -7,16 +7,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.jvnet.hudson.test.FlagRule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-@RunWith(Parameterized.class)
-public class JettySameSiteCookieSetupTest {
+@WithJenkins
+@ParameterizedClass
+@MethodSource("sameSite")
+class JettySameSiteCookieSetupTest {
 
     private static final Map<String, String> FLAG_TO_SAMESITE_COOKIE = new HashMap<>() {{
         put("", null);
@@ -25,35 +31,49 @@ public class JettySameSiteCookieSetupTest {
         put(null, "lax");
     }};
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    @RegisterExtension
+    private final JenkinsSessionExtension session = new JenkinsSessionExtension();
 
-    @Rule
-    public FlagRule<String> sameSiteCookie;
+    private String sameSiteCookie;
 
-    private final String sameSiteValue;
+    @Parameter
+    private String sameSiteValue;
 
-    public JettySameSiteCookieSetupTest(String sameSiteValue) {
-        this.sameSiteValue = sameSiteValue;
-        sameSiteCookie = FlagRule.systemProperty(JettySameSiteCookieSetup.class.getName() + ".sameSiteDefault", sameSiteValue);
-    }
-
-    @Parameterized.Parameters
-    public static Set<String> sameSite() {
+    static Set<String> sameSite() {
         return FLAG_TO_SAMESITE_COOKIE.keySet();
     }
 
-    @Test
-    public void testJettyFlagSetsSameSiteCookieProperty() throws Exception {
-        String expected = FLAG_TO_SAMESITE_COOKIE.get(this.sameSiteValue);
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
-
-        try (JenkinsRule.WebClient wc = j.createWebClient()) {
-            wc.login("admin", "admin", true);
-
-            assertThat(wc.getCookieManager().getCookie("JSESSIONID").getSameSite(), is(expected));
-            assertThat(wc.getCookieManager().getCookie("remember-me").getSameSite(), is(expected));
+    @BeforeEach
+    void setUp() {
+        if (sameSiteValue != null) {
+            sameSiteCookie = System.setProperty(JettySameSiteCookieSetup.class.getName() + ".sameSiteDefault", sameSiteValue);
+        } else {
+            sameSiteCookie = System.clearProperty(JettySameSiteCookieSetup.class.getName() + ".sameSiteDefault");
         }
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (sameSiteCookie != null) {
+            System.setProperty(JettySameSiteCookieSetup.class.getName() + ".sameSiteDefault", sameSiteCookie);
+        } else {
+            System.clearProperty(JettySameSiteCookieSetup.class.getName() + ".sameSiteDefault");
+        }
+    }
+
+    @Test
+    void testJettyFlagSetsSameSiteCookieProperty() throws Throwable {
+        String expected = FLAG_TO_SAMESITE_COOKIE.get(sameSiteValue);
+        session.then(j -> {
+            j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+            j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
+
+            try (JenkinsRule.WebClient wc = j.createWebClient()) {
+                wc.login("admin", "admin", true);
+
+                assertThat(wc.getCookieManager().getCookie("JSESSIONID").getSameSite(), is(expected));
+                assertThat(wc.getCookieManager().getCookie("remember-me").getSameSite(), is(expected));
+            }
+        });
     }
 }
