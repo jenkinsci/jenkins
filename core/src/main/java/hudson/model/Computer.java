@@ -626,6 +626,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
+     * Uses {@link #getChannel()} to check the connection.
+     * A connected agent may still be offline for scheduling if marked temporarily offline.
+     * @return {@code true} if the agent is connected, {@code false} otherwise.
+     * @see #isOffline()
+     */
+    @Override
+    public boolean isConnected() {
+        return getChannel() != null;
+    }
+
+    /**
      * This method is called to determine whether manual launching of the agent is allowed at this point in time.
      * @return {@code true} if manual launching of the agent is allowed at this point in time.
      */
