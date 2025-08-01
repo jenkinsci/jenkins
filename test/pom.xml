@@ -83,7 +83,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>ionicons-api</artifactId>
-        <version>88.va_4187cb_eddf1</version>
+        <version>94.vcc3065403257</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
