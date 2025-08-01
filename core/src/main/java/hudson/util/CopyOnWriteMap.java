@@ -37,7 +37,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
@@ -64,9 +66,17 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
         update(Collections.emptyMap());
     }
 
+    protected Map<K, V> getView() {
+        return view;
+    }
+
+    protected Map<K, V> createView() {
+        return Collections.unmodifiableMap(core);
+    }
+
     protected void update(Map<K, V> m) {
         core = m;
-        view = Collections.unmodifiableMap(core);
+        view = createView();
     }
 
     /**
@@ -214,7 +224,7 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
     /**
      * {@link CopyOnWriteMap} backed by {@link TreeMap}.
      */
-    public static final class Tree<K, V> extends CopyOnWriteMap<K, V> {
+    public static final class Tree<K, V> extends CopyOnWriteMap<K, V> implements SortedMap<K, V> {
         private final Comparator<K> comparator;
 
         public Tree(Map<K, V> core, Comparator<K> comparator) {
@@ -232,7 +242,7 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
         }
 
         @Override
-        protected Map<K, V> copy() {
+        protected TreeMap<K, V> copy() {
             TreeMap<K, V> m = new TreeMap<>(comparator);
             m.putAll(core);
             return m;
@@ -241,6 +251,50 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
         @Override
         public synchronized void clear() {
             update(new TreeMap<>(comparator));
+        }
+
+        @Override
+        protected NavigableMap<K, V> createView() {
+            return Collections.unmodifiableNavigableMap((NavigableMap<K, V>) core);
+        }
+
+        @Override
+        public NavigableMap<K, V> getView() {
+            return (NavigableMap<K, V>) super.getView();
+        }
+
+        public NavigableMap<K, V> descendingMap() {
+            return getView().descendingMap();
+        }
+
+        @Override
+        public Comparator<? super K> comparator() {
+            return getView().comparator();
+        }
+
+        @Override
+        public SortedMap<K, V> subMap(K fromKey, K toKey) {
+            return getView().subMap(fromKey, toKey);
+        }
+
+        @Override
+        public SortedMap<K, V> headMap(K toKey) {
+            return getView().headMap(toKey);
+        }
+
+        @Override
+        public SortedMap<K, V> tailMap(K fromKey) {
+            return getView().tailMap(fromKey);
+        }
+
+        @Override
+        public K firstKey() {
+            return getView().firstKey();
+        }
+
+        @Override
+        public K lastKey() {
+            return getView().lastKey();
         }
 
         public static class ConverterImpl extends TreeMapConverter {
