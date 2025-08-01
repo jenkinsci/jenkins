@@ -45,10 +45,10 @@
     "sass": "1.89.2",
     "sass-loader": "16.0.5",
     "style-loader": "4.0.0",
-    "stylelint": "16.22.0",
+    "stylelint": "16.23.0",
     "stylelint-checkstyle-reporter": "1.1.1",
     "stylelint-config-standard-scss": "15.0.1",
-    "webpack": "5.100.2",
+    "webpack": "5.101.0",
     "webpack-cli": "6.0.1",
     "webpack-remove-empty-scripts": "1.1.1"
   },

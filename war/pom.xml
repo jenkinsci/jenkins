@@ -283,7 +283,7 @@ THE SOFTWARE.
                   <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>509.vc54d23fc427e</version>
+                  <version>515.vd788654779b_1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -325,7 +325,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1380.ve03e7a_63d139</version>
+                  <version>1382.veca_a_efe062fa_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -339,7 +339,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.7-1</version>
+                  <version>5.3.7-2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -369,7 +369,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>5.6.0-5</version>
+                  <version>6.0.0-1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -534,7 +534,7 @@ THE SOFTWARE.
                   <!-- dependency of junit and matrix-auth -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>ionicons-api</artifactId>
-                  <version>88.va_4187cb_eddf1</version>
+                  <version>94.vcc3065403257</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
