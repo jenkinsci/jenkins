@@ -172,7 +172,7 @@ function generateButtons() {
        */
       function toggleButtonState() {
         const templateCount = templates.length;
-        const selectedCount = [...e.children].filter((e) =>
+        const selectedCount = Array.from(e.children).filter((e) =>
           e.classList.contains("repeated-chunk"),
         ).length;
 
