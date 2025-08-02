@@ -68,19 +68,18 @@ $dropdown-padding: 0.375rem;
   &__filter {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 1.2ch;
     padding: 0.6rem 1rem;
-    border-bottom: 1px solid var(--input-border);
+    border-bottom: var(--jenkins-border);
 
     &-input {
-      &:focus {
-        outline: none;
-      }
-
-      width: 100%;
-      border: none;
-      color: var(--text-color-secondary);
-      background-color: unset;
+      outline: none !important;
+      border: none !important;
+      background-color: unset !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      min-height: 0 !important;
+      border-radius: 0 !important;
     }
 
     svg {
@@ -118,11 +117,11 @@ $dropdown-padding: 0.375rem;
   &__disabled {
     color: var(--text-color-secondary) !important;
     font-size: 0.8125rem;
-    opacity: 0.8;
+    opacity: 0.5;
     display: inline-flex;
     align-items: center;
     margin: 0;
-    cursor: default;
+    cursor: not-allowed;
   }
 
   &__item {
