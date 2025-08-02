@@ -195,7 +195,7 @@ function generateButtons() {
 
 function createFilter(menu) {
   const filterInput = createElementFromHtml(`
-    <input class="jenkins-dropdown__filter-input" placeholder="Filter" spellcheck="false" type="search"/>
+    <input class="jenkins-input jenkins-search__input jenkins-dropdown__filter-input" placeholder="Filter" spellcheck="false" type="search"/>
   `);
 
   filterInput.addEventListener("input", (event) =>
