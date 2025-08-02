@@ -100,11 +100,11 @@ THE SOFTWARE.
 
       <f:class-entry descriptor="${descriptor}" />
 
-      <div class="jenkins-repeated-chunk__content">
-        <j:if test="${help!=null}">
-          <f:helpArea />
-        </j:if>
+      <j:if test="${help!=null}">
+        <f:helpArea />
+      </j:if>
 
+      <div class="jenkins-repeated-chunk__content">
         <d:invokeBody/>
       </div>
     </d:tag>

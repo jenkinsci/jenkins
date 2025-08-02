@@ -1,6 +1,6 @@
 @use "../abstracts/mixins";
 
-$inset: 1rem;
+$inset: 0.9375rem;
 $exit-animation: 0.2s;
 
 div.repeated-chunk {
@@ -73,6 +73,10 @@ div.repeated-chunk {
     &--no-handle {
       padding-left: $inset;
     }
+  }
+
+  & > .help-area .help {
+    margin: 0 $inset $inset;
   }
 
   .repeatable-delete {
