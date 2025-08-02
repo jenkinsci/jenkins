@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.521</revision>
+    <revision>2.522</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-07-22T13:07:51Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-07-29T13:10:03Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -98,7 +98,7 @@ THE SOFTWARE.
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>8.11</winstone.version>
-    <node.version>22.17.1</node.version>
+    <node.version>22.18.0</node.version>
   </properties>
 
   <!--
