@@ -221,7 +221,7 @@ div.repeated-chunk {
   }
 }
 
-.repeated-chunk + .repeatable-insertion-point + .hetero-list-add {
+.repeated-chunk + .repeatable-insertion-point + span .hetero-list-add {
   margin-top: 1rem;
   transition: none;
 }
