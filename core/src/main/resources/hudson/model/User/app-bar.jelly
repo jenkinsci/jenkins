@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2025 Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <st:documentation> <![CDATA[
-    Delete button for the <repeatable> tag.
-    ]]>
-    <st:attribute name="value">
-      Caption of the button. Defaults to 'Delete'.
-    </st:attribute>
-  </st:documentation>
-  <st:adjunct includes="lib.form.repeatable.repeatable"/>
-
-  <j:set var="deleteText" value="${attrs.value ?: '%Delete'}" />
-  <button class="repeatable-delete danger" type="button" style="--width: calc(${deleteText.length()}ch + 20px)">
-    <l:icon src="symbol-close" />
-    <span>${deleteText}</span>
-  </button>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:app-bar title="${it.fullName}" icon="${h.getUserAvatar(it, '96x96')}" />
 </j:jelly>
