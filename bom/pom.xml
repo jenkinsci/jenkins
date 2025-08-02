@@ -40,8 +40,8 @@ THE SOFTWARE.
   <properties>
     <commons-fileupload2.version>2.0.0-M4</commons-fileupload2.version>
     <groovy.version>2.4.21</groovy.version>
-    <jelly.version>1.1-jenkins-20250616</jelly.version>
-    <stapler.version>2007.vf6d829600297</stapler.version>
+    <jelly.version>1.1-jenkins-20250731</jelly.version>
+    <stapler.version>2011.v9eb_9f37b_0717</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -305,7 +305,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>json-lib</artifactId>
-        <version>2.4-jenkins-9</version>
+        <version>2.4-jenkins-13</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
