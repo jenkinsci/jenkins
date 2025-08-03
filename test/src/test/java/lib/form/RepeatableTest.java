@@ -110,7 +110,7 @@ class RepeatableTest {
         assertEquals(1, getButtonsList(f, buttonCaption).size());
         clickButton(wc, f, buttonCaption, true); // click Add button
         assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that second Add button is not present
-        clickButton(wc, f, "Remove", true); // click Remove button
+        clickButton(wc, f, "Delete", true); // click Delete button
         assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that only one Add button is in form
     }
 
@@ -126,7 +126,7 @@ class RepeatableTest {
         assertEquals(1, getButtonsList(f, buttonCaption).size());
         clickButton(wc, f, buttonCaption, true); // click Add button
         assertEquals(2, getButtonsList(f, buttonCaption).size()); // check that second Add button was added into form
-        clickButton(wc, f, "Remove", true); // click Remove button
+        clickButton(wc, f, "Delete", true); // click Delete button
         assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that only one Add button is in form
     }
 
@@ -647,7 +647,7 @@ class RepeatableTest {
      */
     private static List<?> getButtonsList(HtmlForm form, String buttonCaption) {
         return form.getByXPath(
-                String.format("//button[text() = '%s'] | //button[@tooltip = '%s']", buttonCaption, buttonCaption)
+                String.format("//button[normalize-space(string(.)) = '%s'] | //button[@tooltip = '%s']", buttonCaption, buttonCaption)
         );
     }
 
