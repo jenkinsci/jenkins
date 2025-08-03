@@ -1,9 +1,9 @@
 package hudson.node_monitors;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
@@ -14,29 +14,36 @@ import hudson.slaves.OfflineCause;
 import hudson.slaves.SlaveComputer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.InboundAgentRule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Andrew Bayer
  */
-public class ResponseTimeMonitorTest {
+@WithJenkins
+class ResponseTimeMonitorTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    @RegisterExtension
+    private final InboundAgentExtension inboundAgents = new InboundAgentExtension();
 
-    @Rule
-    public InboundAgentRule inboundAgents = new InboundAgentRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Makes sure that it doesn't try to monitor an already-offline agent.
      */
     @Test
     @Issue("JENKINS-20272")
-    public void skipOfflineAgent() throws Exception {
+    void skipOfflineAgent() throws Exception {
         DumbSlave s = j.createSlave();
         SlaveComputer c = s.getComputer();
         c.connect(false).get(); // wait until it's connected
@@ -64,8 +71,8 @@ public class ResponseTimeMonitorTest {
     }
 
     @Test
-    public void doNotDisconnectBeforeLaunched() throws Exception {
-        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().skipStart().build());
+    void doNotDisconnectBeforeLaunched() throws Exception {
+        Slave slave = inboundAgents.createAgent(j, InboundAgentExtension.Options.newBuilder().skipStart().build());
         Computer c = slave.toComputer();
         assertNotNull(c);
         OfflineCause originalOfflineCause = c.getOfflineCause();
