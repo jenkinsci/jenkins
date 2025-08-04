@@ -276,7 +276,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, and mailer -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>display-url-api</artifactId>
-                  <version>2.209.v582ed814ff2f</version>
+                  <version>2.217.va_6b_de84cc74b_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
