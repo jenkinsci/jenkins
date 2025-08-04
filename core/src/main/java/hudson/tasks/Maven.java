@@ -625,9 +625,6 @@ public class Maven extends Builder {
 
         /**
          * Is this Maven Daemon?
-         *
-         * @param launcher
-         *      Represents the node on which we evaluate the path.
          */
         private boolean isMavenDaemon() {
             return getExeFile("mvnd", getHome()).exists();
