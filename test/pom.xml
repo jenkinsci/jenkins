@@ -64,6 +64,12 @@ THE SOFTWARE.
         <scope>import</scope>
       </dependency>
       <dependency>
+        <!-- Required by workflow-support -->
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>caffeine-api</artifactId>
+        <version>3.2.2-178.v353b_8428ed56</version>
+      </dependency>
+      <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-lang3-api</artifactId>
         <version>3.18.0-98.v3a_674c06072d</version>
