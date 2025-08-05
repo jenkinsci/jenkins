@@ -53,7 +53,7 @@ class HealthCheckActionTest {
 
     @Test
     void healthCheck() throws Exception {
-        try (var webClient = r.createWebClient()) {
+        try (var webClient = r.createWebClient().withRedirectEnabled(false)) {
             var page = webClient.goTo(healthUrl(), "application/json");
             assertThat(page.getWebResponse().getStatusCode(), is(200));
             assertEquals(JSONObject.fromObject("""
@@ -64,13 +64,14 @@ class HealthCheckActionTest {
         }
     }
 
+
     private static String healthUrl() {
-        return ExtensionList.lookupSingleton(HealthCheckAction.class).getUrlName();
+        return ExtensionList.lookupSingleton(HealthCheckAction.class).getUrlName() + "/";
     }
 
     @Test
     void healthCheckSuccessExtension() throws Exception {
-        try (var webClient = r.createWebClient()) {
+        try (var webClient = r.createWebClient().withRedirectEnabled(false)) {
             var page = webClient.goTo(healthUrl(), "application/json");
             assertThat(page.getWebResponse().getStatusCode(), is(200));
             assertEquals(JSONObject.fromObject("""
@@ -97,7 +98,7 @@ class HealthCheckActionTest {
 
     @Test
     void healthCheckFailingExtension() throws Exception {
-        try (var webClient = r.createWebClient()) {
+        try (var webClient = r.createWebClient().withRedirectEnabled(false)) {
             webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
             webClient.getOptions().setPrintContentOnFailingStatusCode(false);
             var page = webClient.goTo(healthUrl(), "application/json");
