@@ -47,16 +47,45 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:if test="${mode=='breadcrumbs'}">
+    <j:set var="baseUrl" value="${request2.originalRequestURI}" />
     <j:set var="hasLink" value="${attrs.href != null}" />
-    <li id="${attrs.id}" class="jenkins-breadcrumbs__list-item" data-type="breadcrumb-item" aria-current="${hasLink ? null : 'page'}" data-has-menu="${attrs.hasMenu}">
+    <j:set var="isCurrent" value="${baseUrl == attrs.href}" />
+    <j:set var="inPageNav" value="${attrs.id.contains('inpage-nav')}" />
+    <j:set var="shouldShowTitle" value="${attrs.title.length() > 26}" />
+
+    <li aria-current="${(isCurrent or !hasLink)? 'page' : null}"
+        id="${attrs.id}" class="jenkins-breadcrumbs__list-item"
+        data-type="breadcrumb-item" data-has-menu="${attrs.hasMenu}"
+    >
       <j:choose>
-        <j:when test="${!hasLink}">
-          <span class="${attrs.hasMenu ? 'hoverable-model-link' : ''}">${attrs.title}</span>
+        <j:when test="${(!hasLink and !attrs.hasMenu)  or (isCurrent and !inPageNav)}">
+          <j:choose>
+            <j:when test="${shouldShowTitle}">
+              <span tooltip="${attrs.title}">${attrs.title}</span>
+            </j:when>
+            <j:otherwise>
+              <span>${attrs.title}</span>
+            </j:otherwise>
+          </j:choose>
         </j:when>
         <j:otherwise>
-          <a href="${attrs.href}" class="${attrs.hasMenu ? 'hoverable-model-link' : ''} ${attrs.hasChildrenMenu ? 'hoverable-children-model-link' : ''}">
-            ${attrs.title}
-          </a>
+          <j:choose>
+            <j:when test="${shouldShowTitle}">
+              <a tooltip="${attrs.title}" href="${attrs.href}">
+                ${attrs.title}
+              </a>
+            </j:when>
+            <j:otherwise>
+              <a href="${attrs.href}">
+                ${attrs.title}
+              </a>
+            </j:otherwise>
+          </j:choose>
+          <j:if test="${attrs.hasMenu or attrs.hasChildrenMenu}">
+            <div aria-label="dropdown menu for ${attrs.title}" data-iscurrent="${isCurrent}" data-href="${attrs.href}" data-base="${baseUrl}" tabindex="0" class="dropdown-indicator" data-model="${attrs.hasMenu}" data-children="${attrs.hasChildrenMenu}" >
+              <l:icon class="icon-sm jenkins-!-text-color-secondary" src="symbol-chevron-down" />
+            </div>
+          </j:if>
         </j:otherwise>
       </j:choose>
     </li>
