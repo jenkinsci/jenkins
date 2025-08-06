@@ -24,11 +24,6 @@
 
 package hudson.model;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Extension;
-import hudson.ExtensionList;
-import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
@@ -36,167 +31,85 @@ import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.util.Collections;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import jenkins.model.IdStrategy;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+/**
+ * @deprecated Formerly used to track which directory held each user configuration.
+ *             Now that is deterministic based on a hash of {@link IdStrategy#keyFor}.
+ */
+@Deprecated
 @Restricted(NoExternalUse.class)
-@Extension
 public class UserIdMapper {
 
     private static final XStream2 XSTREAM = new XStream2();
-    static final String MAPPING_FILE = "users.xml";
     private static final Logger LOGGER = Logger.getLogger(UserIdMapper.class.getName());
-    private static final int PREFIX_MAX = 15;
-    private static final Pattern PREFIX_PATTERN = Pattern.compile("[^A-Za-z0-9]");
-    @SuppressFBWarnings(value = "SS_SHOULD_BE_STATIC", justification = "Reserved for future use")
-    private final int version = 1; // Not currently used, but it may be helpful in the future to store a version.
 
-    private transient File usersDirectory;
+    // contrary to the name, the keys were actually IdStrategy.keyFor, not necessarily ids
     private Map<String, String> idToDirectoryNameMap = new ConcurrentHashMap<>();
 
-    static UserIdMapper getInstance() {
-        return ExtensionList.lookupSingleton(UserIdMapper.class);
+    private UserIdMapper() {
     }
 
-    public UserIdMapper() {
-    }
-
-    @Initializer(after = InitMilestone.PLUGINS_STARTED, before = InitMilestone.JOB_LOADED)
-    public File init() throws IOException {
-        usersDirectory = createUsersDirectoryAsNeeded();
-        load();
-        return usersDirectory;
-    }
-
-    @CheckForNull File getDirectory(String userId) {
-        String directoryName = idToDirectoryNameMap.get(getIdStrategy().keyFor(userId));
-        return directoryName == null ? null : new File(usersDirectory, directoryName);
-    }
-
-    File putIfAbsent(String userId, boolean saveToDisk) throws IOException {
-        String idKey = getIdStrategy().keyFor(userId);
-        String directoryName = idToDirectoryNameMap.get(idKey);
-        File directory = null;
-        if (directoryName == null) {
-            synchronized (this) {
-                directoryName = idToDirectoryNameMap.get(idKey);
-                if (directoryName == null) {
-                    directory = createDirectoryForNewUser(userId);
-                    directoryName = directory.getName();
-                    idToDirectoryNameMap.put(idKey, directoryName);
-                    if (saveToDisk) {
-                        save();
+    @Initializer(after = InitMilestone.SYSTEM_CONFIG_ADAPTED, before = InitMilestone.JOB_LOADED)
+    public static void migrate() throws IOException {
+        var usersDirectory = User.getRootDir();
+        var data = new UserIdMapper();
+        var mapperXml = new XmlFile(XSTREAM, new File(usersDirectory, "users.xml"));
+        if (mapperXml.exists()) { // need to migrate
+            // Load it, and trust ids it defines over <id>…</id> in users/…/config.xml which UserIdMigrator neglected to resave.
+            LOGGER.info(() -> "migrating " + mapperXml);
+            mapperXml.unmarshal(data);
+            var idStrategy = User.idStrategy();
+            for (var entry : data.idToDirectoryNameMap.entrySet()) {
+                var idKey = entry.getKey();
+                var directoryName = entry.getValue();
+                try {
+                    var oldDirectory = new File(usersDirectory, directoryName);
+                    var userXml = new XmlFile(User.XSTREAM, new File(oldDirectory, User.CONFIG_XML));
+                    var user = (User) userXml.read();
+                    if (user.id == null || !idKey.equals(idStrategy.keyFor(user.id))) {
+                        user.id = idKey; // not quite right but hoping for the best
+                        userXml.write(user);
                     }
+                    var newDirectory = User.getUserFolderFor(user.id);
+                    Files.move(oldDirectory.toPath(), newDirectory.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    LOGGER.info(() -> "migrated " + oldDirectory + " to " + newDirectory);
+                } catch (Exception x) {
+                    LOGGER.log(Level.WARNING, "failed to migrate " + entry, x);
                 }
             }
+            mapperXml.delete();
         }
-        return directory == null ? new File(usersDirectory, directoryName) : directory;
-    }
-
-    boolean isMapped(String userId) {
-        return idToDirectoryNameMap.containsKey(getIdStrategy().keyFor(userId));
-    }
-
-    Set<String> getConvertedUserIds() {
-        return Collections.unmodifiableSet(idToDirectoryNameMap.keySet());
-    }
-
-    void remove(String userId) throws IOException {
-        idToDirectoryNameMap.remove(getIdStrategy().keyFor(userId));
-        save();
-    }
-
-    void clear() {
-        idToDirectoryNameMap.clear();
-    }
-
-    void reload() throws IOException {
-        clear();
-        load();
-    }
-
-    protected IdStrategy getIdStrategy() {
-        return User.idStrategy();
-    }
-
-    protected File getUsersDirectory() {
-        return User.getRootDir();
-    }
-
-    private XmlFile getXmlConfigFile() {
-        File file = getConfigFile(usersDirectory);
-        return new XmlFile(XSTREAM, file);
-    }
-
-    static File getConfigFile(File usersDirectory) {
-        return new File(usersDirectory, MAPPING_FILE);
-    }
-
-    private File createDirectoryForNewUser(String userId) throws IOException {
-        try {
-            Path tempDirectory = Files.createTempDirectory(Util.fileToPath(usersDirectory), generatePrefix(userId));
-            return tempDirectory.toFile();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error creating directory for user: " + userId, e);
-            throw e;
-        }
-    }
-
-    private String generatePrefix(String userId) {
-        String fullPrefix = PREFIX_PATTERN.matcher(userId).replaceAll("");
-        return fullPrefix.length() > PREFIX_MAX - 1 ? fullPrefix.substring(0, PREFIX_MAX - 1) + '_' : fullPrefix + '_';
-    }
-
-    private File createUsersDirectoryAsNeeded() throws IOException {
-        File usersDirectory = getUsersDirectory();
-        if (!usersDirectory.exists()) {
-            try {
-                Files.createDirectory(usersDirectory.toPath());
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Unable to create users directory: " + usersDirectory, e);
-                throw e;
-            }
-        }
-        return usersDirectory;
-    }
-
-    synchronized void save() throws IOException {
-        try {
-            getXmlConfigFile().write(this);
-        } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, "Error saving userId mapping file.", ioe);
-            throw ioe;
-        }
-    }
-
-    private void load() throws IOException {
-        UserIdMigrator migrator = new UserIdMigrator(usersDirectory, getIdStrategy());
-        if (migrator.needsMigration()) {
-            try {
-                migrator.migrateUsers(this);
-            } catch (IOException ioe) {
-                LOGGER.log(Level.SEVERE, "Error migrating users.", ioe);
-                throw ioe;
-            }
-        } else {
-            XmlFile config = getXmlConfigFile();
-            try {
-                config.unmarshal(this);
-            } catch (NoSuchFileException e) {
-                LOGGER.log(Level.FINE, "User id mapping file does not exist. It will be created when a user is saved.");
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to load " + config, e);
-                throw e;
+        // Also look for any remaining user dirs, such as those predating even UserIdMapper, or PresetData or incomplete @LocalData.
+        var subdirectories = usersDirectory.listFiles();
+        if (subdirectories != null) {
+            for (var oldDirectory : subdirectories) {
+                if (!User.HASHED_DIRNAMES.matcher(oldDirectory.getName()).matches()) {
+                    var userXml = new XmlFile(User.XSTREAM, new File(oldDirectory, User.CONFIG_XML));
+                    if (userXml.exists()) {
+                        try {
+                            var user = (User) userXml.read();
+                            var id = user.id;
+                            if (id == null) {
+                                id = oldDirectory.getName();
+                                user.id = id;
+                                userXml.write(user);
+                            }
+                            var newDirectory = User.getUserFolderFor(id);
+                            Files.move(oldDirectory.toPath(), newDirectory.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            LOGGER.info(() -> "migrated " + oldDirectory + " to " + newDirectory);
+                        } catch (Exception x) {
+                            LOGGER.log(Level.WARNING, "failed to migrate " + oldDirectory, x);
+                        }
+                    }
+                }
             }
         }
     }
