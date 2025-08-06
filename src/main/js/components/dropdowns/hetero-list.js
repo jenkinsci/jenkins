@@ -234,6 +234,7 @@ function generateDropDown(button, callback) {
   tippy(
     button,
     Object.assign({}, Templates.dropdown(), {
+      appendTo: undefined,
       onCreate(instance) {
         if (instance.loaded) {
           return;
