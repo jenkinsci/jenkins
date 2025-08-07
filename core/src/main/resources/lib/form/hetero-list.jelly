@@ -157,7 +157,7 @@ THE SOFTWARE.
 
     <j:if test="${!readOnlyMode}">
       <span>
-        <button type="button" class="jenkins-button hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"><l:icon src="symbol-add"/>${attrs.addCaption?:'%Add'}
+        <button type="button" class="jenkins-button hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"><l:icon src="symbol-add"/>${attrs.addCaption?:'%Add'}</button>
       </span>
     </j:if>
   </div>
