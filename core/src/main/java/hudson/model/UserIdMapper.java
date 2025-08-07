@@ -25,8 +25,6 @@
 package hudson.model;
 
 import hudson.XmlFile;
-import hudson.init.InitMilestone;
-import hudson.init.Initializer;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
@@ -57,8 +55,7 @@ public class UserIdMapper {
     private UserIdMapper() {
     }
 
-    @Initializer(after = InitMilestone.SYSTEM_CONFIG_ADAPTED, before = InitMilestone.JOB_LOADED)
-    public static void migrate() throws IOException {
+    static void migrate() throws IOException {
         var usersDirectory = User.getRootDir();
         var data = new UserIdMapper();
         var mapperXml = new XmlFile(XSTREAM, new File(usersDirectory, "users.xml"));

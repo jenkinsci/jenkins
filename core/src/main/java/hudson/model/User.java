@@ -236,6 +236,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private void loadFromUserConfigFile(String userId) {
+        AllUsers.getInstance().migrateUserIdMapper();
         XmlFile config = getConfigFile();
         try {
             if (config.exists()) {
@@ -1097,16 +1098,31 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Restricted(NoExternalUse.class)
     public static final class AllUsers {
 
+        private boolean migratedUserIdMapper;
         private final ConcurrentMap<String, User> byName = new ConcurrentHashMap<>();
+
+        @SuppressWarnings("deprecation")
+        synchronized void migrateUserIdMapper() {
+            if (!migratedUserIdMapper) {
+                try {
+                    UserIdMapper.migrate();
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, null, x);
+                }
+                migratedUserIdMapper = true;
+            }
+        }
 
         @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
         public static void scanAll() throws IOException {
             DIRNAMES.createMac(); // force the key to be saved during startup
+            var instance = getInstance();
+            instance.migrateUserIdMapper();
             var subdirectories = getRootDir().listFiles();
             if (subdirectories == null) {
                 return;
             }
-            var byName = getInstance().byName;
+            var byName = instance.byName;
             var idStrategy = idStrategy();
             for (var dir : subdirectories) {
                 var dirName = dir.getName();
