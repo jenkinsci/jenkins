@@ -290,7 +290,7 @@ THE SOFTWARE.
                   <!-- detached after 1.535 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-auth</artifactId>
-                  <version>3.2.6</version>
+                  <version>3.2.7</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
