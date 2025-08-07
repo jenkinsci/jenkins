@@ -647,7 +647,7 @@ class RepeatableTest {
      */
     private static List<?> getButtonsList(HtmlForm form, String buttonCaption) {
         return form.getByXPath(
-                String.format("//button[text() = '%s'] | //button[@tooltip = '%s']", buttonCaption, buttonCaption)
+                String.format("//button[normalize-space(string(.)) = '%s'] | //button[@tooltip = '%s']", buttonCaption, buttonCaption)
         );
     }
 
