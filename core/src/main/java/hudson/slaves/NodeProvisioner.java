@@ -251,7 +251,7 @@ public class NodeProvisioner {
                                 LOGGER.log(Level.INFO,
                                         "{0} provisioning successfully completed. "
                                                 + "We have now {1,number,integer} computer(s)",
-                                        new Object[]{f.displayName, jenkins.getComputers().length});
+                                        new Object[]{f.displayName, jenkins.getComputersCollection().size()});
                                 fireOnCommit(f, node);
                             } catch (IOException e) {
                                 LOGGER.log(Level.WARNING,
