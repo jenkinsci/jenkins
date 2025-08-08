@@ -28,6 +28,6 @@ THE SOFTWARE.
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
     <j:set var="escapeEntryTitleAndDescription" value="false"/>
     <f:entry description="${it.formattedDescription}">
-        <f:checkbox title="${h.escape(it.name)}" name="value" checked="${it.value}" readonly="true" />
+      <f:checkbox title="${h.escape(it.name)}" name="value" checked="${it.value}"/>
     </f:entry>
 </j:jelly>
