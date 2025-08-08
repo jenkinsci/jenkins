@@ -15,7 +15,7 @@ div.repeated-chunk {
     border-radius var(--standard-transition),
     box-shadow var(--standard-transition);
   height: unset !important;
-  margin: 0 0 var(--card-border-width) 0;
+  margin: 0 0 calc(var(--card-border-width) * 2);
 
   &::after {
     content: "";
