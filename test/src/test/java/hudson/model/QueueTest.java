@@ -727,6 +727,7 @@ public class QueueTest {
             return true;
         }
 
+        @NonNull
         @Override public String getUrl() {
             return "test/";
         }

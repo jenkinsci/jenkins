@@ -45,7 +45,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since 2.480
  */
 @Restricted(Beta.class)
-public interface IComputer extends AccessControlled, IconSpec {
+public interface IComputer extends AccessControlled, AddressableModelObject, IconSpec {
     /**
      * Returns {@link Node#getNodeName() the name of the node}.
      */
@@ -65,12 +65,6 @@ public interface IComputer extends AccessControlled, IconSpec {
     boolean isOffline();
 
     /**
-     * @return the node name for UI purposes.
-     */
-    @NonNull
-    String getDisplayName();
-
-    /**
      * Returns {@code true} if the computer is accepting tasks. Needed to allow agents programmatic suspension of task
      * scheduling that does not overlap with being offline.
      *
@@ -79,12 +73,6 @@ public interface IComputer extends AccessControlled, IconSpec {
      * @see hudson.model.Node#isAcceptingTasks()
      */
     boolean isAcceptingTasks();
-
-    /**
-     * @return the URL where to reach specifically this computer, relative to Jenkins URL.
-     */
-    @NonNull
-    String getUrl();
 
     /**
      * @return {@code true} if this computer has a defined offline cause, @{code false} otherwise.

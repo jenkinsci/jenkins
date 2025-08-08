@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.markup.MarkupFormatter;
 import hudson.model.BallColor;
 import hudson.model.BuildBadgeAction;
-import hudson.model.ModelObject;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;
@@ -48,20 +47,12 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since 2.477
  */
 @Restricted(Beta.class)
-public interface HistoricalBuild extends ModelObject {
+public interface HistoricalBuild extends AddressableModelObject {
 
     /**
      * @return A build number
      */
     int getNumber();
-
-    /**
-     * Returns the URL of this {@link HistoricalBuild}, relative to the context root of Jenkins.
-     *
-     * @return
-     *      String like "job/foo/32/" with trailing slash but no leading slash.
-     */
-    @NonNull String getUrl();
 
     /**
      * Returns a human-readable description which is used on the main build page.

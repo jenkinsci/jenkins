@@ -51,7 +51,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class Actionable extends AbstractModelObject implements ModelObjectWithContextMenu {
+public abstract class Actionable extends AbstractModelObject implements ModelObject, ModelObjectWithContextMenu {
     /**
      * Actions contributed to this model object.
      *

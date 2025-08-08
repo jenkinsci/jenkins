@@ -24,11 +24,13 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.util.DescriptorList;
 import java.util.List;
+import jenkins.model.Addressable;
 import jenkins.model.Jenkins;
 
 /**
@@ -66,7 +68,7 @@ import jenkins.model.Jenkins;
  * @author Kohsuke Kawaguchi
  * @since 1.235
  */
-public abstract class PageDecorator extends Descriptor<PageDecorator> implements ExtensionPoint, Describable<PageDecorator> {
+public abstract class PageDecorator extends Descriptor<PageDecorator> implements Addressable, ExtensionPoint, Describable<PageDecorator> {
     /**
      * @param yourClass
      *      pass-in "this.getClass()" (except that the constructor parameters cannot use 'this',
@@ -96,6 +98,7 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
      * Every {@link PageDecorator} is bound to URL via {@link Jenkins#getDescriptor()}.
      * This method returns such an URL.
      */
+    @NonNull
     public final String getUrl() {
         return "descriptor/" + clazz.getName();
     }

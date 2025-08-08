@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.queue.CauseOfBlockage;
 import java.util.Collections;
 import java.util.List;
@@ -84,9 +85,10 @@ public class MockItem extends Queue.Item {
             return null;
         }
 
+        @NonNull
         @Override
         public String getUrl() {
-            return null;
+            return "";
         }
 
         @Override

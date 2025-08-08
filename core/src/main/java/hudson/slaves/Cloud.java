@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.Future;
+import jenkins.model.AddressableModelObject;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
@@ -107,7 +108,7 @@ import org.kohsuke.stapler.verb.POST;
  * @see NodeProvisioner
  * @see AbstractCloudImpl
  */
-public abstract class Cloud extends Actionable implements ExtensionPoint, Describable<Cloud>, AccessControlled {
+public abstract class Cloud extends Actionable implements AddressableModelObject, ExtensionPoint, Describable<Cloud>, AccessControlled {
 
     /**
      * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
