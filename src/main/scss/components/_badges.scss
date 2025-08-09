@@ -3,10 +3,26 @@
 .jenkins-badge {
   @include mixins.item;
 
-  --item-background: color-mix(in sRGB, var(--color, var(--accent-color)) 7.5%, transparent);
-  --item-background--hover: color-mix(in sRGB, var(--color, var(--accent-color)) 12.5%, transparent);
-  --item-background--active: color-mix(in sRGB, var(--color, var(--accent-color)) 17.5%, transparent);
-  --item-box-shadow--focus: color-mix(in sRGB, var(--color, var(--accent-color)) 10%, transparent);
+  --item-background: color-mix(
+    in sRGB,
+    var(--color, var(--accent-color)) 7.5%,
+    transparent
+  );
+  --item-background--hover: color-mix(
+    in sRGB,
+    var(--color, var(--accent-color)) 12.5%,
+    transparent
+  );
+  --item-background--active: color-mix(
+    in sRGB,
+    var(--color, var(--accent-color)) 17.5%,
+    transparent
+  );
+  --item-box-shadow--focus: color-mix(
+    in sRGB,
+    var(--color, var(--accent-color)) 10%,
+    transparent
+  );
 
   position: relative;
   display: inline-flex;
@@ -25,10 +41,23 @@
   }
 
   &--filled {
-    --item-background: color-mix(in sRGB, var(--color, var(--accent-color)) 85%, transparent);
-    --item-background--hover: color-mix(in sRGB, var(--color, var(--accent-color)) 85%, transparent);
-    --item-background--active: color-mix(in sRGB, var(--color, var(--accent-color)) 85%, transparent);
+    --item-background: color-mix(
+      in sRGB,
+      var(--color, var(--accent-color)) 85%,
+      transparent
+    );
+    --item-background--hover: color-mix(
+      in sRGB,
+      var(--color, var(--accent-color)) 85%,
+      transparent
+    );
+    --item-background--active: color-mix(
+      in sRGB,
+      var(--color, var(--accent-color)) 85%,
+      transparent
+    );
     --item-box-shadow--focus: transparent;
+
     box-shadow: inset 0 -1px 2px var(--color, var(--text-color-secondary));
     color: var(--white) !important;
     text-shadow: 0 1px 1px rgb(0 0 0 / 0.1);

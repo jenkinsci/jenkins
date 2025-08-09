@@ -124,10 +124,8 @@ window.displayBuilds = function (data) {
     td2.appendChild(a1);
     var a2 = document.createElement("a");
     a2.classList.add(
-      "jenkins-table__link",
-      "jenkins-table__badge",
+      "jenkins-badge",
       "model-link",
-      "inside",
     );
     a2.href = rootUrl + "/" + e.url;
     a2.textContent = e.displayName;
