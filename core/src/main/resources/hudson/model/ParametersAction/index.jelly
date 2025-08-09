@@ -35,6 +35,7 @@ THE SOFTWARE.
     <l:main-panel>
 	  <t:buildCaption it="${build}">${title}</t:buildCaption>
       <j:set var="escapeEntryTitleAndDescription" value="true" /> <!-- SECURITY-353 defense unless overridden -->
+      <j:set var="readOnlyMode" value="true"/>
       <j:forEach var="parameterValue" items="${it.parameters}">
 	    <st:include it="${parameterValue}" page="value.jelly" />
       </j:forEach>
