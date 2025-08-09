@@ -39,7 +39,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <j:if test="${attrs.badge != null}">
-    <span class="jenkins-badge jenkins-!-${attrs.badge.severity}-color ${attrs.class?:''}" tooltip="${attrs.badge.tooltip}">
+    <span class="jenkins-badge jenkins-badge--filled jenkins-!-${attrs.badge.severity}-color ${attrs.class?:''}" tooltip="${attrs.badge.tooltip}">
       ${attrs.badge.text}
     </span>
   </j:if>

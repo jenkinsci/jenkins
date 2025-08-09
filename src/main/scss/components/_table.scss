@@ -284,6 +284,11 @@
     }
   }
 
+  .jenkins-badge {
+    padding: 0.1875rem 0.6875rem;
+    font-size: 0.75rem;
+  }
+
   &__badge {
     @include mixins.item;
 

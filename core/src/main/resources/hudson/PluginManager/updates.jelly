@@ -131,7 +131,7 @@ THE SOFTWARE.
                             <j:forEach var="label" items="${p.categories}">
                               <j:if test="${!it.isMetaLabel(label)}">
                                 <a href="?filter=${app.updateCenter.getCategoryDisplayName(label)}"
-                                   class="jenkins-table__link jenkins-table__badge">
+                                   class="jenkins-badge">
                                   ${app.updateCenter.getCategoryDisplayName(label)}
                                 </a>
                               </j:if>
