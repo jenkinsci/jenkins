@@ -2409,8 +2409,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
-            if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
-                throw new ClassNotFoundException("ignoring " + name);
+            String[] namePrefixesToSkip = new String[] {
+                    "SimpleTemplateScript",  // cf. groovy.text.SimpleTemplateEngine
+                    "groovy.tmp.templates.GStringTemplateScript", // Leaks on classLoader in some cases, see JENKINS-75879
+            };
+
+            for (String namePrefixToSkip : namePrefixesToSkip) {
+                if (name.startsWith(namePrefixToSkip)) {
+                    throw new ClassNotFoundException("ignoring " + name);
+                }
             }
             return loaded.computeIfAbsent(name, this::computeValue).orElseThrow(() -> new ClassNotFoundException(name));
         }
