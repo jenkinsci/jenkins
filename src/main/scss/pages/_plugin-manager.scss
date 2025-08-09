@@ -5,6 +5,10 @@
     flex-wrap: wrap;
     margin-block: 0.5rem;
 
+    .jenkins-badge {
+      margin: 0;
+    }
+
     &:empty {
       display: none;
     }
