@@ -70,12 +70,12 @@
   --button-background: transparent !important;
 
   &:not(
-      :hover,
-      &:active,
-      &:focus,
-      &[aria-describedby],
-      &[aria-expanded="true"]
-    ) {
+    :hover,
+    &:active,
+    &:focus,
+    &[aria-describedby],
+    &[aria-expanded="true"]
+  ) {
     &::before {
       border-color: transparent;
     }
@@ -230,8 +230,7 @@
   }
 }
 
-.advanced-button,
-.hetero-list-add {
+.advanced-button {
   svg {
     width: 0.875rem;
     height: 0.875rem;

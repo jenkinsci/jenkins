@@ -10,7 +10,7 @@ graphHost.style.aspectRatio = `${imageWidth} / ${imageHeight}`;
 timespanSelect.addEventListener("change", () => {
   const rootURL = document.head.dataset.rooturl;
   const type = timespanSelect.value;
-  graphHost.innerHTML = `<img src="${rootURL}/jenkins.diagnosis.MemoryUsageMonitorAction/heap/graph?type=${type}&width=${imageWidth}&height=${imageHeight}" srcset="${rootURL}/jenkins.diagnosis.MemoryUsageMonitorAction/heap/graph?type=${type}&width=${imageWidth}&height=${imageHeight}&scale=2 2x" loading="lazy" style="width: 100%" alt="Memory usage graph"/>`;
+  graphHost.innerHTML = `<img src="${rootURL}/jenkins.diagnosis.MemoryUsageMonitorAction/heap/graph?type=${type}&width=${imageWidth}&height=${imageHeight}" srcset="${rootURL}/jenkins.diagnosis.MemoryUsageMonitorAction/heap/graph?type=${type}&width=${imageWidth}&height=${imageHeight}&scale=2 2x" loading="lazy" style="width: 100%" alt="Memory usage graph" class="jenkins-graph-card" />`;
 });
 
 // Dispatch a change event to insert a graph on page load

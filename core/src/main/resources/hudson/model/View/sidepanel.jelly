@@ -35,6 +35,9 @@ THE SOFTWARE.
     <link rel="alternate" title="Jenkins:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
   </l:header>
   <l:side-panel>
+    <!-- Display the user's name for their views -->
+    <st:include page="app-bar.jelly" it="${it.owner.user}" optional="true" />
+
     <l:tasks>
       <st:include page="tasks-top.jelly" it="${it.owner}" optional="true" />
 
@@ -60,6 +63,7 @@ THE SOFTWARE.
       <st:include page="sidepanel2.jelly" optional="true"/>
 
       <st:include page="tasks-bottom.jelly" it="${it.owner}" optional="true" />
+      <t:actions />
     </l:tasks>
     <j:forEach var="w" items="${it.widgets}">
       <j:set var="view" value="${it}" /><!-- expose the view that's rendering this sidepanel to the widget -->

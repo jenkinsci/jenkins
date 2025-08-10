@@ -216,6 +216,26 @@ function generateButtons() {
 
       let oneEach = c.classList.contains("one-each");
 
+      /**
+       * Disable the Add button if there are no more items to add
+       */
+      function toggleButtonState() {
+        const templateCount = templates.length;
+        const selectedCount = Array.from(c.children).filter((e) =>
+          e.classList.contains("repeated-chunk"),
+        ).length;
+
+        btn.disabled = oneEach && selectedCount === templateCount;
+        if (topButton) {
+          topButton.disabled = oneEach && selectedCount === templateCount;
+        }
+      }
+      const observer = new MutationObserver(() => {
+        toggleButtonState();
+      });
+      observer.observe(c, { childList: true });
+      toggleButtonState();
+
       function expand(instance, addOnTop) {
         let menuItems = [];
         for (let i = 0; i < templates.length; i++) {
@@ -243,16 +263,18 @@ function generateButtons() {
       generateDropDown(btn, (instance) => {
         expand(instance, false);
       });
-      generateDropDown(topButton, (instance) => {
-        expand(instance, true);
-      });
+      if (topButton) {
+        generateDropDown(topButton, (instance) => {
+          expand(instance, true);
+        });
+      }
     },
   );
 }
 
 function createFilter(menu) {
   const filterInput = createElementFromHtml(`
-    <input class="jenkins-dropdown__filter-input" placeholder="Filter" spellcheck="false" type="search"/>
+    <input class="jenkins-input jenkins-search__input jenkins-dropdown__filter-input" placeholder="Filter" spellcheck="false" type="search"/>
   `);
 
   filterInput.addEventListener("input", (event) =>

@@ -66,6 +66,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.security.Security;
 import java.util.ArrayList;
@@ -641,9 +642,11 @@ public class SlaveComputer extends Computer {
                 // Orderly shutdown will have null exception
                 if (cause != null) {
                     offlineCause = new ChannelTermination(cause);
-                    Functions.printStackTrace(cause, taskListener.error("Connection terminated"));
-                } else {
+                }
+                if (cause == null || cause instanceof ClosedChannelException) {
                     taskListener.getLogger().println("Connection terminated");
+                } else {
+                    Functions.printStackTrace(cause, taskListener.error("Connection terminated"));
                 }
                 closeChannel();
                 try {

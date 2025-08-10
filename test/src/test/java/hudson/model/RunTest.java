@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -196,6 +197,9 @@ class RunTest  {
 
         // keeping the minimum to validate it's working and it's not exploitable as there are some modifications
         // like adding double quotes
+        // Some test flakes due to JavaScript objects not yet available
+        // Wait 2 seconds before checking the assertion
+        Thread.sleep(2003);
         ensureXssIsPrevented(up, "Down", "<img");
     }
 
@@ -241,6 +245,7 @@ class RunTest  {
             this.virtualName = virtualName;
         }
 
+        @NonNull
         @Override
         public String getName() {
             if (virtualName != null) {

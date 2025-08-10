@@ -29,13 +29,13 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%System}" type="one-column">
   <st:include page="sidepanel.jelly" />
-  <l:breadcrumb title="${%System}" />
+  <f:breadcrumb-config-outline title="${%System}" />
 
   <l:main-panel>
     <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
     <l:app-bar title="${%System}" />
 
-    <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
+    <l:skeleton />
     <f:form method="post" name="config" action="configSubmit" class="jenkins-form">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />

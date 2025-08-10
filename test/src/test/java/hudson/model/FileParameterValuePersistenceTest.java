@@ -2,8 +2,8 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Functions;
 import hudson.tasks.BatchFile;
@@ -15,32 +15,32 @@ import java.nio.file.Path;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
-public class FileParameterValuePersistenceTest {
+class FileParameterValuePersistenceTest {
 
     private static final String FILENAME = "file.txt";
     private static final String CONTENTS = "foobar";
 
-    @Rule
-    public JenkinsSessionRule sessions = new JenkinsSessionRule();
+    @RegisterExtension
+    private final JenkinsSessionExtension sessions = new JenkinsSessionExtension();
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    private File tmp;
 
     @Issue("JENKINS-13536")
     @Test
-    public void fileParameterValuePersistence() throws Throwable {
+    void fileParameterValuePersistence() throws Throwable {
         sessions.then(j -> {
             FreeStyleProject p = j.createFreeStyleProject("p");
             p.addProperty(new ParametersDefinitionProperty(new FileParameterDefinition(FILENAME, "The file.")));
             p.getBuildersList().add(Functions.isWindows() ? new BatchFile("type " + FILENAME) : new Shell("cat " + FILENAME));
-            File test = tmp.newFile();
+            File test = File.createTempFile("junit", null, tmp);
             Files.writeString(test.toPath(), CONTENTS, StandardCharsets.UTF_8);
             try (JenkinsRule.WebClient wc = j.createWebClient()) {
                 // ParametersDefinitionProperty/index.jelly sends a 405
