@@ -28,6 +28,7 @@ THE SOFTWARE.
          xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <j:set var="escapeEntryTitleAndDescription" value="false"/>
   <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
+    <j:set var="readOnlyMode" value="true"/>
     <f:textbox name="value" value="${it.value}"/>
   </f:entry>
 </j:jelly>
