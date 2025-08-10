@@ -201,7 +201,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
 
     /**
      * Add a <em>new</em> build to the map.
-     * Do not use when loading existing builds (use {@link #put(Integer, Object)}).
+     * Do not use when loading existing builds (use {@link #putAll(Map)}).
      */
     @Override
     public R put(R r) {
