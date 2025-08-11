@@ -464,7 +464,7 @@ THE SOFTWARE.
                   <!-- detached after 2.281 -->
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>sshd</artifactId>
-                  <version>3.372.v5d04a_e92d8cf</version>
+                  <version>3.374.v19b_d59ce6610</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
