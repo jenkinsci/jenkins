@@ -1154,7 +1154,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 user.fixUpAfterLoad();
                 var old = byName.put(idStrategy.keyFor(user.id), user);
                 if (old != null) {
-                    LOGGER.warning(() -> "duplicate entries for " + user.id);
+                    LOGGER.warning(() -> "entry for " + user.id + " in " + dir + " duplicates one seen earlier for " + old.id);
                 } else {
                     LOGGER.fine(() -> "successfully loaded " + user.id + " from " + xml);
                 }
