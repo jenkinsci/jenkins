@@ -55,7 +55,9 @@ public class UserIdMapper {
     private UserIdMapper() {
     }
 
+    @SuppressWarnings("deprecation")
     static void migrate() throws IOException {
+        var idStrategy = User.idStrategy();
         var usersDirectory = User.getRootDir();
         var data = new UserIdMapper();
         var mapperXml = new XmlFile(XSTREAM, new File(usersDirectory, "users.xml"));
@@ -63,7 +65,6 @@ public class UserIdMapper {
             // Load it, and trust ids it defines over <id>…</id> in users/…/config.xml which UserIdMigrator neglected to resave.
             LOGGER.info(() -> "migrating " + mapperXml);
             mapperXml.unmarshal(data);
-            var idStrategy = User.idStrategy();
             for (var entry : data.idToDirectoryNameMap.entrySet()) {
                 var idKey = entry.getKey();
                 var directoryName = entry.getValue();
@@ -95,7 +96,7 @@ public class UserIdMapper {
                             var user = (User) userXml.read();
                             var id = user.id;
                             if (id == null) {
-                                id = oldDirectory.getName();
+                                id = idStrategy.idFromFilename(oldDirectory.getName());
                                 user.id = id;
                                 userXml.write(user);
                             }
