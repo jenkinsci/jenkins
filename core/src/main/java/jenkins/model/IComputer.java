@@ -27,7 +27,7 @@ package jenkins.model;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.model.Computer;
-import hudson.model.Node;
+import hudson.model.ModelObject;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import java.util.List;
@@ -45,13 +45,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since 2.480
  */
 @Restricted(Beta.class)
-public interface IComputer extends AccessControlled, IconSpec {
-    /**
-     * Returns {@link Node#getNodeName() the name of the node}.
-     */
-    @NonNull
-    String getName();
-
+public interface IComputer extends AccessControlled, IconSpec, ModelObject, Named {
     /**
      * Used to render the list of executors.
      * @return a snapshot of the executor display information
@@ -67,12 +61,6 @@ public interface IComputer extends AccessControlled, IconSpec {
      * @see #isConnected()
      */
     boolean isOffline();
-
-    /**
-     * @return the node name for UI purposes.
-     */
-    @NonNull
-    String getDisplayName();
 
     /**
      * Returns {@code true} if the computer is accepting tasks. Needed to allow agents programmatic suspension of task

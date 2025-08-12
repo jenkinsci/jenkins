@@ -104,7 +104,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>513.vde9e7b_a_0da_0f</version>
+        <version>518.v8d8dc7945eca_</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -256,13 +256,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.2.6</version>
+      <version>3.2.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>849.v0cd64ed7e531</version>
+      <version>855.va_10985fa_3219</version>
       <scope>test</scope>
     </dependency>
     <dependency>
