@@ -104,7 +104,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>513.vde9e7b_a_0da_0f</version>
+        <version>518.v8d8dc7945eca_</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
