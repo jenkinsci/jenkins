@@ -325,7 +325,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1382.veca_a_efe062fa_</version>
+                  <version>1384.vdc05a_48f535f</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
