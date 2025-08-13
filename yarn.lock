@@ -3402,13 +3402,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"enhanced-resolve@npm:^5.17.2":
-  version: 5.18.2
-  resolution: "enhanced-resolve@npm:5.18.2"
+"enhanced-resolve@npm:^5.17.3":
+  version: 5.18.3
+  resolution: "enhanced-resolve@npm:5.18.3"
   dependencies:
     graceful-fs: "npm:^4.2.4"
     tapable: "npm:^2.2.0"
-  checksum: 10c0/2a45105daded694304b0298d1c0351a981842249a9867513d55e41321a4ccf37dfd35b0c1e9ceae290eab73654b09aa7a910d618ea6f9441e97c52bc424a2372
+  checksum: 10c0/d413c23c2d494e4c1c9c9ac7d60b812083dc6d446699ed495e69c920988af0a3c66bf3f8d0e7a45cb1686c2d4c1df9f4e7352d973f5b56fe63d8d711dd0ccc54
   languageName: node
   linkType: hard
 
@@ -4376,7 +4376,7 @@ __metadata:
     stylelint-checkstyle-reporter: "npm:1.1.1"
     stylelint-config-standard-scss: "npm:15.0.1"
     tippy.js: "npm:6.3.7"
-    webpack: "npm:5.101.0"
+    webpack: "npm:5.101.1"
     webpack-cli: "npm:6.0.1"
     webpack-remove-empty-scripts: "npm:1.1.1"
     window-handle: "npm:1.0.1"
@@ -7062,9 +7062,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.101.0":
-  version: 5.101.0
-  resolution: "webpack@npm:5.101.0"
+"webpack@npm:5.101.1":
+  version: 5.101.1
+  resolution: "webpack@npm:5.101.1"
   dependencies:
     "@types/eslint-scope": "npm:^3.7.7"
     "@types/estree": "npm:^1.0.8"
@@ -7076,7 +7076,7 @@ __metadata:
     acorn-import-phases: "npm:^1.0.3"
     browserslist: "npm:^4.24.0"
     chrome-trace-event: "npm:^1.0.2"
-    enhanced-resolve: "npm:^5.17.2"
+    enhanced-resolve: "npm:^5.17.3"
     es-module-lexer: "npm:^1.2.1"
     eslint-scope: "npm:5.1.1"
     events: "npm:^3.2.0"
@@ -7096,7 +7096,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 10c0/0fb5f70032ac53cfc2e667c97c6ceb903d280cebd03dd7f7ca794d8ab75d4f692483313efb90c616c2e4e266cf580a54df84cbaee43db36d7d42e450bf1569fd
+  checksum: 10c0/4a616c637c489cf78c3f2858dde7b934fff6c303dd08a237ccfc683caaf06f88f461b1a47ce6ee6705bcfb6c21f73077fbf286859b2ac10b4490f4548f4a747c
   languageName: node
   linkType: hard
 
