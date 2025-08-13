@@ -30,10 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
-import hudson.widgets.RenderOnDemandClosure;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.util.logging.Level;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.WebClientUtil;
 import org.htmlunit.html.HtmlPage;

@@ -40,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.Jenkins;
 import org.junit.jupiter.api.BeforeEach;

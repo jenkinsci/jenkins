@@ -29,7 +29,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.User;
 import java.util.List;
-import jenkins.security.SecurityListener;
 import jenkins.util.Listeners;
 
 /**

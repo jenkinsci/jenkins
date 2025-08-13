@@ -10,7 +10,6 @@ import hudson.model.Job;
 import hudson.model.Run;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.logging.Level;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FailureBuilder;
