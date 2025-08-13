@@ -148,7 +148,7 @@ THE SOFTWARE.
                 <enforceBytecodeVersion>
                   <maxJdkVersion>11</maxJdkVersion>
                   <excludes>
-                    <exclude>com.infradna.tool:bridge-method-annotation</exclude>
+                    <exclude>io.jenkins.tools:bridge-method-annotation</exclude>
                     <exclude>org.jenkins-ci:annotation-indexer</exclude>
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
                     <exclude>org.jenkins-ci:commons-jelly-tags-fmt</exclude>
@@ -304,7 +304,7 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>849.v0cd64ed7e531</version>
+                  <version>856.v4c352b_3a_b_23e</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -325,7 +325,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1382.veca_a_efe062fa_</version>
+                  <version>1384.vdc05a_48f535f</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -464,7 +464,7 @@ THE SOFTWARE.
                   <!-- detached after 2.281 -->
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>sshd</artifactId>
-                  <version>3.372.v5d04a_e92d8cf</version>
+                  <version>3.374.v19b_d59ce6610</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -654,7 +654,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.0.24</version>
+        <version>12.0.25</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)

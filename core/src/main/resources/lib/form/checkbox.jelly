@@ -83,9 +83,9 @@ THE SOFTWARE.
            name="${name}"
            value="${attrs.value}"
            title="${attrs.tooltip}"
-           onclick="${attrs.readonly=='true' ? 'return false;' : attrs.onclick}" id="${attrs.id}" class="${attrs.class} ${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
+           onclick="${attrs.readonly=='true' ? null : attrs.onclick}" id="${attrs.id}" class="${attrs.class} ${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
            checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
-           disabled="${readOnlyMode ? 'true' : null}"
+           disabled="${readOnlyMode or attrs.readonly=='true' ? 'true' : null}"
            checked="${value ? 'true' : null}"/>
     <label class="attach-previous ${attrs.title == null ? 'js-checkbox-label-empty' : ''}"
            title="${attrs.tooltip}">${attrs.title}</label>
