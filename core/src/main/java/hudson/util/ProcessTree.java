@@ -1311,7 +1311,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         private class SolarisProcess extends UnixProcess {
-            private static final byte PR_MODEL_ILP32 = 1;
             private static final byte PR_MODEL_LP64 = 2;
 
             /*

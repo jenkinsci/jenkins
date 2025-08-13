@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
@@ -23,8 +22,6 @@ class SafeTimerTaskTest {
 
     @TempDir
     private File folder;
-
-    private final LogRecorder loggerRule = new LogRecorder();
 
     private JenkinsRule j;
 

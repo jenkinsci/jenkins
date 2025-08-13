@@ -45,7 +45,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 
@@ -56,8 +55,6 @@ class CustomClassFilterTest {
     static {
         System.setProperty("hudson.remoting.ClassFilter", "javax.script.SimpleBindings,!jenkins.util.TreeString");
     }
-
-    private final LogRecorder logging = new LogRecorder().record("jenkins.security", Level.FINER);
 
     @TempDir(cleanup = CleanupMode.NEVER)
     private File tmp;

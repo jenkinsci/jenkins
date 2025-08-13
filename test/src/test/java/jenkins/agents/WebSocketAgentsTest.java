@@ -37,14 +37,12 @@ import hudson.tasks.Shell;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import jenkins.security.SlaveToMasterCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.junit.jupiter.BuildWatcherExtension;
 import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
@@ -54,19 +52,11 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 @WithJenkins
 public class WebSocketAgentsTest {
 
-    private static final Logger LOGGER = Logger.getLogger(WebSocketAgentsTest.class.getName());
-
     @RegisterExtension
     private static final BuildWatcherExtension buildWatcher = new BuildWatcherExtension();
 
     @RegisterExtension
     private final InboundAgentExtension inboundAgents = new InboundAgentExtension();
-
-    private final LogRecorder logging = new LogRecorder().
-        record(Slave.class, Level.FINE).
-        record(SlaveComputer.class, Level.FINEST).
-        record(WebSocketAgents.class, Level.FINEST).
-        record(Engine.class, Level.FINEST);
 
     private JenkinsRule r;
 

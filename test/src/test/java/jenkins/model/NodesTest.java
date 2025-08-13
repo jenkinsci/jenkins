@@ -237,8 +237,6 @@ class NodesTest {
     }
 
     private static class InvalidNode extends Slave {
-        // JEP-200 whitelist changes prevent this field (and thus instances of this class) from being serialized.
-        private ClassLoader cl = InvalidNode.class.getClassLoader();
 
         InvalidNode(String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
             super(name, remoteFS, launcher);
