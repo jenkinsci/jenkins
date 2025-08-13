@@ -5,7 +5,7 @@
     <l:main-panel>
       <st:include page="client-scripts" />
       <form action="${app.instance.securityRealm.authenticationGatewayUrl}" method="POST">
-        <input type="hidden" name="from" value="${request.getParameter('from')}" />
+        <input type="hidden" name="from" value="${request2.getParameter('from')}" />
         <div class="plugin-setup-wizard bootstrap-3">
           <div class="modal fade in" style="display: block;">
             <div class="modal-dialog">
@@ -19,7 +19,7 @@
                     <p>${%jenkins.install.findSecurityTokenMessage(it.initialAdminPasswordFile)}</p>
                     <p>${%authenticate-security-token.copy.password}</p>
                     <j:if test="${error}">
-                        <div class="alert alert-danger">
+                        <div class="jenkins-alert jenkins-alert-danger">
                           <strong>${%authenticate-security-token.error}</strong> ${%authenticate-security-token.password.incorrect}
                         </div>
                     </j:if>

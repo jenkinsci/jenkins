@@ -30,6 +30,21 @@ THE SOFTWARE.
       A collection of builds to be displayed.
     </st:attribute>
   </st:documentation>
+  <template id="jenkins-build-status-icons">
+    <l:icon src="symbol-status-blue" id="blue" />
+    <l:icon src="symbol-status-yellow" id="yellow" />
+    <l:icon src="symbol-status-red" id="red" />
+    <l:icon src="symbol-status-nobuilt" id="nobuilt" />
+    <l:icon src="symbol-status-aborted" id="aborted" />
+    <l:icon src="symbol-status-disabled" id="disabled" />
+    <l:icon src="symbol-status-blue-anime" id="blue-anime" />
+    <l:icon src="symbol-status-yellow-anime" id="yellow-anime" />
+    <l:icon src="symbol-status-red-anime" id="red-anime" />
+    <l:icon src="symbol-status-nobuilt-anime" id="nobuilt-anime" />
+    <l:icon src="symbol-status-aborted-anime" id="aborted-anime" />
+    <l:icon src="symbol-status-disabled-anime" id="disabled-anime" />
+    <l:icon src="symbol-terminal" id="console" />
+  </template>
 
   <t:setIconSize/>
   <st:adjunct includes="hudson.model.Job.buildTimeTrend_resources" />
@@ -39,7 +54,7 @@ THE SOFTWARE.
   <j:set var="consoleOutputIcon" trim="true">
     <l:icon src="symbol-terminal" alt="${%Console output}" />
   </j:set>
-  <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="projectStatus" style="display: none;" data-icon-size-class="${iconSizeClass}" data-scroll-tooltip="${%Click to center timeline on event}" data-console-output-icon="${consoleOutputIcon}">
+  <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="projectStatus" style="display: none;" data-icon-size-class="${iconSizeClass}"  data-console-output-icon="${consoleOutputIcon}">
     <thead>
         <tr>
             <th class="jenkins-table__cell--tight">${%S}</th>

@@ -1,11 +1,7 @@
 package jenkins.bugs;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.gargoylesoftware.htmlunit.WebClientUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -15,25 +11,36 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import jakarta.inject.Inject;
 import java.io.IOException;
-import javax.inject.Inject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.WebClientUtil;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSelect;
+import org.htmlunit.html.HtmlTextInput;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.QueryParameter;
 
-public class Jenkins19124Test {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class Jenkins19124Test {
 
     @Inject
     public Foo.DescriptorImpl d;
 
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
     @Issue("JENKINS-19124")
     @Test
-    public void interrelatedFormValidation() throws Exception {
+    void interrelatedFormValidation() throws Exception {
         j.jenkins.getInjector().injectMembers(this);
 
         FreeStyleProject p = j.createFreeStyleProject();
@@ -42,8 +49,8 @@ public class Jenkins19124Test {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage c = wc.getPage(p, "configure");
         HtmlTextInput alpha = c.getElementByName("_.alpha");
-        // the fireEvent is required as setValueAttribute's new behavior is not triggering the onChange event anymore
-        alpha.setValueAttribute("hello");
+        // the fireEvent is required as setValue's new behavior is not triggering the onChange event anymore
+        alpha.setValue("hello");
         alpha.fireEvent("change");
 
         WebClientUtil.waitForJSExec(wc);

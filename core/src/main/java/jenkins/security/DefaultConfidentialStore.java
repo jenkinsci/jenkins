@@ -1,5 +1,6 @@
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.util.Secret;
@@ -19,19 +20,35 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.IOUtils;
+import jenkins.util.SystemProperties;
 
 /**
  * Default portable implementation of {@link ConfidentialStore} that uses
  * a directory inside $JENKINS_HOME.
- *
- * The master key is also stored in this same directory.
+ * <p>
+ * The master key is stored by default in <code>$JENKINS_HOME/secrets/master.key</code> but another location can be provided using the system property <code>jenkins.security.DefaultConfidentialStore.file</code>.
+ * <p>
+ * It is also possible to prevent the generation of the master key file using the system property <code>jenkins.security.DefaultConfidentialStore.readOnly</code>.
+ * In this case, the master key file must be provided or startup will fail.
  *
  * @author Kohsuke Kawaguchi
  */
 // @MetaInfServices --- not annotated because this is the fallback implementation
 public class DefaultConfidentialStore extends ConfidentialStore {
+    static final String MASTER_KEY_FILE_SYSTEM_PROPERTY = DefaultConfidentialStore.class.getName() + ".file";
+    static final String MASTER_KEY_READONLY_SYSTEM_PROPERTY_NAME = DefaultConfidentialStore.class.getName() + ".readOnly";
+
     private final SecureRandom sr = new SecureRandom();
+
+    @NonNull
+    private static File getMasterKeyFile(File rootDir) {
+        var jenkinsMasterKey = SystemProperties.getString(MASTER_KEY_FILE_SYSTEM_PROPERTY);
+        if (jenkinsMasterKey != null) {
+            return new File(jenkinsMasterKey);
+        } else {
+            return new File(rootDir, "master.key");
+        }
+    }
 
     /**
      * Directory that stores individual keys.
@@ -52,6 +69,10 @@ public class DefaultConfidentialStore extends ConfidentialStore {
     }
 
     public DefaultConfidentialStore(File rootDir) throws IOException, InterruptedException {
+        this(rootDir, getMasterKeyFile(rootDir));
+    }
+
+    protected DefaultConfidentialStore(File rootDir, File keyFile) throws IOException, InterruptedException {
         this.rootDir = rootDir;
         if (rootDir.mkdirs()) {
             // protect this directory. but don't change the permission of the existing directory
@@ -59,11 +80,15 @@ public class DefaultConfidentialStore extends ConfidentialStore {
             new FilePath(rootDir).chmod(0700);
         }
 
-        TextFile masterSecret = new TextFile(new File(rootDir, "master.key"));
+        TextFile masterSecret = new TextFile(keyFile);
         if (!masterSecret.exists()) {
-            // we are only going to use small number of bits (since export control limits AES key length)
-            // but let's generate a long enough key anyway
-            masterSecret.write(Util.toHexString(randomBytes(128)));
+            if (SystemProperties.getBoolean(MASTER_KEY_READONLY_SYSTEM_PROPERTY_NAME)) {
+                throw new IOException(masterSecret + " does not exist and system property " + MASTER_KEY_READONLY_SYSTEM_PROPERTY_NAME + " is set. You must provide a valid master key file.");
+            } else {
+                // we are only going to use small number of bits (since export control limits AES key length)
+                // but let's generate a long enough key anyway
+                masterSecret.write(Util.toHexString(randomBytes(128)));
+            }
         }
         this.masterKey = Util.toAes128Key(masterSecret.readTrim());
     }
@@ -104,7 +129,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
             sym.init(Cipher.DECRYPT_MODE, masterKey);
             try (InputStream fis = Files.newInputStream(f.toPath());
                  CipherInputStream cis = new CipherInputStream(fis, sym)) {
-                byte[] bytes = IOUtils.toByteArray(cis);
+                byte[] bytes = cis.readAllBytes();
                 return verifyMagic(bytes);
             }
         } catch (GeneralSecurityException e) {

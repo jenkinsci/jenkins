@@ -48,6 +48,10 @@ import org.kohsuke.stapler.export.ExportedBean;
  *  A badge might display the same information as an {@link AdministrativeMonitor}. While an {@link AdministrativeMonitor}
  *  can be disabled, a badge will always be shown. E.g. the badge of {@link OldDataMonitor.ManagementLinkImpl} always shows the number of old data entries.
  *
+ *  <p>
+ *  A badge can also be used in a {@code <l:task .../>} to show information on the right of the link in the sidepanel,
+ *  e.g. to show number of available plugin updates.
+ *
  *  @since 2.385
  */
 @ExportedBean
@@ -99,6 +103,7 @@ public class Badge {
      *
      * @return severity as String
      */
+    @Exported(visibility = 999)
     public String getSeverity() {
         return severity.toString().toLowerCase(Locale.US);
     }

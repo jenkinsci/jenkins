@@ -26,18 +26,21 @@ package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.security.ACL;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -57,7 +60,6 @@ import jenkins.util.SystemProperties;
 import net.jcip.annotations.Immutable;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -66,7 +68,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -89,7 +91,6 @@ public class ApiTokenProperty extends UserProperty {
      *
      * @since 1.638
      */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ boolean SHOW_LEGACY_TOKEN_TO_ADMINS =
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
 
@@ -102,7 +103,6 @@ public class ApiTokenProperty extends UserProperty {
      *
      * @since 2.129
      */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ boolean ADMIN_CAN_GENERATE_NEW_TOKENS =
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".adminCanGenerateNewTokens");
 
@@ -175,7 +175,6 @@ public class ApiTokenProperty extends UserProperty {
 
     @NonNull
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Used to prevent use of pre-2013 API tokens, then returning the API token value")
     /*package*/ String getApiTokenInsecure() {
         if (apiToken == null) {
             return Messages.ApiTokenProperty_NoLegacyToken();
@@ -191,7 +190,7 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     public boolean matchesPassword(String token) {
-        if (StringUtils.isBlank(token)) {
+        if (token == null || token.isBlank()) {
             return false;
         }
 
@@ -268,13 +267,75 @@ public class ApiTokenProperty extends UserProperty {
             this.lastUseDate = stats.getLastUseDate();
             this.numDaysUse = stats.getNumDaysUse();
         }
+
+        public String createdDaysAgo() {
+            LocalDate c = creationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            Period period = Period.between(c, now);
+            if (period.getYears() > 1) {
+                return Messages.ApiTokenProperty_createdYearsAgo(period.getYears());
+            }
+            if (period.getYears() == 1) {
+                return Messages.ApiTokenProperty_createdAYearAgo();
+            }
+            if (period.getMonths() > 1) {
+                return Messages.ApiTokenProperty_createdMonthsAgo(period.getMonths());
+            }
+            if (period.getMonths() == 1) {
+                return Messages.ApiTokenProperty_createdAMonthAgo();
+            }
+            if (period.getDays() > 14) {
+                return Messages.ApiTokenProperty_createdWeeksAgo(period.getDays() / 7);
+            }
+            if (period.getDays() >= 7) {
+                return Messages.ApiTokenProperty_createdAWeekAgo();
+            }
+            if (period.getDays() == 0) {
+                return Messages.ApiTokenProperty_createdToday();
+            }
+            if (period.getDays() == 1) {
+                return Messages.ApiTokenProperty_createdYesterday();
+            }
+            return Messages.ApiTokenProperty_createdDaysAgo(period.getDays());
+        }
+
+        public String lastUsedDaysAgo() {
+            LocalDate lu = lastUseDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            Period period = Period.between(lu, now);
+            if (period.getYears() > 1) {
+                return Messages.ApiTokenProperty_lastUsedYearsAgo(period.getYears());
+            }
+            if (period.getYears() == 1) {
+                return Messages.ApiTokenProperty_lastUsedAYearAgo();
+            }
+            if (period.getMonths() > 1) {
+                return Messages.ApiTokenProperty_lastUsedMonthsAgo(period.getMonths());
+            }
+            if (period.getMonths() == 1) {
+                return Messages.ApiTokenProperty_lastUsedAMonthAgo();
+            }
+            if (period.getDays() > 14) {
+                return Messages.ApiTokenProperty_lastUsedWeeksAgo(period.getDays() / 7);
+            }
+            if (period.getDays() >= 7) {
+                return Messages.ApiTokenProperty_lastUsedAWeekAgo();
+            }
+            if (period.getDays() == 0) {
+                return Messages.ApiTokenProperty_lastUsedToday();
+            }
+            if (period.getDays() == 1) {
+                return Messages.ApiTokenProperty_lastUsedYesterday();
+            }
+            return Messages.ApiTokenProperty_lastUsedDaysAgo(period.getDays());
+        }
     }
 
     /**
      * Allow user to rename tokens
      */
     @Override
-    public UserProperty reconfigure(StaplerRequest req, @CheckForNull JSONObject form) throws FormException {
+    public UserProperty reconfigure(StaplerRequest2 req, @CheckForNull JSONObject form) throws FormException {
         if (form == null) {
             return this;
         }
@@ -512,7 +573,7 @@ public class ApiTokenProperty extends UserProperty {
             }
 
             final String tokenName;
-            if (StringUtils.isBlank(newTokenName)) {
+            if (newTokenName == null || newTokenName.isBlank()) {
                 tokenName = Messages.Token_Created_on(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             } else {
                 tokenName = newTokenName;
@@ -548,7 +609,7 @@ public class ApiTokenProperty extends UserProperty {
             }
 
             final String tokenName;
-            if (StringUtils.isBlank(newTokenName)) {
+            if (newTokenName == null || newTokenName.isBlank()) {
                 tokenName = String.format("Token created on %s", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             } else {
                 tokenName = newTokenName;
@@ -575,17 +636,17 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can rename token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(newName)) {
+            if (newName == null || newName.isBlank()) {
                 return HttpResponses.errorJSON("The name cannot be empty");
             }
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
-                return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
+                return HttpResponses.errorJSON("The tokenUuid cannot be empty");
             }
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
-                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
+                return HttpResponses.errorJSON("The user does not have any ApiToken yet, try generating one before.");
             }
 
             boolean renameOk = p.tokenStore.renameToken(tokenUuid, newName);
@@ -597,7 +658,7 @@ public class ApiTokenProperty extends UserProperty {
 
             u.save();
 
-            return HttpResponses.ok();
+            return HttpResponses.okJSON();
         }
 
         @RequirePOST
@@ -606,7 +667,7 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can revoke token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
@@ -644,7 +705,7 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can revoke token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
@@ -657,6 +718,11 @@ public class ApiTokenProperty extends UserProperty {
             p.revokeAllTokensExceptOne(tokenUuid);
 
             return HttpResponses.ok();
+        }
+
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Security.class);
         }
     }
 

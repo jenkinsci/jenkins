@@ -17,9 +17,16 @@
 
 package jenkins.org.apache.commons.validator.routines;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Arrays;
 import java.util.regex.PatternSyntaxException;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test Case for RegexValidatorTest.
@@ -27,7 +34,7 @@ import junit.framework.TestCase;
  * @version $Revision$
  * @since Validator 1.4
  */
-public class RegexValidatorTest extends TestCase {
+class RegexValidatorTest {
 
     private static final String REGEX         = "^([abc]*)(?:\\-)([DEF]*)(?:\\-)([123]*)$";
 
@@ -41,46 +48,41 @@ public class RegexValidatorTest extends TestCase {
     private static final String REGEX_3 = "^" + COMPONENT_1 + COMPONENT_2 + COMPONENT_3 + "$";
     private static final String[] MULTIPLE_REGEX = new String[] {REGEX_1, REGEX_2, REGEX_3};
 
-    /**
-     * Constrct a new test case.
-     * @param name The name of the test
-     */
-    public RegexValidatorTest(String name) {
-        super(name);
-    }
 
     /**
      * Test instance methods with single regular expression.
      */
-    public void testSingle() {
+    @Test
+    void testSingle() {
         RegexValidator sensitive   = new RegexValidator(REGEX);
         RegexValidator insensitive = new RegexValidator(REGEX, false);
 
         // isValid()
-        assertTrue("Sensitive isValid() valid", sensitive.isValid("ac-DE-1"));
-        assertFalse("Sensitive isValid() invalid", sensitive.isValid("AB-de-1"));
-        assertTrue("Insensitive isValid() valid", insensitive.isValid("AB-de-1"));
-        assertFalse("Insensitive isValid() invalid", insensitive.isValid("ABd-de-1"));
+        assertTrue(sensitive.isValid("ac-DE-1"), "Sensitive isValid() valid");
+        assertFalse(sensitive.isValid("AB-de-1"), "Sensitive isValid() invalid");
+        assertTrue(insensitive.isValid("AB-de-1"), "Insensitive isValid() valid");
+        assertFalse(insensitive.isValid("ABd-de-1"), "Insensitive isValid() invalid");
 
         // validate()
-        assertEquals("Sensitive validate() valid",     "acDE1", sensitive.validate("ac-DE-1"));
-        assertNull("Sensitive validate() invalid", sensitive.validate("AB-de-1"));
-        assertEquals("Insensitive validate() valid",   "ABde1", insensitive.validate("AB-de-1"));
-        assertNull("Insensitive validate() invalid", insensitive.validate("ABd-de-1"));
+        assertEquals("acDE1", sensitive.validate("ac-DE-1"), "Sensitive validate() valid");
+        assertNull(sensitive.validate("AB-de-1"), "Sensitive validate() invalid");
+        assertEquals("ABde1", insensitive.validate("AB-de-1"), "Insensitive validate() valid");
+        assertNull(insensitive.validate("ABd-de-1"), "Insensitive validate() invalid");
 
         // match()
         checkArray("Sensitive match() valid",     new String[] {"ac", "DE", "1"}, sensitive.match("ac-DE-1"));
         checkArray("Sensitive match() invalid",   null,                           sensitive.match("AB-de-1"));
         checkArray("Insensitive match() valid",   new String[] {"AB", "de", "1"}, insensitive.match("AB-de-1"));
         checkArray("Insensitive match() invalid", null,                           insensitive.match("ABd-de-1"));
-        assertEquals("validate one", "ABC", (new RegexValidator("^([A-Z]*)$")).validate("ABC"));
+        assertEquals("ABC", (new RegexValidator("^([A-Z]*)$")).validate("ABC"), "validate one");
         checkArray("match one", new String[] {"ABC"}, (new RegexValidator("^([A-Z]*)$")).match("ABC"));
     }
 
     /**
      * Test with multiple regular expressions (case sensitive).
      */
-    public void testMultipleSensitive() {
+    @Test
+    void testMultipleSensitive() {
 
         // ------------ Set up Sensitive Validators
         RegexValidator multiple   = new RegexValidator(MULTIPLE_REGEX);
@@ -94,16 +96,16 @@ public class RegexValidatorTest extends TestCase {
         String[] array = new String[] {"aac", "FDE", "321"};
 
         // isValid()
-        assertTrue("Sensitive isValid() Multiple", multiple.isValid(value));
-        assertFalse("Sensitive isValid() 1st", single1.isValid(value));
-        assertTrue("Sensitive isValid() 2nd", single2.isValid(value));
-        assertFalse("Sensitive isValid() 3rd", single3.isValid(value));
+        assertTrue(multiple.isValid(value), "Sensitive isValid() Multiple");
+        assertFalse(single1.isValid(value), "Sensitive isValid() 1st");
+        assertTrue(single2.isValid(value), "Sensitive isValid() 2nd");
+        assertFalse(single3.isValid(value), "Sensitive isValid() 3rd");
 
         // validate()
-        assertEquals("Sensitive validate() Multiple", expect, multiple.validate(value));
-        assertNull("Sensitive validate() 1st", single1.validate(value));
-        assertEquals("Sensitive validate() 2nd",      expect, single2.validate(value));
-        assertNull("Sensitive validate() 3rd", single3.validate(value));
+        assertEquals(expect, multiple.validate(value), "Sensitive validate() Multiple");
+        assertNull(single1.validate(value), "Sensitive validate() 1st");
+        assertEquals(expect, single2.validate(value), "Sensitive validate() 2nd");
+        assertNull(single3.validate(value), "Sensitive validate() 3rd");
 
         // match()
         checkArray("Sensitive match() Multiple", array, multiple.match(value));
@@ -113,15 +115,16 @@ public class RegexValidatorTest extends TestCase {
 
         // All invalid
         value = "AAC*FDE*321";
-        assertFalse("isValid() Invalid", multiple.isValid(value));
-        assertNull("validate() Invalid", multiple.validate(value));
-        assertNull("match() Multiple", multiple.match(value));
+        assertFalse(multiple.isValid(value), "isValid() Invalid");
+        assertNull(multiple.validate(value), "validate() Invalid");
+        assertNull(multiple.match(value), "match() Multiple");
     }
 
     /**
      * Test with multiple regular expressions (case in-sensitive).
      */
-    public void testMultipleInsensitive() {
+    @Test
+    void testMultipleInsensitive() {
 
         // ------------ Set up In-sensitive Validators
         RegexValidator multiple = new RegexValidator(MULTIPLE_REGEX, false);
@@ -135,16 +138,16 @@ public class RegexValidatorTest extends TestCase {
         String[] array = new String[] {"AAC", "FDE", "321"};
 
         // isValid()
-        assertTrue("isValid() Multiple", multiple.isValid(value));
-        assertFalse("isValid() 1st", single1.isValid(value));
-        assertTrue("isValid() 2nd", single2.isValid(value));
-        assertFalse("isValid() 3rd", single3.isValid(value));
+        assertTrue(multiple.isValid(value), "isValid() Multiple");
+        assertFalse(single1.isValid(value), "isValid() 1st");
+        assertTrue(single2.isValid(value), "isValid() 2nd");
+        assertFalse(single3.isValid(value), "isValid() 3rd");
 
         // validate()
-        assertEquals("validate() Multiple", expect, multiple.validate(value));
-        assertNull("validate() 1st", single1.validate(value));
-        assertEquals("validate() 2nd",      expect, single2.validate(value));
-        assertNull("validate() 3rd", single3.validate(value));
+        assertEquals(expect, multiple.validate(value), "validate() Multiple");
+        assertNull(single1.validate(value), "validate() 1st");
+        assertEquals(expect, single2.validate(value), "validate() 2nd");
+        assertNull(single3.validate(value), "validate() 3rd");
 
         // match()
         checkArray("match() Multiple", array, multiple.match(value));
@@ -154,99 +157,87 @@ public class RegexValidatorTest extends TestCase {
 
         // All invalid
         value = "AAC*FDE*321";
-        assertFalse("isValid() Invalid", multiple.isValid(value));
-        assertNull("validate() Invalid", multiple.validate(value));
-        assertNull("match() Multiple", multiple.match(value));
+        assertFalse(multiple.isValid(value), "isValid() Invalid");
+        assertNull(multiple.validate(value), "validate() Invalid");
+        assertNull(multiple.match(value), "match() Multiple");
     }
 
     /**
      * Test Null value
      */
-    public void testNullValue() {
+    @Test
+    void testNullValue() {
 
         RegexValidator validator = new RegexValidator(REGEX);
-        assertFalse("Instance isValid()", validator.isValid(null));
-        assertNull("Instance validate()", validator.validate(null));
-        assertNull("Instance match()", validator.match(null));
+        assertFalse(validator.isValid(null), "Instance isValid()");
+        assertNull(validator.validate(null), "Instance validate()");
+        assertNull(validator.match(null), "Instance match()");
     }
 
     /**
      * Test exceptions
      */
-    public void testMissingRegex() {
+    @Test
+    void testMissingRegex() {
 
         // Single Regular Expression - null
-        try {
-            new RegexValidator((String) null);
-            fail("Single Null - expected IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Single Null", "Regular expression[0] is missing", e.getMessage());
+        {
+            final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RegexValidator((String) null), "Single Null - expected IllegalArgumentException");
+            assertEquals("Regular expression[0] is missing", e.getMessage(), "Single Null");
         }
 
         // Single Regular Expression - Zero Length
-        try {
-            new RegexValidator("");
-            fail("Single Zero Length - expected IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Single Zero Length", "Regular expression[0] is missing", e.getMessage());
+        {
+            final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RegexValidator(""), "Single Zero Length - expected IllegalArgumentException");
+            assertEquals("Regular expression[0] is missing", e.getMessage(), "Single Zero Length");
         }
 
         // Multiple Regular Expression - Null array
-        try {
-            new RegexValidator((String[]) null);
-            fail("Null Array - expected IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Null Array", "Regular expressions are missing", e.getMessage());
+        {
+            final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RegexValidator((String[]) null), "Null Array - expected IllegalArgumentException");
+            assertEquals("Regular expressions are missing", e.getMessage(), "Null Array");
         }
 
         // Multiple Regular Expression - Zero Length array
-        try {
-            new RegexValidator(new String[0]);
-            fail("Zero Length Array - expected IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Zero Length Array", "Regular expressions are missing", e.getMessage());
+        {
+            final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RegexValidator(new String[0]), "Zero Length Array - expected IllegalArgumentException");
+            assertEquals("Regular expressions are missing", e.getMessage(), "Zero Length Array");
         }
 
         // Multiple Regular Expression - Array has Null
-        String[] expressions = new String[] {"ABC", null};
-        try {
-            new RegexValidator(expressions);
-            fail("Array has Null - expected IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Array has Null", "Regular expression[1] is missing", e.getMessage());
+        {
+            String[] expressions = new String[] {"ABC", null};
+            final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RegexValidator(expressions), "Array has Null - expected IllegalArgumentException");
+            assertEquals("Regular expression[1] is missing", e.getMessage(), "Array has Null");
         }
 
         // Multiple Regular Expression - Array has Zero Length
-        expressions = new String[] {"", "ABC"};
-        try {
-            new RegexValidator(expressions);
-            fail("Array has Zero Length - expected IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Array has Zero Length", "Regular expression[0] is missing", e.getMessage());
+        {
+            String[] expressions = new String[] {"", "ABC"};
+            final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new RegexValidator(expressions), "Array has Zero Length - expected IllegalArgumentException");
+            assertEquals("Regular expression[0] is missing", e.getMessage(), "Array has Zero Length");
         }
     }
 
     /**
      * Test exceptions
      */
-    public void testExceptions() {
+    @Test
+    void testExceptions() {
         String invalidRegex = "^([abCD12]*$";
-        try {
-            new RegexValidator(invalidRegex);
-        } catch (PatternSyntaxException e) {
-            // expected
-        }
+        assertThrows(PatternSyntaxException.class, () -> new RegexValidator(invalidRegex));
     }
 
     /**
      * Test toString() method
      */
-    public void testToString() {
+    @Test
+    void testToString() {
         RegexValidator single = new RegexValidator(REGEX);
-        assertEquals("Single", "RegexValidator{" + REGEX + "}", single.toString());
+        assertEquals("RegexValidator{" + REGEX + "}", single.toString(), "Single");
 
         RegexValidator multiple = new RegexValidator(new String[] {REGEX, REGEX});
-        assertEquals("Multiple", "RegexValidator{" + REGEX + "," + REGEX + "}", multiple.toString());
+        assertEquals("RegexValidator{" + REGEX + "," + REGEX + "}", multiple.toString(), "Multiple");
     }
 
     /**
@@ -274,7 +265,7 @@ public class RegexValidatorTest extends TestCase {
 
         // Check Values
         for (int i = 0; i < expect.length; i++) {
-            assertEquals(label + " value[" + i + "]", expect[i], result[i]);
+            assertEquals(expect[i], result[i], label + " value[" + i + "]");
         }
     }
 

@@ -26,16 +26,11 @@ package lib.form;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
@@ -45,49 +40,54 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTextInput;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class RepeatablePropertyTest {
-
-    @Rule public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class RepeatablePropertyTest {
 
     private static final String VIEW_WITHOUT_DEFAULT = "noDefault";
     private static final String VIEW_WITH_DEFAULT = "withDefault";
 
     private RootActionImpl rootAction;
 
-    @Before
-    public void setUp() {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
     }
 
     @Test
-    public void testSimple() throws Exception {
+    void testSimple() throws Exception {
         rootAction.testRepeatable = createRepeatable();
         assertFormContents(VIEW_WITHOUT_DEFAULT, rootAction.testRepeatable);
     }
 
     @Test
-    public void testNullFieldNoDefault() throws Exception {
+    void testNullFieldNoDefault() throws Exception {
         assertFormContents(VIEW_WITHOUT_DEFAULT, new ArrayList<>());
     }
 
     @Test
-    public void testNullFieldWithDefault() throws Exception {
+    void testNullFieldWithDefault() throws Exception {
         rootAction.defaults = createRepeatable();
         assertFormContents(VIEW_WITH_DEFAULT, rootAction.defaults);
     }
 
     @Test
-    public void testFieldNotNullWithDefaultIgnoresDefaults() throws Exception {
+    void testFieldNotNullWithDefaultIgnoresDefaults() throws Exception {
         rootAction.testRepeatable = createRepeatable();
         rootAction.defaults = new ArrayList<>(Arrays.asList(
            new ExcitingObject("This default should be ignored"),
@@ -98,7 +98,7 @@ public class RepeatablePropertyTest {
 
     @Issue("JENKINS-37599")
     @Test
-    public void testNestedRepeatableProperty() throws Exception {
+    void testNestedRepeatableProperty() throws Exception {
         rootAction.testRepeatableContainer = Collections.emptyList();
         // minimum="1" is set for the upper one,
         // the form should be:
@@ -109,12 +109,12 @@ public class RepeatablePropertyTest {
                 form.getElementsByAttribute("input", "type", "text").stream()
                         .map(HtmlTextInput.class::cast)
                         .filter(input -> input.getNameAttribute().endsWith(".containerName"))
-                        .collect(Collectors.toList());
+                        .toList();
         List<HtmlTextInput> greatPropertyInputs =
                 form.getElementsByAttribute("input", "type", "text").stream()
                         .map(HtmlTextInput.class::cast)
                         .filter(input -> input.getNameAttribute().endsWith(".greatProperty"))
-                        .collect(Collectors.toList());
+                        .toList();
         assertEquals(1, containerNameInputs.size());
         assertEquals(0, greatPropertyInputs.size());
     }
@@ -122,9 +122,9 @@ public class RepeatablePropertyTest {
     private void assertFormContents(final String viewName, final ArrayList<ExcitingObject> expected) throws Exception {
         final HtmlForm form = getForm(viewName);
         final List<HtmlTextInput> inputs = toTextInputList(form.getElementsByAttribute("input", "type", "text"));
-        assertEquals("size", expected.size(), inputs.size());
+        assertEquals(expected.size(), inputs.size(), "size");
         for (int i = 0; i < expected.size(); i++)
-            assertEquals(expected.get(i).greatProperty, inputs.get(i).getValueAttribute());
+            assertEquals(expected.get(i).greatProperty, inputs.get(i).getValue());
     }
 
     private List<HtmlTextInput> toTextInputList(final List<HtmlElement> inputs) {
@@ -154,6 +154,7 @@ public class RepeatablePropertyTest {
     public static final class ExcitingObject implements Describable<ExcitingObject> {
         private final String greatProperty;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public ExcitingObject(final String greatProperty) {
             this.greatProperty = greatProperty;
@@ -173,9 +174,7 @@ public class RepeatablePropertyTest {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             ExcitingObject that = (ExcitingObject) o;
-            if (!Objects.equals(greatProperty, that.greatProperty))
-                return false;
-            return true;
+            return Objects.equals(greatProperty, that.greatProperty);
         }
 
         @Override
@@ -190,16 +189,18 @@ public class RepeatablePropertyTest {
 
         @Extension
         public static final class ExcitingDescriptor extends Descriptor<ExcitingObject> {
+            @SuppressWarnings("checkstyle:redundantmodifier")
             public ExcitingDescriptor() {
                 super(ExcitingObject.class);
             }
         }
     }
 
-    public static final class ExcitingObjectContainer extends AbstractDescribableImpl<ExcitingObjectContainer> {
+    public static final class ExcitingObjectContainer implements Describable<ExcitingObjectContainer> {
         String containerName;
         List<ExcitingObject> excitingObjectList;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public ExcitingObjectContainer(String containerName, List<ExcitingObject> excitingObjectList) {
             this.containerName = containerName;

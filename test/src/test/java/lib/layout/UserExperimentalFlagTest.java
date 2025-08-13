@@ -24,9 +24,8 @@
 
 package lib.layout;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.InvisibleAction;
@@ -36,44 +35,51 @@ import java.util.HashMap;
 import java.util.Map;
 import jenkins.model.experimentalflags.BooleanUserExperimentalFlag;
 import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class UserExperimentalFlagTest {
+@WithJenkins
+class UserExperimentalFlagTest {
     private static final String VALID_FLAG_CLASS = "lib.layout.UserExperimentalFlagTest$Test1UserExperimentalFlag";
     private static final String NON_REGISTERED_FLAG_CLASS = "lib.layout.UserExperimentalFlagTest$Test2UserExperimentalFlag";
     private static final String UNRELATED_CLASS = "lib.layout.UserExperimentalFlagTest";
     private static final String NON_EXISTING_FLAG_CLASS = "nonExisting";
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testNonExistingClass() throws Exception {
+    void testNonExistingClass() throws Exception {
         assertFlagUsage(NON_EXISTING_FLAG_CLASS, "", null);
     }
 
     @Test
-    public void testNonFlagClass() throws Exception {
+    void testNonFlagClass() throws Exception {
         assertFlagUsage(UNRELATED_CLASS, "", null);
     }
 
     @Test
-    public void testExistingClassButNotRegisteredFlag() throws Exception {
+    void testExistingClassButNotRegisteredFlag() throws Exception {
         // No @Extension annotation
         assertFlagUsage(NON_REGISTERED_FLAG_CLASS, "", null);
     }
 
     @Test
-    public void testExistingFlagButAnonymousUser() throws Exception {
+    void testExistingFlagButAnonymousUser() throws Exception {
         // default value is true
         assertFlagUsage(VALID_FLAG_CLASS, "true", null);
     }
 
     @Test
-    public void testPropertyWithValues() throws Exception {
+    void testPropertyWithValues() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.getOrCreateByIdOrFullName("user");
@@ -86,7 +92,7 @@ public class UserExperimentalFlagTest {
     }
 
     @Test
-    public void testPropertyWithNull() throws Exception {
+    void testPropertyWithNull() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.getOrCreateByIdOrFullName("user");
@@ -136,6 +142,7 @@ public class UserExperimentalFlagTest {
 
     @TestExtension
     public static final class Test1UserExperimentalFlag extends BooleanUserExperimentalFlag {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public Test1UserExperimentalFlag() {
             super("test1.flag");
         }
@@ -158,6 +165,7 @@ public class UserExperimentalFlagTest {
 
     // Especially not registered extension
     public static final class Test2UserExperimentalFlag extends BooleanUserExperimentalFlag {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public Test2UserExperimentalFlag() {
             super("test2.flag");
         }

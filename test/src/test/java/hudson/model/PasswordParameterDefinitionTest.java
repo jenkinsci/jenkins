@@ -24,25 +24,34 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import hudson.Launcher;
 import java.io.IOException;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPasswordInput;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PasswordParameterDefinitionTest {
+@WithJenkins
+class PasswordParameterDefinitionTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Test public void defaultValueKeptSecret() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    @Test
+    void defaultValueKeptSecret() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new PasswordParameterDefinition("p", "s3cr3t", "")));
         j.configRoundtrip(p);
@@ -50,7 +59,8 @@ public class PasswordParameterDefinitionTest {
     }
 
     @Issue("JENKINS-36476")
-    @Test public void defaultValueAlwaysAvailable() throws Exception {
+    @Test
+    void defaultValueAlwaysAvailable() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("admin").
@@ -79,7 +89,7 @@ public class PasswordParameterDefinitionTest {
 
         // Another control case: anyone can enter a different value.
         HtmlForm form = wc.withBasicApiToken(dev).getPage(p, "build?delay=0sec").getFormByName("parameters");
-        form.getElementsByAttribute("input", "class", "hidden-password-update-btn").get(0).click();
+        ((HtmlElement) form.querySelector("button.hidden-password-update-btn")).click();
         HtmlPasswordInput input = form.getInputByName("value");
         input.setText("rumor");
         j.submit(form);
@@ -97,7 +107,7 @@ public class PasswordParameterDefinitionTest {
 
         // Another control case: blank values.
         form = wc.withBasicApiToken(dev).getPage(p, "build?delay=0sec").getFormByName("parameters");
-        form.getElementsByAttribute("input", "class", "hidden-password-update-btn").get(0).click();
+        ((HtmlElement) form.querySelector("button.hidden-password-update-btn")).click();
         input = form.getInputByName("value");
         input.setText("");
         j.submit(form);

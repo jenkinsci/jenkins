@@ -41,7 +41,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       }
     }
     var instructions = document.getElementById(
-      "hidden-by-default-instructions"
+      "hidden-by-default-instructions",
     );
     if (instructions) {
       instructions.style.display = anyVisible ? "none" : "";
@@ -53,7 +53,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
 
   (function () {
     var instructionsTd = document.getElementById(
-      "hidden-by-default-instructions-td"
+      "hidden-by-default-instructions-td",
     );
     if (instructionsTd) {
       // only on Available tab
@@ -94,11 +94,6 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
 
     if (!pluginTRs) {
       return;
-    }
-
-    var pluginI18n = select(".plugins.i18n");
-    function i18n(messageId) {
-      return pluginI18n.getAttribute("data-" + messageId);
     }
 
     // Create a map of the plugin rows, making it easy to index them.
@@ -377,19 +372,19 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       if (dependenciesDiv) {
         pluginTR.jenkinsPluginMetadata.dependencies = selectAll(
           "span",
-          dependenciesDiv
+          dependenciesDiv,
         );
         pluginTR.jenkinsPluginMetadata.dependencyIds = processSpanSet(
-          pluginTR.jenkinsPluginMetadata.dependencies
+          pluginTR.jenkinsPluginMetadata.dependencies,
         );
       }
       if (dependentsDiv) {
         pluginTR.jenkinsPluginMetadata.dependents = selectAll(
           "span",
-          dependentsDiv
+          dependentsDiv,
         );
         pluginTR.jenkinsPluginMetadata.dependentIds = processSpanSet(
-          pluginTR.jenkinsPluginMetadata.dependents
+          pluginTR.jenkinsPluginMetadata.dependents,
         );
       }
 
@@ -467,7 +462,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
 
 window.addEventListener("load", function () {
   const compatibleCheckbox = document.querySelector(
-    "[data-select='compatible']"
+    "[data-select='compatible']",
   );
   if (compatibleCheckbox) {
     compatibleCheckbox.addEventListener("click", () => {
@@ -478,7 +473,59 @@ window.addEventListener("load", function () {
           candidate.checked = candidate.dataset.compatWarning === "false";
         }
       }
-      window.updateTableHeaderCheckbox();
+      const ev = new CustomEvent("updateIcon", {
+        bubbles: true,
+      });
+      compatibleCheckbox.dispatchEvent(ev);
+    });
+  }
+
+  const uninstallButtons = document.querySelectorAll(
+    "[data-action='uninstall']",
+  );
+  uninstallButtons.forEach((uninstallButton) => {
+    uninstallButton.addEventListener("click", () => {
+      const title = uninstallButton.dataset.message;
+      const href = uninstallButton.dataset.href;
+
+      const options = {
+        message: i18n("uninstall-description"),
+        type: "destructive",
+      };
+
+      dialog.confirm(title, options).then(
+        () => {
+          var form = document.createElement("form");
+          form.setAttribute("method", "POST");
+          form.setAttribute("action", href);
+          crumb.appendToForm(form);
+          document.body.appendChild(form);
+          form.submit();
+        },
+        () => {},
+      );
+    });
+  });
+
+  const updateButton = document.querySelector("#button-update");
+  if (updateButton) {
+    // Enable/disable the 'Update' button depending on if any updates are checked
+    const anyCheckboxesSelected = () => {
+      return (
+        document.querySelectorAll(
+          "input[type='checkbox']:checked:not(:disabled)",
+        ).length > 0
+      );
+    };
+    const checkboxes = document.querySelectorAll(
+      "input[type='checkbox'], [data-select], .jenkins-table__checkbox",
+    );
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener("click", () => {
+        setTimeout(() => {
+          updateButton.disabled = !anyCheckboxesSelected();
+        });
+      });
     });
   }
 
@@ -487,7 +534,11 @@ window.addEventListener("load", function () {
   if (updateCenterError) {
     notificationBar.show(
       updateCenterError.content.textContent,
-      notificationBar.ERROR
+      notificationBar.ERROR,
     );
   }
 });
+
+function i18n(messageId) {
+  return document.querySelector("#i18n").getAttribute("data-" + messageId);
+}

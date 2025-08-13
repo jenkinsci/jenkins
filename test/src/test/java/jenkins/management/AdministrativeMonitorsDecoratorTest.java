@@ -24,27 +24,52 @@
 
 package jenkins.management;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.ExtensionList;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
+import hudson.security.ACL;
+import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AdministrativeMonitorsDecoratorTest {
+@WithJenkins
+class AdministrativeMonitorsDecoratorTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private String managePermission;
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+        managePermission = System.setProperty("jenkins.security.ManagePermission", "true");
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (managePermission != null) {
+            System.setProperty("jenkins.security.ManagePermission", managePermission);
+        } else {
+            System.clearProperty("jenkins.security.ManagePermission");
+        }
+    }
 
     @Test
-    public void ensureAdminMonitorsAreNotRunPerNonAdminPage() throws Exception {
+    void ensureAdminMonitorsAreNotRunPerNonAdminPage() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         String nonAdminLogin = "nonAdmin";
         User.getById(nonAdminLogin, true);
@@ -66,7 +91,7 @@ public class AdministrativeMonitorsDecoratorTest {
 
     @Test
     @Issue("JENKINS-63977")
-    public void ensureAdminMonitorsAreRunOnlyOncePerAdminPage() throws Exception {
+    void ensureAdminMonitorsAreRunOnlyOncePerAdminPage() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         String adminLogin = "admin";
         User.getById(adminLogin, true);
@@ -128,6 +153,82 @@ public class AdministrativeMonitorsDecoratorTest {
 
         @Override
         public boolean isSecurity() {
+            return true;
+        }
+    }
+
+    @Test
+    void ensureAdminMonitorsCanBeSeenByManagers() {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        var managerLogin = "manager";
+        var systemReadLogin = "system-reader";
+        var managerUser = User.getById(managerLogin, true);
+        var systemReadUser = User.getById(systemReadLogin, true);
+
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().to(managerLogin)
+                .grant(Jenkins.READ, Jenkins.SYSTEM_READ).everywhere().to(systemReadLogin)
+        );
+
+        try (var ignored = ACL.as2(managerUser.impersonate2())) {
+            assertThat(Jenkins.get().getActiveAdministrativeMonitors(), hasItem(instanceOf(ManagerAdministrativeMonitor.class)));
+        }
+        try (var ignored = ACL.as2(systemReadUser.impersonate2())) {
+            assertThat(Jenkins.get().getActiveAdministrativeMonitors(), not(hasItem(instanceOf(ManagerAdministrativeMonitor.class))));
+        }
+    }
+
+    @TestExtension("ensureAdminMonitorsCanBeSeenByManagers")
+    public static class ManagerAdministrativeMonitor extends AdministrativeMonitor {
+        @Override
+        public Permission getRequiredPermission() {
+            return Jenkins.MANAGE;
+        }
+
+        @Override
+        public boolean isActivated() {
+            return true;
+        }
+    }
+
+    @Test
+    void ensureAdminMonitorsCanBeSeenByManagersOrSystemReaders() {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        var managerLogin = "manager";
+        var systemReadLogin = "system-reader";
+        var managerUser = User.getById(managerLogin, true);
+        var systemReadUser = User.getById(systemReadLogin, true);
+
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().to(managerLogin)
+                .grant(Jenkins.READ, Jenkins.SYSTEM_READ).everywhere().to(systemReadLogin)
+        );
+
+        try (var ignored = ACL.as2(managerUser.impersonate2())) {
+            assertThat(Jenkins.get().getActiveAdministrativeMonitors(), hasItem(instanceOf(ManagerOrSystemReaderAdministrativeMonitor.class)));
+        }
+        try (var ignored = ACL.as2(systemReadUser.impersonate2())) {
+            assertThat(Jenkins.get().getActiveAdministrativeMonitors(), hasItem(instanceOf(ManagerOrSystemReaderAdministrativeMonitor.class)));
+        }
+    }
+
+    @TestExtension("ensureAdminMonitorsCanBeSeenByManagersOrSystemReaders")
+    public static class ManagerOrSystemReaderAdministrativeMonitor extends AdministrativeMonitor {
+
+        private static final Permission[] REQUIRED_ANY_PERMISSIONS = {Jenkins.MANAGE, Jenkins.SYSTEM_READ};
+
+        @Override
+        public void checkRequiredPermission() {
+            Jenkins.get().checkAnyPermission(REQUIRED_ANY_PERMISSIONS);
+        }
+
+        @Override
+        public boolean hasRequiredPermission() {
+            return Jenkins.get().hasAnyPermission(REQUIRED_ANY_PERMISSIONS);
+        }
+
+        @Override
+        public boolean isActivated() {
             return true;
         }
     }

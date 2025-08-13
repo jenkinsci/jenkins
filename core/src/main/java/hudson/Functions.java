@@ -36,11 +36,11 @@ import hudson.console.ConsoleAnnotatorFactory;
 import hudson.init.InitMilestone;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
-import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
@@ -54,6 +54,7 @@ import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.PasswordParameterDefinition;
+import hudson.model.RootAction;
 import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.model.TimeZoneProperty;
@@ -62,6 +63,7 @@ import hudson.model.User;
 import hudson.model.View;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import hudson.search.SearchFactory;
 import hudson.search.SearchableModelObject;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -94,6 +96,12 @@ import hudson.util.jna.GNUCLibrary;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
+import io.jenkins.servlet.http.CookieWrapper;
+import io.jenkins.servlet.http.HttpServletRequestWrapper;
+import io.jenkins.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -116,6 +124,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -130,6 +142,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
@@ -144,16 +157,18 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jenkins.console.ConsoleUrlProvider;
+import jenkins.console.DefaultConsoleUrlProvider;
+import jenkins.console.WithConsoleUrl;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.SimplePageDecorator;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.DetailGroup;
 import jenkins.util.SystemProperties;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -161,7 +176,6 @@ import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
-import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jvnet.tiger_types.Types;
@@ -172,7 +186,7 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.RawHtmlArgument;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -217,12 +231,12 @@ public class Functions {
     }
 
     public static String xsDate(Calendar cal) {
-        return Util.XS_DATETIME_FORMATTER.format(cal.getTime());
+        return Util.XS_DATETIME_FORMATTER2.format(cal.toInstant());
     }
 
     @Restricted(NoExternalUse.class)
     public static String iso8601DateTime(Date date) {
-        return Util.XS_DATETIME_FORMATTER.format(date);
+        return Util.XS_DATETIME_FORMATTER2.format(date.toInstant());
     }
 
     /**
@@ -234,7 +248,7 @@ public class Functions {
     }
 
     public static String rfc822Date(Calendar cal) {
-        return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
+        return DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.ofInstant(cal.toInstant(), ZoneId.systemDefault()));
     }
 
     /**
@@ -272,8 +286,8 @@ public class Functions {
     }
 
     public static void initPageVariables(JellyContext context) {
-        StaplerRequest currentRequest = Stapler.getCurrentRequest();
-        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse2());
         String rootURL = currentRequest.getContextPath();
 
         Functions h = new Functions();
@@ -312,8 +326,7 @@ public class Functions {
      */
     public static <B> Class getTypeParameter(Class<? extends B> c, Class<B> base, int n) {
         Type parameterization = Types.getBaseClass(c, base);
-        if (parameterization instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) parameterization;
+        if (parameterization instanceof ParameterizedType pt) {
             return Types.erasure(Types.getTypeArgument(pt, n));
         } else {
             throw new AssertionError(c + " doesn't properly parameterize " + base);
@@ -369,7 +382,10 @@ public class Functions {
         return buf.toString();
     }
 
-    public static RunUrl decompose(StaplerRequest req) {
+    /**
+     * @since 2.475
+     */
+    public static RunUrl decompose(StaplerRequest2 req) {
         List<Ancestor> ancestors = req.getAncestors();
 
         // find the first and last Run instances
@@ -403,11 +419,19 @@ public class Functions {
     }
 
     /**
+     * @deprecated use {@link #decompose(StaplerRequest2)}
+     */
+    @Deprecated
+    public static RunUrl decompose(StaplerRequest req) {
+        return decompose(StaplerRequest.toStaplerRequest2(req));
+    }
+
+    /**
      * If we know the user's screen resolution, return it. Otherwise null.
      * @since 1.213
      */
     public static Area getScreenResolution() {
-        Cookie res = Functions.getCookie(Stapler.getCurrentRequest(), "screenResolution");
+        Cookie res = Functions.getCookie(Stapler.getCurrentRequest2(), "screenResolution");
         if (res != null)
             return Area.parse(res.getValue());
         return null;
@@ -589,6 +613,9 @@ public class Functions {
         return list;
     }
 
+    /**
+     * @since 2.475
+     */
     public static Cookie getCookie(HttpServletRequest req, String name) {
         Cookie[] cookies = req.getCookies();
         if (cookies != null) {
@@ -601,10 +628,29 @@ public class Functions {
         return null;
     }
 
+    /**
+     * @deprecated use {@link #getCookie(HttpServletRequest, String)}
+     */
+    @Deprecated
+    public static javax.servlet.http.Cookie getCookie(javax.servlet.http.HttpServletRequest req, String name) {
+        return CookieWrapper.fromJakartaServletHttpCookie(getCookie(HttpServletRequestWrapper.toJakartaHttpServletRequest(req), name));
+    }
+
+    /**
+     * @since 2.475
+     */
     public static String getCookie(HttpServletRequest req, String name, String defaultValue) {
         Cookie c = getCookie(req, name);
         if (c == null || c.getValue() == null) return defaultValue;
         return c.getValue();
+    }
+
+    /**
+     * @deprecated use {@link #getCookie(HttpServletRequest, String, String)}
+     */
+    @Deprecated
+    public static String getCookie(javax.servlet.http.HttpServletRequest req, String name, String defaultValue) {
+        return getCookie(HttpServletRequestWrapper.toJakartaHttpServletRequest(req), name, defaultValue);
     }
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
@@ -618,17 +664,14 @@ public class Functions {
     }
 
     /**
-     * Gets the suffix to use for YUI JavaScript.
-     */
-    public static String getYuiSuffix() {
-        return DEBUG_YUI ? "debug" : "min";
-    }
-
-    /**
-     * Set to true if you need to use the debug version of YUI.
+     * No longer used, to be removed after enough plugins have adopted a version of the test harness with
+     * <a href="https://github.com/jenkinsci/jenkins-test-harness/pull/874">jenkins-test-harness/pull/874</a> in it.
+     *
+     * @deprecated removed without replacement
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static boolean DEBUG_YUI = SystemProperties.getBoolean("debug.YUI");
+    @Deprecated(forRemoval = true, since = "TODO")
+    public static boolean DEBUG_YUI;
 
     /**
      * Creates a sub map by using the given range (both ends inclusive).
@@ -690,13 +733,13 @@ public class Functions {
     }
 
     @Restricted(NoExternalUse.class)
-    public static String getUserTimeZonePostfix() {
+    public static String getUserTimeZonePostfix(Date date) {
         if (!isUserTimeZoneOverride()) {
             return "";
         }
 
         TimeZone tz = TimeZone.getTimeZone(getUserTimeZone());
-        return tz.getDisplayName(tz.observesDaylightTime(), TimeZone.SHORT);
+        return tz.getDisplayName(tz.inDaylightTime(date), TimeZone.SHORT, getCurrentLocale());
     }
 
     @Restricted(NoExternalUse.class)
@@ -710,8 +753,10 @@ public class Functions {
      * Finds the given object in the ancestor list and returns its URL.
      * This is used to determine the "current" URL assigned to the given object,
      * so that one can compute relative URLs from it.
+     *
+     * @since 2.475
      */
-    public static String getNearestAncestorUrl(StaplerRequest req, Object it) {
+    public static String getNearestAncestorUrl(StaplerRequest2 req, Object it) {
         List list = req.getAncestors();
         for (int i = list.size() - 1; i >= 0; i--) {
             Ancestor anc = (Ancestor) list.get(i);
@@ -722,10 +767,18 @@ public class Functions {
     }
 
     /**
+     * @deprecated use {@link #getNearestAncestorUrl(StaplerRequest2, Object)}
+     */
+    @Deprecated
+    public static String getNearestAncestorUrl(StaplerRequest req, Object it) {
+        return getNearestAncestorUrl(StaplerRequest.toStaplerRequest2(req), it);
+    }
+
+    /**
      * Finds the inner-most {@link SearchableModelObject} in scope.
      */
     public static String getSearchURL() {
-        List list = Stapler.getCurrentRequest().getAncestors();
+        List list = Stapler.getCurrentRequest2().getAncestors();
         for (int i = list.size() - 1; i >= 0; i--) {
             Ancestor anc = (Ancestor) list.get(i);
             if (anc.getObject() instanceof SearchableModelObject)
@@ -863,11 +916,11 @@ public class Functions {
         return buf.toString();
     }
 
-    public static void checkPermission(Permission permission) throws IOException, ServletException {
+    public static void checkPermission(Permission permission) {
         checkPermission(Jenkins.get(), permission);
     }
 
-    public static void checkPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
+    public static void checkPermission(AccessControlled object, Permission permission) {
         if (permission != null) {
             object.checkPermission(permission);
         }
@@ -878,14 +931,14 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
-    public static void checkPermission(Object object, Permission permission) throws IOException, ServletException {
+    public static void checkPermission(Object object, Permission permission) {
         if (permission == null)
             return;
 
         if (object instanceof AccessControlled)
             checkPermission((AccessControlled) object, permission);
         else {
-            List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
+            List<Ancestor> ancs = Stapler.getCurrentRequest2().getAncestors();
             for (Ancestor anc : Iterators.reverse(ancs)) {
                 Object o = anc.getObject();
                 if (o instanceof AccessControlled) {
@@ -903,7 +956,7 @@ public class Functions {
      * @param permission
      *      If null, returns true. This defaulting is convenient in making the use of this method terse.
      */
-    public static boolean hasPermission(Permission permission) throws IOException, ServletException {
+    public static boolean hasPermission(Permission permission) {
         return hasPermission(Jenkins.get(), permission);
     }
 
@@ -911,13 +964,13 @@ public class Functions {
      * This version is so that the 'hasPermission' can degrade gracefully
      * if "it" is not an {@link AccessControlled} object.
      */
-    public static boolean hasPermission(Object object, Permission permission) throws IOException, ServletException {
+    public static boolean hasPermission(Object object, Permission permission) {
         if (permission == null)
             return true;
         if (object instanceof AccessControlled)
             return ((AccessControlled) object).hasPermission(permission);
         else {
-            List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
+            List<Ancestor> ancs = Stapler.getCurrentRequest2().getAncestors();
             for (Ancestor anc : Iterators.reverse(ancs)) {
                 Object o = anc.getObject();
                 if (o instanceof AccessControlled) {
@@ -928,25 +981,12 @@ public class Functions {
         }
     }
 
-    public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, ServletException {
-        // this is legacy --- all views should be eventually converted to
-        // the permission based model.
-        if (required != null && !Hudson.adminCheck(req, rsp)) {
-            // check failed. commit the FORBIDDEN response, then abort.
-            rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            rsp.getOutputStream().close();
-            throw new ServletException("Unauthorized access");
-        }
-
-        // make sure the user owns the necessary permission to access this page.
-        if (permission != null)
-            checkPermission(permission);
-    }
-
     /**
      * Infers the hudson installation URL from the given request.
+     *
+     * @since 2.475
      */
-    public static String inferHudsonURL(StaplerRequest req) {
+    public static String inferHudsonURL(StaplerRequest2 req) {
         String rootUrl = Jenkins.get().getRootUrl();
         if (rootUrl != null)
             // prefer the one explicitly configured, to work with load-balancer, frontend, etc.
@@ -961,12 +1001,20 @@ public class Functions {
     }
 
     /**
+     * @deprecated use {@link #inferHudsonURL(StaplerRequest2)}
+     */
+    @Deprecated
+    public static String inferHudsonURL(StaplerRequest req) {
+        return inferHudsonURL(StaplerRequest.toStaplerRequest2(req));
+    }
+
+    /**
      * Returns the link to be displayed in the footer of the UI.
      */
     public static String getFooterURL() {
         if (footerURL == null) {
             footerURL = SystemProperties.getString("hudson.footerURL");
-            if (StringUtils.isBlank(footerURL)) {
+            if (footerURL == null || footerURL.isBlank()) {
                 footerURL = "https://www.jenkins.io/";
             }
         }
@@ -1215,7 +1263,7 @@ public class Functions {
      *
      * @since 2.238
      */
-    public static boolean hasAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+    public static boolean hasAnyPermission(Object object, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
             return true;
         }
@@ -1223,7 +1271,7 @@ public class Functions {
         if (object instanceof AccessControlled)
             return hasAnyPermission((AccessControlled) object, permissions);
         else {
-            AccessControlled ac = Stapler.getCurrentRequest().findAncestorObject(AccessControlled.class);
+            AccessControlled ac = Stapler.getCurrentRequest2().findAncestorObject(AccessControlled.class);
             if (ac != null) {
                 return hasAnyPermission(ac, permissions);
             }
@@ -1253,7 +1301,7 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
-    public static void checkAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+    public static void checkAnyPermission(Object object, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
             return;
         }
@@ -1261,7 +1309,7 @@ public class Functions {
         if (object instanceof AccessControlled)
             checkAnyPermission((AccessControlled) object, permissions);
         else {
-            List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
+            List<Ancestor> ancs = Stapler.getCurrentRequest2().getAncestors();
             for (Ancestor anc : Iterators.reverse(ancs)) {
                 Object o = anc.getObject();
                 if (o instanceof AccessControlled) {
@@ -1332,7 +1380,7 @@ public class Functions {
         Map<Object, String> ancestors = new HashMap<>();
         View view = null;
 
-        StaplerRequest request = Stapler.getCurrentRequest();
+        StaplerRequest2 request = Stapler.getCurrentRequest2();
         for (Ancestor a : request.getAncestors()) {
             ancestors.put(a.getObject(), a.getRelativePath());
             if (a.getObject() instanceof View)
@@ -1418,7 +1466,7 @@ public class Functions {
         StringBuilder buf = new StringBuilder();
         Item i = p;
         while (true) {
-            if (buf.length() > 0) buf.insert(0, separationString);
+            if (!buf.isEmpty()) buf.insert(0, separationString);
             buf.insert(0, useDisplayName ? i.getDisplayName() : i.getName());
             ItemGroup gr = i.getParent();
 
@@ -1678,7 +1726,7 @@ public class Functions {
         if (it instanceof Descriptor)
             clazz = ((Descriptor) it).clazz;
 
-        String buf = Stapler.getCurrentRequest().getContextPath() + Jenkins.VIEW_RESOURCE_PATH + '/' +
+        String buf = Stapler.getCurrentRequest2().getContextPath() + Jenkins.VIEW_RESOURCE_PATH + '/' +
                 clazz.getName().replace('.', '/').replace('$', '/') +
                 '/' + path;
         return buf;
@@ -1686,7 +1734,7 @@ public class Functions {
 
     public static boolean hasView(Object it, String path) throws IOException {
         if (it == null)    return false;
-        return Stapler.getCurrentRequest().getView(it, path) != null;
+        return Stapler.getCurrentRequest2().getView(it, path) != null;
     }
 
     /**
@@ -1728,6 +1776,7 @@ public class Functions {
         return s.toString();
     }
 
+    @SuppressFBWarnings(value = "INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE", justification = "Jenkins handles this issue differently or doesn't care about it")
     private static void doPrintStackTrace(@NonNull StringBuilder s, @NonNull Throwable t, @CheckForNull Throwable higher, @NonNull String prefix, @NonNull Set<Throwable> encountered) {
         if (!encountered.add(t)) {
             s.append("<cycle to ").append(t).append(">\n");
@@ -1781,6 +1830,7 @@ public class Functions {
      * @param pw the log
      * @since 2.43
      */
+    @SuppressFBWarnings(value = "XSS_SERVLET", justification = "TODO needs triage")
     public static void printStackTrace(@CheckForNull Throwable t, @NonNull PrintWriter pw) {
         pw.println(printThrowable(t).trim());
     }
@@ -1869,7 +1919,7 @@ public class Functions {
         for (String s : components) {
             if (s.isEmpty())  continue;
 
-            if (buf.length() > 0) {
+            if (!buf.isEmpty()) {
                 if (buf.charAt(buf.length() - 1) != '/')
                     buf.append('/');
                 if (s.charAt(0) == '/')   s = s.substring(1);
@@ -1897,10 +1947,29 @@ public class Functions {
             return null;
         }
         if (urlName.startsWith("/"))
-            return joinPath(Stapler.getCurrentRequest().getContextPath(), urlName);
+            return joinPath(Stapler.getCurrentRequest2().getContextPath(), urlName);
         else
             // relative URL name
-            return joinPath(Stapler.getCurrentRequest().getContextPath() + '/' + itUrl, urlName);
+            return joinPath(Stapler.getCurrentRequest2().getContextPath() + '/' + itUrl, urlName);
+    }
+
+    /**
+     * Computes the link to the console for the run for the specified object, taking {@link ConsoleUrlProvider} into account.
+     * @param withConsoleUrl the object to compute a console url for (can be {@link Run}, a {@code PlaceholderExecutable}...)
+     * @return the absolute URL for accessing the build console for the given object, or null if there is no console URL defined for the object.
+     * @since 2.433
+     */
+    public static @CheckForNull String getConsoleUrl(WithConsoleUrl withConsoleUrl) {
+        String consoleUrl = withConsoleUrl.getConsoleUrl();
+        return consoleUrl != null ? Stapler.getCurrentRequest2().getContextPath() + '/' + consoleUrl : null;
+    }
+
+    /**
+     * @param run the run
+     * @return the Console Provider for the given run, if null, the default Console Provider
+     */
+    public static ConsoleUrlProvider getConsoleProviderFor(Run<?, ?> run) {
+        return Optional.ofNullable(ConsoleUrlProvider.getProvider(run)).orElse(new DefaultConsoleUrlProvider());
     }
 
     /**
@@ -1946,7 +2015,7 @@ public class Functions {
         } catch (MalformedURLException e) {
             // fall back to HTTP request
         }
-        return Stapler.getCurrentRequest().getServerName();
+        return Stapler.getCurrentRequest2().getServerName();
     }
 
     /**
@@ -1958,8 +2027,7 @@ public class Functions {
     @Deprecated
     public String getCheckUrl(String userDefined, Object descriptor, String field) {
         if (userDefined != null || field == null)   return userDefined;
-        if (descriptor instanceof Descriptor) {
-            Descriptor d = (Descriptor) descriptor;
+        if (descriptor instanceof Descriptor d) {
             return d.getCheckUrl(field);
         }
         return null;
@@ -1972,8 +2040,7 @@ public class Functions {
     public void calcCheckUrl(Map attributes, String userDefined, Object descriptor, String field) {
         if (userDefined != null || field == null)   return;
 
-        if (descriptor instanceof Descriptor) {
-            Descriptor d = (Descriptor) descriptor;
+        if (descriptor instanceof Descriptor d) {
             CheckMethod m = d.getCheckMethod(field);
             attributes.put("checkUrl", m.toStemUrl());
             attributes.put("checkDependsOn", m.getDependsOn());
@@ -1986,7 +2053,7 @@ public class Functions {
      * Used in {@code task.jelly} to decide if the page should be highlighted.
      */
     public boolean hyperlinkMatchesCurrentPage(String href) {
-        String url = Stapler.getCurrentRequest().getRequestURL().toString();
+        String url = Stapler.getCurrentRequest2().getRequestURL().toString();
         if (href == null || href.length() <= 1) return ".".equals(href) && url.endsWith("/");
         url = URLDecoder.decode(url, StandardCharsets.UTF_8);
         href = URLDecoder.decode(href, StandardCharsets.UTF_8);
@@ -1994,6 +2061,46 @@ public class Functions {
         if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
 
         return url.endsWith(href);
+    }
+
+    /**
+     * If the given {@code Action} is a {@link RootAction#isPrimaryAction() primary} {@code RootAction}, or a parent of the current page, return {@code true}.
+     * Used in {@code actions.jelly} to decide if the action should shown in the main header or the hamburger.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean showInPrimaryHeader(Action action) {
+        // regular Actions can be injected into Jenkins via a factory.
+        if (action instanceof RootAction ra) {
+            if (ra.isPrimaryAction()) {
+                return true;
+            }
+        }
+        String path = Stapler.getCurrentRequest2().getPathInfo();
+        if (path == null || path.equals("/")) {
+            // we are in the root page so there is nothing current
+            return false;
+        }
+
+        String actionPath = action.getUrlName();
+        if (actionPath == null) {
+            // we are not a primary action and can not ever be current when we have no URL
+            return false;
+        }
+
+        // RootActions are not expected to start with a `/` but some do and some do, and not all Actions will be RootActions
+        // but path will always start with a "/"
+        if (!actionPath.startsWith("/")) {
+            actionPath = '/' + actionPath;
+        }
+
+        // the action /foo should not match /foobar but should match /foo/bar
+        if (!actionPath.endsWith("/")) {
+            actionPath = actionPath + '/';
+        }
+        if (!path.endsWith("/")) {
+            path = path + '/';
+        }
+        return path.startsWith(actionPath);
     }
 
     /**
@@ -2036,7 +2143,7 @@ public class Functions {
      * Prepend a prefix only when there's the specified body.
      */
     public String prepend(String prefix, String body) {
-        if (body != null && body.length() > 0)
+        if (body != null && !body.isEmpty())
             return prefix + body;
         return body;
     }
@@ -2045,10 +2152,21 @@ public class Functions {
         return CrumbIssuer.all();
     }
 
-    public static String getCrumb(StaplerRequest req) {
+    /**
+     * @since 2.475
+     */
+    public static String getCrumb(StaplerRequest2 req) {
         Jenkins h = Jenkins.getInstanceOrNull();
         CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
         return issuer != null ? issuer.getCrumb(req) : "";
+    }
+
+    /**
+     * @deprecated use {@link #getCrumb(StaplerRequest2)}
+     */
+    @Deprecated
+    public static String getCrumb(StaplerRequest req) {
+        return getCrumb(req != null ? StaplerRequest.toStaplerRequest2(req) : null);
     }
 
     public static String getCrumbRequestField() {
@@ -2063,7 +2181,7 @@ public class Functions {
 
     public static Locale getCurrentLocale() {
         Locale locale = null;
-        StaplerRequest req = Stapler.getCurrentRequest();
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
         if (req != null)
             locale = req.getLocale();
         if (locale == null)
@@ -2074,12 +2192,14 @@ public class Functions {
     /**
      * Generate a series of {@code <script>} tags to include {@code script.js}
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
+     *
+     * @see hudson.console.ConsoleAnnotatorFactory.RootAction
      */
     public static String generateConsoleAnnotationScriptAndStylesheet() {
-        String cp = Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH;
+        String cp = Stapler.getCurrentRequest2().getContextPath() + Jenkins.RESOURCE_PATH;
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
-            String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
+            String path = cp + "/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
                 buf.append("<script src='").append(path).append("/script.js'></script>");
             if (f.hasStylesheet())
@@ -2129,7 +2249,7 @@ public class Functions {
         }
 
         /* Mask from Extended Read */
-        StaplerRequest req = Stapler.getCurrentRequest();
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
         if (o instanceof Secret || Secret.BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE) {
             if (req != null) {
                 Item item = req.findAncestorObject(Item.class);
@@ -2175,7 +2295,7 @@ public class Functions {
             int firstPeriod = part.indexOf(".");
             return slash > 0 && firstPeriod > 0 && slash < firstPeriod;
         }).collect(Collectors.joining(" "));
-        if (StringUtils.isBlank(views)) {
+        if (views == null || views.isBlank()) {
             // fallback to full thread name if there are no apparent views
             return threadName;
         }
@@ -2223,8 +2343,19 @@ public class Functions {
         return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
     }
 
+    @Deprecated
     public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {
-        return Stapler.getCurrentRequest().createJavaScriptProxy(new RenderOnDemandClosure(context, attributesToCapture));
+        return Stapler.getCurrentRequest2().createJavaScriptProxy(new RenderOnDemandClosure(context, attributesToCapture));
+    }
+
+    /**
+     * Called from renderOnDemand.jelly to generate the parameters for the proxy object generation.
+     *
+     * @since 2.475
+     */
+    @Restricted(NoExternalUse.class)
+    public static StaplerRequest2.RenderOnDemandParameters createRenderOnDemandProxyParameters(JellyContext context, String attributesToCapture) {
+        return Stapler.getCurrentRequest2().createJavaScriptProxyParameters(new RenderOnDemandClosure(context, attributesToCapture));
     }
 
     public static String getCurrentDescriptorByNameUrl() {
@@ -2233,18 +2364,18 @@ public class Functions {
 
     public static String setCurrentDescriptorByNameUrl(String value) {
         String o = getCurrentDescriptorByNameUrl();
-        Stapler.getCurrentRequest().setAttribute("currentDescriptorByNameUrl", value);
+        Stapler.getCurrentRequest2().setAttribute("currentDescriptorByNameUrl", value);
 
         return o;
     }
 
     public static void restoreCurrentDescriptorByNameUrl(String old) {
-        Stapler.getCurrentRequest().setAttribute("currentDescriptorByNameUrl", old);
+        Stapler.getCurrentRequest2().setAttribute("currentDescriptorByNameUrl", old);
     }
 
     public static List<String> getRequestHeaders(String name) {
         List<String> r = new ArrayList<>();
-        Enumeration e = Stapler.getCurrentRequest().getHeaders(name);
+        Enumeration e = Stapler.getCurrentRequest2().getHeaders(name);
         while (e.hasMoreElements()) {
             r.add(e.nextElement().toString());
         }
@@ -2299,13 +2430,17 @@ public class Functions {
         double number = size;
         if (number >= 1024) {
             number = number / 1024;
-            measure = "KB";
+            measure = "KiB";
             if (number >= 1024) {
                 number = number / 1024;
-                measure = "MB";
+                measure = "MiB";
                 if (number >= 1024) {
                     number = number / 1024;
-                    measure = "GB";
+                    measure = "GiB";
+                    if (number >= 1024) {
+                        number = number / 1024;
+                        measure = "TiB";
+                    }
                 }
             }
         }
@@ -2335,6 +2470,7 @@ public class Functions {
      * Advertises the minimum set of HTTP headers that assist programmatic
      * discovery of Jenkins.
      */
+    @SuppressFBWarnings(value = "UC_USELESS_VOID_METHOD", justification = "TODO needs triage")
     public static void advertiseHeaders(HttpServletResponse rsp) {
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) {
@@ -2342,6 +2478,14 @@ public class Functions {
             rsp.setHeader("X-Jenkins", Jenkins.VERSION);
             rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
         }
+    }
+
+    /**
+     * @deprecated use {@link #advertiseHeaders(HttpServletResponse)}
+     */
+    @Deprecated
+    public static void advertiseHeaders(javax.servlet.http.HttpServletResponse rsp) {
+        advertiseHeaders(HttpServletResponseWrapper.toJakartaHttpServletResponse(rsp));
     }
 
     @Restricted(NoExternalUse.class) // for actions.jelly and ContextMenu.add
@@ -2383,7 +2527,7 @@ public class Functions {
     }
 
     private static @NonNull String filterIconNameClasses(@NonNull String classNames) {
-        return Arrays.stream(StringUtils.split(classNames, ' '))
+        return Arrays.stream(classNames.split(" "))
             .filter(className -> className.startsWith("icon-"))
             .collect(Collectors.joining(" "));
     }
@@ -2418,7 +2562,7 @@ public class Functions {
             return iconGuess;
         }
 
-        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
         String rootURL = currentRequest.getContextPath();
         Icon iconMetadata = tryGetIcon(iconGuess);
 
@@ -2454,5 +2598,64 @@ public class Functions {
     @Restricted(NoExternalUse.class)
     public static String generateItemId() {
         return String.valueOf(Math.floor(Math.random() * 3000));
+    }
+
+    /**
+     * Returns a grouped list of Detail objects for the given Actionable object
+     */
+    @Restricted(NoExternalUse.class)
+    public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object) {
+        ExtensionList<DetailGroup> groupsExtensionList = ExtensionList.lookup(DetailGroup.class);
+        List<ExtensionComponent<DetailGroup>> components = groupsExtensionList.getComponents();
+        Map<String, Double> detailGroupOrdinal = components.stream()
+                .collect(Collectors.toMap(
+                        (k) -> k.getInstance().getClass().getName(),
+                        ExtensionComponent::ordinal
+                ));
+
+        Map<DetailGroup, List<Detail>> result = new TreeMap<>(Comparator.comparingDouble(d -> detailGroupOrdinal.get(d.getClass().getName())));
+        for (DetailFactory taf : DetailFactory.factoriesFor(object.getClass())) {
+            List<Detail> details = taf.createFor(object);
+            details.forEach(e -> result.computeIfAbsent(e.getGroup(), k -> new ArrayList<>()).add(e));
+        }
+
+        for (Map.Entry<DetailGroup, List<Detail>> entry : result.entrySet()) {
+            List<Detail> detailList = entry.getValue();
+            detailList.sort(Comparator.comparingInt(Detail::getOrder));
+        }
+
+        return result;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static ExtensionList<SearchFactory> getSearchFactories() {
+        return SearchFactory.all();
+    }
+
+    /**
+     * @param keyboardShortcut the shortcut to be translated
+     * @return the translated shortcut, e.g. CMD+K to ⌘+K for macOS, CTRL+K for Windows
+     */
+    @Restricted(NoExternalUse.class)
+    public static String translateModifierKeysForUsersPlatform(String keyboardShortcut) {
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse2());
+        String userAgent = currentRequest.getHeader("User-Agent");
+        if (userAgent != null) {
+          List<String> platformsThatUseCommand = List.of("MAC", "IPHONE", "IPAD");
+          boolean useCmdKey = platformsThatUseCommand.stream().anyMatch(e -> userAgent.toUpperCase().contains(e));
+          return keyboardShortcut.replace("CMD", useCmdKey ? "⌘" : "CTRL");
+        } else {
+          return keyboardShortcut;
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String formatMessage(String format, Object args) {
+        if (format == null) {
+            return args.toString();
+        }
+
+        return MessageFormat.format(format, args);
     }
 }

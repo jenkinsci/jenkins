@@ -24,9 +24,8 @@
 
 package jenkins.model.experimentalflags;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.InvisibleAction;
@@ -34,18 +33,25 @@ import hudson.model.RootAction;
 import hudson.model.User;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class UserExperimentalFlagsPropertyTest {
+@WithJenkins
+class UserExperimentalFlagsPropertyTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testAnonymous() throws Exception {
+    void testAnonymous() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -59,7 +65,7 @@ public class UserExperimentalFlagsPropertyTest {
     }
 
     @Test
-    public void testWithoutProperty() throws Exception {
+    void testWithoutProperty() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.getOrCreateByIdOrFullName("user");
@@ -75,7 +81,7 @@ public class UserExperimentalFlagsPropertyTest {
     }
 
     @Test
-    public void testPropertyWithDefault() throws Exception {
+    void testPropertyWithDefault() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.getOrCreateByIdOrFullName("user");
@@ -95,7 +101,7 @@ public class UserExperimentalFlagsPropertyTest {
     }
 
     @Test
-    public void testPropertyWithValues() throws Exception {
+    void testPropertyWithValues() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.getOrCreateByIdOrFullName("user");
@@ -115,7 +121,7 @@ public class UserExperimentalFlagsPropertyTest {
     }
 
     @Test
-    public void testPropertyWithNull() throws Exception {
+    void testPropertyWithNull() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.getOrCreateByIdOrFullName("user");
@@ -145,6 +151,7 @@ public class UserExperimentalFlagsPropertyTest {
 
     @TestExtension
     public static final class Test1UserExperimentalFlag extends BooleanUserExperimentalFlag {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public Test1UserExperimentalFlag() {
             super("test1.flag");
         }
@@ -167,6 +174,7 @@ public class UserExperimentalFlagsPropertyTest {
 
     @TestExtension
     public static final class Test2UserExperimentalFlag extends BooleanUserExperimentalFlag {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public Test2UserExperimentalFlag() {
             super("test2.flag");
         }
@@ -190,6 +198,7 @@ public class UserExperimentalFlagsPropertyTest {
 
     @TestExtension
     public static final class Test3UserExperimentalFlag extends BooleanUserExperimentalFlag {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public Test3UserExperimentalFlag() {
             super("test3.flag");
         }

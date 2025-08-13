@@ -29,8 +29,8 @@ THE SOFTWARE.
     <st:setHeader name="Expires" value="0" />
     <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
     <!-- needed for cli -->
-    <j:if test="${request.servletPath=='/' || request.servletPath==''}">
-      ${h.advertiseHeaders(response)}
+    <j:if test="${request2.servletPath=='/' || request2.servletPath==''}">
+      ${h.advertiseHeaders(response2)}
       <j:forEach var="pd" items="${h.pageDecorators}">
         <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
       </j:forEach>
@@ -39,27 +39,27 @@ THE SOFTWARE.
       needed to generate a session if non exists,
       without it we would add ";jsessionid=" to the url which will result in a 404
     -->
-    <j:set var="_" value="${request.getSession()}"/>
+    <j:set var="_" value="${request2.getSession()}"/>
     <!-- get default/common page variable -->
     ${h.initPageVariables(context)}
     <x:doctype name="html" />
     <!-- needed for the redirect after login -->
-    <j:set var="from" value="${error ? request.session.getAttribute('from') : request.getParameter('from')}"/>
+    <j:set var="from" value="${error ? request2.session.getAttribute('from') : request2.getParameter('from')}"/>
     <!-- in case of error we want to surround the form elements with an error hint -->
     <j:set var="inputClass" value="${error ? 'jenkins-input--error' : ''}"/>
     <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
     <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
 
     <!-- real deal starting here -->
-    <html lang="${request.getLocale().toLanguageTag()}">
+    <html lang="${request2.getLocale().toLanguageTag()}">
       <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
-        <title>${%signIn} [Jenkins]</title>
+        <title>${%signIn} - Jenkins</title>
         <!-- we do not want bots on this page -->
         <meta name="ROBOTS" content="NOFOLLOW" />
         <!-- mobile friendly layout -->
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <!-- css styling, will fallback to default implementation -->
-        <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
+        <st:include it="${simpleDecorator}" page="simple-head.jelly" />
       </head>
       <body class="app-sign-in-register">
         <j:choose>
@@ -67,10 +67,12 @@ THE SOFTWARE.
             <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
           </j:when>
           <j:otherwise>
-            <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
+            <st:include it="${simpleDecorator}" page="simple-branding.jelly" />
             <main id="main-panel" class="app-sign-in-register__content">
               <div class="app-sign-in-register__content-inner">
-                <h1>Sign in to Jenkins</h1>
+                <h1>${%Sign in to Jenkins}</h1>
+
+                <st:include it="${simpleDecorator}" page="simple-header.jelly" />
 
                 <form name="login" action="${it.securityRealm.authenticationGatewayUrl}"
                     method="post">

@@ -277,12 +277,6 @@ public class RegistryKey implements AutoCloseable {
     }
 
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        dispose();
-    }
-
     public void dispose() {
         if (handle != 0)
             Advapi32.INSTANCE.RegCloseKey(handle);

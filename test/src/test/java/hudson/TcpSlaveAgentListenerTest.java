@@ -3,25 +3,31 @@ package hudson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.TextPage;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.Page;
+import org.htmlunit.TextPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class TcpSlaveAgentListenerTest {
+@WithJenkins
+class TcpSlaveAgentListenerTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void headers() throws Exception {
+    void headers() throws Exception {
         WebClient wc = r.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 
@@ -35,17 +41,17 @@ public class TcpSlaveAgentListenerTest {
     }
 
     @Test
-    public void diagnostics() throws Exception {
+    void diagnostics() throws Exception {
         r.getInstance().setSlaveAgentPort(0);
         int p = r.jenkins.getTcpSlaveAgentListener().getPort();
         WebClient wc = r.createWebClient();
 
-        TextPage text = wc.getPage(new URL("http://localhost:" + p + "/"));
+        TextPage text = wc.getPage(new URI("http://localhost:" + p + "/").toURL());
         String c = text.getContent();
         assertThat(c, containsString(Jenkins.VERSION));
 
         wc.setThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.getPage(new URL("http://localhost:" + p + "/xxx"));
+        Page page = wc.getPage(new URI("http://localhost:" + p + "/xxx").toURL());
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, page.getWebResponse().getStatusCode());
     }
 }

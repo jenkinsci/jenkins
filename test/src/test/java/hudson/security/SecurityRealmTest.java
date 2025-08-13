@@ -26,13 +26,8 @@ package hudson.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.Cookie;
 import hudson.model.Descriptor;
 import hudson.security.captcha.CaptchaSupport;
 import java.io.OutputStream;
@@ -41,24 +36,35 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Random;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.CookieManager;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.Cookie;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.jelly.JellyFacet;
 
-public class SecurityRealmTest {
+@WithJenkins
+class SecurityRealmTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-43852")
-    public void testCacheHeaderInResponse() throws Exception {
+    void testCacheHeaderInResponse() throws Exception {
         SecurityRealm securityRealm = j.createDummySecurityRealm();
         j.jenkins.setSecurityRealm(securityRealm);
 
@@ -98,7 +104,7 @@ public class SecurityRealmTest {
     }
 
     @Test
-    public void many_sessions_logout() throws Exception {
+    void many_sessions_logout() throws Exception {
         final String WILL_NOT_BE_SENT = "/will-not-be-sent";
         final String LOCALHOST = "localhost";
         final String JSESSIONID = "JSESSIONID";
@@ -147,15 +153,15 @@ public class SecurityRealmTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void getPostLogOutUrl() throws Exception {
+    void getPostLogOutUrl() throws Exception {
         OldSecurityRealm osr = new OldSecurityRealm();
         j.jenkins.setSecurityRealm(osr);
         j.executeOnServer(() -> {
             assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS));
-            assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS2));
+            assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest2(), Jenkins.ANONYMOUS2));
             osr.special = true;
             assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS));
-            assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS2));
+            assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest2(), Jenkins.ANONYMOUS2));
             return null;
         });
     }
@@ -164,7 +170,9 @@ public class SecurityRealmTest {
     public static final class OldSecurityRealm extends SecurityRealm {
         boolean special;
 
-        @DataBoundConstructor public OldSecurityRealm() {}
+        @SuppressWarnings("checkstyle:redundantmodifier")
+        @DataBoundConstructor
+        public OldSecurityRealm() {}
 
         @Override
         public SecurityRealm.SecurityComponents createSecurityComponents() {
@@ -182,7 +190,7 @@ public class SecurityRealmTest {
 
     @Test
     @Issue("JENKINS-65288")
-    public void submitPossibleWithoutJellyTrace() throws Exception {
+    void submitPossibleWithoutJellyTrace() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage htmlPage = wc.goTo("configureSecurity");
         HtmlForm configForm = htmlPage.getFormByName("config");
@@ -194,7 +202,7 @@ public class SecurityRealmTest {
      */
     @Test
     @Issue("JENKINS-65288")
-    public void submitPossibleWithJellyTrace() throws Exception {
+    void submitPossibleWithJellyTrace() throws Exception {
         boolean currentValue = JellyFacet.TRACE;
         try {
             JellyFacet.TRACE = true;

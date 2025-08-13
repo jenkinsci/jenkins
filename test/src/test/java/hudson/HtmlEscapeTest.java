@@ -1,26 +1,33 @@
 package hudson;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests the HTML escape behaviour.
  *
  * @author Kohsuke Kawaguchi
  */
-public class HtmlEscapeTest {
+@WithJenkins
+class HtmlEscapeTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void test1() throws Exception {
+    void test1() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/foo");
         // literal HTML in message resources are allowed
         assertEquals("test", p.getElementById("d1").getTextContent());

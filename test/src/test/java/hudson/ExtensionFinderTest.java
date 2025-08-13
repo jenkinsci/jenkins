@@ -26,45 +26,52 @@ package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.ImplementedBy;
 import hudson.model.PageDecorator;
+import jakarta.inject.Inject;
+import jakarta.inject.Qualifier;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import javax.inject.Inject;
-import javax.inject.Qualifier;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ExtensionFinderTest {
+@WithJenkins
+class ExtensionFinderTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     /**
      * It's OK for some extensions to fail to load. The system needs to tolerate that.
      */
     @Test
-    public void failingInstance() {
+    void failingInstance() {
         FailingExtension i = PageDecorator.all().get(FailingExtension.class);
-        assertNull("Instantiation should have failed", i);
-        assertTrue("Instantiation should have been attempted", FailingExtension.error);
+        assertNull(i, "Instantiation should have failed");
+        assertTrue(FailingExtension.error, "Instantiation should have been attempted");
     }
 
     @TestExtension("failingInstance")
     public static class FailingExtension extends PageDecorator {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public FailingExtension() {
             super(FailingExtension.class);
             error = true;
@@ -75,14 +82,11 @@ public class ExtensionFinderTest {
     }
 
 
-
-
-
     /**
      * Extensions are Guice components, so it should support injection.
      */
     @Test
-    public void injection() {
+    void injection() {
         InjectingExtension i = PageDecorator.all().get(InjectingExtension.class);
         assertNotNull(i.foo);
         assertEquals("lion king", i.value);
@@ -96,7 +100,7 @@ public class ExtensionFinderTest {
         @Inject @LionKing
         String value;
 
-
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public InjectingExtension() {
             super(InjectingExtension.class);
         }
@@ -104,6 +108,32 @@ public class ExtensionFinderTest {
         public static class Foo {}
     }
 
+    /**
+     * Extensions are Guice components, so it should support injection.
+     */
+    @Test
+    void legacyInjection() {
+        LegacyInjectingExtension i = PageDecorator.all().get(LegacyInjectingExtension.class);
+        assertNotNull(i.foo);
+        assertEquals("lion king", i.value);
+    }
+
+    @TestExtension("legacyInjection")
+    public static class LegacyInjectingExtension extends PageDecorator {
+        @javax.inject.Inject
+        Foo foo;
+
+        @javax.inject.Inject
+        @LionKing
+        String value;
+
+        @SuppressWarnings("checkstyle:redundantmodifier")
+        public LegacyInjectingExtension() {
+            super(LegacyInjectingExtension.class);
+        }
+
+        public static class Foo {}
+    }
 
     @Retention(RetentionPolicy.RUNTIME) @Qualifier
     public @interface LionKing {}
@@ -114,7 +144,9 @@ public class ExtensionFinderTest {
         protected void configure() {
             TestEnvironment environment = TestEnvironment.get();
             // JMH benchmarks do not initialize TestEnvironment, so check for null
-            if (environment != null && ExtensionFinderTest.class.getName().equals(environment.description().getClassName()) && "injection".equals(environment.description().getMethodName())) {
+            if (environment != null
+                    && ExtensionFinderTest.class.getName().equals(environment.description().getClassName())
+                    && ("injection".equals(environment.description().getMethodName()) || "legacyInjection".equals(environment.description().getMethodName()))) {
                 bind(String.class).annotatedWith(LionKing.class).toInstance("lion king");
             }
         }
@@ -127,13 +159,14 @@ public class ExtensionFinderTest {
      * One failure in binding definition shouldn't prevent Jenkins from booting.
      */
     @Test
-    public void errorRecovery() {
+    void errorRecovery() {
         BrokenExtension i = PageDecorator.all().get(BrokenExtension.class);
         assertNull(i);
     }
 
     @TestExtension("errorRecovery")
     public static class BrokenExtension extends PageDecorator {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public BrokenExtension() {
             super(InjectingExtension.class);
 
@@ -142,7 +175,7 @@ public class ExtensionFinderTest {
     }
 
     @Test
-    public void injectMutualRecursion() {
+    void injectMutualRecursion() {
         A a = ExtensionList.lookupSingleton(A.class);
         B b = ExtensionList.lookupSingleton(B.class);
         assertEquals(b, a.b);
@@ -161,7 +194,7 @@ public class ExtensionFinderTest {
 
     @Issue("JENKINS-60816")
     @Test
-    public void injectInterface() {
+    void injectInterface() {
         assertThat(ExtensionList.lookupSingleton(X.class).xface, instanceOf(Impl.class));
     }
 

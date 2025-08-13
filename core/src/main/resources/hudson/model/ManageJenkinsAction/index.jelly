@@ -28,11 +28,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
-    <j:if test="${taskTags==null}">
-      <st:include page="sidepanel.jelly" it="${app}" />
-      <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-    </j:if>
-
     <l:main-panel>
       <l:app-bar title="${%Manage Jenkins}">
         <l:search-bar placeholder="${%Search settings}" id="settings-search-bar" />
@@ -52,62 +47,58 @@ THE SOFTWARE.
           <h2 class="jenkins-section__title">${category.key.label}</h2>
           ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.addHeader(category.key.label) : null}
           <div class="jenkins-section__items">
-          <j:forEach var="m" items="${category.value}">
-            <j:if test="${m.iconFileName != null}">
-              <div class="jenkins-section__item">
-              <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
-              <j:set var="iconSrc" value="${h.tryGetIconPath(m.iconFileName, context)}"/>
-              <j:set var="iconXml">
-                <l:icon src="${m.iconFileName}" />
-              </j:set>
-              ${taskTags!=null and attrs.contextMenu!='false' ? it.addContextMenuItem(taskTags, m.urlName, iconSrc, iconXml, m.displayName, m.requiresPOST, m.requiresConfirmation, m.badge) : null}
-              <j:choose>
-                <j:when test="${m.requiresConfirmation}">
-                  <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
-                    <div class="jenkins-section__item__icon" aria-hidden="true">
-                      <l:icon src="${m.iconFileName}" class="icon" />
-                    </div>
-                    <dl>
-                      <dt>${m.displayName}</dt>
-                      <dd><j:out value="${m.description}"/></dd>
-                      <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
-                    </dl>
-                  </l:confirmationLink>
-                </j:when>
-                <j:when test="${m.requiresPOST}">
-                  <f:link href="${m.urlName}" post="${m.requiresPOST}">
-                    <div class="jenkins-section__item__icon" aria-hidden="true">
-                      <l:icon src="${m.iconFileName}" class="icon" />
-                    </div>
-                    <dl>
-                      <dt>${m.displayName}</dt>
-                      <dd><j:out value="${m.description}"/></dd>
-                      <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
-                    </dl>
-                  </f:link>
-                </j:when>
-                <j:otherwise>
-                  <a href="${m.urlName}">
-                    <div class="jenkins-section__item__icon" aria-hidden="true">
-                      <l:icon src="${m.iconFileName}" class="icon" />
-                      <j:set var="badge" value="${m.badge}"/>
-                      <j:if test="${badge != null}">
-                        <div tooltip="${badge.tooltip}" class="jenkins-section__item__icon__badge alert-${badge.severity}">
-                          ${badge.text}
+            <j:forEach var="m" items="${category.value}">
+              <j:if test="${m.iconFileName != null}">
+                <div class="jenkins-section__item">
+                  <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
+                  <j:set var="iconSrc" value="${h.tryGetIconPath(m.iconFileName, context)}"/>
+                  <j:set var="sure" value="${%sure}"/>
+                  <j:set var="iconXml">
+                    <l:icon src="${m.iconFileName}" />
+                  </j:set>
+                  ${taskTags!=null and attrs.contextMenu!='false' ? it.addContextMenuItem(taskTags, m.urlName, iconSrc, iconXml, m.displayName, m.requiresPOST, m.requiresConfirmation, m.badge, sure) : null}
+                  <j:choose>
+                    <j:when test="${m.requiresConfirmation}">
+                      <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%sure}" title="${m.displayName}">
+                        <div class="jenkins-section__item__icon" aria-hidden="true">
+                          <l:icon src="${m.iconFileName}" class="icon" />
                         </div>
-                      </j:if>
-                    </div>
-                    <dl>
-                      <dt>${m.displayName}</dt>
-                      <dd><j:out value="${m.description}"/></dd>
-                      <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
-                    </dl>
-                  </a>
-                </j:otherwise>
-              </j:choose>
-              </div>
-            </j:if>
-          </j:forEach>
+                        <dl>
+                          <dt>${m.displayName}</dt>
+                          <dd><j:out value="${m.description}"/></dd>
+                          <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+                        </dl>
+                      </l:confirmationLink>
+                    </j:when>
+                    <j:when test="${m.requiresPOST}">
+                      <f:link href="${m.urlName}" post="${m.requiresPOST}">
+                        <div class="jenkins-section__item__icon" aria-hidden="true">
+                          <l:icon src="${m.iconFileName}" class="icon" />
+                        </div>
+                        <dl>
+                          <dt>${m.displayName}</dt>
+                          <dd><j:out value="${m.description}"/></dd>
+                          <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+                        </dl>
+                      </f:link>
+                    </j:when>
+                    <j:otherwise>
+                      <a href="${m.urlName}">
+                        <div class="jenkins-section__item__icon" aria-hidden="true">
+                          <l:icon src="${m.iconFileName}" class="icon" />
+                          <l:badge badge="${m.badge}" class="jenkins-section__item__icon__badge"/>
+                        </div>
+                        <dl>
+                          <dt>${m.displayName}</dt>
+                          <dd><j:out value="${m.description}"/></dd>
+                          <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+                        </dl>
+                      </a>
+                    </j:otherwise>
+                  </j:choose>
+                </div>
+              </j:if>
+            </j:forEach>
           </div>
         </section>
       </j:forEach>

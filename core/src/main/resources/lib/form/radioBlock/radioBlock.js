@@ -55,7 +55,7 @@ Behaviour.specify(
       g.buttons = [];
     }
 
-    var s = findAncestorClass(r, "radio-block-start");
+    var s = r.closest(".radio-block-start");
     s.setAttribute("ref", r.id);
 
     // find the end node
@@ -87,5 +87,5 @@ Behaviour.specify(
     r.onclick = r.onchange = function () {
       g.updateButtons();
     };
-  }
+  },
 );

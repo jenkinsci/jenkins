@@ -17,24 +17,15 @@ import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
  */
 class LazyLoadRunMapEntrySet<R> extends AbstractSet<Map.Entry<Integer, R>> {
     private final AbstractLazyLoadRunMap<R> owner;
-
-    /**
-     * Lazily loaded all entries.
-     */
-    private Set<Map.Entry<Integer, R>> all;
+    private final BuildReferenceMapAdapter<R> adapter;
 
     LazyLoadRunMapEntrySet(AbstractLazyLoadRunMap<R> owner) {
         this.owner = owner;
+        this.adapter = new BuildReferenceMapAdapter<>(owner, owner.all());
     }
 
     private synchronized Set<Map.Entry<Integer, R>> all() {
-        if (all == null)
-            all = new BuildReferenceMapAdapter<>(owner, owner.all()).entrySet();
-        return all;
-    }
-
-    synchronized void clearCache() {
-        all = null;
+        return this.adapter.entrySet();
     }
 
     @Override

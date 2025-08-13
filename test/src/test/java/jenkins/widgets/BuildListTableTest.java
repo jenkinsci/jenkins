@@ -24,26 +24,39 @@
 
 package jenkins.widgets;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.AbstractItem;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 import java.net.URI;
 import java.net.URL;
-import org.junit.Rule;
-import org.junit.Test;
+import java.util.logging.Level;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class BuildListTableTest {
+@WithJenkins
+class BuildListTableTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private LogRecorder logging = new LogRecorder().record(AbstractItem.class, Level.FINER);
+
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-19310")
-    @Test public void linksFromFolders() throws Exception {
+    @Test
+    void linksFromFolders() throws Exception {
         MockFolder d = r.createFolder("d");
         ListView v1 = new ListView("v1", r.jenkins);
         v1.add(d);
@@ -56,20 +69,20 @@ public class BuildListTableTest {
         v2.add(p);
         d.addView(v2);
         JenkinsRule.WebClient wc = r.createWebClient();
-        HtmlPage page = wc.goTo("view/v1/job/d/view/v2/builds?suppressTimelineControl=true");
+        HtmlPage page = wc.goTo("view/v1/job/d/view/v2/builds");
         assertEquals(0, wc.waitForBackgroundJavaScript(120000));
         HtmlAnchor anchor = page.getAnchorByText("d » d2 » p");
         String href = anchor.getHrefAttribute();
         URL target = URI.create(page.getUrl().toExternalForm()).resolve(href).toURL();
         wc.getPage(target);
-        assertEquals(href, r.getURL() + "view/v1/job/d/view/v2/job/d2/job/p/", target.toString());
-        page = wc.goTo("job/d/view/All/builds?suppressTimelineControl=true");
+        assertEquals(r.getURL() + "view/v1/job/d/view/v2/job/d2/job/p/", target.toString(), href);
+        page = wc.goTo("job/d/view/All/builds");
         assertEquals(0, wc.waitForBackgroundJavaScript(120000));
         anchor = page.getAnchorByText("d » d2 » p");
         href = anchor.getHrefAttribute();
         target = URI.create(page.getUrl().toExternalForm()).resolve(href).toURL();
         wc.getPage(target);
-        assertEquals(href, r.getURL() + "job/d/job/d2/job/p/", target.toString());
+        assertEquals(r.getURL() + "job/d/job/d2/job/p/", target.toString(), href);
     }
 
 }

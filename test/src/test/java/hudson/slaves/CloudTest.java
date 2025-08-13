@@ -4,11 +4,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Action;
 import hudson.model.Computer;
@@ -22,20 +21,30 @@ import java.util.Collections;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
 import org.acegisecurity.acls.sid.Sid;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
-import org.kohsuke.stapler.StaplerResponse;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerResponse2;
 
-public class CloudTest {
+@WithJenkins
+class CloudTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Test @WithoutJenkins @Issue("JENKINS-37616")
-    public void provisionPermissionShouldBeIndependentFromAdminister() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    @Test
+    @WithoutJenkins
+    @Issue("JENKINS-37616")
+    void provisionPermissionShouldBeIndependentFromAdminister() {
         SidACL acl = new SidACL() {
             @Override protected Boolean hasPermission(Sid p, Permission permission) {
                 return permission == Cloud.PROVISION;
@@ -47,15 +56,16 @@ public class CloudTest {
         assertEquals(Cloud.PROVISION, Computer.PERMISSIONS.find("Provision"));
     }
 
-    @Test @Issue("JENKINS-37616")
-    public void ensureProvisionPermissionIsLoadable() {
+    @Test
+    @Issue("JENKINS-37616")
+    void ensureProvisionPermissionIsLoadable() {
         // Name introduced by JENKINS-37616
         Permission p = Permission.fromId("hudson.model.Computer.Provision");
         assertEquals("Provision", p.name);
     }
 
     @Test
-    public void ui() throws Exception {
+    void ui() throws Exception {
         ACloud aCloud = new ACloud("a", "0");
         j.jenkins.clouds.add(aCloud);
 
@@ -79,10 +89,10 @@ public class CloudTest {
     }
 
     @Test
-    public void cloudNameIsEncodedInGetUrl() {
+    void cloudNameIsEncodedInGetUrl() {
         ACloud aCloud = new ACloud("../../gibberish", "0");
 
-        assertEquals("Cloud name is encoded in Cloud#getUrl", "cloud/..%2F..%2Fgibberish/", aCloud.getUrl());
+        assertEquals("cloud/..%2F..%2Fgibberish/", aCloud.getUrl(), "Cloud name is encoded in Cloud#getUrl");
     }
 
     public static final class ACloud extends AbstractCloudImpl {
@@ -127,7 +137,7 @@ public class CloudTest {
             return "task";
         }
 
-        public void doIndex(StaplerResponse rsp) throws IOException {
+        public void doIndex(StaplerResponse2 rsp) throws IOException {
             rsp.getOutputStream().println("doIndex called");
         }
     }

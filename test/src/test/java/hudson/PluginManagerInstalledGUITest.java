@@ -24,131 +24,121 @@
 
 package hudson;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTableRow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlElementUtil;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTableRow;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestPluginManager;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 import org.xml.sax.SAXException;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class PluginManagerInstalledGUITest {
+class PluginManagerInstalledGUITest {
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule() {
-        @Override
-        public PluginManager getPluginManager() {
-            try {
-                return new TestPluginManager() {
-                    @Override
-                    protected Collection<String> loadBundledPlugins() throws Exception {
-                        try {
-                            return super.loadBundledPlugins();
-                        } finally {
-                            copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/WEB-INF/detached-plugins/matrix-auth.hpi"), "matrix-auth.jpi"); // cannot use installDetachedPlugin at this point
-                            copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/dependee-0.0.2.hpi"), "dependee.jpi");
-                            copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/depender-0.0.2.hpi"), "depender.jpi");
-                            copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/mandatory-depender-0.0.2.hpi"), "mandatory-depender.jpi");
-                        }
-                    }
-                };
-            } catch (IOException e) {
-                Assert.fail(e.getMessage());
-                return null;
-            }
-        }
-    };
+    @RegisterExtension
+    private final JenkinsSessionExtension session = new CustomPluginManagerExtension();
 
     @Issue("JENKINS-33843")
     @Test
-    public void test_enable_disable_uninstall() throws IOException, SAXException {
-        InstalledPlugins installedPlugins = new InstalledPlugins();
+    void test_enable_disable_uninstall() throws Throwable {
+        session.then(j -> {
+            InstalledPlugins installedPlugins = new InstalledPlugins(j);
 
-        InstalledPlugin matrixAuthPlugin = installedPlugins.get("matrix-auth");
-        InstalledPlugin dependeePlugin = installedPlugins.get("dependee");
-        InstalledPlugin dependerPlugin = installedPlugins.get("depender");
-        InstalledPlugin mandatoryDependerPlugin = installedPlugins.get("mandatory-depender");
+            InstalledPlugin matrixAuthPlugin = installedPlugins.get("matrix-auth");
+            InstalledPlugin dependeePlugin = installedPlugins.get("dependee");
+            InstalledPlugin dependerPlugin = installedPlugins.get("depender");
+            InstalledPlugin mandatoryDependerPlugin = installedPlugins.get("mandatory-depender");
 
-        // As a detached plugin, it is an optional dependency of others built against a newer baseline.
-        matrixAuthPlugin.assertHasNoDependents();
-        // Has a mandatory dependency:
-        dependeePlugin.assertHasDependents();
-        // Leaf plugins:
-        dependerPlugin.assertHasNoDependents();
-        mandatoryDependerPlugin.assertHasNoDependents();
+            // As a detached plugin, it is an optional dependency of others built against a newer baseline.
+            matrixAuthPlugin.assertHasNoDependents();
+            // Has a mandatory dependency:
+            dependeePlugin.assertHasDependents();
+            // Leaf plugins:
+            dependerPlugin.assertHasNoDependents();
+            mandatoryDependerPlugin.assertHasNoDependents();
 
-        // This plugin should be enabled and it should be possible to disable it
-        // because no other plugins depend on it.
-        mandatoryDependerPlugin.assertEnabled();
-        mandatoryDependerPlugin.assertEnabledStateChangeable();
-        mandatoryDependerPlugin.assertUninstallable();
+            // This plugin should be enabled and it should be possible to disable it
+            // because no other plugins depend on it.
+            mandatoryDependerPlugin.assertEnabled();
+            mandatoryDependerPlugin.assertEnabledStateChangeable();
+            mandatoryDependerPlugin.assertUninstallable();
 
-        // This plugin should be enabled, but it should not be possible to disable or uninstall it
-        // because another plugin depends on it.
-        dependeePlugin.assertEnabled();
-        dependeePlugin.assertEnabledStateNotChangeable();
-        dependeePlugin.assertNotUninstallable();
+            // This plugin should be enabled, but it should not be possible to disable or uninstall it
+            // because another plugin depends on it.
+            dependeePlugin.assertEnabled();
+            dependeePlugin.assertEnabledStateNotChangeable();
+            dependeePlugin.assertNotUninstallable();
 
-        // Disable one plugin
-        mandatoryDependerPlugin.clickEnabledWidget();
+            // Disable one plugin
+            mandatoryDependerPlugin.clickEnabledWidget();
 
-        // Now that plugin should be disabled, but it should be possible to re-enable it
-        // and it should still be uninstallable.
-        mandatoryDependerPlugin.assertNotEnabled(); // this is different to earlier
-        mandatoryDependerPlugin.assertEnabledStateChangeable();
-        mandatoryDependerPlugin.assertUninstallable();
+            // Now that plugin should be disabled, but it should be possible to re-enable it
+            // and it should still be uninstallable.
+            mandatoryDependerPlugin.assertNotEnabled(); // this is different to earlier
+            mandatoryDependerPlugin.assertEnabledStateChangeable();
+            mandatoryDependerPlugin.assertUninstallable();
 
-        // The dependee plugin should still be enabled, but it should now be possible to disable it because
-        // the mandatory depender plugin is no longer enabled. Should still not be possible to uninstall it.
-        // Note that the depender plugin does not block its disablement.
-        dependeePlugin.assertEnabled();
-        dependeePlugin.assertEnabledStateChangeable(); // this is different to earlier
-        dependeePlugin.assertNotUninstallable();
-        dependerPlugin.assertEnabled();
+            // The dependee plugin should still be enabled, but it should now be possible to disable it because
+            // the mandatory depender plugin is no longer enabled. Should still not be possible to uninstall it.
+            // Note that the depender plugin does not block its disablement.
+            dependeePlugin.assertEnabled();
+            dependeePlugin.assertEnabledStateChangeable(); // this is different to earlier
+            dependeePlugin.assertNotUninstallable();
+            dependerPlugin.assertEnabled();
 
-        // Disable the dependee plugin
-        dependeePlugin.clickEnabledWidget();
+            // Disable the dependee plugin
+            dependeePlugin.clickEnabledWidget();
 
-        // Now it should NOT be possible to change the enable state of the depender plugin because one
-        // of the plugins it depends on is not enabled.
-        mandatoryDependerPlugin.assertNotEnabled();
-        mandatoryDependerPlugin.assertEnabledStateNotChangeable();  // this is different to earlier
-        mandatoryDependerPlugin.assertUninstallable();
-        dependerPlugin.assertEnabled();
+            // Now it should NOT be possible to change the enable state of the depender plugin because one
+            // of the plugins it depends on is not enabled.
+            mandatoryDependerPlugin.assertNotEnabled();
+            mandatoryDependerPlugin.assertEnabledStateNotChangeable();  // this is different to earlier
+            mandatoryDependerPlugin.assertUninstallable();
+            dependerPlugin.assertEnabled();
 
-        // You can disable a detached plugin if there is no explicit dependency on it.
-        matrixAuthPlugin.assertEnabled();
-        matrixAuthPlugin.assertEnabledStateChangeable();
-        matrixAuthPlugin.assertUninstallable();
-        matrixAuthPlugin.clickEnabledWidget();
-        matrixAuthPlugin.assertNotEnabled();
-        matrixAuthPlugin.assertEnabledStateChangeable();
-        matrixAuthPlugin.assertUninstallable();
+            // You can disable a detached plugin if there is no explicit dependency on it.
+            matrixAuthPlugin.assertEnabled();
+            matrixAuthPlugin.assertEnabledStateChangeable();
+            matrixAuthPlugin.assertUninstallable();
+            matrixAuthPlugin.clickEnabledWidget();
+            matrixAuthPlugin.assertNotEnabled();
+            matrixAuthPlugin.assertEnabledStateChangeable();
+            matrixAuthPlugin.assertUninstallable();
+        });
     }
 
-    private class InstalledPlugins {
+    private static class InstalledPlugins {
 
         private final List<InstalledPlugin> installedPlugins;
 
-        private InstalledPlugins() throws IOException, SAXException {
+        private InstalledPlugins(JenkinsRule jenkinsRule) throws IOException, SAXException {
             JenkinsRule.WebClient webClient = jenkinsRule.createWebClient();
             HtmlPage installedPage = webClient.goTo("pluginManager/installed");
+            final boolean healthScoresAvailable = jenkinsRule.jenkins.getUpdateCenter().isHealthScoresAvailable();
 
             // Note for debugging... simply print installedPage to get the JenkinsRule
             // Jenkins URL and then add a long Thread.sleep here. It's useful re being
@@ -159,7 +149,7 @@ public class PluginManagerInstalledGUITest {
 
             installedPlugins = new ArrayList<>();
             for (DomElement htmlTableRow : tbody.getChildElements()) {
-                installedPlugins.add(new InstalledPlugin((HtmlTableRow) htmlTableRow));
+                installedPlugins.add(new InstalledPlugin((HtmlTableRow) htmlTableRow, healthScoresAvailable));
             }
         }
 
@@ -169,18 +159,20 @@ public class PluginManagerInstalledGUITest {
                     return plugin;
                 }
             }
-            Assert.fail("No pluginManager/installed row for plugin " + pluginId);
+            fail("No pluginManager/installed row for plugin " + pluginId);
             return null;
         }
 
     }
 
-    private class InstalledPlugin {
+    private static class InstalledPlugin {
 
         private final HtmlTableRow pluginRow;
+        private final boolean hasHealth;
 
-        InstalledPlugin(HtmlTableRow pluginRow) {
+        InstalledPlugin(HtmlTableRow pluginRow, boolean hasHealth) {
             this.pluginRow = pluginRow;
+            this.hasHealth = hasHealth;
         }
 
         public String getId() {
@@ -192,18 +184,18 @@ public class PluginManagerInstalledGUITest {
         }
 
         private HtmlInput getEnableWidget() {
-            HtmlElement input = pluginRow.getCells().get(1).getElementsByTagName("input").get(0);
+            HtmlElement input = pluginRow.getCells().get(hasHealth ? 2 : 1).getElementsByTagName("input").get(0);
             return (HtmlInput) input;
         }
 
         public void assertEnabled() {
             HtmlInput enableWidget = getEnableWidget();
-            Assert.assertTrue("Plugin '" + getId() + "' is expected to be enabled.", enableWidget.isChecked());
+            assertTrue(enableWidget.isChecked(), "Plugin '" + getId() + "' is expected to be enabled.");
         }
 
         public void assertNotEnabled() {
             HtmlInput enableWidget = getEnableWidget();
-            Assert.assertFalse("Plugin '" + getId() + "' is not expected to be enabled.", enableWidget.isChecked());
+            assertFalse(enableWidget.isChecked(), "Plugin '" + getId() + "' is not expected to be enabled.");
         }
 
         public void clickEnabledWidget() throws IOException {
@@ -219,7 +211,7 @@ public class PluginManagerInstalledGUITest {
                 return;
             }
 
-            Assert.fail("The enable/disable state of plugin '" + getId() + "' cannot be changed.");
+            fail("The enable/disable state of plugin '" + getId() + "' cannot be changed.");
         }
 
         public void assertEnabledStateNotChangeable() {
@@ -230,23 +222,23 @@ public class PluginManagerInstalledGUITest {
                 return;
             }
 
-            Assert.fail("The enable/disable state of plugin '" + getId() + "' cannot be changed.");
+            fail("The enable/disable state of plugin '" + getId() + "' cannot be changed.");
         }
 
         public void assertUninstallable() {
-            Assert.assertFalse("Plugin '" + getId() + "' cannot be uninstalled.", hasDependents());
+            assertFalse(hasDependents(), "Plugin '" + getId() + "' cannot be uninstalled.");
         }
 
         public void assertNotUninstallable() {
-            Assert.assertTrue("Plugin '" + getId() + "' can be uninstalled.", hasDependents());
+            assertTrue(hasDependents(), "Plugin '" + getId() + "' can be uninstalled.");
         }
 
         public void assertHasDependents() {
-            Assert.assertTrue("Plugin '" + getId() + "' is expected to have dependents.", hasDependents());
+            assertTrue(hasDependents(), "Plugin '" + getId() + "' is expected to have dependents.");
         }
 
         public void assertHasNoDependents() {
-            Assert.assertFalse("Plugin '" + getId() + "' is expected to have no dependents.", hasDependents());
+            assertFalse(hasDependents(), "Plugin '" + getId() + "' is expected to have no dependents.");
         }
 
         private boolean hasClassName(String className) {
@@ -265,6 +257,69 @@ public class PluginManagerInstalledGUITest {
 
         private boolean hasDependents() {
             return hasClassName("has-dependents");
+        }
+    }
+
+    private static final class CustomPluginManagerExtension extends JenkinsSessionExtension {
+
+        private int port;
+        private Description description;
+
+        @Override
+        public void beforeEach(ExtensionContext context) {
+            super.beforeEach(context);
+            description = Description.createTestDescription(
+                    context.getTestClass().map(Class::getName).orElse(null),
+                    context.getTestMethod().map(Method::getName).orElse(null),
+                    context.getTestMethod().map(Method::getAnnotations).orElse(null));
+        }
+
+        @Override
+        public void then(Step s) throws Throwable {
+            CustomJenkinsRule r = new CustomJenkinsRule(getHome(), port);
+            r.apply(
+                    new Statement() {
+                        @Override
+                        public void evaluate() throws Throwable {
+                            port = r.getPort();
+                            s.run(r);
+                        }
+                    },
+                    description
+            ).evaluate();
+        }
+
+        private static final class CustomJenkinsRule extends JenkinsRule {
+
+            CustomJenkinsRule(File home, int port) {
+                with(() -> home);
+                localPort = port;
+            }
+
+            int getPort() {
+                return localPort;
+            }
+
+            @Override
+            public PluginManager getPluginManager() {
+                try {
+                    return new TestPluginManager() {
+                        @Override
+                        protected Collection<String> loadBundledPlugins() throws Exception {
+                            try {
+                                return super.loadBundledPlugins();
+                            } finally {
+                                copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/WEB-INF/detached-plugins/matrix-auth.hpi"), "matrix-auth.jpi"); // cannot use installDetachedPlugin at this point
+                                copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/dependee-0.0.2.hpi"), "dependee.jpi");
+                                copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/depender-0.0.2.hpi"), "depender.jpi");
+                                copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/mandatory-depender-0.0.2.hpi"), "mandatory-depender.jpi");
+                            }
+                        }
+                    };
+                } catch (IOException e) {
+                    return fail(e.getMessage());
+                }
+            }
         }
     }
 }

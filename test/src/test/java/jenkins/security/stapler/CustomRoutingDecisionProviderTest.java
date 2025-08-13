@@ -27,28 +27,34 @@ package jenkins.security.stapler;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import com.gargoylesoftware.htmlunit.Page;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.UnprotectedRootAction;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.Page;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 
 @Issue("SECURITY-400")
 @For(RoutingDecisionProvider.class)
-public class CustomRoutingDecisionProviderTest {
+@WithJenkins
+class CustomRoutingDecisionProviderTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @TestExtension("customRoutingWhitelistProvider")
     public static class XxxBlacklister extends RoutingDecisionProvider {
@@ -99,7 +105,7 @@ public class CustomRoutingDecisionProviderTest {
     }
 
     private static void replyOk() {
-        StaplerResponse resp = Stapler.getCurrentResponse();
+        StaplerResponse2 resp = Stapler.getCurrentResponse2();
         try {
             resp.getWriter().write("ok");
             resp.flushBuffer();
@@ -109,7 +115,7 @@ public class CustomRoutingDecisionProviderTest {
     }
 
     @Test
-    public void customRoutingWhitelistProvider() throws Exception {
+    void customRoutingWhitelistProvider() throws Exception {
         Page okPage = j.createWebClient().goTo("custom/legitGetter", null);
         assertThat(okPage.getWebResponse().getStatusCode(), is(200));
 

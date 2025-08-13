@@ -1,0 +1,52 @@
+@use "theme";
+
+// Generates a series of color override classes and their variations,
+// e.g. .jenkins-!-color-blue, .jenkins-!-color-light-blue, .jenkins-!-color-dark-blue
+@each $key, $value in theme.$colors {
+  .jenkins-\!-color-light-#{$key} {
+    --color: var(--light-#{$key});
+
+    color: var(--light-#{$key}) !important;
+  }
+  .jenkins-\!-color-#{$key} {
+    --color: var(--#{$key});
+
+    color: var(--#{$key}) !important;
+  }
+  .jenkins-\!-color-dark-#{$key} {
+    --color: var(--dark-#{$key});
+
+    color: var(--dark-#{$key}) !important;
+  }
+}
+
+@each $key, $value in theme.$semantics {
+  .jenkins-\!-#{$key}-color {
+    --color: #{$value};
+
+    color: #{$value} !important;
+  }
+}
+
+// Custom class for secondary text colors as the
+// generator above doesn't support it
+.jenkins-\!-text-color-secondary {
+  --color: var(--text-color-secondary);
+
+  color: var(--text-color-secondary) !important;
+}
+
+// Deprecated - don't use the below classes
+.greyed {
+  color: var(--text-color-secondary);
+}
+
+.redbold {
+  color: var(--red);
+  font-weight: bold;
+}
+
+.greenbold {
+  color: var(--green);
+  font-weight: bold;
+}

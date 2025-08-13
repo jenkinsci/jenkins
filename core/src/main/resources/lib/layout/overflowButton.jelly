@@ -31,16 +31,26 @@ THE SOFTWARE.
     <st:attribute name="text">
       Optional text to be displayed on the button
     </st:attribute>
+    <st:attribute name="html">
+      Optional html to be displayed on the button (only used if 'text' is not provided)
+    </st:attribute>
+
     <st:attribute name="tooltip">
       Optional tooltip of the button, defaults to 'More actions'
     </st:attribute>
     <st:attribute name="clazz">
       Additional CSS class names for the button
     </st:attribute>
+    <st:attribute name="id">
+      Optional ID for the button
+    </st:attribute>
+
+    Displays a button which when clicked displays a dropdown of the component's children
   </st:documentation>
 
   <button class="jenkins-button ${attrs.clazz}"
           tooltip="${attrs.containsKey('tooltip') ? attrs.tooltip : '%More actions'}"
+          id="${attrs.id}"
           type="button" data-dropdown="true">
     <j:choose>
       <j:when test="${attrs.containsKey('icon')}">
@@ -56,10 +66,18 @@ THE SOFTWARE.
         </div>
       </j:otherwise>
     </j:choose>
-
-    ${attrs.text}
+    <j:choose>
+      <j:when test="${attrs.text != null}">
+        ${attrs.text}
+      </j:when>
+      <j:when test="${attrs.html != null}">
+        <j:out value="${attrs.html}" />
+      </j:when>
+    </j:choose>
   </button>
   <template>
-    <d:invokeBody />
+    <div class="jenkins-dropdown">
+      <d:invokeBody />
+    </div>
   </template>
 </j:jelly>

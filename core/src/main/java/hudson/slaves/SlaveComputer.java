@@ -56,7 +56,6 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Futures;
-import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
 import hudson.util.VersionNumber;
@@ -67,6 +66,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.security.Security;
 import java.util.ArrayList;
@@ -98,8 +98,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -309,7 +309,7 @@ public class SlaveComputer extends Computer {
                     e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
                     throw e;
-                } catch (RuntimeException e) {
+                } catch (RuntimeException | Error e) {
                     e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                     throw e;
@@ -330,10 +330,11 @@ public class SlaveComputer extends Computer {
 
     @Override
     public void taskAccepted(Executor executor, Queue.Task task) {
+        LOGGER.log(Level.FINER, "Accepted {0} on {1}", new Object[] {task.toString(), executor.getOwner().getDisplayName()});
+
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener) launcher).taskAccepted(executor, task);
         }
-
         //getNode() can return null at indeterminate times when nodes go offline
         Slave node = getNode();
         if (node != null && node.getRetentionStrategy() instanceof ExecutorListener) {
@@ -343,6 +344,7 @@ public class SlaveComputer extends Computer {
 
     @Override
     public void taskStarted(Executor executor, Queue.Task task) {
+        LOGGER.log(Level.FINER, "Started {0} on {1}", new Object[] {task.toString(), executor.getOwner().getDisplayName()});
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener) launcher).taskStarted(executor, task);
         }
@@ -354,6 +356,7 @@ public class SlaveComputer extends Computer {
 
     @Override
     public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
+        LOGGER.log(Level.FINE, "Completed {0} on {1}", new Object[] {task.toString(), executor.getOwner().getDisplayName()});
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener) launcher).taskCompleted(executor, task, durationMS);
         }
@@ -365,6 +368,7 @@ public class SlaveComputer extends Computer {
 
     @Override
     public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
+        LOGGER.log(Level.FINE, "Completed with problems {0} on {1}", new Object[] {task.toString(), executor.getOwner().getDisplayName()});
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener) launcher).taskCompletedWithProblems(executor, task, durationMS, problems);
         }
@@ -383,10 +387,10 @@ public class SlaveComputer extends Computer {
     public OutputStream openLogFile() {
         try {
             log.rewind();
-            return log;
+            return decorate(log);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to create log file " + getLogFile(), e);
-            return new NullStream();
+            return OutputStream.nullOutputStream();
         }
     }
 
@@ -638,9 +642,11 @@ public class SlaveComputer extends Computer {
                 // Orderly shutdown will have null exception
                 if (cause != null) {
                     offlineCause = new ChannelTermination(cause);
-                    Functions.printStackTrace(cause, taskListener.error("Connection terminated"));
-                } else {
+                }
+                if (cause == null || cause instanceof ClosedChannelException) {
                     taskListener.getLogger().println("Connection terminated");
+                } else {
+                    Functions.printStackTrace(cause, taskListener.error("Connection terminated"));
                 }
                 closeChannel();
                 try {
@@ -785,7 +791,7 @@ public class SlaveComputer extends Computer {
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
-    public synchronized void doSubmitDescription(StaplerResponse rsp, @QueryParameter String description) throws IOException {
+    public synchronized void doSubmitDescription(StaplerResponse2 rsp, @QueryParameter String description) throws IOException {
         checkPermission(CONFIGURE);
 
         final Slave node = this.getNode();
@@ -825,7 +831,7 @@ public class SlaveComputer extends Computer {
 
     @RequirePOST
     @Override
-    public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doLaunchSlaveAgent(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         checkPermission(CONNECT);
 
         if (channel != null) {
@@ -868,23 +874,29 @@ public class SlaveComputer extends Computer {
     }
 
     @WebMethod(name = "slave-agent.jnlp") // backward compatibility
-    public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
+    public HttpResponse doSlaveAgentJnlp(StaplerRequest2 req, StaplerResponse2 res) {
         return doJenkinsAgentJnlp(req, res);
     }
 
     @WebMethod(name = "jenkins-agent.jnlp")
-    public HttpResponse doJenkinsAgentJnlp(StaplerRequest req, StaplerResponse res) {
+    public HttpResponse doJenkinsAgentJnlp(StaplerRequest2 req, StaplerResponse2 res) {
+        LOGGER.log(
+                Level.WARNING,
+                "Agent \"" + getName()
+                        + "\" is connecting with the \"-jnlpUrl\" argument, which is deprecated."
+                        + " Use \"-url\" and \"-name\" instead, potentially also passing in"
+                        + " \"-webSocket\", \"-tunnel\", and/or work directory options as needed.");
         return new EncryptedSlaveAgentJnlpFile(this, "jenkins-agent.jnlp.jelly", getName(), CONNECT);
     }
 
     class LowPermissionResponse {
         @WebMethod(name = "jenkins-agent.jnlp")
-        public HttpResponse doJenkinsAgentJnlp(StaplerRequest req, StaplerResponse res) {
+        public HttpResponse doJenkinsAgentJnlp(StaplerRequest2 req, StaplerResponse2 res) {
             return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
         }
 
         @WebMethod(name = "slave-agent.jnlp") // backward compatibility
-        public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
+        public HttpResponse doSlaveAgentJnlp(StaplerRequest2 req, StaplerResponse2 res) {
             return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
         }
     }
@@ -946,6 +958,7 @@ public class SlaveComputer extends Computer {
     }
 
     @Override
+    @SuppressFBWarnings(value = "UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR", justification = "TODO needs triage")
     protected void setNode(final Node node) {
         super.setNode(node);
         launcher = grabLauncher(node);
@@ -965,6 +978,11 @@ public class SlaveComputer extends Computer {
                 connect(false);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return nodeName != null ? super.toString() + "[" + nodeName + "]" : super.toString();
     }
 
     /**
@@ -1107,10 +1125,14 @@ public class SlaveComputer extends Computer {
             this.ringBufferSize = ringBufferSize;
         }
 
-        @Override
         @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "field is static for the reason explained in the Javadoc for LogHolder")
-        public Void call() {
+        private void setLogHandler() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
+        }
+
+        @Override
+        public Void call() {
+            setLogHandler();
 
             // avoid double installation of the handler. Inbound agents can reconnect to the controller multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,

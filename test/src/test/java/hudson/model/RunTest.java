@@ -27,49 +27,70 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.XmlFile;
+import hudson.model.listeners.SaveableListener;
+import hudson.remoting.Callable;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import jenkins.model.ArtifactManager;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-@Category(SmokeTest.class)
-public class RunTest  {
+@Tag("SmokeTest")
+@WithJenkins
+class RunTest  {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private static final Logger LOGGER = Logger.getLogger(RunTest.class.getName());
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-17935")
-    @Test public void getDynamicInvisibleTransientAction() throws Exception {
+    @Test
+    void getDynamicInvisibleTransientAction() throws Exception {
         TransientBuildActionFactory.all().add(0, new TransientBuildActionFactory() {
             @Override public Collection<? extends Action> createFor(Run target) {
                 return Collections.singleton(new Action() {
@@ -92,7 +113,8 @@ public class RunTest  {
     }
 
     @Issue("JENKINS-40281")
-    @Test public void getBadgeActions() throws Exception {
+    @Test
+    void getBadgeActions() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         assertEquals(0, b.getBadgeActions().size());
@@ -104,7 +126,8 @@ public class RunTest  {
     }
 
     @Issue("JENKINS-51819")
-    @Test public void deleteArtifactsCustom() throws Exception {
+    @Test
+    void deleteArtifactsCustom() throws Exception {
         ArtifactManagerConfiguration.get().getArtifactManagerFactories().add(new Mgr.Factory());
         FreeStyleProject p = j.createFreeStyleProject();
         j.jenkins.getWorkspaceFor(p).child("f").write("", null);
@@ -112,10 +135,35 @@ public class RunTest  {
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         b.delete();
         assertTrue(Mgr.deleted.get());
+        assertTrue(ExtensionList.lookupSingleton(SaveableListenerImpl.class).deleted);
+    }
+
+    @TestExtension("deleteArtifactsCustom")
+    public static class SaveableListenerImpl extends SaveableListener {
+        boolean deleted;
+
+        @Override
+        public void onDeleted(Saveable o, XmlFile file) {
+            deleted = true;
+        }
+    }
+
+    @Issue("JENKINS-73835")
+    @Test
+    void buildsMayNotBeDeletedWhileRunning() throws Exception {
+        var p = j.createFreeStyleProject();
+        p.getBuildersList().add(new SleepBuilder(999999));
+        var b = p.scheduleBuild2(0).waitForStart();
+        var ex = assertThrows(IOException.class, b::delete);
+        assertThat(ex.getMessage(), containsString("Unable to delete " + b + " because it is still running"));
+        b.getExecutor().interrupt();
+        j.waitForCompletion(b);
+        b.delete(); // Works fine.
     }
 
     @Issue("SECURITY-1902")
-    @Test public void preventXssInBadgeTooltip() throws Exception {
+    @Test
+    void preventXssInBadgeTooltip() throws Exception {
         j.jenkins.setQuietPeriod(0);
         /*
          * The scenario to trigger is to have a build protected from deletion because of an upstream protected build.
@@ -138,7 +186,7 @@ public class RunTest  {
         FreeStyleBuild upBuild = j.buildAndAssertSuccess(up);
         j.waitUntilNoActivity();
         CustomBuild downBuild = down.getBuilds().getLastBuild();
-        assertNotNull("The down build must exist, otherwise the up's one is not protected.", downBuild);
+        assertNotNull(downBuild, "The down build must exist, otherwise the up's one is not protected.");
 
         // updating the name before the build is problematic under Windows
         // so we are updating internal stuff manually
@@ -149,6 +197,9 @@ public class RunTest  {
 
         // keeping the minimum to validate it's working and it's not exploitable as there are some modifications
         // like adding double quotes
+        // Some test flakes due to JavaScript objects not yet available
+        // Wait 2 seconds before checking the assertion
+        Thread.sleep(2003);
         ensureXssIsPrevented(up, "Down", "<img");
     }
 
@@ -157,7 +208,7 @@ public class RunTest  {
         HtmlPage htmlPage = wc.goTo(upProject.getUrl());
 
         // trigger the tooltip display
-        htmlPage.executeJavaScript("document.querySelector('#buildHistory table .build-badge img')._tippy.show()");
+        htmlPage.executeJavaScript("document.querySelector('#jenkins-build-history .app-builds-container__item__inner__controls svg')._tippy.show()");
         wc.waitForBackgroundJavaScript(500);
         ScriptResult result = htmlPage.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();
@@ -177,6 +228,7 @@ public class RunTest  {
     }
 
     public static class CustomBuild extends Build<FullNameChangingProject, CustomBuild> {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public CustomBuild(FullNameChangingProject job) throws IOException {
             super(job);
         }
@@ -193,6 +245,7 @@ public class RunTest  {
             this.virtualName = virtualName;
         }
 
+        @NonNull
         @Override
         public String getName() {
             if (virtualName != null) {
@@ -238,13 +291,114 @@ public class RunTest  {
         }
 
         public static final class Factory extends ArtifactManagerFactory {
-            @DataBoundConstructor public Factory() {}
+            @SuppressWarnings("checkstyle:redundantmodifier") @DataBoundConstructor public Factory() {}
 
             @Override public ArtifactManager managerFor(Run<?, ?> build) {
                 return new Mgr();
             }
 
             @TestExtension("deleteArtifactsCustom") public static final class DescriptorImpl extends ArtifactManagerFactoryDescriptor {}
+        }
+    }
+
+    @Test
+    void slowArtifactManager() throws Exception {
+        ArtifactManagerConfiguration.get().getArtifactManagerFactories().add(new SlowMgr.Factory());
+        var p = j.createFreeStyleProject();
+        j.jenkins.getWorkspaceFor(p).child("f").write("", null);
+        p.getPublishersList().add(new ArtifactArchiver("f"));
+        var b = j.buildAndAssertSuccess(p);
+        assertThat(b.getArtifactManager(), isA(SlowMgr.class));
+        var wc = j.createWebClient();
+        wc.getOptions().setJavaScriptEnabled(false);
+        wc.getPage(b);
+        wc.getPage(p);
+    }
+
+    public static final class SlowMgr extends ArtifactManager {
+        static final AtomicBoolean deleted = new AtomicBoolean();
+
+        @Override public boolean delete() {
+            return !deleted.getAndSet(true);
+        }
+
+        @Override public void onLoad(Run<?, ?> build) {}
+
+        @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String, String> artifacts) {
+            LOGGER.info(() -> "Pretending to archive " + artifacts);
+        }
+
+        @Override public VirtualFile root() {
+            return new VirtualFile() {
+                @Override public <V> V run(Callable<V, IOException> callable) throws IOException {
+                    LOGGER.info("Sleeping");
+                    try {
+                        Thread.sleep(Long.MAX_VALUE);
+                    } catch (InterruptedException x) {
+                        throw new IOException(x);
+                    }
+                    throw new IllegalStateException();
+                }
+
+                @Override public String getName() {
+                    return "";
+                }
+
+                @Override public URI toURI() {
+                    return URI.create("no://where");
+                }
+
+                @Override public VirtualFile getParent() {
+                    return null;
+                }
+
+                @Override public boolean isDirectory() throws IOException {
+                    return true;
+                }
+
+                @Override public boolean isFile() throws IOException {
+                    return false;
+                }
+
+                @Override public boolean exists() throws IOException {
+                    return true;
+                }
+
+                @Override public VirtualFile[] list() throws IOException {
+                    return new VirtualFile[0];
+                }
+
+                @Override public VirtualFile child(String name) {
+                    return null;
+                }
+
+                @Override public long length() throws IOException {
+                    return 0;
+                }
+
+                @Override public long lastModified() throws IOException {
+                    return 0;
+                }
+
+                @Override public boolean canRead() throws IOException {
+                    return true;
+                }
+
+                @Override public InputStream open() throws IOException {
+                    throw new FileNotFoundException();
+                }
+            };
+        }
+
+        public static final class Factory extends ArtifactManagerFactory {
+            @SuppressWarnings("checkstyle:redundantmodifier") @DataBoundConstructor public Factory() {}
+
+            @Override public ArtifactManager managerFor(Run<?, ?> build) {
+                LOGGER.info(() -> "Picking manager for " + build);
+                return new SlowMgr();
+            }
+
+            @TestExtension("slowArtifactManager") public static final class DescriptorImpl extends ArtifactManagerFactoryDescriptor {}
         }
     }
 

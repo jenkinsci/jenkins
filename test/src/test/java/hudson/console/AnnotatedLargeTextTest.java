@@ -27,7 +27,8 @@ package hudson.console;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.matchesRegex;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.MarkupText;
 import java.io.ByteArrayOutputStream;
@@ -36,26 +37,30 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 @For({AnnotatedLargeText.class, ConsoleNote.class, ConsoleAnnotationOutputStream.class, PlainTextConsoleOutputStream.class})
-public class AnnotatedLargeTextTest {
+@WithJenkins
+class AnnotatedLargeTextTest {
 
-    @ClassRule
-    public static JenkinsRule r = new JenkinsRule();
+    private final LogRecorder logging = new LogRecorder().record(ConsoleAnnotationOutputStream.class, Level.FINE).record(PlainTextConsoleOutputStream.class, Level.FINE).capture(100);
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(ConsoleAnnotationOutputStream.class, Level.FINE).capture(100);
+    private static JenkinsRule r;
+
+    @BeforeAll
+    static void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void smokes() throws Exception {
+    void smokes() throws Exception {
         ByteBuffer buf = new ByteBuffer();
         PrintStream ps = new PrintStream(buf, true, StandardCharsets.UTF_8);
         ps.print("Some text.\n");
@@ -72,7 +77,7 @@ public class AnnotatedLargeTextTest {
 
     @Issue("SECURITY-382")
     @Test
-    public void oldDeserialization() throws Exception {
+    void oldDeserialization() throws Exception {
         ByteBuffer buf = new ByteBuffer();
         buf.write(("hello"
                         + ConsoleNote.PREAMBLE_STR
@@ -110,7 +115,7 @@ public class AnnotatedLargeTextTest {
 
     @Issue("SECURITY-382")
     @Test
-    public void badMac() throws Exception {
+    void badMac() throws Exception {
         ByteBuffer buf = new ByteBuffer();
         buf.write(("Go back to "
                         + ConsoleNote.PREAMBLE_STR
@@ -136,6 +141,29 @@ public class AnnotatedLargeTextTest {
                         + "UT45ZekCpys9xWo8J3KxMDkycCWk5qXXpLhw8BcWpRTwiDkk5VYlqifk5iXr"
                         + "h9cUpSZl25dUcQghWaBM4QGGcYAAYxMDAwVBUAGZwkDq35Rfn4JABmN28qcA"
                         + "AAA\\u001B[0myour home.\\n\"")); // TODO assert that this is IOException: MAC mismatch
+    }
+
+    @Issue("JENKINS-61452")
+    @Test
+    void corruptedNote() throws Exception {
+        ByteBuffer buf = new ByteBuffer();
+        PrintStream ps = new PrintStream(buf, true, StandardCharsets.UTF_8);
+        ps.print("Some text.\n");
+        ps.print("Go back to " + TestNote.encodeTo("/root", "your home") + ".\n");
+        ps.print("More text.\n");
+        String original = buf.toString();
+        String corrupted = original.replace("+", "\u0000");
+        buf = new ByteBuffer();
+        buf.write(corrupted.getBytes());
+        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        text.writeLogTo(0, baos);
+        assertThat(baos.toString(StandardCharsets.UTF_8), matchesRegex("Some text[.]\nGo back to .*your home[.]\nMore text[.]\n"));
+        assertThat(logging.getMessages(), hasItem(matchesRegex("Failed to skip annotation from .+")));
+        StringWriter w = new StringWriter();
+        text.writeHtmlTo(0, w);
+        assertThat(w.toString(), matchesRegex("Some text[.]\nGo back to .*your home[.]\nMore text[.]\n"));
+        assertThat(logging.getMessages(), hasItem(matchesRegex("Failed to resurrect annotation from .+")));
     }
 
     /** Simplified version of {@link HyperlinkNote}. */

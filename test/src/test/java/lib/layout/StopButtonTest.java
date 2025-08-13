@@ -24,36 +24,43 @@
 
 package lib.layout;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
 import hudson.util.HttpResponses;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlElementUtil;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 
-public class StopButtonTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class StopButtonTest {
 
     private static final String hrefPayload = "\",document.title='hacked',\"";
     private static final String postPayload = "\",document.title='hacked',\"";
 
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
     @Test
-    public void noInjectionArePossible() throws Exception {
+    void noInjectionArePossible() throws Exception {
         TestRootAction testParams = j.jenkins.getExtensionList(UnprotectedRootAction.class).get(TestRootAction.class);
         assertNotNull(testParams);
 
@@ -143,7 +150,7 @@ public class StopButtonTest {
         }
 
         @WebMethod(name = "submit")
-        public HttpResponse doSubmit(StaplerRequest request) {
+        public HttpResponse doSubmit(StaplerRequest2 request) {
             return HttpResponses.plainText("method:" + request.getMethod());
         }
     }

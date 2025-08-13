@@ -25,43 +25,65 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.XmlFile;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.Node;
+import hudson.model.Saveable;
 import hudson.model.Slave;
+import hudson.model.listeners.SaveableListener;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.RetentionStrategy;
+import hudson.slaves.SlaveComputer;
 import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.jvnet.hudson.test.recipes.LocalData;
 
-public class NodesTest {
+@WithJenkins
+class NodesTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
     @Issue("JENKINS-50599")
-    public void addNodeShouldFailAtomically() throws Exception {
+    void addNodeShouldFailAtomically() throws Exception {
         InvalidNode node = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
         IOException e = assertThrows(
-                "Adding the node should have thrown an exception during serialization",
                 IOException.class,
-                () -> r.jenkins.addNode(node));
+                () -> r.jenkins.addNode(node),
+                "Adding the node should have thrown an exception during serialization");
         String className = InvalidNode.class.getName();
         assertThat("The exception should be from failing to serialize the node",
                 e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
@@ -71,14 +93,14 @@ public class NodesTest {
 
     @Test
     @Issue("JENKINS-50599")
-    public void addNodeShouldFailAtomicallyWhenReplacingNode() throws Exception {
+    void addNodeShouldFailAtomicallyWhenReplacingNode() throws Exception {
         Node oldNode = r.createSlave("foo", "", null);
         r.jenkins.addNode(oldNode);
         InvalidNode newNode = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
         IOException e = assertThrows(
-                "Adding the node should have thrown an exception during serialization",
                 IOException.class,
-                () -> r.jenkins.addNode(newNode));
+                () -> r.jenkins.addNode(newNode),
+                "Adding the node should have thrown an exception during serialization");
         String className = InvalidNode.class.getName();
         assertThat("The exception should be from failing to serialize the node",
                 e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
@@ -87,7 +109,7 @@ public class NodesTest {
     }
 
     @Test
-    public void addNodeShouldReplaceExistingNode() throws Exception {
+    void addNodeShouldReplaceExistingNode() throws Exception {
         Node oldNode = r.createSlave("foo", "", null);
         r.jenkins.addNode(oldNode);
         Node newNode = r.createSlave("foo", "", null);
@@ -97,6 +119,10 @@ public class NodesTest {
         assertEquals(0, l.deleted);
         assertEquals(1, l.updated);
         assertEquals(1, l.created);
+        var saveableListener = ExtensionList.lookupSingleton(SaveableListenerImpl.class);
+        assertEquals(0, saveableListener.deleted);
+        r.jenkins.removeNode(newNode);
+        assertEquals(1, saveableListener.deleted);
     }
 
     @TestExtension("addNodeShouldReplaceExistingNode")
@@ -120,9 +146,19 @@ public class NodesTest {
         }
     }
 
+    @TestExtension("addNodeShouldReplaceExistingNode")
+    public static final class SaveableListenerImpl extends SaveableListener {
+        int deleted;
+
+        @Override
+        public void onDeleted(Saveable o, XmlFile file) {
+            deleted++;
+        }
+    }
+
     @Test
     @Issue("JENKINS-56403")
-    public void replaceNodeShouldRemoveOldNode() throws Exception {
+    void replaceNodeShouldRemoveOldNode() throws Exception {
         Node oldNode = r.createSlave("foo", "", null);
         Node newNode = r.createSlave("foo-new", "", null);
         r.jenkins.addNode(oldNode);
@@ -133,13 +169,71 @@ public class NodesTest {
 
     @Test
     @Issue("JENKINS-56403")
-    public void replaceNodeShouldNotRemoveIdenticalOldNode() throws Exception {
+    void replaceNodeShouldNotRemoveIdenticalOldNode() throws Exception {
         Node oldNode = r.createSlave("foo", "", null);
         Node newNode = r.createSlave("foo", "", null);
         r.jenkins.addNode(oldNode);
         r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
         r.jenkins.getNodesObject().load();
         assertNotNull(r.jenkins.getNode("foo"));
+    }
+
+    @Test
+    @Issue("JENKINS-33704")
+    void replacingSecondNodeIsLocal() throws Exception {
+        DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
+        var retentionStrategyA = new MockRetentionStrategy();
+        nodeA.setRetentionStrategy(retentionStrategyA);
+        r.jenkins.addNode(nodeA);
+        assertThat(retentionStrategyA.checkCount, equalTo(0));
+        DumbSlave nodeB = r.createSlave("nodeB", "temp", null);
+        var retentionStrategyB = new MockRetentionStrategy();
+        nodeB.setRetentionStrategy(retentionStrategyB);
+        r.jenkins.addNode(nodeB);
+        assertThat(retentionStrategyA.checkCount, equalTo(0));
+        assertThat(retentionStrategyB.checkCount, equalTo(0));
+        Jenkins.get().getNodesObject().replaceNode(nodeA, nodeA);
+        assertThat(retentionStrategyB.checkCount, equalTo(0));
+    }
+
+    @Test
+    @Issue("JENKINS-33704")
+    void removingSecondNodeIsLocal() throws Exception {
+        DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
+        var retentionStrategyA = new MockRetentionStrategy();
+        nodeA.setRetentionStrategy(retentionStrategyA);
+        r.jenkins.addNode(nodeA);
+        assertThat(retentionStrategyA.checkCount, equalTo(0));
+        DumbSlave nodeB = r.createSlave("nodeB", "temp", null);
+        var retentionStrategyB = new MockRetentionStrategy();
+        nodeB.setRetentionStrategy(retentionStrategyB);
+        r.jenkins.addNode(nodeB);
+        assertThat(retentionStrategyA.checkCount, equalTo(0));
+        assertThat(retentionStrategyB.checkCount, equalTo(0));
+        r.jenkins.removeNode(nodeA);
+        assertThat(retentionStrategyB.checkCount, equalTo(0));
+    }
+
+    @Test
+    @Issue("JENKINS-33704")
+    void changingBuiltInNodeDoesntChangeOtherNodes() throws Exception {
+        DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
+        var retentionStrategyA = new MockRetentionStrategy();
+        nodeA.setRetentionStrategy(retentionStrategyA);
+        r.jenkins.addNode(nodeA);
+        assertThat(retentionStrategyA.checkCount, equalTo(0));
+        r.jenkins.setNumExecutors(1);
+        assertThat(retentionStrategyA.checkCount, equalTo(0));
+    }
+
+    public static class MockRetentionStrategy extends RetentionStrategy.Always {
+        private int checkCount = 0;
+
+        @Override
+        public long check(SlaveComputer c) {
+            checkCount++;
+            return super.check(c);
+        }
     }
 
     private static class InvalidNode extends Slave {
@@ -153,14 +247,14 @@ public class NodesTest {
 
     @Test
     @Issue("SECURITY-2424")
-    public void cannotCreateNodeWithTrailingDot_withoutOtherNode() throws Exception {
+    void cannotCreateNodeWithTrailingDot_withoutOtherNode() throws Exception {
         assertThat(r.jenkins.getNodes(), hasSize(0));
 
         DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
         Failure e = assertThrows(
-                "Adding the node should have thrown an exception during checkGoodName",
                 Failure.class,
-                () -> r.jenkins.addNode(node));
+                () -> r.jenkins.addNode(node),
+                "Adding the node should have thrown an exception during checkGoodName");
         assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
 
         assertThat(r.jenkins.getNodes(), hasSize(0));
@@ -168,16 +262,16 @@ public class NodesTest {
 
     @Test
     @Issue("SECURITY-2424")
-    public void cannotCreateNodeWithTrailingDot_withExistingNode() throws Exception {
+    void cannotCreateNodeWithTrailingDot_withExistingNode() throws Exception {
         assertThat(r.jenkins.getNodes(), hasSize(0));
         r.createSlave("nodeA", "", null);
         assertThat(r.jenkins.getNodes(), hasSize(1));
 
         DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
         Failure e = assertThrows(
-                "Adding the node should have thrown an exception during checkGoodName",
                 Failure.class,
-                () -> r.jenkins.addNode(node));
+                () -> r.jenkins.addNode(node),
+                "Adding the node should have thrown an exception during checkGoodName");
         assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
 
         assertThat(r.jenkins.getNodes(), hasSize(1));
@@ -185,7 +279,7 @@ public class NodesTest {
 
     @Test
     @Issue("SECURITY-2424")
-    public void cannotCreateNodeWithTrailingDot_exceptIfEscapeHatchIsSet() throws Exception {
+    void cannotCreateNodeWithTrailingDot_exceptIfEscapeHatchIsSet() throws Exception {
         String propName = Jenkins.NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP;
         String initialValue = System.getProperty(propName);
         System.setProperty(propName, "false");
@@ -202,6 +296,100 @@ public class NodesTest {
             } else {
                 System.setProperty(propName, initialValue);
             }
+        }
+    }
+
+    @Test
+    @LocalData
+    void vetoLoad() {
+        assertNull(Jenkins.get().getNode("one-node"), "one-node should not have been loaded because vetoed by VetoLoadingNodes");
+    }
+
+    @TestExtension("vetoLoad")
+    public static class VetoLoadingNodes extends NodeListener {
+        @Override
+        protected boolean allowLoad(@NonNull Node node) {
+            // Don't allow loading any node.
+            return false;
+        }
+    }
+
+    @Test
+    void listenersCalledOnSetNodes() throws URISyntaxException, IOException, Descriptor.FormException {
+        var agentA = new DumbSlave("nodeA", "temp", r.createComputerLauncher(null));
+        var agentB = new DumbSlave("nodeB", "temp", r.createComputerLauncher(null));
+        var agentA2 = new DumbSlave("nodeA", "temp2", r.createComputerLauncher(null));
+        Jenkins.get().setNodes(List.of(agentA, agentB));
+        assertThat(CheckSetNodes.created, containsInAnyOrder("nodeA", "nodeB"));
+        assertThat(CheckSetNodes.updated, empty());
+        assertThat(CheckSetNodes.deleted, empty());
+        Jenkins.get().setNodes(List.of(agentA2));
+        assertThat(CheckSetNodes.created, containsInAnyOrder("nodeA", "nodeB"));
+        assertThat(CheckSetNodes.updated, contains(new DumbSlaveNameAndRemoteFSMatcher(new DumbSlavePair(agentA, agentA2))));
+        assertThat(CheckSetNodes.deleted, contains("nodeB"));
+        Jenkins.get().setNodes(List.of());
+        assertThat(CheckSetNodes.created, containsInAnyOrder("nodeA", "nodeB"));
+        assertThat(CheckSetNodes.updated, contains(new DumbSlaveNameAndRemoteFSMatcher(new DumbSlavePair(agentA, agentA2))));
+        assertThat(CheckSetNodes.deleted, containsInAnyOrder("nodeA", "nodeB"));
+    }
+
+    private record DumbSlavePair(DumbSlave oldNode, DumbSlave newNode) {
+        @Override
+        public String toString() {
+            return "NodePair{" +
+                    "oldNode=" + toStringNode(oldNode) +
+                    ", newNode=" + toStringNode(newNode) +
+                    '}';
+        }
+
+        private String toStringNode(DumbSlave node) {
+            return "(name=" + node.getNodeName() + ",remoteFS=" + node.getRemoteFS() + ")";
+        }
+    }
+
+    @TestExtension("listenersCalledOnSetNodes")
+    public static class CheckSetNodes extends NodeListener {
+        private static final List<String> created = new ArrayList<>();
+        private static final List<DumbSlavePair> updated = new ArrayList<>();
+        private static final List<String> deleted = new ArrayList<>();
+
+        @Override
+        protected void onCreated(@NonNull Node node) {
+            node.getRootDir();
+            created.add(node.getNodeName());
+        }
+
+        @Override
+        protected void onUpdated(@NonNull Node oldOne, @NonNull Node newOne) {
+            if (oldOne instanceof DumbSlave oldDumbSlave && newOne instanceof DumbSlave newDumbSlave) {
+                updated.add(new DumbSlavePair(oldDumbSlave, newDumbSlave));
+            }
+        }
+
+        @Override
+        protected void onDeleted(@NonNull Node node) {
+            deleted.add(node.getNodeName());
+        }
+    }
+
+    private static class DumbSlaveNameAndRemoteFSMatcher extends TypeSafeMatcher<DumbSlavePair> {
+        private final DumbSlavePair expected;
+
+        DumbSlaveNameAndRemoteFSMatcher(DumbSlavePair expected) {
+            this.expected = expected;
+        }
+
+        @Override
+        protected boolean matchesSafely(DumbSlavePair dumbSlavePair) {
+            return expected.oldNode.getNodeName().equals(dumbSlavePair.oldNode.getNodeName())
+                    && expected.oldNode.getRemoteFS().equals(dumbSlavePair.oldNode.getRemoteFS())
+                    && expected.newNode.getNodeName().equals(dumbSlavePair.newNode.getNodeName())
+                    && expected.newNode.getRemoteFS().equals(dumbSlavePair.newNode.getRemoteFS());
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("NodePair(").appendValue(expected).appendText(")");
         }
     }
 }

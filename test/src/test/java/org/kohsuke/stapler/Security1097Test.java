@@ -1,30 +1,37 @@
 package org.kohsuke.stapler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Extension;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import jakarta.servlet.ServletException;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
-import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.json.SubmittedForm;
 
-public class Security1097Test {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class Security1097Test {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testPostWorks() throws Exception {
+    void testPostWorks() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         final HtmlPage htmlPage1 = webClient.goTo("security1097/post1");
         j.submit(htmlPage1.getFormByName("config"));
@@ -34,7 +41,7 @@ public class Security1097Test {
     }
 
     @Test
-    public void testGet1Fails() throws Exception {
+    void testGet1Fails() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         final HtmlPage htmlPage = webClient.goTo("security1097/get1");
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(htmlPage.getFormByName("config")));
@@ -42,7 +49,7 @@ public class Security1097Test {
     }
 
     @Test
-    public void testGet2Fails() throws Exception {
+    void testGet2Fails() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         final HtmlPage htmlPage = webClient.goTo("security1097/get2");
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(htmlPage.getFormByName("config")));
@@ -50,7 +57,7 @@ public class Security1097Test {
     }
 
     @Test
-    public void testGetWorksWithEscapeHatch() throws Exception {
+    void testGetWorksWithEscapeHatch() throws Exception {
         final Field allowed_http_verbs_for_forms = RequestImpl.class.getDeclaredField("ALLOWED_HTTP_VERBS_FOR_FORMS");
         allowed_http_verbs_for_forms.setAccessible(true);
         try {
@@ -74,7 +81,7 @@ public class Security1097Test {
         }
 
         /* Deliberate CSRF vulnerability */
-        public void doConfigSubmit1(StaplerRequest req) throws ServletException {
+        public void doConfigSubmit1(StaplerRequest2 req) throws ServletException {
             req.getSubmittedForm();
         }
 

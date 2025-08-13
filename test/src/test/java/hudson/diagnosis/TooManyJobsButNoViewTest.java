@@ -4,14 +4,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Item;
 import hudson.model.ListView;
@@ -19,29 +15,38 @@ import hudson.model.View;
 import java.io.IOException;
 import java.net.URL;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.ElementNotFoundException;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class TooManyJobsButNoViewTest {
+@WithJenkins
+class TooManyJobsButNoViewTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
     private TooManyJobsButNoView mon;
 
-    @Before public void setUp() {
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
         mon = AdministrativeMonitor.all().get(TooManyJobsButNoView.class);
     }
 
     /**
      * Shouldn't be active at the beginning
      */
-    @Test public void initialState() throws Exception {
+    @Test
+    void initialState() throws Exception {
         verifyNoForm();
     }
 
@@ -53,7 +58,8 @@ public class TooManyJobsButNoViewTest {
     /**
      * Once we have enough jobs, it should kick in
      */
-    @Test public void activated() throws Exception {
+    @Test
+    void activated() throws Exception {
         for (int i = 0; i <= TooManyJobsButNoView.THRESHOLD; i++)
             r.createFreeStyleProject();
 
@@ -63,7 +69,7 @@ public class TooManyJobsButNoViewTest {
 
         // this should take us to the new view page
         URL url = r.submit(f, "yes").getUrl();
-        assertTrue(url.toExternalForm(), url.toExternalForm().endsWith("/newView"));
+        assertTrue(url.toExternalForm().endsWith("/newView"), url.toExternalForm());
 
         // since we didn't create a view, if we go back, we should see the warning again
         p = r.createWebClient().goTo("manage");
@@ -76,7 +82,7 @@ public class TooManyJobsButNoViewTest {
     }
 
     @Test
-    public void systemReadNoViewAccessVerifyNoForm() throws Exception {
+    void systemReadNoViewAccessVerifyNoForm() throws Exception {
         final String READONLY = "readonly";
 
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
@@ -101,7 +107,7 @@ public class TooManyJobsButNoViewTest {
     }
 
     @Test
-    public void systemReadVerifyForm() throws Exception {
+    void systemReadVerifyForm() throws Exception {
         final String READONLY = "readonly";
 
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());

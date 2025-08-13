@@ -28,7 +28,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
@@ -38,19 +37,26 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class HyperlinkNoteTest {
+@WithJenkins
+class HyperlinkNoteTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-53016")
     @Test
-    public void textWithNewlines() throws Exception {
+    void textWithNewlines() throws Exception {
         String url = r.getURL().toString() + "test";
         String noteText = "\nthis string\nhas newline\r\ncharacters\n\r";
         String input = HyperlinkNote.encodeTo(url, noteText);
@@ -64,7 +70,7 @@ public class HyperlinkNoteTest {
 
     @Issue("JENKINS-53016")
     @Test
-    public void textWithNewlinesModelHyperlinkNote() throws Exception {
+    void textWithNewlinesModelHyperlinkNote() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         String noteText = "\nthis string\nhas newline\r\ncharacters\n\r";
         String input = ModelHyperlinkNote.encodeTo(p, noteText);
@@ -78,7 +84,7 @@ public class HyperlinkNoteTest {
     }
 
     @Test
-    public void textWithSingleQuote() throws Exception {
+    void textWithSingleQuote() throws Exception {
         FreeStyleProject upstream = r.createFreeStyleProject("upstream");
         r.createFreeStyleProject("d0wnstr3'am");
         upstream.getPublishersList().add(new BuildTrigger("d0wnstr3'am", Result.SUCCESS));

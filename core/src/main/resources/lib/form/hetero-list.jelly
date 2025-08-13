@@ -107,8 +107,6 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
-  <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
-
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
   <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
     <!-- display existing items -->
@@ -156,7 +154,8 @@ THE SOFTWARE.
 
     <j:if test="${!readOnlyMode}">
       <div>
-        <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
+        <button type="button" class="jenkins-button hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"><l:icon src="symbol-add"/>${attrs.addCaption?:'%Add'}
+        </button>
       </div>
     </j:if>
   </div>

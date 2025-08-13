@@ -1,8 +1,7 @@
 package jenkins.security;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
 import hudson.security.UserMayOrMayNotExistException2;
@@ -10,9 +9,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -25,12 +26,18 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class LastGrantedAuthoritiesPropertyTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class LastGrantedAuthoritiesPropertyTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void basicFlow() throws Exception {
+    void basicFlow() throws Exception {
         j.jenkins.setSecurityRealm(new TestSecurityRealm());
 
         // login, and make sure it leaves the LastGrantedAuthoritiesProperty object
@@ -43,7 +50,7 @@ public class LastGrantedAuthoritiesPropertyTest {
         assertAuthorities(u.impersonate2(), "alice:authenticated:development:us");
 
         // visiting the configuration page shouldn't change authorities
-        HtmlPage pg = wc.goTo("user/alice/configure");
+        HtmlPage pg = wc.goTo("user/alice/account/");
         j.submit(pg.getFormByName("config"));
 
         p = u.getProperty(LastGrantedAuthoritiesProperty.class);

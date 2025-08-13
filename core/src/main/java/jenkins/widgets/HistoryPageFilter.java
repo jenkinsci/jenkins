@@ -30,9 +30,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.ParameterValue;
-import hudson.model.ParametersAction;
-import hudson.model.Queue;
-import hudson.model.Run;
 import hudson.search.UserSearchProperty;
 import hudson.util.Iterators;
 import hudson.widgets.HistoryWidget;
@@ -42,11 +39,14 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import jenkins.model.HistoricalBuild;
 import jenkins.model.queue.QueueItem;
 
 /**
  * History page filter.
- *
+ * @param <T> typically {@link HistoricalBuild}
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class HistoryPageFilter<T> {
@@ -56,21 +56,22 @@ public class HistoryPageFilter<T> {
     private Long olderThan;
     private String searchString;
 
-    // Need to use different Lists for QueueItem and Runs because
+    // Need to use different Lists for QueueItem and HistoricalBuilds because
     // we need access to them separately in the jelly files for rendering.
     public final List<HistoryPageEntry<QueueItem>> queueItems = new ArrayList<>();
-    public final List<HistoryPageEntry<Run>> runs = new ArrayList<>();
+    public final List<HistoryPageEntry<HistoricalBuild>> runs = new ArrayList<>();
 
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+    @SuppressFBWarnings(value = {"PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, justification = "Preserve API compatibility; read by Stapler")
     public boolean hasUpPage = false; // there are newer builds than on this page
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+    @SuppressFBWarnings(value = {"PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, justification = "Preserve API compatibility; read by Stapler")
     public boolean hasDownPage = false; // there are older builds than on this page
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+    @SuppressFBWarnings(value = {"PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, justification = "Preserve API compatibility; read by Stapler")
     public long nextBuildNumber;
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public HistoryWidget widget;
 
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public long newestOnPage = Long.MIN_VALUE; // see updateNewestOldest()
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public long oldestOnPage = Long.MAX_VALUE; // see updateNewestOldest()
 
     /**
@@ -241,13 +242,9 @@ public class HistoryPageFilter<T> {
     }
 
     private long getNextBuildNumber(@NonNull Object entry) {
-        if (entry instanceof QueueItem) {
-            Queue.Task task = ((QueueItem) entry).getTask();
-            if (task instanceof Job) {
-                return ((Job) task).getNextBuildNumber();
-            }
-        } else if (entry instanceof Run) {
-            return ((Run) entry).getParent().getNextBuildNumber();
+        // TODO refactor into method on HistoryWidget
+        if (widget != null && widget.owner instanceof Job job) {
+            return job.getNextBuildNumber();
         }
 
         // TODO maybe this should be an error?
@@ -260,12 +257,13 @@ public class HistoryPageFilter<T> {
         updateNewestOldest(entry.getEntryId());
     }
 
-    private void addRun(Run run) {
-        HistoryPageEntry<Run> entry = new HistoryPageEntry<>(run);
+    private void addRun(HistoricalBuild run) {
+        HistoryPageEntry<HistoricalBuild> entry = new HistoryPageEntry<>(run);
         // Assert that runs have been added in descending order
-        if (runs.size() > 0) {
+        if (!runs.isEmpty()) {
             if (entry.getEntryId() > runs.get(runs.size() - 1).getEntryId()) {
-                throw new IllegalStateException("Runs were out of order");
+                throw new IllegalStateException("Cannot add newer " + run + " to descending-order list " +
+                    runs.stream().map(HistoryPageEntry::getEntry).collect(Collectors.toList()));
             }
         }
         runs.add(entry);
@@ -287,8 +285,7 @@ public class HistoryPageFilter<T> {
             }
             addQueueItem(item);
             return true;
-        } else if (entry instanceof Run) {
-            Run run = (Run) entry;
+        } else if (entry instanceof HistoricalBuild run) {
             if (searchString != null && !fitsSearchParams(run)) {
                 return false;
             }
@@ -321,7 +318,7 @@ public class HistoryPageFilter<T> {
         return false;
     }
 
-    private boolean fitsSearchParams(@NonNull Run run) {
+    private boolean fitsSearchParams(@NonNull HistoricalBuild run) {
         if (searchString == null) {
             return true;
         }
@@ -339,8 +336,8 @@ public class HistoryPageFilter<T> {
         } else if (run instanceof AbstractBuild && fitsSearchBuildVariables((AbstractBuild) run)) {
             return true;
         } else {
-            ParametersAction parametersAction = run.getAction(ParametersAction.class);
-            if (parametersAction != null && fitsSearchBuildParameters(parametersAction)) {
+            List<ParameterValue> parameters = run.getParameterValues();
+            if (fitsSearchBuildParameters(parameters)) {
                 return true;
             }
         }
@@ -371,16 +368,16 @@ public class HistoryPageFilter<T> {
 
     private boolean fitsSearchBuildVariables(AbstractBuild<?, ?> runAsBuild) {
         Map<String, String> buildVariables = runAsBuild.getBuildVariables();
-        for (String paramsValues : buildVariables.values()) {
-            if (fitsSearchString(paramsValues)) {
+        Set<String> sensitiveBuildVariables = runAsBuild.getSensitiveBuildVariables();
+        for (Map.Entry<String, String> param : buildVariables.entrySet()) {
+            if (!sensitiveBuildVariables.contains(param.getKey()) && fitsSearchString(param.getValue())) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean fitsSearchBuildParameters(ParametersAction parametersAction) {
-        List<ParameterValue> parameters = parametersAction.getParameters();
+    private boolean fitsSearchBuildParameters(List<ParameterValue> parameters) {
         for (ParameterValue parameter : parameters) {
             if (!parameter.isSensitive() && fitsSearchString(parameter.getValue())) {
                 return true;

@@ -1,32 +1,38 @@
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
-import javax.inject.Inject;
-import org.junit.Rule;
-import org.junit.Test;
+import jakarta.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
-public class TextAreaTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class TextAreaTest {
 
     @Inject
     public TestBuilder.DescriptorImpl d;
 
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
     @Test
     @Issue("JENKINS-19457")
-    public void validation() throws Exception {
+    void validation() throws Exception {
         j.jenkins.getInjector().injectMembers(this);
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder());
@@ -37,6 +43,7 @@ public class TextAreaTest {
 
     public static class TestBuilder extends Builder {
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public TestBuilder() {}
 
@@ -73,7 +80,7 @@ public class TextAreaTest {
 
     @Issue("JENKINS-27505")
     @Test
-    public void text() throws Exception {
+    void text() throws Exception {
         {
             String TEXT_TO_TEST = "some\nvalue\n";
             FreeStyleProject p = j.createFreeStyleProject();
@@ -108,6 +115,7 @@ public class TextAreaTest {
 
         private String text;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public TextareaTestBuilder(String text) {
             this.text = text;

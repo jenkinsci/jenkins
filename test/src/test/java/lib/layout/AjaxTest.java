@@ -24,23 +24,32 @@
 
 package lib.layout;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlLink;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import jenkins.widgets.ExecutorsWidget;
+import jenkins.widgets.HasWidgetHelper;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlLink;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.jelly.JellyFacet;
 
-public class AjaxTest {
+@WithJenkins
+class AjaxTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-21254")
-    @Test public void rejectedLinks() throws Exception {
+    @Test
+    void rejectedLinks() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         JenkinsRule.WebClient wc = r.createWebClient();
@@ -58,9 +67,9 @@ public class AjaxTest {
 
     @Test
     @Issue("JENKINS-65288")
-    public void ajaxPageRenderingPossibleWithoutJellyTrace() throws Exception {
-        JenkinsRule.WebClient wc = r.createWebClient();
-        HtmlPage htmlPage = wc.goTo("ajaxExecutors");
+    void ajaxPageRenderingPossibleWithoutJellyTrace() throws Exception {
+        JenkinsRule.WebClient wc = r.createWebClient().withJavaScriptEnabled(false);
+        HtmlPage htmlPage = wc.goTo(getExecutorsWidgetAjaxViewUrl());
         r.assertGoodStatus(htmlPage);
     }
 
@@ -69,16 +78,20 @@ public class AjaxTest {
      */
     @Test
     @Issue("JENKINS-65288")
-    public void ajaxPageRenderingPossibleWithJellyTrace() throws Exception {
+    void ajaxPageRenderingPossibleWithJellyTrace() throws Exception {
         boolean currentValue = JellyFacet.TRACE;
         try {
             JellyFacet.TRACE = true;
 
-            JenkinsRule.WebClient wc = r.createWebClient();
-            HtmlPage htmlPage = wc.goTo("ajaxExecutors");
+            JenkinsRule.WebClient wc = r.createWebClient().withJavaScriptEnabled(false);
+            HtmlPage htmlPage = wc.goTo(getExecutorsWidgetAjaxViewUrl());
             r.assertGoodStatus(htmlPage);
         } finally {
             JellyFacet.TRACE = currentValue;
         }
+    }
+
+    private String getExecutorsWidgetAjaxViewUrl() {
+        return HasWidgetHelper.getWidget(r.jenkins.getPrimaryView(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax";
     }
 }

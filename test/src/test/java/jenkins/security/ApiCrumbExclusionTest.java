@@ -24,40 +24,47 @@
 
 package jenkins.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
 import java.io.IOException;
 import java.net.URL;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlFormUtil;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.xml.sax.SAXException;
 
-public class ApiCrumbExclusionTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class ApiCrumbExclusionTest {
 
     private WebClient wc;
 
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
     @Test
     @Issue("JENKINS-22474")
-    public void callUsingApiTokenDoesNotRequireCSRFToken() throws Exception {
+    void callUsingApiTokenDoesNotRequireCSRFToken() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setCrumbIssuer(null);
         User foo = User.getOrCreateByIdOrFullName("foo");
@@ -108,7 +115,7 @@ public class ApiCrumbExclusionTest {
     }
 
     private void checkWeCanChangeMyDescription(int expectedCode) throws IOException, SAXException {
-        HtmlPage page = wc.goTo("me/configure");
+        HtmlPage page = wc.goTo("me/account/");
         HtmlForm form = page.getFormByName("config");
         form.getTextAreaByName("_.description").setText("random description: " + Math.random());
 

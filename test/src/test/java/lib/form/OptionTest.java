@@ -24,26 +24,29 @@
 
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.ExtensionList;
 import hudson.model.RootAction;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests for lib/form/option.jelly
  */
-public class OptionTest {
+@WithJenkins
+class OptionTest {
     private static final int MODE_JELLY_REGULAR = 0;
     private static final int MODE_JELLY_FORCE_RAW = 1;
 
@@ -53,12 +56,16 @@ public class OptionTest {
     private static final int MODE_XML_ESCAPE = 2;
     private static final int MODE_NATIVE_OPTION = 3;
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("SECURITY-624")
-    public void optionsAreCorrectlyEscaped() throws Exception {
+    void optionsAreCorrectlyEscaped() throws Exception {
         checkNonDangerousOutputCorrect_simple();
         checkNonDangerousOutputCorrect_advanced();
         checkDangerousOutputNotActive();
@@ -216,7 +223,7 @@ public class OptionTest {
                             String bodyContainsExpected, String valueContainsExpected,
                             boolean checkExactCharacters,
                             boolean withValueTrue, boolean withValueFalse) throws Exception {
-        UsingJellyView view = j.jenkins.getExtensionList(UsingJellyView.class).get(0);
+        UsingJellyView view = ExtensionList.lookupFirst(UsingJellyView.class);
         view.setMode(mode);
         view.setInjection(msgToInject);
 
@@ -242,7 +249,7 @@ public class OptionTest {
                              String bodyContainsExpected, String valueContainsExpected,
                              boolean checkExactCharacters,
                              boolean withValueTrue, boolean withValueFalse) throws Exception {
-        UsingGroovyView view = j.jenkins.getExtensionList(UsingGroovyView.class).get(0);
+        UsingGroovyView view = ExtensionList.lookupFirst(UsingGroovyView.class);
         view.setMode(mode);
         view.setInjection(msgToInject);
 
@@ -278,7 +285,7 @@ public class OptionTest {
             assertEquals(-1, indexOfScript);
         } else {
             // in this mode, we check the content as displayed to the user, converting all the escaped characters to
-            // their un-escaped equivalent, done by com.gargoylesoftware.htmlunit.html.HtmlSerializer#cleanUp(String)
+            // their un-escaped equivalent, done by org.htmlunit.html.HtmlSerializer#cleanUp(String)
 
             HtmlElement document = page.getDocumentElement();
             DomNodeList<HtmlElement> elements = document.getElementsByTagName("option");
@@ -286,16 +293,16 @@ public class OptionTest {
 
             HtmlOption option = (HtmlOption) elements.get(0);
 
-            // without that check, the getValueAttribute could return getText if the value is not present
+            // without that check, the getValue could return getText if the value is not present
             assertNotEquals(DomElement.ATTRIBUTE_NOT_DEFINED, option.getAttribute("value"));
 
             assertTrue(
-                    "Value attribute does not contain the expected value",
-                    option.getValueAttribute().contains(valueContainsExpected)
+                    option.getValueAttribute().contains(valueContainsExpected),
+                    "Value attribute does not contain the expected value"
             );
             assertTrue(
-                    "Body content of the option does not contain the expected value",
-                    option.getText().contains(bodyContainsExpected)
+                    option.getText().contains(bodyContainsExpected),
+                    "Body content of the option does not contain the expected value"
             );
         }
     }

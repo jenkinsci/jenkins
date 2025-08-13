@@ -27,23 +27,24 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.title} : ${path}">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
-    <l:breadcrumb title="${%Workspace}" />
+    <l:breadcrumb title="${it.title}" />
     <l:main-panel>
       <h1><l:breakable value="${it.title}"/></h1>
       <div class="dirTree">
       <!-- parent path -->
         <div class="parentPath">
-          <form action="${backPath}" method="get">
+          <form>
             <a href="${topPath}">${it.owner.name}</a> /
             <j:forEach var="p" items="${parentPath}">
               <a href="${p.href}">${p.title}</a>
               /
             </j:forEach>
-            <input type="text" name="pattern" value="${pattern}" class="jenkins-input" />
-            <button class="jenkins-button">
+            <input type="text" name="pattern" value="${pattern}" class="jenkins-input" id="pattern" data-restofpath="${request2.restOfPath}" data-backpath="${backPath}" />
+            <button class="jenkins-button" id="pattern-submit">
               <l:icon src="symbol-arrow-right" />
             </button>
           </form>
+          <st:adjunct includes="hudson.model.DirectoryBrowserSupport.pattern" />
         </div>
         <j:choose>
           <j:when test="${empty(files)}">

@@ -2,15 +2,12 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.ExtensionList;
 import hudson.XmlFile;
 import hudson.model.listeners.SaveableListener;
@@ -26,31 +23,51 @@ import java.nio.file.Path;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.util.NameValuePair;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.springframework.security.core.Authentication;
 
-public class AbstractItemTest {
+@WithJenkins
+class AbstractItemTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Tests the reload functionality
      */
     @Test
-    public void reload() throws Exception {
+    void reload() throws Exception {
         Jenkins jenkins = j.jenkins;
-        FreeStyleProject p = jenkins.createProject(FreeStyleProject.class, "foo");
-        p.setDescription("Hello World");
+        jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
+        mas.grant(Item.CONFIGURE).everywhere().to("alice", "bob");
+        mas.grant(Item.READ).everywhere().to("alice");
 
-        FreeStyleBuild b = j.buildAndAssertSuccess(p);
-        b.setDescription("This is my build");
+        FreeStyleProject p;
+        FreeStyleBuild b;
+        var alice = User.getById("alice", true);
+        try (ACLContext ignored = ACL.as(alice)) {
+            p = jenkins.createProject(FreeStyleProject.class, "foo");
+            p.setDescription("Hello World");
 
+            b = j.buildAndAssertSuccess(p);
+            b.setDescription("This is my build");
+        }
         // update on disk representation
         Path path = p.getConfigFile().getFile().toPath();
         Files.writeString(path, Files.readString(path, StandardCharsets.UTF_8).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
@@ -61,19 +78,29 @@ public class AbstractItemTest {
         // reload away
         p.doReload();
 
-        assertFalse(SaveableListener.class.getSimpleName() + " should not have been called", testSaveableListener.wasCalled());
-
-
+        assertFalse(testSaveableListener.isChangeCalled(), SaveableListener.class.getSimpleName() + " should not have been called");
         assertEquals("Good Evening", p.getDescription());
 
         FreeStyleBuild b2 = p.getBuildByNumber(1);
 
         assertNotEquals(b, b2); // should be different object
         assertEquals(b.getDescription(), b2.getDescription()); // but should have the same properties
+
+        try (var ignored = ACL.as(alice)) {
+            p.setDescription("This is Alice's project");
+        }
+        assertTrue(testSaveableListener.isChangeCalled(), SaveableListener.class.getSimpleName() + " should have been called");
+        assertThat(testSaveableListener.getChangeUser(), equalTo(alice.impersonate2()));
+
+        try (var ignored = ACL.as(alice)) {
+            p.delete();
+        }
+        assertTrue(testSaveableListener.isDeleteCalled(), SaveableListener.class.getSimpleName() + " should have been called");
+        assertThat(testSaveableListener.getDeleteUser(), equalTo(alice.impersonate2()));
     }
 
     @Test
-    public void checkRenameValidity() throws Exception {
+    void checkRenameValidity() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         p.getBuildersList().add(new SleepBuilder(10));
         j.createFreeStyleProject("foo-exists");
@@ -93,7 +120,7 @@ public class AbstractItemTest {
     }
 
     @Test
-    public void checkRenamePermissions() throws Exception {
+    void checkRenamePermissions() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
         mas.grant(Item.CONFIGURE).everywhere().to("alice", "bob");
@@ -115,7 +142,7 @@ public class AbstractItemTest {
     }
 
     @Test
-    public void renameViaRestApi() throws Exception {
+    void renameViaRestApi() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
         mas.grant(Item.READ, Jenkins.READ).everywhere().to("alice", "bob");
@@ -158,20 +185,45 @@ public class AbstractItemTest {
     public static class TestSaveableListener extends SaveableListener {
         private Saveable saveable;
 
-        private boolean called;
+        private boolean changeCalled;
+        private Authentication changeUser;
+
+        private boolean deleteCalled;
+        private Authentication deleteUser;
 
         private void setSaveable(Saveable saveable) {
             this.saveable = saveable;
         }
 
-        public boolean wasCalled() {
-            return called;
+        public boolean isChangeCalled() {
+            return changeCalled;
+        }
+
+        public Authentication getChangeUser() {
+            return changeUser;
+        }
+
+        public boolean isDeleteCalled() {
+            return deleteCalled;
+        }
+
+        public Authentication getDeleteUser() {
+            return deleteUser;
         }
 
         @Override
         public void onChange(Saveable o, XmlFile file) {
             if (o == saveable) {
-                this.called = true;
+                changeCalled = true;
+                changeUser = Jenkins.getAuthentication2();
+            }
+        }
+
+        @Override
+        public void onDeleted(Saveable o, XmlFile file) {
+            if (o == saveable) {
+                deleteCalled = true;
+                deleteUser = Jenkins.getAuthentication2();
             }
         }
     }

@@ -26,11 +26,12 @@ package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
@@ -41,6 +42,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.security.InputManipulationException;
+import hudson.model.Saveable;
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -48,24 +51,40 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.xstream.CriticalXStreamException;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class RobustReflectionConverterTest {
+class RobustReflectionConverterTest {
+    private final boolean originalRecordFailures = RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS;
 
     static {
         Logger.getLogger(RobustReflectionConverter.class.getName()).setLevel(Level.OFF);
     }
 
+    @BeforeEach
+    void before() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
+    }
+
+    @AfterEach
+    void after() {
+        RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = originalRecordFailures;
+    }
+
     @Test
-    public void robustUnmarshalling() {
+    void robustUnmarshalling() {
         Point p = read(new XStream2());
         assertEquals(1, p.x);
         assertEquals(2, p.y);
@@ -77,15 +96,15 @@ public class RobustReflectionConverterTest {
     }
 
     @Test
-    public void ifWorkaroundNeeded() {
-        XStream xs = new XStream();
+    void ifWorkaroundNeeded() {
+        XStream xs = new XStream(XStream2.getDefaultDriver());
         xs.allowTypes(new Class[] {Point.class});
         final ConversionException e = assertThrows(ConversionException.class, () -> read(xs));
         assertThat(e.getMessage(), containsString("No such field hudson.util.Point.z"));
     }
 
     @Test
-    public void classOwnership() {
+    void classOwnership() {
         Enchufla s1 = new Enchufla();
         s1.number = 1;
         s1.direction = "North";
@@ -120,20 +139,86 @@ public class RobustReflectionConverterTest {
     }
 
     @Test
-    public void implicitCollection() {
+    void implicitCollection() {
         XStream2 xs = new XStream2();
         xs.alias("hold", Hold.class);
         xs.addImplicitCollection(Hold.class, "items", "item", String.class);
         Hold h = (Hold) xs.fromXML("<hold><item>a</item><item>b</item></hold>");
         assertThat(h.items, Matchers.containsInAnyOrder("a", "b"));
-        assertEquals("<hold>\n" +
-                "  <item>a</item>\n" +
-                "  <item>b</item>\n" +
-                "</hold>", xs.toXML(h));
+        assertEquals("""
+                <hold>
+                  <item>a</item>
+                  <item>b</item>
+                </hold>""", xs.toXML(h));
     }
 
-    public static class Hold {
+    @Disabled("Throws an NPE in writeValueToImplicitCollection. Issue has existed since RobustReflectionConverter was created.")
+    @Test
+    void implicitCollectionsAllowNullElements() {
+        XStream2 xs = new XStream2();
+        xs.alias("hold", Hold.class);
+        xs.addImplicitCollection(Hold.class, "items", "item", String.class);
+        Hold h = (Hold) xs.fromXML("<hold><null/><item>b</item></hold>");
+        assertThat(h.items, Matchers.containsInAnyOrder(null, "b"));
+        assertEquals("""
+                <hold>
+                  <null/>
+                  <item>b</item>
+                </hold>""", xs.toXML(h));
+    }
+
+    @Issue("JENKINS-63343")
+    @Test
+    void robustAgainstImplicitCollectionElementsWithBadTypes() {
+        XStream2 xs = new XStream2();
+        xs.alias("hold", Hold.class);
+        // Note that the fix only matters for `addImplicitCollection` overloads like the following where the element type is not provided.
+        xs.addImplicitCollection(Hold.class, "items");
+        Hold h = (Hold) xs.fromXML(
+                """
+                <hold>
+                  <int>123</int>
+                  <string>abc</string>
+                  <int>456</int>
+                  <string>def</string>
+                </hold>
+                """);
+        assertThat(h.items, equalTo(List.of("abc", "def")));
+    }
+
+    public static class Hold implements Saveable {
         List<String> items;
+
+        @Override
+        public void save() {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+        }
+    }
+
+    @Test
+    void implicitCollectionRawtypes() {
+        XStream2 xs = new XStream2();
+        xs.alias("hold", HoldRaw.class);
+        xs.addImplicitCollection(HoldRaw.class, "items");
+        var h = (HoldRaw) xs.fromXML(
+                """
+                <hold>
+                  <int>123</int>
+                  <string>abc</string>
+                  <int>456</int>
+                  <string>def</string>
+                </hold>
+                """);
+        assertThat(h.items, equalTo(List.of(123, "abc", 456, "def")));
+    }
+
+    public static class HoldRaw implements Saveable {
+        List items;
+
+        @Override
+        public void save() throws IOException {
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+        }
     }
 
     @Retention(RetentionPolicy.RUNTIME) @interface Owner {
@@ -178,9 +263,10 @@ public class RobustReflectionConverterTest {
     @Owner("p4")
     public static class Jean extends Lover {}
 
-    @Test(timeout = 30 * 1000)
+    @Test
+    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
     @Issue("SECURITY-2602")
-    public void robustDoesNotSwallowDosException() {
+    void robustDoesNotSwallowDosException() {
         XStream2 xstream2 = new XStream2();
 
         Set<Object> set = preparePayload();
@@ -199,11 +285,12 @@ public class RobustReflectionConverterTest {
         assertNotNull(cause);
         assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
-        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
+        assertTrue(ime.getMessage().contains("exceeds 5 seconds"), "Limit expected in message");
     }
 
-    @Test(timeout = 30 * 1000)
-    public void customConverter_useDefaultXStreamException() {
+    @Test
+    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
+    void customConverter_useDefaultXStreamException() {
         XStream2 xstream2 = new XStream2();
         xstream2.registerConverter(new CustomSet.ConverterImpl(xstream2.getMapper()));
 
@@ -213,12 +300,13 @@ public class RobustReflectionConverterTest {
         final String xml = xstream2.toXML(customSet);
 
         InputManipulationException e = assertThrows(InputManipulationException.class, () -> xstream2.fromXML(xml));
-        assertTrue("Limit expected in message", e.getMessage().contains("exceeds 5 seconds"));
+        assertTrue(e.getMessage().contains("exceeds 5 seconds"), "Limit expected in message");
     }
 
-    @Test(timeout = 30 * 1000)
+    @Test
+    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
     @Issue("SECURITY-2602")
-    public void customConverter_wrapped_useCriticalXStreamException() {
+    void customConverter_wrapped_useCriticalXStreamException() {
         XStream2 xstream2 = new XStream2();
         xstream2.registerConverter(new CustomSet.ConverterImpl(xstream2.getMapper())); // TODO Fix test so it does not pass without this
 
@@ -238,7 +326,7 @@ public class RobustReflectionConverterTest {
         assertNotNull(cause);
         assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
-        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
+        assertTrue(ime.getMessage().contains("exceeds 5 seconds"), "Limit expected in message");
     }
 
     private Set<Object> preparePayload() {

@@ -1,0 +1,34 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
+
+
+  <st:documentation> <![CDATA[
+    Used inside <h:actions> to render primaryActions.
+    ]]>
+    <st:attribute name="action" use="required">
+      The action to render
+    </st:attribute>
+  </st:documentation>
+
+  <j:choose>
+    <j:when test="${h.hasView(action, 'action')}">
+      <j:scope>
+        <!--  Root actions expect to be in the context of Jenkins (as it) -->
+        <j:set var="it" value="${app}"/>
+        <j:set var="isInSecondaryHeader" value="true"/>
+        <st:include page="action.jelly" from="${action}" optional="true"/>
+      </j:scope>
+    </j:when>
+    <j:otherwise>
+      <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"/>
+      <j:if test="${icon != null}">
+
+        <dd:item icon="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"
+                 text="${action.displayName}"
+                 href="${h.getActionUrl(app.url, action)}"
+                 badge="${action.badge}">
+        </dd:item>
+      </j:if>
+    </j:otherwise>
+  </j:choose>
+</j:jelly>

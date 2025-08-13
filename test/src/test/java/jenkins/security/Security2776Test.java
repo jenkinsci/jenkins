@@ -3,28 +3,35 @@ package jenkins.security;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Functions;
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.xml.sax.SAXException;
 
-public class Security2776Test {
-    public static final String URL_NAME = "security2776";
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class Security2776Test {
+    private static final String URL_NAME = "security2776";
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void escapedTooltipIsEscaped() throws Exception {
+    void escapedTooltipIsEscaped() throws Exception {
         assertExpectedBehaviorForTooltip("#symbol-icons .unsafe svg",
                 "&lt;img src=\"x\" onerror=\"alert(1)\"&gt;");
         assertExpectedBehaviorForTooltip("#symbol-icons .safe svg",
@@ -53,7 +60,7 @@ public class Security2776Test {
         assertThat(jsResult, instanceOf(String.class));
         String jsResultString = (String) jsResult;
         assertThat(jsResultString, is(expectedResult));
-        Assert.assertFalse("No alert expected", alerts.get());
+        assertFalse(alerts.get(), "No alert expected");
     }
 
     private static String _getUnsafeTooltip() {

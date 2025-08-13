@@ -24,34 +24,36 @@
 
 package hudson.tools;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.User;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ZipExtractionInstallerTest {
+@WithJenkins
+class ZipExtractionInstallerTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("SECURITY-794")
-    public void onlyAdminCanReachTheDoCheck() throws Exception {
+    void onlyAdminCanReachTheDoCheck() throws Exception {
         final String ADMIN = "admin";
         final String USER = "user";
 

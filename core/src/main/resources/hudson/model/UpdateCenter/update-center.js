@@ -3,13 +3,13 @@ Behaviour.specify(
   "scheduleRestartCheckbox",
   0,
   function (el) {
-    el.addEventListener("click", function () {
+    el.addEventListener("change", function () {
       var form = document.getElementById("scheduleRestart");
       form.action = el.checked ? "safeRestart" : "cancelRestart";
       crumb.appendToForm(form);
       form.submit();
     });
-  }
+  },
 );
 
 function refresh() {
@@ -40,7 +40,9 @@ function refresh() {
           }
           var scheduleDiv = document.getElementById("scheduleRestartBlock");
           scheduleDiv.innerHTML = div.lastElementChild.innerHTML;
-          Behaviour.applySubtree(scheduleDiv);
+          // we need to call applySubtree for parentNode so that click listeners for "Details"
+          // button in Failure/status.jelly are added as buttons get rendered
+          Behaviour.applySubtree(scheduleDiv.parentNode);
           refresh();
         });
       }

@@ -24,18 +24,18 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class TimeSeriesTest {
+class TimeSeriesTest {
 
     @Test
-    public void test1() {
+    void test1() {
         TimeSeries ts = new TimeSeries(0, 1 - 0.1f, 100);
         float last = ts.getLatest();
         assertEquals(0f, last, 0f);

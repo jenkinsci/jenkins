@@ -25,28 +25,35 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class DirectlyModifiableViewTest {
+@WithJenkins
+class DirectlyModifiableViewTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void manipulateViewContent() throws IOException {
+    void manipulateViewContent() throws IOException {
         FreeStyleProject projectA = j.createFreeStyleProject("projectA");
         FreeStyleProject projectB = j.createFreeStyleProject("projectB");
 
@@ -76,7 +83,7 @@ public class DirectlyModifiableViewTest {
     }
 
     @Test
-    public void doAddJobToView() throws Exception {
+    void doAddJobToView() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("a_project");
         ListView view = new ListView("a_view", j.jenkins);
         j.jenkins.addView(view);
@@ -93,7 +100,7 @@ public class DirectlyModifiableViewTest {
     }
 
     @Test
-    public void doAddNestedJobToRecursiveView() throws Exception {
+    void doAddNestedJobToRecursiveView() throws Exception {
         ListView view = new ListView("a_view", j.jenkins);
         view.setRecurse(true);
         j.jenkins.addView(view);
@@ -138,7 +145,7 @@ public class DirectlyModifiableViewTest {
     }
 
     @Test
-    public void doRemoveJobFromView() throws Exception {
+    void doRemoveJobFromView() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("a_project");
         ListView view = new ListView("a_view", j.jenkins);
         j.jenkins.addView(view);
@@ -156,7 +163,7 @@ public class DirectlyModifiableViewTest {
     }
 
     @Test
-    public void failWebMethodForIllegalRequest() throws Exception {
+    void failWebMethodForIllegalRequest() throws Exception {
         ListView view = new ListView("a_view", j.jenkins);
         j.jenkins.addView(view);
 
@@ -188,7 +195,7 @@ public class DirectlyModifiableViewTest {
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         WebRequest req = new WebRequest(
-                new URL(j.jenkins.getRootUrl() + view.getUrl() + path),
+                new URI(j.jenkins.getRootUrl() + view.getUrl() + path).toURL(),
                 HttpMethod.POST
         );
 
@@ -197,7 +204,7 @@ public class DirectlyModifiableViewTest {
 
     private void assertBadStatus(Page page, String message) {
         WebResponse rsp = page.getWebResponse();
-        assertFalse("Status: " + rsp.getStatusCode(), j.isGoodHttpStatus(rsp.getStatusCode()));
+        assertFalse(j.isGoodHttpStatus(rsp.getStatusCode()), "Status: " + rsp.getStatusCode());
         assertThat(rsp.getContentAsString(), Matchers.containsString(message));
     }
 }

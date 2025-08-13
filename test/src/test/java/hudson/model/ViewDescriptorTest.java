@@ -26,32 +26,38 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.util.Arrays;
 import java.util.TreeSet;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerRequest2;
 
-public class ViewDescriptorTest {
+@WithJenkins
+class ViewDescriptorTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     /** Checks that {@link ViewDescriptor#doAutoCompleteCopyNewItemFrom} honors {@link DirectlyModifiableTopLevelItemGroup#canAdd}. */
     @Test
-    public void canAdd() throws Exception {
+    void canAdd() throws Exception {
         MockFolder d1 = r.createFolder("d1");
         d1.createProject(MockFolder.class, "sub");
         d1.createProject(FreeStyleProject.class, "prj");
@@ -62,6 +68,7 @@ public class ViewDescriptorTest {
     @SuppressWarnings("rawtypes") // the usual API mistakes
     public static class RestrictiveFolder extends MockFolder {
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public RestrictiveFolder(ItemGroup parent, String name) {
             super(parent, name);
         }
@@ -85,10 +92,9 @@ public class ViewDescriptorTest {
         assertEquals(new TreeSet<>(Arrays.asList(values)), new TreeSet<>(c.getValues()));
     }
 
-
     @Test
     @Issue("JENKINS-60579")
-    public void invisiblePropertiesOnViewShoudBePersisted() throws Exception {
+    void invisiblePropertiesOnViewShoudBePersisted() throws Exception {
 
         //GIVEN a listView that have an invisible property
         ListView myListView = new ListView("Rock");
@@ -115,20 +121,20 @@ public class ViewDescriptorTest {
         HtmlPage editViewPage = client.getPage(myListView, "configure");
 
         //THEN the invisible property is not displayed on page
-        assertFalse("CustomInvisibleProperty should not be displayed on the View edition page UI.",
-                    editViewPage.asNormalizedText().contains("CustomInvisibleProperty"));
+        assertFalse(editViewPage.asNormalizedText().contains("CustomInvisibleProperty"),
+                    "CustomInvisibleProperty should not be displayed on the View edition page UI.");
 
 
         HtmlForm editViewForm = editViewPage.getFormByName("viewConfig");
-        editViewForm.getTextAreaByName("description").setText("This list view is awesome !");
+        editViewForm.getTextAreaByName("_.description").setText("This list view is awesome !");
         r.submit(editViewForm);
 
         //Check that the description is updated on view
         assertThat(client.getPage(myListView).asNormalizedText(), containsString("This list view is awesome !"));
 
         //AND THEN after View save, the invisible property is still persisted with the View.
-        assertNotNull("The CustomInvisibleProperty should be persisted on the View.",
-                      r.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class));
+        assertNotNull(r.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class),
+                      "The CustomInvisibleProperty should be persisted on the View.");
         assertEquals(
                 "You cannot see me.",
                 r.jenkins
@@ -156,7 +162,7 @@ public class ViewDescriptorTest {
         }
 
         @Override
-        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) {
+        public ViewProperty reconfigure(StaplerRequest2 req, JSONObject form) {
             return this;
         }
 

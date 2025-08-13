@@ -1,0 +1,88 @@
+@use "../abstracts/mixins";
+
+$border-radius: 19px;
+
+.tabBarFrame {
+  position: relative;
+}
+
+.tabBar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  background: var(--table-background);
+  border-radius: $border-radius;
+  padding: 2px;
+  margin-bottom: var(--section-padding);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: var(--jenkins-border-width) solid var(--card-border-color);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .tab {
+    float: left;
+  }
+}
+
+.tabBar .tab a {
+  @include mixins.item($border: false);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 1.2rem;
+  border-radius: $border-radius;
+  color: var(--tabs-item-foreground);
+  font-weight: normal;
+  font-size: var(--font-size-sm);
+  min-width: 3.75rem;
+
+  &::before,
+  &::after {
+    inset: 2px;
+  }
+}
+
+.tabBar .tab .addTab svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.tabBar .tab [type="radio"] {
+  display: none;
+}
+
+.tabBar .tab.active a {
+  z-index: 2;
+  cursor: default;
+  font-weight: 450;
+  color: var(--tabs-item-foreground--active);
+
+  &::before {
+    background-clip: padding-box;
+    background-color: var(--tabs-item-background--selected) !important;
+    border: var(--jenkins-border--subtle) !important;
+  }
+
+  &::after {
+    display: none;
+  }
+
+  &::before,
+  &::after {
+    inset: 0;
+  }
+}
+
+.jenkins-tab-pane__title {
+  font-size: 1.6rem;
+  margin: 2.2rem 0 1.4rem;
+  padding: 0;
+}

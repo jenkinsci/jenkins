@@ -2,9 +2,9 @@ package hudson.model.queue;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
@@ -14,23 +14,28 @@ import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.io.StringWriter;
 import java.util.logging.Level;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class QueueTaskDispatcherTest {
+@WithJenkins
+class QueueTaskDispatcherTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private final LogRecorder logging = new LogRecorder().record(Queue.class, Level.ALL);
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(Queue.class, Level.ALL);
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void canRunBlockageIsDisplayed() throws Exception {
+    void canRunBlockageIsDisplayed() throws Exception {
         FreeStyleProject project = r.createFreeStyleProject();
         r.jenkins.getQueue().schedule(project, 0);
 
@@ -38,8 +43,11 @@ public class QueueTaskDispatcherTest {
 
         Item item = r.jenkins.getQueue().getItem(project);
 
-        assertTrue("Not blocked", item.isBlocked());
-        assertEquals("Expected CauseOfBlockage to be returned", "blocked by canRun", item.getWhy());
+        assertTrue(item.isBlocked(), "Not blocked");
+        assertEquals("blocked by canRun", item.getWhy(), "Expected CauseOfBlockage to be returned");
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(project));
     }
 
     @TestExtension("canRunBlockageIsDisplayed")
@@ -57,7 +65,7 @@ public class QueueTaskDispatcherTest {
 
     @Issue("JENKINS-38514")
     @Test
-    public void canTakeBlockageIsDisplayed() throws Exception {
+    void canTakeBlockageIsDisplayed() throws Exception {
         FreeStyleProject project = r.createFreeStyleProject();
 
         r.jenkins.getQueue().schedule(project, 0);
@@ -75,6 +83,9 @@ public class QueueTaskDispatcherTest {
         cob.print(l);
         l.getLogger().flush();
         assertThat(w.toString(), containsString("blocked by canTake"));
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(project));
     }
 
     @TestExtension("canTakeBlockageIsDisplayed")

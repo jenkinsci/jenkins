@@ -34,28 +34,30 @@ THE SOFTWARE.
     needed to generate a session if non exists,
     without it we would add ";jsessionid=" to the url which will result in a 404
     -->
-    <j:set var="_" value="${request.getSession()}"/>
+    <j:set var="_" value="${request2.getSession()}"/>
     <x:doctype name="html"/>
     <!-- in case of error we want to surround the form elements with an error hint -->
     <j:set var="inputClass" value="${data.errorMessage!=null ? 'jenkins-input--error' : ''}"/>
     <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
     <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
-    <html lang="${request.getLocale().toLanguageTag()}">
+    <html lang="${request2.getLocale().toLanguageTag()}">
       <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
-        <title>${%Register} [Jenkins]</title>
+        <title>${%Register} - Jenkins</title>
         <!-- we do not want bots on this page -->
         <meta name="ROBOTS" content="NOFOLLOW"/>
         <!-- mobile friendly layout -->
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <!-- css styling, will fallback to default implementation -->
-        <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
+        <st:include it="${simpleDecorator}" page="simple-head.jelly" />
         <script src="${resURL}/jsbundles/pages/register.js" type="text/javascript" defer="true" />
       </head>
       <body class="app-sign-in-register">
-        <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
+        <st:include it="${simpleDecorator}" page="simple-branding.jelly" />
         <main id="main-panel" class="app-sign-in-register__content">
           <div class="app-sign-in-register__content-inner">
             <h1>${%Register}</h1>
+
+            <st:include it="${simpleDecorator}" page="simple-header.jelly" />
 
             <template id="i18n" data-strength-strong="${%Strong}"
                                 data-strength-moderate="${%Moderate}"
@@ -71,7 +73,7 @@ THE SOFTWARE.
                   ${data.errors.containsKey('username') ? data.errors.get('username') : ''}
                 </div>
                 <input class="jenkins-input ${data.errors.containsKey('username') ? 'jenkins-input--error' : ''}"
-                       autofocus="${(data.errors.containsKey('username') || !data) ? true : null}"
+                       autofocus="${(data == null || data.errors.containsKey('username')) ? true : null}"
                        value="${data.username}"
                        type="text"
                        name="username"
@@ -163,7 +165,7 @@ THE SOFTWARE.
               <div class="app-sign-in-register__switcher">
                 <a href="${rootURL}/login">${%or sign in}</a>
               </div>
-              <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}"/>
+              <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}"/>
               <div class="footer">
                 <j:forEach var="decorator" items="${simpleDecorators}">
                   <st:include it="${decorator}" page="simple-footer.jelly" optional="true"/>

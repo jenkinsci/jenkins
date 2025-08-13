@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.servlet.ServletContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -50,7 +51,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
@@ -59,8 +59,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.CancelRequestHandlingException;
 import org.kohsuke.stapler.DispatchValidator;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebApp;
 
 /**
@@ -95,7 +95,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     public static /* script-console editable */ boolean DISABLED = SystemProperties.getBoolean(ESCAPE_HATCH);
 
     @NonNull
-    private static YesNoMaybe setStatus(@NonNull StaplerRequest req, @NonNull YesNoMaybe status) {
+    private static YesNoMaybe setStatus(@NonNull StaplerRequest2 req, @NonNull YesNoMaybe status) {
         switch (status) {
             case YES:
             case NO:
@@ -110,7 +110,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     }
 
     @NonNull
-    private static YesNoMaybe computeStatusIfNull(@NonNull StaplerRequest req, @NonNull Supplier<YesNoMaybe> statusIfNull) {
+    private static YesNoMaybe computeStatusIfNull(@NonNull StaplerRequest2 req, @NonNull Supplier<YesNoMaybe> statusIfNull) {
         Object requestStatus = req.getAttribute(ATTRIBUTE_NAME);
         if (requestStatus instanceof Boolean) {
             return (Boolean) requestStatus ? YesNoMaybe.YES : YesNoMaybe.NO;
@@ -127,7 +127,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     }
 
     @Override
-    public @CheckForNull Boolean isDispatchAllowed(@NonNull StaplerRequest req, @NonNull StaplerResponse rsp) {
+    public @CheckForNull Boolean isDispatchAllowed(@NonNull StaplerRequest2 req, @NonNull StaplerResponse2 rsp) {
         if (DISABLED) {
             return true;
         }
@@ -145,7 +145,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     }
 
     @Override
-    public @CheckForNull Boolean isDispatchAllowed(@NonNull StaplerRequest req, @NonNull StaplerResponse rsp, @NonNull String viewName, @CheckForNull Object node) {
+    public @CheckForNull Boolean isDispatchAllowed(@NonNull StaplerRequest2 req, @NonNull StaplerResponse2 rsp, @NonNull String viewName, @CheckForNull Object node) {
         if (DISABLED) {
             return true;
         }
@@ -163,7 +163,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     }
 
     @Override
-    public void allowDispatch(@NonNull StaplerRequest req, @NonNull StaplerResponse rsp) {
+    public void allowDispatch(@NonNull StaplerRequest2 req, @NonNull StaplerResponse2 rsp) {
         if (DISABLED) {
             return;
         }
@@ -171,7 +171,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     }
 
     @Override
-    public void requireDispatchAllowed(@NonNull StaplerRequest req, @NonNull StaplerResponse rsp) throws CancelRequestHandlingException {
+    public void requireDispatchAllowed(@NonNull StaplerRequest2 req, @NonNull StaplerResponse2 rsp) throws CancelRequestHandlingException {
         if (DISABLED) {
             return;
         }
@@ -311,6 +311,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
             }
         }
 
+        @SuppressFBWarnings(value = "SIC_INNER_SHOULD_BE_STATIC", justification = "TODO needs triage")
         private class Validator {
             // lazy load parents to avoid trying to load potentially unavailable classes
             private final Supplier<Collection<Validator>> parentsSupplier;

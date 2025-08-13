@@ -28,23 +28,62 @@ For refactoring and code cleanup changes, exercise the code before and after the
 
 ### Proposed changelog entries
 
-- Entry 1: Issue, human-readable text
-- […]
+- human-readable text
 
 <!-- Comment:
 The changelog entry should be in the imperative mood; e.g., write "do this"/"return that" rather than "does this"/"returns that".
 For examples, see: https://www.jenkins.io/changelog/
+
+Do not include the Jira issue in the changelog entry.
+Include the Jira issue in the description of the pull request so that the changelog generator can find it and include it in the generated changelog.
+
+You may add multiple changelog entries if applicable by adding a new entry to the list, e.g.
+- First changelog entry
+- Second changelog entry
+-->
+
+### Proposed changelog category
+
+/label <update-this-with-category>
+
+<!--
+The changelog entry needs to have a category which is selected based on the label.
+If there's no changelog then the label should be `skip-changelog`.
+
+The available categories are:
+* bug - Minor bug. Will be listed after features
+* developer - Changes which impact plugin developers
+* dependencies - Pull requests that update a dependency
+* internal - Internal only change, not user facing
+* into-lts - Changes that are backported to the LTS baseline
+* localization - Updates localization files
+* major-bug - Major bug. Will be highlighted on the top of the changelog
+* major-rfe - Major enhancement. Will be highlighted on the top
+* rfe - Minor enhancement
+* regression-fix - Fixes a regression in one of the previous Jenkins releases
+* removed - Removes a feature or a public API
+* skip-changelog - Should not be shown in the changelog
+
+Non-changelog categories:
+* web-ui - Changes in the web UI
+
+Non-changelog categories require a changelog category but should be used if applicable,
+comma separate to provide multiple categories in the label command.
 -->
 
 ### Proposed upgrade guidelines
 
 N/A
 
+<!-- Comment:
+Leave the proposed upgrade guidelines in the pull request with the "N/A" value if no upgrade guidelines are needed.
+The changelog generator relies on the presence of the upgrade guidelines section as part of its data extraction process.
+-->
+
 ### Submitter checklist
 
 - [ ] The Jira issue, if it exists, is well-described.
-- [ ] The changelog entries and upgrade guidelines are appropriate for the audience affected by the change (users or developers, depending on the change) and are in the imperative mood (see [examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)).
-  - Fill in the **Proposed upgrade guidelines** section only if there are breaking changes or changes that may require extra steps from users during upgrade.
+- [ ] The changelog entries and upgrade guidelines are appropriate for the audience affected by the change (users or developers, depending on the change) and are in the imperative mood (see [examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)). Fill in the **Proposed upgrade guidelines** section only if there are breaking changes or changes that may require extra steps from users during upgrade.
 - [ ] There is automated testing or an explanation as to why this change has no tests.
 - [ ] New public classes, fields, and methods are annotated with `@Restricted` or have `@since TODO` Javadocs, as appropriate.
 - [ ] New deprecations are annotated with `@Deprecated(since = "TODO")` or `@Deprecated(forRemoval = true, since = "TODO")`, if applicable.
@@ -60,9 +99,9 @@ N/A
 If you need an accelerated review process by the community (e.g., for critical bugs), mention @jenkinsci/core-pr-reviewers.
 -->
 
-### Maintainer checklist
-
 Before the changes are marked as `ready-for-merge`:
+
+### Maintainer checklist
 
 - [ ] There are at least two (2) approvals for the pull request and no outstanding requests for change.
 - [ ] Conversations in the pull request are over, or it is explicit that a reviewer is not blocking the change.

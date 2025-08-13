@@ -27,11 +27,13 @@ package hudson.lifecycle;
 import static hudson.util.jna.Kernel32.MOVEFILE_DELAY_UNTIL_REBOOT;
 import static hudson.util.jna.Kernel32.MOVEFILE_REPLACE_EXISTING;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.Kernel32;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -43,13 +45,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * {@link Lifecycle} for Hudson installed as Windows service.
  *
  * @author Kohsuke Kawaguchi
- * @see WindowsInstallerLink
  */
 public class WindowsServiceLifecycle extends Lifecycle {
     public WindowsServiceLifecycle() {
@@ -119,6 +119,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
     }
 
     @Override
+    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public void restart() throws IOException, InterruptedException {
         Jenkins jenkins = Jenkins.getInstanceOrNull();
         try {

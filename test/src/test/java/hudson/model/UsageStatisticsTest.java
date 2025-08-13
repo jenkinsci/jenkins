@@ -28,8 +28,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Util;
 import hudson.model.UsageStatistics.CombinedCipherInputStream;
@@ -56,23 +56,29 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class UsageStatisticsTest {
+@WithJenkins
+class UsageStatisticsTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Makes sure that the stat data can be decrypted safely.
      */
     @Test
-    public void roundtrip() throws Exception {
+    void roundtrip() throws Exception {
         j.createOnlineSlave();
         warmUpNodeMonitorCache();
 
@@ -116,7 +122,7 @@ public class UsageStatisticsTest {
         // that would cause issues with parsing/analyzing uploaded usage statistics
         assertEquals(1, o.getInt("stat"));
         assertEquals(jenkins.getLegacyInstanceId(), o.getString("install"));
-        assertEquals(jenkins.servletContext.getServerInfo(), o.getString("servletContainer"));
+        assertEquals(jenkins.getServletContext().getServerInfo(), o.getString("servletContainer"));
         assertEquals(Jenkins.VERSION, o.getString("version"));
 
         assertTrue(o.has("plugins"));

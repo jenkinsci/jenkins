@@ -7,14 +7,8 @@
     <Or>
       <!-- We don't care about this behavior -->
       <Bug pattern="CRLF_INJECTION_LOGS"/>
-      <!-- Pending https://github.com/spotbugs/spotbugs/issues/1515 -->
-      <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED"/>
       <!-- Silly check; it is perfectly reasonable to implement Comparable by writing a compareTo without an equals. -->
       <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS"/>
-      <!-- Jenkins handles this issue differently or doesn't care about it -->
-      <Bug pattern="INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE"/>
-      <!-- Used for backward compatibility and extending utility classes -->
-      <Bug pattern="NM_SAME_SIMPLE_NAME_AS_SUPERCLASS"/>
     </Or>
   </Match>
   <Match>
@@ -62,71 +56,8 @@
     - If it is not a false positive, fix the bug, then remove the exclusion from this section.
    -->
   <Match>
-    <And>
-      <Bug pattern="DM_DEFAULT_ENCODING"/>
-      <Class name="hudson.util.TextFile"/>
-    </And>
-  </Match>
-  <Match>
     <Confidence value="2"/>
     <Or>
-      <And>
-        <Bug pattern="COMMAND_INJECTION"/>
-        <Or>
-          <Class name="hudson.Launcher$LocalLauncher"/>
-          <Class name="hudson.Launcher$RemoteChannelLaunchCallable"/>
-          <Class name="hudson.os.WindowsUtil"/>
-          <Class name="jenkins.slaves.restarter.WinswSlaveRestarter"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="EC_UNRELATED_TYPES_USING_POINTER_EQUALITY"/>
-        <Or>
-          <Class name="hudson.model.AutoCompletionCandidates"/>
-          <Class name="hudson.tasks.Fingerprinter$FingerprintAction"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="EQ_DOESNT_OVERRIDE_EQUALS"/>
-        <Or>
-          <Class name="hudson.model.Run$ArtifactList"/>
-          <Class name="hudson.model.Run$SerializableArtifactList"/>
-          <Class name="hudson.search.Search$SearchResultImpl"/>
-          <Class name="hudson.slaves.NodeList"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="FILE_UPLOAD_FILENAME"/>
-        <Or>
-          <Class name="hudson.model.FileParameterDefinition"/>
-          <Class name="hudson.model.FileParameterValue"/>
-          <Class name="hudson.PluginManager"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="HTTP_PARAMETER_POLLUTION"/>
-        <Class name="hudson.ProxyConfiguration$DescriptorImpl"/>
-      </And>
-      <And>
-        <Bug pattern="HTTP_RESPONSE_SPLITTING"/>
-        <Or>
-          <Class name="hudson.Functions"/>
-          <Class name="jenkins.install.InstallUtil"/>
-          <Class name="jenkins.model.Jenkins"/>
-          <Class name="jenkins.util.xml.XMLUtils"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="INSECURE_COOKIE"/>
-        <Or>
-          <Class name="hudson.security.SecurityRealm"/>
-          <Class name="jenkins.model.Jenkins"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="LI_LAZY_INIT_STATIC"/>
-        <Class name="hudson.triggers.Trigger"/>
-      </And>
       <And>
         <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
         <Or>
@@ -157,7 +88,6 @@
           <Class name="hudson.model.Run"/>
           <Class name="hudson.model.RunParameterValue"/>
           <Class name="hudson.model.Slave"/>
-          <Class name="hudson.model.TopLevelItemDescriptor"/>
           <Class name="hudson.model.UpdateCenter$HudsonDowngradeJob"/>
           <Class name="hudson.model.UpdateCenter$HudsonUpgradeJob"/>
           <Class name="hudson.model.UpdateSite$Plugin"/>
@@ -171,7 +101,6 @@
           <Class name="hudson.tasks.BuildTrigger"/>
           <Class name="hudson.tasks.Maven"/>
           <Class name="hudson.tasks.Maven$MavenInstallation"/>
-          <Class name="hudson.TcpSlaveAgentListener$TcpSlaveAgentListenerRescheduler"/>
           <Class name="hudson.tools.DownloadFromUrlInstaller$DescriptorImpl"/>
           <Class name="hudson.tools.ToolInstallation"/>
           <Class name="hudson.triggers.SCMTrigger$DescriptorImpl"/>
@@ -183,8 +112,6 @@
           <Class name="jenkins.fingerprints.FingerprintStorage"/>
           <Class name="jenkins.install.SetupWizard"/>
           <Class name="jenkins.model.Jenkins"/>
-          <Class name="jenkins.model.Nodes"/>
-          <Class name="jenkins.model.RunIdMigrator"/>
           <Class name="jenkins.mvn.SettingsPathHelper"/>
           <Class name="jenkins.security.CustomClassFilter$Contributed"/>
           <Class name="jenkins.security.ResourceDomainConfiguration"/>
@@ -219,9 +146,7 @@
           <Class name="hudson.Launcher$RemoteChannelLaunchCallable"/>
           <Class name="hudson.Launcher$RemoteLaunchCallable"/>
           <Class name="hudson.lifecycle.Lifecycle"/>
-          <Class name="hudson.lifecycle.WindowsInstallerLink"/>
           <Class name="hudson.lifecycle.WindowsServiceLifecycle"/>
-          <Class name="hudson.LocalPluginManager"/>
           <Class name="hudson.logging.LogRecorder"/>
           <Class name="hudson.model.AsyncAperiodicWork"/>
           <Class name="hudson.model.AsyncPeriodicWork"/>
@@ -237,7 +162,6 @@
           <Class name="hudson.model.Run"/>
           <Class name="hudson.model.Run$Artifact"/>
           <Class name="hudson.model.UpdateCenter"/>
-          <Class name="hudson.model.UpdateCenter$DownloadJob"/>
           <Class name="hudson.model.UpdateCenter$HudsonDowngradeJob"/>
           <Class name="hudson.model.UpdateCenter$InstallationJob"/>
           <Class name="hudson.model.UpdateCenter$PluginDowngradeJob"/>
@@ -270,19 +194,15 @@
           <Class name="jenkins.model.Jenkins"/>
           <Class name="jenkins.model.Nodes"/>
           <Class name="jenkins.model.PeepholePermalink"/>
-          <Class name="jenkins.model.RunIdMigrator"/>
           <Class name="jenkins.mvn.FilePathGlobalSettingsProvider"/>
           <Class name="jenkins.mvn.FilePathSettingsProvider"/>
           <Class name="jenkins.mvn.SettingsPathHelper"/>
-          <Class name="jenkins.plugins.DetachedPluginsUtil$DetachedPlugin"/>
           <Class name="jenkins.security.ClassFilterImpl"/>
           <Class name="jenkins.security.ConfidentialKey"/>
           <Class name="jenkins.security.DefaultConfidentialStore"/>
-          <Class name="jenkins.security.s2m.ConfigDirectory"/>
           <Class name="jenkins.security.stapler.StaplerDispatchValidator$ValidatorCache"/>
           <Class name="jenkins.security.stapler.StaticRoutingDecisionProvider"/>
           <Class name="jenkins.slaves.restarter.UnixSlaveRestarter"/>
-          <Class name="jenkins.SoloFilePathFilter"/>
           <Class name="jenkins.util.groovy.GroovyHookScript"/>
           <Class name="jenkins.util.io.FileBoolean"/>
           <Class name="jenkins.util.JavaVMArguments"/>
@@ -293,58 +213,7 @@
       </And>
       <And>
         <Bug pattern="REDOS"/>
-        <Or>
-          <Class name="hudson.model.Computer"/>
-          <Class name="jenkins.org.apache.commons.validator.routines.UrlValidator"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="REQUESTDISPATCHER_FILE_DISCLOSURE"/>
-        <Or>
-          <Class name="hudson.cli.CLIAction"/>
-          <Class name="hudson.model.AbstractProject"/>
-          <Class name="hudson.model.Descriptor"/>
-          <Class name="hudson.model.DirectoryBrowserSupport"/>
-          <Class name="hudson.model.RSS"/>
-          <Class name="hudson.model.Run"/>
-          <Class name="hudson.scm.AbstractScmTagAction"/>
-          <Class name="hudson.search.Search"/>
-          <Class name="hudson.security.BasicAuthenticationFilter"/>
-          <Class name="hudson.security.FederatedLoginService$UnclaimedIdentityException"/>
-          <Class name="hudson.security.HudsonPrivateSecurityRealm"/>
-          <Class name="hudson.slaves.NodeDescriptor"/>
-          <Class name="hudson.slaves.SlaveComputer"/>
-          <Class name="hudson.util.DoubleLaunchChecker"/>
-          <Class name="hudson.util.ErrorObject"/>
-          <Class name="hudson.util.HudsonIsLoading"/>
-          <Class name="hudson.util.HudsonIsRestarting"/>
-          <Class name="hudson.widgets.HistoryWidget"/>
-          <Class name="jenkins.agents.CloudSet"/>
-          <Class name="jenkins.management.AdministrativeMonitorsApi"/>
-          <Class name="jenkins.model.Jenkins"/>
-          <Class name="jenkins.model.ParameterizedJobMixIn"/>
-          <Class name="jenkins.slaves.EncryptedSlaveAgentJnlpFile"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="SE_BAD_FIELD"/>
-        <Class name="hudson.scm.PollingResult"/>
-      </And>
-      <And>
-        <Bug pattern="STATIC_IV"/>
-        <Or>
-          <Class name="hudson.cli.Connection"/>
-          <Class name="hudson.model.UsageStatistics$CombinedCipherOutputStream"/>
-          <Class name="jenkins.security.CryptoConfidentialKey"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="UNENCRYPTED_SERVER_SOCKET"/>
-        <Class name="hudson.slaves.Channels"/>
-      </And>
-      <And>
-        <Bug pattern="UNENCRYPTED_SOCKET"/>
-        <Class name="hudson.TcpSlaveAgentListener"/>
+        <Class name="jenkins.org.apache.commons.validator.routines.UrlValidator"/>
       </And>
       <And>
         <Bug pattern="URLCONNECTION_SSRF_FD"/>
@@ -358,17 +227,6 @@
           <Class name="hudson.PluginWrapper"/>
           <Class name="hudson.ProxyConfiguration"/>
           <Class name="jenkins.security.ResourceDomainConfiguration"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR"/>
-        <Class name="hudson.slaves.SlaveComputer"/>
-      </And>
-      <And>
-        <Bug pattern="XSS_SERVLET"/>
-        <Or>
-          <Class name="hudson.Functions"/>
-          <Class name="hudson.security.AccessDeniedException3"/>
         </Or>
       </And>
     </Or>

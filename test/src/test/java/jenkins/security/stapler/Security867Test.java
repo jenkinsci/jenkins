@@ -30,22 +30,29 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
-import com.gargoylesoftware.htmlunit.Page;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.RootAction;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.Page;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class Security867Test {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class Security867Test {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("SECURITY-867")
-    public void folderTraversalPrevented_avoidStealingSecretInView() throws Exception {
+    void folderTraversalPrevented_avoidStealingSecretInView() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
@@ -91,7 +98,7 @@ public class Security867Test {
 
     @Test
     @Issue("SECURITY-867")
-    public void folderTraversalPrevented_avoidStealingSecretFromDifferentObject() throws Exception {
+    void folderTraversalPrevented_avoidStealingSecretFromDifferentObject() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 

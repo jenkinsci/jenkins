@@ -29,8 +29,8 @@ import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Util;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.Computer;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Node;
 import hudson.model.Queue;
@@ -51,7 +51,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Stephen Connolly
  * @author Kohsuke Kawaguchi
  */
-public abstract class RetentionStrategy<T extends Computer> extends AbstractDescribableImpl<RetentionStrategy<?>> implements ExtensionPoint {
+public abstract class RetentionStrategy<T extends Computer> implements Describable<RetentionStrategy<?>>, ExtensionPoint {
 
     /**
      * This method will be called periodically to allow this strategy to decide what to do with its owning agent.
@@ -171,7 +171,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         public long check(SlaveComputer c) {
             if (c.isOffline() && !c.isConnecting() && c.isLaunchSupported())
                 c.tryReconnect();
-            return 1;
+            return 0;
         }
 
         @Extension(ordinal = 100) @Symbol("always")
@@ -272,6 +272,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
                     c.connect(false);
+                } else if (c.getOfflineCause() == null) {
+                    c.setOfflineCause(new OfflineCause.IdleOfflineCause());
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
@@ -285,7 +287,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     return TimeUnit.MILLISECONDS.toMinutes(TimeUnit.MINUTES.toMillis(idleDelay) - idleMilliseconds);
                 }
             }
-            return 1;
+            return 0;
         }
 
         @Extension @Symbol("demand")

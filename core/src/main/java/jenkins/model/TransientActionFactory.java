@@ -24,10 +24,8 @@
 
 package jenkins.model;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
@@ -80,59 +78,53 @@ public abstract class TransientActionFactory<T> implements ExtensionPoint {
      */
     public abstract @NonNull Collection<? extends Action> createFor(@NonNull T target);
 
-    /** @see <a href="http://stackoverflow.com/a/24336841/12916">no pairs/tuples in Java</a> */
-    private static class CacheKey {
-        private final Class<?> type;
-        private final Class<? extends Action> actionType;
+    @Restricted(NoExternalUse.class)
+    @Extension
+    public static final class Cache extends ExtensionListListener {
 
-        CacheKey(Class<?> type, Class<? extends Action> actionType) {
-            this.type = type;
-            this.actionType = actionType;
-        }
+        @SuppressWarnings("rawtypes")
+        private ExtensionList<TransientActionFactory> allFactories;
 
-        @Override
-        public boolean equals(Object obj) {
-            return obj instanceof CacheKey && type == ((CacheKey) obj).type && actionType == ((CacheKey) obj).actionType;
-        }
+        private ClassValue<ClassValue<List<TransientActionFactory<?>>>> cache;
 
-        @Override
-        public int hashCode() {
-            return type.hashCode() ^ actionType.hashCode();
-        }
-    }
-
-    @SuppressWarnings("rawtypes")
-    private static final LoadingCache<ExtensionList<TransientActionFactory>, LoadingCache<CacheKey, List<TransientActionFactory<?>>>> cache =
-        CacheBuilder.newBuilder().weakKeys().build(new CacheLoader<>() {
-        @Override
-        public LoadingCache<CacheKey, List<TransientActionFactory<?>>> load(final ExtensionList<TransientActionFactory> allFactories) throws Exception {
-            final LoadingCache<CacheKey, List<TransientActionFactory<?>>> perJenkinsCache =
-                CacheBuilder.newBuilder().build(new CacheLoader<>() {
-                @Override
-                public List<TransientActionFactory<?>> load(CacheKey key) throws Exception {
-                    List<TransientActionFactory<?>> factories = new ArrayList<>();
-                    for (TransientActionFactory<?> taf : allFactories) {
-                        Class<? extends Action> actionType = taf.actionType();
-                        if (taf.type().isAssignableFrom(key.type) && (key.actionType.isAssignableFrom(actionType) || actionType.isAssignableFrom(key.actionType))) {
-                            factories.add(taf);
-                        }
+        private synchronized ClassValue<ClassValue<List<TransientActionFactory<?>>>> cache() {
+            if (allFactories == null) {
+                allFactories = ExtensionList.lookup(TransientActionFactory.class);
+                allFactories.addListener(this);
+            }
+            if (cache == null) {
+                cache = new ClassValue<>() {
+                    @Override
+                    protected ClassValue<List<TransientActionFactory<?>>> computeValue(Class<?> type) {
+                        return new ClassValue<>() {
+                            @Override
+                            protected List<TransientActionFactory<?>> computeValue(Class<?> actionType) {
+                                List<TransientActionFactory<?>> factories = new ArrayList<>();
+                                for (TransientActionFactory<?> taf : allFactories) {
+                                    if (taf.type().isAssignableFrom(type) && (actionType.isAssignableFrom(taf.actionType()) || taf.actionType().isAssignableFrom(actionType))) {
+                                        factories.add(taf);
+                                    }
+                                }
+                                return factories;
+                            }
+                        };
                     }
-                    return factories;
-                }
-            });
-            allFactories.addListener(new ExtensionListListener() {
-                @Override
-                public void onChange() {
-                    perJenkinsCache.invalidateAll();
-                }
-            });
-            return perJenkinsCache;
+                };
+            }
+            return cache;
         }
-    });
+
+
+        @Override
+        public synchronized void onChange() {
+            cache = null;
+        }
+
+    }
 
     @Restricted(NoExternalUse.class) // pending a need for it outside Actionable
     public static Iterable<? extends TransientActionFactory<?>> factoriesFor(Class<?> type, Class<? extends Action> actionType) {
-        return cache.getUnchecked(ExtensionList.lookup(TransientActionFactory.class)).getUnchecked(new CacheKey(type, actionType));
+        return ExtensionList.lookupSingleton(Cache.class).cache().get(type).get(actionType);
     }
 
 }

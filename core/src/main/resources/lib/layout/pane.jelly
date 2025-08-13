@@ -52,25 +52,25 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <j:set var="paneIsCollapsed" value="${h.isCollapsed(attrs.id)}" />
-  <div class="container-fluid pane-frame track-mouse ${paneIsCollapsed ? 'collapsed' : 'expanded'}" id="${attrs.id}">
-    <div class="row">
-      <div class="col-xs-24 pane-header">
-        <span class="pane-header-title">
-          <j:out value="${title}"/>
-        </span>
+  <div class="pane-frame ${paneIsCollapsed ? 'collapsed' : 'expanded'}" id="${attrs.id}">
+    <div class="pane-header">
+      <span class="pane-header-title">
+        <j:out value="${title}"/>
+      </span>
 
-        <j:if test="${attrs.id != null}">
-          <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
-             title="${paneIsCollapsed ? '%expand' : '%collapse'}">
+      <j:if test="${attrs.id != null}">
+        <st:adjunct includes="lib.form.link.link"/>
+        <!-- TODO improve l:link so the `a` can be changed to `l:link`. -->
+        <a class="collapse post" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
+           title="${paneIsCollapsed ? '%expand' : '%collapse'}">
 
-            <j:set var="svgIconId" value="${paneIsCollapsed ? 'chevron-up' : 'chevron-down'}" />
-            <l:icon src="symbol-${svgIconId}" />
-          </a>
-        </j:if>
-      </div>
+          <j:set var="svgIconId" value="${paneIsCollapsed ? 'chevron-up' : 'chevron-down'}" />
+          <l:icon src="symbol-${svgIconId}" />
+        </a>
+      </j:if>
     </div>
     <j:choose>
-      <div class="row pane-content">
+      <div class="pane-content">
         <j:when test="${paneIsCollapsed}">
           <table class="pane">
             <tr>
@@ -88,10 +88,8 @@ THE SOFTWARE.
       </div>
     </j:choose>
     <j:if test="${attrs.footer != null}">
-      <div class="row">
-        <div class="col-xs-24 pane-footer">
-          <j:out value="${attrs.footer}"/>
-        </div>
+      <div class="pane-footer">
+        <j:out value="${attrs.footer}"/>
       </div>
     </j:if>
   </div>

@@ -35,12 +35,17 @@ THE SOFTWARE.
             Use POST rather than GET (recommended).
         </st:attribute>
         <st:attribute name="message" use="required">
-            A confirmation dialog message.
+            The confirmation dialog message.
         </st:attribute>
         <st:attribute name="class">
             A CSS class to use to style the link.
         </st:attribute>
+        <st:attribute name="title">
+          The title to show in the confirmation dialog
+        </st:attribute>
+        <st:attribute name="destructive" type="boolean">
+            Show a red confirmation button
+        </st:attribute>
     </st:documentation>
-    <a href="#" class="${class} confirmation-link" data-post="${post}" data-url="${attrs.href}" data-message="${message}"><d:invokeBody/></a>
-    <st:adjunct includes="lib.layout.confirmationLink.adjunct "/>
+    <a href="#" class="${class} confirmation-link" data-post="${post}" data-url="${attrs.href}" data-message="${message}" data-title="${title ?: ''}" data-destructive="${destructive}"><d:invokeBody/></a>
 </j:jelly>

@@ -65,6 +65,6 @@ THE SOFTWARE.
         <!-- Used to display the form validation status -->
       </div>
     </div>
-    <st:adjunct includes="lib.form.validateButton.adjunct"/>
+    <st:adjunct includes="lib.form.validateButton.validateButton"/>
   </f:entry>
 </j:jelly>

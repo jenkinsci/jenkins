@@ -30,7 +30,7 @@ THE SOFTWARE.
             <l:task contextMenu="false" href="." icon="symbol-computer" title="${%Status}"/>
             <l:task href="configure" icon="symbol-settings"
                     title="${app.hasPermission(app.ADMINISTER) ? '%Configure' : '%View Configuration'}"/>
-            <l:task confirmationMessage="${%delete.cloud(it.displayName)}" href="doDelete" icon="icon-edit-delete icon-md" permission="${app.ADMINISTER}" title="${%Delete Cloud}" post="true" requiresConfirmation="true"/>
+            <l:delete permission="${app.ADMINISTER}" title="${%Delete Cloud}" message="${%delete.cloud(it.displayName)}"/>
             <t:actions />
         </l:tasks>
         <j:forEach var="action" items="${it.allActions}">

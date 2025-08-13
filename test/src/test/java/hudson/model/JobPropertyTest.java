@@ -24,42 +24,47 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
-import com.gargoylesoftware.htmlunit.WebAssert;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.matrix.MatrixProject;
 import hudson.model.Descriptor.FormException;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.WebAssert;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
-public class JobPropertyTest {
+@WithJenkins
+class JobPropertyTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private final LogRecorder logs = new LogRecorder();
 
-    @Rule
-    public LoggerRule logs = new LoggerRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-2398")
-    public void jobPropertySummaryIsShownInMatrixProjectIndexPage() throws Exception {
+    void jobPropertySummaryIsShownInMatrixProjectIndexPage() throws Exception {
         assertJobPropertySummaryIsShownInIndexPage(MatrixProject.class);
     }
 
     @Test
     @Issue("JENKINS-2398")
-    public void jobPropertySummaryIsShownInFreeStyleProjectIndexPage() throws Exception {
+    void jobPropertySummaryIsShownInFreeStyleProjectIndexPage() throws Exception {
         assertJobPropertySummaryIsShownInIndexPage(FreeStyleProject.class);
     }
 
@@ -75,7 +80,7 @@ public class JobPropertyTest {
     public static class JobPropertyImpl extends JobProperty<Job<?, ?>> {
         private final String propertyString;
 
-        public JobPropertyImpl(String propertyString) {
+        JobPropertyImpl(String propertyString) {
             this.propertyString = propertyString;
         }
 
@@ -97,7 +102,7 @@ public class JobPropertyTest {
      * Make sure that the UI rendering works as designed.
      */
     @Test
-    public void configRoundtrip() throws Exception {
+    void configRoundtrip() throws Exception {
         logs.record(Descriptor.class, Level.ALL);
         FreeStyleProject p = j.createFreeStyleProject();
         JobPropertyWithConfigImpl before = new JobPropertyWithConfigImpl("Duke");
@@ -116,6 +121,7 @@ public class JobPropertyTest {
     public static class JobPropertyWithConfigImpl extends JobProperty<Job<?, ?>> {
         public String name;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public JobPropertyWithConfigImpl(String name) {
             this.name = name;
@@ -124,7 +130,7 @@ public class JobPropertyTest {
         @TestExtension("configRoundtrip")
         public static class DescriptorImpl extends JobPropertyDescriptor {
             @Override
-            public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            public JobProperty<?> newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
                 JobPropertyWithConfigImpl prop = (JobPropertyWithConfigImpl) super.newInstance(req, formData);
                 return prop.name.isEmpty() ? null : prop;
             }
@@ -132,7 +138,7 @@ public class JobPropertyTest {
     }
 
     @Test
-    public void invisibleProperty() throws Exception {
+    void invisibleProperty() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         InvisibleImpl before = new InvisibleImpl();
         p.addProperty(before);
@@ -147,7 +153,7 @@ public class JobPropertyTest {
         InvisibleImpl() {}
 
         @Override
-        public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) {
+        public JobProperty<?> reconfigure(StaplerRequest2 req, JSONObject form) {
             return this;
         }
 

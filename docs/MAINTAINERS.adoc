@@ -26,7 +26,7 @@ Remoting updates in the core are subject to the process though.
 === Communication channels
 
 * Mailing list: link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List]
-* Chat for runtime Jenkins release coordination: `#jenkins-release` on Libera IRC
+* Chat for runtime Jenkins release coordination takes place in link:https://matrix.to/#/#jenkins-release:matrix.org[#jenkins-release:matrix.org].
 ** All async communications should go to the developer mailing list
 
 === Roles
@@ -584,8 +584,8 @@ Any Jenkins contributors are welcome to participate in backporting and release c
   Lists unresolved recent regressions, unresolved recent core bugs, and popular new issues.
 * link:https://github.com/jenkinsci/core-pr-tester[Core Pull Request Tester]
 * link:https://github.com/jenkinsci/core-changelog-generator[Core Changelog Generator]
-* link:https://github.com/jenkins-infra/backend-commit-history-parser[Toolkit for LTS backporting]
-* link:/update-since-todo.sh[Javadoc @since version updater]
+* link:https://github.com/jenkins-infra/release/tree/master/tools[Toolkit for LTS backporting]
+* link:/update-since-todo.py[@since version updater]
 
 == Feedback
 

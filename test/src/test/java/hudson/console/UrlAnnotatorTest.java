@@ -1,29 +1,35 @@
 package hudson.console;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Launcher;
 import hudson.MarkupText;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class UrlAnnotatorTest {
+@WithJenkins
+class UrlAnnotatorTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void test1() throws Exception {
+    void test1() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -38,16 +44,16 @@ public class UrlAnnotatorTest {
 
         HtmlPage c = j.createWebClient().getPage(b, "console");
         String rsp = c.getWebResponse().getContentAsString();
-        assertTrue(rsp, rsp.contains("<a href='http://www.sun.com/'>http://www.sun.com/</a>"));
-        assertTrue(rsp, rsp.contains("<a href='http://www.kohsuke.org/'>http://www.kohsuke.org/</a>"));
-        assertTrue(rsp, rsp.contains("<a href='http://www.oracle.com/'>http://www.oracle.com/</a>"));
+        assertTrue(rsp.contains("<a href='http://www.sun.com/'>http://www.sun.com/</a>"), rsp);
+        assertTrue(rsp.contains("<a href='http://www.kohsuke.org/'>http://www.kohsuke.org/</a>"), rsp);
+        assertTrue(rsp.contains("<a href='http://www.oracle.com/'>http://www.oracle.com/</a>"), rsp);
     }
 
     /**
      * Mark up of URL should consider surrounding markers, if any.
      */
     @Test
-    public void test2() {
+    void test2() {
         MarkupText m = new MarkupText("{abc='http://url/',def='ghi'}");
         new UrlAnnotator().newInstance(null).annotate(null, m);
         String html = m.toString(false);

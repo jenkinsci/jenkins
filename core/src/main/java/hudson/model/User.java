@@ -39,16 +39,17 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
-import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException2;
-import hudson.util.FormApply;
+import hudson.tasks.UserAvatarResolver;
 import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,28 +67,26 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.scm.RunWithSCM;
+import jenkins.search.SearchGroup;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -120,7 +119,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
+public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Loadable, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
 
     public static final XStream2 XSTREAM = new XStream2();
     private static final Logger LOGGER = Logger.getLogger(User.class.getName());
@@ -173,6 +172,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private static final String[] ILLEGAL_PERSISTED_USERNAMES = new String[]{ACL.ANONYMOUS_USERNAME,
             ACL.SYSTEM_USERNAME, UNKNOWN_USERNAME};
 
+    @SuppressFBWarnings(value = "SS_SHOULD_BE_STATIC", justification = "Reserved for future use")
     private final int version = 10; // Not currently used, but it may be helpful in the future to store a version.
     private String id;
     private volatile String fullName;
@@ -188,6 +188,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private User(String id, String fullName) {
         this.id = id;
         this.fullName = fullName;
+        load(id);
+    }
+
+    @Override
+    public void load() {
         load(id);
     }
 
@@ -276,6 +281,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
+    @Override
+    public String getSearchIcon() {
+        return UserAvatarResolver.resolve(this, "48x48");
+    }
+
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.UserSearchGroup.class);
+    }
+
     /**
      * The URL of the user page.
      */
@@ -335,6 +350,29 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         p.setUser(this);
         properties = ps;
         save();
+    }
+
+    /**
+     * Expand {@link #addProperty(UserProperty)} for multiple properties to be done at once.
+     * Expected to be used by the categorized configuration pages to update part of the properties.
+     * The properties not included in the list will be let untouched.
+     * It will call the {@link UserProperty#setUser(User)} method and at the end, {@link #save()} once.
+     *
+     * @since 2.468
+     */
+    public synchronized void addProperties(@NonNull List<UserProperty> multipleProperties) throws IOException {
+        List<UserProperty> newProperties = new ArrayList<>(this.properties);
+        for (UserProperty property : multipleProperties) {
+            UserProperty oldProp = getProperty(property.getClass());
+            if (oldProp != null) {
+                newProperties.remove(oldProp);
+            }
+            newProperties.add(property);
+            property.setUser(this);
+        }
+
+        this.properties = newProperties;
+        this.save();
     }
 
     /**
@@ -461,7 +499,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Accepts the new description.
      */
     @RequirePOST
-    public void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doSubmitDescription(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
 
         description = req.getParameter("description");
@@ -649,9 +687,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * To be called from {@link Jenkins#reload} only.
+     * Called from {@link Jenkins#reload}.
      */
-    @Restricted(NoExternalUse.class)
+    @Restricted(Beta.class)
     public static void reload() throws IOException {
         UserIdMapper.getInstance().reload();
         AllUsers.reload();
@@ -789,7 +827,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.600
      */
     public static boolean isIdOrFullnameAllowed(@CheckForNull String id) {
-        if (StringUtils.isBlank(id)) {
+        if (id == null || id.isBlank()) {
             return false;
         }
         final String trimmedId = id.trim();
@@ -855,52 +893,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Accepts submission from the configuration page.
-     */
-    @POST
-    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
-        checkPermission(Jenkins.ADMINISTER);
-
-        JSONObject json = req.getSubmittedForm();
-        String oldFullName = this.fullName;
-        fullName = json.getString("fullName");
-        description = json.getString("description");
-
-        List<UserProperty> props = new ArrayList<>();
-        int i = 0;
-        for (UserPropertyDescriptor d : UserProperty.all()) {
-            UserProperty p = getProperty(d.clazz);
-
-            JSONObject o = json.optJSONObject("userProperty" + i++);
-            if (o != null) {
-                if (p != null) {
-                    p = p.reconfigure(req, o);
-                } else {
-                    p = d.newInstance(req, o);
-                }
-            }
-
-            if (p != null) {
-                p.setUser(this);
-                props.add(p);
-            }
-        }
-        this.properties = props;
-
-        save();
-
-        if (oldFullName != null && !oldFullName.equals(this.fullName)) {
-            UserDetailsCache.get().invalidate(oldFullName);
-        }
-
-        FormApply.success(".").generateResponse(req, rsp, this);
-    }
-
-    /**
      * Deletes this user from Hudson.
      */
     @RequirePOST
-    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
         if (idStrategy().equals(id, Jenkins.getAuthentication2().getName())) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");
@@ -912,15 +908,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         rsp.sendRedirect2("../..");
     }
 
-    public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssAll(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds().newBuilds());
     }
 
-    public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssFailed(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().regressionOnly());
     }
 
-    public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssLatest(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<>();
         for (Job<?, ?> p : Jenkins.get().allItems(Job.class)) {
             for (Run<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
@@ -1028,7 +1024,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     @Override
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         return new ContextMenu().from(this, request, response);
     }
 
@@ -1135,7 +1131,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @see FullNameIdResolver
      * @since 1.479
      */
-    public abstract static class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
+    public abstract static class CanonicalIdResolver implements Describable<CanonicalIdResolver>, ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
          * context key for realm (domain) where idOrFullName has been retrieved from.

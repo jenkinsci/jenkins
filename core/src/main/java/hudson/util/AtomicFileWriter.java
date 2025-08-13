@@ -26,12 +26,16 @@ package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Functions;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.ref.Cleaner;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -55,8 +59,19 @@ public class AtomicFileWriter extends Writer {
 
     private static final Logger LOGGER = Logger.getLogger(AtomicFileWriter.class.getName());
 
+    private static final Cleaner CLEANER = Cleaner.create(
+            new NamingThreadFactory(new DaemonThreadFactory(), AtomicFileWriter.class.getName() + ".cleaner"));
+
     private static /* final */ boolean DISABLE_FORCED_FLUSH = SystemProperties.getBoolean(
             AtomicFileWriter.class.getName() + ".DISABLE_FORCED_FLUSH");
+
+    private static /* final */ boolean REQUIRES_DIR_FSYNC = SystemProperties.getBoolean(
+            AtomicFileWriter.class.getName() + ".REQUIRES_DIR_FSYNC", !Functions.isWindows());
+
+    /**
+     * Whether the platform supports atomic move.
+     */
+    private static boolean atomicMoveSupported = true;
 
     static {
         if (DISABLE_FORCED_FLUSH) {
@@ -64,7 +79,7 @@ public class AtomicFileWriter extends Writer {
         }
     }
 
-    private final Writer core;
+    private final FileChannelWriter core;
     private final Path tmpPath;
     private final Path destPath;
 
@@ -140,7 +155,7 @@ public class AtomicFileWriter extends Writer {
 
         try {
             // JENKINS-48407: NIO's createTempFile creates file with 0600 permissions, so we use pre-NIO for this...
-            tmpPath = File.createTempFile("atomic", "tmp", dir.toFile()).toPath();
+            tmpPath = File.createTempFile(destPath.getFileName() + "-atomic", "tmp", dir.toFile()).toPath();
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in " + dir, e);
         }
@@ -151,6 +166,8 @@ public class AtomicFileWriter extends Writer {
         }
 
         core = new FileChannelWriter(tmpPath, charset, integrityOnFlush, integrityOnClose, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+
+        CLEANER.register(this, new CleanupChecker(core, tmpPath, destPath));
     }
 
     @Override
@@ -185,61 +202,84 @@ public class AtomicFileWriter extends Writer {
      * the {@link #commit()} is called, to simplify coding.
      */
     public void abort() throws IOException {
-        closeAndDeleteTempFile();
+        // One way or another, the temporary file should be deleted.
+        try {
+            close();
+        } finally {
+            Files.deleteIfExists(tmpPath);
+        }
     }
 
     public void commit() throws IOException {
         close();
         try {
-            // Try to make an atomic move.
-            Files.move(tmpPath, destPath, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException moveFailed) {
-            // If it falls here that can mean many things. Either that the atomic move is not supported,
-            // or something wrong happened. Anyway, let's try to be over-diagnosing
-            if (moveFailed instanceof AtomicMoveNotSupportedException) {
-                LOGGER.log(Level.WARNING, "Atomic move not supported. falling back to non-atomic move.", moveFailed);
-            } else {
-                LOGGER.log(Level.WARNING, "Unable to move atomically, falling back to non-atomic move.", moveFailed);
-            }
-
-            if (destPath.toFile().exists()) {
-                LOGGER.log(Level.INFO, "The target file {0} was already existing", destPath);
-            }
-
+            move(tmpPath, destPath);
+        } finally {
             try {
-                Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException replaceFailed) {
-                replaceFailed.addSuppressed(moveFailed);
-                LOGGER.log(Level.WARNING, "Unable to move {0} to {1}. Attempting to delete {0} and abandoning.",
-                           new Path[]{tmpPath, destPath});
-                try {
-                    Files.deleteIfExists(tmpPath);
-                } catch (IOException deleteFailed) {
-                    replaceFailed.addSuppressed(deleteFailed);
-                    LOGGER.log(Level.WARNING, "Unable to delete {0}, good bye then!", tmpPath);
-                    throw replaceFailed;
-                }
+                // In case of prior failure, the temporary file should be deleted.
+                // If the operation succeeded, the tmpPath is already deleted.
+                Files.deleteIfExists(tmpPath);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, e, () -> "Failed to delete temporary file " + tmpPath + " for destination file " + destPath);
+            }
+        }
 
-                throw replaceFailed;
+        /*
+         * From fsync(2) on Linux:
+         *
+         *     Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also
+         *     reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.
+         */
+        if (!DISABLE_FORCED_FLUSH && REQUIRES_DIR_FSYNC) {
+            try (FileChannel parentChannel = FileChannel.open(destPath.getParent())) {
+                parentChannel.force(true);
             }
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            closeAndDeleteTempFile();
-        } finally {
-            super.finalize();
+    private static void move(Path source, Path destination) throws IOException {
+        if (atomicMoveSupported) {
+            try {
+                // Try to make an atomic move.
+                Files.move(source, destination, StandardCopyOption.ATOMIC_MOVE);
+                return;
+            } catch (AtomicMoveNotSupportedException e) {
+                // Both files are on the same filesystem, so this should not happen.
+                LOGGER.log(Level.WARNING, e, () -> "Atomic move " + source + " → " + destination + " not supported. Falling back to non-atomic move.");
+                atomicMoveSupported = false;
+            } catch (AccessDeniedException e) {
+                LOGGER.log(Level.INFO, e, () -> "Move " + source + " → " + destination + " failed, perhaps due to a temporary file lock. Falling back to non-atomic move.");
+            }
         }
+        Files.move(source, destination, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    private void closeAndDeleteTempFile() throws IOException {
-        // one way or the other, temporary file should be deleted.
-        try {
-            close();
-        } finally {
-            Files.deleteIfExists(tmpPath);
+    private static final class CleanupChecker implements Runnable {
+        private final FileChannelWriter core;
+        private final Path tmpPath;
+        private final Path destPath;
+
+        CleanupChecker(final FileChannelWriter core, final Path tmpPath, final Path destPath) {
+            this.core = core;
+            this.tmpPath = tmpPath;
+            this.destPath = destPath;
+        }
+
+        @Override
+        public void run() {
+            if (core.isOpen()) {
+                LOGGER.log(Level.WARNING, "AtomicFileWriter for " + destPath + " was not closed before being released");
+                try {
+                    core.close();
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to close " + tmpPath + " for destination file " + destPath, e);
+                }
+            }
+            try {
+                Files.deleteIfExists(tmpPath);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to delete temporary file " + tmpPath + " for destination file " + destPath, e);
+            }
         }
     }
 

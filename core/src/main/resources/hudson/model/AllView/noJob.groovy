@@ -31,9 +31,7 @@ div {
                             a(href: "newJob", class: "content-block__link") {
                                 span(_("createJob"))
                                 span(class: "trailing-icon") {
-                                    l.icon(
-                                            class: "icon-md",
-                                            src: "symbol-arrow-right")
+                                    l.icon(src: "symbol-add")
                                 }
                             }
                         }
@@ -48,9 +46,7 @@ div {
                                 a(href: "computer/new", class: "content-block__link") {
                                     span(_("setUpAgent"))
                                     span(class: "trailing-icon") {
-                                        l.icon(
-                                                class: "icon-md",
-                                                src: "symbol-arrow-right")
+                                        l.icon(src: "symbol-computer")
                                     }
                                 }
                             }
@@ -60,9 +56,7 @@ div {
                                     a(href: "cloud/", class: "content-block__link") {
                                         span(_("setUpCloud"))
                                         span(class: "trailing-icon") {
-                                            l.icon(
-                                                    class: "icon-md",
-                                                    src: "symbol-arrow-right")
+                                            l.icon(src: "symbol-cloud")
                                         }
                                     }
                                 }
@@ -71,12 +65,10 @@ div {
                             li(class: "content-block") {
                                 a(href: "https://www.jenkins.io/redirect/distributed-builds",
                                         target: "_blank",
-                                        class: "content-block__link content-block__help-link") {
+                                        class: "content-block__link") {
                                     span(_("learnMoreDistributedBuilds"))
                                     span(class: "trailing-icon") {
-                                        l.icon(
-                                                class: "icon-md",
-                                                src: "symbol-link")
+                                        l.icon(src: "symbol-help-circle")
                                     }
                                 }
                             }
@@ -89,16 +81,14 @@ div {
             // we're in a folder
 
             section(class: "empty-state-section") {
-                h2(_("This folder is empty"), class: "h4")
+                h2(_("thisFolderIsEmpty"), class: "h4")
 
                 ul(class: "empty-state-section-list") {
                     li(class: "content-block") {
                         a(href: "newJob", class: "content-block__link") {
                             span(_("createJob"))
                             span(class: "trailing-icon") {
-                                l.icon(
-                                        class: "icon-md",
-                                        src: "symbol-arrow-right")
+                                l.icon(src: "symbol-add")
                             }
                         }
                     }
@@ -121,7 +111,7 @@ div {
             section(class: "empty-state-section") {
                 ul(class: "empty-state-section-list") {
                     li(class: "content-block") {
-                        a(href: "${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}",
+                        a(href: "${rootURL}/${app.securityRealm.loginUrl}?from=${request2.requestURI}",
                                 class: "content-block__link") {
                             span(_("Log in to Jenkins"))
                             span(class: "trailing-icon") {

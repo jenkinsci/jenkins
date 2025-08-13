@@ -24,8 +24,6 @@
 
 package hudson.console;
 
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionPoint;
 import hudson.Functions;
@@ -34,8 +32,8 @@ import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.remoting.ClassFilter;
 import hudson.remoting.ObjectInputStreamEx;
-import hudson.util.IOUtils;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -50,11 +48,13 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.BuildListener;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 import org.kohsuke.accmod.Restricted;
@@ -193,6 +193,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * Technically, this method only works if the {@link Writer} to {@link OutputStream}
      * encoding is ASCII compatible.
      */
+    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public void encodeTo(Writer out) throws IOException {
         out.write(encodeToBytes().toString());
     }
@@ -223,6 +224,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     /**
      * Works like {@link #encodeTo(Writer)} but obtain the result as a string.
      */
+    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public String encode() throws IOException {
         return encodeToBytes().toString();
     }
@@ -306,12 +308,12 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         DataInputStream decoded = new DataInputStream(Base64.getDecoder().wrap(in));
         int macSz = - decoded.readInt();
         if (macSz > 0) { // new format
-            IOUtils.skip(decoded, macSz);
+            IOUtils.skipFully(decoded, macSz);
             int sz = decoded.readInt();
-            IOUtils.skip(decoded, sz);
+            IOUtils.skipFully(decoded, sz);
         } else { // old format
             int sz = -macSz;
-            IOUtils.skip(decoded, sz);
+            IOUtils.skipFully(decoded, sz);
         }
 
         byte[] postamble = new byte[POSTAMBLE.length];

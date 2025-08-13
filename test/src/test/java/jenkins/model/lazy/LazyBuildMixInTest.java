@@ -24,26 +24,38 @@
 
 package jenkins.model.lazy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.listeners.RunListener;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class LazyBuildMixInTest {
+@WithJenkins
+class LazyBuildMixInTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-22395")
-    @Test public void dropLinksAfterGC() throws Exception {
+    @Test
+    void dropLinksAfterGC() throws Exception {
         RunListener.all().clear();  // see commit message for the discussion
 
         FreeStyleProject p = r.createFreeStyleProject();
@@ -65,7 +77,8 @@ public class LazyBuildMixInTest {
     }
 
     @Issue("JENKINS-22395")
-    @Test public void dropLinksAfterGC2() throws Exception {
+    @Test
+    void dropLinksAfterGC2() throws Exception {
         RunListener.all().clear();  // see commit message for the discussion
 
         FreeStyleProject p = r.createFreeStyleProject();
@@ -84,10 +97,46 @@ public class LazyBuildMixInTest {
         assertNotSame(b1, b1a);
         assertEquals(1, b1a.getNumber());
         assertEquals(b3, b1a.getNextBuild());
+    }
+
+    @Test
+    void numericLookups() throws Exception {
+        var p = r.createFreeStyleProject();
+        var b1 = r.buildAndAssertSuccess(p);
+        var b2 = r.buildAndAssertSuccess(p);
+        var b3 = r.buildAndAssertSuccess(p);
+        var b4 = r.buildAndAssertSuccess(p);
+        var b5 = r.buildAndAssertSuccess(p);
+        var b6 = r.buildAndAssertSuccess(p);
+        b1.delete();
+        b3.delete();
+        b6.delete();
+        // leaving 2, 4, 5
+        assertThat(p.getFirstBuild(), is(b2));
+        assertThat(p.getLastBuild(), is(b5));
+        assertThat(p.getNearestBuild(-1), is(b2));
+        assertThat(p.getNearestBuild(0), is(b2));
+        assertThat(p.getNearestBuild(1), is(b2));
+        assertThat(p.getNearestBuild(2), is(b2));
+        assertThat(p.getNearestBuild(3), is(b4));
+        assertThat(p.getNearestBuild(4), is(b4));
+        assertThat(p.getNearestBuild(5), is(b5));
+        assertThat(p.getNearestBuild(6), nullValue());
+        assertThat(p.getNearestBuild(7), nullValue());
+        assertThat(p.getNearestOldBuild(-1), nullValue());
+        assertThat(p.getNearestOldBuild(0), nullValue());
+        assertThat(p.getNearestOldBuild(1), nullValue());
+        assertThat(p.getNearestOldBuild(2), is(b2));
+        assertThat(p.getNearestOldBuild(3), is(b2));
+        assertThat(p.getNearestOldBuild(4), is(b4));
+        assertThat(p.getNearestOldBuild(5), is(b5));
+        assertThat(p.getNearestOldBuild(6), is(b5));
+        assertThat(p.getNearestOldBuild(7), is(b5));
     }
 
     @Issue("JENKINS-20662")
-    @Test public void newRunningBuildRelationFromPrevious() throws Exception {
+    @Test
+    void newRunningBuildRelationFromPrevious() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new SleepBuilder(1000));
         FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
@@ -96,4 +145,19 @@ public class LazyBuildMixInTest {
         assertSame(b2, b1.getNextBuild());
         r.assertBuildStatusSuccess(r.waitForCompletion(b2));
     }
+
+    @Test
+    void newBuildsShouldNotLoadOld() throws Throwable {
+        var p = r.createFreeStyleProject("p");
+        for (int i = 0; i < 10; i++) {
+            r.buildAndAssertSuccess(p);
+        }
+        RunLoadCounter.assertMaxLoads(p, /* just lastBuild */ 1, () -> {
+            for (int i = 0; i < 5; i++) {
+                r.buildAndAssertSuccess(p);
+            }
+            return null;
+        });
+    }
+
 }

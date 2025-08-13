@@ -5,14 +5,11 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.util.Cookie;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.User;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -22,12 +19,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import jenkins.security.seed.UserSeedProperty;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.CookieManager;
+import org.htmlunit.util.Cookie;
+import org.htmlunit.xml.XmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Stapler;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -39,20 +39,21 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import test.security.realm.InMemorySecurityRealm;
 
-public class TokenBasedRememberMeServices2Test {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class TokenBasedRememberMeServices2Test {
 
     private static boolean failureInduced;
 
-    @Before
-    public void resetFailureInduced() {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         failureInduced = false;
     }
 
     @Test
-    public void rememberMeAutoLoginFailure() throws Exception {
+    void rememberMeAutoLoginFailure() throws Exception {
         j.jenkins.setSecurityRealm(new InvalidUserWhenLoggingBackInRealm());
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -102,7 +103,7 @@ public class TokenBasedRememberMeServices2Test {
     }
 
     @Test
-    public void basicFlow() throws Exception {
+    void basicFlow() throws Exception {
         j.jenkins.setSecurityRealm(new StupidRealm());
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -141,7 +142,7 @@ public class TokenBasedRememberMeServices2Test {
     @Test
     @Issue("SECURITY-868")
     @For(UserSeedProperty.class)
-    public void rememberMeToken_invalid_afterUserSeedReset() throws Exception {
+    void rememberMeToken_invalid_afterUserSeedReset() throws Exception {
         j.jenkins.setDisableRememberMe(false);
 
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
@@ -167,7 +168,7 @@ public class TokenBasedRememberMeServices2Test {
     @Test
     @Issue("SECURITY-868")
     @For(UserSeedProperty.class)
-    public void rememberMeToken_stillValid_afterUserSeedReset_ifUserSeedDisabled() throws Exception {
+    void rememberMeToken_stillValid_afterUserSeedReset_ifUserSeedDisabled() throws Exception {
         boolean currentStatus = UserSeedProperty.DISABLE_USER_SEED;
         try {
             UserSeedProperty.DISABLE_USER_SEED = true;
@@ -200,7 +201,7 @@ public class TokenBasedRememberMeServices2Test {
 
     @Test
     @Issue("SECURITY-868")
-    public void rememberMeToken_shouldNotAccept_expirationDurationLargerThanConfigured() throws Exception {
+    void rememberMeToken_shouldNotAccept_expirationDurationLargerThanConfigured() throws Exception {
         j.jenkins.setDisableRememberMe(false);
 
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
@@ -239,7 +240,7 @@ public class TokenBasedRememberMeServices2Test {
 
     @Test
     @Issue("SECURITY-868")
-    public void rememberMeToken_skipExpirationCheck() throws Exception {
+    void rememberMeToken_skipExpirationCheck() throws Exception {
         boolean previousConfig = TokenBasedRememberMeServices2.SKIP_TOO_FAR_EXPIRATION_DATE_CHECK;
         try {
             TokenBasedRememberMeServices2.SKIP_TOO_FAR_EXPIRATION_DATE_CHECK = true;
@@ -285,7 +286,7 @@ public class TokenBasedRememberMeServices2Test {
 
     @Test
     @Issue("JENKINS-56243")
-    public void rememberMeToken_shouldLoadUserDetailsOnlyOnce() throws Exception {
+    void rememberMeToken_shouldLoadUserDetailsOnlyOnce() throws Exception {
         j.jenkins.setDisableRememberMe(false);
         LoadUserCountingSecurityRealm realm = new LoadUserCountingSecurityRealm();
         realm.createAccount("alice");
@@ -299,7 +300,7 @@ public class TokenBasedRememberMeServices2Test {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getCookieManager().addCookie(cookie);
         // trigger remember me
-        String sessionSeed = wc.executeOnServer(() -> Stapler.getCurrentRequest().getSession(false).getAttribute(UserSeedProperty.USER_SESSION_SEED).toString());
+        String sessionSeed = wc.executeOnServer(() -> Stapler.getCurrentRequest2().getSession(false).getAttribute(UserSeedProperty.USER_SESSION_SEED).toString());
         realm.verifyInvocations(1);
         String userSeed = alice.getProperty(UserSeedProperty.class).getSeed();
 
@@ -353,7 +354,7 @@ public class TokenBasedRememberMeServices2Test {
 
     @Test
     @Issue("SECURITY-996")
-    public void rememberMeToken_shouldNotBeRead_ifOptionIsDisabled() throws Exception {
+    void rememberMeToken_shouldNotBeRead_ifOptionIsDisabled() throws Exception {
         j.jenkins.setDisableRememberMe(false);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 

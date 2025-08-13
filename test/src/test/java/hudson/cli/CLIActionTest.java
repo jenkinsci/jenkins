@@ -1,6 +1,10 @@
 package hudson.cli;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.Functions;
 import hudson.Launcher;
@@ -38,31 +42,37 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.args4j.Option;
 
-public class CLIActionTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class CLIActionTest {
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    private File tmp;
 
-    @Rule
-    public LoggerRule logging = new LoggerRule();
+    private final LogRecorder logging = new LogRecorder();
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("SECURITY-192")
-    public void serveCliActionToAnonymousUserWithoutPermissions() throws Exception {
+    void serveCliActionToAnonymousUserWithoutPermissions() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -71,19 +81,19 @@ public class CLIActionTest {
     }
 
     @Test
-    public void serveCliActionToAnonymousUserWithAnonymousUserWithPermissions() throws Exception {
+    void serveCliActionToAnonymousUserWithAnonymousUserWithPermissions() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.goTo("cli");
     }
 
     @Issue({"JENKINS-12543", "JENKINS-41745"})
     @Test
-    public void authentication() throws Exception {
+    void authentication() throws Exception {
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
         config.setTokenGenerationOnCreationEnabled(true);
 
         logging.record(PlainCLIProtocol.class, Level.FINE);
-        File jar = tmp.newFile("jenkins-cli.jar");
+        File jar = File.createTempFile("jenkins-cli.jar", null, tmp);
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN));
@@ -132,10 +142,25 @@ public class CLIActionTest {
         assertEquals(code, proc.join());
     }
 
+    @Disabled("TODO flaky test")
+    @Test
+    void authenticationFailed() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
+        var jar = File.createTempFile("jenkins-cli.jar", null, tmp);
+        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
+        var baos = new ByteArrayOutputStream();
+        var exitStatus = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
+            "java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), "-auth", "user:bogustoken", "who-am-i"
+        ).stdout(baos).start().join();
+        assertThat(baos.toString(), allOf(containsString("status code 401"), containsString("Server: Jetty")));
+        assertThat(exitStatus, is(15));
+    }
+
     @Issue("JENKINS-41745")
     @Test
-    public void encodingAndLocale() throws Exception {
-        File jar = tmp.newFile("jenkins-cli.jar");
+    void encodingAndLocale() throws Exception {
+        File jar = File.createTempFile("jenkins-cli.jar", null, tmp);
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
@@ -149,9 +174,9 @@ public class CLIActionTest {
 
     @Issue("JENKINS-41745")
     @Test
-    public void interleavedStdio() throws Exception {
+    void interleavedStdio() throws Exception {
         logging.record(PlainCLIProtocol.class, Level.FINE).record(FullDuplexHttpService.class, Level.FINE);
-        File jar = tmp.newFile("jenkins-cli.jar");
+        File jar = File.createTempFile("jenkins-cli.jar", null, tmp);
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PipedInputStream pis = new PipedInputStream();
@@ -178,8 +203,8 @@ public class CLIActionTest {
 
     @Issue("SECURITY-754")
     @Test
-    public void noPreAuthOptionHandlerInfoLeak() throws Exception {
-        File jar = tmp.newFile("jenkins-cli.jar");
+    void noPreAuthOptionHandlerInfoLeak() throws Exception {
+        File jar = File.createTempFile("jenkins-cli.jar", null, tmp);
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.addView(new AllView("v1"));
@@ -219,21 +244,22 @@ public class CLIActionTest {
 
     @Issue("JENKINS-64294")
     @Test
-    public void largeTransferWebSocket() throws Exception {
+    void largeTransferWebSocket() throws Exception {
         logging.record(CLIAction.class, Level.FINE);
-        File jar = tmp.newFile("jenkins-cli.jar");
+        File jar = File.createTempFile("jenkins-cli.jar", null, tmp);
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
-        CountingOutputStream cos = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM);
         long size = /*999_*/999_999;
-        // Download:
-        assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
-            "java", "-jar", jar.getAbsolutePath(),
-                "-webSocket",
-                "-s", j.getURL().toString(),
-                "large-download",
-                "-size", Long.toString(size)).
-            stdout(cos).stderr(System.err).join());
-        assertEquals(size, cos.getByteCount());
+        try (OutputStream nos = OutputStream.nullOutputStream(); CountingOutputStream cos = new CountingOutputStream(nos)) {
+            // Download:
+            assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
+                "java", "-jar", jar.getAbsolutePath(),
+                    "-webSocket",
+                    "-s", j.getURL().toString(),
+                    "large-download",
+                    "-size", Long.toString(size)).
+                stdout(cos).stderr(System.err).join());
+            assertEquals(size, cos.getByteCount());
+        }
         // Upload:
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
@@ -250,7 +276,7 @@ public class CLIActionTest {
     public static final class LargeUploadCommand extends CLICommand {
         @Override
         protected int run() throws Exception {
-            try (InputStream is = new BufferedInputStream(stdin); CountingOutputStream cos = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM)) {
+            try (InputStream is = new BufferedInputStream(stdin); OutputStream nos = OutputStream.nullOutputStream(); CountingOutputStream cos = new CountingOutputStream(nos)) {
                 System.err.println("starting upload");
                 long start = System.nanoTime();
                 IOUtils.copyLarge(is, cos);

@@ -24,11 +24,11 @@
 
 package hudson.tasks;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Launcher;
@@ -62,29 +62,26 @@ import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.triggers.ReverseBuildTriggerTest;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockBuilder;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.springframework.security.core.Authentication;
 import org.xml.sax.SAXException;
 
-public class BuildTriggerTest {
+@WithJenkins
+class BuildTriggerTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
-
-    @Before
-    public void runMoreQuickly() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
         j.jenkins.setQuietPeriod(0);
     }
 
@@ -115,8 +112,8 @@ public class BuildTriggerTest {
     private void assertNoDownstreamBuild(FreeStyleProject dp, Run<?, ?> b) throws Exception {
         for (int i = 0; i < 3; i++) {
             Thread.sleep(200);
-            assertTrue("downstream build should not run!  upstream log: " + b.getLog(),
-                       !dp.isInQueue() && !dp.isBuilding() && dp.getLastBuild() == null);
+            assertTrue(!dp.isInQueue() && !dp.isBuilding() && dp.getLastBuild() == null,
+                       "downstream build should not run!  upstream log: " + b.getLog());
         }
     }
 
@@ -126,23 +123,23 @@ public class BuildTriggerTest {
         for (int i = 0; (result = dp.getLastBuild()) == null && i < 25; i++) {
             Thread.sleep(250);
         }
-        assertNotNull("downstream build didn't run.. upstream log: " + b.getLog(), result);
+        assertNotNull(result, "downstream build didn't run.. upstream log: " + b.getLog());
         return result;
     }
 
     @Test
-    public void buildTrigger() throws Exception {
+    void buildTrigger() throws Exception {
         doTriggerTest(false, Result.SUCCESS, Result.UNSTABLE);
     }
 
     @Test
-    public void triggerEvenWhenUnstable() throws Exception {
+    void triggerEvenWhenUnstable() throws Exception {
         doTriggerTest(true, Result.UNSTABLE, Result.FAILURE);
     }
 
     /** @see ReverseBuildTriggerTest#upstreamProjectSecurity */
     @Test
-    public void downstreamProjectSecurity() throws Exception {
+    void downstreamProjectSecurity() throws Exception {
         j.jenkins.setSecurityRealm(new LegacySecurityRealm());
         ProjectMatrixAuthorizationStrategy auth = new ProjectMatrixAuthorizationStrategy();
         auth.add(Jenkins.READ, "alice");
@@ -150,8 +147,8 @@ public class BuildTriggerTest {
         auth.add(Computer.BUILD, "anonymous");
         j.jenkins.setAuthorizationStrategy(auth);
         final FreeStyleProject upstream = j. createFreeStyleProject("upstream");
-        org.acegisecurity.Authentication alice = User.getOrCreateByIdOrFullName("alice").impersonate();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of("upstream", alice)));
+        Authentication alice = User.getOrCreateByIdOrFullName("alice").impersonate2();
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator().authenticate("upstream", alice));
         Map<Permission, Set<String>> perms = new HashMap<>();
         perms.put(Item.READ, Set.of("alice"));
         perms.put(Item.CONFIGURE, Set.of("alice"));
@@ -168,7 +165,7 @@ public class BuildTriggerTest {
         config.getButtonByCaption("Add post-build action").click(); // lib/hudson/project/config-publishers2.jelly
         page.getAnchorByText("Build other projects").click();
         HtmlTextInput childProjects = config.getInputByName("buildTrigger.childProjects");
-        childProjects.setValueAttribute(downstreamName);
+        childProjects.setValue(downstreamName);
         submit(config);
         */
         assertEquals(List.of(downstream), upstream.getDownstreamProjects());
@@ -206,7 +203,7 @@ public class BuildTriggerTest {
         assertNotNull(cause);
         assertEquals(b, cause.getUpstreamRun());
         // Now if we have configured some QIA’s but they are not active on this job, we should normally fall back to running as anonymous. Which would normally have no permissions:
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(Map.of("upstream", Jenkins.ANONYMOUS)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator().authenticate("upstream", Jenkins.ANONYMOUS2));
         assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName);
         assertDoCheck(alice, null, null, downstreamName);
         b = j.buildAndAssertSuccess(upstream);
@@ -242,21 +239,22 @@ public class BuildTriggerTest {
         j.buildAndAssertSuccess(simple);
     }
 
-    private void assertDoCheck(org.acegisecurity.Authentication auth, @CheckForNull String expectedError, AbstractProject<?, ?> project, String value) {
+    private void assertDoCheck(Authentication auth, @CheckForNull String expectedError, AbstractProject<?, ?> project, String value) {
         FormValidation result;
-        try (ACLContext c = ACL.as(auth)) {
+        try (ACLContext c = ACL.as2(auth)) {
             result = j.jenkins.getDescriptorByType(BuildTrigger.DescriptorImpl.class).doCheck(project, value);
         }
         if (expectedError == null) {
-            assertEquals(result.renderHtml(), FormValidation.Kind.OK, result.kind);
+            assertEquals(FormValidation.Kind.OK, result.kind, result.renderHtml());
         } else {
-            assertEquals(result.renderHtml(), FormValidation.Kind.ERROR, result.kind);
+            assertEquals(FormValidation.Kind.ERROR, result.kind, result.renderHtml());
             assertEquals(result.renderHtml(), expectedError);
         }
     }
 
-    @Test @Issue("JENKINS-20989")
-    public void downstreamProjectShouldObserveCompletedParent() throws Exception {
+    @Test
+    @Issue("JENKINS-20989")
+    void downstreamProjectShouldObserveCompletedParent() throws Exception {
         j.jenkins.setNumExecutors(2);
 
         final FreeStyleProject us = j.createFreeStyleProject();
@@ -276,8 +274,9 @@ public class BuildTriggerTest {
         j.assertBuildStatusSuccess(dsb);
     }
 
-    @Test @Issue("JENKINS-20989")
-    public void allDownstreamProjectsShouldObserveCompletedParent() throws Exception {
+    @Test
+    @Issue("JENKINS-20989")
+    void allDownstreamProjectsShouldObserveCompletedParent() throws Exception {
         j.jenkins.setNumExecutors(3);
 
         final FreeStyleProject us = j.createFreeStyleProject();
@@ -354,8 +353,8 @@ public class BuildTriggerTest {
             FreeStyleBuild success = us.getLastSuccessfulBuild();
             FreeStyleBuild last = us.getLastBuild();
             try {
-                assertFalse("Upstream build is not completed after downstream started", last.isBuilding());
-                assertNotNull("Upstream build permalink not correctly updated", success);
+                assertFalse(last.isBuilding(), "Upstream build is not completed after downstream started");
+                assertNotNull(success, "Upstream build permalink not correctly updated");
                 assertEquals(1, success.getNumber());
             } catch (AssertionError ex) {
                 System.err.println("Upstream build log: " + last.getLog());

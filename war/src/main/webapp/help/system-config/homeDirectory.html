@@ -3,39 +3,15 @@
 
   <ul>
     <li>
-      Edit the
+      Set the
       <code>JENKINS_HOME</code>
-      variable in your Jenkins configuration file (e.g.
-      <code>/etc/sysconfig/jenkins</code>
-      on Red Hat Linux).
-    </li>
-
-    <li>
-      Use your web container's admin tool to set the
-      <code>JENKINS_HOME</code>
-      environment variable.
-    </li>
-
-    <li>
-      Set the environment variable
-      <code>JENKINS_HOME</code>
-      before launching your web container, or before launching Jenkins directly
-      from the WAR file.
+      environment variable when launching Jenkins.
     </li>
 
     <li>
       Set the
       <code>JENKINS_HOME</code>
-      Java system property when launching your web container, or when launching
-      Jenkins directly from the WAR file.
-    </li>
-
-    <li>
-      Modify
-      <code>web.xml</code>
-      in
-      <code>jenkins.war</code>
-      (or its expanded image in your web container). This is not recommended.
+      Java system property when launching Jenkins.
     </li>
   </ul>
 

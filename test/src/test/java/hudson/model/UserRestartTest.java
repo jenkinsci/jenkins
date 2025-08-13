@@ -28,27 +28,28 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.FilePath;
 import hudson.tasks.Mailer;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.WebRequest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
-public class UserRestartTest {
+class UserRestartTest {
 
-    @Rule
-    public JenkinsSessionRule sessions = new JenkinsSessionRule();
+    @RegisterExtension
+    private final JenkinsSessionExtension sessions = new JenkinsSessionExtension();
 
-    @Test public void persistedUsers() throws Throwable {
+    @Test
+    void persistedUsers() throws Throwable {
         sessions.then(r -> {
             User bob = User.getById("bob", true);
             bob.setFullName("Bob");
@@ -66,7 +67,7 @@ public class UserRestartTest {
 
     @Issue("JENKINS-45892")
     @Test
-    public void badSerialization() throws Throwable {
+    void badSerialization() throws Throwable {
         sessions.then(r -> {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             FreeStyleProject p = r.createFreeStyleProject("p");
@@ -103,7 +104,7 @@ public class UserRestartTest {
 
     @Test
     @Issue("SECURITY-897")
-    public void legacyConfigMoveCannotEscapeUserFolder() throws Throwable {
+    void legacyConfigMoveCannotEscapeUserFolder() throws Throwable {
         sessions.then(r -> {
                 r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
                 assertThat(r.jenkins.isUseSecurity(), equalTo(true));
@@ -115,7 +116,7 @@ public class UserRestartTest {
                     JenkinsRule.WebClient wc = r.createWebClient()
                             .withThrowExceptionOnFailingStatusCode(false);
 
-                    WebRequest request = new WebRequest(new URL(r.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(r.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("..", "any-password"));
                     wc.getPage(request);
                 }
@@ -123,7 +124,7 @@ public class UserRestartTest {
                     JenkinsRule.WebClient wc = r.createWebClient()
                             .withThrowExceptionOnFailingStatusCode(false);
 
-                    WebRequest request = new WebRequest(new URL(r.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(r.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("../users/..", "any-password"));
                     wc.getPage(request);
                 }

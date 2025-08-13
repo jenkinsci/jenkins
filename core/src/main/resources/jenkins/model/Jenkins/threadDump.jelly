@@ -28,7 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permission="${app.ADMINISTER}" title="${%threadDump}" type="one-column">
-    <f:breadcrumb-config-outline title="${%threadDump}" />
+    <l:breadcrumb title="${%threadDump}" />
     <l:main-panel>
       <h1>${%threadDumpTitle}</h1>
       <j:set var="tdumps" value="${it.getAllThreadDumps()}"/>
@@ -47,7 +47,7 @@ THE SOFTWARE.
         </j:if>
         <j:if test="${e.key != null and e.key.length() > 0}">
           <h1 id="id${e.key.hashCode()}">
-            <l:icon class="symbol-computer icon-lg"/> <a class="model-link inside" href="/computer/${e.key}">${e.key}</a>
+            <l:icon class="symbol-computer icon-lg"/> <a class="model-link inside" href="${rootURL}/computer/${e.key}/">${e.key}</a>
           </h1>
         </j:if>
         <j:forEach var="t" items="${e.value.entrySet()}">

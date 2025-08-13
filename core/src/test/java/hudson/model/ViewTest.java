@@ -1,7 +1,7 @@
 package hudson.model;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mockito;
 
 public class ViewTest {
@@ -24,7 +24,7 @@ public class ViewTest {
      * are added to the SearchIndexBuilder
      */
     @Test
-    public void testAddDisplayNamesToSearchIndex() {
+    void testAddDisplayNamesToSearchIndex() {
         final String url1 = "url1";
         final String displayName1 = "displayName1";
         final String url2 = "url2";
@@ -75,7 +75,7 @@ public class ViewTest {
      * Get all items recursively when View implements ViewGroup at the same time
      */
     @Test
-    public void getAllItems() {
+    void getAllItems() {
 
         final View leftView = Mockito.mock(View.class);
         final View rightView = Mockito.mock(View.class);
@@ -102,7 +102,7 @@ public class ViewTest {
 
     @Test
     @Issue("JENKINS-43322")
-    public void getAllViewsRecursively() {
+    void getAllViewsRecursively() {
         //given
         View left2ndNestedView = Mockito.mock(View.class);
         View right2ndNestedView = Mockito.mock(View.class);
@@ -186,11 +186,11 @@ public class ViewTest {
         }
 
         @Override
-        protected void submit(StaplerRequest req) {
+        protected void submit(StaplerRequest2 req) {
         }
 
         @Override
-        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) {
+        public Item doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) {
             return null;
         }
     }

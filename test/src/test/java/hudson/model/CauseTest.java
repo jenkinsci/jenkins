@@ -27,78 +27,99 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.XmlFile;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.BuildTrigger;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.concurrent.Future;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.xml.sax.SAXException;
 
-public class CauseTest {
+@WithJenkins
+class CauseTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-14814")
-    @Test public void deeplyNestedCauses() throws Exception {
+    @Test
+    void deeplyNestedCauses() throws Exception {
         FreeStyleProject a = j.createFreeStyleProject("a");
         FreeStyleProject b = j.createFreeStyleProject("b");
-        Run<?, ?> early = null;
-        Run<?, ?> last = null;
+        FreeStyleBuild early = null;
+        FreeStyleBuild last = null;
         for (int i = 1; i <= 15; i++) {
-            last = b.scheduleBuild2(0, new Cause.UpstreamCause((Run<?, ?>) a.scheduleBuild2(0, last == null ? null : new Cause.UpstreamCause(last)).get())).get();
+            last = j.waitForCompletion(a.scheduleBuild2(0, last == null ? null : new Cause.UpstreamCause(last)).get());
+            last = j.waitForCompletion(b.scheduleBuild2(0, new Cause.UpstreamCause(last)).get());
             if (i == 5) {
                 early = last;
             }
         }
         String buildXml = new XmlFile(Run.XSTREAM, new File(early.getRootDir(), "build.xml")).asString();
-        assertTrue("keeps full history:\n" + buildXml, buildXml.contains("<upstreamBuild>1</upstreamBuild>"));
+        assertTrue(buildXml.contains("<upstreamBuild>1</upstreamBuild>"), "keeps full history:\n" + buildXml);
         buildXml = new XmlFile(Run.XSTREAM, new File(last.getRootDir(), "build.xml")).asString();
-        assertFalse("too big:\n" + buildXml, buildXml.contains("<upstreamBuild>1</upstreamBuild>"));
+        assertFalse(buildXml.contains("<upstreamBuild>1</upstreamBuild>"), "too big:\n" + buildXml);
     }
 
     @Issue("JENKINS-15747")
-    @Test public void broadlyNestedCauses() throws Exception {
+    @Test
+    void broadlyNestedCauses() throws Exception {
         FreeStyleProject a = j.createFreeStyleProject("a");
         FreeStyleProject b = j.createFreeStyleProject("b");
         FreeStyleProject c = j.createFreeStyleProject("c");
+        List<QueueTaskFuture<FreeStyleBuild>> futures = new ArrayList<>();
         Run<?, ?> last = null;
         for (int i = 1; i <= 10; i++) {
             Cause cause = last == null ? null : new Cause.UpstreamCause(last);
-            Future<? extends Run<?, ?>> next1 = a.scheduleBuild2(0, cause);
-            a.scheduleBuild2(0, cause);
-            cause = new Cause.UpstreamCause(next1.get());
-            Future<? extends Run<?, ?>> next2 = b.scheduleBuild2(0, cause);
-            b.scheduleBuild2(0, cause);
-            cause = new Cause.UpstreamCause(next2.get());
-            Future<? extends Run<?, ?>> next3 = c.scheduleBuild2(0, cause);
-            c.scheduleBuild2(0, cause);
-            last = next3.get();
+            last = j.waitForCompletion(a.scheduleBuild2(0, cause).get());
+            recordFuture(b.scheduleBuild2(1, cause), futures);
+            cause = new Cause.UpstreamCause(last);
+            last = j.waitForCompletion(b.scheduleBuild2(0, cause).get());
+            recordFuture(c.scheduleBuild2(1, cause), futures);
+            cause = new Cause.UpstreamCause(last);
+            last = j.waitForCompletion(c.scheduleBuild2(0, cause).get());
+            recordFuture(a.scheduleBuild2(1, cause), futures);
         }
+        last = j.waitForCompletion(a.scheduleBuild2(0, new Cause.UpstreamCause(last)).get());
         int count = new XmlFile(Run.XSTREAM, new File(last.getRootDir(), "build.xml")).asString().split(Pattern.quote("<hudson.model.Cause_-UpstreamCause")).length;
-        assertFalse("too big at " + count, count > 100);
+        assertFalse(count > 100, "too big at " + count);
         //j.interactiveBreak();
+        for (QueueTaskFuture<FreeStyleBuild> future : futures) {
+            j.assertBuildStatusSuccess(j.waitForCompletion(future.waitForStart()));
+        }
     }
 
+    private static QueueTaskFuture<FreeStyleBuild> recordFuture(QueueTaskFuture<FreeStyleBuild> future, List<QueueTaskFuture<FreeStyleBuild>> futures) {
+        futures.add(future);
+        return future;
+    }
 
     @Issue("JENKINS-48467")
-    @Test public void userIdCausePrintTest() throws Exception {
+    @Test
+    void userIdCausePrintTest() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         TaskListener listener = new StreamTaskListener(baos, Charset.defaultCharset());
 
@@ -136,7 +157,7 @@ public class CauseTest {
     @Test
     @Issue("SECURITY-1960")
     @LocalData
-    public void xssInRemoteCause() throws IOException, SAXException {
+    void xssInRemoteCause() throws IOException, SAXException {
         final Item item = j.jenkins.getItemByFullName("fs");
         assertThat(item, instanceOf(FreeStyleProject.class));
         FreeStyleProject fs = (FreeStyleProject) item;
@@ -144,13 +165,13 @@ public class CauseTest {
 
         final JenkinsRule.WebClient wc = j.createWebClient();
         final String content = wc.getPage(build).getWebResponse().getContentAsString();
-        Assert.assertFalse(content.contains("Started by remote host <img"));
-        Assert.assertTrue(content.contains("Started by remote host &lt;img"));
+        assertFalse(content.contains("Started by remote host <img"));
+        assertTrue(content.contains("Started by remote host &lt;img"));
     }
 
     @Test
     @Issue("SECURITY-1901")
-    public void preventXssInUpstreamDisplayName() throws Exception {
+    void preventXssInUpstreamDisplayName() throws Exception {
         j.jenkins.setQuietPeriod(0);
         FreeStyleProject up = j.createFreeStyleProject("up");
         up.setDisplayName("Up<script>alert(123)</script>Project");
@@ -170,7 +191,7 @@ public class CauseTest {
 
     @Test
     @Issue("SECURITY-1901")
-    public void preventXssInUpstreamDisplayName_deleted() throws Exception {
+    void preventXssInUpstreamDisplayName_deleted() throws Exception {
         j.jenkins.setQuietPeriod(0);
         FreeStyleProject up = j.createFreeStyleProject("up");
         up.setDisplayName("Up<script>alert(123)</script>Project");
@@ -193,7 +214,7 @@ public class CauseTest {
 
     @Test
     @Issue("SECURITY-1901")
-    public void preventXssInUpstreamShortDescription() throws Exception {
+    void preventXssInUpstreamShortDescription() throws Exception {
         FullNameChangingProject up = j.createProject(FullNameChangingProject.class, "up");
 
         FreeStyleProject down = j.createFreeStyleProject("down");
@@ -216,7 +237,7 @@ public class CauseTest {
         wc.setAlertHandler((page, s) -> alertCalled.set(true));
         wc.goTo(downBuild.getUrl());
 
-        assertFalse("XSS not prevented", alertCalled.get());
+        assertFalse(alertCalled.get(), "XSS not prevented");
     }
 
     private <B extends Build<?, B>> B waitForDownBuild(Project<?, B> down) throws Exception {
@@ -229,28 +250,29 @@ public class CauseTest {
 
     @Test
     @Issue("SECURITY-2452")
-    public void basicCauseIsSafe() throws Exception {
+    void basicCauseIsSafe() throws Exception {
         final FreeStyleProject fs = j.createFreeStyleProject();
         {
             final FreeStyleBuild build = j.waitForCompletion(fs.scheduleBuild2(0, new SimpleCause("safe")).get());
 
             final JenkinsRule.WebClient wc = j.createWebClient();
             final String content = wc.getPage(build).getWebResponse().getContentAsString();
-            Assert.assertTrue(content.contains("Simple cause: safe"));
+            assertTrue(content.contains("Simple cause: safe"));
         }
         {
             final FreeStyleBuild build = j.waitForCompletion(fs.scheduleBuild2(0, new SimpleCause("<img src=x onerror=alert(1)>")).get());
 
             final JenkinsRule.WebClient wc = j.createWebClient();
             final String content = wc.getPage(build).getWebResponse().getContentAsString();
-            Assert.assertFalse(content.contains("Simple cause: <img"));
-            Assert.assertTrue(content.contains("Simple cause: &lt;img"));
+            assertFalse(content.contains("Simple cause: <img"));
+            assertTrue(content.contains("Simple cause: &lt;img"));
         }
     }
 
     public static class SimpleCause extends Cause {
         private final String description;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public SimpleCause(String description) {
             this.description = description;
         }
@@ -262,6 +284,7 @@ public class CauseTest {
     }
 
     public static class CustomBuild extends Build<FullNameChangingProject, CustomBuild> {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public CustomBuild(FullNameChangingProject job) throws IOException {
             super(job);
         }
@@ -278,6 +301,7 @@ public class CauseTest {
             this.virtualName = virtualName;
         }
 
+        @NonNull
         @Override
         public String getName() {
             if (virtualName != null) {

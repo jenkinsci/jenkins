@@ -4,6 +4,8 @@ import hudson.Util;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.SecurityListener;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.springframework.security.authentication.AnonymousAuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -78,6 +80,15 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
         } else {
             throw new AbstractMethodError("Implement authenticate2");
         }
+    }
+
+    /**
+     * A public alias of @{link {@link #authenticate2(String, String)}.
+     * @since 2.444
+     */
+    @Restricted(Beta.class)
+    public final UserDetails authenticateByPassword(String username, String password) throws AuthenticationException {
+        return authenticate2(username, password);
     }
 
     /**
@@ -175,7 +186,10 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     class Authenticator extends AbstractUserDetailsAuthenticationProvider {
         @Override
         protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-            // authentication is assumed to be done already in the retrieveUser method
+            // Authentication is done in the retrieveUser method. Note that this method being a no-op is only safe
+            // because we use Spring Security's default NullUserCache. If caching was enabled, it would be possible to
+            // log in as any cached user with any password unless we updated this method to check the provided
+            // authentication as recommended in the superclass method's documentation, so be careful reusing this code.
         }
 
         @Override

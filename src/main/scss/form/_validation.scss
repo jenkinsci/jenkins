@@ -1,0 +1,85 @@
+.validation-error-area {
+  transition: var(--standard-transition);
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.validation-error-area--visible {
+  margin-top: 0.75rem;
+  opacity: 1;
+
+  & > * {
+    animation: animate-validation-error-area var(--standard-transition);
+  }
+}
+
+@keyframes animate-validation-error-area {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.error,
+.warning,
+.info {
+  position: relative;
+  padding-left: calc(22px + 0.4rem);
+  font-weight: var(--font-bold-weight);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 22px;
+    height: 22px;
+    background-color: currentColor;
+    mask-position: top center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+  }
+}
+
+.ok {
+  color: var(--text-color-secondary);
+}
+
+.error {
+  color: var(--red);
+
+  &::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Ctitle%3Eionicons-v5-a%3C/title%3E%3Cpath d='M256,48C141.31,48,48,141.31,48,256s93.31,208,208,208,208-93.31,208-208S370.69,48,256,48Zm0,319.91a20,20,0,1,1,20-20A20,20,0,0,1,256,367.91Zm21.72-201.15-5.74,122a16,16,0,0,1-32,0l-5.74-121.94v-.05a21.74,21.74,0,1,1,43.44,0Z'/%3E%3C/svg%3E");
+  }
+}
+
+.error-inline {
+  color: var(--red);
+  font-weight: var(--font-bold-weight);
+}
+
+.warning {
+  color: var(--orange);
+
+  &::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Ctitle%3Eionicons-v5-r%3C/title%3E%3Cpath d='M449.07,399.08,278.64,82.58c-12.08-22.44-44.26-22.44-56.35,0L51.87,399.08A32,32,0,0,0,80,446.25H420.89A32,32,0,0,0,449.07,399.08Zm-198.6-1.83a20,20,0,1,1,20-20A20,20,0,0,1,250.47,397.25ZM272.19,196.1l-5.74,122a16,16,0,0,1-32,0l-5.74-121.95v0a21.73,21.73,0,0,1,21.5-22.69h.21a21.74,21.74,0,0,1,21.73,22.7Z'/%3E%3C/svg%3E");
+  }
+}
+
+.warning-inline {
+  color: var(--orange);
+  font-weight: var(--font-bold-weight);
+}
+
+.info {
+  color: var(--text-color);
+
+  &::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EArrow Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M268 112l144 144-144 144M392 256H100'/%3E%3C/svg%3E");
+  }
+}

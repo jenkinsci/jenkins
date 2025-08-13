@@ -1,0 +1,72 @@
+{
+  "name": "jenkins-ui",
+  "version": "1.0.0",
+  "description": "Jenkins User Interface",
+  "license": "MIT",
+  "author": {
+    "name": "Tom Fennelly",
+    "email": "tom.fennelly@gmail.com",
+    "url": "https://github.com/tfennelly"
+  },
+  "private": true,
+  "scripts": {
+    "dev": "webpack --config webpack.config.js",
+    "prod": "webpack --config webpack.config.js --mode=production",
+    "build": "yarn prod",
+    "start": "yarn dev --watch",
+    "lint:js": "eslint . && prettier --check .",
+    "lint:js-ci": "eslint . -f checkstyle -o target/eslint-warnings.xml",
+    "lint:css": "stylelint src/main/scss",
+    "lint:css-ci": "stylelint src/main/scss --custom-formatter stylelint-checkstyle-reporter -o target/stylelint-warnings.xml",
+    "lint:ci": "yarn lint:js-ci && yarn lint:css-ci",
+    "lint:fix": "eslint --fix . && prettier --write . && stylelint src/main/scss --fix",
+    "lint": "yarn lint:js && yarn lint:css"
+  },
+  "devDependencies": {
+    "@babel/cli": "7.28.0",
+    "@babel/core": "7.28.0",
+    "@babel/preset-env": "7.28.0",
+    "@eslint/js": "9.33.0",
+    "babel-loader": "10.0.0",
+    "clean-webpack-plugin": "4.0.0",
+    "css-loader": "7.1.2",
+    "css-minimizer-webpack-plugin": "7.0.2",
+    "eslint": "9.33.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-formatter-checkstyle": "8.40.0",
+    "globals": "16.3.0",
+    "handlebars-loader": "1.7.3",
+    "mini-css-extract-plugin": "2.9.4",
+    "postcss": "8.5.6",
+    "postcss-loader": "8.1.1",
+    "postcss-preset-env": "10.2.4",
+    "postcss-scss": "4.0.9",
+    "prettier": "3.6.2",
+    "sass": "1.90.0",
+    "sass-loader": "16.0.5",
+    "style-loader": "4.0.0",
+    "stylelint": "16.23.1",
+    "stylelint-checkstyle-reporter": "1.1.1",
+    "stylelint-config-standard-scss": "15.0.1",
+    "webpack": "5.101.0",
+    "webpack-cli": "6.0.1",
+    "webpack-remove-empty-scripts": "1.1.1"
+  },
+  "dependencies": {
+    "handlebars": "4.7.8",
+    "hotkeys-js": "3.12.2",
+    "jquery": "3.7.1",
+    "lodash": "4.17.21",
+    "sortablejs": "1.15.6",
+    "tippy.js": "6.3.7",
+    "window-handle": "1.0.1"
+  },
+  "browserslist": [
+    "defaults",
+    "not IE 11"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "yarn@4.9.2"
+}

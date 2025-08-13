@@ -27,12 +27,14 @@ package hudson;
 import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.model.AbstractDescribableImpl;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
-import hudson.util.Scrambler;
+import hudson.util.NamingThreadFactory;
 import hudson.util.Secret;
 import hudson.util.XStream2;
 import java.io.File;
@@ -58,6 +60,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import jenkins.UserAgentURLConnectionDecorator;
@@ -66,7 +70,6 @@ import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
-import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -89,7 +92,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see jenkins.model.Jenkins#proxy
  */
 @StaplerAccessibleType
-public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfiguration> implements Saveable, Serializable {
+public final class ProxyConfiguration implements Describable<ProxyConfiguration>, Saveable, Serializable {
     /**
      * Holds a default TCP connect timeout set on all connections returned from this class,
      * note this is value is in milliseconds, it's passed directly to {@link URLConnection#setConnectTimeout(int)}
@@ -110,6 +113,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * @see #getNoProxyHostPatterns()
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public String noProxyHost;
 
     @Deprecated
@@ -244,7 +248,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     @DataBoundSetter
     public void setUserName(String userName) {
-        this.userName = userName;
+        this.userName = Util.fixEmptyAndTrim(userName);
     }
 
     @DataBoundSetter
@@ -281,11 +285,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     private Object readResolve() {
-        if (secretPassword == null)
-            // backward compatibility : get scrambled password and store it encrypted
-            secretPassword = Secret.fromString(Scrambler.descramble(password));
-        password = null;
         authenticator = newAuthenticator();
+        userName = Util.fixEmptyAndTrim(userName);
         return this;
     }
 
@@ -341,10 +342,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     public static InputStream getInputStream(URL url) throws IOException {
         final ProxyConfiguration p = get();
         if (p == null)
-            return new RetryableHttpStream(url);
+            return ((HttpURLConnection) url.openConnection()).getInputStream();
 
         Proxy proxy = p.createProxy(url.getHost());
-        InputStream is = new RetryableHttpStream(url, proxy);
+        InputStream is = ((HttpURLConnection) url.openConnection(proxy)).getInputStream();
         if (p.getUserName() != null) {
             // Add an authenticator which provides the credentials for proxy authentication
             Authenticator.setDefault(p.authenticator);
@@ -359,16 +360,15 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      *
      * <p>Equivalent to {@code newHttpClientBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()}.
      *
-     * <p>The Jenkins-specific default settings include a proxy server and proxy authentication (as
-     * configured by {@link ProxyConfiguration}) and a connection timeout (as configured by {@link
-     * ProxyConfiguration#DEFAULT_CONNECT_TIMEOUT_MILLIS}).
-     *
      * @return a new {@link HttpClient}
      * @since 2.379
+     * @see #newHttpClientBuilder
      */
     public static HttpClient newHttpClient() {
         return newHttpClientBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
     }
+
+    private static final Executor httpClientExecutor = Executors.newCachedThreadPool(new NamingThreadFactory(new DaemonThreadFactory(), "Jenkins HttpClient"));
 
     /**
      * Create a new {@link HttpClient.Builder} preconfigured with Jenkins-specific default settings.
@@ -376,6 +376,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * <p>The Jenkins-specific default settings include a proxy server and proxy authentication (as
      * configured by {@link ProxyConfiguration}) and a connection timeout (as configured by {@link
      * ProxyConfiguration#DEFAULT_CONNECT_TIMEOUT_MILLIS}).
+     *
+     * <p><strong>Warning:</strong> if both {@link #getName} and {@link #getUserName} are set
+     * (meaning that an authenticated proxy is defined),
+     * you will not be able to pass an {@code Authorization} header to the real server
+     * when running on Java 17 and later
+     * (pending <a href="https://bugs.openjdk.org/browse/JDK-8326949">JDK-8326949</a>.
      *
      * @return an {@link HttpClient.Builder}
      * @since 2.379
@@ -397,6 +403,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         if (DEFAULT_CONNECT_TIMEOUT_MILLIS > 0) {
             httpClientBuilder.connectTimeout(Duration.ofMillis(DEFAULT_CONNECT_TIMEOUT_MILLIS));
         }
+        httpClientBuilder.executor(httpClientExecutor);
         return httpClientBuilder;
     }
 
@@ -529,6 +536,34 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             return FormValidation.ok();
         }
 
+        /**
+         * Do check if the provided value is empty or composed of whitespaces.
+         * If so, return a validation warning.
+         *
+         * @param value the value to test
+         * @return a validation warning iff the provided value is empty or composed of whitespaces.
+         */
+        private static FormValidation checkProxyCredentials(String value) {
+            value = Util.fixEmptyAndTrim(value);
+            if (value == null) {
+                return FormValidation.ok();
+            } else {
+                return FormValidation.warning(Messages.ProxyConfiguration_NonTLSWarning());
+            }
+        }
+
+        @RequirePOST
+        @Restricted(NoExternalUse.class)
+        public FormValidation doCheckUserName(@QueryParameter String value) {
+            return checkProxyCredentials(value);
+        }
+
+        @RequirePOST
+        @Restricted(NoExternalUse.class)
+        public FormValidation doCheckSecretPassword(@QueryParameter String value) {
+            return checkProxyCredentials(value);
+        }
+
         @RequirePOST
         @Restricted(NoExternalUse.class)
         public FormValidation doValidateProxy(
@@ -569,8 +604,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             }
             try {
                 HttpResponse<Void> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.discarding());
-                if (httpResponse.statusCode() == HttpURLConnection.HTTP_OK) {
-                    return FormValidation.ok(Messages.ProxyConfiguration_Success());
+                if (httpResponse.statusCode() < HttpURLConnection.HTTP_BAD_REQUEST) {
+                    return FormValidation.ok(Messages.ProxyConfiguration_Success(httpResponse.statusCode()));
                 }
                 return FormValidation.error(Messages.ProxyConfiguration_FailedToConnect(testUrl, httpResponse.statusCode()));
             } catch (IOException e) {

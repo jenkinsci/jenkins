@@ -1,7 +1,9 @@
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.jenkins.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.util.SystemProperties;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -43,6 +45,18 @@ public class AccessDeniedException3 extends AccessDeniedException {
      * Reports the details of the access failure in HTTP headers to assist diagnosis.
      */
     public void reportAsHeaders(HttpServletResponse rsp) {
+        reportAsHeadersImpl(rsp);
+    }
+
+    /**
+     * @deprecated use {@link #reportAsHeaders(HttpServletResponse)}
+     */
+    @Deprecated
+    public void reportAsHeaders(javax.servlet.http.HttpServletResponse rsp) {
+        reportAsHeadersImpl(HttpServletResponseWrapper.toJakartaHttpServletResponse(rsp));
+    }
+
+    private void reportAsHeadersImpl(HttpServletResponse rsp) {
         rsp.addHeader("X-You-Are-Authenticated-As", authentication.getName());
         if (REPORT_GROUP_HEADERS) {
             for (GrantedAuthority auth : authentication.getAuthorities()) {
@@ -62,6 +76,7 @@ public class AccessDeniedException3 extends AccessDeniedException {
      * This method is similar to {@link #reportAsHeaders(HttpServletResponse)} for the intention
      * but instead of using HTTP headers, this version is meant to go inside the payload.
      */
+    @SuppressFBWarnings(value = "XSS_SERVLET", justification = "TODO needs triage")
     public void report(PrintWriter w) {
         w.println("You are authenticated as: " + authentication.getName());
         w.println("Groups that you are in:");

@@ -3,30 +3,37 @@ package hudson.model.queue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class MaintainCanTakeStrengtheningTest {
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+@WithJenkins
+class MaintainCanTakeStrengtheningTest {
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(Node.class.getName(), Level.ALL).capture(100);
+    private final LogRecorder logging = new LogRecorder().record(Node.class.getName(), Level.ALL).capture(100);
 
-    private QueueTaskFuture scheduleBuild(String name, String label) throws Exception {
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
+
+    private QueueTaskFuture<FreeStyleBuild> scheduleBuild(String name, String label) throws Exception {
         FreeStyleProject project = r.createFreeStyleProject(name);
 
         project.setAssignedLabel(Label.get(label));
@@ -35,7 +42,7 @@ public class MaintainCanTakeStrengtheningTest {
 
     @Issue("JENKINS-59886")
     @Test
-    public void testExceptionOnNodeProperty() throws Exception {
+    void testExceptionOnNodeProperty() throws Exception {
         // A node throwing the exception because of the canTake method of the attached FaultyNodeProperty
         DumbSlave faultyAgent = r.createOnlineSlave(Label.get("faulty"));
         faultyAgent.getNodeProperties().add(new FaultyNodeProperty());
@@ -44,15 +51,9 @@ public class MaintainCanTakeStrengtheningTest {
         r.createOnlineSlave(Label.get("good"));
 
         // Only the good ones will be run and the latest doesn't get hung because of the second
-        QueueTaskFuture[] taskFuture = new QueueTaskFuture[3];
-        taskFuture[0] = scheduleBuild("good1", "good");
-        taskFuture[1] = scheduleBuild("theFaultyOne", "faulty");
-        taskFuture[2] = scheduleBuild("good2", "good");
-
-        // Wait for a while until the good ones start, no need to wait for their completion to guarantee
-        // the fix works
-        taskFuture[0].getStartCondition().get(15, TimeUnit.SECONDS);
-        taskFuture[2].getStartCondition().get(15, TimeUnit.SECONDS);
+        FreeStyleBuild good1 = scheduleBuild("good1", "good").waitForStart();
+        scheduleBuild("theFaultyOne", "faulty");
+        FreeStyleBuild good2 = scheduleBuild("good2", "good").waitForStart();
 
         // The faulty one is the only one in the queue
         assertThat(r.getInstance().getQueue().getBuildableItems().size(), equalTo(1));
@@ -60,6 +61,13 @@ public class MaintainCanTakeStrengtheningTest {
 
         // The new error is shown in the logs
         assertThat(logging.getMessages(), hasItem(String.format("Exception evaluating if the node '%s' can take the task '%s'", faultyAgent.getDisplayName(), "theFaultyOne")));
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("theFaultyOne", FreeStyleProject.class)));
+
+        // Tear down
+        r.assertBuildStatusSuccess(r.waitForCompletion(good1));
+        r.assertBuildStatusSuccess(r.waitForCompletion(good2));
     }
 
     /**

@@ -29,7 +29,6 @@ import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 
-import com.google.common.primitives.Ints;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
@@ -53,7 +52,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
@@ -75,7 +73,6 @@ import java.util.logging.Logger;
 import jenkins.agents.AgentComputerUtil;
 import jenkins.security.SlaveToMasterCallable;
 import jenkins.util.SystemProperties;
-import org.apache.commons.io.FileUtils;
 import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
@@ -458,7 +455,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         // Null-check in case the previous call worked
-        boolean vetoes = vetoersExist == null ? true : vetoersExist;
+        boolean vetoes = vetoersExist == null || vetoersExist;
 
         try {
             if (File.pathSeparatorChar == ';')
@@ -486,7 +483,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     private static class DoVetoersExist extends SlaveToMasterCallable<Boolean, IOException> {
         @Override
         public Boolean call() throws IOException {
-            return ProcessKillingVeto.all().size() > 0;
+            return !ProcessKillingVeto.all().isEmpty();
         }
     }
 
@@ -752,7 +749,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         @CheckForNull
         @Override
         public OSProcess get(@NonNull Process proc) {
-            return get(Ints.checkedCast(proc.pid()));
+            return get(Math.toIntExact(proc.pid()));
         }
 
         @Override
@@ -914,7 +911,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return arguments;
                 arguments = new ArrayList<>();
                 try {
-                    byte[] cmdline = readFileToByteArray(getFile("cmdline"));
+                    byte[] cmdline = Files.readAllBytes(Util.fileToPath(getFile("cmdline")));
                     int pos = 0;
                     for (int i = 0; i < cmdline.length; i++) {
                         byte b = cmdline[i];
@@ -938,7 +935,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return envVars;
                 envVars = new EnvVars();
                 try {
-                    byte[] environ = readFileToByteArray(getFile("environ"));
+                    byte[] environ = Files.readAllBytes(Util.fileToPath(getFile("environ")));
                     int pos = 0;
                     for (int i = 0; i < environ.length; i++) {
                         byte b = environ[i];
@@ -952,12 +949,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     // so don't report this as an error.
                 }
                 return envVars;
-            }
-        }
-
-        public byte[] readFileToByteArray(File file) throws IOException {
-            try (InputStream in = FileUtils.openInputStream(file)) {
-                return org.apache.commons.io.IOUtils.toByteArray(in);
             }
         }
     }
@@ -2124,12 +2115,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
     /*
-        On MacOS X, there's no procfs <http://www.osxbook.com/book/bonus/chapter11/procfs/>
-        instead you'd do it with the sysctl <http://search.cpan.org/src/DURIST/Proc-ProcessTable-0.42/os/darwin.c>
-        <http://developer.apple.com/documentation/Darwin/Reference/ManPages/man3/sysctl.3.html>
+        On MacOS X, there's no procfs <https://web.archive.org/web/20200513034043/https://osxbook.com/book/bonus/chapter11/procfs/>
+        instead you'd do it with sysctl <https://metacpan.org/release/DURIST/Proc-ProcessTable-0.42/source/os/darwin.c>
+        <https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/sysctl.3.html>
 
         There's CLI but that doesn't seem to offer the access to per-process info
-        <http://developer.apple.com/documentation/Darwin/Reference/ManPages/man8/sysctl.8.html>
+        <https://web.archive.org/web/20090819232443/http://developer.apple.com/documentation/Darwin/Reference/ManPages/man8/sysctl.8.html>
 
 
 

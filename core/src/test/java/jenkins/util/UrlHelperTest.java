@@ -6,11 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
-public class UrlHelperTest {
+class UrlHelperTest {
 
     @Test
     @Issue("JENKINS-31661")
-    public void regularCases() {
+    void regularCases() {
         assertTrue(UrlHelper.isValidRootUrl("http://www.google.com"));
         // trailing slash is optional
         assertTrue(UrlHelper.isValidRootUrl("http://www.google.com/"));
@@ -54,21 +54,21 @@ public class UrlHelperTest {
     }
 
     @Test
-    public void fragmentIsForbidden() {
+    void fragmentIsForbidden() {
         // this url will be used as a root url and so will be concatenated with other part, fragment part is not allowed
         assertFalse(UrlHelper.isValidRootUrl("http://jenkins#fragment"));
         assertFalse(UrlHelper.isValidRootUrl("http://jenkins.com#fragment"));
     }
 
     @Test
-    public void queryIsForbidden() {
+    void queryIsForbidden() {
         // this url will be used as a root url and so will be concatenated with other part, query part is not allowed
         assertFalse(UrlHelper.isValidRootUrl("http://jenkins?param=test"));
         assertFalse(UrlHelper.isValidRootUrl("http://jenkins.com?param=test"));
     }
 
     @Test
-    public void otherCharactersAreForbidden() {
+    void otherCharactersAreForbidden() {
         // other characters are not allowed
         assertFalse(UrlHelper.isValidRootUrl("http://jenk@ins.com"));
         assertFalse(UrlHelper.isValidRootUrl("http://jenk(ins.com"));
@@ -82,7 +82,7 @@ public class UrlHelperTest {
     }
 
     @Test
-    public void ipv4Allowed() {
+    void ipv4Allowed() {
         assertTrue(UrlHelper.isValidRootUrl("http://172.52.125.12"));
         assertTrue(UrlHelper.isValidRootUrl("http://172.52.125.12/jenkins"));
         assertTrue(UrlHelper.isValidRootUrl("http://172.52.125.12:8080"));
@@ -90,7 +90,7 @@ public class UrlHelperTest {
     }
 
     @Test
-    public void ipv6Allowed() {
+    void ipv6Allowed() {
         assertTrue(UrlHelper.isValidRootUrl("http://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]"));
         assertTrue(UrlHelper.isValidRootUrl("http://[FEDC:0000:0000:3210:FEDC:BA98:7654:3210]"));
         // 0000 can be reduced to 0
@@ -111,7 +111,7 @@ public class UrlHelperTest {
 
     @Test
     @Issue("JENKINS-51064")
-    public void withCustomDomain() {
+    void withCustomDomain() {
         assertTrue(UrlHelper.isValidRootUrl("http://my-server:8080/jenkins"));
         assertTrue(UrlHelper.isValidRootUrl("http://jenkins.internal/"));
         assertTrue(UrlHelper.isValidRootUrl("http://jenkins.otherDomain/"));
@@ -129,7 +129,7 @@ public class UrlHelperTest {
     }
 
     @Test
-    public void multipleConsecutiveDashesAreAllowed() {
+    void multipleConsecutiveDashesAreAllowed() {
         assertTrue(UrlHelper.isValidRootUrl("http://jenk--ins.internal/"));
         assertTrue(UrlHelper.isValidRootUrl("http://www.go-----ogle.com/"));
         // even with subdomain being just a dash
@@ -138,7 +138,7 @@ public class UrlHelperTest {
 
     @Test
     @Issue("JENKINS-51158")
-    public void trailingDotsAreAccepted() {
+    void trailingDotsAreAccepted() {
         assertTrue(UrlHelper.isValidRootUrl("http://jenkins.internal./"));
         assertTrue(UrlHelper.isValidRootUrl("http://jenkins.internal......./"));
         assertTrue(UrlHelper.isValidRootUrl("http://my-server.domain.:8080/jenkins"));
@@ -149,7 +149,7 @@ public class UrlHelperTest {
 
     @Test
     @Issue("SECURITY-1471")
-    public void ensureJavaScriptSchemaIsNotAllowed() {
+    void ensureJavaScriptSchemaIsNotAllowed() {
         assertFalse(UrlHelper.isValidRootUrl("javascript:alert(123)"));
     }
 }

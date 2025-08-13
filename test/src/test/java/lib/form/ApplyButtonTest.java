@@ -1,30 +1,36 @@
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.markup.RawHtmlMarkupFormatter;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ApplyButtonTest {
+@WithJenkins
+class ApplyButtonTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Editing code mirror should still gets reflected when you click apply.
      */
     @Test
     @Issue("JENKINS-18436")
-    public void editDescription() throws Exception {
+    void editDescription() throws Exception {
         j.jenkins.setMarkupFormatter(RawHtmlMarkupFormatter.INSTANCE); // need something using CodeMirror
         FreeStyleProject p = j.createFreeStyleProject();
         FreeStyleBuild b = j.buildAndAssertSuccess(p);

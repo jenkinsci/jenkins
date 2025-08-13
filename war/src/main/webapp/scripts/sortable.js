@@ -82,7 +82,7 @@ var Sortable = (function () {
           self.onClicked(this);
           return false;
         };
-      }.bind(this)
+      }.bind(this),
     );
 
     // figure out the initial sort preference
@@ -94,7 +94,7 @@ var Sortable = (function () {
           if (initialSortDir != null) {
             this.pref = { column: i, direction: arrowTable[initialSortDir] };
           }
-        }.bind(this)
+        }.bind(this),
       );
     }
 
@@ -133,16 +133,14 @@ var Sortable = (function () {
      */
     getStoredPreference: function () {
       var key = this.getStorageKey();
-      if (storage.hasKey(key)) {
-        var val = storage.getItem(key);
-        if (val) {
-          var vals = val.split(":");
-          if (vals.length == 2) {
-            return {
-              column: parseInt(vals[0]),
-              direction: arrowTable[vals[1]],
-            };
-          }
+      var val = sessionStorage.getItem(key);
+      if (val) {
+        var vals = val.split(":");
+        if (vals.length == 2) {
+          return {
+            column: parseInt(vals[0]),
+            direction: arrowTable[vals[1]],
+          };
         }
       }
       return null;
@@ -156,7 +154,13 @@ var Sortable = (function () {
 
     savePreference: function () {
       var key = this.getStorageKey();
-      storage.setItem(key, this.pref.column + ":" + this.pref.direction.id);
+      var value = this.pref.column + ":" + this.pref.direction.id;
+      try {
+        sessionStorage.setItem(key, value);
+      } catch (e) {
+        // storage could be full
+        console.warn(e);
+      }
     },
 
     /**
@@ -237,15 +241,15 @@ var Sortable = (function () {
 
           return s(
             this.extractData(a.cells[column]),
-            this.extractData(b.cells[column])
+            this.extractData(b.cells[column]),
           );
-        }.bind(this)
+        }.bind(this),
       );
 
       rows.forEach(
         function (e) {
           this.table.tBodies[0].appendChild(e);
-        }.bind(this)
+        }.bind(this),
       );
 
       // update arrow rendering
@@ -259,7 +263,7 @@ var Sortable = (function () {
 
     getIndexOfSortableTable: function () {
       return Array.from(document.querySelectorAll("TABLE.sortable")).indexOf(
-        this.table
+        this.table,
       );
     },
 
@@ -441,28 +445,6 @@ var Sortable = (function () {
       };
     },
   };
-
-  var storage;
-  try {
-    storage = YAHOO.util.StorageManager.get(
-      YAHOO.util.StorageEngineHTML5.ENGINE_NAME,
-      YAHOO.util.StorageManager.LOCATION_SESSION,
-      {
-        order: [YAHOO.util.StorageEngineGears],
-      }
-    );
-  } catch (e) {
-    // no storage available
-    storage = {
-      setItem: function () {},
-      getItem: function () {
-        return null;
-      },
-      hasKey: function () {
-        return false;
-      },
-    };
-  }
 
   return {
     Sortable: Sortable,

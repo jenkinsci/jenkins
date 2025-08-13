@@ -13,7 +13,7 @@ rootUrlField.onkeydown = function (event) {
   var iframeRelativeUrl = "setupWizard/setupWizardConfigureInstance";
   var rootUrl = iframeUrl.substr(
     0,
-    iframeUrl.length - iframeRelativeUrl.length
+    iframeUrl.length - iframeRelativeUrl.length,
   );
   // to keep only the root url
   rootUrlField.value = rootUrl;

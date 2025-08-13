@@ -24,19 +24,16 @@
 
 package hudson.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Items;
@@ -47,37 +44,48 @@ import hudson.model.Saveable;
 import hudson.security.ACL;
 import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
-public class RobustReflectionConverterTest {
+@WithJenkins
+class RobustReflectionConverterTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-21024")
     @LocalData
-    @Test public void randomExceptionsReported() {
+    @Test
+    void randomExceptionsReported() {
         FreeStyleProject p = r.jenkins.getItemByFullName("j", FreeStyleProject.class);
         assertNotNull(p);
-        assertTrue("There should be no triggers", p.getTriggers().isEmpty());
+        assertTrue(p.getTriggers().isEmpty(), "There should be no triggers");
         OldDataMonitor odm = (OldDataMonitor) r.jenkins.getAdministrativeMonitor("OldData");
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
         assertEquals(Set.of(p), data.keySet());
         String text = data.values().iterator().next().extra;
-        assertTrue(text, text.contains("hudson.triggers.TimerTrigger.readResolve"));
+        assertTrue(text.contains("hudson.triggers.TimerTrigger.readResolve"), text);
     }
 
     // Testing describable object to demonstrate what is expected with RobustReflectionConverter#addCriticalField
@@ -86,10 +94,11 @@ public class RobustReflectionConverterTest {
     // GUI related implementations (@DataBoundConstructor and newInstance) aren't used actually
     // (no jelly files are provides and they don't work actually),
     // but written to clarify a use case.
-    public static class AcceptOnlySpecificKeyword extends AbstractDescribableImpl<AcceptOnlySpecificKeyword> {
+    public static class AcceptOnlySpecificKeyword implements Describable<AcceptOnlySpecificKeyword> {
         public static final String ACCEPT_KEYWORD = "accept";
         private final String keyword;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public AcceptOnlySpecificKeyword(String keyword) {
             this.keyword = keyword;
@@ -123,7 +132,7 @@ public class RobustReflectionConverterTest {
             }
 
             @Override
-            public AcceptOnlySpecificKeyword newInstance(StaplerRequest req, JSONObject formData)
+            public AcceptOnlySpecificKeyword newInstance(StaplerRequest2 req, JSONObject formData)
                     throws FormException {
                 AcceptOnlySpecificKeyword instance = super.newInstance(req, formData);
                 if (!instance.isAcceptable()) {
@@ -138,6 +147,7 @@ public class RobustReflectionConverterTest {
         private final AcceptOnlySpecificKeyword nonCriticalField;
         private final AcceptOnlySpecificKeyword criticalField;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public KeywordProperty(AcceptOnlySpecificKeyword nonCriticalField, AcceptOnlySpecificKeyword criticalField) {
             this.nonCriticalField = nonCriticalField;
             this.criticalField = criticalField;
@@ -160,7 +170,7 @@ public class RobustReflectionConverterTest {
             }
 
             @Override
-            public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData)
+            public JobProperty<?> newInstance(StaplerRequest2 req, JSONObject formData)
                     throws FormException {
                 // unfortunately, default newInstance bypasses newInstances for members.
                 formData = formData.getJSONObject("keywordProperty");
@@ -190,7 +200,7 @@ public class RobustReflectionConverterTest {
             + "</project>";
 
     @Test
-    public void testRestInterfaceFailure() throws Exception {
+    void testRestInterfaceFailure() throws Exception {
         Items.XSTREAM2.addCriticalField(KeywordProperty.class, "criticalField");
 
         // without addCriticalField. This is accepted.
@@ -206,7 +216,7 @@ public class RobustReflectionConverterTest {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
             wc.withBasicApiToken("test");
-            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
+            WebRequest req = new WebRequest(new URI(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())).toURL(), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD));
             wc.getPage(req);
@@ -237,14 +247,14 @@ public class RobustReflectionConverterTest {
             WebClient wc = r.createWebClient()
                     .withThrowExceptionOnFailingStatusCode(false);
             wc.withBasicApiToken("test");
-            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
+            WebRequest req = new WebRequest(new URI(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())).toURL(), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue"));
 
             Page page = wc.getPage(req);
-            assertEquals("Submitting unacceptable configuration via REST should fail.",
-                    HttpURLConnection.HTTP_INTERNAL_ERROR,
-                    page.getWebResponse().getStatusCode());
+            assertEquals(HttpURLConnection.HTTP_INTERNAL_ERROR,
+                    page.getWebResponse().getStatusCode(),
+                    "Submitting unacceptable configuration via REST should fail.");
 
             // Configuration should not be updated for a failure of the critical field,
             assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
@@ -258,7 +268,7 @@ public class RobustReflectionConverterTest {
     }
 
     @Test
-    public void testCliFailure() throws Exception {
+    void testCliFailure() throws Exception {
         Items.XSTREAM2.addCriticalField(KeywordProperty.class, "criticalField");
 
         // without addCriticalField. This is accepted.

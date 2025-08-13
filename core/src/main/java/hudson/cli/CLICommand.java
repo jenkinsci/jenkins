@@ -26,6 +26,7 @@ package hudson.cli;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -47,21 +48,18 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import jenkins.cli.listeners.CLIContext;
+import jenkins.cli.listeners.CLIListener;
 import jenkins.model.Jenkins;
-import org.apache.commons.discovery.ResourceClassIterator;
-import org.apache.commons.discovery.ResourceNameIterator;
-import org.apache.commons.discovery.resource.ClassLoaders;
-import org.apache.commons.discovery.resource.classes.DiscoverClasses;
-import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
+import jenkins.util.Listeners;
+import jenkins.util.SystemProperties;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.ParserProperties;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -107,6 +105,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 @LegacyInstancesAreScopedToHudson
 public abstract class CLICommand implements ExtensionPoint, Cloneable {
+
+    /**
+     * Boolean values to either allow or disallow parsing of @-prefixes.
+     * If a command line value starts with @, it is interpreted as being a file, loaded,
+     * and interpreted as if the file content would have been passed to the command line
+     */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    @Restricted(NoExternalUse.class)
+    public static boolean ALLOW_AT_SYNTAX = SystemProperties.getBoolean(CLICommand.class.getName() + ".allowAtSyntax");
+
     /**
      * Connected to stdout and stderr of the CLI agent that initiated the session.
      * IOW, if you write to these streams, the person who launched the CLI command
@@ -116,6 +124,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * (In contrast, calling {@code System.out.println(...)} would print out
      * the message to the server log file, which is probably not what you want.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public transient PrintStream stdout, stderr;
 
     /**
@@ -131,6 +140,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * <p>
      * This input stream is buffered to hide the latency in the remoting.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public transient InputStream stdin;
 
     /**
@@ -142,6 +152,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     /**
      * The locale of the client. Messages should be formatted with this resource.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public transient Locale locale;
 
     /**
@@ -229,73 +240,75 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.stdout = stdout;
         this.stderr = stderr;
         this.locale = locale;
-        registerOptionHandlers();
         CmdLineParser p = getCmdLineParser();
+
+        Authentication auth = getTransportAuthentication2();
+        CLIContext context = new CLIContext(getName(), args, auth);
 
         // add options from the authenticator
         SecurityContext sc = null;
         Authentication old = null;
-        Authentication auth;
         try {
             // TODO as in CLIRegisterer this may be doing too much work
             sc = SecurityContextHolder.getContext();
             old = sc.getAuthentication();
 
-            sc.setAuthentication(auth = getTransportAuthentication2());
+            sc.setAuthentication(auth);
 
             if (!(this instanceof HelpCommand || this instanceof WhoAmICommand))
                 Jenkins.get().checkPermission(Jenkins.READ);
             p.parseArgument(args.toArray(new String[0]));
-            LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.",
-                    new Object[] {getName(), args.size(), auth.getName()});
+
+            Listeners.notify(CLIListener.class, true, listener -> listener.onExecution(context));
             int res = run();
-            LOGGER.log(Level.FINE, "Executed CLI command {0}, with {1} arguments, as user {2}, return code {3}",
-                    new Object[] {getName(), args.size(), auth.getName(), res});
+            Listeners.notify(CLIListener.class, true, listener -> listener.onCompleted(context, res));
+
             return res;
-        } catch (CmdLineException e) {
-            logFailedCommandAndPrintExceptionErrorMessage(args, e);
-            printUsage(stderr, p);
-            return 2;
-        } catch (IllegalStateException e) {
-            logFailedCommandAndPrintExceptionErrorMessage(args, e);
-            return 4;
-        } catch (IllegalArgumentException e) {
-            logFailedCommandAndPrintExceptionErrorMessage(args, e);
-            return 3;
-        } catch (AbortException e) {
-            logFailedCommandAndPrintExceptionErrorMessage(args, e);
-            return 5;
-        } catch (AccessDeniedException e) {
-            logFailedCommandAndPrintExceptionErrorMessage(args, e);
-            return 6;
-        } catch (BadCredentialsException e) {
-            // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
-            // do that to the server log instead
-            String id = UUID.randomUUID().toString();
-            logAndPrintError(e, "Bad Credentials. Search the server log for " + id + " for more details.",
-                    "CLI login attempt failed: " + id, Level.INFO);
-            return 7;
         } catch (Throwable e) {
-            String errorMsg = "Unexpected exception occurred while performing " + getName() + " command.";
-            logAndPrintError(e, errorMsg, errorMsg, Level.WARNING);
-            Functions.printStackTrace(e, stderr);
-            return 1;
+            int exitCode = handleException(e, context, p);
+            Listeners.notify(CLIListener.class, true, listener -> listener.onThrowable(context, e));
+            return exitCode;
         } finally {
             if (sc != null)
                 sc.setAuthentication(old); // restore
         }
     }
 
-    private void logFailedCommandAndPrintExceptionErrorMessage(List<String> args, Throwable e) {
-        Authentication auth = getTransportAuthentication2();
-        String logMessage = String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-                getName(), args.size(), auth != null ? auth.getName() : "<unknown>");
-
-        logAndPrintError(e, e.getMessage(), logMessage, Level.FINE);
+    /**
+     * Determines command stderr output and return the exit code as described on {@link #main(List, Locale, InputStream, PrintStream, PrintStream)}
+     * */
+    protected int handleException(Throwable e, CLIContext context, CmdLineParser p) {
+        int exitCode;
+        if (e instanceof CmdLineException) {
+            exitCode = 2;
+            printError(e.getMessage());
+            printUsage(stderr, p);
+        } else if (e instanceof IllegalArgumentException) {
+            exitCode = 3;
+            printError(e.getMessage());
+        } else if (e instanceof IllegalStateException) {
+            exitCode = 4;
+            printError(e.getMessage());
+        } else if (e instanceof AbortException) {
+            exitCode = 5;
+            printError(e.getMessage());
+        } else if (e instanceof AccessDeniedException) {
+            exitCode = 6;
+            printError(e.getMessage());
+        } else if (e instanceof BadCredentialsException) {
+            exitCode = 7;
+            printError(
+                    "Bad Credentials. Search the server log for " + context.getCorrelationId() + " for more details.");
+        } else {
+            exitCode = 1;
+            printError("Unexpected exception occurred while performing " + getName() + " command.");
+            Functions.printStackTrace(e, stderr);
+        }
+        return exitCode;
     }
 
-    private void logAndPrintError(Throwable e, String errorMessage, String logMessage, Level logLevel) {
-        LOGGER.log(logLevel, logMessage, e);
+
+    private void printError(String errorMessage) {
         this.stderr.println();
         this.stderr.println("ERROR: " + errorMessage);
     }
@@ -307,7 +320,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @since 1.538
      */
     protected CmdLineParser getCmdLineParser() {
-        return new CmdLineParser(this);
+        ParserProperties properties = ParserProperties.defaults().withAtSyntax(ALLOW_AT_SYNTAX);
+        return new CmdLineParser(this, properties);
     }
 
     /**
@@ -483,7 +497,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.encoding = encoding;
     }
 
-    protected @NonNull Charset getClientCharset() throws IOException, InterruptedException {
+    public @NonNull Charset getClientCharset() throws IOException, InterruptedException {
         if (encoding != null) {
             return encoding;
         }
@@ -514,20 +528,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     /**
-     * Auto-discovers {@link OptionHandler}s and add them to the given command line parser.
-     */
-    protected void registerOptionHandlers() {
-        try {
-            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.get().pluginManager.uberClassLoader, Class.class)) {
-                Type t = Types.getBaseClass(c, OptionHandler.class);
-                CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t, 0)), c);
-            }
-        } catch (IOException e) {
-            throw new Error(e);
-        }
-    }
-
-    /**
      * Returns all the registered {@link CLICommand}s.
      */
     public static ExtensionList<CLICommand> all() {
@@ -543,8 +543,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 return cmd.createClone();
         return null;
     }
-
-    private static final Logger LOGGER = Logger.getLogger(CLICommand.class.getName());
 
     private static final ThreadLocal<CLICommand> CURRENT_COMMAND = new ThreadLocal<>();
 
@@ -563,20 +561,16 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     static {
         // register option handlers that are defined
-        ClassLoaders cls = new ClassLoaders();
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) { // only when running on the controller
-            cls.put(j.getPluginManager().uberClassLoader);
-
-            ResourceNameIterator servicesIter =
-                new DiscoverServiceNames(cls).findResourceNames(OptionHandler.class.getName());
-            final ResourceClassIterator itr =
-                new DiscoverClasses(cls).findResourceClasses(servicesIter);
-
-            while (itr.hasNext()) {
-                Class h = itr.nextResourceClass().loadClass();
-                Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
-                CmdLineParser.registerHandler(c, h);
+            // Register OptionHandlers through META-INF/services/annotations and Annotation Indexer
+            try {
+                for (Class c : Index.list(OptionHandlerExtension.class, j.getPluginManager().uberClassLoader, Class.class)) {
+                    Type t = Types.getBaseClass(c, OptionHandler.class);
+                    CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t, 0)), c);
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
         }
     }

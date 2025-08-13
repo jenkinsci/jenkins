@@ -1,13 +1,13 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Streams;
 import hudson.model.queue.QueueTaskFuture;
@@ -21,24 +21,33 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class RunMapTest {
+@WithJenkins
+class RunMapTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
-    @Rule public LoggerRule logs = new LoggerRule();
+    private final LogRecorder logs = new LogRecorder();
+
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     /**
      * Makes sure that reloading the project while a build is in progress won't clobber that in-progress build.
      */
     @Issue("JENKNS-12318")
-    @Test public void reloadWhileBuildIsInProgress() throws Exception {
+    @Test
+    void reloadWhileBuildIsInProgress() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
 
         // want some completed build records
@@ -66,7 +75,8 @@ public class RunMapTest {
     }
 
     @Issue("JENKINS-27530")
-    @Test public void reloadWhileBuildIsInQueue() throws Exception {
+    @Test
+    void reloadWhileBuildIsInQueue() throws Exception {
         logs.record(Queue.class, Level.FINE);
         FreeStyleProject p = r.createFreeStyleProject("p");
         p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
@@ -103,7 +113,8 @@ public class RunMapTest {
      * Testing if the lazy loading can gracefully tolerate a RuntimeException during unmarshalling.
      */
     @Issue("JENKINS-15533")
-    @Test public void runtimeExceptionInUnmarshalling() throws Exception {
+    @Test
+    void runtimeExceptionInUnmarshalling() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
         b.addAction(new BombAction());
@@ -128,7 +139,8 @@ public class RunMapTest {
     private static boolean bombed;
 
     @Issue("JENKINS-25788")
-    @Test public void remove() throws Exception {
+    @Test
+    void remove() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
         FreeStyleBuild b2 = r.buildAndAssertSuccess(p);
@@ -145,7 +157,7 @@ public class RunMapTest {
     }
 
     @Test
-    public void stream() throws Exception {
+    void stream() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         SortedMap<Integer, FreeStyleBuild> builds = new TreeMap<>(Collections.reverseOrder());
         for (int i = 0; i < 10; i++) {
@@ -190,9 +202,8 @@ public class RunMapTest {
     }
 
     @Test
-    public void runLoadCounterFirst() throws Exception {
+    void runLoadCounterFirst() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        RunLoadCounter.prepare(p);
         for (int i = 0; i < 10; i++) {
             r.buildAndAssertSuccess(p);
         }
@@ -202,9 +213,8 @@ public class RunMapTest {
     }
 
     @Test
-    public void runLoadCounterLimit() throws Exception {
+    void runLoadCounterLimit() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        RunLoadCounter.prepare(p);
         for (int i = 0; i < 10; i++) {
             r.buildAndAssertSuccess(p);
         }

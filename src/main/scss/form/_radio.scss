@@ -1,0 +1,120 @@
+$jenkins-radio-size: 1.375rem;
+$jenkins-radio-border-size: 1.5px;
+$jenkins-radio-border-hover-size: 0.3125rem;
+$jenkins-radio-border-active-size: 0.5rem;
+$jenkins-radio-border-checked-size: 0.4rem;
+$jenkins-radio-glow-size: 0.5rem;
+
+.jenkins-radio-help-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.jenkins-radio {
+  &:not(:last-of-type) {
+    margin-bottom: 0.875rem;
+  }
+
+  &__input {
+    position: absolute;
+    opacity: 0;
+    margin-top: 0.625rem;
+
+    &:not(:checked) {
+      &:hover {
+        & + label::before {
+          box-shadow:
+            0 0 0 $jenkins-radio-glow-size transparent,
+            inset 0 0 0 $jenkins-radio-border-hover-size
+              var(--input-border-hover);
+        }
+      }
+
+      &:focus-visible,
+      &:focus,
+      &:active {
+        & + label::before {
+          box-shadow:
+            var(--form-input-glow--focus),
+            inset 0 0 0 $jenkins-radio-border-active-size
+              var(--focus-input-border);
+        }
+      }
+    }
+
+    &:checked {
+      & + label {
+        cursor: default;
+
+        &::before {
+          box-shadow:
+            0 0 0 $jenkins-radio-glow-size transparent,
+            inset 0 0 0 $jenkins-radio-border-checked-size
+              var(--focus-input-border);
+        }
+      }
+
+      &:not(:disabled) {
+        &:focus-visible,
+        &:focus,
+        &:active {
+          & + label::before {
+            box-shadow:
+              var(--form-input-glow--focus),
+              inset 0 0 0 $jenkins-radio-border-active-size
+                var(--focus-input-border);
+          }
+        }
+      }
+    }
+
+    &:disabled {
+      & + label {
+        cursor: not-allowed;
+
+        &::before {
+          opacity: 0.35;
+        }
+      }
+    }
+  }
+
+  &__label {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 0;
+    padding: 0 0 0 2rem;
+    cursor: pointer;
+    font-weight: var(--form-label-font-weight);
+
+    // remove 300ms pause on mobile
+    touch-action: manipulation;
+
+    &::before {
+      content: "";
+      box-sizing: border-box;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: $jenkins-radio-size;
+      height: $jenkins-radio-size;
+      border-radius: 50%;
+      background: var(--input-color);
+      box-shadow:
+        0 0 0 $jenkins-radio-glow-size transparent,
+        inset 0 0 0 $jenkins-radio-border-size var(--input-border);
+      transition: box-shadow var(--standard-transition);
+    }
+  }
+
+  &__description {
+    margin: 0 0 0 2rem;
+    color: var(--text-color-secondary);
+    line-height: 1.66;
+  }
+
+  &__input:not(:checked) + &__label + &__children {
+    display: none;
+  }
+}

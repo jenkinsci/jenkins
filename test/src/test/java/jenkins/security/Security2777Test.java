@@ -1,32 +1,40 @@
 package jenkins.security;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import hudson.model.UnprotectedRootAction;
 import java.io.IOException;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class Security2777Test {
-    public static final String ACTION_URL = "security2777";
+@WithJenkins
+class Security2777Test {
+    private static final String ACTION_URL = "security2777";
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testView() throws IOException {
+    void testView() throws IOException {
         final JenkinsRule.WebClient wc = j.createWebClient();
 
         // no exception on action index page
         wc.getPage(wc.getContextPath() + ACTION_URL);
 
-        final FailingHttpStatusCodeException ex2 = Assert.assertThrows("no icon, no response", FailingHttpStatusCodeException.class, () -> wc.getPage(wc.getContextPath() + ACTION_URL + "/fragmentWithoutIcon"));
-        Assert.assertEquals("it's 404", 404, ex2.getStatusCode());
+        final FailingHttpStatusCodeException ex2 = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(wc.getContextPath() + ACTION_URL + "/fragmentWithoutIcon"), "no icon, no response");
+        assertEquals(404, ex2.getStatusCode(), "it's 404");
 
-        final FailingHttpStatusCodeException ex3 = Assert.assertThrows("icon, still no response", FailingHttpStatusCodeException.class, () -> wc.getPage(wc.getContextPath() + ACTION_URL + "/fragmentWithIcon"));
-        Assert.assertEquals("it's 404", 404, ex3.getStatusCode());
+        final FailingHttpStatusCodeException ex3 = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(wc.getContextPath() + ACTION_URL + "/fragmentWithIcon"), "icon, still no response");
+        assertEquals(404, ex3.getStatusCode(), "it's 404");
     }
 
     @TestExtension

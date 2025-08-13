@@ -25,6 +25,7 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -57,6 +58,7 @@ public class UserIdMapper {
     private static final Logger LOGGER = Logger.getLogger(UserIdMapper.class.getName());
     private static final int PREFIX_MAX = 15;
     private static final Pattern PREFIX_PATTERN = Pattern.compile("[^A-Za-z0-9]");
+    @SuppressFBWarnings(value = "SS_SHOULD_BE_STATIC", justification = "Reserved for future use")
     private final int version = 1; // Not currently used, but it may be helpful in the future to store a version.
 
     private transient File usersDirectory;

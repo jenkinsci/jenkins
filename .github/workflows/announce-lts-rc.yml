@@ -1,0 +1,30 @@
+name: Announce LTS RCs
+
+on:
+  release:
+    types: [prereleased]
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post on Discourse
+        uses: roots/discourse-topic-github-release-action@c30dc233349b7c6f24f52fb1c659cc64f13b5474 # v1.0.1
+        with:
+          discourse-api-key: ${{ secrets.DISCOURSE_RELEASES_API_KEY }}
+          discourse-base-url: https://community.jenkins.io/
+          discourse-author-username: jenkins-release-bot
+          discourse-category: 23
+      - name: Post on mailing list
+        uses: dawidd6/action-send-mail@6d98ae34d733f9a723a9e04e94f2f24ba05e1402 # v6
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{secrets.MAIL_USERNAME}}
+          password: ${{secrets.MAIL_PASSWORD}}
+          secure: true
+          subject: ${{ github.event.release.tag_name }} has been released
+          to: jenkinsci-dev@googlegroups.com
+          from: Jenkins Release Bot
+          html_body: ${{ github.event.release.body }}
+          convert_markdown: true

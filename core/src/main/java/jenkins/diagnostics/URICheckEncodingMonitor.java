@@ -7,13 +7,14 @@ import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.FormValidation;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 @Restricted(NoExternalUse.class)
 @Extension
@@ -22,7 +23,7 @@ public class URICheckEncodingMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(URICheckEncodingMonitor.class.getName());
 
     public boolean isCheckEnabled() {
-        return !"ISO-8859-1".equalsIgnoreCase(System.getProperty("file.encoding"));
+        return !"ISO-8859-1".equalsIgnoreCase(Charset.defaultCharset().displayName());
     }
 
     @Override
@@ -35,7 +36,7 @@ public class URICheckEncodingMonitor extends AdministrativeMonitor {
         return Messages.URICheckEncodingMonitor_DisplayName();
     }
 
-    public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
+    public FormValidation doCheckURIEncoding(StaplerRequest2 request) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         // expected is non-ASCII String
         final String expected = "\u57f7\u4e8b";

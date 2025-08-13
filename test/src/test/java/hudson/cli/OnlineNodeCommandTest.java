@@ -30,45 +30,45 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
-import hudson.model.Descriptor;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
-import hudson.tasks.Builder;
 import hudson.util.OneShotEvent;
 import java.io.IOException;
-import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author pjanouse
  */
-public class OnlineNodeCommandTest {
+@WithJenkins
+class OnlineNodeCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, "online-node");
     }
 
-    @Test public void onlineNodeShouldFailWithoutComputerConnectPermission() throws Exception {
+    @Test
+    void onlineNodeShouldFailWithoutComputerConnectPermission() throws Exception {
         j.createSlave("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
@@ -79,7 +79,8 @@ public class OnlineNodeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Connect permission"));
     }
 
-    @Test public void onlineNodeShouldFailIfNodeDoesNotExist() {
+    @Test
+    void onlineNodeShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -88,7 +89,8 @@ public class OnlineNodeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: No such agent \"never_created\" exists."));
     }
 
-    @Test public void onlineNodeShouldSucceed() throws Exception {
+    @Test
+    void onlineNodeShouldSucceed() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
@@ -102,7 +104,8 @@ public class OnlineNodeCommandTest {
         assertThat(slave.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void onlineNodeShouldSucceedOnOnlineNode() throws Exception {
+    @Test
+    void onlineNodeShouldSucceedOnOnlineNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         if (slave.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
@@ -117,7 +120,8 @@ public class OnlineNodeCommandTest {
         assertThat(slave.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void onlineNodeShouldSucceedOnOfflineNode() throws Exception {
+    @Test
+    void onlineNodeShouldSucceedOnOfflineNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         if (slave.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
@@ -139,7 +143,8 @@ public class OnlineNodeCommandTest {
         assertThat(slave.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void onlineNodeShouldSucceedOnDisconnectedNode() throws Exception {
+    @Test
+    void onlineNodeShouldSucceedOnDisconnectedNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         if (slave.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
@@ -161,7 +166,8 @@ public class OnlineNodeCommandTest {
         assertThat(slave.toComputer().isOnline(), equalTo(false));
     }
 
-    @Test public void onlineNodeShouldSucceedOnDisconnectingNode() throws Exception {
+    @Test
+    void onlineNodeShouldSucceedOnDisconnectingNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         if (slave.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
@@ -181,7 +187,8 @@ public class OnlineNodeCommandTest {
         assertThat(slave.toComputer().isOnline(), equalTo(false));
     }
 
-    @Test public void onlineNodeShouldSucceedOnBuildingOfflineNode() throws Exception {
+    @Test
+    void onlineNodeShouldSucceedOnBuildingOfflineNode() throws Exception {
         final OneShotEvent finish = new OneShotEvent();
         DumbSlave slave = j.createSlave("aNode", "", null);
         if (!slave.toComputer().isOnline()) {
@@ -190,8 +197,7 @@ public class OnlineNodeCommandTest {
         }
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.setAssignedNode(slave);
-        final Future<FreeStyleBuild> build = startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = startBlockingAndFinishingBuild(project, finish);
 
         slave.toComputer().setTemporarilyOffline(true);
         slave.toComputer().waitUntilOffline();
@@ -206,17 +212,16 @@ public class OnlineNodeCommandTest {
             slave.toComputer().waitUntilOnline();
         }
         assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(true));
+        assertThat(build.isBuilding(), equalTo(true));
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
     }
 
-    @Test public void onlineNodeManyShouldSucceed() throws Exception {
+    @Test
+    void onlineNodeManyShouldSucceed() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         DumbSlave slave3 = j.createSlave("aNode3", "", null);
@@ -242,7 +247,8 @@ public class OnlineNodeCommandTest {
         assertThat(slave3.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void onlineNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
+    @Test
+    void onlineNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
 
@@ -265,7 +271,8 @@ public class OnlineNodeCommandTest {
         assertThat(slave2.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void onlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
+    @Test
+    void onlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
 
@@ -285,7 +292,8 @@ public class OnlineNodeCommandTest {
         assertThat(slave2.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void onlineNodeShouldSucceedOnMaster() {
+    @Test
+    void onlineNodeShouldSucceedOnMaster() {
         final Computer masterComputer = j.jenkins.getComputer("");
 
         CLICommandInvoker.Result result = command
@@ -306,24 +314,24 @@ public class OnlineNodeCommandTest {
      *
      * @param project {@link FreeStyleProject} to start
      * @param finish {@link OneShotEvent} to signal to finish a build
-     * @return A {@link Future} object represents the started build
+     * @return the started build (the caller should wait for its completion)
      * @throws Exception if somethink wrong happened
      */
-    public static Future<FreeStyleBuild> startBlockingAndFinishingBuild(FreeStyleProject project, OneShotEvent finish) throws Exception {
+    public static FreeStyleBuild startBlockingAndFinishingBuild(FreeStyleProject project, OneShotEvent finish) throws Exception {
         assertFalse(finish.isSignaled());
 
         final OneShotEvent block = new OneShotEvent();
 
         project.getBuildersList().add(new BlockingAndFinishingBuilder(block, finish));
 
-        Future<FreeStyleBuild> r = project.scheduleBuild2(0);
+        FreeStyleBuild b = project.scheduleBuild2(0).waitForStart();
         block.block();  // wait until we are safe to interrupt
-        assertTrue(project.getLastBuild().isBuilding());
+        assertTrue(b.isBuilding());
 
-        return r;
+        return b;
     }
 
-    private static final class BlockingAndFinishingBuilder extends Builder {
+    private static final class BlockingAndFinishingBuilder extends TestBuilder {
         private final OneShotEvent block;
         private final OneShotEvent finish;
 
@@ -345,8 +353,5 @@ public class OnlineNodeCommandTest {
             }
             return true;
         }
-
-        @TestExtension("disconnectCause")
-        public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 }

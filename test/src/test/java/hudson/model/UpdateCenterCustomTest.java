@@ -28,63 +28,111 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 
-import javax.servlet.ServletContext;
-import org.junit.Rule;
-import org.junit.Test;
+import jakarta.servlet.ServletContext;
+import java.io.File;
+import java.lang.reflect.Method;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
 /**
  * Tests of the custom {@link UpdateCenter} implementation.
  */
-public class UpdateCenterCustomTest {
+class UpdateCenterCustomTest {
 
-    @Rule
-    public final JenkinsRule j = new CustomUpdateCenterRule(CustomUpdateCenter.class);
+    @RegisterExtension
+    private final JenkinsSessionExtension session = new CustomUpdateCenterExtension(CustomUpdateCenterExtension.CustomUpdateCenter.class);
 
     @Test
-    public void shouldStartupWithCustomUpdateCenter() {
-        UpdateCenter uc = j.jenkins.getUpdateCenter();
-        assertThat("Update Center must be a custom instance", uc, instanceOf(CustomUpdateCenter.class));
+    void shouldStartupWithCustomUpdateCenter() throws Throwable {
+        session.then(j -> {
+            UpdateCenter uc = j.jenkins.getUpdateCenter();
+            assertThat("Update Center must be a custom instance", uc, instanceOf(CustomUpdateCenterExtension.CustomUpdateCenter.class));
+        });
     }
 
     // TODO: move to Jenkins Test Harness
-    private static final class CustomUpdateCenterRule extends JenkinsRule {
+    private static final class CustomUpdateCenterExtension extends JenkinsSessionExtension {
+
+        private int port;
+        private Description description;
         private final String updateCenterClassName;
-        private String _oldValue = null;
 
-        private static final String PROPERTY_NAME = UpdateCenter.class.getName() + ".className";
-
-        CustomUpdateCenterRule(Class<?> ucClass) {
+        CustomUpdateCenterExtension(Class<?> ucClass) {
             this.updateCenterClassName = ucClass.getName();
         }
 
         @Override
-        protected ServletContext createWebServer() throws Exception {
-            _oldValue = System.getProperty(PROPERTY_NAME);
-            System.setProperty(PROPERTY_NAME, updateCenterClassName);
-            return super.createWebServer();
+        public void beforeEach(ExtensionContext context) {
+            super.beforeEach(context);
+            description = Description.createTestDescription(
+                    context.getTestClass().map(Class::getName).orElse(null),
+                    context.getTestMethod().map(Method::getName).orElse(null),
+                    context.getTestMethod().map(Method::getAnnotations).orElse(null));
         }
 
         @Override
-        public void after() {
-            if (_oldValue != null) {
-                System.setProperty(PROPERTY_NAME, _oldValue);
+        public void then(Step s) throws Throwable {
+            CustomJenkinsRule r = new CustomJenkinsRule(updateCenterClassName, getHome(), port);
+            r.apply(
+                    new Statement() {
+                        @Override
+                        public void evaluate() throws Throwable {
+                            port = r.getPort();
+                            s.run(r);
+                        }
+                    },
+                    description
+            ).evaluate();
+        }
+
+        private static final class CustomJenkinsRule extends JenkinsRule {
+
+            private final String updateCenterClassName;
+            private String _oldValue = null;
+
+            private static final String PROPERTY_NAME = UpdateCenter.class.getName() + ".className";
+
+            CustomJenkinsRule(final String updateCenterClassName, File home, int port) {
+                this.updateCenterClassName = updateCenterClassName;
+                with(() -> home);
+                localPort = port;
+            }
+
+            int getPort() {
+                return localPort;
+            }
+
+            @Override
+            protected ServletContext createWebServer2() throws Exception {
+                _oldValue = System.getProperty(PROPERTY_NAME);
+                System.setProperty(PROPERTY_NAME, updateCenterClassName);
+                return super.createWebServer2();
+            }
+
+            @Override
+            public void after() {
+                if (_oldValue != null) {
+                    System.setProperty(PROPERTY_NAME, _oldValue);
+                }
             }
         }
 
-        public String getUpdateCenterClassName() {
-            return updateCenterClassName;
+        public static final class CustomUpdateCenter extends UpdateCenter {
+
+            @SuppressWarnings("checkstyle:redundantmodifier")
+            public CustomUpdateCenter() {
+            }
+
+            @SuppressWarnings("checkstyle:redundantmodifier")
+            public CustomUpdateCenter(UpdateCenterConfiguration config) {
+                super(config);
+            }
+
         }
-    }
-
-    public static final class CustomUpdateCenter extends UpdateCenter {
-
-        public CustomUpdateCenter() {
-        }
-
-        public CustomUpdateCenter(UpdateCenterConfiguration config) {
-            super(config);
-        }
-
     }
 }
