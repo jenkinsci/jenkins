@@ -15,9 +15,6 @@ import org.acegisecurity.Authentication;
 @Deprecated
 public class AccessDeniedException2 extends AccessDeniedException {
 
-    /** If true, report {@code X-You-Are-In-Group} headers. Disabled due to JENKINS-39402; use {@code /whoAmI} etc. to diagnose permission issues. */
-    private static /* not final */ boolean REPORT_GROUP_HEADERS = SystemProperties.getBoolean(AccessDeniedException2.class.getName() + ".REPORT_GROUP_HEADERS");
-
     /**
      * This object represents the user being authenticated.
      */

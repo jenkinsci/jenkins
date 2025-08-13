@@ -1509,7 +1509,6 @@ class VirtualFileTest {
     }
 
     private long computeEarlierSystemTime() {
-        long earlierSystemTime = 0L;
         if (Functions.isWindows()) {
             return 0L;
         }

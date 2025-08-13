@@ -47,15 +47,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
 class WorkspaceCleanupThreadTest {
-
-    private final LogRecorder logs = new LogRecorder().record(WorkspaceCleanupThread.class, Level.ALL);
 
     private JenkinsRule r;
 

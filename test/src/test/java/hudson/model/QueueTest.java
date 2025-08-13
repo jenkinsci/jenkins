@@ -125,7 +125,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
@@ -142,8 +141,6 @@ import org.springframework.security.core.Authentication;
  */
 @WithJenkins
 public class QueueTest {
-
-    private final LogRecorder logging = new LogRecorder().record(Queue.class, Level.FINE);
 
     private JenkinsRule r;
 

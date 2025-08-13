@@ -61,7 +61,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.SimpleCommandLauncher;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -76,8 +75,6 @@ class JNLPLauncherTest {
 
     @TempDir
     private File tmpDir;
-
-    private final LogRecorder logging = new LogRecorder().record(Slave.class, Level.FINE);
 
     private JenkinsRule j;
 

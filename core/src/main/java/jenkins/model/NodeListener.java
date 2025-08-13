@@ -29,7 +29,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Node;
 import java.util.List;
-import java.util.logging.Logger;
 import jenkins.util.Listeners;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -41,8 +40,6 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since 2.8
  */
 public abstract class NodeListener implements ExtensionPoint {
-
-    private static final Logger LOGGER = Logger.getLogger(NodeListener.class.getName());
 
     /**
      * Allows to veto node loading.

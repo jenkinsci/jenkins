@@ -34,15 +34,12 @@ import net.sf.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 
 @WithJenkins
 class HealthCheckActionTest {
-
-    private final LogRecorder loggingRule = new LogRecorder().record(HealthCheckAction.class, Level.WARNING).capture(10);
 
     private JenkinsRule r;
 
