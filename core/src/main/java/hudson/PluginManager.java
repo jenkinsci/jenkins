@@ -221,7 +221,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Class name prefixes to skip in the class loading
      */
-    private static final String[] CLASS_PREFIXES_TO_SKIP = new String[] {
+    private static final String[] CLASS_PREFIXES_TO_SKIP = {
             "SimpleTemplateScript",  // cf. groovy.text.SimpleTemplateEngine
             "groovy.tmp.templates.GStringTemplateScript", // Leaks on classLoader in some cases, see JENKINS-75879
     };
