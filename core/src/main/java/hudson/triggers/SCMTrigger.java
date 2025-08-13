@@ -246,13 +246,6 @@ public class SCMTrigger extends Trigger<Item> {
         private static final int THREADS_UPPER_BOUND = 100;
         private static final int THREADS_DEFAULT = 10;
 
-        private Object readResolve() {
-            if (maximumThreads == 0) {
-                maximumThreads = THREADS_DEFAULT;
-            }
-            return this;
-        }
-
         @Override
         public boolean isApplicable(Item item) {
             return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(item) != null;

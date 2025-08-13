@@ -27,15 +27,12 @@ package hudson.tools;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.EnvVars;
-import hudson.Functions;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Ant.AntInstallation;
-import hudson.tasks.BatchFile;
 import hudson.tasks.Maven.MavenInstallation;
-import hudson.tasks.Shell;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
@@ -111,12 +108,5 @@ class ToolLocationNodePropertyTest {
         assertEquals(antDescriptor, location.getType());
         assertEquals("ant", location.getName());
         assertEquals("zotfoo", location.getHome());
-    }
-
-    private void configureDumpEnvBuilder() {
-        if (Functions.isWindows())
-            project.getBuildersList().add(new BatchFile("set"));
-        else
-            project.getBuildersList().add(new Shell("export"));
     }
 }

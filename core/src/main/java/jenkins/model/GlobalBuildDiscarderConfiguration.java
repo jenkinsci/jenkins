@@ -56,11 +56,6 @@ public class GlobalBuildDiscarderConfiguration extends GlobalConfiguration {
     private final DescribableList<GlobalBuildDiscarderStrategy, GlobalBuildDiscarderStrategyDescriptor> configuredBuildDiscarders =
             new DescribableList<>(this, List.of(new JobGlobalBuildDiscarderStrategy()));
 
-    private Object readResolve() {
-        configuredBuildDiscarders.setOwner(this);
-        return this;
-    }
-
     public DescribableList<GlobalBuildDiscarderStrategy, GlobalBuildDiscarderStrategyDescriptor> getConfiguredBuildDiscarders() {
         return configuredBuildDiscarders;
     }

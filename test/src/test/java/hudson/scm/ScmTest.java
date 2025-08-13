@@ -69,10 +69,6 @@ class ScmTest {
                 callback[0] = true;
                 return true;
             }
-
-            private Object writeReplace() { // don't really care about save
-                return new NullSCM();
-            }
         });
         j.buildAndAssertSuccess(p);
         p.delete();
@@ -90,10 +86,6 @@ class ScmTest {
                     BuildListener listener, File changeLogFile)
                     throws InterruptedException {
                 throw new InterruptedException();
-            }
-
-            private Object writeReplace() { // don't really care about save
-                return new NullSCM();
             }
         });
 

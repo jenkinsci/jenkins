@@ -320,10 +320,6 @@ class AbstractBuildTest {
 
                 return true;
             }
-
-            private Object writeReplace() {
-                return new Object();
-            }
         });
 
         QueueTaskFuture<FreeStyleBuild> b1 = p.scheduleBuild2(0);

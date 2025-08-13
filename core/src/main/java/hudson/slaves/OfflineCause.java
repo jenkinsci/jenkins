@@ -28,8 +28,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Computer;
 import hudson.model.User;
-import java.io.ObjectStreamException;
-import java.util.Collections;
 import jenkins.agents.IOfflineCause;
 import jenkins.model.Jenkins;
 import org.jvnet.localizer.Localizable;
@@ -167,22 +165,6 @@ public abstract class OfflineCause implements IOfflineCause {
          */
         public String getMessage() {
             return message;
-        }
-
-        // Storing the User in a filed was a mistake, switch to userId
-        private Object readResolve() throws ObjectStreamException {
-            if (user != null) {
-                String id = user.getId();
-                if (id != null) {
-                    userId = id;
-                } else {
-                    // The user field is not properly deserialized so id may be missing. Look the user up by fullname
-                    User user = User.get(this.user.getFullName(), true, Collections.emptyMap());
-                    userId = user.getId();
-                }
-                this.user = null;
-            }
-            return this;
         }
 
         @Override

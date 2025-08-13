@@ -76,10 +76,6 @@ class DoActionFilterTest extends StaplerAbstractTest {
             return new TestAccessModifier();
         }
 
-        private TestAccessModifier getPrivate() {
-            return new TestAccessModifier();
-        }
-
         public static class TestAccessModifier {
             @GET
             public String doValue() {

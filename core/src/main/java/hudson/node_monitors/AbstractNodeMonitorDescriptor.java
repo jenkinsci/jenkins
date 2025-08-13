@@ -197,13 +197,6 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     }
 
     /**
-     * Is the monitoring activity currently in progress?
-     */
-    private synchronized boolean isInProgress() {
-        return inProgress != null && inProgress.isAlive();
-    }
-
-    /**
      * The timestamp that indicates when the last round of the monitoring has completed.
      */
     public long getTimestamp() {

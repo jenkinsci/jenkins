@@ -32,7 +32,6 @@ import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.util.FormValidation;
 import hudson.util.LineEndingConversion;
-import java.util.ArrayList;
 import java.util.List;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
@@ -97,14 +96,6 @@ public class BatchFile extends CommandInterpreter {
     @Override
     protected boolean isErrorlevelForUnstableBuild(int exitCode) {
         return this.unstableReturn != null && exitCode != 0 && this.unstableReturn.equals(exitCode);
-    }
-
-    private Object readResolve() {
-        BatchFile batch = new BatchFile(command);
-        batch.setUnstableReturn(unstableReturn);
-        // backward compatibility
-        batch.setConfiguredLocalRules(configuredLocalRules == null ? new ArrayList<>() : configuredLocalRules);
-        return batch;
     }
 
     @Extension @Symbol("batchFile")

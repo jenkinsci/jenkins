@@ -1044,11 +1044,6 @@ class ViewTest {
             this.views = asList(views);
         }
 
-        private DummyCompositeView withJobs(TopLevelItem... jobs) {
-            this.jobs = asList(jobs);
-            return this;
-        }
-
         @Override
         public Collection<TopLevelItem> getItems() {
             return this.jobs;

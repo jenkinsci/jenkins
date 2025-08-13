@@ -41,7 +41,6 @@ import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.Saveable;
-import hudson.security.ACL;
 import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -110,17 +109,6 @@ class RobustReflectionConverterTest {
 
         public boolean isAcceptable() {
             return ACCEPT_KEYWORD.equals(keyword);
-        }
-
-        private Object readResolve() throws Exception {
-            if (!ACL.SYSTEM2.equals(Jenkins.getAuthentication2())) {
-                // called via REST / CLI with authentication
-                if (!isAcceptable()) {
-                    // Reject invalid configuration via REST / CLI.
-                    throw new Exception(String.format("Bad keyword: %s", getKeyword()));
-                }
-            }
-            return this;
         }
 
         @TestExtension

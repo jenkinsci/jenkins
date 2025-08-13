@@ -786,13 +786,6 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
             return new ChainedServletFilter2();
         }
 
-        /**
-         * Maintain singleton semantics.
-         */
-        private Object readResolve() {
-            return NO_AUTHENTICATION;
-        }
-
         @Extension(ordinal = -100)
         @Symbol("none")
         public static class DescriptorImpl extends Descriptor<SecurityRealm> {

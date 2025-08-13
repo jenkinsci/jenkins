@@ -230,13 +230,6 @@ class WorkspaceCleanupThreadTest {
         return ws;
     }
 
-    private FilePath createOldLibsWorkspace(FreeStyleProject p) throws IOException, InterruptedException {
-        FilePath libsWs = Jenkins.get().getWorkspaceFor(p).withSuffix(WorkspaceList.COMBINATOR + "libs");
-        libsWs.child("test-libs").write("content", null);
-        libsWs.act(new Touch(0));
-        return libsWs;
-    }
-
     private void performCleanup() throws InterruptedException, IOException {
         new WorkspaceCleanupThread().execute(StreamTaskListener.fromStdout());
     }

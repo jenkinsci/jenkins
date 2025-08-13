@@ -47,26 +47,19 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.ResourceDomainRootAction;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
-import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -439,57 +432,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         return FilePath.isIgnoreTmpDirs(openOptions) && TMPDIR_PATTERN.matcher(base).matches();
     }
 
-    private List<List<Path>> keepReadabilityOnlyOnDescendants(VirtualFile root, boolean patternUsed, List<List<Path>> pathFragmentsList) {
-        Stream<List<Path>> pathFragmentsStream = pathFragmentsList.stream().map((List<Path> pathFragments) -> {
-            List<Path> mappedFragments = new ArrayList<>(pathFragments.size());
-            String relativePath = "";
-            for (int i = 0; i < pathFragments.size(); i++) {
-                Path current = pathFragments.get(i);
-                if (i == 0) {
-                    relativePath = current.title;
-                } else {
-                    relativePath += "/" + current.title;
-                }
-
-                if (!current.isReadable) {
-                    if (patternUsed) {
-                        // we do not want to leak information about existence of folders / files satisfying the pattern inside that folder
-                        return null;
-                    }
-                    mappedFragments.add(current);
-                    return mappedFragments;
-                } else {
-                    if (isDescendant(root, relativePath)) {
-                        mappedFragments.add(current);
-                    } else {
-                        if (patternUsed) {
-                            // we do not want to leak information about existence of folders / files satisfying the pattern inside that folder
-                            return null;
-                        }
-                        mappedFragments.add(Path.createNotReadableVersionOf(current));
-                        return mappedFragments;
-                    }
-                }
-            }
-            return mappedFragments;
-        });
-
-        if (patternUsed) {
-            pathFragmentsStream = pathFragmentsStream.filter(Objects::nonNull);
-        }
-
-        return pathFragmentsStream.collect(Collectors.toList());
-    }
-
-    private boolean isDescendant(VirtualFile root, String relativePath) {
-        try {
-            return ALLOW_SYMLINK_ESCAPE || !root.supportIsDescendant() || root.isDescendant(relativePath);
-        }
-        catch (IOException e) {
-            return false;
-        }
-    }
-
     private String getPath(StaplerRequest2 req) {
         String path = req.getRestOfPath();
         if (path.isEmpty())
@@ -517,71 +459,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static String createBackRef(int times) {
         if (times == 0)    return "./";
         return "../".repeat(times);
-    }
-
-    private static void zip(StaplerResponse2 rsp, VirtualFile root, VirtualFile dir, String glob) throws IOException, InterruptedException {
-        OutputStream outputStream = rsp.getOutputStream();
-        // TODO JENKINS-20663 make encoding overridable via query parameter
-        try (ZipOutputStream zos = new ZipOutputStream(outputStream, Charset.defaultCharset())) {
-            // TODO consider using run(Callable) here
-
-            if (glob.isEmpty()) {
-                if (!root.supportsQuickRecursiveListing()) {
-                    // avoid slow listing when the Glob can do a quicker job
-                    glob = "**";
-                }
-            }
-
-            if (glob.isEmpty()) {
-                Map<String, VirtualFile> nameToVirtualFiles = collectRecursivelyAllLegalChildren(dir);
-                sendZipUsingMap(zos, dir, nameToVirtualFiles);
-            } else {
-                Collection<String> listOfFile = dir.list(glob, null, /* TODO what is the user expectation? */true);
-                sendZipUsingListOfNames(zos, dir, listOfFile);
-            }
-        }
-    }
-
-    private static void sendZipUsingMap(ZipOutputStream zos, VirtualFile dir, Map<String, VirtualFile> nameToVirtualFiles) throws IOException {
-        for (Map.Entry<String, VirtualFile> entry : nameToVirtualFiles.entrySet()) {
-            String n = entry.getKey();
-
-            // JENKINS-19947: traditional behavior is to prepend the directory name
-            String relativePath = dir.getName() + '/' + n;
-
-            VirtualFile f = entry.getValue();
-            sendOneZipEntry(zos, f, relativePath);
-        }
-    }
-
-    private static void sendZipUsingListOfNames(ZipOutputStream zos, VirtualFile dir, Collection<String> listOfFileNames) throws IOException {
-        for (String relativePath : listOfFileNames) {
-            VirtualFile f = dir.child(relativePath);
-            sendOneZipEntry(zos, f, relativePath);
-        }
-    }
-
-    private static void sendOneZipEntry(ZipOutputStream zos, VirtualFile vf, String relativePath) throws IOException {
-        // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
-        // TODO On Linux file names can contain backslashes which should not treated as file separators.
-        //      Unfortunately, only the file separator char of the controller is known (File.separatorChar)
-        //      but not the file separator char of the (maybe remote) "dir".
-        ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
-
-        e.setTime(vf.lastModified());
-        zos.putNextEntry(e);
-        try (InputStream in = vf.open()) {
-            IOUtils.copy(in, zos);
-        }
-        finally {
-            zos.closeEntry();
-        }
-    }
-
-    private static Map<String, VirtualFile> collectRecursivelyAllLegalChildren(VirtualFile dir) throws IOException {
-        Map<String, VirtualFile> nameToFiles = new LinkedHashMap<>();
-        collectRecursivelyAllLegalChildren(dir, "", nameToFiles);
-        return nameToFiles;
     }
 
     private static void collectRecursivelyAllLegalChildren(VirtualFile currentDir, String currentPrefix, Map<String, VirtualFile> nameToFiles) throws IOException {

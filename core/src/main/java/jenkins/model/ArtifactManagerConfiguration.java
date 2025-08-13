@@ -46,11 +46,6 @@ public class ArtifactManagerConfiguration extends GlobalConfiguration implements
 
     private final DescribableList<ArtifactManagerFactory, ArtifactManagerFactoryDescriptor> artifactManagerFactories = new DescribableList<>(this);
 
-    private Object readResolve() {
-        artifactManagerFactories.setOwner(this);
-        return this;
-    }
-
     public DescribableList<ArtifactManagerFactory, ArtifactManagerFactoryDescriptor> getArtifactManagerFactories() {
         return artifactManagerFactories;
     }

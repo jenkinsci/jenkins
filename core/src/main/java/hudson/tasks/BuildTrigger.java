@@ -362,15 +362,6 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         return changed;
     }
 
-    /**
-     * Correct broken data gracefully (JENKINS-1537)
-     */
-    private Object readResolve() {
-        if (childProjects == null)
-            return childProjects = "";
-        return this;
-    }
-
     @Extension @Symbol("downstream")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         @NonNull

@@ -636,15 +636,6 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         Replacer(AbstractItem i) {
             fullName = i.getFullName();
         }
-
-        private Object readResolve() {
-            Jenkins j = Jenkins.getInstanceOrNull();
-            if (j == null) {
-                return null;
-            }
-            // Will generally only work if called after job loading:
-            return j.getItemByFullName(fullName);
-        }
     }
 
     /**

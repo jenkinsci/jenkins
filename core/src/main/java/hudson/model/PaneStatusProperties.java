@@ -40,11 +40,6 @@ public class PaneStatusProperties extends UserProperty implements Saveable {
         user.save();
     }
 
-    private Object readResolve() {
-        collapsed.setOwner(this);
-        return this;
-    }
-
     @Extension @Symbol("paneStatus")
     public static class DescriptorImpl extends UserPropertyDescriptor {
 

@@ -377,16 +377,6 @@ public class Queue extends ResourceController implements Saveable {
     public static final class State {
         public /* almost final */ List<Item> items = new ArrayList<>();
         public /* almost final */ Map<String, Object> properties = new HashMap<>();
-
-        private Object readResolve() {
-            if (items == null) {
-                items = new ArrayList<>();
-            }
-            if (properties == null) {
-                properties = new HashMap<>();
-            }
-            return this;
-        }
     }
 
     /**

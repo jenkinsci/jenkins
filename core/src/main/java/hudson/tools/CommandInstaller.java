@@ -28,7 +28,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.util.LineEndingConversion;
-import java.io.ObjectStreamException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -51,10 +50,6 @@ public class CommandInstaller extends AbstractCommandInstaller {
     @Override
     public String[] getCommandCall(FilePath script) {
         return new String[]{"sh", "-e", script.getRemote()};
-    }
-
-    private Object readResolve() throws ObjectStreamException {
-        return new CommandInstaller(getLabel(), getCommand(), getToolHome());
     }
 
     @Extension @Symbol("command")

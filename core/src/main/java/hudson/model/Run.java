@@ -2036,10 +2036,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         Replacer(Run<?, ?> r) {
             id = r.getExternalizableId();
         }
-
-        private Object readResolve() {
-            return fromExternalizableId(id);
-        }
     }
 
     /**

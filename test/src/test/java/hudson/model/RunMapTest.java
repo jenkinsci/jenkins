@@ -130,10 +130,6 @@ class RunMapTest {
     }
 
     public static class BombAction extends InvisibleAction {
-        private Object readResolve() {
-            bombed = true;
-            throw new NullPointerException();
-        }
     }
 
     private static boolean bombed;

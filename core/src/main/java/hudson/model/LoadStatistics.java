@@ -370,18 +370,6 @@ public abstract class LoadStatistics {
 
             j.overallLoad.updateCounts(j.overallLoad.computeSnapshot(bis));
         }
-
-        private int count(List<Queue.BuildableItem> bis, Label l) {
-            int q = 0;
-            for (Queue.BuildableItem bi : bis) {
-                for (SubTask st : bi.task.getSubTasks()) {
-                    if (bi.getAssignedLabelFor(st) == l) {
-                        q++;
-                    }
-                }
-            }
-            return q;
-        }
     }
 
     /**

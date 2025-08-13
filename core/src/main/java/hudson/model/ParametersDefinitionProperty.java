@@ -89,10 +89,6 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         this.parameterDefinitions = parameterDefinitions != null ? Arrays.asList(parameterDefinitions) : new ArrayList<>();
     }
 
-    private Object readResolve() {
-        return parameterDefinitions == null ? new ParametersDefinitionProperty() : this;
-    }
-
 
     public final String getBuildButtonText() {
         return AlternativeUiTextProvider.get(BUILD_BUTTON_TEXT, owner, Messages.ParametersDefinitionProperty_BuildButtonText());

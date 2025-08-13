@@ -75,11 +75,6 @@ public class ApiTokenStore {
         this.init();
     }
 
-    private Object readResolve() {
-        this.init();
-        return this;
-    }
-
     private void init() {
         if (this.tokenList == null) {
             this.tokenList = new ArrayList<>();

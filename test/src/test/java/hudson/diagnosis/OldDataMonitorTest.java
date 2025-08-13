@@ -157,15 +157,9 @@ class OldDataMonitorTest {
     }
 
     public static final class BadAction extends InvisibleAction {
-        private Object writeReplace() {
-            throw new IllegalStateException("broken");
-        }
     }
 
     public static final class BadAction2 extends InvisibleAction {
-        private Object readResolve() {
-            throw new IllegalStateException("broken");
-        }
     }
 
 }

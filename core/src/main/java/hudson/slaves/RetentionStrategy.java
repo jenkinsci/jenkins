@@ -141,10 +141,6 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
             return DESCRIPTOR;
         }
 
-        private Object readResolve() {
-            return NOOP;
-        }
-
         private static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         private static final class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {}

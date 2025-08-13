@@ -2716,14 +2716,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private void _syncIO() throws InterruptedException {
-        channel.syncLocalIO();
-    }
-
-    /**
      * Remoting interface used for {@link FilePath#copyRecursiveTo(String, FilePath)}.
      *
      * TODO: this might not be the most efficient way to do the copy.

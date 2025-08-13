@@ -54,11 +54,6 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         return this.excludeClientIPFromCrumb;
     }
 
-    private Object readResolve() {
-        initializeMessageDigest();
-        return this;
-    }
-
     private synchronized void initializeMessageDigest() {
         try {
             md = MessageDigest.getInstance("SHA-256");

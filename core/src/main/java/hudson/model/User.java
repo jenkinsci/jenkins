@@ -780,14 +780,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         UserIdMapper.getInstance().clear();
         AllUsers.clear();
     }
-
-    private static File getConfigFileFor(String id) {
-        return new File(getUserFolderFor(id), "config.xml");
-    }
-
-    private static File getUserFolderFor(String id) {
-        return new File(getRootDir(), idStrategy().filenameOf(id));
-    }
     /**
      * Returns the folder that store all the user information.
      * Useful for plugins to save a user-specific file aside the config.xml.
@@ -1050,20 +1042,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return new HashSet<>(Arrays.asList(ILLEGAL_PERSISTED_USERNAMES));
     }
 
-    private Object writeReplace() {
-        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
-    }
-
     private static class Replacer {
         private final String id;
 
         Replacer(User u) {
             id = u.getId();
-        }
-
-        private Object readResolve() {
-            // Will generally only work if called after UserIdMapper.init:
-            return getById(id, false);
         }
     }
 

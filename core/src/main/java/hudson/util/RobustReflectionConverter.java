@@ -568,11 +568,6 @@ public class RobustReflectionConverter implements Converter {
         }
     }
 
-    private Object readResolve() {
-        serializationMethodInvoker = new SerializationMembers();
-        return this;
-    }
-
     public static class DuplicateFieldException extends ConversionException {
         public DuplicateFieldException(String msg) {
             super(msg);

@@ -33,14 +33,8 @@ import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.model.StatusIcon;
 import hudson.model.StockStatusIcon;
-import java.io.StringWriter;
 import java.util.List;
 import java.util.stream.StreamSupport;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import jenkins.util.NonLocalizable;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlElement;
@@ -192,18 +186,5 @@ class IconTest  {
 
     private void assertIconToSymbolOkay(DomElement icon) {
         assertThat("svg", is(icon.getTagName()));
-    }
-
-    private void dump(HtmlElement element) throws TransformerException {
-        System.out.println("****");
-        System.out.println(toString(element));
-        System.out.println("****");
-    }
-
-    private String toString(HtmlElement element) throws TransformerException {
-        StringWriter writer = new StringWriter();
-        Transformer transformer = TransformerFactory.newInstance().newTransformer();
-        transformer.transform(new DOMSource(element), new StreamResult(writer));
-        return writer.toString();
     }
 }

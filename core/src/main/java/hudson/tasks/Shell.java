@@ -139,14 +139,6 @@ public class Shell extends CommandInterpreter {
         return (DescriptorImpl) super.getDescriptor();
     }
 
-    private Object readResolve() {
-        Shell shell = new Shell(command);
-        shell.setUnstableReturn(unstableReturn);
-        // backward compatibility
-        shell.setConfiguredLocalRules(configuredLocalRules == null ? new ArrayList<>() : configuredLocalRules);
-        return shell;
-    }
-
     @Extension @Symbol("shell")
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> implements PersistentDescriptor {
         /**
