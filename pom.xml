@@ -94,7 +94,7 @@ THE SOFTWARE.
 
     <access-modifier.version>1.35</access-modifier.version>
     <antlr.version>4.13.2</antlr.version>
-    <bridge-method-injector.version>1.31</bridge-method-injector.version>
+    <bridge-method-injector.version>1.32</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>8.12</winstone.version>
@@ -223,7 +223,7 @@ THE SOFTWARE.
           <version>1.1</version>
         </plugin>
         <plugin>
-          <groupId>com.infradna.tool</groupId>
+          <groupId>io.jenkins.tools</groupId>
           <artifactId>bridge-method-injector</artifactId>
           <version>${bridge-method-injector.version}</version>
         </plugin>
