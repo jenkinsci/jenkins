@@ -95,20 +95,31 @@ which will open the workspace in IntelliJ IDEA using JetBrains Gateway.
 
 ### Linting
 
-For linting we use a number of tools:
+For linting we use a number of tools.
 
-- [checkstyle](https://checkstyle.sourceforge.io/)
-- [eslint](https://eslint.org/)
-- [prettier](https://prettier.io/)
-- [spotless](https://github.com/diffplug/spotless)
-- [stylelint](https://stylelint.io/)
+Backend:
+  - [checkstyle](https://checkstyle.sourceforge.io/)
+  - [rewrite](https://github.com/openrewrite/rewrite) 
+  - [spotbugs](https://github.com/spotbugs/spotbugs)
+  - [spotless](https://github.com/diffplug/spotless)
+
+Frontend:
+  - [eslint](https://eslint.org/)
+  - [prettier](https://prettier.io/)
+  - [stylelint](https://stylelint.io/)
 
 These are all configured to run as part of the Maven build, although they will be skipped if you are building with the `quick-build` profile.
 
 To automatically fix backend issues, run:
 
+#### spotless
 ```sh
 mvn spotless:apply
+```
+
+#### rewrite
+```sh
+mvn rewrite:run
 ```
 
 To view frontend issues, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build), run:
