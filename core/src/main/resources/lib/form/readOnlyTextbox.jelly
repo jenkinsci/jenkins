@@ -63,10 +63,18 @@ THE SOFTWARE.
       which is the recommended approach.
     </st:attribute>
     <st:attribute name="onchange" deprecated="true">
-      onchange handler. Deprecated; assign an ID and look up the element that way to attach event handlers.
+      Inline JavaScript to execute when the textbox is changed.
+      Deprecated because this attribute is incompatible with adding Content-Security-Policy to the Jenkins UI in the future.
+      Set 'id' or 'class' attributes as appropriate to look up this element in external Javascript files (e.g. adjuncts)
+      to add the desired behavior there (DOMContentLoaded event in static forms, Behaviour.specify if this element may be
+      dynamically added). See https://github.com/jenkinsci/jenkins/pull/6852 for an example.
     </st:attribute>
     <st:attribute name="onkeyup" deprecated="true">
-      onkeyup handler. Deprecated; assign an ID and look up the element that way to attach event handlers.
+      Inline JavaScript to execute when the keyup event is fired.
+      Deprecated because this attribute is incompatible with adding Content-Security-Policy to the Jenkins UI in the future.
+      Set 'id' or 'class' attributes as appropriate to look up this element in external Javascript files (e.g. adjuncts)
+      to add the desired behavior there (DOMContentLoaded event in static forms, Behaviour.specify if this element may be
+      dynamically added). See https://github.com/jenkinsci/jenkins/pull/6852 for an example.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
