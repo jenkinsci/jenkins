@@ -70,7 +70,7 @@ class AbstractItemTest {
         }
         // update on disk representation
         Path path = p.getConfigFile().getFile().toPath();
-        Files.writeString(path, Files.readString(path, StandardCharsets.UTF_8).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
+        Files.writeString(path, Files.readString(path).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
 
         TestSaveableListener testSaveableListener = ExtensionList.lookupSingleton(TestSaveableListener.class);
         testSaveableListener.setSaveable(p);

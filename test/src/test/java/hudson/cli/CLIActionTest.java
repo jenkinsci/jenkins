@@ -28,6 +28,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -93,7 +94,7 @@ class CLIActionTest {
         config.setTokenGenerationOnCreationEnabled(true);
 
         logging.record(PlainCLIProtocol.class, Level.FINE);
-        File jar = File.createTempFile("jenkins-cli.jar", null, tmp);
+        File jar = Files.createTempFile(tmp.toPath(), "jenkins-cli.jar", null).toFile();
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN));
@@ -147,7 +148,7 @@ class CLIActionTest {
     void authenticationFailed() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
-        var jar = File.createTempFile("jenkins-cli.jar", null, tmp);
+        var jar = Files.createTempFile(tmp.toPath(), "jenkins-cli.jar", null).toFile();
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         var baos = new ByteArrayOutputStream();
         var exitStatus = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
@@ -160,7 +161,7 @@ class CLIActionTest {
     @Issue("JENKINS-41745")
     @Test
     void encodingAndLocale() throws Exception {
-        File jar = File.createTempFile("jenkins-cli.jar", null, tmp);
+        File jar = Files.createTempFile(tmp.toPath(), "jenkins-cli.jar", null).toFile();
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
@@ -176,7 +177,7 @@ class CLIActionTest {
     @Test
     void interleavedStdio() throws Exception {
         logging.record(PlainCLIProtocol.class, Level.FINE).record(FullDuplexHttpService.class, Level.FINE);
-        File jar = File.createTempFile("jenkins-cli.jar", null, tmp);
+        File jar = Files.createTempFile(tmp.toPath(), "jenkins-cli.jar", null).toFile();
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PipedInputStream pis = new PipedInputStream();
@@ -204,7 +205,7 @@ class CLIActionTest {
     @Issue("SECURITY-754")
     @Test
     void noPreAuthOptionHandlerInfoLeak() throws Exception {
-        File jar = File.createTempFile("jenkins-cli.jar", null, tmp);
+        File jar = Files.createTempFile(tmp.toPath(), "jenkins-cli.jar", null).toFile();
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.addView(new AllView("v1"));
@@ -246,7 +247,7 @@ class CLIActionTest {
     @Test
     void largeTransferWebSocket() throws Exception {
         logging.record(CLIAction.class, Level.FINE);
-        File jar = File.createTempFile("jenkins-cli.jar", null, tmp);
+        File jar = Files.createTempFile(tmp.toPath(), "jenkins-cli.jar", null).toFile();
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         long size = /*999_*/999_999;
         try (OutputStream nos = OutputStream.nullOutputStream(); CountingOutputStream cos = new CountingOutputStream(nos)) {

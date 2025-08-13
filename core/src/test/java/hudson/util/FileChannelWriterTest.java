@@ -49,6 +49,6 @@ class FileChannelWriterTest {
     }
 
     private void assertContent(String string) throws IOException {
-        assertThat(Files.readString(file, StandardCharsets.UTF_8), equalTo(string));
+        assertThat(Files.readString(file), equalTo(string));
     }
 }

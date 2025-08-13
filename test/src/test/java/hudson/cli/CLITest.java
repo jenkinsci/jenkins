@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -86,7 +87,7 @@ class CLITest {
     }
 
     private void grabCliJar() throws IOException {
-        jar = File.createTempFile("jenkins-cli.jar", null, tmp);
+        jar = Files.createTempFile(tmp.toPath(), "jenkins-cli.jar", null).toFile();
         FileUtils.copyURLToFile(r.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
     }
 

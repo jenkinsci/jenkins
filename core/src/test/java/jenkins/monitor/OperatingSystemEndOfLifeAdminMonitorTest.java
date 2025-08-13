@@ -167,7 +167,7 @@ class OperatingSystemEndOfLifeAdminMonitorTest {
 
     @Test
     void testReadOperatingSystemListOnWarningDate() throws Exception {
-        File dataFile = File.createTempFile("junit", null, tmp);
+        File dataFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(dataFile.toPath(), "PRETTY_NAME=\"Test OS\"");
         JSONObject eolIn6Months = new JSONObject();
         eolIn6Months.put("pattern", "Test OS");

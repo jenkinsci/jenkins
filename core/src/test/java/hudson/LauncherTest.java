@@ -100,7 +100,7 @@ class LauncherTest {
     void remoteKill() throws Exception {
         assumeFalse(Functions.isWindows());
 
-        File tmp = File.createTempFile("junit", null, temp);
+        File tmp = Files.createTempFile(temp.toPath(), "junit", null).toFile();
 
             FilePath f = new FilePath(french, tmp.getPath());
             Launcher l = f.createLauncher(StreamTaskListener.fromStderr());

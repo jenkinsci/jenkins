@@ -263,7 +263,7 @@ class UtilTest {
             // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work:
             //assertTrue(Util.isSymlink(new File(d,"anotherDir/link")));
 
-            File external = File.createTempFile("something", "");
+            File external = Files.createTempFile("something", "").toFile();
             try {
                 Util.createSymlink(d, external.getAbsolutePath(), "outside", l);
                 assertEquals(external.getAbsolutePath(), Util.resolveSymlink(new File(d, "outside")));

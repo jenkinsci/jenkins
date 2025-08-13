@@ -32,7 +32,6 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
@@ -182,14 +181,14 @@ class StaticRoutingDecisionProvider2Test {
 
         wl.save();
         assertTrue(Files.exists(whitelistUserControlledList));
-        assertThat(Files.readString(whitelistUserControlledList, StandardCharsets.UTF_8), is(""));
+        assertThat(Files.readString(whitelistUserControlledList), is(""));
 
         wl.add("white-1");
 
         assertThat(wl.decide("white-1"), is(RoutingDecisionProvider.Decision.ACCEPTED));
 
         assertTrue(Files.exists(whitelistUserControlledList));
-        assertThat(Files.readString(whitelistUserControlledList, StandardCharsets.UTF_8), containsString("white-1"));
+        assertThat(Files.readString(whitelistUserControlledList), containsString("white-1"));
         {
             StaticRoutingDecisionProvider temp = new StaticRoutingDecisionProvider();
             assertThat(temp.decide("white-1"), is(RoutingDecisionProvider.Decision.ACCEPTED));
@@ -199,7 +198,7 @@ class StaticRoutingDecisionProvider2Test {
 
         assertThat(wl.decide("white-1"), is(RoutingDecisionProvider.Decision.ACCEPTED));
         assertThat(wl.decide("black-2"), is(RoutingDecisionProvider.Decision.REJECTED));
-        assertThat(Files.readString(whitelistUserControlledList, StandardCharsets.UTF_8), allOf(
+        assertThat(Files.readString(whitelistUserControlledList), allOf(
                 containsString("white-1"),
                 containsString("!black-2")
         ));
@@ -214,7 +213,7 @@ class StaticRoutingDecisionProvider2Test {
 
         assertThat(wl.decide("white-1"), is(RoutingDecisionProvider.Decision.ACCEPTED));
         assertThat(wl.decide("black-2"), is(RoutingDecisionProvider.Decision.UNKNOWN));
-        assertThat(Files.readString(whitelistUserControlledList, StandardCharsets.UTF_8), allOf(
+        assertThat(Files.readString(whitelistUserControlledList), allOf(
                 containsString("white-1"),
                 not(containsString("black-2"))
         ));
@@ -229,7 +228,7 @@ class StaticRoutingDecisionProvider2Test {
 
         assertThat(wl.decide("white-1"), is(RoutingDecisionProvider.Decision.UNKNOWN));
         assertThat(wl.decide("black-2"), is(RoutingDecisionProvider.Decision.UNKNOWN));
-        assertThat(Files.readString(whitelistUserControlledList, StandardCharsets.UTF_8), allOf(
+        assertThat(Files.readString(whitelistUserControlledList), allOf(
                 not(containsString("white-1")),
                 not(containsString("black-2"))
         ));

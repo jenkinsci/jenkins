@@ -40,7 +40,7 @@ class FileParameterValuePersistenceTest {
             FreeStyleProject p = j.createFreeStyleProject("p");
             p.addProperty(new ParametersDefinitionProperty(new FileParameterDefinition(FILENAME, "The file.")));
             p.getBuildersList().add(Functions.isWindows() ? new BatchFile("type " + FILENAME) : new Shell("cat " + FILENAME));
-            File test = File.createTempFile("junit", null, tmp);
+            File test = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
             Files.writeString(test.toPath(), CONTENTS, StandardCharsets.UTF_8);
             try (JenkinsRule.WebClient wc = j.createWebClient()) {
                 // ParametersDefinitionProperty/index.jelly sends a 405
@@ -71,7 +71,7 @@ class FileParameterValuePersistenceTest {
         j.assertLogContains(CONTENTS, b);
         Path saved = b.getRootDir().toPath().resolve("fileParameters").resolve(FILENAME);
         assertTrue(Files.isRegularFile(saved));
-        assertEquals(CONTENTS, Files.readString(saved, StandardCharsets.UTF_8));
+        assertEquals(CONTENTS, Files.readString(saved));
         assertTrue(b.getWorkspace().child(FILENAME).exists());
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             HtmlPage page = wc.goTo(p.getUrl() + "ws");

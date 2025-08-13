@@ -76,7 +76,7 @@ class LoadStatisticsTest {
         JFreeChart chart = ls.createTrendChart(TimeScale.SEC10).createChart();
         BufferedImage image = chart.createBufferedImage(400, 200);
 
-        File tempFile = File.createTempFile("chart-", "png");
+        File tempFile = Files.createTempFile("chart-", "png").toFile();
         try (OutputStream os = Files.newOutputStream(tempFile.toPath(), StandardOpenOption.DELETE_ON_CLOSE)) {
             ImageIO.write(image, "PNG", os);
         } finally {

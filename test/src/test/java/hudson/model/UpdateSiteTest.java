@@ -41,10 +41,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,7 +87,7 @@ public class UpdateSiteTest {
             if (url == null) {
                 url = extract(resourceName);
             }
-            return url != null ? Files.readString(Paths.get(url.toURI()), StandardCharsets.UTF_8) : null;
+            return url != null ? Files.readString(Path.of(url.toURI())) : null;
         } catch (URISyntaxException e) {
             return null;
         }

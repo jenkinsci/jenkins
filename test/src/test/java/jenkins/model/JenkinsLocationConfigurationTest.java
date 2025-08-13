@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
@@ -75,7 +74,7 @@ class JenkinsLocationConfigurationTest {
             assertNull(JenkinsLocationConfiguration.getOrDie().getUrl());
 
             Path configFile = j.jenkins.getRootDir().toPath().resolve("jenkins.model.JenkinsLocationConfiguration.xml");
-            String configFileContent = Files.readString(configFile, StandardCharsets.UTF_8);
+            String configFileContent = Files.readString(configFile);
             assertThat(configFileContent, containsString("JenkinsLocationConfiguration"));
             assertThat(configFileContent, not(containsString("javascript:alert(123);//")));
         });
@@ -103,7 +102,7 @@ class JenkinsLocationConfigurationTest {
                 assertEquals(expectedUrl + "/", JenkinsLocationConfiguration.getOrDie().getUrl());
 
                 Path configFile = j.jenkins.getRootDir().toPath().resolve("jenkins.model.JenkinsLocationConfiguration.xml");
-                String configFileContent = Files.readString(configFile, StandardCharsets.UTF_8);
+                String configFileContent = Files.readString(configFile);
                 assertThat(configFileContent, containsString("JenkinsLocationConfiguration"));
                 assertThat(configFileContent, containsString(expectedUrl));
             } finally {

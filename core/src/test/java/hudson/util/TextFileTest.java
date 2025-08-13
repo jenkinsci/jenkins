@@ -18,7 +18,7 @@ class TextFileTest {
 
     @Test
     void head() throws Exception {
-        File f = File.createTempFile("junit", null, tmp);
+        File f = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         FileUtils.copyURLToFile(getClass().getResource("ascii.txt"), f);
 
         TextFile t = new TextFile(f);
@@ -29,7 +29,7 @@ class TextFileTest {
 
     @Test
     void shortHead() throws Exception {
-        File f = File.createTempFile("junit", null, tmp);
+        File f = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(f.toPath(), "hello", Charset.defaultCharset());
 
         TextFile t = new TextFile(f);
@@ -38,7 +38,7 @@ class TextFileTest {
 
     @Test
     void tail() throws Exception {
-        File f = File.createTempFile("junit", null, tmp);
+        File f = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         FileUtils.copyURLToFile(getClass().getResource("ascii.txt"), f);
         String whole = Files.readString(f.toPath(), Charset.defaultCharset());
         TextFile t = new TextFile(f);
@@ -48,7 +48,7 @@ class TextFileTest {
 
     @Test
     void shortTail() throws Exception {
-        File f = File.createTempFile("junit", null, tmp);
+        File f = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(f.toPath(), "hello", Charset.defaultCharset());
 
         TextFile t = new TextFile(f);
@@ -63,7 +63,7 @@ class TextFileTest {
      */
     @Test
     void tailShiftJIS() throws Exception {
-        File f = File.createTempFile("junit", null, tmp);
+        File f = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
 
         TextFile t = new TextFile(f);
 

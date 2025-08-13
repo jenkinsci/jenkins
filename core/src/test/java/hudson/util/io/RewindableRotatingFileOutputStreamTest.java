@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -23,7 +24,7 @@ class RewindableRotatingFileOutputStreamTest {
 
     @Test
     void rotation() throws IOException, InterruptedException {
-        File base = File.createTempFile("test.log", null, tmp);
+        File base = Files.createTempFile(tmp.toPath(), "test.log", null).toFile();
         RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base, 3);
         PrintWriter w = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
         for (int i = 0; i <= 4; i++) {

@@ -8,7 +8,6 @@ import hudson.model.utils.IOExceptionPublisher;
 import hudson.model.utils.ResultWriterPublisher;
 import hudson.model.utils.TrueFalsePublisher;
 import hudson.tasks.ArtifactArchiver;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +49,7 @@ class FreestyleJobPublisherTest {
         FreeStyleBuild b = j.buildAndAssertStatus(Result.FAILURE, p);
         Path path = b.getArtifactsDir().toPath().resolve("result.txt");
         assertTrue(Files.exists(path), "ArtifactArchiver is executed even prior publisher fails");
-        assertEquals(Files.readString(path, StandardCharsets.UTF_8), Result.FAILURE.toString(), "Publisher, after publisher with return false status, must see FAILURE status");
+        assertEquals(Files.readString(path), Result.FAILURE.toString(), "Publisher, after publisher with return false status, must see FAILURE status");
     }
 
     /**
@@ -74,7 +73,7 @@ class FreestyleJobPublisherTest {
         j.assertLogContains("Threw AbortException from publisher!", b); // log must contain exact error message
         Path path = b.getArtifactsDir().toPath().resolve("result.txt");
         assertTrue(Files.exists(path), "ArtifactArchiver is executed even prior publisher fails");
-        assertEquals(Files.readString(path, StandardCharsets.UTF_8), Result.FAILURE.toString(), "Third publisher must see FAILURE status");
+        assertEquals(Files.readString(path), Result.FAILURE.toString(), "Third publisher must see FAILURE status");
     }
 
     /**
@@ -98,6 +97,6 @@ class FreestyleJobPublisherTest {
         j.assertLogContains("Threw IOException from publisher!", b); // log must contain exact error message
         Path path = b.getArtifactsDir().toPath().resolve("result.txt");
         assertTrue(Files.exists(path), "ArtifactArchiver is executed even prior publisher fails");
-        assertEquals(Files.readString(path, StandardCharsets.UTF_8), Result.FAILURE.toString(), "Third publisher must see FAILURE status");
+        assertEquals(Files.readString(path), Result.FAILURE.toString(), "Third publisher must see FAILURE status");
     }
 }

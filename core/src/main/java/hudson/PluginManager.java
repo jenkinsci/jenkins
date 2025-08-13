@@ -88,7 +88,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.security.CodeSource;
 import java.time.Duration;
@@ -1396,7 +1396,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if ("file".equals(loc.getProtocol())) {
                         File file;
                         try {
-                            file = Paths.get(loc.toURI()).toFile();
+                            file = Path.of(loc.toURI()).toFile();
                         } catch (InvalidPathException | URISyntaxException e) {
                             LOGGER.log(Level.WARNING, "could not inspect " + loc, e);
                             return null;
@@ -1962,7 +1962,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
 
             // first copy into a temporary file name
-            File t = File.createTempFile("uploaded", ".jpi", tmpDir);
+            File t = Files.createTempFile(tmpDir.toPath(), "uploaded", ".jpi").toFile();
             tmpDir.deleteOnExit();
             t.deleteOnExit();
             // TODO Remove this workaround after FILEUPLOAD-293 is resolved.

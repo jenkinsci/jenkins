@@ -64,7 +64,7 @@ class XStream2Security383Test {
     @Test
     @Issue("SECURITY-383")
     void testXmlLoad() throws Exception {
-        File exploitFile = File.createTempFile("junit", null, f);
+        File exploitFile = Files.createTempFile(f.toPath(), "junit", null).toFile();
         try {
             // be extra sure there's no file already
             if (exploitFile.exists() && !exploitFile.delete()) {
@@ -91,7 +91,7 @@ class XStream2Security383Test {
     @Test
     @Issue("SECURITY-383")
     void testPostJobXml() throws Exception {
-        File exploitFile = File.createTempFile("junit", null, f);
+        File exploitFile = Files.createTempFile(f.toPath(), "junit", null).toFile();
         try {
             // be extra sure there's no file already
             if (exploitFile.exists() && !exploitFile.delete()) {

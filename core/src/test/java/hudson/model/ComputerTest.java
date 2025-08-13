@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import hudson.FilePath;
 import hudson.security.ACL;
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -24,7 +25,7 @@ class ComputerTest {
 
     @Test
     void testRelocate() throws Exception {
-        File d = File.createTempFile("jenkins", "test");
+        File d = Files.createTempFile("jenkins", "test").toFile();
         FilePath dir = new FilePath(d);
         try {
             dir.delete();

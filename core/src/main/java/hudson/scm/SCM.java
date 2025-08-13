@@ -516,7 +516,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
                         BuildListener.class,
                         File.class)) {
             if (changelogFile == null) {
-                changelogFile = File.createTempFile("changelog", ".xml");
+                changelogFile = Files.createTempFile("changelog", ".xml").toFile();
                 try {
                     if (!checkout((AbstractBuild) build, launcher, workspace, (BuildListener) listener, changelogFile)) {
                         throw new AbortException();

@@ -137,7 +137,7 @@ class FilePathTest {
 
     @Test
     void copyTo() throws Exception {
-        File tmp = File.createTempFile("junit", null, temp);
+        File tmp = Files.createTempFile(temp.toPath(), "junit", null).toFile();
         FilePath f = new FilePath(french, tmp.getPath());
         try (OutputStream out = OutputStream.nullOutputStream()) {
             f.copyTo(out);
@@ -155,9 +155,9 @@ class FilePathTest {
     @Test
     void noFileLeakInCopyTo() throws Exception {
         for (int j = 0; j < 2500; j++) {
-            File tmp = File.createTempFile("junit", null, temp);
+            File tmp = Files.createTempFile(temp.toPath(), "junit", null).toFile();
             FilePath f = new FilePath(tmp);
-            File tmp2 = File.createTempFile("junit", null, temp);
+            File tmp2 = Files.createTempFile(temp.toPath(), "junit", null).toFile();
             FilePath f2 = new FilePath(british, tmp2.getPath());
 
             f.copyTo(f2);
@@ -182,7 +182,7 @@ class FilePathTest {
     @Issue("JENKINS-7871")
     @Test
     void noRaceConditionInCopyTo() throws Exception {
-        final File tmp = File.createTempFile("junit", null, temp);
+        final File tmp = Files.createTempFile(temp.toPath(), "junit", null).toFile();
 
            int fileSize = 90000;
 
@@ -262,7 +262,7 @@ class FilePathTest {
         // should return number of files processed, whether or not they were copied or already current
         File src = newFolder(temp, "src");
         File dst = newFolder(temp, "dst");
-            File.createTempFile("foo", ".tmp", src);
+        Files.createTempFile(src.toPath(), "foo", ".tmp").toFile();
             FilePath fp = new FilePath(src);
             assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
             // copy again should still report 1
@@ -872,7 +872,7 @@ class FilePathTest {
         givenSomeContentInFile(pomFile, 2049);
         FileUtils.copyFileToDirectory(pomFile, srcFolder);
 
-        final File archive = File.createTempFile("archive.tar", null, temp);
+        final File archive = Files.createTempFile(temp.toPath(), "archive.tar", null).toFile();
 
         // Compress archive
         final FilePath tmpDirPath = new FilePath(srcFolder);
@@ -890,7 +890,7 @@ class FilePathTest {
     @Test
     void chmod() throws Exception {
         assumeFalse(Functions.isWindows());
-        File f = File.createTempFile("file", null, temp);
+        File f = Files.createTempFile(temp.toPath(), "file", null).toFile();
         FilePath fp = new FilePath(f);
         int prevMode = fp.mode();
         assertEquals(0400, chmodAndMode(fp, 0400));
@@ -1214,7 +1214,7 @@ class FilePathTest {
     void isDescendant_throwIfAbsolutePathGiven() throws Exception {
         FilePath rootFolder = new FilePath(newFolder(temp, "root"));
         rootFolder.mkdirs();
-        assertThrows(IllegalArgumentException.class, () -> rootFolder.isDescendant(File.createTempFile("junit", null, temp).getAbsolutePath()));
+        assertThrows(IllegalArgumentException.class, () -> rootFolder.isDescendant(Files.createTempFile(temp.toPath(), "junit", null).toFile().getAbsolutePath()));
     }
 
     @Test

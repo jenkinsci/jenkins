@@ -64,10 +64,10 @@ class TarArchiverTest {
     void permission() throws Exception {
         assumeFalse(Functions.isWindows());
 
-        File tar = File.createTempFile("test", "tar");
-        File zip = File.createTempFile("test", "zip");
+        File tar = Files.createTempFile("test", "tar").toFile();
+        File zip = Files.createTempFile("test", "zip").toFile();
 
-        FilePath dir = new FilePath(File.createTempFile("test", "dir"));
+        FilePath dir = new FilePath(Files.createTempFile("test", "dir").toFile());
 
         try {
             dir.delete();
@@ -135,7 +135,7 @@ class TarArchiverTest {
     @Issue("JENKINS-73837")
     @Test
     void emptyDirectory() throws Exception {
-        Path tar = File.createTempFile("test.tar", null, tmp).toPath();
+        Path tar = Files.createTempFile(tmp.toPath(), "test.tar", null);
         Path root = newFolder(tmp, "junit").toPath();
         Files.createDirectory(root.resolve("foo"));
         Files.createDirectory(root.resolve("bar"));

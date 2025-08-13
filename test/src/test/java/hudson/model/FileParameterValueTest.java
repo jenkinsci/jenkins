@@ -87,7 +87,7 @@ class FileParameterValueTest {
         assertThat(root.child("root-level.txt").exists(), equalTo(false));
 
         String uploadedContent = "test-content";
-        File uploadedFile = File.createTempFile("junit", null, tmp);
+        File uploadedFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
 
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
@@ -127,7 +127,7 @@ class FileParameterValueTest {
         assertThat(root.child("pwned").exists(), equalTo(false));
 
         String uploadedContent = "test-content";
-        File uploadedFile = File.createTempFile("junit", null, tmp);
+        File uploadedFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
 
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
@@ -154,7 +154,7 @@ class FileParameterValueTest {
         assertThat(root.child("pwned").exists(), equalTo(false));
 
         String uploadedContent = "test-content";
-        File uploadedFile = File.createTempFile("junit", null, tmp);
+        File uploadedFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
 
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
@@ -192,7 +192,7 @@ class FileParameterValueTest {
         assertThat(root.child("root-level.txt").exists(), equalTo(false));
 
         String uploadedContent = "test-content";
-        File uploadedFile = File.createTempFile("junit", null, tmp);
+        File uploadedFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
 
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
@@ -221,7 +221,7 @@ class FileParameterValueTest {
         )));
 
         String uploadedContent = "test-content";
-        File uploadedFile = File.createTempFile("junit", null, tmp);
+        File uploadedFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
 
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
@@ -249,7 +249,7 @@ class FileParameterValueTest {
         )));
 
         String uploadedContent = "test-content";
-        File uploadedFile = File.createTempFile("junit", null, tmp);
+        File uploadedFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
 
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
@@ -283,7 +283,7 @@ class FileParameterValueTest {
         root.child("root-level.txt").write(initialContent, StandardCharsets.UTF_8.name());
 
         String uploadedContent = "test-content";
-        File uploadedFile = File.createTempFile("junit", null, tmp);
+        File uploadedFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
 
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
@@ -308,9 +308,9 @@ class FileParameterValueTest {
                 new FileParameterDefinition("parent/child2.txt", null)
         )));
 
-        File uploadedFile1 = File.createTempFile("junit", null, tmp);
+        File uploadedFile1 = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(uploadedFile1.toPath(), "test1", StandardCharsets.UTF_8);
-        File uploadedFile2 = File.createTempFile("junit", null, tmp);
+        File uploadedFile2 = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(uploadedFile2.toPath(), "test2", StandardCharsets.UTF_8);
 
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
@@ -349,7 +349,7 @@ class FileParameterValueTest {
                 new FileParameterDefinition("weird..name.txt", null)
         )));
 
-        File uploadedFile = File.createTempFile("junit", null, tmp);
+        File uploadedFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(uploadedFile.toPath(), "test1", StandardCharsets.UTF_8);
 
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
@@ -377,7 +377,7 @@ class FileParameterValueTest {
                 new FileParameterDefinition("~name", null)
         )));
 
-        File uploadedFile = File.createTempFile("junit", null, tmp);
+        File uploadedFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(uploadedFile.toPath(), "test1", StandardCharsets.UTF_8);
 
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(

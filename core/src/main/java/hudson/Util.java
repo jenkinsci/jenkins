@@ -1306,7 +1306,7 @@ public class Util {
     @CheckReturnValue
     private static boolean createSymlinkAtomic(@NonNull Path pathForSymlink, @NonNull File fileForSymlink, @NonNull Path target, @NonNull String symlinkPath) {
         try {
-            File symlink = File.createTempFile("symtmp", null, fileForSymlink);
+            File symlink = Files.createTempFile(fileForSymlink.toPath(), "symtmp", null).toFile();
             tryToDeleteSymlink(symlink);
             Path tempSymlinkPath = symlink.toPath();
             Files.createSymbolicLink(tempSymlinkPath, target);

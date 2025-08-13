@@ -156,7 +156,7 @@ class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
             // Now screw up the value by writing into the file directly, like one could do using external XML manipulation tools
             final Path configFile = rule.jenkins.getRootDir().toPath().resolve("config.xml");
-            final String screwedUp = Files.readString(configFile, StandardCharsets.UTF_8).
+            final String screwedUp = Files.readString(configFile).
                     replaceFirst("<buildsDir>.*</buildsDir>", "<buildsDir>eeeeeeeeek</buildsDir>");
             Files.writeString(configFile, screwedUp, StandardCharsets.UTF_8);
         });
@@ -240,7 +240,7 @@ class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
             // ** HACK AROUND JENKINS-50422: manually restarting ** //
             // Check the disk (cannot just restart normally with the rule, )
-            assertThat(Files.readString(j.jenkins.getRootDir().toPath().resolve("config.xml"), StandardCharsets.UTF_8),
+            assertThat(Files.readString(j.jenkins.getRootDir().toPath().resolve("config.xml")),
                        containsString("<buildsDir>" + newBuildsDirValueBySysprop + "</buildsDir>"));
 
             String rootDirBeforeRestart = j.jenkins.getRootDir().toString();
@@ -253,7 +253,7 @@ class JenkinsBuildsAndWorkspacesDirectoriesTest {
             }
 
             assertEquals(rootDirBeforeRestart, j.jenkins.getRootDir().toString());
-            assertThat(Files.readString(j.jenkins.getRootDir().toPath().resolve("config.xml"), StandardCharsets.UTF_8),
+            assertThat(Files.readString(j.jenkins.getRootDir().toPath().resolve("config.xml")),
                        containsString("<buildsDir>" + newBuildsDirValueBySysprop + "</buildsDir>"));
             assertEquals(newBuildsDirValueBySysprop, j.jenkins.getRawBuildsDir());
             // ** END HACK ** //

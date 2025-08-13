@@ -143,7 +143,7 @@ public class Main {
         }
 
         // write the output to a temporary file first.
-        File tmpFile = File.createTempFile("jenkins", "log");
+        File tmpFile = Files.createTempFile("jenkins", "log").toFile();
         try {
             int ret;
             try (OutputStream os = Files.newOutputStream(tmpFile.toPath());

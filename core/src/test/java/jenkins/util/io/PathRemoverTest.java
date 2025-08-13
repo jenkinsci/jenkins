@@ -116,7 +116,7 @@ class PathRemoverTest {
 
     @Test
     void testForceRemoveFile() throws IOException {
-        File file = File.createTempFile("junit", null, tmp);
+        File file = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         touchWithFileName(file);
 
         PathRemover remover = PathRemover.newSimpleRemover();
@@ -191,7 +191,7 @@ class PathRemoverTest {
     @Test
     void testForceRemoveFile_SymbolicLink() throws IOException {
         assumeFalse(Functions.isWindows());
-        File file = File.createTempFile("junit", null, tmp);
+        File file = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         touchWithFileName(file);
         Path link = Files.createSymbolicLink(tmp.toPath().resolve("test-link"), file.toPath());
 
@@ -206,7 +206,7 @@ class PathRemoverTest {
     @Issue("JENKINS-55448")
     void testForceRemoveFile_DotsInPath() throws IOException {
         Path folder = newFolder(tmp, "junit-" + System.currentTimeMillis()).toPath();
-        File test = File.createTempFile("test", null, tmp);
+        File test = Files.createTempFile(tmp.toPath(), "test", null).toFile();
         touchWithFileName(test);
         Path path = folder.resolve("../" + test.getName());
 

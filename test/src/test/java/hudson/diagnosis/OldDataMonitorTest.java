@@ -35,6 +35,7 @@ import hudson.model.Saveable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -130,7 +131,7 @@ class OldDataMonitorTest {
 
         ensureEntry.await();
         // test will hang here due to JENKINS-24763
-        File xml = File.createTempFile("OldDataMonitorTest.slowDiscard", "xml");
+        File xml = Files.createTempFile("OldDataMonitorTest.slowDiscard", "xml").toFile();
         xml.deleteOnExit();
         OldDataMonitor.changeListener
                 .onChange(() -> {},

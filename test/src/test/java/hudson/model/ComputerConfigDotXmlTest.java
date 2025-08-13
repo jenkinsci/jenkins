@@ -52,7 +52,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import jenkins.model.Jenkins;
 import org.htmlunit.FailingHttpStatusCodeException;
@@ -221,7 +220,7 @@ class ComputerConfigDotXmlTest {
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
         assertThat(e.getStatusCode(), equalTo(400));
         File configDotXml = new File(rule.jenkins.getRootDir(), "config.xml");
-        String configDotXmlContents = Files.readString(configDotXml.toPath(), StandardCharsets.UTF_8);
+        String configDotXmlContents = Files.readString(configDotXml.toPath());
 
         assertThat(configDotXmlContents, not(containsString("<name>../</name>")));
     }

@@ -111,7 +111,7 @@ class VirtualFileTest {
     @Issue("JENKINS-26810")
     @Test
     void mode() throws Exception {
-        File f = File.createTempFile("junit", null, tmp);
+        File f = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         VirtualFile vf = VirtualFile.forFile(f);
         FilePath fp = new FilePath(f);
         VirtualFile vfp = VirtualFile.forFilePath(fp);

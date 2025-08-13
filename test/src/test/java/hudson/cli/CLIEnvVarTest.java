@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +49,7 @@ class CLIEnvVarTest {
     @BeforeEach
     void grabCliJar() throws IOException {
         home = newFolder(tmp, "junit");
-        jar = File.createTempFile("jenkins-cli.jar", null, tmp);
+        jar = Files.createTempFile(tmp.toPath(), "jenkins-cli.jar", null).toFile();
         FileUtils.copyURLToFile(r.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
     }
 

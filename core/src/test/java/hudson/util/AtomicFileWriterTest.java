@@ -67,7 +67,7 @@ class AtomicFileWriterTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        af = File.createTempFile("junit", null, tmp);
+        af = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         Files.writeString(af.toPath(), PREVIOUS, Charset.defaultCharset());
         afw = new AtomicFileWriter(af.toPath(), Charset.defaultCharset());
     }
@@ -147,7 +147,7 @@ class AtomicFileWriterTest {
 
     @Test
     void badPath() throws Exception {
-        final File newFile = File.createTempFile("junit", null, tmp);
+        final File newFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         File parentExistsAndIsAFile = new File(newFile, "badChild");
 
         assertTrue(newFile.exists());
@@ -163,7 +163,7 @@ class AtomicFileWriterTest {
     @Test
     void checkPermissionsRespectUmask() throws IOException {
 
-        final File newFile = File.createTempFile("junit", null, tmp);
+        final File newFile = Files.createTempFile(tmp.toPath(), "junit", null).toFile();
         boolean posixSupported = isPosixSupported(newFile);
 
         assumeTrue(posixSupported);

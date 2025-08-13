@@ -169,7 +169,7 @@ public class InstallPluginCommand extends CLICommand {
     }
 
     private static File getTmpFile() throws Exception {
-        return File.createTempFile("download", ".jpi.tmp", Jenkins.get().getPluginManager().rootDir);
+        return Files.createTempFile(Jenkins.get().getPluginManager().rootDir.toPath(), "download", ".jpi.tmp").toFile();
     }
 
     private static File moveToFinalLocation(File tmpFile) throws Exception {

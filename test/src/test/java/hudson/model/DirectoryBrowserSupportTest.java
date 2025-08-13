@@ -68,7 +68,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -347,7 +346,7 @@ class DirectoryBrowserSupportTest {
 
     private File download(UnexpectedPage page) throws IOException {
 
-        File file = File.createTempFile("DirectoryBrowserSupport", "zipDownload");
+        File file = Files.createTempFile("DirectoryBrowserSupport", "zipDownload").toFile();
         file.delete();
         try (InputStream is = page.getInputStream();
              OutputStream os = Files.newOutputStream(file.toPath())) {
@@ -1112,8 +1111,8 @@ class DirectoryBrowserSupportTest {
         if (resourceUrl == null) {
             fail("The resource with fileName " + fileNameInResources + " is not present in the resources of the test");
         }
-        Path resourcePath = Paths.get(resourceUrl.toURI());
-        return Files.readString(resourcePath, StandardCharsets.UTF_8);
+        Path resourcePath = Path.of(resourceUrl.toURI());
+        return Files.readString(resourcePath);
     }
 
     @Test

@@ -204,7 +204,7 @@ class UserPropertyTest {
         }
 
         private File getUserFile() throws IOException {
-            userFile =  File.createTempFile("user", ".txt");
+            userFile =  Files.createTempFile("user", ".txt").toFile();
             userFile.deleteOnExit();
             if (!userFile.exists()) {
                 userFile.createNewFile();

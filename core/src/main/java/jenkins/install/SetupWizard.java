@@ -245,7 +245,7 @@ public class SetupWizard extends PageDecorator {
                 }
 
                 try {
-                    plainText = Files.readString(apiTokenFile, StandardCharsets.UTF_8);
+                    plainText = Files.readString(apiTokenFile);
                     LOGGER.log(Level.INFO, "API Token generated using contents of file: {0}", apiTokenFile.toAbsolutePath());
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, String.format("The API Token cannot be retrieved from the file: %s", apiTokenFile), e);
@@ -483,7 +483,7 @@ public class SetupWizard extends PageDecorator {
         File state = getUpdateStateFile();
         if (state.exists()) {
             try {
-                String version = Files.readString(Util.fileToPath(state), StandardCharsets.UTF_8);
+                String version = Files.readString(Util.fileToPath(state));
                 if (version == null || version.isBlank()) {
                     version = "1.0";
                 }

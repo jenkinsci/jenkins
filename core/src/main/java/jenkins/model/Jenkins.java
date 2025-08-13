@@ -3449,7 +3449,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (replacedValue.contains("doCheckRawBuildsDir-Marker:foo")) {
             // make sure platform can handle colon
             try {
-                File tmp = File.createTempFile("Jenkins-doCheckRawBuildsDir", "foo:bar");
+                File tmp = Files.createTempFile("Jenkins-doCheckRawBuildsDir", "foo:bar").toFile();
                 Files.delete(tmp.toPath());
             } catch (IOException | InvalidPathException e) {
                 throw (InvalidBuildsDir) new InvalidBuildsDir(newBuildsDirValue +  " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead").initCause(e);

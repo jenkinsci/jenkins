@@ -51,7 +51,7 @@ class DefaultConfidentialStoreTest {
         // data storage should have some stuff
         assertTrue(new File(tmp, "test").exists());
 
-        assertThrows(MalformedInputException.class, () -> Files.readString(tmp.toPath().resolve("test"), StandardCharsets.UTF_8)); // the data shouldn't be a plain text, obviously
+        assertThrows(MalformedInputException.class, () -> Files.readString(tmp.toPath().resolve("test"))); // the data shouldn't be a plain text, obviously
 
         if (!Functions.isWindows()) {
             assertEquals(0700, new FilePath(tmp).mode() & 0777); // should be read only

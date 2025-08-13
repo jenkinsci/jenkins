@@ -680,7 +680,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     private static void unzip(File dir, InputStream in) throws IOException {
-        File tmpFile = File.createTempFile("tmpzip", null); // uses java.io.tmpdir
+        File tmpFile = Files.createTempFile("tmpzip", null).toFile(); // uses java.io.tmpdir
         try {
             // TODO why does this not simply use ZipInputStream?
             IOUtils.copy(in, tmpFile);
@@ -1582,7 +1582,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         @Override
         public String invoke(File dir, VirtualChannel channel) throws IOException {
-            File f = File.createTempFile(prefix, suffix, dir);
+            File f = Files.createTempFile(dir.toPath(), prefix, suffix).toFile();
             return f.getName();
         }
     }
@@ -1660,7 +1660,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
             File f;
             try {
-                f = File.createTempFile(prefix, suffix, dir);
+                f = Files.createTempFile(dir.toPath(), prefix, suffix).toFile();
             } catch (IOException e) {
                 throw new IOException("Failed to create a temporary directory in " + dir, e);
             }

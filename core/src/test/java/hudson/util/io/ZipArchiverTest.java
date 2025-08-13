@@ -86,7 +86,7 @@ class ZipArchiverTest {
     @Issue("JENKINS-49296")
     @Test
     void emptyDirectory() throws Exception {
-        Path zip = File.createTempFile("test.zip", null, tmp).toPath();
+        Path zip = Files.createTempFile(tmp.toPath(), "test.zip", null);
         Path root = newFolder(tmp, "junit").toPath();
         Files.createDirectory(root.resolve("foo"));
         Files.createDirectory(root.resolve("bar"));

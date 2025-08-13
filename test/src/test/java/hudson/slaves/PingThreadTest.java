@@ -134,7 +134,7 @@ class PingThreadTest {
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> {
                     try {
-                        String status = Files.readString(Paths.get("/proc/" + pid + "/stat"), StandardCharsets.UTF_8);
+                        String status = Files.readString(Paths.get("/proc/" + pid + "/stat"));
                         char actualState = status.charAt(status.lastIndexOf(')') + 2);
                         return actualState == expectedState;
                     } catch (NoSuchFileException e) {

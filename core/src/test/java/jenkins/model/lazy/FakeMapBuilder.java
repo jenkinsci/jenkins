@@ -41,7 +41,7 @@ public class FakeMapBuilder {
 
     public FakeMapBuilder() {
         try {
-            dir = File.createTempFile("lazyload", "test");
+            dir = Files.createTempFile("lazyload", "test").toFile();
             dir.delete();
             dir.mkdirs();
         } catch (IOException e) {

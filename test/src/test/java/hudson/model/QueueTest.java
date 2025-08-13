@@ -89,7 +89,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -166,7 +165,7 @@ public class QueueTest {
         assertNotNull(testProject.scheduleBuild2(0, new UserIdCause()));
         q.save();
 
-        System.out.println(Files.readString(r.jenkins.getRootDir().toPath().resolve("queue.xml"), StandardCharsets.UTF_8));
+        System.out.println(Files.readString(r.jenkins.getRootDir().toPath().resolve("queue.xml")));
 
         assertEquals(1, q.getItems().length);
         q.clear();
@@ -221,7 +220,7 @@ public class QueueTest {
         assertNotNull(testProject.scheduleBuild2(0, new UserIdCause()));
         q.save();
 
-        System.out.println(Files.readString(r.jenkins.getRootDir().toPath().resolve("queue.xml"), StandardCharsets.UTF_8));
+        System.out.println(Files.readString(r.jenkins.getRootDir().toPath().resolve("queue.xml")));
 
         assertEquals(1, q.getItems().length);
         q.clear();

@@ -40,7 +40,7 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -191,7 +191,7 @@ class UsageStatisticsTest {
     private void compareWithFile(String fileName, Object object) throws IOException, URISyntaxException {
 
         Class clazz = this.getClass();
-        String fileContent = Files.readString(Paths.get(clazz.getResource(clazz.getSimpleName() + "/" + fileName).toURI()), StandardCharsets.UTF_8);
+        String fileContent = Files.readString(Path.of(clazz.getResource(clazz.getSimpleName() + "/" + fileName).toURI()));
         fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vm.vendor"));
         fileContent = fileContent.replace("JVMNAME", System.getProperty("java.vm.name"));
         fileContent = fileContent.replace("JVMVERSION", System.getProperty("java.version"));
