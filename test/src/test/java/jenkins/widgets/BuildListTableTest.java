@@ -26,12 +26,10 @@ package jenkins.widgets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import hudson.model.AbstractItem;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 import java.net.URI;
 import java.net.URL;
-import java.util.logging.Level;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;

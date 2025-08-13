@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import hudson.remoting.ClassFilter;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;

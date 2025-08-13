@@ -13,7 +13,6 @@ import hudson.model.Queue.Item;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.io.StringWriter;
-import java.util.logging.Level;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;

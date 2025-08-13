@@ -26,8 +26,6 @@ package hudson.slaves;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import hudson.model.Slave;
-import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import org.dom4j.Document;
 import org.dom4j.Element;

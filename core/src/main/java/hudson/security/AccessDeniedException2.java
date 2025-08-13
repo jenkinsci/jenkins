@@ -3,7 +3,6 @@ package hudson.security;
 import io.jenkins.servlet.http.HttpServletResponseWrapper;
 import java.io.PrintWriter;
 import javax.servlet.http.HttpServletResponse;
-import jenkins.util.SystemProperties;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 

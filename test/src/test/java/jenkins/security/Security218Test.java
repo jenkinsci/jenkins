@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
-import java.util.logging.Level;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
