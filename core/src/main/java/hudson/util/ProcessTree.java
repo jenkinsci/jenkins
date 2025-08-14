@@ -953,6 +953,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
     }
 
+    private static final byte PR_MODEL_ILP32 = 0;
+    private static final byte PR_MODEL_LP64 = 1;
+
     /**
      * Implementation for AIX that uses {@code /proc}.
      *
@@ -985,8 +988,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         private class AIXProcess extends UnixProcess {
-            private static final byte PR_MODEL_ILP32 = 0;
-            private static final byte PR_MODEL_LP64 = 1;
 
             /*
              * An arbitrary upper-limit on how many characters readLine() will
@@ -1311,7 +1312,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         private class SolarisProcess extends UnixProcess {
-            private static final byte PR_MODEL_LP64 = 2;
 
             /*
              * An arbitrary upper-limit on how many characters readLine() will
