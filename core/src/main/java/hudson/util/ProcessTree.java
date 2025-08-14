@@ -954,6 +954,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
     private static final byte PR_MODEL_ILP32 = 0;
+
     private static final byte PR_MODEL_LP64 = 1;
 
     /**
