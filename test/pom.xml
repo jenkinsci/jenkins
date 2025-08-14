@@ -104,7 +104,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>513.vde9e7b_a_0da_0f</version>
+        <version>518.v8d8dc7945eca_</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -132,7 +132,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1382.veca_a_efe062fa_</version>
+        <version>1384.vdc05a_48f535f</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -262,7 +262,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>849.v0cd64ed7e531</version>
+      <version>856.v4c352b_3a_b_23e</version>
       <scope>test</scope>
     </dependency>
     <dependency>

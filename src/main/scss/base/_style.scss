@@ -64,8 +64,8 @@ td.no-wrap {
 
 #safe-restart-msg {
   font-weight: bold;
-  color: white;
-  background-color: var(--warning);
+  color: var(--background) !important;
+  background-color: var(--warning-color);
   text-align: center;
   margin-bottom: var(--section-padding);
   padding: 0.5em;
@@ -75,8 +75,8 @@ td.no-wrap {
 
 #shutdown-msg {
   font-weight: bold;
-  color: white;
-  background-color: #ef2929;
+  color: var(--background) !important;
+  background-color: var(--destructive-color);
   text-align: center;
   margin-bottom: var(--section-padding);
   padding: 0.5em;
