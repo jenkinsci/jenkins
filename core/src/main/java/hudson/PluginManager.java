@@ -220,6 +220,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     /* private final */ static int CHECK_UPDATE_ATTEMPTS;
 
+    /**
+     * Class name prefixes to skip in the class loading
+     */
+    private static final String[] CLASS_PREFIXES_TO_SKIP = {
+            "SimpleTemplateScript",  // cf. groovy.text.SimpleTemplateEngine
+            "groovy.tmp.templates.GStringTemplateScript", // Leaks on classLoader in some cases, see JENKINS-75879
+    };
+
     static {
         try {
             // Secure initialization
@@ -2407,8 +2415,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
-            if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
-                throw new ClassNotFoundException("ignoring " + name);
+            for (String namePrefixToSkip : CLASS_PREFIXES_TO_SKIP) {
+                if (name.startsWith(namePrefixToSkip)) {
+                    throw new ClassNotFoundException("ignoring " + name);
+                }
             }
             return loaded.computeIfAbsent(name, this::computeValue).orElseThrow(() -> new ClassNotFoundException(name));
         }
