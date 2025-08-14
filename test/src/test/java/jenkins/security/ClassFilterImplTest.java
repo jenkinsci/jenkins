@@ -52,19 +52,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import jenkins.model.GlobalConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
 class ClassFilterImplTest {
-
-    private final LogRecorder logging = new LogRecorder().record(ClassFilterImpl.class, Level.FINE);
 
     private JenkinsRule r;
 

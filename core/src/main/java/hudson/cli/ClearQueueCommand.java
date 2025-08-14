@@ -25,7 +25,6 @@
 package hudson.cli;
 
 import hudson.Extension;
-import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 
 /**
@@ -36,8 +35,6 @@ import jenkins.model.Jenkins;
  */
 @Extension
 public class ClearQueueCommand extends CLICommand {
-
-    private static final Logger LOGGER = Logger.getLogger(ClearQueueCommand.class.getName());
 
     @Override
     public String getShortDescription() {

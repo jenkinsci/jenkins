@@ -3,7 +3,6 @@ package jenkins.slaves.restarter;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import java.io.Serializable;
-import java.util.logging.Logger;
 
 /**
  * Extension point to control how to restart an inbound agent when it loses the connection with the master.
@@ -40,8 +39,6 @@ public abstract class SlaveRestarter implements ExtensionPoint, Serializable {
     public static ExtensionList<SlaveRestarter> all() {
         return ExtensionList.lookup(SlaveRestarter.class);
     }
-
-    private static final Logger LOGGER = Logger.getLogger(SlaveRestarter.class.getName());
 
     private static final long serialVersionUID = 1L;
 }

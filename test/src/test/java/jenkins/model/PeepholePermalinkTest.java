@@ -10,19 +10,15 @@ import hudson.model.Job;
 import hudson.model.Run;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.logging.Level;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
 class PeepholePermalinkTest {
-
-    private final LogRecorder logging = new LogRecorder().record(PeepholePermalink.class, Level.FINE);
 
     private JenkinsRule j;
 

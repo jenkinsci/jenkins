@@ -153,7 +153,6 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
      * returns computers that were not monitored as they were either offline or monitor produced {@code null} {@link Callable}.
      */
     protected static final class Result<T> {
-        private static final long serialVersionUID = -7671448355804481216L;
 
         private final @NonNull Map<Computer, T> data;
         private final @NonNull ArrayList<Computer> skipped;

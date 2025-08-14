@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.logging.Level;
-import jenkins.security.ClassFilterImpl;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -33,8 +30,6 @@ class XStream2Security383Test {
 
     @TempDir
     private File f;
-
-    private final LogRecorder logging = new LogRecorder().record(ClassFilterImpl.class, Level.FINE);
 
     @Mock
     private StaplerRequest2 req;

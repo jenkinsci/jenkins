@@ -619,7 +619,6 @@ class PluginManagerTest {
 
             // wait for all the download jobs to complete
             boolean done = true;
-            boolean passed = true;
             do {
                 Thread.sleep(100);
                 done = true;

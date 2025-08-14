@@ -2,12 +2,9 @@ package hudson.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.logging.Level;
-import jenkins.model.lazy.LazyBuildMixIn;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
@@ -15,8 +12,6 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
  */
 @WithJenkins
 class SimpleJobTest {
-
-    private final LogRecorder logging = new LogRecorder().record(LazyBuildMixIn.class, Level.FINE);
 
     private static JenkinsRule r;
 

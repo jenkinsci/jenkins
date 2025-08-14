@@ -29,8 +29,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.User;
 import java.util.List;
-import java.util.logging.Logger;
-import jenkins.security.SecurityListener;
 import jenkins.util.Listeners;
 
 /**
@@ -38,7 +36,6 @@ import jenkins.util.Listeners;
  * @since 2.160 and 2.150.2, but restricted (unavailable to plugins) before 2.406
  */
 public abstract class UserSeedChangeListener implements ExtensionPoint {
-    private static final Logger LOGGER = Logger.getLogger(SecurityListener.class.getName());
 
     /**
      * Called after a seed was changed but before the user is saved.
