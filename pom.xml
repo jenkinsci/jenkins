@@ -286,11 +286,10 @@ THE SOFTWARE.
           </dependencies>
           <executions>
             <execution>
-              <id>validate</id>
               <goals>
                 <goal>check</goal>
               </goals>
-              <phase>validate</phase>
+              <phase>verify</phase>
             </execution>
           </executions>
         </plugin>
@@ -321,6 +320,14 @@ THE SOFTWARE.
             <trimTrailingWhitespace />
           </java>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
