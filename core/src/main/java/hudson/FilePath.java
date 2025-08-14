@@ -1985,6 +1985,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         Files.setPosixFilePermissions(fileToPath(f), Util.modeToPermissions(mask));
     }
 
+    private static boolean CHMOD_WARNED = false;
+
     /**
      * Gets the file permission bit mask.
      *

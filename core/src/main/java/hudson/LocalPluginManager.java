@@ -31,6 +31,7 @@ import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 
@@ -86,4 +87,6 @@ public class LocalPluginManager extends PluginManager {
             loadDetachedPlugins();
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(LocalPluginManager.class.getName());
 }

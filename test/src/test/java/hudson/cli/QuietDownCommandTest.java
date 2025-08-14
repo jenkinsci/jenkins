@@ -393,6 +393,8 @@ class QuietDownCommandTest {
         final OneShotEvent finish = new OneShotEvent();
         final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+
+        boolean timeoutOccurred = false;
         final FutureTask exec_task = new FutureTask(() -> {
             assertJenkinsNotInQuietMode();
             final long time_before = System.currentTimeMillis();

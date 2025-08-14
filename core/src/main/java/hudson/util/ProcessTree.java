@@ -110,7 +110,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
     // instantiation only allowed for subtypes in this class
     private ProcessTree() {
-       skipVetoes = false;
+        skipVetoes = false;
     }
 
     private ProcessTree(boolean vetoesExist) {
@@ -623,7 +623,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         @Override
         public synchronized EnvVars getEnvironmentVariables() {
             try {
-               return getEnvironmentVariables2();
+                return getEnvironmentVariables2();
             } catch (WindowsOSProcessException e) {
                 if (LOGGER.isLoggable(FINEST)) {
                     LOGGER.log(FINEST, "Failed to get the environment variables of process with pid=" + p.getPid(), e);
@@ -634,14 +634,14 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         private synchronized EnvVars getEnvironmentVariables2() throws WindowsOSProcessException {
             if (env != null) {
-              return env;
+                return env;
             }
             env = new EnvVars();
 
             try {
-               env.putAll(p.getEnvironmentVariables());
+                env.putAll(p.getEnvironmentVariables());
             } catch (WinpException e) {
-               throw new WindowsOSProcessException("Failed to get the environment variables", e);
+                throw new WindowsOSProcessException("Failed to get the environment variables", e);
             }
             return env;
         }
@@ -996,7 +996,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
              * over the entire process address space if this class has bugs.
              */
             private final int LINE_LENGTH_LIMIT =
-                SystemProperties.getInteger(AIX.class.getName() + ".lineLimit", 10000);
+                    SystemProperties.getInteger(AIX.class.getName() + ".lineLimit", 10000);
 
             /*
              * True if target process is 64-bit (Java process may be different).
@@ -1068,7 +1068,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         throw new IOException("pstatus PID mismatch"); // sanity check
 
                     ppid = adjust((int) pstatus.readLong()); // AIX pids are stored as a 64 bit integer,
-                                                            // but the first 4 bytes are always 0
+                    // but the first 4 bytes are always 0
                 }
 
                 try (RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"), "r")) {
@@ -1163,7 +1163,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                             arguments.add(readLine(fd, addr, "arg[" + n + "]"));
                         }
                     } finally  {
-                       LIBC.close(fd);
+                        LIBC.close(fd);
                     }
                 } catch (IOException | LastErrorException e) {
                     // failed to read. this can happen under normal circumstances (most notably permission denied)
@@ -1211,7 +1211,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                             envVars.addLine(readLine(fd, addr, "env[" + n + "]"));
                         }
                     } finally  {
-                       LIBC.close(fd);
+                        LIBC.close(fd);
                     }
                 } catch (IOException | LastErrorException e) {
                     // failed to read. this can happen under normal circumstances (most notably permission denied)
@@ -1320,7 +1320,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
              * over the entire process address space if this class has bugs.
              */
             private final int LINE_LENGTH_LIMIT =
-                SystemProperties.getInteger(Solaris.class.getName() + ".lineLimit", 10000);
+                    SystemProperties.getInteger(Solaris.class.getName() + ".lineLimit", 10000);
 
             /*
              * True if target process is 64-bit (Java process may be different).
@@ -1698,46 +1698,46 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
 
                     /*
-                    * Make a sysctl() call to get the raw argument space of the
-                        * process.  The layout is documented in start.s, which is part
-                        * of the Csu project.  In summary, it looks like:
-                        *
-                        * /---------------\ 0x00000000
-                        * :               :
-                        * :               :
-                        * |---------------|
-                        * | argc          |
-                        * |---------------|
-                        * | arg[0]        |
-                        * |---------------|
-                        * :               :
-                        * :               :
-                        * |---------------|
-                        * | arg[argc - 1] |
-                        * |---------------|
-                        * | 0             |
-                        * |---------------|
-                        * | env[0]        |
-                        * |---------------|
-                        * :               :
-                        * :               :
-                        * |---------------|
-                        * | env[n]        |
-                        * |---------------|
-                        * | 0             |
-                        * |---------------| <-- Beginning of data returned by sysctl() is here.
-                        * | argc          |
-                        * |---------------|
-                        * | exec_path     |
-                        * |:::::::::::::::|
-                        * |               |
-                        * | String area.  |
-                        * |               |
-                        * |---------------| <-- Top of stack.
-                        * :               :
-                        * :               :
-                        * \---------------/ 0xffffffff
-                        */
+                     * Make a sysctl() call to get the raw argument space of the
+                     * process.  The layout is documented in start.s, which is part
+                     * of the Csu project.  In summary, it looks like:
+                     *
+                     * /---------------\ 0x00000000
+                     * :               :
+                     * :               :
+                     * |---------------|
+                     * | argc          |
+                     * |---------------|
+                     * | arg[0]        |
+                     * |---------------|
+                     * :               :
+                     * :               :
+                     * |---------------|
+                     * | arg[argc - 1] |
+                     * |---------------|
+                     * | 0             |
+                     * |---------------|
+                     * | env[0]        |
+                     * |---------------|
+                     * :               :
+                     * :               :
+                     * |---------------|
+                     * | env[n]        |
+                     * |---------------|
+                     * | 0             |
+                     * |---------------| <-- Beginning of data returned by sysctl() is here.
+                     * | argc          |
+                     * |---------------|
+                     * | exec_path     |
+                     * |:::::::::::::::|
+                     * |               |
+                     * | String area.  |
+                     * |               |
+                     * |---------------| <-- Top of stack.
+                     * :               :
+                     * :               :
+                     * \---------------/ 0xffffffff
+                     */
 
                     // I find the Darwin source code of the 'ps' command helpful in understanding how it does this:
                     // see https://opensource.apple.com/source/adv_cmds/adv_cmds-176/ps/print.c
@@ -1829,12 +1829,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 while (true) {
                     // Find out how much memory we need for kern.proc.all.
                     if (LIBC.sysctl(
-                                    new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ALL},
-                                    3,
-                                    NULL,
-                                    size,
-                                    NULL,
-                                    new NativeLong(0))
+                            new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ALL},
+                            3,
+                            NULL,
+                            size,
+                            NULL,
+                            new NativeLong(0))
                             != 0) {
                         throw new IOException(
                                 "Failed to get memory requirement: "
@@ -1849,12 +1849,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     m = new Memory(len);
                     size.setValue(new NativeLong(len));
                     if (LIBC.sysctl(
-                                    new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ALL},
-                                    3,
-                                    m,
-                                    size,
-                                    NULL,
-                                    new NativeLong(0))
+                            new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ALL},
+                            3,
+                            m,
+                            size,
+                            NULL,
+                            new NativeLong(0))
                             != 0) {
                         if (Native.getLastError() == ENOMEM && nRetry++ < 16) {
                             continue; // retry
@@ -1913,12 +1913,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     Memory m = new Memory(argmax);
                     NativeLongByReference size = new NativeLongByReference(new NativeLong(argmax));
                     if (LIBC.sysctl(
-                                    new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ENV, pid},
-                                    4,
-                                    m,
-                                    size,
-                                    NULL,
-                                    new NativeLong(0))
+                            new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ENV, pid},
+                            4,
+                            m,
+                            size,
+                            NULL,
+                            new NativeLong(0))
                             != 0) {
                         throw new IOException(
                                 "Failed to get kern.proc.env: "
@@ -1949,12 +1949,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     Memory m = new Memory(argmax);
                     NativeLongByReference size = new NativeLongByReference(new NativeLong(argmax));
                     if (LIBC.sysctl(
-                                    new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ARGS, pid},
-                                    4,
-                                    m,
-                                    size,
-                                    NULL,
-                                    new NativeLong(0))
+                            new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ARGS, pid},
+                            4,
+                            m,
+                            size,
+                            NULL,
+                            new NativeLong(0))
                             != 0) {
                         throw new IOException(
                                 "Failed to get kern.proc.args: "
@@ -1972,12 +1972,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 IntByReference argmaxRef = new IntByReference(0);
                 NativeLongByReference size = new NativeLongByReference(new NativeLong(sizeOfInt));
                 if (LIBC.sysctl(
-                                new int[] {CTL_KERN, KERN_ARGMAX},
-                                2,
-                                argmaxRef.getPointer(),
-                                size,
-                                NULL,
-                                new NativeLong(0))
+                        new int[] {CTL_KERN, KERN_ARGMAX},
+                        2,
+                        argmaxRef.getPointer(),
+                        size,
+                        NULL,
+                        new NativeLong(0))
                         != 0) {
                     throw new IOException(
                             "Failed to get kern.argmax: " + LIBC.strerror(Native.getLastError()));

@@ -3,6 +3,7 @@ package hudson.node_monitors;
 import hudson.model.Computer;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 import java.text.ParseException;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -93,5 +94,7 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
         ((DiskSpaceMonitorDescriptor) getDescriptor()).markNodeOfflineOrOnline(c, size, this);
         return size;
     }
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractDiskSpaceMonitor.class.getName());
     private static final long DEFAULT_THRESHOLD = 1024L * 1024 * 1024;
 }

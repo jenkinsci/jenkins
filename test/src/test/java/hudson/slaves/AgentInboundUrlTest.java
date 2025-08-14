@@ -26,6 +26,8 @@ package hudson.slaves;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import hudson.model.Slave;
+import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -37,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -49,6 +52,8 @@ class AgentInboundUrlTest {
 
     @RegisterExtension
     private final InboundAgentExtension inboundAgents = new InboundAgentExtension();
+
+    private final LogRecorder logging = new LogRecorder().record(Slave.class, Level.FINE);
 
     // Override the inbound agent url
     private static final String CUSTOM_INBOUND_URL = "http://localhost:8080/jenkins";

@@ -30,8 +30,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import hudson.widgets.RenderOnDemandClosure;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.WebClientUtil;
 import org.htmlunit.html.HtmlPage;
@@ -40,6 +42,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -53,6 +56,7 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 class RenderOnDemandTest {
 
     private JenkinsRule j;
+    private final LogRecorder logging = new LogRecorder().record(RenderOnDemandClosure.class, Level.FINE);
 
     @BeforeEach
     void setUp(JenkinsRule rule) {

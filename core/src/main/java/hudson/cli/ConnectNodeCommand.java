@@ -29,6 +29,7 @@ import hudson.Extension;
 import hudson.model.Computer;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
@@ -46,6 +47,8 @@ public class ConnectNodeCommand extends CLICommand {
 
     @Option(name = "-f", usage = "Cancel any currently pending connect operation and retry from scratch")
     public boolean force = false;
+
+    private static final Logger LOGGER = Logger.getLogger(ConnectNodeCommand.class.getName());
 
     @Override
     public String getShortDescription() {

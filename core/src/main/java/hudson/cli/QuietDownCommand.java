@@ -25,6 +25,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Option;
 
@@ -36,6 +37,8 @@ import org.kohsuke.args4j.Option;
  */
 @Extension
 public class QuietDownCommand extends CLICommand {
+
+    private static final Logger LOGGER = Logger.getLogger(QuietDownCommand.class.getName());
 
     @Option(name = "-block", usage = "Block until the system really quiets down and no builds are running")
     public boolean block = false;

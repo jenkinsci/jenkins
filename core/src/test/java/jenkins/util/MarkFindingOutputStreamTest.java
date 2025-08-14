@@ -15,6 +15,7 @@ class MarkFindingOutputStreamTest {
 
     private String mark = MarkFindingOutputStream.MARK;
     private String markHead = mark.substring(0, 5);
+    private String markTail = mark.substring(5);
 
     private ByteArrayOutputStream baos = new ByteArrayOutputStream();
     private MarkCountingOutputStream m = new MarkCountingOutputStream(baos);

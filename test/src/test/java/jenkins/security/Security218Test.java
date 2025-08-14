@@ -6,12 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
+import java.util.logging.Level;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
@@ -24,6 +26,8 @@ class Security218Test {
 
     @RegisterExtension
     private final InboundAgentExtension inboundAgents = new InboundAgentExtension();
+
+    private final LogRecorder logging = new LogRecorder().record(ClassFilterImpl.class, Level.FINE);
 
     private JenkinsRule j;
 

@@ -31,6 +31,7 @@ import hudson.model.ComputerSet;
 import hudson.util.EditDistance;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
@@ -47,6 +48,8 @@ public class DisconnectNodeCommand extends CLICommand {
 
     @Option(name = "-m", usage = "Record the reason about why you are disconnecting this node")
     public String cause;
+
+    private static final Logger LOGGER = Logger.getLogger(DisconnectNodeCommand.class.getName());
 
     @Override
     public String getShortDescription() {

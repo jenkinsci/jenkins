@@ -27,6 +27,7 @@ package jenkins.cli;
 import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.cli.Messages;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -41,6 +42,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 @Extension
 @Restricted(NoExternalUse.class)
 public class SafeRestartCommand extends CLICommand {
+    private static final Logger LOGGER = Logger.getLogger(SafeRestartCommand.class.getName());
 
     @Option(name = "-message", usage = "Message for safe restart that will be visible to users")
     public String message = null;

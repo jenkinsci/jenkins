@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 import jenkins.telemetry.Telemetry;
 import jenkins.util.HttpServletFilter;
 import net.sf.json.JSONObject;
@@ -46,6 +47,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class UserLanguages extends Telemetry {
 
     private static final Map<String, AtomicLong> requestsByLanguage = new ConcurrentSkipListMap<>();
+    private static Logger LOGGER = Logger.getLogger(UserLanguages.class.getName());
 
     @NonNull
     @Override

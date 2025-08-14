@@ -26,21 +26,26 @@ package jenkins.widgets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import hudson.model.AbstractItem;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 import java.net.URI;
 import java.net.URL;
+import java.util.logging.Level;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
 class BuildListTableTest {
+
+    private LogRecorder logging = new LogRecorder().record(AbstractItem.class, Level.FINER);
 
     private JenkinsRule r;
 

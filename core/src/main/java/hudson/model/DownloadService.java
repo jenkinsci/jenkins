@@ -210,6 +210,7 @@ public class DownloadService {
         private final String url;
         private final long interval;
         private volatile long due = 0;
+        private volatile long lastAttempt = Long.MIN_VALUE;
 
         /**
          * Creates a new downloadable.

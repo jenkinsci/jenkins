@@ -34,6 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 /**
  * <p>Transparently coalesces chunks of a HTTP stream that uses
@@ -74,6 +75,9 @@ public class ChunkedInputStream extends InputStream {
 
     /** True if this stream is closed */
     private boolean closed = false;
+
+    /** Log object for this class. */
+    private static final Logger LOGGER = Logger.getLogger(ChunkedInputStream.class.getName());
 
     /**
      * ChunkedInputStream constructor

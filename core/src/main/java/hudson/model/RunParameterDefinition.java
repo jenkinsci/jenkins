@@ -31,6 +31,7 @@ import hudson.Extension;
 import hudson.util.EnumConverter;
 import hudson.util.RunList;
 import java.util.Objects;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
@@ -242,4 +243,6 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
             return false;
         return Objects.equals(filter, other.filter);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(RunParameterDefinition.class.getName());
 }
