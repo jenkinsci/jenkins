@@ -299,6 +299,18 @@ THE SOFTWARE.
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>0.8.13</version>
         </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <!-- Version specified in parent POM -->
+          <configuration>
+            <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
+            <preparationGoals>clean install</preparationGoals>
+            <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
+            <pushChanges>false</pushChanges>
+            <localCheckout>true</localCheckout>
+            <tagNameFormat>jenkins-@{project.version}</tagNameFormat>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -325,14 +337,6 @@ THE SOFTWARE.
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
         <!-- Version specified in parent POM -->
-        <configuration>
-          <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
-          <preparationGoals>clean install</preparationGoals>
-          <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
-          <pushChanges>false</pushChanges>
-          <localCheckout>true</localCheckout>
-          <tagNameFormat>jenkins-@{project.version}</tagNameFormat>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-remote-resources-plugin</artifactId>
