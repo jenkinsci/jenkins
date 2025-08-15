@@ -3,6 +3,7 @@ package jenkins.util;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import jenkins.ClassLoaderReflectionToolkit;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -13,6 +14,10 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Restricted(NoExternalUse.class)
 public class URLClassLoader2 extends URLClassLoader implements JenkinsClassLoader {
+    private static final AtomicInteger NEXT_INSTANCE_NUMBER = new AtomicInteger(0);
+
+    private final String lockObjectPrefixName = String.format("%s@%x-loadClassLock:",
+            URLClassLoader2.class.getName(), NEXT_INSTANCE_NUMBER.getAndIncrement());
 
     static {
         registerAsParallelCapable();
@@ -85,13 +90,6 @@ public class URLClassLoader2 extends URLClassLoader implements JenkinsClassLoade
     @Override
     public Object getClassLoadingLock(String className) {
         Objects.requireNonNull(className);
-        return new StringBuilder(128)
-                .append(getClass().getSimpleName())
-                .append("@")
-                .append(Integer.toHexString(System.identityHashCode(this)))
-                .append("-loadClassLock:")
-                .append(className)
-                .toString()
-                .intern();
+        return (lockObjectPrefixName + className).intern();
     }
 }

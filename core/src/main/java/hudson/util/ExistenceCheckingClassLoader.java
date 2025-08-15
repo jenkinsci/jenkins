@@ -48,13 +48,13 @@ public final class ExistenceCheckingClassLoader extends DelegatingClassLoader {
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         // Add support for loading of JaCoCo dynamic instrumentation classes
         if (name.equals("java.lang.$JaCoCo")) {
-            return verify(super.loadClass(name, resolve));
+            return super.loadClass(name, resolve);
         }
 
         if (getResource(name.replace('.', '/') + ".class") == null) {
             throw new ClassNotFoundException(name);
         }
 
-        return verify(super.loadClass(name, resolve));
+        return super.loadClass(name, resolve);
     }
 }
