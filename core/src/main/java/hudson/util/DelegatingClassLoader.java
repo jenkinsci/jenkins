@@ -1,5 +1,6 @@
 package hudson.util;
 
+import java.util.Objects;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -16,11 +17,11 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public class DelegatingClassLoader extends ClassLoader {
     protected DelegatingClassLoader(String name, ClassLoader parent) {
-        super(name, parent);
+        super(name, Objects.requireNonNull(parent));
     }
 
     public DelegatingClassLoader(ClassLoader parent) {
-        super(parent);
+        super(Objects.requireNonNull(parent));
     }
 
     /**

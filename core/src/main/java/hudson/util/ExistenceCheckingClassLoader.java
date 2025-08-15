@@ -1,5 +1,6 @@
 package hudson.util;
 
+import java.util.Objects;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -21,11 +22,11 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class ExistenceCheckingClassLoader extends DelegatingClassLoader {
 
     public ExistenceCheckingClassLoader(String name, ClassLoader parent) {
-        super(name, parent);
+        super(name, Objects.requireNonNull(parent));
     }
 
     public ExistenceCheckingClassLoader(ClassLoader parent) {
-        super(parent);
+        super(Objects.requireNonNull(parent));
     }
 
     @Override

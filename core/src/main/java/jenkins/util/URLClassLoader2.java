@@ -2,6 +2,7 @@ package jenkins.util;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Objects;
 import jenkins.ClassLoaderReflectionToolkit;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -79,6 +80,7 @@ public class URLClassLoader2 extends URLClassLoader implements JenkinsClassLoade
      */
     @Override
     public Object getClassLoadingLock(String className) {
+        Objects.requireNonNull(className);
         return new StringBuilder(128)
                 .append(getClass().getSimpleName())
                 .append("@")
