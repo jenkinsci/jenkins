@@ -58,10 +58,10 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
-import hudson.util.CheckingExistenceClassLoader;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.DelegatingClassLoader;
+import hudson.util.ExistenceCheckingClassLoader;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import hudson.util.Retrier;
@@ -2409,7 +2409,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         private final ConcurrentMap<String, Optional<Class<?>>> loaded = new ConcurrentHashMap<>();
 
         public UberClassLoader(List<PluginWrapper> activePlugins) {
-            super("UberClassLoader", new CheckingExistenceClassLoader(PluginManager.class.getClassLoader()));
+            super("UberClassLoader", new ExistenceCheckingClassLoader(PluginManager.class.getClassLoader()));
             this.activePlugins = activePlugins;
         }
 

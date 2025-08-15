@@ -14,13 +14,13 @@ package hudson.util;
  * @see ClassLoader
  * @see #getResource(String)
  */
-public class CheckingExistenceClassLoader extends DelegatingClassLoader {
+public class ExistenceCheckingClassLoader extends DelegatingClassLoader {
 
-    public CheckingExistenceClassLoader(String name, ClassLoader parent) {
+    public ExistenceCheckingClassLoader(String name, ClassLoader parent) {
         super(name, parent);
     }
 
-    public CheckingExistenceClassLoader(ClassLoader parent) {
+    public ExistenceCheckingClassLoader(ClassLoader parent) {
         super(parent);
     }
 
