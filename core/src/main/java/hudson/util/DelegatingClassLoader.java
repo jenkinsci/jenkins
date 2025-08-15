@@ -27,7 +27,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Dmytro Ukhlov
  */
 @Restricted(NoExternalUse.class)
-public class DelegatingClassLoader extends ClassLoader {
+public abstract class DelegatingClassLoader extends ClassLoader {
     protected DelegatingClassLoader(String name, ClassLoader parent) {
         super(name, Objects.requireNonNull(parent));
     }
