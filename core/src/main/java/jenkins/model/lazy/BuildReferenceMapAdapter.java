@@ -263,7 +263,7 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         @Override
         public boolean contains(Object o) {
             if (o instanceof Map.Entry<?, ?> e && e.getKey() instanceof Integer key) {
-                return e.getValue() != null && Objects.equals(BuildReferenceMapAdapter.this.get(key), e.getValue());
+                return e.getValue() != null && e.getValue().equals(BuildReferenceMapAdapter.this.get(key));
             }
             return false;
         }
