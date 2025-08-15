@@ -135,7 +135,7 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
     @Override
     public boolean containsValue(Object value) {
         R val = castValue(value);
-        return val != null && Objects.equals(get(buildNumberProvider.apply(val)), val);
+        return val != null && val.equals(get(buildNumberProvider.apply(val)));
     }
 
     @Override
