@@ -5,22 +5,24 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * A {@link ClassLoader} that does not define any classes itself but delegates class loading to other class loaders to
- * avoid the JDK's per-class-name locking and lock retention.
- * <p>
- * This class first attempts to load classes via its {@link ClassLoader#getParent} class loader, then falls back to
- * {@link ClassLoader#findClass} to allow for custom delegation logic.
- * <p>
- * In a parallel-capable {@link ClassLoader{, the JDK maintains a per-name lock object indefinitely. In Jenkins, many
- * class loading misses across many loaders can accumulate hundreds of thousands of such locks, retaining significant
- * memory. This loader never defines classes and bypasses {@link ClassLoader}'s default {@code loadClass} locking; it
- * delegates to the parent first and then to {@code findClass} for custom delegation.
- * <p>
- * The actual defining loader (parent or a delegate) still performs the necessary synchronization and class definition.
- * A runtime guard ({@link #verify}) throws if this loader ever becomes the defining loader.
- * <p>
- * Subclasses must not call {@code defineClass}; implement delegation in {@code findClass} if needed and do not mark
- * subclasses as parallel-capable.
+ * A {@link ClassLoader} that does not define any classes itself but delegates class loading to
+ * other class loaders to avoid the JDK's per-class-name locking and lock retention.
+ *
+ * <p>This class first attempts to load classes via its {@link ClassLoader#getParent} class loader,
+ * then falls back to {@link ClassLoader#findClass} to allow for custom delegation logic.
+ *
+ * <p>In a parallel-capable {@link ClassLoader}, the JDK maintains a per-name lock object
+ * indefinitely. In Jenkins, many class loading misses across many loaders can accumulate hundreds
+ * of thousands of such locks, retaining significant memory. This loader never defines classes and
+ * bypasses {@link ClassLoader}'s default {@code loadClass} locking; it delegates to the parent
+ * first and then to {@code findClass} for custom delegation.
+ *
+ * <p>The actual defining loader (parent or a delegate) still performs the necessary synchronization
+ * and class definition. A runtime guard ({@link #verify}) throws if this loader ever becomes the
+ * defining loader.
+ *
+ * <p>Subclasses must not call {@code defineClass}; implement delegation in {@code findClass} if
+ * needed and do not mark subclasses as parallel-capable.
  *
  * @author Dmytro Ukhlov
  */
