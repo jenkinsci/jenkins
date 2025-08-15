@@ -16,8 +16,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class URLClassLoader2 extends URLClassLoader implements JenkinsClassLoader {
     private static final AtomicInteger NEXT_INSTANCE_NUMBER = new AtomicInteger(0);
 
-    private final String lockObjectPrefixName = String.format("%s@%x-loadClassLock:",
-            URLClassLoader2.class.getName(), NEXT_INSTANCE_NUMBER.getAndIncrement());
+    private final String lockObjectPrefixName = String.format(
+            "%s@%x-loadClassLock:", URLClassLoader2.class.getName(), NEXT_INSTANCE_NUMBER.getAndIncrement());
 
     static {
         registerAsParallelCapable();
