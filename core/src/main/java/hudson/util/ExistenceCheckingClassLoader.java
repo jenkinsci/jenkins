@@ -1,5 +1,8 @@
 package hudson.util;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 /**
  * A class loader that verifies the existence of a class resource before attempting to load the class.
  * <p>
@@ -14,6 +17,7 @@ package hudson.util;
  * @see ClassLoader
  * @see #getResource(String)
  */
+@Restricted(NoExternalUse.class)
 public class ExistenceCheckingClassLoader extends DelegatingClassLoader {
 
     public ExistenceCheckingClassLoader(String name, ClassLoader parent) {

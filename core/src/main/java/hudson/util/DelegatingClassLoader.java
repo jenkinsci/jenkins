@@ -1,5 +1,8 @@
 package hudson.util;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 /**
  * A {@link ClassLoader} that does not define any classes itself but delegates class loading
  * to other class loaders. It first attempts to load classes via its {@code getParent()} class loader,
@@ -10,6 +13,7 @@ package hudson.util;
  *
  * @author Dmytro Ukhlov
  */
+@Restricted(NoExternalUse.class)
 public class DelegatingClassLoader extends ClassLoader {
     protected DelegatingClassLoader(String name, ClassLoader parent) {
         super(name, parent);
