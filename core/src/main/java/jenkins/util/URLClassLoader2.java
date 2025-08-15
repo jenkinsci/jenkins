@@ -71,12 +71,16 @@ public class URLClassLoader2 extends URLClassLoader implements JenkinsClassLoade
     }
 
     /**
-     * Use String.intern() to create ClassLoader/className unique lock object which can be GCed
+     * Replace the JDK's per-name lock map with a GC-collectable lock object.
      *
-     * @param className
-     *         The name of the to-be-loaded class
+     * <p>Parallel-capable {@link ClassLoader} implementations keep a distinct lock object per class
+     * name indefinitely, which can retain huge maps when there are many misses. Returning an
+     * interned {@link String} keyed by this loader and the class name preserves mutual exclusion
+     * for a given (loader, name) pair but allows the JVM to reclaim the lock when no longer
+     * referenced. Interned Strings are heap objects and GC-eligible on modern JDKs (7+).
      *
-     * @return lock object, unique per classloader/classname combination
+     * @param className the binary name of the class being loaded (must not be null)
+     * @return a lock object unique to this classloader/class pair
      */
     @Override
     public Object getClassLoadingLock(String className) {

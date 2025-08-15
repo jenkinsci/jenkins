@@ -2408,6 +2408,18 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         /** Cache of loaded, or known to be unloadable, classes. */
         private final ConcurrentMap<String, Optional<Class<?>>> loaded = new ConcurrentHashMap<>();
 
+        /**
+         * The servlet container's {@link ClassLoader} (the parent of Jenkins core) is
+         * parallel-capable and maintains its own growing {@link Map} of {@link
+         * ClassLoader#getClassLoadingLock} objects per class name for every load attempt (including
+         * misses), and we cannot override this behavior. Wrap the servlet container {@link
+         * ClassLoader} in {@link ExistenceCheckingClassLoader} to avoid calling {@link
+         * ClassLoader#getParent}'s {@link ClassLoader#loadClass(String, boolean)} at all for misses
+         * by first checking if the resource exists. If the resource does not exist, we immediately
+         * throw {@link ClassNotFoundException}. As a result, the servlet container's {@link
+         * ClassLoader} is never asked to try and fail, and it never creates/retains lock objects
+         * for those misses.
+         */
         public UberClassLoader(List<PluginWrapper> activePlugins) {
             super("UberClassLoader", new ExistenceCheckingClassLoader(PluginManager.class.getClassLoader()));
             this.activePlugins = activePlugins;
