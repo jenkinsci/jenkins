@@ -96,8 +96,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> implements SortedMap<Integer, R> {
     private final CopyOnWriteMap.Tree<Integer, BuildReference<R>> core = new CopyOnWriteMap.Tree<>(
             Collections.reverseOrder());
-    private final BuildReferenceMapAdapter<R> adapter = new BuildReferenceMapAdapter<>(core, this::resolveBuildRef,
-            this::getNumberOf) {
+    private final BuildReferenceMapAdapter<R> adapter = new BuildReferenceMapAdapter<>(core,
+            this::resolveBuildRef, this::getNumberOf, this::getBuildClass) {
         @Override
         protected boolean removeValue(R value) {
             return AbstractLazyLoadRunMap.this.removeValue(value);
@@ -260,7 +260,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
                 res.put(entry.getKey(), buildRef);
             }
         }
-        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<>(res, this::resolveBuildRef, this::getNumberOf));
+        return new BuildReferenceMapAdapter<>(res, this::resolveBuildRef, this::getNumberOf, this::getBuildClass);
     }
 
     /**
@@ -518,6 +518,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      *      except the caller will catch the exception and report it.
      */
     protected abstract R retrieve(File dir) throws IOException;
+
+    protected abstract Class<R> getBuildClass();
 
     public synchronized boolean removeValue(R run) {
         return core.remove(getNumberOf(run)) != null;

@@ -16,6 +16,7 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
+import java.util.function.Supplier;
 
 /**
  * Take {@code SortedMap<Integer,BuildReference<R>>} and make it look like {@code SortedMap<Integer,R>}.
@@ -45,6 +46,7 @@ import java.util.function.IntConsumer;
 class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements SortedMap<Integer, R> {
     private final Function<BuildReference<R>, R> buildRefResolver;
     private final Function<R, Integer> buildNumberProvider;
+    private final Supplier<Class<R>> buildClassProvider;
 
     private final SortedMap<Integer, BuildReference<R>> core;
 
@@ -54,10 +56,12 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
 
     BuildReferenceMapAdapter(SortedMap<Integer, BuildReference<R>> core,
                              Function<BuildReference<R>, R> buildRefResolver,
-                             Function<R, Integer> buildNumberProvider) {
+                             Function<R, Integer> buildNumberProvider,
+                             Supplier<Class<R>> buildClassProvider) {
         this.buildRefResolver = buildRefResolver;
         this.buildNumberProvider = buildNumberProvider;
         this.core = core;
+        this.buildClassProvider = buildClassProvider;
     }
 
     @Override
@@ -67,17 +71,20 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
 
     @Override
     public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
-        return new BuildReferenceMapAdapter<>(core.subMap(fromKey, toKey), buildRefResolver, buildNumberProvider);
+        return new BuildReferenceMapAdapter<>(core.subMap(fromKey, toKey),
+                buildRefResolver, buildNumberProvider, buildClassProvider);
     }
 
     @Override
     public SortedMap<Integer, R> headMap(Integer toKey) {
-        return new BuildReferenceMapAdapter<>(core.headMap(toKey), buildRefResolver, buildNumberProvider);
+        return new BuildReferenceMapAdapter<>(core.headMap(toKey),
+                buildRefResolver, buildNumberProvider, buildClassProvider);
     }
 
     @Override
     public SortedMap<Integer, R> tailMap(Integer fromKey) {
-        return new BuildReferenceMapAdapter<>(core.tailMap(fromKey), buildRefResolver, buildNumberProvider);
+        return new BuildReferenceMapAdapter<>(core.tailMap(fromKey),
+                buildRefResolver, buildNumberProvider, buildClassProvider);
     }
 
     @Override
@@ -116,26 +123,20 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         if (ref == null) {
             return false;
         }
-        // if found, resolve it and check that value is equal
+        // if found, check if value is loadable
         if (!ref.isSet()) {
             buildRefResolver.apply(ref);
         }
         return !ref.isUnloadable();
     }
 
-    @SuppressWarnings("unchecked")
-    private R castValue(Object value) {
-        try {
-            return  (R) value;
-        } catch (ClassCastException e) {
-            return null;
-        }
-    }
-
     @Override
     public boolean containsValue(Object value) {
-        R val = castValue(value);
-        return val != null && val.equals(get(buildNumberProvider.apply(val)));
+        if (!buildClassProvider.get().isInstance(value)) {
+            return false;
+        }
+        R val = buildClassProvider.get().cast(value);
+        return val.equals(get(buildNumberProvider.apply(val)));
     }
 
     @Override
@@ -229,8 +230,8 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
 
         @Override
         public boolean remove(Object o) {
-            R val = castValue(o);
-            return val != null && BuildReferenceMapAdapter.this.removeValue(val);
+            return buildClassProvider.get().isInstance(o) &&
+                    BuildReferenceMapAdapter.this.removeValue(buildClassProvider.get().cast(o));
         }
 
         @Override
@@ -271,8 +272,8 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         @Override
         public boolean remove(Object o) {
             if (o instanceof Map.Entry<?, ?> e) {
-                R val = castValue(e.getValue());
-                return val != null && BuildReferenceMapAdapter.this.removeValue(val);
+                return buildClassProvider.get().isInstance(e.getValue()) &&
+                        BuildReferenceMapAdapter.this.removeValue(buildClassProvider.get().cast(e.getValue()));
             }
             return false;
         }
@@ -281,14 +282,11 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         public Iterator<Entry<Integer, R>> iterator() {
             return new Iterator<>() {
                 private Entry<Integer, R> current;
-                private final Iterator<Entry<Integer, R>> it = Iterators.removeNull(
-                        new AdaptedIterator<>(BuildReferenceMapAdapter.this.core.entrySet().iterator()) {
-                            @Override
-                            protected Entry<Integer, R> adapt(Entry<Integer, BuildReference<R>> e) {
-                                R v = BuildReferenceMapAdapter.this.buildRefResolver.apply(e.getValue());
-                                return v == null ? null : new AbstractMap.SimpleEntry<>(e.getKey(), v);
-                            }
-                        });
+                private final Iterator<Entry<Integer, R>> it = Iterators.removeNull(Iterators.map(
+                        BuildReferenceMapAdapter.this.core.entrySet().iterator(), coreEntry -> {
+                            R v = BuildReferenceMapAdapter.this.buildRefResolver.apply(coreEntry.getValue());
+                            return v == null ? null : new AbstractMap.SimpleEntry<>(coreEntry.getKey(), v);
+                        }));
 
                 @Override
                 public boolean hasNext() {

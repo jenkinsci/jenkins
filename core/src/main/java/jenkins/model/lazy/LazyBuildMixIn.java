@@ -148,6 +148,11 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
             public RunT create(File dir) throws IOException {
                 return loadBuild(dir);
             }
+
+            @Override
+            public Class<RunT> getBuildClass() {
+                return LazyBuildMixIn.this.getBuildClass();
+            }
         });
         return r;
     }
