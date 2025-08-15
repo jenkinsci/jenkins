@@ -76,8 +76,11 @@ public class URLClassLoader2 extends URLClassLoader implements JenkinsClassLoade
     }
 
     /**
-     * Replace the JDK's per-name lock map with a GC-collectable lock object.
-     * See also: <a href="https://mail.openjdk.org/pipermail/core-libs-dev/2025-May/146392.html">OpenJDK MailThread</a>
+     * Replace the JDK's per-name lock map with a GC-collectable lock object. This is a workaround
+     * for JDK-8005233. When JDK-8005233 is resolved, this should be deleted. See also the
+     * discussion in <a
+     * href="https://mail.openjdk.org/pipermail/core-libs-dev/2025-May/146392.html">this OpenJDK
+     * thread</a>.
      *
      * <p>Parallel-capable {@link ClassLoader} implementations keep a distinct lock object per class
      * name indefinitely, which can retain huge maps when there are many misses. Returning an
