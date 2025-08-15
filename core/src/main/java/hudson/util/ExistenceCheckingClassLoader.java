@@ -19,7 +19,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @see #getResource(String)
  */
 @Restricted(NoExternalUse.class)
-public class ExistenceCheckingClassLoader extends DelegatingClassLoader {
+public final class ExistenceCheckingClassLoader extends DelegatingClassLoader {
 
     public ExistenceCheckingClassLoader(String name, ClassLoader parent) {
         super(name, Objects.requireNonNull(parent));
