@@ -39,14 +39,10 @@ public class DelegatingClassLoader extends ClassLoader {
      *          If the class could not be found
      */
     @Override
-    protected Class<?> loadClass(String name, boolean resolve)
-            throws ClassNotFoundException
-    {
+    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         Class<?> c = null;
         try {
-            if (getParent() != null) {
-                c = getParent().loadClass(name);
-            }
+            c = getParent().loadClass(name);
         } catch (ClassNotFoundException e) {
             // ClassNotFoundException thrown if class not found
             // from the non-null parent class loader
