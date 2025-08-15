@@ -53,7 +53,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 @Extension
 @Symbol("consoleUrlProvider")
 @Restricted(NoExternalUse.class)
-public class ConsoleUrlProviderGlobalConfiguration extends GlobalConfiguration {
+public class  ConsoleUrlProviderGlobalConfiguration extends GlobalConfiguration {
     private static final Logger LOGGER = Logger.getLogger(ConsoleUrlProviderGlobalConfiguration.class.getName());
 
     private List<ConsoleUrlProvider> providers;
