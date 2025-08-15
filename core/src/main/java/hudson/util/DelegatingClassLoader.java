@@ -62,7 +62,7 @@ public abstract class DelegatingClassLoader extends ClassLoader {
             c = findClass(name);
         }
 
-        c = verify(c);
+        verify(c);
         if (resolve) {
             resolveClass(c);
         }
@@ -75,10 +75,9 @@ public abstract class DelegatingClassLoader extends ClassLoader {
      * <p>Fails fast if a subclass erroneously defines a class here, which would violate the
      * delegation-only contract and could reintroduce locking/retention issues.
      */
-    private Class<?> verify(Class<?> clazz) {
+    private void verify(Class<?> clazz) {
         if (clazz.getClassLoader() == this) {
             throw new IllegalStateException("DelegatingClassLoader must not be the defining loader: " + clazz.getName());
         }
-        return clazz;
     }
 }
