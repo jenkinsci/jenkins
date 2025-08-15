@@ -58,9 +58,17 @@ public class DelegatingClassLoader extends ClassLoader {
             c = findClass(name);
         }
 
+        c = verify(c);
         if (resolve) {
             resolveClass(c);
         }
         return c;
+    }
+
+    protected Class<?> verify(Class<?> clazz) {
+        if (clazz.getClassLoader() == this) {
+            throw new IllegalStateException("DelegatingClassLoader must not be the defining loader: " + clazz.getName());
+        }
+        return clazz;
     }
 }

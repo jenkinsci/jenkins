@@ -36,6 +36,6 @@ public final class ExistenceCheckingClassLoader extends DelegatingClassLoader {
             throw new ClassNotFoundException(name);
         }
 
-        return super.loadClass(name, resolve);
+        return verify(super.loadClass(name, resolve));
     }
 }
