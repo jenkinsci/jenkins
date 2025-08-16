@@ -95,7 +95,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      *      Used to create new instance of {@link Run}.
      * @since 2.451
      */
-    public RunMap(@NonNull Job<?, ?> job, Constructor cons) {
+    public RunMap(@NonNull Job<?, ?> job, Constructor<R> cons) {
         this.job = Objects.requireNonNull(job);
         this.cons = cons;
         initBaseDir(job.getBuildDir());
@@ -105,7 +105,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      * @deprecated Use {@link #RunMap(Job, Constructor)}.
      */
     @Deprecated
-    public RunMap(File baseDir, Constructor cons) {
+    public RunMap(File baseDir, Constructor<R> cons) {
         job = null;
         this.cons = cons;
         initBaseDir(baseDir);
@@ -187,6 +187,8 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      */
     public interface Constructor<R extends Run<?, R>> {
         R create(File dir) throws IOException;
+
+        Class<R> getBuildClass();
     }
 
     @Override
@@ -201,7 +203,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
 
     /**
      * Add a <em>new</em> build to the map.
-     * Do not use when loading existing builds (use {@link #put(Integer, Object)}).
+     * Do not use when loading existing builds (use {@link #putAll(Map)}).
      */
     @Override
     public R put(R r) {
@@ -296,6 +298,11 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
         }
         LOGGER.fine(() -> "no config.xml in " + d);
         return null;
+    }
+
+    @Override
+    protected Class<R> getBuildClass() {
+        return cons.getBuildClass();
     }
 
     /**
