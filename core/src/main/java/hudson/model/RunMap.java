@@ -95,7 +95,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      *      Used to create new instance of {@link Run}.
      * @since 2.451
      */
-    public RunMap(@NonNull Job<?, ?> job, Constructor cons) {
+    public RunMap(@NonNull Job<?, ?> job, Constructor<R> cons) {
         this.job = Objects.requireNonNull(job);
         this.cons = cons;
         initBaseDir(job.getBuildDir());
@@ -105,7 +105,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      * @deprecated Use {@link #RunMap(Job, Constructor)}.
      */
     @Deprecated
-    public RunMap(File baseDir, Constructor cons) {
+    public RunMap(File baseDir, Constructor<R> cons) {
         job = null;
         this.cons = cons;
         initBaseDir(baseDir);

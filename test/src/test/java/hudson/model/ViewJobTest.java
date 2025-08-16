@@ -65,7 +65,17 @@ class ViewJobTest {
         }
 
         @Override protected void reload() {
-            runs.load(this, d -> new R(J.this, d));
+            runs.load(this, new RunMap.Constructor<>() {
+                @Override
+                public R create(File dir) throws IOException {
+                    return null;
+                }
+
+                @Override
+                public Class<R> getBuildClass() {
+                    return null;
+                }
+            });
         }
 
         @Override public TopLevelItemDescriptor getDescriptor() {
