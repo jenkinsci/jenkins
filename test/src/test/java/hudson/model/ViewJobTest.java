@@ -68,12 +68,12 @@ class ViewJobTest {
             runs.load(this, new RunMap.Constructor<>() {
                 @Override
                 public R create(File dir) throws IOException {
-                    return null;
+                    return new R(J.this, dir);
                 }
 
                 @Override
                 public Class<R> getBuildClass() {
-                    return null;
+                    return R.class;
                 }
             });
         }
