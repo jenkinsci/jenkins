@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_CONFLICT;
 import static jakarta.servlet.http.HttpServletResponse.SC_CREATED;
 
@@ -201,7 +202,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         }
 
         if (!asJob().isBuildable()) {
-            throw HttpResponses.error(SC_CONFLICT, new IOException(asJob().getFullName() + " is not buildable"));
+            throw HttpResponses.errorWithoutStack(SC_CONFLICT, asJob().getFullName() + " is not buildable");
         }
 
         // if a build is parameterized, let that take over
@@ -238,12 +239,12 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
 
         ParametersDefinitionProperty pp = asJob().getProperty(ParametersDefinitionProperty.class);
         if (!asJob().isBuildable()) {
-            throw HttpResponses.error(SC_CONFLICT, new IOException(asJob().getFullName() + " is not buildable!"));
+            throw HttpResponses.errorWithoutStack(SC_CONFLICT, asJob().getFullName() + " is not buildable");
         }
         if (pp != null) {
             pp.buildWithParameters(req, rsp, delay);
         } else {
-            throw new IllegalStateException("This build is not parameterized!");
+            throw HttpResponses.errorWithoutStack(SC_BAD_REQUEST, asJob().getFullName() + " is not parameterized");
         }
     }
 
