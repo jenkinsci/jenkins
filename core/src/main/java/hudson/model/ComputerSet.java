@@ -62,6 +62,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import jenkins.security.ExtendedReadRedaction;
+import jenkins.users.SidePanelUserProperty;
 import jenkins.util.Timer;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
@@ -547,6 +548,17 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             LOGGER.log(Level.SEVERE, "Failed to instantiate " + d.clazz, e);
         }
         return null;
+    }
+
+    // jelly only
+    @Restricted(DoNotUse.class)
+    public boolean isShowSidePanel() {
+        User user = User.current();
+        if (user == null) {
+            return false;
+        }
+        SidePanelUserProperty property = user.getProperty(SidePanelUserProperty.class);
+        return property != null && property.isShowNodesSidePanel();
     }
 
     @Extension(ordinal = -1)
