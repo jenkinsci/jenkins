@@ -187,6 +187,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      */
     public interface Constructor<R extends Run<?, R>> {
         R create(File dir) throws IOException;
+
         Class<R> getBuildClass();
     }
 
