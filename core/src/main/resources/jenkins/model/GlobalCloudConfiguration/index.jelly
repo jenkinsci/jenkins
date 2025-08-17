@@ -20,5 +20,5 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-    <st:redirect url="${rootURL}/manage/cloud/" />
+    <st:redirect url="../manage/cloud/" />
 </j:jelly>
