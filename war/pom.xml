@@ -399,7 +399,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jquery3-api</artifactId>
-                  <version>3.7.1-583.vda_6ca_102270d</version>
+                  <version>3.7.1-594.vb_3864f326cf0</version>
                   <type>hpi</type>
                 </artifactItem>
 
