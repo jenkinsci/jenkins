@@ -332,7 +332,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, echarts-api, font-awesome-api, and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>plugin-util-api</artifactId>
-                  <version>6.1154.ved7e7d3035a_5</version>
+                  <version>6.1157.vc75ef7129d86</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -369,7 +369,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>6.0.0-1</version>
+                  <version>6.0.0-1137.vfd5f348e1952</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -407,7 +407,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api and echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>font-awesome-api</artifactId>
-                  <version>7.0.0-1</version>
+                  <version>7.0.0-844.vb_f7825b_7f5da_</version>
                   <type>hpi</type>
                 </artifactItem>
 
