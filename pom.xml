@@ -96,6 +96,7 @@ THE SOFTWARE.
     <antlr.version>4.13.2</antlr.version>
     <bridge-method-injector.version>1.32</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
+    <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>8.13</winstone.version>
     <node.version>24.6.0</node.version>
