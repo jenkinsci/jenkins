@@ -36,6 +36,7 @@
 
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -139,6 +140,9 @@ public class QuotedStringTokenizer
 
     /* ------------------------------------------------------------ */
     @Override
+    @SuppressFBWarnings(
+            value = {"SF_DEAD_STORE_DUE_TO_SWITCH_FALLTHROUGH", "SF_SWITCH_FALLTHROUGH"},
+            justification = "TODO needs triage")
     public boolean hasMoreTokens()
     {
         // Already found a token
