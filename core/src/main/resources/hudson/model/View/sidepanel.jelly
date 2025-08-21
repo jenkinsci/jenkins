@@ -35,6 +35,9 @@ THE SOFTWARE.
     <link rel="alternate" title="Jenkins:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
   </l:header>
   <l:side-panel>
+    <!-- Display the user's name for their views -->
+    <st:include page="app-bar.jelly" it="${it.owner.user}" optional="true" />
+
     <l:tasks>
       <st:include page="tasks-top.jelly" it="${it.owner}" optional="true" />
 

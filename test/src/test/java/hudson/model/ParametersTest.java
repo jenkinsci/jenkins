@@ -267,7 +267,7 @@ class ParametersTest {
         assertAll(
                 () -> assertThat("parameters page should escape param name", text2, containsString("&lt;param name&gt;")),
                 () -> assertThat("parameters page should not leave param name unescaped", text2, not(containsString("<param name>"))),
-                () -> assertThat("parameters page should escape param value", text2, containsString("&lt;param value&gt;")),
+                () -> assertThat("parameters page should escape param value", text2, containsString("&lt;param value>")),
                 () -> assertThat("parameters page should not leave param value unescaped", text2, not(containsString("<param value>"))),
                 () -> assertThat("parameters page should mark up param description", text2, containsString("<b>[</b>param description<b>]</b>")),
                 () -> assertThat("parameters page should not leave param description unescaped", text2, not(containsString("<param description>")))

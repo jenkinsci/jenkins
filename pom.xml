@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.133</version>
+    <version>1.138</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.519</revision>
+    <revision>2.525</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-07-08T13:08:54Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-08-19T13:08:53Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,18 +87,18 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3309.v27b_9314fd1a_4</remoting.version>
+    <remoting.version>3327.v868139a_d00e0</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
     <access-modifier.version>1.35</access-modifier.version>
     <antlr.version>4.13.2</antlr.version>
-    <bridge-method-injector.version>1.31</bridge-method-injector.version>
+    <bridge-method-injector.version>1.32</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.11</winstone.version>
-    <node.version>22.17.0</node.version>
+    <winstone.version>8.13</winstone.version>
+    <node.version>24.6.0</node.version>
   </properties>
 
   <!--
@@ -223,7 +223,7 @@ THE SOFTWARE.
           <version>1.1</version>
         </plugin>
         <plugin>
-          <groupId>com.infradna.tool</groupId>
+          <groupId>io.jenkins.tools</groupId>
           <artifactId>bridge-method-injector</artifactId>
           <version>${bridge-method-injector.version}</version>
         </plugin>
@@ -281,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.26.1</version>
+              <version>11.0.0</version>
             </dependency>
           </dependencies>
           <executions>

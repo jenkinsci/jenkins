@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
   <st:documentation> <![CDATA[
     Repeatable blocks used to present UI where the user can configure multiple entries
     of the same kind (see the Java installations configuration in the system config.)
@@ -143,6 +143,7 @@ THE SOFTWARE.
     </div>
     <j:if test="${!empty(items) and !attrs.noAddButton and attrs.enableTopButton}">
       <button type="button" class="jenkins-button repeatable-add repeatable-add-top">
+        <l:icon src="symbol-add"/>
         ${attrs.add?:'%Add'}
       </button>
     </j:if>
@@ -173,6 +174,7 @@ THE SOFTWARE.
     <div class="repeatable-insertion-point" />
     <j:if test="${!attrs.noAddButton}">
       <button type="button" class="jenkins-button repeatable-add">
+        <l:icon src="symbol-add"/>
         ${attrs.add?:'%Add'}
       </button>
     </j:if>
