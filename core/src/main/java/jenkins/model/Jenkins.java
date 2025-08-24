@@ -292,6 +292,7 @@ import jenkins.security.stapler.StaplerFilteredActionListener;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.security.stapler.TypedFilter;
 import jenkins.slaves.WorkspaceLocator;
+import jenkins.users.SidePanelUserProperty;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
@@ -1344,6 +1345,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @CheckForNull
     public Boolean isNoUsageStatistics() {
         return noUsageStatistics;
+    }
+
+    // jelly only
+    @Restricted(DoNotUse.class)
+    public boolean isShowLoadstatsSidePanel() {
+        User user = User.current();
+        if (user == null) {
+            return false;
+        }
+        SidePanelUserProperty property = user.getProperty(SidePanelUserProperty.class);
+        return property != null && property.isShowLoadstatsSidePanel();
     }
 
     /**
