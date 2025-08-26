@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <h2>${%Load Statistics}</h2>
+  <h2>---Translate 729--- ${%Load Statistics}</h2>
   <p>
     Load statistics of this computer has <a href="../loadStatistics/api/">its own separate API</a>.
   </p>

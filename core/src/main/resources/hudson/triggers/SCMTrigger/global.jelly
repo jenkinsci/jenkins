@@ -25,8 +25,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${descriptor.pollingThreadCountOptionVisible}">
-    <f:section title="${%SCM Polling}">
-      <f:entry title="${%Max # of concurrent polling}" field="pollingThreadCount">
+    <f:section title="---Translate 644--- ${%SCM Polling}">
+      <f:entry title="---Translate 644--- ${%Max # of concurrent polling}" field="pollingThreadCount">
         <f:number value="${descriptor.pollingThreadCount==0 ? '' : descriptor.pollingThreadCount}"
            clazz="positive-number" min="1" step="1"/>
       </f:entry>

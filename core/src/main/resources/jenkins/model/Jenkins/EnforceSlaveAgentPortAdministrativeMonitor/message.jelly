@@ -25,8 +25,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <div class="jenkins-alert jenkins-alert-warning">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="reset" value="${%reset(it.expectedPort)}"/>
+      <f:submit name="reset" value="---Translate 726--- ${%reset(it.expectedPort)}"/>
     </form>
-    ${%description(it.systemPropertyName, it.expectedPort)}
+    ---Translate 726--- ${%description(it.systemPropertyName, it.expectedPort)}
   </div>
 </j:jelly>

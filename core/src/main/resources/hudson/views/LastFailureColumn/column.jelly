@@ -32,7 +32,7 @@ THE SOFTWARE.
         <a href="${jobBaseUrl}${job.shortUrl}lastFailedBuild/" class="jenkins-table__link jenkins-table__badge model-link inside">${lfBuild.displayName}</a>
       </j:when>
       <j:otherwise>
-        ${%N/A}
+        ---Translate 674--- ${%N/A}
       </j:otherwise>
     </j:choose>
   </td>

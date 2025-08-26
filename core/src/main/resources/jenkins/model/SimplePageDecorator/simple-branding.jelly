@@ -25,6 +25,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core">
   <section class="app-sign-in-register__branding">
     <div class="app-sign-in-register__branding__starburst"></div>
-    <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}"/>
+    <img src="${imagesURL}/svgs/logo.svg" alt="---Translate 769--- ${%logo}"/>
   </section>
 </j:jelly>

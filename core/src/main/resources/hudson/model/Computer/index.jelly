@@ -38,17 +38,17 @@ THE SOFTWARE.
           <j:when test="${it.temporarilyOffline}">
             <l:hasPermission permission="${it.CONNECT}">
               <form method="post" action="toggleOffline">
-                <f:submit value="${%submit.temporarilyOffline}"  />
+                <f:submit value="---Translate 412--- ${%submit.temporarilyOffline}"  />
               </form>
               <form method="post" action="setOfflineCause">
-              <f:submit primary="false" value="${%submit.updateOfflineCause}"  />
+              <f:submit primary="false" value="---Translate 412--- ${%submit.updateOfflineCause}"  />
               </form>
             </l:hasPermission>
           </j:when>
           <j:otherwise>
             <l:hasPermission permission="${it.DISCONNECT}">
               <form method="post" action="markOffline">
-                <f:submit primary="false" value="${%submit.not.temporarilyOffline}"  />
+                <f:submit primary="false" value="---Translate 412--- ${%submit.not.temporarilyOffline}"  />
               </form>
             </l:hasPermission>
           </j:otherwise>
@@ -67,10 +67,10 @@ THE SOFTWARE.
       </j:if>
 
       <j:if test="${it.offline and !it.manualLaunchAllowed and it.launchSupported}">
-        <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
+        <p>---Translate 412--- ${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
       </j:if>
 
-      <f:advanced title="${%Monitoring Data}">
+      <f:advanced title="---Translate 412--- ${%Monitoring Data}">
         <table class="jenkins-table jenkins-table--small jenkins-table--auto-width">
           <j:forEach var="m" items="${it.monitoringData}">
             <tr>
@@ -84,7 +84,7 @@ THE SOFTWARE.
 
       <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div class="jenkins-!-margin-bottom-3">
-          <h2>${%Labels}</h2>
+          <h2>---Translate 412--- ${%Labels}</h2>
           <j:forEach var="entry" items="${it.node.labelCloud}">
             <!-- Skip the label for this node -->
             <j:if test="${entry.item!=it.node.selfLabel}">
@@ -97,12 +97,12 @@ THE SOFTWARE.
 
       <st:include page="nodepropertysummaries.jelly" />
 
-      <h2>${%title.projects_tied_on(it.displayName)}</h2>
+      <h2>---Translate 412--- ${%title.projects_tied_on(it.displayName)}</h2>
       <j:set var="jobs" value="${it.tiedJobs}" />
       <j:choose>
         <j:when test="${empty(jobs)}">
           <p>
-            ${%None}
+            ---Translate 412--- ${%None}
           </p>
         </j:when>
         <j:otherwise>

@@ -33,14 +33,14 @@ THE SOFTWARE.
     <st:include it="${it.run}" page="sidepanel.jelly"/>
     <l:main-panel>
       <h1>
-        ${%Recorded Fingerprints}
+        ---Translate 623--- ${%Recorded Fingerprints}
       </h1>
       <table class="fingerprint-in-build sortable jenkins-table">
         <thead>
           <tr>
-            <th initialSortDir="down">${%File}</th>
-            <th>${%Original owner}</th>
-            <th>${%Age}</th>
+            <th initialSortDir="down">---Translate 623--- ${%File}</th>
+            <th>---Translate 623--- ${%Original owner}</th>
+            <th>---Translate 623--- ${%Age}</th>
           </tr>
         </thead>
         <j:forEach var="e" items="${it.fingerprints}">
@@ -54,10 +54,10 @@ THE SOFTWARE.
             <td>
               <j:choose>
                 <j:when test="${f.original==null}">
-                  ${%outside Jenkins}
+                  ---Translate 623--- ${%outside Jenkins}
                 </j:when>
                 <j:when test="${f.original.run==it.run}">
-                  ${%this build}
+                  ---Translate 623--- ${%this build}
                 </j:when>
                 <j:otherwise>
                   <t:buildLink jobName="${f.original.name}" job="${f.original.job}" number="${f.original.number}" />

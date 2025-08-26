@@ -34,8 +34,8 @@ THE SOFTWARE.
 
   <f:toggleSwitch id="enable-disable-project"
                   name="enable"
-                  title="${%Disabled}"
-                  checkedTitle="${%Enabled}"
+                  title="---Translate 908--- ${%Disabled}"
+                  checkedTitle="---Translate 908--- ${%Enabled}"
                   checked="${!it.disabled}"
                   invertLabel="true"
                   tooltip="${tooltip ?: '%Enable or disable the current project'}" />

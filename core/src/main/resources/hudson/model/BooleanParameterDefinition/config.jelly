@@ -26,13 +26,13 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-    <f:entry title="${%Name}" help="/help/parameter/name.html">
+    <f:entry title="---Translate 398--- ${%Name}" help="/help/parameter/name.html">
 		<f:textbox name="parameter.name" value="${instance.name}" />
 	</f:entry>
     <f:entry field="boolean-default">
-	    <f:checkbox title="${%Set by Default}" name="parameter.defaultValue" checked="${instance.defaultValue}" />
+	    <f:checkbox title="---Translate 398--- ${%Set by Default}" name="parameter.defaultValue" checked="${instance.defaultValue}" />
     </f:entry>
-    <f:entry title="${%Description}" help="/help/parameter/description.html">
+    <f:entry title="---Translate 398--- ${%Description}" help="/help/parameter/description.html">
         <f:textarea name="parameter.description" value="${instance.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription" />
     </f:entry>
 </j:jelly>

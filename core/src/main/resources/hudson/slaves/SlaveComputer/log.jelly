@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} log" permissions="${it.EXTENDED_READ_AND_CONNECT}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Log}" />
+    <l:breadcrumb title="---Translate 614--- ${%Log}" />
     <l:main-panel>
       <pre id="out" />
       <div id="spinner">
@@ -36,7 +36,7 @@ THE SOFTWARE.
       <!-- TODO dubious value: INFO+ shown in logText anyway; FINE- configured in /log/*/ maybe better viewed there
       <j:set var="logRecords" value="${it.logRecords}"/>
       <j:if test="${!logRecords.isEmpty()}">
-        <h1>${%Log Records}</h1>
+        <h1>---Translate 614--- ${%Log Records}</h1>
         <t:logRecords logRecords="${logRecords}"/>
       </j:if>
       -->

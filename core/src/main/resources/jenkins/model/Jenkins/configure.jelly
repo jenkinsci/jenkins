@@ -27,26 +27,26 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%System}" type="one-column">
+<l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="---Translate 746--- ${%System}" type="one-column">
   <st:include page="sidepanel.jelly" />
-  <f:breadcrumb-config-outline title="${%System}" />
+  <f:breadcrumb-config-outline title="---Translate 746--- ${%System}" />
 
   <l:main-panel>
     <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
-    <l:app-bar title="${%System}" />
+    <l:app-bar title="---Translate 746--- ${%System}" />
 
     <l:skeleton />
     <f:form method="post" name="config" action="configSubmit" class="jenkins-form">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
 
-      <f:entry title="${%Home directory}" description="${%By default, Jenkins stores all of its data in this directory on the file system}" help="/help/system-config/homeDirectory.html">
+      <f:entry title="---Translate 746--- ${%Home directory}" description="---Translate 746--- ${%By default, Jenkins stores all of its data in this directory on the file system}" help="/help/system-config/homeDirectory.html">
         <div class="jenkins-quote jenkins-quote--monospace">
           ${it.rootDir}
-          <l:copyButton tooltip="${%Copy home directory}" text="${it.rootDir}" iconOnly="true" />
+          <l:copyButton tooltip="---Translate 746--- ${%Copy home directory}" text="${it.rootDir}" iconOnly="true" />
         </div>
       </f:entry>
-      <f:entry title="${%System Message}" description="${%This message will be displayed at the top of the Jenkins main page. This can be useful for posting notifications to your users}">
+      <f:entry title="---Translate 746--- ${%System Message}" description="---Translate 746--- ${%This message will be displayed at the top of the Jenkins main page. This can be useful for posting notifications to your users}">
         <f:textarea name="system_message" value="${it.systemMessage}" disabled="${readOnlyMode?'true':null}" readonly="${readOnlyMode?'true':null}"
                     codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
       </f:entry>

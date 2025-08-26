@@ -36,7 +36,7 @@ THE SOFTWARE.
 
       <t:editableDescription permission="${app.ADMINISTER}" hideButton="true"/>
       <div>
-        ${%Jenkins User ID}: ${it.id}
+        ---Translate 531--- ${%Jenkins User ID}: ${it.id}
       </div>
       <!-- give properties a chance to contribute summary item -->
       <j:forEach var="p" items="${it.allProperties}">
@@ -44,7 +44,7 @@ THE SOFTWARE.
       </j:forEach>
       <j:set var="authorities" value="${it.authorities}"/>
       <j:if test="${!authorities.isEmpty()}">
-        <div>${%Groups}:</div>
+        <div>---Translate 531--- ${%Groups}:</div>
         <ul>
           <j:forEach var="a" items="${authorities}">
             <li>${a}</li>

@@ -31,8 +31,8 @@ THE SOFTWARE.
   <l:layout permission="${it.CREATE}" type="one-column">
     <l:main-panel>
       <f:form method="post" action="doCreateItem" name="config" class="jenkins-form">
-        <f:entry title="${%Name}" help="${requestScope.descriptor.getHelpFile('name')}">
-          <f:textbox name="name" value="${request2.getParameter('name')}" clazz="required" checkMessage="${%Name is mandatory}"/>
+        <f:entry title="---Translate 424--- ${%Name}" help="${requestScope.descriptor.getHelpFile('name')}">
+          <f:textbox name="name" value="${request2.getParameter('name')}" clazz="required" checkMessage="---Translate 424--- ${%Name is mandatory}"/>
         </f:entry>
 
         <!-- main body of the configuration -->
@@ -42,7 +42,7 @@ THE SOFTWARE.
         <f:bottomButtonBar>
           <input type="hidden" name="type" value="${request2.getParameter('mode')}"/>
 
-          <f:submit value="${%Save}"/>
+          <f:submit value="---Translate 424--- ${%Save}"/>
         </f:bottomButtonBar>
       </f:form>
       <st:adjunct includes="lib.form.confirm" />

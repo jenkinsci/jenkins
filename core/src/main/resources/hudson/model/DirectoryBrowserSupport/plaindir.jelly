@@ -28,7 +28,7 @@ THE SOFTWARE.
                         <a href="..">..</a><br/>
                     </j:if>
                     <j:when test="${empty(files)}">
-                        <p>${%No files in directory}</p>
+                        <p>---Translate 427--- ${%No files in directory}</p>
                     </j:when>
                     <j:otherwise>
                         <j:forEach var="f" items="${files}">

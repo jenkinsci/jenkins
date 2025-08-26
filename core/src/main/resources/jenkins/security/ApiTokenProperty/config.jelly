@@ -30,22 +30,22 @@ THE SOFTWARE.
         <d:tag name="editButton">
             <button type="button"
                     class="jenkins-button jenkins-button--tertiary api-token-property-token-rename"
-                    data-target-url="${descriptor.descriptorFullUrl}/rename" data-rename-title="${%RenameToken}"
-                    data-button-text="${%Rename}"
-                    data-rename-message="${%New name}"
-                    tooltip="${%Rename}">
+                    data-target-url="${descriptor.descriptorFullUrl}/rename" data-rename-title="---Translate 785--- ${%RenameToken}"
+                    data-button-text="---Translate 785--- ${%Rename}"
+                    data-rename-message="---Translate 785--- ${%New name}"
+                    tooltip="---Translate 785--- ${%Rename}">
                 <l:icon src="symbol-edit" class="icon-sm"/>
             </button>
         </d:tag>
         <d:tag name="revokeButton">
             <button type="button"
                     class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color api-token-property-token-revoke"
-                    data-message-if-legacy-revoked="${%RevokedToken}"
-                    data-confirm="${%ConfirmRevokeSingle}"
-                    data-confirm-title="${%ConfirmRevokeSingleTitle}"
-                    data-button-text="${%Revoke}"
+                    data-message-if-legacy-revoked="---Translate 785--- ${%RevokedToken}"
+                    data-confirm="---Translate 785--- ${%ConfirmRevokeSingle}"
+                    data-confirm-title="---Translate 785--- ${%ConfirmRevokeSingleTitle}"
+                    data-button-text="---Translate 785--- ${%Revoke}"
                     data-token-uuid="${token.uuid}"
-                    data-target-url="${descriptor.descriptorFullUrl}/revoke" tooltip="${%RevokeToken}">
+                    data-target-url="${descriptor.descriptorFullUrl}/revoke" tooltip="---Translate 785--- ${%RevokeToken}">
                 <l:icon src="symbol-trash" class="icon-sm"/>
             </button>
         </d:tag>
@@ -53,11 +53,11 @@ THE SOFTWARE.
             <j:if test="${descriptor.hasCurrentUserRightToGenerateNewToken(it)}">
                 <button class="api-token-property-add jenkins-button jenkins-button--secondary" type="button"
                         data-target-url="${descriptor.descriptorFullUrl}/generateNewToken"
-                        data-prompt-message="${%Create new API token}"
-                        data-generate="${%GenerateNewToken}" data-success-title="${%successfully created}"
-                        data-cancel="${%Cancel}"
-                        data-button-done="${%Done}"
-                        data-message-name="${%Name}">${%AddNewToken}</button>
+                        data-prompt-message="---Translate 785--- ${%Create new API token}"
+                        data-generate="---Translate 785--- ${%GenerateNewToken}" data-success-title="---Translate 785--- ${%successfully created}"
+                        data-cancel="---Translate 785--- ${%Cancel}"
+                        data-button-done="---Translate 785--- ${%Done}"
+                        data-message-name="---Translate 785--- ${%Name}">---Translate 785--- ${%AddNewToken}</button>
             </j:if>
         </d:tag>
     </d:taglib>
@@ -68,15 +68,15 @@ THE SOFTWARE.
                     <span class="token-name">${token.name}</span>
                 </div>
                 <div class="token-stats">
-                    <span class="token-creation" tooltip="${%Just Now}">${%Created just now}</span>
-                    <span class="token-last-used">${%TokenNeverUsed}</span>
+                    <span class="token-creation" tooltip="---Translate 785--- ${%Just Now}">---Translate 785--- ${%Created just now}</span>
+                    <span class="token-last-used">---Translate 785--- ${%TokenNeverUsed}</span>
                 </div>
             </div>
             <div class="token-controls">
                 <button type="button"
                         class="jenkins-button jenkins-button--tertiary api-token-property-token-show"
-                        data-button-done="${%Done}"
-                        tooltip="${%Show}">
+                        data-button-done="---Translate 785--- ${%Done}"
+                        tooltip="---Translate 785--- ${%Show}">
                     <l:icon src="symbol-key" class="icon-sm"/>
                 </button>
                 <local:editButton/>
@@ -87,21 +87,21 @@ THE SOFTWARE.
     <div class="jenkins-hidden" id="api-token-template">
         <div>
             <div class="jenkins-alert jenkins-alert-info">
-                ${%TokenDisplayedOnce}
+                ---Translate 785--- ${%TokenDisplayedOnce}
             </div>
             <div class="api-token-new-form-row jenkins-quote jenkins-quote--monospace">
                 <span class="api-token-new-value"/>
-                <l:copyButton text="" clazz="jenkins-hidden" tooltip="${%CopyToken}" iconOnly="true"/>
+                <l:copyButton text="" clazz="jenkins-hidden" tooltip="---Translate 785--- ${%CopyToken}" iconOnly="true"/>
             </div>
         </div>
     </div>
     <st:adjunct includes="jenkins.security.ApiTokenProperty.resources"/>
-    <f:entry title="${%CurrentTokens}" help="${descriptor.getHelpFile('tokenStore')}">
+    <f:entry title="---Translate 785--- ${%CurrentTokens}" help="${descriptor.getHelpFile('tokenStore')}">
         <!-- ignore the whole div to prevent the "Add new token" button to trigger the confirm -->
         <div class="token-list ignore-dirty-panel" xmlns:local="local">
             <j:set var="tokenList" value="${instance.tokenList}" />
             <div class="token-list-empty-item ${tokenList.isEmpty() ? '' : 'jenkins-hidden'} jenkins-!-margin-bottom-2" >
-                <l:notice title="${%NoTokenYet}" icon="symbol-key">
+                <l:notice title="---Translate 785--- ${%NoTokenYet}" icon="symbol-key">
                     <local:addButton/>
                 </l:notice>
             </div>
@@ -120,7 +120,7 @@ THE SOFTWARE.
                         <j:set var="legacyToolTip" value="" />
                         <j:if test="${token.isLegacy}">
                             <j:set var="legacyClazz" value="legacy-token" />
-                            <j:set var="legacyToolTip" value="${%LegacyToken}" />
+                            <j:set var="legacyToolTip" value="---Translate 785--- ${%LegacyToken}" />
                         </j:if>
                         <div class="token-card jenkins-card ${legacyClazz}" id="${token.uuid}">
                             <div class="token-card-inner">
@@ -130,7 +130,7 @@ THE SOFTWARE.
                                         </j:if>
                                         <span class="token-name">${token.name}</span>
                                 </div>
-                                <j:set var="creationDateFormat" value="${%NoCreationDate}" />
+                                <j:set var="creationDateFormat" value="---Translate 785--- ${%NoCreationDate}" />
                                 <j:if test="${token.creationDate != null}">
                                     <i:formatDate var="creationDateFormat" value="${token.creationDate}" type="both" dateStyle="medium" timeStyle="medium" />
                                     <!--TODO convert to "Today", "Tomorrow", "4 days ago", "2 weeks ago", etc. -->
@@ -145,8 +145,8 @@ THE SOFTWARE.
                                                     <j:when test="${useCounter gt 0}">
                                                         <j:if test="${token.lastUseDate == null}">
                                                             <!--Should normally never happen without manual XML modification-->
-                                                            <span tooltip="${%TokenNeverUsedTooltip}">
-                                                                ${%TokenNeverUsed}
+                                                            <span tooltip="---Translate 785--- ${%TokenNeverUsedTooltip}">
+                                                                ---Translate 785--- ${%TokenNeverUsed}
                                                             </span>
                                                         </j:if>
                                                         <j:if test="${token.lastUseDate != null}">
@@ -167,20 +167,20 @@ THE SOFTWARE.
                                                     <j:otherwise>
                                                         <j:set var="neverUsedTooltip" value=""/>
                                                         <j:if test="${daysOld gt 7}">
-                                                            <j:set var="neverUsedTooltip" value="${%TokenNeverUsed.Title}"/>
+                                                            <j:set var="neverUsedTooltip" value="---Translate 785--- ${%TokenNeverUsed.Title}"/>
                                                         </j:if>
                                                         <div class="token-never-used ${oldClazz}" tooltip="${neverUsedTooltip}">
                                                             <j:if test="${daysOld gt 7}">
                                                                 <l:icon src="symbol-warning" class="icon-sm"/>
                                                             </j:if>
-                                                            ${%TokenNeverUsed}
+                                                            ---Translate 785--- ${%TokenNeverUsed}
                                                         </div>
                                                     </j:otherwise>
                                                 </j:choose>
                                             </j:when>
                                             <j:otherwise>
-                                                <span class="no-statistics" tooltip="${%StatisticsDisabled.Title}">
-                                                    ${%StatisticsDisabled}
+                                                <span class="no-statistics" tooltip="---Translate 785--- ${%StatisticsDisabled.Title}">
+                                                    ---Translate 785--- ${%StatisticsDisabled}
                                                 </span>
                                             </j:otherwise>
                                         </j:choose>
@@ -199,11 +199,11 @@ THE SOFTWARE.
         </div>
     </f:entry>
     <j:if test="${descriptor.mustDisplayLegacyApiToken(it)}">
-        <f:advanced title="${%Show Legacy API Token}">
-            <f:entry title="${%Legacy API Token}" field="apiToken">
+        <f:advanced title="---Translate 785--- ${%Show Legacy API Token}">
+            <f:entry title="---Translate 785--- ${%Legacy API Token}" field="apiToken">
                 <f:readOnlyTextbox id="apiToken" default="${descriptor.noLegacyToken}"/>
             </f:entry>
-            <f:validateButton title="${%Change API Token}" method="changeToken" clazz="ignore-dirty-panel"/>
+            <f:validateButton title="---Translate 785--- ${%Change API Token}" method="changeToken" clazz="ignore-dirty-panel"/>
         </f:advanced>
     </j:if>
 </j:jelly>

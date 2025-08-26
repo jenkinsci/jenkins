@@ -31,7 +31,7 @@ THE SOFTWARE.
 
   <j:if test="${!readOnlyMode}">
     <f:bottomButtonBar>
-      <f:submit value="${%Save}" />
+      <f:submit value="---Translate 894--- ${%Save}" />
       <f:apply/>
     </f:bottomButtonBar>
     <st:adjunct includes="lib.form.confirm" />

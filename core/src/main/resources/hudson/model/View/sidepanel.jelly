@@ -43,20 +43,20 @@ THE SOFTWARE.
 
       <st:include page="tasks-new.jelly" it="${it.owner}" optional="true">
         <!-- made overridable for ViewGroup that doesn't allow modifications -->
-        <l:task href="${rootURL}/${it.viewUrl}newJob" icon="symbol-add" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
+        <l:task href="${rootURL}/${it.viewUrl}newJob" icon="symbol-add" it="${app}" permission="${it.itemCreatePermission}" title="---Translate 537--- ${%NewJob(it.newPronoun)}"/>
       </st:include>
 
-      <l:task href="${rootURL}/${it.viewUrl}builds" icon="symbol-build-history" title="${%Build History}"/>
+      <l:task href="${rootURL}/${it.viewUrl}builds" icon="symbol-build-history" title="---Translate 537--- ${%Build History}"/>
       <j:if test="${it.isEditable()}">
         <!-- /configure URL on Jenkins object is overloaded with Jenkins's system config, so always use the explicit name. -->
-        <l:task href="${rootURL}/${it.viewUrl}configure" icon="symbol-settings" permission="${it.CONFIGURE}" title="${%Edit View}"/>
+        <l:task href="${rootURL}/${it.viewUrl}configure" icon="symbol-settings" permission="${it.CONFIGURE}" title="---Translate 537--- ${%Edit View}"/>
       </j:if>
       <j:if test="${it.owner.canDelete(it)}">
-        <l:delete permission="${it.DELETE}" title="${%Delete View}" message="${%delete.view(it.displayName)}"/>
+        <l:delete permission="${it.DELETE}" title="---Translate 537--- ${%Delete View}" message="---Translate 537--- ${%delete.view(it.displayName)}"/>
       </j:if>
       <j:if test="${app.fingerprintMap.ready}">
-        <l:task href="${rootURL}/projectRelationship" icon="symbol-project-relationship" title="${%Project Relationship}"/>
-        <l:task href="${rootURL}/fingerprintCheck" icon="icon-fingerprint icon-md" title="${%Check File Fingerprint}"/>
+        <l:task href="${rootURL}/projectRelationship" icon="symbol-project-relationship" title="---Translate 537--- ${%Project Relationship}"/>
+        <l:task href="${rootURL}/fingerprintCheck" icon="icon-fingerprint icon-md" title="---Translate 537--- ${%Check File Fingerprint}"/>
       </j:if>
 
       <!-- subtypes can put more stuff here -->

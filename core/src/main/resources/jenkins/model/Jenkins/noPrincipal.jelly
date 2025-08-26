@@ -29,7 +29,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <div style="margin: 2em; color:red; font-weight:bold">
-        ${%blurb}
+        ---Translate 740--- ${%blurb}
       </div>
     </l:main-panel>
   </l:layout>

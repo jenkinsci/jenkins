@@ -28,19 +28,19 @@ THE SOFTWARE.
     <st:redirect url="setOfflineCause"/>
   </j:if>
 
-  <l:layout title="${%title(it.displayName)}">
+  <l:layout title="---Translate 413--- ${%title(it.displayName)}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Mark offline}" />
+    <l:breadcrumb title="---Translate 413--- ${%Mark offline}" />
     <l:main-panel>
       <l:hasPermission permission="${it.DISCONNECT}">
-        <h2>${%title(it.displayName)}</h2>
+        <h2>---Translate 413--- ${%title(it.displayName)}</h2>
         <p>
-          ${%blurb}
+          ---Translate 413--- ${%blurb}
         </p>
         <form method="post" action="toggleOffline">
           <f:textarea name="offlineMessage" />
           <p>
-            <f:submit value="${%submit}"  />
+            <f:submit value="---Translate 413--- ${%submit}"  />
           </p>
         </form>
       </l:hasPermission>

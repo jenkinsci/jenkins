@@ -25,5 +25,5 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <!-- Displays a console link for a build. -->
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-    <l:task href="${h.getConsoleUrl(it) ?: (buildUrl.baseUrl + '/console')}" icon="icon-terminal icon-md"  title="${%Console Output}" />
+    <l:task href="${h.getConsoleUrl(it) ?: (buildUrl.baseUrl + '/console')}" icon="icon-terminal icon-md"  title="---Translate 899--- ${%Console Output}" />
 </j:jelly>

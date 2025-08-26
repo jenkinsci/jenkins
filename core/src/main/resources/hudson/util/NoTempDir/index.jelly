@@ -29,8 +29,8 @@ THE SOFTWARE.
     <l:header title="Jenkins" />
     <l:side-panel />
     <l:main-panel>
-      <h1>${%Error}</h1>
-      <p>${%description(it.tempDir)}</p>
+      <h1>---Translate 660--- ${%Error}</h1>
+      <p>---Translate 660--- ${%description(it.tempDir)}</p>
       <pre>${it.stackTraceString}</pre>
     </l:main-panel>
   </l:layout>

@@ -8,7 +8,7 @@
     <j:set var="commandPaletteTooltip">
       <div class="jenkins-keyboard-shortcut__tooltip">
         <span class="jenkins-!-margin-right-1">
-          ${%Search}
+          ---Translate 958--- ${%Search}
         </span>
         <l:keyboard-shortcut shortcut="CMD+K" />
       </div>

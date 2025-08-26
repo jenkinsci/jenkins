@@ -25,9 +25,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div>
-    <l:icon src="symbol-status-red" class="icon-md"/> ${%Failure}
+    <l:icon src="symbol-status-red" class="icon-md"/> ---Translate 506--- ${%Failure}
     -
-    <a class="update-center-job-failure-show-details" href="">${%Details}</a>
+    <a class="update-center-job-failure-show-details" href="">---Translate 506--- ${%Details}</a>
   </div>
   <pre style="display:none">${it.problemStackTrace}</pre>
 </j:jelly>

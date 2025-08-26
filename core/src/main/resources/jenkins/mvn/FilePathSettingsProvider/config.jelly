@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-    <f:entry title="${%File path}" field="path">
+    <f:entry title="---Translate 780--- ${%File path}" field="path">
         <f:textbox />
     </f:entry>
 </j:jelly>

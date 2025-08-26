@@ -9,7 +9,7 @@
   <div class="optionalBlock-container jenkins-form-item">
     <div class="form-container">
       <j:if test="${descriptor.canTakeOffline()}">
-        <f:entry title="${%Don't mark agents temporarily offline}" field="ignored">
+        <f:entry title="---Translate 564--- ${%Don't mark agents temporarily offline}" field="ignored">
           <f:checkbox checked="${instance.ignored}" />
         </f:entry>
       </j:if>

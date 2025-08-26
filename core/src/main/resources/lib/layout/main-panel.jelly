@@ -38,7 +38,7 @@ THE SOFTWARE.
                 ${app.getQuietDownReason()}
               </j:when>
               <j:otherwise>
-                ${%saferestart}
+                ---Translate 987--- ${%saferestart}
               </j:otherwise>
             </j:choose>
           </div>
@@ -50,7 +50,7 @@ THE SOFTWARE.
                 ${app.getQuietDownReason()}
               </j:when>
               <j:otherwise>
-                ${%shutdown}
+                ---Translate 987--- ${%shutdown}
               </j:otherwise>
             </j:choose>
           </div>

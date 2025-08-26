@@ -29,17 +29,17 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${it.displayName} ${%System Information}" permissions="${it.EXTENDED_READ_AND_CONNECT}">
+  <l:layout title="${it.displayName} ---Translate 611--- ${%System Information}" permissions="${it.EXTENDED_READ_AND_CONNECT}">
     <j:if test="${it.channel != null}">
       <l:header>
         <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
       </l:header>
     </j:if>
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%System Information}" />
+    <l:breadcrumb title="---Translate 611--- ${%System Information}" />
 
     <l:main-panel>
-      <l:app-bar title="${it.caption} ${%System Information}"/>
+      <l:app-bar title="${it.caption} ---Translate 611--- ${%System Information}"/>
 
       <j:choose>
         <j:when test="${it.channel != null}">
@@ -54,7 +54,7 @@ THE SOFTWARE.
           </j:forEach>
         </j:when>
         <j:otherwise>
-          ${%System Information is unavailable when agent is offline.}
+          ---Translate 611--- ${%System Information is unavailable when agent is offline.}
         </j:otherwise>
       </j:choose>
     </l:main-panel>

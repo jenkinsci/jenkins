@@ -29,9 +29,9 @@ THE SOFTWARE.
   </s:documentation>
 
   <div id="command-palette-i18n" class="i18n"
-       data-no-results-for="${%No results for}"
-       data-help="${%Help}"
-       data-get-help="${%Get help using Jenkins search}"
+       data-no-results-for="---Translate 1007--- ${%No results for}"
+       data-help="---Translate 1007--- ${%Help}"
+       data-get-help="---Translate 1007--- ${%Get help using Jenkins search}"
   />
 
   <dialog id="command-palette" class="jenkins-command-palette__dialog">

@@ -24,17 +24,17 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${%Rename}">
+  <l:layout title="---Translate 377--- ${%Rename}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Rename}" />
+    <l:breadcrumb title="---Translate 377--- ${%Rename}" />
     <l:main-panel>
-      <h1>${%DescribeRename(it.pronoun, it.name)}</h1>
+      <h1>---Translate 377--- ${%DescribeRename(it.pronoun, it.name)}</h1>
       <f:form method="post" action="confirmRename" name="config" tableClass="config-table scrollspy">
-        <f:entry title="${%NewName}">
+        <f:entry title="---Translate 377--- ${%NewName}">
           <f:textbox name="newName" value="${it.name}" autocomplete="on" checkUrl="checkNewName" checkDependsOn="newName"/>
         </f:entry>
         <f:bottomButtonBar>
-          <f:submit value="${%Rename}" />
+          <f:submit value="---Translate 377--- ${%Rename}" />
         </f:bottomButtonBar>
       </f:form>
       <st:adjunct includes="lib.form.confirm" />

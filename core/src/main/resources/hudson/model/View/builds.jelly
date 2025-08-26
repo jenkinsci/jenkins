@@ -27,12 +27,12 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Build History}" />
+    <l:breadcrumb title="---Translate 541--- ${%Build History}" />
     <l:main-panel>
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content">
           <h1>
-            ${%buildHistory(it.class.name=='hudson.model.AllView' ? app.displayName : it.displayName)}
+            ---Translate 541--- ${%buildHistory(it.class.name=='hudson.model.AllView' ? app.displayName : it.displayName)}
           </h1>
         </div>
       </div>

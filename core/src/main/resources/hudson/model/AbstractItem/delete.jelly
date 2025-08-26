@@ -30,11 +30,11 @@ THE SOFTWARE.
 	</st:documentation>
   <l:layout>
 		<st:include page="sidepanel.jelly" />
-		<l:breadcrumb title="${%Delete}" />
+		<l:breadcrumb title="---Translate 376--- ${%Delete}" />
 		<l:main-panel>
 		  <form method="post" action="doDelete">
-		    ${%blurb(it.pronoun, it.displayName)}
-        <f:submit value="${%Yes}" clazz="jenkins-!-destructive-color" />
+		    ---Translate 376--- ${%blurb(it.pronoun, it.displayName)}
+        <f:submit value="---Translate 376--- ${%Yes}" clazz="jenkins-!-destructive-color" />
 		  </form>
 		</l:main-panel>
 	</l:layout>

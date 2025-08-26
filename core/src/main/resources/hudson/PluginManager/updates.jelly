@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%Updates} - ${%Plugins}" permission="${app.SYSTEM_READ}">
+  <l:layout title="---Translate 333--- ${%Updates} - ---Translate 333--- ${%Plugins}" permission="${app.SYSTEM_READ}">
     <j:set var="list" value="${app.updateCenter.updates}" />
 
     <st:include page="sidepanel.jelly"/>
@@ -38,7 +38,7 @@ THE SOFTWARE.
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"
-                        placeholder="${%Search plugin updates}"
+                        placeholder="---Translate 333--- ${%Search plugin updates}"
                         id="filter-box"
                         autofocus="true"
                         value="${request2.getParameter('filter')}"
@@ -49,7 +49,7 @@ THE SOFTWARE.
             <j:if test="${!empty(list)}">
               <button id="button-update" form="form" type="submit" class="jenkins-button jenkins-button--primary" disabled="true">
                 <l:icon src="symbol-download" />
-                ${%Update}
+                ---Translate 333--- ${%Update}
               </button>
             </j:if>
           </l:isAdmin>
@@ -71,24 +71,24 @@ THE SOFTWARE.
                     <th data-sort-disable="true">
                       <l:rowSelectionController class="app-checkbox-install-plugin">
                         <j:if test="${app.updateCenter.hasIncompatibleUpdates(cache)}">
-                          <button tooltip="${%CompatibleTooltip}" type="button" data-select="compatible" class="jenkins-button jenkins-button--tertiary">
+                          <button tooltip="---Translate 333--- ${%CompatibleTooltip}" type="button" data-select="compatible" class="jenkins-button jenkins-button--tertiary">
                             <div class="jenkins-table__checkbox-dropdown__icon">
                               <l:icon src="symbol-compatible" />
                             </div>
-                            ${%Compatible}
+                            ---Translate 333--- ${%Compatible}
                           </button>
                         </j:if>
                       </l:rowSelectionController>
                     </th>
                   </l:isAdmin>
-                  <th initialSortDir="down">${%Name}</th>
-                  <th>${%Released}</th>
-                  <th>${%Installed}</th>
+                  <th initialSortDir="down">---Translate 333--- ${%Name}</th>
+                  <th>---Translate 333--- ${%Released}</th>
+                  <th>---Translate 333--- ${%Installed}</th>
                   <j:if test="${app.updateCenter.healthScoresAvailable}">
                     <th>
-                      <j:set var="healthTooltip">${%healthTooltip}</j:set>
+                      <j:set var="healthTooltip">---Translate 333--- ${%healthTooltip}</j:set>
                       <span data-html-tooltip="${healthTooltip}" data-tooltip-interactive="true">
-                        ${%Health}
+                        ---Translate 333--- ${%Health}
                       </span>
                     </th>
                   </j:if>
@@ -121,7 +121,7 @@ THE SOFTWARE.
                           <a href="${p.wiki}" class="jenkins-table__link" rel="noopener noreferrer" target="_blank">
                             <st:out value="${p.displayName}"/>
                             <span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">
-                              <span class="jenkins-visually-hidden">${%Version}</span>
+                              <span class="jenkins-visually-hidden">---Translate 333--- ${%Version}</span>
                               ${p.version}
                             </span>
                           </a>
@@ -144,9 +144,9 @@ THE SOFTWARE.
                           </div>
                         </j:if>
                         <j:if test="${!p.isCompatibleWithInstalledVersion()}">
-                          <div class="jenkins-alert jenkins-alert-danger">${%compatWarning}
+                          <div class="jenkins-alert jenkins-alert-danger">---Translate 333--- ${%compatWarning}
                             <j:if test="${p.hasIncompatibleParentPlugins()}">
-                              <br/>${%parentCompatWarning}
+                              <br/>---Translate 333--- ${%parentCompatWarning}
                               <ul>
                                 <j:forEach var="i" items="${p.getIncompatibleParentPlugins()}">
                                   <li>
@@ -161,16 +161,16 @@ THE SOFTWARE.
                           </div>
                         </j:if>
                         <j:if test="${p.isForNewerHudson()}">
-                          <div class="jenkins-alert jenkins-alert-danger">${%coreWarning(p.requiredCore)}</div>
+                          <div class="jenkins-alert jenkins-alert-danger">---Translate 333--- ${%coreWarning(p.requiredCore)}</div>
                         </j:if>
                         <j:if test="${p.fixesSecurityVulnerabilities()}">
                           <div class="jenkins-alert jenkins-alert-warning">
-                            ${%Applying this update will address security vulnerabilities in the currently installed version.}
+                            ---Translate 333--- ${%Applying this update will address security vulnerabilities in the currently installed version.}
                           </div>
                         </j:if>
                         <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion(cache)}">
-                          <div class="jenkins-alert jenkins-alert-danger">${%depCompatWarning}
-                            <br/>${%parentDepCompatWarning}
+                          <div class="jenkins-alert jenkins-alert-danger">---Translate 333--- ${%depCompatWarning}
+                            <br/>---Translate 333--- ${%parentDepCompatWarning}
                             <ul>
                               <j:forEach var="d"
                                          items="${p.getDependenciesIncompatibleWithInstalledVersion(cache)}">
@@ -186,11 +186,11 @@ THE SOFTWARE.
                         </j:if>
                         <j:if test="${p.isNeededDependenciesForNewerJenkins(cache)}">
                           <div class="jenkins-alert jenkins-alert-danger">
-                            ${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}
+                            ---Translate 333--- ${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}
                           </div>
                         </j:if>
                         <j:if test="${p.hasWarnings()}">
-                          <div class="jenkins-alert jenkins-alert-danger">${%securityWarning}
+                          <div class="jenkins-alert jenkins-alert-danger">---Translate 333--- ${%securityWarning}
                             <ul>
                               <j:forEach var="warning" items="${p.getWarnings()}">
                                 <li>
@@ -204,12 +204,12 @@ THE SOFTWARE.
                         </j:if>
                         <j:if test="${p.isDeprecated()}">
                           <div class="jenkins-alert jenkins-alert-warning">
-                            ${%deprecationWarning(p.getDeprecation().url)}
+                            ---Translate 333--- ${%deprecationWarning(p.getDeprecation().url)}
                           </div>
                         </j:if>
                         <j:if test="${it.hasAdoptThisPluginLabel(p)}">
                           <div class="jenkins-alert jenkins-alert-warning">
-                            ${%adoptThisPlugin}
+                            ---Translate 333--- ${%adoptThisPlugin}
                           </div>
                         </j:if>
                       </td>
@@ -217,7 +217,7 @@ THE SOFTWARE.
                         <j:if test="${p.releaseTimestamp != null}">
                           <time datetime="${h.iso8601DateTime(p.releaseTimestamp)}"
                                 tooltip="${h.localDate(p.releaseTimestamp)}">
-                            ${%ago(h.getTimeSpanString(p.releaseTimestamp))}
+                            ---Translate 333--- ${%ago(h.getTimeSpanString(p.releaseTimestamp))}
                           </time>
                         </j:if>
                       </td>
@@ -227,7 +227,7 @@ THE SOFTWARE.
                             <st:out value="${p.installed.version}"/>
                           </j:when>
                           <j:otherwise>
-                            <span title="${%Inactive}">
+                            <span title="---Translate 333--- ${%Inactive}">
                               (<st:out value="${p.installed.version}"/>)
                             </span>
                           </j:otherwise>
@@ -242,7 +242,7 @@ THE SOFTWARE.
                               </a>
                             </j:when>
                             <j:otherwise>
-                              <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="${%No health score available}"/>
+                              <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="---Translate 333--- ${%No health score available}"/>
                             </j:otherwise>
                           </j:choose>
                         </td>
@@ -252,7 +252,7 @@ THE SOFTWARE.
             </table>
           </j:when>
           <j:otherwise>
-            <l:notice icon="symbol-up-to-date" title="${%No updates available}" />
+            <l:notice icon="symbol-up-to-date" title="---Translate 333--- ${%No updates available}" />
           </j:otherwise>
         </j:choose>
         <d:invokeBody/>

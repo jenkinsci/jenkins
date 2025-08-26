@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="${%Case-sensitivity}">
-    <f:checkbox name="insensitiveSearch" checked="${instance.insensitiveSearch}" title="${%Insensitive search tool}"/>
+  <f:entry title="---Translate 572--- ${%Case-sensitivity}">
+    <f:checkbox name="insensitiveSearch" checked="${instance.insensitiveSearch}" title="---Translate 572--- ${%Insensitive search tool}"/>
   </f:entry>
 </j:jelly>

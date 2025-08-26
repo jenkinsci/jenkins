@@ -27,10 +27,10 @@ THE SOFTWARE.
     <l:header />
     <l:side-panel>
         <l:tasks>
-            <l:task contextMenu="false" href="." icon="symbol-computer" title="${%Status}"/>
+            <l:task contextMenu="false" href="." icon="symbol-computer" title="---Translate 617--- ${%Status}"/>
             <l:task href="configure" icon="symbol-settings"
                     title="${app.hasPermission(app.ADMINISTER) ? '%Configure' : '%View Configuration'}"/>
-            <l:delete permission="${app.ADMINISTER}" title="${%Delete Cloud}" message="${%delete.cloud(it.displayName)}"/>
+            <l:delete permission="${app.ADMINISTER}" title="---Translate 617--- ${%Delete Cloud}" message="---Translate 617--- ${%delete.cloud(it.displayName)}"/>
             <t:actions />
         </l:tasks>
         <j:forEach var="action" items="${it.allActions}">

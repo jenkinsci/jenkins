@@ -39,10 +39,10 @@ THE SOFTWARE.
   <j:set var="executor" value="${executor?:build.executor}" /> <!-- TODO use Executor.of -->
   <j:choose>
     <j:when test="${executor != null}">
-      <t:progressBar tooltip="${%text(executor.timestampString,executor.estimatedRemainingTime)}"
+      <t:progressBar tooltip="---Translate 941--- ${%text(executor.timestampString,executor.estimatedRemainingTime)}"
                      red="${executor.isLikelyStuck()}"
                      pos="${executor.progress}" href="${h.getConsoleUrl(build) ?: (rootURL + '/' + build.url + 'console')}"
-                     tooltipTemplate="${%text('%0','%1')}"
+                     tooltipTemplate="---Translate 941--- ${%text('%0','%1')}"
                      animate="${attrs.animate}"/>
     </j:when>
     <j:otherwise>

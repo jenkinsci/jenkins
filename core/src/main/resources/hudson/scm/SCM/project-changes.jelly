@@ -36,7 +36,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:choose>
     <j:when test="${empty(builds)}">
-      ${%No builds.}
+      ---Translate 570--- ${%No builds.}
     </j:when>
     <j:otherwise>
       <j:set var="hadChanges" value="${false}"/>
@@ -63,7 +63,7 @@ THE SOFTWARE.
                   </j:when>
                   <j:otherwise>
                     <!-- This anchor is meaningless if there is >1 ChangeLogSet/index.jelly for the build; an SCM should rather use an actual commit ID for the anchor: -->
-                    <a href="${b.number}/changes#detail${loop.index}">${%detail}</a>
+                    <a href="${b.number}/changes#detail${loop.index}">---Translate 570--- ${%detail}</a>
                   </j:otherwise>
                 </j:choose>
               </li>
@@ -72,7 +72,7 @@ THE SOFTWARE.
         </j:forEach>
       </j:forEach>
       <j:if test="${!hadChanges}">
-        ${%No changes in any of the builds.}
+        ---Translate 570--- ${%No changes in any of the builds.}
       </j:if>
     </j:otherwise>
   </j:choose>

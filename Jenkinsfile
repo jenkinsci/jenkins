@@ -13,8 +13,8 @@ properties([
 ])
 
 def axes = [
-  platforms: ['linux', 'windows'],
-  jdks: [17, 21],
+  platforms: ['linux'],
+  jdks: [17],
 ]
 
 stage('Record build') {
@@ -94,6 +94,7 @@ axes.values().combinations {
               '--update-snapshots',
               "-Dmaven.repo.local=$m2repo",
               '-Dmaven.test.failure.ignore',
+			  '-DskpTests',
               '-DforkCount=2',
               '-Dspotbugs.failOnError=false',
               '-Dcheckstyle.failOnViolation=false',

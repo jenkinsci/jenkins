@@ -27,7 +27,7 @@ THE SOFTWARE.
   <local:updates>
     <j:if test="${!empty(app.updateCenter.jobs)}">
       <div>
-        ${%UpdatePageLegend(rootURL+'/updateCenter/')}
+        ---Translate 336--- ${%UpdatePageLegend(rootURL+'/updateCenter/')}
       </div>
     </j:if>
   </local:updates>

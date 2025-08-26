@@ -3,13 +3,13 @@
 <l:ajax>
 <div>
   <p>
-    ${%para1}
+    ---Translate 627--- ${%para1}
   </p>
   <p>
-    ${%para2(rootURL)}
+    ---Translate 627--- ${%para2(rootURL)}
   </p>
   <p>
-    ${%para3}
+    ---Translate 627--- ${%para3}
   </p>
 </div>
 </l:ajax>

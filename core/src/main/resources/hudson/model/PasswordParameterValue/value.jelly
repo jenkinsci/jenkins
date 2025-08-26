@@ -29,6 +29,6 @@ THE SOFTWARE.
 	<j:set var="escapeEntryTitleAndDescription" value="false"/>
 	<j:set var="readOnlyMode" value="true"/>
 	<f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
-		<em>${%hidden}</em>
+		<em>---Translate 470--- ${%hidden}</em>
 	</f:entry>
 </j:jelly>

@@ -25,7 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div>
-    <l:icon src="symbol-status-nobuilt-anime" class="icon-md"/> ${%Installing}
+    <l:icon src="symbol-status-nobuilt-anime" class="icon-md"/> ---Translate 507--- ${%Installing}
   </div>
   <div style="padding-left: 32px">
     <t:progressBar pos="${it.percentage}" animate="true"/>

@@ -36,44 +36,44 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:set var="layout" value="${attrs.layout != null ? attrs.layout : 'two-column'}" />
-  <l:layout permission="${app.ADMINISTER}" title="${%scriptConsole}" type="${layout}">
+  <l:layout permission="${app.ADMINISTER}" title="---Translate 921--- ${%scriptConsole}" type="${layout}">
     <j:if test="${layout == 'two-column'}">
       <st:include page="sidepanel.jelly" />
     </j:if>
 
-    <l:breadcrumb title="${%scriptConsole}"/>
+    <l:breadcrumb title="---Translate 921--- ${%scriptConsole}"/>
     <l:main-panel>
-      <h1>${%scriptConsole}</h1>
+      <h1>---Translate 921--- ${%scriptConsole}</h1>
 
       <j:choose>
         <j:when test="${it.channel != null}">
           <p>
-            ${%description}
+            ---Translate 921--- ${%description}
           </p>
           <!-- this is where the example goes -->
           <d:invokeBody />
           <p>
-            ${%description2}
+            ---Translate 921--- ${%description2}
           </p>
 
           <form action="script" method="post">
             <textarea id="script" name="script" class="script">${request2.getParameter('script')}</textarea>
             <div align="right">
-              <f:submit  value="${%Run}"/>
+              <f:submit  value="---Translate 921--- ${%Run}"/>
             </div>
           </form>
           <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.groovy.groovy"/>
           <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
           <j:if test="${output!=null}">
             <h2>
-              ${%Result}
-              <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${output}"/>
+              ---Translate 921--- ${%Result}
+              <l:copyButton message="---Translate 921--- ${%successfullyCopied}" tooltip="---Translate 921--- ${%clickToCopy}" text="${output}"/>
             </h2>
             <pre><st:out value="${output}"/></pre>
           </j:if>
         </j:when>
         <j:otherwise>
-          ${%impossibleOffline}
+          ---Translate 921--- ${%impossibleOffline}
         </j:otherwise>
       </j:choose>
     </l:main-panel>

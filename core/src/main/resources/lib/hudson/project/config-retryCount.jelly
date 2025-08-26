@@ -25,9 +25,9 @@ THE SOFTWARE.
 <!-- custom retry count -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:optionalBlock name="hasCustomScmCheckoutRetryCount" title="${%Retry Count}" checked="${it.hasCustomScmCheckoutRetryCount()}"
+  <f:optionalBlock name="hasCustomScmCheckoutRetryCount" title="---Translate 904--- ${%Retry Count}" checked="${it.hasCustomScmCheckoutRetryCount()}"
       help="/help/project-config/scmCheckoutRetryCount.html" inline="true">
-    <f:entry title="${%SCM checkout retry count}">
+    <f:entry title="---Translate 904--- ${%SCM checkout retry count}">
       <f:number clazz="number" name="scmCheckoutRetryCount" value="${it.scmCheckoutRetryCount}" min="0" step="1"/>
     </f:entry>
   </f:optionalBlock>

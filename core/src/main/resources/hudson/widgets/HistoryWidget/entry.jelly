@@ -49,7 +49,7 @@ THE SOFTWARE.
         <span class="app-builds-container__item__time" time="${build.timestamp.time.time}">
           <j:set var="linkTitleAttr" value="${null}" />
           <j:if test="${!build.building}">
-            <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
+            <j:set var="linkTitleAttr">---Translate 690--- ${%Took} ${build.durationString}</j:set>
           </j:if>
           <div tooltip="${linkTitleAttr}" data-tooltip-append-to-parent="true">
             <i:formatDate value="${build.timestamp.time}" type="time" timeStyle="short" />
@@ -66,7 +66,7 @@ THE SOFTWARE.
 
           <!-- Check CANCEL permission for Project, Admin permission otherwise -->
           <j:if test="${empty(it.widget.owner.CANCEL) ? h.hasPermission(app.ADMINISTER) : it.widget.owner.hasPermission(it.widget.owner.CANCEL)}">
-            <l:stopButton href="${link}stop" alt="${%Cancel}" confirm="${%confirm(build.fullDisplayName)}" />
+            <l:stopButton href="${link}stop" alt="---Translate 690--- ${%Cancel}" confirm="---Translate 690--- ${%confirm(build.fullDisplayName)}" />
           </j:if>
         </j:if>
 

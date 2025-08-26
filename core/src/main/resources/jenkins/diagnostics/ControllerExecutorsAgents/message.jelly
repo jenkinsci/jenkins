@@ -26,10 +26,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="jenkins-alert jenkins-alert-warning">
      <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="yes" value="${%Manage}"/>
-      <f:submit name="no" value="${%Dismiss}"/>
+      <f:submit name="yes" value="---Translate 709--- ${%Manage}"/>
+      <f:submit name="no" value="---Translate 709--- ${%Dismiss}"/>
      </form>
 
-    ${%ExecutorsWarning}
+    ---Translate 709--- ${%ExecutorsWarning}
   </div>
 </j:jelly>

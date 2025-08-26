@@ -48,19 +48,19 @@ THE SOFTWARE.
       </button>
 
       <div class="jenkins-table__checkbox-dropdown">
-        <span>${%Select}</span>
+        <span>---Translate 994--- ${%Select}</span>
         <button type="button" data-select="all" class="jenkins-button jenkins-button--tertiary">
           <div class="jenkins-table__checkbox-dropdown__icon">
             <l:icon src="symbol-check" />
           </div>
-          ${%All}
+          ---Translate 994--- ${%All}
         </button>
         <j:out value="${contents}" />
         <button type="button" data-select="none" class="jenkins-button jenkins-button--tertiary">
           <div class="jenkins-table__checkbox-dropdown__icon">
             <l:icon src="symbol-close" />
           </div>
-          ${%None}
+          ---Translate 994--- ${%None}
         </button>
       </div>
     </j:if>

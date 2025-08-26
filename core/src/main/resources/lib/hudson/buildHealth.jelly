@@ -44,7 +44,7 @@ THE SOFTWARE.
             <thead>
               <tr>
                 <th class="jenkins-!-padding-left-0" align="center">W</th>
-                <th align="left">${%Description}</th>
+                <th align="left">---Translate 948--- ${%Description}</th>
                 <th align="right">%</th>
               </tr>
             </thead>

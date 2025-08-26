@@ -26,13 +26,13 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-    <f:entry title="${%Name}" help="/help/parameter/name.html">
+    <f:entry title="---Translate 408--- ${%Name}" help="/help/parameter/name.html">
 		<f:textbox name="parameter.name" value="${instance.name}" />
 	</f:entry>
-	<f:entry title="${%Choices}" help="/help/parameter/choice-choices.html">
+	<f:entry title="---Translate 408--- ${%Choices}" help="/help/parameter/choice-choices.html">
 		<f:textarea checkUrl="${rootURL}/descriptorByName/hudson.model.ChoiceParameterDefinition/checkChoices" checkDependsOn="" name="parameter.choices" value="${instance.choicesText}" />
 	</f:entry>
-    <f:entry title="${%Description}" help="/help/parameter/description.html">
+    <f:entry title="---Translate 408--- ${%Description}" help="/help/parameter/description.html">
         <f:textarea name="parameter.description" value="${instance.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription" />
     </f:entry>
 </j:jelly>

@@ -47,7 +47,7 @@ THE SOFTWARE.
 
       <div class="app-build__grid">
         <st:include page="console.jelly" from="${h.getConsoleProviderFor(it)}" optional="true" />
-        <l:card title="${%Details}">
+        <l:card title="---Translate 490--- ${%Details}">
           <div class="jenkins-card__details">
             <j:forEach var="group" items="${h.getDetailsFor(it)}" indexVar="index">
               <j:if test="${index gt 0}">
@@ -72,7 +72,7 @@ THE SOFTWARE.
         <l:card title="Summary">
           <div>
             <table>
-              <t:artifactList build="${it}" caption="${%Build Artifacts}"/>
+              <t:artifactList build="${it}" caption="---Translate 490--- ${%Build Artifacts}"/>
 
               <!-- give actions a chance to contribute summary item -->
               <j:forEach var="a" items="${it.allActions}">

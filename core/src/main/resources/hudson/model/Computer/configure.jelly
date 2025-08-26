@@ -28,17 +28,17 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${it.EXTENDED_READ}" title="${%title(it.displayName)}">
+  <l:layout permission="${it.EXTENDED_READ}" title="---Translate 417--- ${%title(it.displayName)}">
     <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
     <st:include page="sidepanel.jelly"/>
-    <l:breadcrumb title="${%Configure}" />
+    <l:breadcrumb title="---Translate 417--- ${%Configure}" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config" class="jenkins-form">
         <j:set var="instance" value="${it.node}" />
         <j:set var="descriptor" value="${instance.descriptor}" />
 
         <div class="jenkins-section">
-          <f:entry title="${%Name}" field="name">
+          <f:entry title="---Translate 417--- ${%Name}" field="name">
             <f:textbox value="${it.name}" /><!-- anomaly. instance[field] isn't what we want. -->
           </f:entry>
         </div>

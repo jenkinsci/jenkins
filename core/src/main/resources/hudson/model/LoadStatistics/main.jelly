@@ -27,29 +27,29 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <st:adjunct includes="hudson.model.LoadStatistics.resources"/>
   <h1>
-    ${%title(it.displayName)}
+    ---Translate 454--- ${%title(it.displayName)}
   </h1>
 
-  <f:entry title="${%Timespan}" class="jenkins-form-item--small">
+  <f:entry title="---Translate 454--- ${%Timespan}" class="jenkins-form-item--small">
     <div class="jenkins-select">
       <select id="timespan-select" class="jenkins-select__input">
-        <option value="sec10">${%Short}</option>
-        <option value="min" selected="true">${%Medium}</option>
-        <option value="hour">${%Long}</option>
+        <option value="sec10">---Translate 454--- ${%Short}</option>
+        <option value="min" selected="true">---Translate 454--- ${%Medium}</option>
+        <option value="hour">---Translate 454--- ${%Long}</option>
       </select>
     </div>
   </f:entry>
 
   <div class="js-load-graph"
        data-graph-type="${type}" data-graph-parent-selector="#main-panel"
-       data-graph-base-url="${prefix?:'loadStatistics'}" data-graph-alt="${%Load statistics graph}">
+       data-graph-base-url="${prefix?:'loadStatistics'}" data-graph-alt="---Translate 454--- ${%Load statistics graph}">
     <!-- The graph will be loaded dynamically by JS -->
   </div>
   <noscript>
     <!-- The noscript alternative does not have the possibility to adjust the image to the available space -->
-    <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" srcset="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300&amp;scale=2 2x" alt="[${%Load statistics graph}]" class="jenkins-graph-card" />
+    <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" srcset="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300&amp;scale=2 2x" alt="[---Translate 454--- ${%Load statistics graph}]" class="jenkins-graph-card" />
   </noscript>
   <p>
-    ${%blurb}
+    ---Translate 454--- ${%blurb}
   </p>
 </j:jelly>

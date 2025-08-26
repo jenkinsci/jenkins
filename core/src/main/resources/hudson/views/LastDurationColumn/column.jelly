@@ -31,7 +31,7 @@ THE SOFTWARE.
                   ${lBuild.durationString}
               </j:when>
               <j:otherwise>
-                  ${%N/A}
+                  ---Translate 672--- ${%N/A}
               </j:otherwise>
           </j:choose>
       </td>

@@ -31,8 +31,8 @@ THE SOFTWARE.
   <j:invokeStatic var="triggers" className="hudson.triggers.Trigger" method="for_">
     <j:arg value="${it}" type="hudson.model.Item" />
   </j:invokeStatic>
-  <f:descriptorList title="${%Triggers}"
-                    description="${%description}"
+  <f:descriptorList title="---Translate 901--- ${%Triggers}"
+                    description="---Translate 901--- ${%description}"
                     descriptors="${triggers}"
                     instances="${it.triggers}"
                     icon="symbol-trigger">

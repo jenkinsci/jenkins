@@ -26,9 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <div class="jenkins-alert jenkins-alert-danger">
   <dl>
-    <dt>${%blurb}</dt>
+    <dt>---Translate 352--- ${%blurb}</dt>
     <j:forEach var="d" items="${it.problems}">
-      <dd>${%problem(d, d.displayName, app.pluginManager.whichPlugin(d.getClass()))}</dd>
+      <dd>---Translate 352--- ${%problem(d, d.displayName, app.pluginManager.whichPlugin(d.getClass()))}</dd>
     </j:forEach>
   </dl>
 </div>

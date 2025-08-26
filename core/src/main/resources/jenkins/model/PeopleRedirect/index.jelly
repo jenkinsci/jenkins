@@ -1,20 +1,20 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <l:layout title="${%People}">
+    <l:layout title="---Translate 761--- ${%People}">
         <st:include page="sidepanel.jelly" it="${app}" />
         <st:statusCode value="404" />
-        <l:breadcrumb title="${%People}" />
+        <l:breadcrumb title="---Translate 761--- ${%People}" />
         <l:main-panel>
             <div class="jenkins-app-bar">
                 <div class="jenkins-app-bar__content">
                     <h1>
-                        ${%People}
+                        ---Translate 761--- ${%People}
                     </h1>
                 </div>
             </div>
 
             <div>
-                ${%blurb}
+                ---Translate 761--- ${%blurb}
             </div>
         </l:main-panel>
     </l:layout>

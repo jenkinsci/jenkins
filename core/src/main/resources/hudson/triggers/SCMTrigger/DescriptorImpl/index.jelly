@@ -24,14 +24,14 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%Current SCM Polling Activities}" permission="${app.ADMINISTER}">
+  <l:layout title="---Translate 641--- ${%Current SCM Polling Activities}" permission="${app.ADMINISTER}">
     <st:include it="${app}" page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>${%Current SCM Polling Activities}</h1>
+      <h1>---Translate 641--- ${%Current SCM Polling Activities}</h1>
 
       <j:if test="${it.isClogged()}">
         <div class="warning" style="margin:1em;">
-          ${%clogged}
+          ---Translate 641--- ${%clogged}
         </div>
       </j:if>
 
@@ -39,18 +39,18 @@ THE SOFTWARE.
       <j:choose>
         <j:when test="${empty(runners)}">
           <p>
-            ${%No polling activity is in progress.}
+            ---Translate 641--- ${%No polling activity is in progress.}
           </p>
         </j:when>
         <j:otherwise>
           <p>
-            ${%The following polling activities are currently in progress:}
+            ---Translate 641--- ${%The following polling activities are currently in progress:}
           </p>
           <table id="threads" class="jenkins-table sortable">
             <thead>
               <tr>
-                <th initialSortDir="down">${%Project}</th>
-                <th>${%Running for}</th>
+                <th initialSortDir="down">---Translate 641--- ${%Project}</th>
+                <th>---Translate 641--- ${%Running for}</th>
               </tr>
             </thead>
             <tbody>

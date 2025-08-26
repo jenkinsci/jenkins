@@ -27,10 +27,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" title="${%threadDump}" type="one-column">
-    <l:breadcrumb title="${%threadDump}" />
+  <l:layout permission="${app.ADMINISTER}" title="---Translate 731--- ${%threadDump}" type="one-column">
+    <l:breadcrumb title="---Translate 731--- ${%threadDump}" />
     <l:main-panel>
-      <h1>${%threadDumpTitle}</h1>
+      <h1>---Translate 731--- ${%threadDumpTitle}</h1>
       <j:set var="tdumps" value="${it.getAllThreadDumps()}"/>
 
       <j:forEach var="e" items="${tdumps.entrySet()}">
@@ -53,7 +53,7 @@ THE SOFTWARE.
         <j:forEach var="t" items="${e.value.entrySet()}">
           <h2>
             ${t.key}
-            <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${t.value}"/>
+            <l:copyButton message="---Translate 731--- ${%successfullyCopied}" tooltip="---Translate 731--- ${%clickToCopy}" text="${t.value}"/>
           </h2>
           <pre>${t.value}</pre>
         </j:forEach>

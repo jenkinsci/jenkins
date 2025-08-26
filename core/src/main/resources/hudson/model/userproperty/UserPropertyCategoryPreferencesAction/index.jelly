@@ -27,10 +27,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-    <l:layout permission="${app.ADMINISTER}" title="${%title}">
+    <l:layout permission="${app.ADMINISTER}" title="---Translate 393--- ${%title}">
         <st:include page="sidepanel.jelly" it="${it.targetUser}" />
         <l:main-panel>
-            <l:app-bar title="${%title}" />
+            <l:app-bar title="---Translate 393--- ${%title}" />
 
             <f:form method="post" action="configSubmit" name="config">
                 <j:set var="instance" value="${it}"/>
@@ -56,7 +56,7 @@ THE SOFTWARE.
                     </j:when>
                     <j:otherwise>
                         <div class="jenkins-alert jenkins-alert-info jenkins-form-item">
-                            ${%warningNoItems}
+                            ---Translate 393--- ${%warningNoItems}
                         </div>
                     </j:otherwise>
                 </j:choose>

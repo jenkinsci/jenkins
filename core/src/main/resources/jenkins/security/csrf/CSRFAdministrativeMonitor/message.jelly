@@ -25,16 +25,16 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <div class="jenkins-alert jenkins-alert-warning">
         <form method="post" action="${rootURL}/${it.url}/disable">
-            <f:submit value="${%Dismiss}"/>
+            <f:submit value="---Translate 795--- ${%Dismiss}"/>
         </form>
         <j:set var="referenceAnchor">
-            <a href="https://www.jenkins.io/redirect/csrf-protection" rel="noopener noreferrer" target="_blank">${%referenceUrlContent}</a>
+            <a href="https://www.jenkins.io/redirect/csrf-protection" rel="noopener noreferrer" target="_blank">---Translate 795--- ${%referenceUrlContent}</a>
         </j:set>
         <j:set var="actionAnchor">
-            <a href="${rootURL}/configureSecurity">${%actionUrlContent}</a>
+            <a href="${rootURL}/configureSecurity">---Translate 795--- ${%actionUrlContent}</a>
         </j:set>
-        <j:out value="${%warningMessage(referenceAnchor)}"/>
+        <j:out value="---Translate 795--- ${%warningMessage(referenceAnchor)}"/>
         <p />
-        <j:out value="${%actionMessage(actionAnchor)}"/>
+        <j:out value="---Translate 795--- ${%actionMessage(actionAnchor)}"/>
     </div>
 </j:jelly>

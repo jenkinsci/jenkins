@@ -68,7 +68,7 @@ THE SOFTWARE.
     <div class="jenkins-form-item jenkins-form-item--medium">
       <fieldset class="jenkins-fieldset">
         <legend class="jenkins-form-label">
-          ${%View type}
+          ---Translate 895--- ${%View type}
         </legend>
 
         <j:forEach var="descriptor" items="${descriptors}">
@@ -90,7 +90,7 @@ THE SOFTWARE.
             <div class="jenkins-radio__children">
               <j:set var="descriptor" value="${it.descriptor}" />
               <div class="jenkins-search">
-                <s:textbox placeholder="${%Type for suggestions}" clazz="jenkins-search__input copy-field" name="from" field="copyNewItemFrom" />
+                <s:textbox placeholder="---Translate 895--- ${%Type for suggestions}" clazz="jenkins-search__input copy-field" name="from" field="copyNewItemFrom" />
                 <div class="jenkins-search__icon">
                   <l:icon src="symbol-search" />
                 </div>
@@ -108,7 +108,7 @@ THE SOFTWARE.
        -->
       <input type="radio" name="mode" value="dummy1" style="display:none" />
       <input type="radio" name="mode" value="dummy2" style="display:none" />
-      <s:submit value="${%Create}" id="ok"  />
+      <s:submit value="---Translate 895--- ${%Create}" id="ok"  />
     </s:bottomButtonBar>
 
     <st:adjunct includes="lib.hudson.newFromList.validation" />

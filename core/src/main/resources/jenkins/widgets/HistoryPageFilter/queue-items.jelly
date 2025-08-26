@@ -31,7 +31,7 @@ THE SOFTWARE.
     <!-- pending build -->
     <j:set var="queuedItems" value="${it.queueItems}"/>
     <j:if test="${!queuedItems.isEmpty()}">
-        <span class="app-builds-container__heading">${%Pending}</span>
+        <span class="app-builds-container__heading">---Translate 807--- ${%Pending}</span>
         <j:forEach var="pageEntry" items="${queuedItems}">
             <j:set var="item" value="${pageEntry.entry}"/>
             <j:set var="id" value="${h.generateId()}"/>
@@ -52,7 +52,7 @@ THE SOFTWARE.
                             </div>
                         </j:if>
                         <j:if test="${item.hasCancelPermission()}">
-                            <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%Cancel}"/>
+                            <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="---Translate 807--- ${%Cancel}"/>
                         </j:if>
                     </div>
                 </div>

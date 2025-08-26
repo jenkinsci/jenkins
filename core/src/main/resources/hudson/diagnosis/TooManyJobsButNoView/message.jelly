@@ -27,10 +27,10 @@ THE SOFTWARE.
   <div id="tooManyJobsButNoView" class="jenkins-alert jenkins-alert-warning">
     <l:isAdmin>
       <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-        <f:submit name="yes" value="${%Create a view now}"/>
-        <f:submit name="no" value="${%Dismiss}"/>
+        <f:submit name="yes" value="---Translate 359--- ${%Create a view now}"/>
+        <f:submit name="no" value="---Translate 359--- ${%Dismiss}"/>
       </form>
     </l:isAdmin>
-    ${%blurb}
+    ---Translate 359--- ${%blurb}
   </div>
 </j:jelly>

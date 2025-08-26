@@ -36,7 +36,7 @@ THE SOFTWARE.
   <j:set var="b" value="${it[property]}"/>
   <j:if test="${b!=null}">
     <li>
-      <a href="${property}/" class="model-link inside">${%format(title,b.number,b.timestampString)}</a>
+      <a href="${property}/" class="model-link inside">---Translate 915--- ${%format(title,b.number,b.timestampString)}</a>
     </li>
   </j:if>
 </j:jelly>

@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-  ${%blurb}
+  ---Translate 606--- ${%blurb}
 </j:jelly>

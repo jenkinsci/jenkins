@@ -29,8 +29,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <!-- master/agent -->
   <j:if test="${app.labels.size() gt 1 || app.clouds.size() gt 0 || (it.assignedLabel!=null and it.assignedLabel!=app.selfLabel)}">
-    <f:optionalBlock name="hasSlaveAffinity" title="${%Restrict where this project can be run}" checked="${it.assignedLabel!=null}" field="slaveAffinity" inline="true">
-      <f:entry title="${%Label Expression}" field="label">
+    <f:optionalBlock name="hasSlaveAffinity" title="---Translate 912--- ${%Restrict where this project can be run}" checked="${it.assignedLabel!=null}" field="slaveAffinity" inline="true">
+      <f:entry title="---Translate 912--- ${%Label Expression}" field="label">
         <f:textbox autoCompleteDelimChar=" " value="${it.assignedLabelString}"/>
       </f:entry>
     </f:optionalBlock>

@@ -35,14 +35,14 @@ THE SOFTWARE.
       </l:app-bar>
 
       <div class="jenkins-page-description">
-        ${%description}
+        ---Translate 346--- ${%description}
       </div>
 
-      <f:section title="${%Getting started}">
+      <f:section title="---Translate 346--- ${%Getting started}">
         <ol class="jenkins-instructions">
           <li>
             <div class="jenkins-instructions__label">
-              ${%instruction1}
+              ---Translate 346--- ${%instruction1}
             </div>
             <a class="jenkins-button jenkins-button--primary" href="${rootURL}/jnlpJars/jenkins-cli.jar">
               <l:icon src="symbol-download" />
@@ -51,7 +51,7 @@ THE SOFTWARE.
           </li>
           <li>
             <p class="jenkins-instructions__label">
-              ${%instruction2}
+              ---Translate 346--- ${%instruction2}
             </p>
             <j:set var="commandArgs" value="help"/>
             <st:include page="example.jelly"/>
@@ -59,12 +59,12 @@ THE SOFTWARE.
         </ol>
       </f:section>
 
-      <f:section title="${%Available Commands}">
+      <f:section title="---Translate 346--- ${%Available Commands}">
         <table class="jenkins-table sortable">
           <thead>
             <tr>
-              <th initialSortDir="down">${%Name}</th>
-              <th>${%Description}</th>
+              <th initialSortDir="down">---Translate 346--- ${%Name}</th>
+              <th>---Translate 346--- ${%Description}</th>
             </tr>
           </thead>
           <tbody>

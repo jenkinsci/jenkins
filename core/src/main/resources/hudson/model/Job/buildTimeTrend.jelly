@@ -26,9 +26,9 @@ THE SOFTWARE.
 <!-- Displays the chart that show how long builds are taking -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:layout title="${%title(it.displayName)}">
+  <l:layout title="---Translate 445--- ${%title(it.displayName)}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Build Time Trend}" />
+    <l:breadcrumb title="---Translate 445--- ${%Build Time Trend}" />
     <st:adjunct includes="hudson.model.Job.buildTimeTrend_resources" />
     <l:main-panel>
       <template id="jenkins-build-status-icons">
@@ -47,7 +47,7 @@ THE SOFTWARE.
         <l:icon src="symbol-status-disabled-anime" id="disabled-anime" />
         <l:icon src="symbol-terminal" id="console" />
       </template>
-      <h1>${%Build Time Trend}</h1>
+      <h1>---Translate 445--- ${%Build Time Trend}</h1>
           <div id="buildTimeTrend">
             <div>
               <j:new var="handler" className="jenkins.widgets.BuildTimeTrend"/>
@@ -59,12 +59,12 @@ THE SOFTWARE.
                      data-show-agent="${showAgent}" data-icon-size-class="${iconSizeClass}">
                 <thead>
                   <tr>
-                    <th class="jenkins-table__cell--tight">${%S}</th>
-                    <th initialSortDir="up">${%Build}</th>
-                    <th>${%Time Since}</th>
-                    <th>${%Duration}</th>
+                    <th class="jenkins-table__cell--tight">---Translate 445--- ${%S}</th>
+                    <th initialSortDir="up">---Translate 445--- ${%Build}</th>
+                    <th>---Translate 445--- ${%Time Since}</th>
+                    <th>---Translate 445--- ${%Duration}</th>
                     <j:if test="${showAgent}">
-                      <th>${%Agent}</th>
+                      <th>---Translate 445--- ${%Agent}</th>
                     </j:if>
                     <th class="jenkins-table__cell--tight" data-sort-disable="true"></th>
                   </tr>
@@ -73,7 +73,7 @@ THE SOFTWARE.
               </table>
               <t:iconSize/>
             </div>
-            <img class="build-time-graph jenkins-graph-card" src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[${%Build time graph}]" />
+            <img class="build-time-graph jenkins-graph-card" src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[---Translate 445--- ${%Build time graph}]" />
           </div>
     </l:main-panel>
   </l:layout>

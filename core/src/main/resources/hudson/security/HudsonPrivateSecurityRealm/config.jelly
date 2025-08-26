@@ -25,14 +25,14 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <f:entry field="allowsSignup">
-    <f:checkbox default="false" title="${%Allow users to sign up}" />
+    <f:checkbox default="false" title="---Translate 582--- ${%Allow users to sign up}" />
   </f:entry>
   <j:if test="${size(h.captchaSupportDescriptors) gt 0}">
     <f:entry>
       <f:checkbox name="privateRealm.enableCaptcha" checked="${h.defaultToTrue(instance.isEnableCaptcha())}"
-        title="${%Enable captcha on sign up}" />
+        title="---Translate 582--- ${%Enable captcha on sign up}" />
     </f:entry>
-    <f:dropdownList name="privateRealm.captchaSupport" title="${%Captcha Support}">
+    <f:dropdownList name="privateRealm.captchaSupport" title="---Translate 582--- ${%Captcha Support}">
       <!-- Loop through available Captcha Support Descriptors -->
       <j:forEach var="descriptor" items="${h.captchaSupportDescriptors}" varStatus="loop">
         <f:dropdownListBlock title="${descriptor.displayName}" value="${loop.index}"

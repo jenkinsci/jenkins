@@ -26,21 +26,21 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout>
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Title}" />
+    <l:breadcrumb title="---Translate 736--- ${%Title}" />
     <l:main-panel>
-      <h1>${%Title}</h1>
+      <h1>---Translate 736--- ${%Title}</h1>
       <p>
-        ${%body}
+        ---Translate 736--- ${%body}
       </p>
       <p>
-        ${%For this feature to work, the following conditions need to be met:}
+        ---Translate 736--- ${%For this feature to work, the following conditions need to be met:}
       </p>
       <ol>
-        <li>${%The upstream project records the fingerprints of its build artifacts.}</li>
-        <li>${%The downstream project records the fingerprints of the upstream files it uses.}</li>
+        <li>---Translate 736--- ${%The upstream project records the fingerprints of its build artifacts.}</li>
+        <li>---Translate 736--- ${%The downstream project records the fingerprints of the upstream files it uses.}</li>
       </ol>
       <p>
-        ${%This allows Jenkins to correlate two projects.}
+        ---Translate 736--- ${%This allows Jenkins to correlate two projects.}
       </p>
     </l:main-panel>
   </l:layout>

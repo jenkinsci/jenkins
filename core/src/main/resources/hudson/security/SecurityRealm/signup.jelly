@@ -24,12 +24,12 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <st:statusCode value="404" />
-    <l:layout title="${%Signup not supported}">
+    <l:layout title="---Translate 586--- ${%Signup not supported}">
         <st:include page="sidepanel.jelly" from="${app}" it="${app}" />
-        <l:breadcrumb title="${%Signup}" />
+        <l:breadcrumb title="---Translate 586--- ${%Signup}" />
         <l:main-panel>
-            <h1>${%Sign up}</h1>
-            ${%This is not supported in the current configuration.}
+            <h1>---Translate 586--- ${%Sign up}</h1>
+            ---Translate 586--- ${%This is not supported in the current configuration.}
         </l:main-panel>
     </l:layout>
 </j:jelly>

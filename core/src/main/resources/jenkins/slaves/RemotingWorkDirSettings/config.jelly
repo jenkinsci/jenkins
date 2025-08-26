@@ -25,15 +25,15 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:entry field="disabled">
-    <f:checkbox title="${%Disable WorkDir}" />
+    <f:checkbox title="---Translate 803--- ${%Disable WorkDir}" />
   </f:entry>
-  <f:entry title="${%Custom WorkDir path}" field="workDirPath">
+  <f:entry title="---Translate 803--- ${%Custom WorkDir path}" field="workDirPath">
     <f:textbox/>
   </f:entry>
-  <f:entry title="${%Internal data directory}" field="internalDir">
+  <f:entry title="---Translate 803--- ${%Internal data directory}" field="internalDir">
     <f:textbox default="remoting"/>
   </f:entry>
   <f:entry field="failIfWorkDirIsMissing">
-    <f:checkbox title="${%Fail if workspace is missing}" />
+    <f:checkbox title="---Translate 803--- ${%Fail if workspace is missing}" />
   </f:entry>
 </j:jelly>

@@ -32,7 +32,7 @@ THE SOFTWARE.
   <j:forEach var="t" items="${it.getThreadDump().entrySet()}">
     <h2>
       ${t.key}
-      <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${t.value}"/>
+      <l:copyButton message="---Translate 802--- ${%successfullyCopied}" tooltip="---Translate 802--- ${%clickToCopy}" text="${t.value}"/>
     </h2>
     <pre>${t.value}</pre>
   </j:forEach>

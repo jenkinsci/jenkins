@@ -23,10 +23,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler" xmlns:t="/hudson/tools">
-    <f:entry title="${%Download URL for binary archive}" field="url">
+    <f:entry title="---Translate 636--- ${%Download URL for binary archive}" field="url">
         <f:textbox checkMethod="post"/>
     </f:entry>
-    <f:entry title="${%Subdirectory of extracted archive}" field="subdir">
+    <f:entry title="---Translate 636--- ${%Subdirectory of extracted archive}" field="subdir">
         <f:textbox/>
     </f:entry>
   <f:advanced>

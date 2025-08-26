@@ -25,130 +25,130 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <h2 class="jenkins-dialog__subtitle">${%Status}</h2>
+  <h2 class="jenkins-dialog__subtitle">---Translate 751--- ${%Status}</h2>
 
   <dl class="app-icon-legend">
     <dt>
       <l:icon src="symbol-status-blue" />
     </dt>
     <dd>
-      ${%blue}
+      ---Translate 751--- ${%blue}
     </dd>
 
     <dt>
       <l:icon src="symbol-status-blue-anime" />
     </dt>
     <dd>
-      ${%blue_anime}
+      ---Translate 751--- ${%blue_anime}
     </dd>
 
     <dt>
       <l:icon src="symbol-status-yellow" />
     </dt>
     <dd>
-      ${%yellow}
+      ---Translate 751--- ${%yellow}
     </dd>
 
     <dt>
       <l:icon src="symbol-status-yellow-anime" />
     </dt>
     <dd>
-      ${%yellow_anime}
+      ---Translate 751--- ${%yellow_anime}
     </dd>
 
     <dt>
       <l:icon src="symbol-status-red" />
     </dt>
     <dd>
-      ${%red}
+      ---Translate 751--- ${%red}
     </dd>
 
     <dt>
       <l:icon src="symbol-status-red-anime" />
     </dt>
     <dd>
-      ${%red_anime}
+      ---Translate 751--- ${%red_anime}
     </dd>
 
     <dt>
       <l:icon src="symbol-status-nobuilt" />
     </dt>
     <dd>
-      ${%lightgrey}
+      ---Translate 751--- ${%lightgrey}
     </dd>
 
     <dt>
       <l:icon src="symbol-status-nobuilt-anime" />
     </dt>
     <dd>
-      ${%lightgrey_anime}
+      ---Translate 751--- ${%lightgrey_anime}
     </dd>
 
     <dt>
       <l:icon src="symbol-status-aborted" />
     </dt>
     <dd>
-      ${%darkgrey}
+      ---Translate 751--- ${%darkgrey}
     </dd>
 
     <dt>
       <l:icon src="symbol-status-aborted-anime" />
     </dt>
     <dd>
-      ${%darkgrey_anime}
+      ---Translate 751--- ${%darkgrey_anime}
     </dd>
 
     <dt>
       <l:icon src="symbol-status-disabled" />
     </dt>
     <dd>
-      ${%grey}
+      ---Translate 751--- ${%grey}
     </dd>
 
     <dt>
       <l:icon src="symbol-status-disabled-anime" />
     </dt>
     <dd>
-      ${%grey_anime}
+      ---Translate 751--- ${%grey_anime}
     </dd>
   </dl>
 
-  <h2 class="jenkins-dialog__subtitle">${%Project Health}</h2>
+  <h2 class="jenkins-dialog__subtitle">---Translate 751--- ${%Project Health}</h2>
 
   <dl class="app-icon-legend">
     <dt>
       <l:icon src="symbol-weather-icon-health-80plus" />
     </dt>
     <dd>
-      ${%health-81plus}
+      ---Translate 751--- ${%health-81plus}
     </dd>
 
     <dt>
       <l:icon src="symbol-weather-icon-health-60to79" />
     </dt>
     <dd>
-      ${%health-61to80}
+      ---Translate 751--- ${%health-61to80}
     </dd>
 
     <dt>
       <l:icon src="symbol-weather-icon-health-40to59" />
     </dt>
     <dd>
-      ${%health-41to60}
+      ---Translate 751--- ${%health-41to60}
     </dd>
 
     <dt>
       <l:icon src="symbol-weather-icon-health-20to39" />
     </dt>
     <dd>
-      ${%health-21to40}
+      ---Translate 751--- ${%health-21to40}
     </dd>
 
     <dt>
       <l:icon src="symbol-weather-icon-health-00to19" />
     </dt>
     <dd>
-      ${%health-00to20}
+      ---Translate 751--- ${%health-00to20}
     </dd>
   </dl>
 </j:jelly>

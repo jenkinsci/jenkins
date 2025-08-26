@@ -29,10 +29,10 @@ THE SOFTWARE.
         <j:when test="${it.upstreamUrl!=null and app.getItemByFullName(it.upstreamProject)!=null}">
           <j:choose>
             <j:when test="${app.getItemByFullName(it.upstreamProject).getBuildByNumber(it.upstreamBuild)!=null}">
-              ${%started_by_project(app.getItemByFullName(it.upstreamProject).fullDisplayName,it.upstreamBuild.toString(),it.upstreamUrl,rootURL)}
+              ---Translate 401--- ${%started_by_project(app.getItemByFullName(it.upstreamProject).fullDisplayName,it.upstreamBuild.toString(),it.upstreamUrl,rootURL)}
             </j:when>
             <j:otherwise>
-              ${%started_by_project_with_deleted_build(app.getItemByFullName(it.upstreamProject).fullDisplayName,it.upstreamBuild.toString(),it.upstreamUrl,rootURL)}
+              ---Translate 401--- ${%started_by_project_with_deleted_build(app.getItemByFullName(it.upstreamProject).fullDisplayName,it.upstreamBuild.toString(),it.upstreamUrl,rootURL)}
             </j:otherwise>
           </j:choose>
         </j:when>
@@ -42,7 +42,7 @@ THE SOFTWARE.
       </j:choose>
 
         <j:if test="${!it.upstreamCauses.isEmpty()}">
-            <br />${%caused_by}
+            <br />---Translate 401--- ${%caused_by}
             <ul>
 	        <j:forEach var="c" items="${it.upstreamCauses}">
 	          <li><st:include page="description.jelly" it="${c}" /></li>

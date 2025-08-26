@@ -26,6 +26,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
     <!-- TODO: Should use permission attribute after JENKINS-18649 -->
     <j:if test="${it.hasPermission(it.CONFIGURE) or (it.parent.hasPermission(it.CREATE) and it.hasPermission(it.DELETE))}">
-      <l:task href="${h.getActionUrl(it.url, action)}" icon="symbol-edit" enabled="${it.nameEditable}" title="${%Rename}"/>
+      <l:task href="${h.getActionUrl(it.url, action)}" icon="symbol-edit" enabled="${it.nameEditable}" title="---Translate 774--- ${%Rename}"/>
     </j:if>
 </j:jelly>

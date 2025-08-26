@@ -29,9 +29,9 @@ THE SOFTWARE.
     <l:header title="Jenkins" />
     <l:side-panel />
     <l:main-panel>
-      <h1>${%Error}</h1>
+      <h1>---Translate 649--- ${%Error}</h1>
       <p>
-        ${%errorMessage}
+        ---Translate 649--- ${%errorMessage}
       </p>
       <pre>${h.printThrowable(it.cause)}</pre>
     </l:main-panel>

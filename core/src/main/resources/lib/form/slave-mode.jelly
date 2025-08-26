@@ -35,7 +35,7 @@ THE SOFTWARE.
       Node object.
     </st:attribute>
   </st:documentation>
-  <f:entry title="${%Usage}" help="/help/system-config/master-slave/usage.html">
+  <f:entry title="---Translate 843--- ${%Usage}" help="/help/system-config/master-slave/usage.html">
     <j:choose>
       <j:when test="${readOnlyMode}">
         <span>${node.mode}</span>

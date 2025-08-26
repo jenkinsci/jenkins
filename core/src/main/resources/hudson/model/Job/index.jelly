@@ -48,10 +48,10 @@ THE SOFTWARE.
       <j:if test="${(it.fullName!=it.fullDisplayName) and (it.class.name!='hudson.matrix.MatrixConfiguration')}"> <!-- TODO rather check for TopLevelItem (how to do this from Jelly?) -->
         <j:choose>
           <j:when test="${it.parent!=app}">
-            ${%Full project name}: ${it.fullName}
+            ---Translate 442--- ${%Full project name}: ${it.fullName}
           </j:when>
           <j:otherwise>
-            ${%Project name}: ${it.fullName}
+            ---Translate 442--- ${%Project name}: ${it.fullName}
           </j:otherwise>
         </j:choose>
       </j:if>

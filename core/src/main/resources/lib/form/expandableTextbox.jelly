@@ -80,7 +80,7 @@ THE SOFTWARE.
           </div>
           <div class="expanding-input__button">
             <button type="button" class="jenkins-button jenkins-!-margin-left-1"
-                    tooltip="${%tooltip}"><l:icon src="symbol-chevron-down"/></button>
+                    tooltip="---Translate 870--- ${%tooltip}"><l:icon src="symbol-chevron-down"/></button>
           </div>
         </div>
       </f:possibleReadOnlyField>

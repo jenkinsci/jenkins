@@ -37,7 +37,7 @@ THE SOFTWARE.
       ${valueStr}
     </j:when>
     <j:otherwise>
-      ${%built-in}
+      ---Translate 926--- ${%built-in}
     </j:otherwise>
   </j:choose>
 </j:jelly>

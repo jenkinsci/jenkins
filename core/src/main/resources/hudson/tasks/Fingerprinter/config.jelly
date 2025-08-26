@@ -23,18 +23,18 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="${%Files to fingerprint}" field="targets">
+  <f:entry title="---Translate 624--- ${%Files to fingerprint}" field="targets">
     <f:textbox/>
   </f:entry>
   <f:advanced>
-    <f:entry title="${%Excludes}" field="excludes">
+    <f:entry title="---Translate 624--- ${%Excludes}" field="excludes">
       <f:textbox />
     </f:entry>
     <f:entry field="defaultExcludes" >
-      <f:checkbox title="${%defaultExcludes}" default="true"/>
+      <f:checkbox title="---Translate 624--- ${%defaultExcludes}" default="true"/>
     </f:entry>
     <f:entry field="caseSensitive" >
-      <f:checkbox title="${%caseSensitive}" default="true"/>
+      <f:checkbox title="---Translate 624--- ${%caseSensitive}" default="true"/>
     </f:entry>
   </f:advanced>
 </j:jelly>

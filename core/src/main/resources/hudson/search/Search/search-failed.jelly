@@ -29,14 +29,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:set var="q" value="${request2.getParameter('q')}"/>
   <j:new var="h" className="hudson.Functions" /><!-- needed for printing title. -->
-  <l:layout title="${%Search for} '${q}'">
+  <l:layout title="---Translate 571--- ${%Search for} '${q}'">
     <l:main-panel>
-      <h1>${%Search for} '${q}'</h1>
+      <h1>---Translate 571--- ${%Search for} '${q}'</h1>
       <j:set var="items" value="${it.getSuggestions(request2,q)}"/>
       <j:choose>
         <j:when test="${items.size()==0}">
           <div class='error'>
-            ${%Nothing seems to match.}
+            ---Translate 571--- ${%Nothing seems to match.}
           </div>
         </j:when>
         <j:otherwise>

@@ -34,14 +34,14 @@ THE SOFTWARE.
           <div class="jenkins-table__cell__button-wrapper">
             <j:choose>
               <j:when test="${job.parameterized}">
-                <j:set var="title" value="${%Schedule_a_task_with_parameters(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
+                <j:set var="title" value="---Translate 665--- ${%Schedule_a_task_with_parameters(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
               </j:when>
               <j:otherwise>
                 <span class="build-button-column-icon-reference-holder" data-id="${id}" data-url="${href}"
-                      data-notification="${%Task_scheduled(it.taskNoun(job))}"
-                      data-failure="${%Task_schedule_failed(h.getRelativeDisplayNameFrom(job, itemGroup))}"
+                      data-notification="---Translate 665--- ${%Task_scheduled(it.taskNoun(job))}"
+                      data-failure="---Translate 665--- ${%Task_schedule_failed(h.getRelativeDisplayNameFrom(job, itemGroup))}"
                 />
-                <j:set var="title" value="${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
+                <j:set var="title" value="---Translate 665--- ${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
               </j:otherwise>
             </j:choose>
             <j:set var="isQueued" value="${app.queue.contains(job)}"/>

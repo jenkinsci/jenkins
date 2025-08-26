@@ -33,7 +33,7 @@ THE SOFTWARE.
                     <a href="${rootURL}/${it.url}artifact/">${caption != null ? caption : request2.getParameter('caption')}</a>
                     <j:if test="${it.building}">
                         <p>
-                            ${%building}
+                            ---Translate 488--- ${%building}
                         </p>
                     </j:if>
                     <j:if test="${size(artifacts) le it.LIST_CUTOFF}">
@@ -57,7 +57,7 @@ THE SOFTWARE.
                                             </a>
                                             <st:nbsp/>
                                         </j:if>
-                                        <a href="${rootURL}/${it.url}artifact/${f.href}/*view*/">${%view}</a>
+                                        <a href="${rootURL}/${it.url}artifact/${f.href}/*view*/">---Translate 488--- ${%view}</a>
                                     </td>
                                 </tr>
                             </j:forEach>

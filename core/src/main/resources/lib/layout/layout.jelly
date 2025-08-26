@@ -155,18 +155,18 @@ THE SOFTWARE.
   </head>
   <body id="jenkins" class="${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}"
         data-search-url="${rootURL + '/search/suggest'}"
-        data-search-help-url="${%searchBox.url}">
+        data-search-help-url="---Translate 976--- ${%searchBox.url}">
     <l:command-palette />
 
     <j:if test="${layoutType!='full-screen'}">
       <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
       <a href="#skip2content" class="jenkins-skip-link">Skip to content</a>
 
-      <l:pageHeader title="${%title}"
-                    logoAlt="${%jenkinshead.alt}"
-                    searchPlaceholder="${%search}"
-                    searchHelpUrl="${%searchBox.url}"
-                    logout="${%logout}"/>
+      <l:pageHeader title="---Translate 976--- ${%title}"
+                    logoAlt="---Translate 976--- ${%jenkinshead.alt}"
+                    searchPlaceholder="---Translate 976--- ${%search}"
+                    searchHelpUrl="---Translate 976--- ${%searchBox.url}"
+                    logout="---Translate 976--- ${%logout}"/>
     </j:if>
 
     <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">
@@ -202,15 +202,15 @@ THE SOFTWARE.
                               tooltip="${null}">
               <l:hasPermission permission="${app.SYSTEM_READ}">
                 <dd:item icon="symbol-jenkins"
-                        text="${%About Jenkins}"
+                        text="---Translate 976--- ${%About Jenkins}"
                          href="${rootURL}/manage/about" />
                 <dd:separator />
               </l:hasPermission>
               <dd:item icon="symbol-heart"
-                       text="${%Get involved}"
+                       text="---Translate 976--- ${%Get involved}"
                        href="https://www.jenkins.io/participate/" />
               <dd:item icon="symbol-external"
-                       text="${%Website}"
+                       text="---Translate 976--- ${%Website}"
                        href="${h.getFooterURL()}" />
             </l:overflowButton>
           </div>

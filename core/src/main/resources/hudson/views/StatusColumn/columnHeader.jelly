@@ -24,5 +24,5 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-    <th class="jenkins-table__cell--tight" tooltip="${%Status of the last build}">${%S}</th>
+    <th class="jenkins-table__cell--tight" tooltip="---Translate 684--- ${%Status of the last build}">---Translate 684--- ${%S}</th>
 </j:jelly>

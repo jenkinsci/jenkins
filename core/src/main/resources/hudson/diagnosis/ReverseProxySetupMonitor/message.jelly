@@ -26,13 +26,13 @@ THE SOFTWARE.
   <div id="redirect-error" class="jenkins-alert jenkins-alert-danger reverse-proxy__hidden"
        data-url="${rootURL}/${it.url}/test" data-context="${rootURL}">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="yes" value="${%More Info}"/>
+      <f:submit name="yes" value="---Translate 356--- ${%More Info}"/>
       <l:isAdmin>
-        <f:submit name="no" value="${%Dismiss}"/>
+        <f:submit name="no" value="---Translate 356--- ${%Dismiss}"/>
       </l:isAdmin>
     </form>
-    <div>${%blurb}</div>
-    <div class="js-context-message reverse-proxy__hidden">${%missingContextMessage(rootURL)}</div>
+    <div>---Translate 356--- ${%blurb}</div>
+    <div class="js-context-message reverse-proxy__hidden">---Translate 356--- ${%missingContextMessage(rootURL)}</div>
   </div>
   <st:adjunct includes="hudson.diagnosis.ReverseProxySetupMonitor.resources"/>
 </j:jelly>

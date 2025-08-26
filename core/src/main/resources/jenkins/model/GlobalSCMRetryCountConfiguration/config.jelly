@@ -20,7 +20,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:entry title="${%SCM checkout retry count}" field="scmCheckoutRetryCount">
+    <f:entry title="---Translate 723--- ${%SCM checkout retry count}" field="scmCheckoutRetryCount">
         <f:number min="0" clazz="number" step="1"/>
     </f:entry>
 </j:jelly>

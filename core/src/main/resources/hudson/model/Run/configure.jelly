@@ -26,16 +26,16 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} Config">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Edit Build Information}" />
+    <l:breadcrumb title="---Translate 485--- ${%Edit Build Information}" />
     <l:main-panel>
-      <l:app-bar title="${%Edit Build Information}" />
+      <l:app-bar title="---Translate 485--- ${%Edit Build Information}" />
       <l:skeleton />
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="readOnlyMode" value="${!h.hasPermission(it,it.UPDATE)}"/>
-        <f:entry title="${%DisplayName}" help="/help/run-config/displayName.html">
+        <f:entry title="---Translate 485--- ${%DisplayName}" help="/help/run-config/displayName.html">
           <f:textbox name="displayName" value="${it.hasCustomDisplayName()?it.displayName:''}"/>
         </f:entry>
-        <f:entry title="${%Description}" help="/help/run-config/description.html">
+        <f:entry title="---Translate 485--- ${%Description}" help="/help/run-config/description.html">
           <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
         <f:saveApplyBar/>

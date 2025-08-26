@@ -27,11 +27,11 @@ THE SOFTWARE.
     <div class="jenkins-select">
         <select class="jenkins-select__input" name="[${it.flagKey}]">
             <f:option selected="${flagValue == null}" value="">
-                <j:if test="${it.getDefaultValue() == true}">${%Default_True}</j:if>
-                <j:if test="${it.getDefaultValue() == false}">${%Default_False}</j:if>
+                <j:if test="${it.getDefaultValue() == true}">---Translate 770--- ${%Default_True}</j:if>
+                <j:if test="${it.getDefaultValue() == false}">---Translate 770--- ${%Default_False}</j:if>
             </f:option>
-            <f:option selected="${flagValue == true}" value="true">${%True}</f:option>
-            <f:option selected="${flagValue == false}" value="false">${%False}</f:option>
+            <f:option selected="${flagValue == true}" value="true">---Translate 770--- ${%True}</f:option>
+            <f:option selected="${flagValue == false}" value="false">---Translate 770--- ${%False}</f:option>
         </select>
     </div>
 </j:jelly>

@@ -30,7 +30,7 @@ THE SOFTWARE.
       <l:tab name="${v.displayName}" active="${v==currentView}" href="${rootURL}/${v.url}" />
     </j:forEach>
     <j:if test="${currentView.hasPermission(currentView.CREATE)}">
-      <l:tabNewItem href="${rootURL}/${currentView.owner.url}newView" title="${%New View}" />
+      <l:tabNewItem href="${rootURL}/${currentView.owner.url}newView" title="---Translate 666--- ${%New View}" />
     </j:if>
   </l:tabBar>
 </j:jelly>

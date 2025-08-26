@@ -38,7 +38,7 @@ THE SOFTWARE.
       </t:summary>
     </j:forEach>
 
-    <t:artifactList build="${it.lastSuccessfulBuild}" caption="${%Last Successful Artifacts}"/>
+    <t:artifactList build="${it.lastSuccessfulBuild}" caption="---Translate 384--- ${%Last Successful Artifacts}"/>
   </table>
 
   <!-- merge fragments from the actions -->

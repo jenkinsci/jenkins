@@ -29,35 +29,35 @@ THE SOFTWARE.
     <!-- TODO: st:include page="sidepanel.jelly" /-->
     <l:main-panel>
       <h1>
-        ${%JVM Memory Usage}
+        ---Translate 350--- ${%JVM Memory Usage}
       </h1>
       <j:set var="type" value="${request2.getParameter('type') ?: 'min'}" />
       <div>
-        ${%Timespan}:
+        ---Translate 350--- ${%Timespan}:
         <j:choose>
           <j:when test="${type != 'sec10'}">
-            <a href="?type=sec10">${%Short}</a>
+            <a href="?type=sec10">---Translate 350--- ${%Short}</a>
           </j:when>
           <j:otherwise>
-            ${%Short}
+            ---Translate 350--- ${%Short}
           </j:otherwise>
         </j:choose>
         <st:nbsp />
         <j:choose>
           <j:when test="${type != 'min'}">
-            <a href="?type=min">${%Medium}</a>
+            <a href="?type=min">---Translate 350--- ${%Medium}</a>
           </j:when>
           <j:otherwise>
-            ${%Medium}
+            ---Translate 350--- ${%Medium}
           </j:otherwise>
         </j:choose>
         <st:nbsp />
         <j:choose>
           <j:when test="${type != 'hour'}">
-            <a href="?type=hour">${%Long}</a>
+            <a href="?type=hour">---Translate 350--- ${%Long}</a>
           </j:when>
           <j:otherwise>
-            ${%Long}
+            ---Translate 350--- ${%Long}
           </j:otherwise>
         </j:choose>
       </div>

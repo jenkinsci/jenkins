@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="jenkins-alert jenkins-alert-danger">
     <dl>
-        <dt>${%RequiredPluginUpdates}</dt>
+        <dt>---Translate 329--- ${%RequiredPluginUpdates}</dt>
         <j:forEach var="p" items="${it.pluginsToBeUpdated}">
         <dd><j:out value="${p.pluginName}"/> — <j:out value="${p.message}"/></dd>
       </j:forEach>

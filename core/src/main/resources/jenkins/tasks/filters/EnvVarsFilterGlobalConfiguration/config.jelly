@@ -26,14 +26,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <j:if test="${instance.allGlobalRules.size() gt 0}">
         <!-- hide this configuration when there are no descriptors -->
-        <f:section title="${%jobEnvironmentVariableFilters}">
-            <f:advanced title="${%showGlobalRules}">
-                <f:entry title="${%globalRules}">
+        <f:section title="---Translate 821--- ${%jobEnvironmentVariableFilters}">
+            <f:advanced title="---Translate 821--- ${%showGlobalRules}">
+                <f:entry title="---Translate 821--- ${%globalRules}">
                     <f:hetero-list name="rules"
                                    hasHeader="true"
                                    descriptors="${instance.allGlobalRules}"
                                    items="${instance.allActivatedGlobalRules}"
-                                   addCaption="${%addRule}"/>
+                                   addCaption="---Translate 821--- ${%addRule}"/>
                 </f:entry>
             </f:advanced>
         </f:section>

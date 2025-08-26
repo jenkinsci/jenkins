@@ -32,16 +32,16 @@ THE SOFTWARE.
   <j:if test="${app.useSecurity}">
     <f:optionalBlock name="pseudoRemoteTrigger"
         help="/help/project-config/triggerRemotely.html"
-        title="${%Trigger builds remotely} (${%e.g., from scripts})"
+        title="---Translate 400--- ${%Trigger builds remotely} (---Translate 400--- ${%e.g., from scripts})"
         checked="${it.authToken!=null}">
-      <f:entry title="${%Authentication Token}">
+      <f:entry title="---Translate 400--- ${%Authentication Token}">
         <f:textbox name="authToken" value="${it.authToken.token}" />
-        ${%Use the following URL to trigger build remotely:}
+        ---Translate 400--- ${%Use the following URL to trigger build remotely:}
         <code>JENKINS_URL</code>/${it.url}build?token=<code>TOKEN_NAME</code>
-        ${%or}
+        ---Translate 400--- ${%or}
         /buildWithParameters?token=<code>TOKEN_NAME</code>
         <br/>
-        ${%Optionally append &lt;tt>&amp;cause=Cause+Text&lt;/tt> to provide text that will be included in the recorded build cause.}
+        ---Translate 400--- ${%Optionally append &lt;tt>&amp;cause=Cause+Text&lt;/tt> to provide text that will be included in the recorded build cause.}
       </f:entry>
   </f:optionalBlock>
   </j:if>

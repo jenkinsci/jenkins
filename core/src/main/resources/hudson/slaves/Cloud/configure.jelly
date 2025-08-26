@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout permission="${app.SYSTEM_READ}" title="${%title(it.name)}">
+  <l:layout permission="${app.SYSTEM_READ}" title="---Translate 619--- ${%title(it.name)}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
     <st:include page="sidepanel.jelly"/>
-    <l:breadcrumb title="${%Configure}"/>
+    <l:breadcrumb title="---Translate 619--- ${%Configure}"/>
     <l:main-panel>
-      <h1>${%title(it.name)}</h1>
+      <h1>---Translate 619--- ${%title(it.name)}</h1>
       <f:form method="post" action="configSubmit" name="config" class="jenkins-form">
         <j:set var="instance" value="${it}"/>
         <j:set var="descriptor" value="${instance.descriptor}"/>

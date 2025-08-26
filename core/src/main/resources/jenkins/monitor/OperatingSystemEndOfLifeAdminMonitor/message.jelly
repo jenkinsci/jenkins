@@ -27,18 +27,18 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
     <div class="jenkins-alert jenkins-alert-danger">
         <form id="${it.id}" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-            <f:submit name="yes" value="${%More Info}"/>
+            <f:submit name="yes" value="---Translate 827--- ${%More Info}"/>
             <l:isAdmin>
-                <f:submit value="${%Ignore}" name="no"/>
+                <f:submit value="---Translate 827--- ${%Ignore}" name="no"/>
             </l:isAdmin>
         </form>
         <h2 class="h3">${it.displayName}</h2>
         <j:choose>
             <j:when test="${it.afterEndOfLifeDate}">
-                ${%Past_End_of_Life(it.operatingSystemName, it.endOfLifeDate, it.documentationUrl)}
+                ---Translate 827--- ${%Past_End_of_Life(it.operatingSystemName, it.endOfLifeDate, it.documentationUrl)}
             </j:when>
             <j:otherwise>
-                ${%Upcoming_End_of_Life(it.operatingSystemName, it.endOfLifeDate, it.documentationUrl)}
+                ---Translate 827--- ${%Upcoming_End_of_Life(it.operatingSystemName, it.endOfLifeDate, it.documentationUrl)}
             </j:otherwise>
         </j:choose>
     </div>

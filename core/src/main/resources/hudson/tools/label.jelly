@@ -27,7 +27,7 @@ THE SOFTWARE.
         Puts the input field for allowing an user to limit this installer to a certain label.
         Meant to be used from config.jelly of ToolInstaller subtypes. 
     </st:documentation>
-    <f:entry title="${%Label}" field="label" help="/help/tools/help-label.html">
+    <f:entry title="---Translate 637--- ${%Label}" field="label" help="/help/tools/help-label.html">
         <!-- TODO could use Hudson.getLabels and make a combo box -->
         <f:textbox/>
     </f:entry>

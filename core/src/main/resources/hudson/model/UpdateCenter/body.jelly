@@ -39,13 +39,13 @@ THE SOFTWARE.
     <div id="scheduleRestartBlock" style="padding-top:2em">
       <form method="post" id="scheduleRestart" action="">
         <p class="info" style="font-weight: normal">
-          <a href="${rootURL}/">${%Go back to the top page}</a> <br/>
-          (${%you can start using the installed plugins right away}) <!-- leave this text in for a while until users are retrained to expect plugins to work right away without restart -->
+          <a href="${rootURL}/">---Translate 526--- ${%Go back to the top page}</a> <br/>
+          (---Translate 526--- ${%you can start using the installed plugins right away}) <!-- leave this text in for a while until users are retrained to expect plugins to work right away without restart -->
         </p>
         <l:isAdmin>
           <j:if test="${app.lifecycle.canRestart()}">
             <p class="info">
-              <f:checkbox checked="${app.isQuietingDown() or it.isRestartScheduled()}" id="scheduleRestartCheckbox" name="scheduleRestart" title="${%warning}" />
+              <f:checkbox checked="${app.isQuietingDown() or it.isRestartScheduled()}" id="scheduleRestartCheckbox" name="scheduleRestart" title="---Translate 526--- ${%warning}" />
             </p>
           </j:if>
         </l:isAdmin>

@@ -45,9 +45,9 @@ THE SOFTWARE.
       </button>
 
       <j:set var="id" value="${h.generateId()}"/>
-      <span class="jenkins-edited-section-label jenkins-hidden" id="${id}" tooltip="${%customizedFields}">
+      <span class="jenkins-edited-section-label jenkins-hidden" id="${id}" tooltip="---Translate 891--- ${%customizedFields}">
         <l:icon src="symbol-edit" />
-        ${%Edited}
+        ---Translate 891--- ${%Edited}
       </span>
     </div>
 

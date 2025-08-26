@@ -44,7 +44,7 @@
         <j:invokeStatic className="java.time.LocalDate" method="now" var="now"/>
         <j:choose>
             <j:when test="${!anyTrialActive}">
-                <p>${%There are currently no active trials.}</p>
+                <p>---Translate 530--- ${%There are currently no active trials.}</p>
             </j:when>
             <j:otherwise>
                 <p>

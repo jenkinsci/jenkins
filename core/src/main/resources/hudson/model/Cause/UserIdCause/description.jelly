@@ -25,10 +25,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <j:choose>
       <j:when test="${it.userId != null}" >
-        <span>${%started_by_user(it.userUrl, it.userName, rootURL)}</span>
+        <span>---Translate 403--- ${%started_by_user(it.userUrl, it.userName, rootURL)}</span>
       </j:when>
       <j:otherwise>
-        <span>${%started_by_anonymous}</span>
+        <span>---Translate 403--- ${%started_by_anonymous}</span>
       </j:otherwise>
     </j:choose>  
 </j:jelly>

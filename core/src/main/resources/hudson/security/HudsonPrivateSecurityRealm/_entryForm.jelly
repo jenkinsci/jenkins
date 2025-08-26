@@ -48,7 +48,7 @@ THE SOFTWARE.
   <div class="form-content">
     <table>
       <tr>
-        <f:entry title="${%Username}" class="${data.errors.containsKey('username') ? 'jenkins-!-margin-bottom-2' : ''}">
+        <f:entry title="---Translate 585--- ${%Username}" class="${data.errors.containsKey('username') ? 'jenkins-!-margin-bottom-2' : ''}">
           <input class="jenkins-input" type="text" name="username" id="username" value="${data.username}" autofocus="autofocus" />
         </f:entry>
         <j:if test="${data.errors.containsKey('username')}">
@@ -58,7 +58,7 @@ THE SOFTWARE.
         </j:if>
       </tr>
       <tr>
-        <f:entry title="${%Password}" class="${data.errors.containsKey('password1') ? 'jenkins-!-margin-bottom-2' : ''}">
+        <f:entry title="---Translate 585--- ${%Password}" class="${data.errors.containsKey('password1') ? 'jenkins-!-margin-bottom-2' : ''}">
           <input class="jenkins-input" type="password" name="password1" value="${data.password1}" />
         </f:entry>
         <j:if test="${data.errors.containsKey('password1')}">
@@ -68,7 +68,7 @@ THE SOFTWARE.
         </j:if>
       </tr>
       <tr>
-        <f:entry title="${%Confirm password}" class="${data.errors.containsKey('password1') ? 'jenkins-!-margin-bottom-2' : ''}">
+        <f:entry title="---Translate 585--- ${%Confirm password}" class="${data.errors.containsKey('password1') ? 'jenkins-!-margin-bottom-2' : ''}">
           <input class="jenkins-input" type="password" name="password2" value="${data.password2}" />
         </f:entry>
         <j:if test="${data.errors.containsKey('password1')}">
@@ -78,7 +78,7 @@ THE SOFTWARE.
         </j:if>
       </tr>
       <tr>
-        <f:entry title="${%Full name}" class="${data.errors.containsKey('fullname') ? 'jenkins-!-margin-bottom-2' : ''}">
+        <f:entry title="---Translate 585--- ${%Full name}" class="${data.errors.containsKey('fullname') ? 'jenkins-!-margin-bottom-2' : ''}">
           <input class="jenkins-input" type="text" name="fullname" value="${data.fullname}" />
         </f:entry>
         <j:if test="${data.errors.containsKey('fullname')}">
@@ -89,7 +89,7 @@ THE SOFTWARE.
       </tr>
       <j:if test="${it.mailerPluginPresent}">
         <tr>
-          <f:entry title="${%E-mail address}" class="${data.errors.containsKey('email') ? 'jenkins-!-margin-bottom-2' : ''}">
+          <f:entry title="---Translate 585--- ${%E-mail address}" class="${data.errors.containsKey('email') ? 'jenkins-!-margin-bottom-2' : ''}">
             <input class="jenkins-input" type="text" name="email" value="${data.email}" />
           </f:entry>
           <j:if test="${data.errors.containsKey('email')}">
@@ -101,10 +101,10 @@ THE SOFTWARE.
       </j:if>
       <j:if test="${captcha}">
         <tr>
-          <td>${%Enter text as shown}:</td>
+          <td>---Translate 585--- ${%Enter text as shown}:</td>
           <td>
             <input class="jenkins-input" type="text" name="captcha" autocomplete="off" /><br />
-            <img src="${rootURL}/securityRealm/captcha" alt="[${%captcha}]" />
+            <img src="${rootURL}/securityRealm/captcha" alt="[---Translate 585--- ${%captcha}]" />
           </td>
         </tr>
       </j:if>

@@ -29,17 +29,17 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%title(it.displayName)}">
+  <l:layout title="---Translate 610--- ${%title(it.displayName)}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Thread Dump}" />
+    <l:breadcrumb title="---Translate 610--- ${%Thread Dump}" />
 
     <l:main-panel>
       <l:isAdmin>
-        <h1>${%Thread Dump}</h1>
+        <h1>---Translate 610--- ${%Thread Dump}</h1>
         <j:forEach var="t" items="${it.getThreadDump().entrySet()}">
           <h2>
             ${t.key}
-            <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${t.value}"/>
+            <l:copyButton message="---Translate 610--- ${%successfullyCopied}" tooltip="---Translate 610--- ${%clickToCopy}" text="${t.value}"/>
           </h2>
           <pre>${t.value}</pre>
         </j:forEach>

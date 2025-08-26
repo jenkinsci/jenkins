@@ -35,7 +35,7 @@ THE SOFTWARE.
                 <j:set var="copy_java_cmd_secret_unix" value="java -jar agent.jar -url ${jenkinsURL} -secret ${it.jnlpMac} ${it.launcher.getRemotingOptionsUnix(it)}${it.launcher.getWorkDirOptions(it)}" />
                 <j:set var="copy_java_cmd_secret_windows" value="java -jar agent.jar -url ${jenkinsURL} -secret ${it.jnlpMac} ${it.launcher.getRemotingOptionsWindows(it)}${it.launcher.getWorkDirOptions(it)}" />
                 <h3>
-                  ${%slaveAgent.cli.run} (Unix)
+                  ---Translate 598--- ${%slaveAgent.cli.run} (Unix)
                   <l:copyButton text="${copy_agent_jar_unix};${copy_java_cmd_secret_unix}"/>
                 </h3>
                 <!-- TODO conceal secret w/ JS if possible -->
@@ -45,7 +45,7 @@ ${copy_java_cmd_secret_unix}
 </pre>
 
                 <h3>
-                  ${%slaveAgent.cli.run} (Windows)
+                  ---Translate 598--- ${%slaveAgent.cli.run} (Windows)
                   <l:copyButton text="${copy_agent_jar_windows} &amp; ${copy_java_cmd_secret_windows}"/>
                 </h3>
                 <!-- TODO conceal secret w/ JS if possible -->
@@ -58,7 +58,7 @@ ${copy_java_cmd_secret_windows}
                 <j:set var="copy_java_cmd_secret2_unix" value="java -jar agent.jar -url ${jenkinsURL} -secret @secret-file ${it.launcher.getRemotingOptionsUnix(it)}${it.launcher.getWorkDirOptions(it)}" />
                 <j:set var="copy_java_cmd_secret2_windows" value="java -jar agent.jar -url ${jenkinsURL} -secret @secret-file ${it.launcher.getRemotingOptionsWindows(it)}${it.launcher.getWorkDirOptions(it)}" />
                 <h3>
-                  ${%slaveAgent.cli.run.secret} (Unix)
+                  ---Translate 598--- ${%slaveAgent.cli.run.secret} (Unix)
                   <l:copyButton text="${copy_secret_to_file_unix};${copy_agent_jar_unix};${copy_java_cmd_secret2_unix}"/>
                 </h3>
 <pre>
@@ -68,7 +68,7 @@ ${copy_java_cmd_secret2_unix}
 </pre>
 
                 <h3>
-                  ${%slaveAgent.cli.run.secret} (Windows)
+                  ---Translate 598--- ${%slaveAgent.cli.run.secret} (Windows)
                   <l:copyButton text="${copy_secret_to_file_windows} &amp; ${copy_agent_jar_windows} &amp; ${copy_java_cmd_secret2_windows}"/>
                 </h3>
 <pre>
@@ -78,34 +78,34 @@ ${copy_java_cmd_secret2_windows}
 </pre>
           <j:if test="${!it.launcher.configured}">
               <p>
-                  ${%commonOptions}
+                  ---Translate 598--- ${%commonOptions}
               </p>
           </j:if>
           <j:if test="${!it.launcher.descriptor.tcpSupported}">
               <p>
-                  ${%tcp-port-disabled}
-                  <l:isAdmin><a href="${rootURL}/manage/configureSecurity/">${%configure.link.text}</a>.</l:isAdmin>
+                  ---Translate 598--- ${%tcp-port-disabled}
+                  <l:isAdmin><a href="${rootURL}/manage/configureSecurity/">---Translate 598--- ${%configure.link.text}</a>.</l:isAdmin>
               </p>
           </j:if>
           <j:if test="${!it.launcher.descriptor.instanceIdentityInstalled}">
               <p>
-                  ${%instance-identity-missing}
-                  <l:isAdmin><a href="${rootURL}/manage/pluginManager/available">${%install-instance-identity}</a>.</l:isAdmin>
+                  ---Translate 598--- ${%instance-identity-missing}
+                  <l:isAdmin><a href="${rootURL}/manage/pluginManager/available">---Translate 598--- ${%install-instance-identity}</a>.</l:isAdmin>
               </p>
           </j:if>
           <j:if test="${!it.launcher.descriptor.webSocketSupported}">
               <p>
-                  ${%web-socket-unsupported}
+                  ---Translate 598--- ${%web-socket-unsupported}
               </p>
           </j:if>
           <p>
-            ${%powerShell.cli.curl}
+            ---Translate 598--- ${%powerShell.cli.curl}
           </p>
       </j:if>
     </j:when>
     <j:otherwise>
       <p>
-        ${%slaveAgent.connected}
+        ---Translate 598--- ${%slaveAgent.connected}
       </p>
     </j:otherwise>
   </j:choose>

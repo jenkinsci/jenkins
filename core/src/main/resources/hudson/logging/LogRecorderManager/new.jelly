@@ -27,17 +27,17 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%New log recorder}" type="one-column">
-    <l:breadcrumb title="${%New log recorder}" />
+  <l:layout title="---Translate 363--- ${%New log recorder}" type="one-column">
+    <l:breadcrumb title="---Translate 363--- ${%New log recorder}" />
 
     <l:main-panel>
-      <l:app-bar title="${%New log recorder}"/>
+      <l:app-bar title="---Translate 363--- ${%New log recorder}"/>
       <f:form name="configSubmit" method="post" action="newLogRecorder">
-        <f:entry title="${%Name}">
+        <f:entry title="---Translate 363--- ${%Name}">
           <f:textbox name="name" checkDependsOn="name" checkUrl="checkNewName" />
         </f:entry>
         <f:block>
-          <f:submit value="${%Create}" />
+          <f:submit value="---Translate 363--- ${%Create}" />
         </f:block>
       </f:form>
     </l:main-panel>

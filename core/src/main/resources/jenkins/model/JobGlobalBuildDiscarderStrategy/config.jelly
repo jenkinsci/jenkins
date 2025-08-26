@@ -25,6 +25,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <!-- config files are required but can be empty if there are no options -->
     <f:description>
-        ${%blurb}
+        ---Translate 757--- ${%blurb}
     </f:description>
 </j:jelly>

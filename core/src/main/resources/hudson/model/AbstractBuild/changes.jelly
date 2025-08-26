@@ -27,20 +27,20 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.fullDisplayName} ${%Changes}">
+  <l:layout title="${it.fullDisplayName} ---Translate 372--- ${%Changes}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Changes}" />
+    <l:breadcrumb title="---Translate 372--- ${%Changes}" />
     <l:main-panel>
-      <t:buildCaption>${%Changes}</t:buildCaption>
+      <t:buildCaption>---Translate 372--- ${%Changes}</t:buildCaption>
       <j:choose>
         <j:when test="${it.hasChangeSetComputed()}">
           <st:include page="index.jelly" it="${it.changeSet}" />
         </j:when>
         <j:when test="${it.building}">
-          ${%Not yet determined}
+          ---Translate 372--- ${%Not yet determined}
         </j:when>
         <j:otherwise>
-          ${%Failed to determine} (<a href="${h.getConsoleUrl(it)}">${%log}</a>)
+          ---Translate 372--- ${%Failed to determine} (<a href="${h.getConsoleUrl(it)}">---Translate 372--- ${%log}</a>)
         </j:otherwise>
       </j:choose>
     </l:main-panel>

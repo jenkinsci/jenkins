@@ -53,7 +53,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <!-- 'copy-button' class is for backwards compatability -->
-  <span data-message-insecure="${%copyInsecure}">
+  <span data-message-insecure="---Translate 995--- ${%copyInsecure}">
     <button class="copy-button jenkins-button ${attrs.iconOnly == 'true' ? 'jenkins-button--tertiary' : ''} jenkins-copy-button ${attrs.clazz}"
             text="${attrs.text}"
             ref="${attrs.ref}"

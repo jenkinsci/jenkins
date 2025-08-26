@@ -3,12 +3,12 @@
     <l:layout permission="${app.ADMINISTER}">
         <st:include page="sidepanel.jelly" it="${it.context}"/>
         <l:main-panel>
-            <l:app-bar title="${%title(it.context.displayName)}"/>
+            <l:app-bar title="---Translate 663--- ${%title(it.context.displayName)}"/>
             <p class="jenkins-description">
-                ${%blurb}
+                ---Translate 663--- ${%blurb}
             </p>
             <form action="heapdump.hprof" method="post">
-                <input type="submit" class="jenkins-button" value="${%Download}"/>
+                <input type="submit" class="jenkins-button" value="---Translate 663--- ${%Download}"/>
             </form>
         </l:main-panel>
     </l:layout>

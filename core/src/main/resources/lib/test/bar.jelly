@@ -38,17 +38,17 @@ THE SOFTWARE.
   <div>
     <j:choose>
       <j:when test="${it.totalCount==0}">
-        ${%noTests}
+        ---Translate 1010--- ${%noTests}
       </j:when>
       <j:otherwise>
         <div>
-          ${%failures(it.failCount)}
+          ---Translate 1010--- ${%failures(it.failCount)}
           <j:if test="${prev!=null}">
             (${h.getDiffString(it.failCount-prev.failCount)})
           </j:if>
           <!-- Only show skips if there are some since they don't make sense for JUnit, only for TestNG. -->
           <j:if test="${it.skipCount > 0}">
-            , ${%skipped(it.skipCount)}
+            , ---Translate 1010--- ${%skipped(it.skipCount)}
             <j:if test="${prev!=null}">
               (${h.getDiffString(it.skipCount-prev.skipCount)})
             </j:if>
@@ -61,7 +61,7 @@ THE SOFTWARE.
           <div style="width:${it.skipCount*100/it.totalCount}%; height: 1em; background-color: var(--skipped-color); float: left;"></div>
         </div>
         <div align="right">
-          ${%tests(it.totalCount)}
+          ---Translate 1010--- ${%tests(it.totalCount)}
           <j:if test="${prev!=null}">
             (${h.getDiffString(it.totalCount-prev.totalCount)})
           </j:if>

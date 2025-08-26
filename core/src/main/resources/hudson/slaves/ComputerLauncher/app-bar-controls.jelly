@@ -29,14 +29,14 @@ THE SOFTWARE.
       <j:when test="${it.isConnecting()}">
         <l:hasPermission permission="${it.CONNECT}">
           <form method="post" action="launchSlaveAgent">
-            <f:submit value="${%Relaunch agent}"/>
+            <f:submit value="---Translate 592--- ${%Relaunch agent}"/>
           </form>
         </l:hasPermission>
       </j:when>
       <j:otherwise>
         <l:hasPermission permission="${it.CONNECT}">
           <form method="post" action="launchSlaveAgent">
-            <f:submit value="${%Launch agent}"/>
+            <f:submit value="---Translate 592--- ${%Launch agent}"/>
           </form>
         </l:hasPermission>
       </j:otherwise>

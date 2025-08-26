@@ -30,7 +30,7 @@ THE SOFTWARE.
     <l:header />
     <l:side-panel />
     <l:main-panel>
-      <h1>${%Error}</h1>
+      <h1>---Translate 378--- ${%Error}</h1>
       <j:choose>
         <j:when test="${pre}">
           <pre>${message}</pre>
@@ -43,7 +43,7 @@ THE SOFTWARE.
       <j:if test="${exception!=null}">
         <div>
           <!-- use Behavior rule: A.showDetails -->
-          <a href="#" class="showDetails">${%Detail...}</a>
+          <a href="#" class="showDetails">---Translate 378--- ${%Detail...}</a>
           <pre class="default-hidden">${h.printThrowable(exception)}</pre>
         </div>
       </j:if>

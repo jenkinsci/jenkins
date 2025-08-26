@@ -52,15 +52,15 @@ THE SOFTWARE.
   ${handler.setBuilds(attrs.builds)}
   <l:progressiveRendering handler="${handler}" callback="displayBuilds"/>
   <j:set var="consoleOutputIcon" trim="true">
-    <l:icon src="symbol-terminal" alt="${%Console output}" />
+    <l:icon src="symbol-terminal" alt="---Translate 945--- ${%Console output}" />
   </j:set>
   <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="projectStatus" style="display: none;" data-icon-size-class="${iconSizeClass}"  data-console-output-icon="${consoleOutputIcon}">
     <thead>
         <tr>
-            <th class="jenkins-table__cell--tight">${%S}</th>
-            <th>${%Build}</th>
-            <th initialSortDir="up">${%Time Since}</th>
-            <th>${%Status}</th>
+            <th class="jenkins-table__cell--tight">---Translate 945--- ${%S}</th>
+            <th>---Translate 945--- ${%Build}</th>
+            <th initialSortDir="up">---Translate 945--- ${%Time Since}</th>
+            <th>---Translate 945--- ${%Status}</th>
             <th class="jenkins-table__cell--tight" data-sort-disable="true"></th>
         </tr>
     </thead>

@@ -26,17 +26,17 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
  <j:if test="${it.launcher.configured}">
   <f:block>
-    ${%configured}
+    ---Translate 600--- ${%configured}
   </f:block>
   <!-- This property is included only if used directly. Causes JENKINS-45895 in the case of includes otherwise -->
   <j:if test="${descriptor.workDirSupported}"> 
-    <f:property title="${%Enable work directory}" field="workDirSettings" />
+    <f:property title="---Translate 600--- ${%Enable work directory}" field="workDirSettings" />
   </j:if>
   <f:entry field="webSocket">
-    <f:checkbox title="${%Use WebSocket}"/>
+    <f:checkbox title="---Translate 600--- ${%Use WebSocket}"/>
   </f:entry>
   <f:advanced>
-    <f:entry title="${%Tunnel connection through}" help="/help/system-config/master-slave/jnlp-tunnel.html">
+    <f:entry title="---Translate 600--- ${%Tunnel connection through}" help="/help/system-config/master-slave/jnlp-tunnel.html">
       <f:textbox field="tunnel"/>
     </f:entry>
   </f:advanced>

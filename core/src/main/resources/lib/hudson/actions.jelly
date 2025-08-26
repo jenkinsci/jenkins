@@ -42,7 +42,7 @@ THE SOFTWARE.
         <j:choose>
           <j:when test="${h.getActionUrl(it.url,action).contains('pollingLog')}">
             <l:task icon="${icon}" title="${action.displayName}" href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}">
-              <l:task href="${buildUrl.baseUrl}/pollingLog/pollingLog" icon="icon-document icon-md" title="${%View as plain text}"/>
+              <l:task href="${buildUrl.baseUrl}/pollingLog/pollingLog" icon="icon-document icon-md" title="---Translate 937--- ${%View as plain text}"/>
             </l:task>
           </j:when>
           <j:otherwise>

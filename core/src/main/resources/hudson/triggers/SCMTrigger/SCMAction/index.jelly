@@ -27,11 +27,11 @@ THE SOFTWARE.
   <l:layout>
     <st:include it="${it.item}" page="sidepanel.jelly" optional="true"/>
     <l:main-panel>
-      <h1>${%title(it.displayName)}</h1>
+      <h1>---Translate 642--- ${%title(it.displayName)}</h1>
       <j:set var="log" value="${it.log}" />
       <j:choose>
         <j:when test="${empty(log)}">
-          ${%Polling has not run yet.}
+          ---Translate 642--- ${%Polling has not run yet.}
         </j:when>
         <j:otherwise>
           <pre>

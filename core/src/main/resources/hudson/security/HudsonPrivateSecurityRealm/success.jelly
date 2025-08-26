@@ -29,9 +29,9 @@ THE SOFTWARE.
       <st:include page="sidepanel.jelly" it="${app}" />
     </l:hasPermission>
     <l:main-panel>
-      <h1>${%Success}</h1>
+      <h1>---Translate 576--- ${%Success}</h1>
       <div>
-        ${%description}
+        ---Translate 576--- ${%description}
       </div>
     </l:main-panel>
   </l:layout>

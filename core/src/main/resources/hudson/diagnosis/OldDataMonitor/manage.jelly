@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Manage Old Data}" type="one-column">
+<l:layout title="---Translate 354--- ${%Manage Old Data}" type="one-column">
   <!-- no need for additional breadcrumb here as we're on an "index" page already including breadcrumb -->
   <l:main-panel>
-    <h1>${%Manage Old Data}</h1>
-    <p>${%blurb.1}</p>
-    <p>${%blurb.2}</p>
+    <h1>---Translate 354--- ${%Manage Old Data}</h1>
+    <p>---Translate 354--- ${%blurb.1}</p>
+    <p>---Translate 354--- ${%blurb.2}</p>
     
     <!-- First set a flag to check if we'll have any valid data -->
     <j:set var="hasValidData" value="false"/>
@@ -45,17 +45,17 @@ THE SOFTWARE.
 
     <j:choose>
       <j:when test="${!hasValidData and !hasExtra}">
-        <l:notice title="${%No old data}" icon="symbol-trash-bin"/>
+        <l:notice title="---Translate 354--- ${%No old data}" icon="symbol-trash-bin"/>
       </j:when>
       <j:otherwise>
         <j:if test="${hasValidData}">
           <table class="jenkins-table sortable">
             <thead>
               <tr>
-                <th initialSortDir="down">${%Type}</th>
-                <th>${%Name}</th>
-                <th>${%Version}</th>
-                <th>${%Error}</th>
+                <th initialSortDir="down">---Translate 354--- ${%Type}</th>
+                <th>---Translate 354--- ${%Name}</th>
+                <th>---Translate 354--- ${%Version}</th>
+                <th>---Translate 354--- ${%Error}</th>
               </tr>
             </thead>
             <tbody>
@@ -68,7 +68,7 @@ THE SOFTWARE.
                     <td>
                       <j:choose>
                         <j:when test="${item.value.isOld(150)}">
-                          <b title="${%Very old version}">${item.value}</b>
+                          <b title="---Translate 354--- ${%Very old version}">${item.value}</b>
                         </j:when>
                         <j:otherwise>
                           ${item.value}
@@ -87,31 +87,31 @@ THE SOFTWARE.
 
     <j:set var="vers" value="${it.versionList}"/>
     <j:if test="${vers.hasNext()}">
-      <h2>${%Old Data Format}</h2>
-      <p>${%blurb.3}</p>
-      <p>${%blurb.4}</p>
+      <h2>---Translate 354--- ${%Old Data Format}</h2>
+      <p>---Translate 354--- ${%blurb.3}</p>
+      <p>---Translate 354--- ${%blurb.4}</p>
       <form action="upgrade" method="POST" name="oldDataUpgrade">
-        ${%Resave data files with structure changes no newer than Jenkins}
+        ---Translate 354--- ${%Resave data files with structure changes no newer than Jenkins}
         <select name="thruVer">
           <j:forEach var="ver" items="${vers}">
             <f:option>${ver}</f:option>
           </j:forEach>
         </select>
-        ${%blurb.5}
+        ---Translate 354--- ${%blurb.5}
         <br/>
-        <f:submit value="${%Upgrade}"/>
+        <f:submit value="---Translate 354--- ${%Upgrade}"/>
       </form>
     </j:if>
     <j:if test="${hasExtra}">
       <br/>
-      <h2>${%Unreadable Data}</h2>
-      <p>${%blurb.6}</p>
+      <h2>---Translate 354--- ${%Unreadable Data}</h2>
+      <p>---Translate 354--- ${%blurb.6}</p>
       <table class="jenkins-table sortable">
         <thead>
           <tr>
-            <th initialSortDir="down">${%Type}</th>
-            <th>${%Name}</th>
-            <th>${%Error}</th>
+            <th initialSortDir="down">---Translate 354--- ${%Type}</th>
+            <th>---Translate 354--- ${%Name}</th>
+            <th>---Translate 354--- ${%Error}</th>
           </tr>
         </thead>
         <tbody>
@@ -129,7 +129,7 @@ THE SOFTWARE.
       </table>
       <br/>
       <form action="discard" method="POST" name="discardUnreadable">
-        <f:submit value="${%Discard Unreadable Data}"/>
+        <f:submit value="---Translate 354--- ${%Discard Unreadable Data}"/>
       </form>
     </j:if>
   </l:main-panel>

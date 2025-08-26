@@ -12,7 +12,7 @@
       </style>
 
       <div id="proxy-configuration">
-        <h1>${%HTTP Proxy Configuration}</h1>
+        <h1>---Translate 716--- ${%HTTP Proxy Configuration}</h1>
         <f:form method="post" action="/pluginManager/proxyConfigure" name="proxyConfigure">
           <j:scope>
             <j:set var="instance" value="${app.proxy}"/>

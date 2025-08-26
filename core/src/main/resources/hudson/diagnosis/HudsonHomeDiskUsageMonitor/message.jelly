@@ -26,9 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <div class="jenkins-alert jenkins-alert-warning">
   <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-    <f:submit name="yes" value="${%Tell me more}"/>
-    <f:submit name="no" value="${%Dismiss}"/>
+    <f:submit name="yes" value="---Translate 347--- ${%Tell me more}"/>
+    <f:submit name="no" value="---Translate 347--- ${%Dismiss}"/>
   </form>
-  ${%blurb(app.rootDir)}
+  ---Translate 347--- ${%blurb(app.rootDir)}
 </div>
 </j:jelly>

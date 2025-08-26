@@ -26,10 +26,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout>
     <!-- don't include sidepanel.jelly, which could reveal information -->
-    <l:header title="${%Jenkins Login}" />
+    <l:header title="---Translate 747--- ${%Jenkins Login}" />
     <l:side-panel />
     <l:main-panel>
-      <h1>${%Access Denied}</h1>
+      <h1>---Translate 747--- ${%Access Denied}</h1>
       <!-- TODO: message is not human readable. define a subclass -->
       <p class="error"><st:out value="${exception.message}"/></p>
     </l:main-panel>

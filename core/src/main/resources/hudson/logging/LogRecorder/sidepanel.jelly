@@ -30,10 +30,10 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task href="." icon="symbol-journal" title="${%Log records}"/>
+      <l:task href="." icon="symbol-journal" title="---Translate 360--- ${%Log records}"/>
       <l:isAdmin>
-        <l:task href="configure" icon="symbol-settings" title="${%Configure}"/>
-        <l:delete title="${%Delete}" message="${%delete.logrecorder(it.displayName)}" />
+        <l:task href="configure" icon="symbol-settings" title="---Translate 360--- ${%Configure}"/>
+        <l:delete title="---Translate 360--- ${%Delete}" message="---Translate 360--- ${%delete.logrecorder(it.displayName)}" />
       </l:isAdmin>
     </l:tasks>
   </l:side-panel>

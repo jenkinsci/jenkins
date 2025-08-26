@@ -42,29 +42,29 @@ THE SOFTWARE.
               <j:set var="offlineCause" value="${c.offlineCause}"/>
               <j:when test="${offlineCause != null and !c.connecting}">
                 <div>
-                  (<l:icon src="${offlineCause.icon}" class="icon-xs jenkins-!-error-color" tooltip="${c.tooltip}"/> ${%offline})
+                  (<l:icon src="${offlineCause.icon}" class="icon-xs jenkins-!-error-color" tooltip="${c.tooltip}"/> ---Translate 935--- ${%offline})
                 </div>
               </j:when>
               <j:when test="${c.connecting}">
-                <div>(<l:icon src="symbol-hourglass" class="icon-xs"/>${%launching})</div>
+                <div>(<l:icon src="symbol-hourglass" class="icon-xs"/>---Translate 935--- ${%launching})</div>
               </j:when>
               <j:otherwise>
-                <div>(${%offline})</div>
+                <div>(---Translate 935--- ${%offline})</div>
               </j:otherwise>
             </j:choose>
           </j:when>
           <j:otherwise>
-            <div tooltip="${%busy(c.countBusy(), c.countExecutors())}" data-tooltip-append-to-parent="true">${c.countBusy()}/${c.countExecutors()}</div>
+            <div tooltip="---Translate 935--- ${%busy(c.countBusy(), c.countExecutors())}" data-tooltip-append-to-parent="true">${c.countBusy()}/${c.countExecutors()}</div>
           </j:otherwise>
         </j:choose>
-        <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
+        <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (---Translate 935--- ${%suspended})</j:if>
     </d:tag>
     <d:tag name="executor">
       <j:if test="${!e.idle}">
           <div class="executor-row">
             <div class="executor-type">
               <j:if test="${name == ''}">
-                <span tooltip="${%Light weight executor}" data-tooltip-append-to-parent="true">
+                <span tooltip="---Translate 935--- ${%Light weight executor}" data-tooltip-append-to-parent="true">
                   <l:icon src="symbol-paper-plane-outline" class="icon-sm"/>
                 </span>
               </j:if>
@@ -85,16 +85,16 @@ THE SOFTWARE.
                             <j:choose>
                               <j:when test="${exeparentcanread}">
                                 <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
-                                <t:progressBar tooltip="${%Pending}" pos="-1" href="${rootURL}/${exeparent.url}"/>
+                                <t:progressBar tooltip="---Translate 935--- ${%Pending}" pos="-1" href="${rootURL}/${exeparent.url}"/>
                               </j:when>
                               <j:otherwise>
-                                <span>${%Unknown Task}</span>
+                                <span>---Translate 935--- ${%Unknown Task}</span>
                               </j:otherwise>
                             </j:choose>
                           </j:when>
                           <j:when test="${exe == null}">
                             <!-- went idle concurrent with testing for idle -->
-                            ${%Idle}
+                            ---Translate 935--- ${%Idle}
                           </j:when>
                           <j:otherwise>
                             <j:choose>
@@ -103,7 +103,7 @@ THE SOFTWARE.
                                 <t:buildProgressBar build="${exe}" executor="${executor}"/>
                               </j:when>
                               <j:otherwise>
-                                <span>${%Unknown Task}</span>
+                                <span>---Translate 935--- ${%Unknown Task}</span>
                               </j:otherwise>
                             </j:choose>
                           </j:otherwise>
@@ -121,7 +121,7 @@ THE SOFTWARE.
             </div>
             <div class="executor-stop">
               <j:if test="${exeparentcanread and e.hasStopPermission()}">
-                <l:stopButton href="${rootURL}/${c.url}${url}/stopBuild?runExtId=${h.urlEncode(exe.externalizableId)}" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
+                <l:stopButton href="${rootURL}/${c.url}${url}/stopBuild?runExtId=${h.urlEncode(exe.externalizableId)}" confirm="---Translate 935--- ${%confirm(exe.fullDisplayName)}" alt="---Translate 935--- ${%terminate this build}"  />
               </j:if>
             </div>
           </div>
@@ -148,26 +148,26 @@ THE SOFTWARE.
   <j:set var="computersSize" value="${computers.size()}"/>
   <j:choose>
     <j:when test="${!builtInHasExecutors and app.clouds.isEmpty() and app.nodes.isEmpty()}">
-      <j:set var="collapsedText" value="${%noExecutors}"/>
+      <j:set var="collapsedText" value="---Translate 935--- ${%noExecutors}"/>
       <j:set var="showCollapsedText" value="true" />
     </j:when>
     <j:when test="${singleComputer}">
       <j:set var="sc" value="${computers.get(0)}"/>
       <j:set var="executorDetails" value="${sc.countBusy()}/${sc.countExecutors()}"/>
-      <j:set var="collapsedText" value="${%CollapsedSingle(sc.countBusy(), sc.countExecutors())}"/>
-      <j:set var="singleToolTip" value="${%busy(sc.countBusy(), sc.countExecutors())}"/>
+      <j:set var="collapsedText" value="---Translate 935--- ${%CollapsedSingle(sc.countBusy(), sc.countExecutors())}"/>
+      <j:set var="singleToolTip" value="---Translate 935--- ${%busy(sc.countBusy(), sc.countExecutors())}"/>
     </j:when>
     <j:when test="${computersSize > 1 and !builtInHasExecutors}">
-      <j:set var="collapsedText" value="${%CollapsedMulti(computersSize, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}"/>
+      <j:set var="collapsedText" value="---Translate 935--- ${%CollapsedMulti(computersSize, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}"/>
     </j:when>
     <j:when test="${computersSize > 1 and builtInHasExecutors}">
-      <j:set var="collapsedText" value="${%Computers(computersSize - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}"/>
+      <j:set var="collapsedText" value="---Translate 935--- ${%Computers(computersSize - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}"/>
     </j:when>
   </j:choose>
   <div class="pane-frame ${paneIsCollapsed ? 'collapsed' : 'expanded'}" id="executors">
     <div class="pane-header">
       <span class="pane-header-title">
-        <a href="${rootURL}/computer/">${%Build Executor Status}</a>
+        <a href="${rootURL}/computer/">---Translate 935--- ${%Build Executor Status}</a>
       </span>
       <j:if test="${origComputersSize == 1 and !paneIsCollapsed}">
         <span class="pane-header-details" tooltip="${singleToolTip}" data-tooltip-append-to-parent="true">

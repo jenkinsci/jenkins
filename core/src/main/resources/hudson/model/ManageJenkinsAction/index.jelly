@@ -27,10 +27,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
+  <l:layout title="---Translate 456--- ${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <l:main-panel>
-      <l:app-bar title="${%Manage Jenkins}">
-        <l:search-bar placeholder="${%Search settings}" id="settings-search-bar" />
+      <l:app-bar title="---Translate 456--- ${%Manage Jenkins}">
+        <l:search-bar placeholder="---Translate 456--- ${%Search settings}" id="settings-search-bar" />
       </l:app-bar>
 
       <script src="${resURL}/jsbundles/pages/manage-jenkins.js" type="text/javascript" />
@@ -52,14 +52,14 @@ THE SOFTWARE.
                 <div class="jenkins-section__item">
                   <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
                   <j:set var="iconSrc" value="${h.tryGetIconPath(m.iconFileName, context)}"/>
-                  <j:set var="sure" value="${%sure}"/>
+                  <j:set var="sure" value="---Translate 456--- ${%sure}"/>
                   <j:set var="iconXml">
                     <l:icon src="${m.iconFileName}" />
                   </j:set>
                   ${taskTags!=null and attrs.contextMenu!='false' ? it.addContextMenuItem(taskTags, m.urlName, iconSrc, iconXml, m.displayName, m.requiresPOST, m.requiresConfirmation, m.badge, sure) : null}
                   <j:choose>
                     <j:when test="${m.requiresConfirmation}">
-                      <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%sure}" title="${m.displayName}">
+                      <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="---Translate 456--- ${%sure}" title="${m.displayName}">
                         <div class="jenkins-section__item__icon" aria-hidden="true">
                           <l:icon src="${m.iconFileName}" class="icon" />
                         </div>

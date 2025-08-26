@@ -36,6 +36,6 @@ THE SOFTWARE.
   </st:documentation>
   <div class="progressiveText-holder" data-href="${href}" data-idref="${idref}" data-spinner="${spinner}" data-start-offset="${startOffset}"
        data-on-finish-event="${empty(onFinishEvent) ? '' : onFinishEvent}"
-       data-error-message="${%errorMessage}"/>
+       data-error-message="---Translate 930--- ${%errorMessage}"/>
   <st:adjunct includes="lib.hudson.progressive-text"/>
 </j:jelly>

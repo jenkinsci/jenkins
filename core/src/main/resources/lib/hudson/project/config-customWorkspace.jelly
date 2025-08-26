@@ -25,9 +25,9 @@ THE SOFTWARE.
 <!-- custom workspace -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:optionalBlock name="hasCustomWorkspace" title="${%Use custom workspace}" checked="${it.customWorkspace!=null}"
+  <f:optionalBlock name="hasCustomWorkspace" title="---Translate 909--- ${%Use custom workspace}" checked="${it.customWorkspace!=null}"
                    help="/help/project-config/custom-workspace.html" inline="true">
-    <f:entry title="${%Directory}" field="customWorkspace">
+    <f:entry title="---Translate 909--- ${%Directory}" field="customWorkspace">
       <f:textbox />
     </f:entry>
   </f:optionalBlock>

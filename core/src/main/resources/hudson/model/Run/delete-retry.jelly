@@ -2,19 +2,19 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.fullDisplayName}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Retry delete}" />
+    <l:breadcrumb title="---Translate 481--- ${%Retry delete}" />
     <l:main-panel>
       <table>
         <tr><td>
           <form method="post" action="doDelete">
             <div class="error">
-              ${%Not successful}
+              ---Translate 481--- ${%Not successful}
             </div>
-            <f:submit name="now" value="${%Retry delete}" />
+            <f:submit name="now" value="---Translate 481--- ${%Retry delete}" />
           </form>
         </td></tr>
         <tr><td>
-          <a id="delete-retry-show-error" href="">${%Show reason}</a>
+          <a id="delete-retry-show-error" href="">---Translate 481--- ${%Show reason}</a>
           <st:adjunct includes="hudson.model.Run._delete-retry" />
         </td></tr>
         <tr><td>

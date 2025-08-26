@@ -27,17 +27,17 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
-  <l:layout permission="${it.EXTENDED_READ}" title="${%Config(it.displayName)}">
+  <l:layout permission="${it.EXTENDED_READ}" title="---Translate 443--- ${%Config(it.displayName)}">
     <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
 
     <l:header>
       <script src="${resURL}/jsbundles/section-to-sidebar-items.js" type="text/javascript" defer="true" />
     </l:header>
 
-    <l:breadcrumb title="${%Configuration}" />
+    <l:breadcrumb title="---Translate 443--- ${%Configuration}" />
 
     <l:side-panel sticky="true">
-      <l:app-bar title="${%Configure}" />
+      <l:app-bar title="---Translate 443--- ${%Configure}" />
       <div id="tasks">
         <l:skeleton type="side-panel" />
       </div>
@@ -45,7 +45,7 @@ THE SOFTWARE.
 
     <l:main-panel>
       <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
-        <l:app-bar title="${%General}" headingLevel="h2">
+        <l:app-bar title="---Translate 443--- ${%General}" headingLevel="h2">
           <p:config-disableBuild />
         </l:app-bar>
 
@@ -55,7 +55,7 @@ THE SOFTWARE.
         <l:skeleton />
 
         <div class="jenkins-section jenkins-section--no-border jenkins-!-margin-top-3">
-          <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
+          <f:entry title="---Translate 443--- ${%Description}" help="${app.markupFormatter.helpUrl}">
             <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
           </f:entry>
         </div>

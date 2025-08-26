@@ -28,7 +28,7 @@ THE SOFTWARE.
   <!-- upstream/downstream builds -->
   <j:set var="upstream" value="${it.upstreamBuilds}" />
   <j:if test="${!empty(upstream)}">
-    <h2>${%Upstream Builds}</h2>
+    <h2>---Translate 373--- ${%Upstream Builds}</h2>
     <ul style="list-style-type: none;">
       <j:forEach var="item" items="${upstream}">
         <li>
@@ -41,14 +41,14 @@ THE SOFTWARE.
 
   <j:set var="downstream" value="${it.downstreamBuilds}" />
   <j:if test="${!empty(downstream)}">
-    <h2>${%Downstream Builds}</h2>
+    <h2>---Translate 373--- ${%Downstream Builds}</h2>
     <ul style="list-style-type: none;">
       <j:forEach var="item" items="${downstream}">
         <li>
           <a href="${rootURL}/${item.key.url}" class="model-link inside">${item.key.displayName}</a>
           <j:choose>
             <j:when test="${item.value.isEmpty()}">
-              (${%none})
+              (---Translate 373--- ${%none})
             </j:when>
             <j:otherwise>
               <t:buildRangeLink job="${item.key}" range="${item.value}"/>
@@ -64,7 +64,7 @@ THE SOFTWARE.
   <!-- dependency changes -->
   <j:set var="depChanges" value="${it.getDependencyChanges(it.previousBuild)}"/>
   <j:if test="${!empty(depChanges)}">
-    ${%Changes in dependency}
+    ---Translate 373--- ${%Changes in dependency}
     <ol>
       <j:forEach var="dep" items="${depChanges.values()}">
         <li>
@@ -85,7 +85,7 @@ THE SOFTWARE.
           <a href="${rootURL}/${dep.to.url}" class="model-link inside">
             <l:icon class="${dep.to.buildStatusIconClassName} icon-sm" alt="${dep.to.iconColor.description}" />${dep.to.displayName}</a>
 
-          (<a href="${rootURL}/${dep.project.url}changes?from=${dep.fromId}&amp;to=${dep.toId}">${%detail}</a>)
+          (<a href="${rootURL}/${dep.project.url}changes?from=${dep.fromId}&amp;to=${dep.toId}">---Translate 373--- ${%detail}</a>)
         </li>
       </j:forEach>
     </ol>

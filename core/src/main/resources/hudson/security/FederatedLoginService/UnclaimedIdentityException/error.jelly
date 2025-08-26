@@ -28,10 +28,10 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:statusCode value="403" />
-  <l:layout title="${%loginError(it.identifier.pronoun)}">
+  <l:layout title="---Translate 573--- ${%loginError(it.identifier.pronoun)}">
     <l:main-panel>
-      <h1>${%loginError(it.identifier.pronoun)}</h1>
-      <p>${%blurb(it.identifier.pronoun, it.identifier.identifier)}</p>
+      <h1>---Translate 573--- ${%loginError(it.identifier.pronoun)}</h1>
+      <p>---Translate 573--- ${%blurb(it.identifier.pronoun, it.identifier.identifier)}</p>
     </l:main-panel>
   </l:layout>
 </j:jelly>

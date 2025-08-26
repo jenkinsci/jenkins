@@ -30,11 +30,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permission="${app.primaryView.CREATE}">
     <st:include page="sidepanel.jelly" it="${it.user}"/>
-    <l:breadcrumb title="${%New view}" />
+    <l:breadcrumb title="---Translate 461--- ${%New view}" />
 
     <l:main-panel>
       <j:invokeStatic var="views" className="hudson.model.View" method="allInstantiable" />
-      <n:form nameTitle="${%View name}" action="createView"
+      <n:form nameTitle="---Translate 461--- ${%View name}" action="createView"
               descriptors="${views}" checkUrl="${rootURL}/${it.url}viewExistsCheck" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>

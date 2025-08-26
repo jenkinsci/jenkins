@@ -29,28 +29,28 @@ THE SOFTWARE.
     <l:header title="Jenkins" />
     <l:side-panel />
     <l:main-panel>
-      <h1>${%Error}</h1>
+      <h1>---Translate 657--- ${%Error}</h1>
       <p>
-        ${%errorMessage}
+        ---Translate 657--- ${%errorMessage}
       </p>
 
-      <h2>${%Detected JVM}</h2>
+      <h2>---Translate 657--- ${%Detected JVM}</h2>
       <table>
         <j:set var="prop" value="${it.systemProperties}"/>
         <tr>
-          <td>${%Vendor}</td>
+          <td>---Translate 657--- ${%Vendor}</td>
           <td>: ${prop['java.vm.vendor']}</td>
         </tr>
         <tr>
-          <td>${%Version}</td>
+          <td>---Translate 657--- ${%Version}</td>
           <td>: ${prop['java.vm.version']}</td>
         </tr>
         <tr>
-          <td>${%VM Name}</td>
+          <td>---Translate 657--- ${%VM Name}</td>
           <td>: ${prop['java.vm.name']}</td>
         </tr>
         <tr>
-          <td>${%OS Name}</td>
+          <td>---Translate 657--- ${%OS Name}</td>
           <td>: ${prop['os.name']}</td>
         </tr>
       </table>

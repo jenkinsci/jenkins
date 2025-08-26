@@ -30,8 +30,8 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task href="${rootURL}/manage/pluginManager/" icon="symbol-plugins" title="${%Plugin Manager}"/>
-      <l:task href="${rootURL}/manage/updateCenter/" icon="symbol-download" title="${%Update Center}"/>
+      <l:task href="${rootURL}/manage/pluginManager/" icon="symbol-plugins" title="---Translate 524--- ${%Plugin Manager}"/>
+      <l:task href="${rootURL}/manage/updateCenter/" icon="symbol-download" title="---Translate 524--- ${%Update Center}"/>
     </l:tasks>
   </l:side-panel>
 </j:jelly>

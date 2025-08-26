@@ -28,18 +28,18 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" type="one-column" title="${%New cloud}">
-    <l:breadcrumb title="${%New cloud}"/>
+  <l:layout permission="${app.ADMINISTER}" type="one-column" title="---Translate 832--- ${%New cloud}">
+    <l:breadcrumb title="---Translate 832--- ${%New cloud}"/>
     <l:main-panel>
       <f:form method="post" action="doCreate" name="config" class="jenkins-form">
-        <h1>${%New cloud}</h1>
+        <h1>---Translate 832--- ${%New cloud}</h1>
         <!-- main body of the configuration -->
         <st:include it="${requestScope.instance}" class="${requestScope.descriptor.clazz}" page="config.jelly" optional="true" />
         
         <f:bottomButtonBar>
           <input type="hidden" name="cloudDescriptorName" value="${request2.getParameter('mode')}"/>
 
-          <f:submit value="${%Save}"/>
+          <f:submit value="---Translate 832--- ${%Save}"/>
         </f:bottomButtonBar>
       </f:form>
       <st:adjunct includes="lib.form.confirm" />

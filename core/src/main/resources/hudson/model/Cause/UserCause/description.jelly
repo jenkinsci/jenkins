@@ -23,5 +23,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <span>${%started_by_user(it.userName,rootURL)}</span>
+    <span>---Translate 402--- ${%started_by_user(it.userName,rootURL)}</span>
 </j:jelly>

@@ -12,23 +12,23 @@
                     <button class="jenkins-button jenkins-!-destructive-color" type="button" name="reset-seed"
                             id="user-seed-property-reset-seed"
                             data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
-                            data-confirm="${%resetSeed.confirmation}"
+                            data-confirm="---Translate 797--- ${%resetSeed.confirmation}"
                             data-redirect-url="${request2.contextPath}/"
-                            data-confirm-title="${%resetSeed.confirmationTitle}">
-                        ${%resetSeed.button}
+                            data-confirm-title="---Translate 797--- ${%resetSeed.confirmationTitle}">
+                        ---Translate 797--- ${%resetSeed.button}
                     </button>
                 </j:when>
                 <j:otherwise>
                     <button class="jenkins-button jenkins-!-destructive-color" type="button" name="reset-seed"
                             id="user-seed-property-reset-seed"
                             data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
-                            data-confirm="${%resetSeed.confirmation}"
-                            data-confirm-title="${%resetSeed.confirmationTitle}">
-                        ${%resetSeed.button}
+                            data-confirm="---Translate 797--- ${%resetSeed.confirmation}"
+                            data-confirm-title="---Translate 797--- ${%resetSeed.confirmationTitle}">
+                        ---Translate 797--- ${%resetSeed.button}
                     </button>
                 </j:otherwise>
             </j:choose>
-            <div class="display-after-reset">${%resetSeed.result}</div>
+            <div class="display-after-reset">---Translate 797--- ${%resetSeed.result}</div>
         </div>
     </f:entry>
 </j:jelly>

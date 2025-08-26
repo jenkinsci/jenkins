@@ -28,48 +28,48 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <l:layout title="${%Advanced settings} - ${%Plugins}" permission="${app.SYSTEM_READ}">
+    <l:layout title="---Translate 339--- ${%Advanced settings} - ---Translate 339--- ${%Plugins}" permission="${app.SYSTEM_READ}">
         <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
         <st:include page="sidepanel.jelly"/>
         <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
         <l:main-panel>
-          <l:app-bar title="${%Advanced settings}"/>
+          <l:app-bar title="---Translate 339--- ${%Advanced settings}"/>
 
           <div class="jenkins-alert jenkins-alert-info">
-              <strong>${%proxyMovedBlurb(rootURL+"/manage/configure")}</strong>
+              <strong>---Translate 339--- ${%proxyMovedBlurb(rootURL+"/manage/configure")}</strong>
           </div>
 
           <div class="jenkins-form">
 
             <l:isAdmin>
                 <section class="jenkins-section jenkins-!-margin-bottom-5">
-                    <h2 class="jenkins-section__title">${%Deploy Plugin}</h2>
+                    <h2 class="jenkins-section__title">---Translate 339--- ${%Deploy Plugin}</h2>
                     <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
                         <div style="margin-bottom: 1em;">
-                            ${%deploytext}
+                            ---Translate 339--- ${%deploytext}
                         </div>
-                        <f:entry title="${%File}" field="name">
+                        <f:entry title="---Translate 339--- ${%File}" field="name">
                             <f:file accept=".hpi,.jpi" />
                         </f:entry>
-                        <p>${%Or}</p>
-                        <f:entry title="${%URL}">
+                        <p>---Translate 339--- ${%Or}</p>
+                        <f:entry title="---Translate 339--- ${%URL}">
                             <f:textbox name="pluginUrl"
                                        class="jenkins-input validated" checkUrl="checkPluginUrl" checkDependsOn="" />
                         </f:entry>
-                        <f:submit value="${%Deploy}"/>
+                        <f:submit value="---Translate 339--- ${%Deploy}"/>
                     </f:form>
                 </section>
             </l:isAdmin>
 
             <section class="jenkins-section jenkins-!-margin-bottom-5">
-                <h2 class="jenkins-section__title">${%Update Site}</h2>
+                <h2 class="jenkins-section__title">---Translate 339--- ${%Update Site}</h2>
                 <f:form method="post" action="siteConfigure" name="siteConfigure">
-                    <f:entry title="${%URL}">
+                    <f:entry title="---Translate 339--- ${%URL}">
                         <l:isAdmin>
                             <j:if test="${app.updateCenter.ID_DEFAULT.equals(app.updateCenter.PREDEFINED_UPDATE_SITE_ID)}">
-                                <a id="reset-to-default" href="#">${%Reset to default}</a>
+                                <a id="reset-to-default" href="#">---Translate 339--- ${%Reset to default}</a>
                             </j:if>
                         </l:isAdmin>
                         <f:textbox name="site"
@@ -94,7 +94,7 @@ THE SOFTWARE.
 
             <j:if test="${hasNonDefault}">
                 <section class="jenkins-section jenkins-!-margin-bottom-5">
-                    <h2 class="jenkins-section__title">${%Other Sites}</h2>
+                    <h2 class="jenkins-section__title">---Translate 339--- ${%Other Sites}</h2>
                     <ul>
                         <j:forEach var="site" items="${app.updateCenter.sites}">
                             <j:if test="${site.id != app.updateCenter.ID_DEFAULT}">

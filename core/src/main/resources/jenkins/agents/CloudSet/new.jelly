@@ -32,11 +32,11 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="createPermission" className="jenkins.model.Jenkins" field="ADMINISTER"/>
-  <l:layout title="${%New cloud}" permission="${app.ADMINISTER}" type="one-column">
-    <l:breadcrumb title="${%New cloud}" />
+  <l:layout title="---Translate 831--- ${%New cloud}" permission="${app.ADMINISTER}" type="one-column">
+    <l:breadcrumb title="---Translate 831--- ${%New cloud}" />
     <l:main-panel>
       <j:invokeStatic var="clouds" className="hudson.slaves.Cloud" method="all" />
-      <n:form title="${%New cloud}" nameTitle="${%Cloud name}" copyTitle="${%Copy Existing Cloud}" showCopyOption="${it.hasClouds()}" action="create"
+      <n:form title="---Translate 831--- ${%New cloud}" nameTitle="---Translate 831--- ${%Cloud name}" copyTitle="---Translate 831--- ${%Copy Existing Cloud}" showCopyOption="${it.hasClouds()}" action="create"
               descriptors="${clouds}" checkUrl="checkName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>

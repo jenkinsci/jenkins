@@ -30,9 +30,9 @@ THE SOFTWARE.
       <table class="jenkins-table sortable">
         <thead>
           <tr>
-            <th initialSortDir="down">${%Name}</th>
-            <th>${%Maven ID}</th>
-            <th>${%License}</th>
+            <th initialSortDir="down">---Translate 917--- ${%Name}</th>
+            <th>---Translate 917--- ${%Maven ID}</th>
+            <th>---Translate 917--- ${%License}</th>
           </tr>
         </thead>
         <tbody>

@@ -27,41 +27,41 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%System Information}" type="one-column">
+  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="---Translate 732--- ${%System Information}" type="one-column">
     <l:header>
       <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
       <script src="${resURL}/jsbundles/pages/manage-jenkins/system-information.js" type="text/javascript" defer="true" />
     </l:header>
     
-    <l:breadcrumb title="${%System Information}"/>
+    <l:breadcrumb title="---Translate 732--- ${%System Information}"/>
     <l:main-panel>
-      <l:app-bar title="${%System Information}" />
+      <l:app-bar title="---Translate 732--- ${%System Information}" />
 
       <l:hasPermission permission="${app.SYSTEM_READ}">
-        <l:tabPane title="${%System Properties}">
+        <l:tabPane title="---Translate 732--- ${%System Properties}">
           <t:propertyTable items="${h.systemProperties}" sensitive="true" />
         </l:tabPane>
       </l:hasPermission>
 
       <l:hasPermission permission="${app.SYSTEM_READ}">
-        <l:tabPane title="${%Environment Variables}">
+        <l:tabPane title="---Translate 732--- ${%Environment Variables}">
           <t:propertyTable items="${h.envVars}" sensitive="true" />
         </l:tabPane>
       </l:hasPermission>
 
-      <l:tabPane title="${%Plugins}">
+      <l:tabPane title="---Translate 732--- ${%Plugins}">
 
         <j:choose>
           <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
-            <l:notice icon="symbol-plugins" title="${%No plugins installed}" />
+            <l:notice icon="symbol-plugins" title="---Translate 732--- ${%No plugins installed}" />
           </j:when>
           <j:otherwise>
             <table class="jenkins-table sortable">
               <thead>
                 <tr>
-                  <th initialSortDir="down">${%Name}</th>
-                  <th>${%Version}</th>
-                  <th>${%Enabled}</th>
+                  <th initialSortDir="down">---Translate 732--- ${%Name}</th>
+                  <th>---Translate 732--- ${%Version}</th>
+                  <th>---Translate 732--- ${%Enabled}</th>
                 </tr>
               </thead>
               <tbody>
@@ -87,13 +87,13 @@ THE SOFTWARE.
         </j:choose>
       </l:tabPane>
 
-      <l:tabPane title="${%Memory Usage}">
-        <f:entry title="${%Timespan}" class="jenkins-form-item--small">
+      <l:tabPane title="---Translate 732--- ${%Memory Usage}">
+        <f:entry title="---Translate 732--- ${%Timespan}" class="jenkins-form-item--small">
           <div class="jenkins-select">
             <select id="timespan-select" class="jenkins-select__input">
-              <option value="sec10">${%Short}</option>
-              <option value="min" selected="true">${%Medium}</option>
-              <option value="hour">${%Long}</option>
+              <option value="sec10">---Translate 732--- ${%Short}</option>
+              <option value="min" selected="true">---Translate 732--- ${%Medium}</option>
+              <option value="hour">---Translate 732--- ${%Long}</option>
             </select>
           </div>
         </f:entry>
@@ -102,8 +102,8 @@ THE SOFTWARE.
       </l:tabPane>
 
       <l:isAdmin>
-        <l:tabPane title="${%Thread Dumps}">
-          <p>${%threadDump_blurb('threadDump')}</p>
+        <l:tabPane title="---Translate 732--- ${%Thread Dumps}">
+          <p>---Translate 732--- ${%threadDump_blurb('threadDump')}</p>
         </l:tabPane>
       </l:isAdmin>
     </l:main-panel>

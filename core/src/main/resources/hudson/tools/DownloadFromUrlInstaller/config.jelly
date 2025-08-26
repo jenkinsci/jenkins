@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <f:entry title="${%Version}" field="id">
+  <f:entry title="---Translate 631--- ${%Version}" field="id">
     <j:choose>
       <j:set var="tools" value="${descriptor.installables}"/>
       <j:when test="${empty(tools)}">

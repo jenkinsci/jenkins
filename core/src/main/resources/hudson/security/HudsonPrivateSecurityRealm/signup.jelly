@@ -42,7 +42,7 @@ THE SOFTWARE.
     <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
     <html lang="${request2.getLocale().toLanguageTag()}">
       <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
-        <title>${%Register} - Jenkins</title>
+        <title>---Translate 577--- ${%Register} - Jenkins</title>
         <!-- we do not want bots on this page -->
         <meta name="ROBOTS" content="NOFOLLOW"/>
         <!-- mobile friendly layout -->
@@ -55,19 +55,19 @@ THE SOFTWARE.
         <st:include it="${simpleDecorator}" page="simple-branding.jelly" />
         <main id="main-panel" class="app-sign-in-register__content">
           <div class="app-sign-in-register__content-inner">
-            <h1>${%Register}</h1>
+            <h1>---Translate 577--- ${%Register}</h1>
 
             <st:include it="${simpleDecorator}" page="simple-header.jelly" />
 
-            <template id="i18n" data-strength-strong="${%Strong}"
-                                data-strength-moderate="${%Moderate}"
-                                data-strength-weak="${%Weak}"
-                                data-strength-poor="${%Poor}" />
+            <template id="i18n" data-strength-strong="---Translate 577--- ${%Strong}"
+                                data-strength-moderate="---Translate 577--- ${%Moderate}"
+                                data-strength-weak="---Translate 577--- ${%Weak}"
+                                data-strength-poor="---Translate 577--- ${%Poor}" />
 
             <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post">
               <div>
                 <label class="app-sign-in-register__form-label ${data.errors.containsKey('username') ? 'alert' : ''}" for="username">
-                  ${%Username}
+                  ---Translate 577--- ${%Username}
                 </label>
                 <div class="app-sign-in-register__error">
                   ${data.errors.containsKey('username') ? data.errors.get('username') : ''}
@@ -81,7 +81,7 @@ THE SOFTWARE.
               </div>
               <div>
                 <label class="app-sign-in-register__form-label ${data.errors.containsKey('fullname') ? 'alert' : ''}" for="fullname">
-                  ${%Full name}
+                  ---Translate 577--- ${%Full name}
                 </label>
                 <div class="app-sign-in-register__error">
                   ${data.errors.containsKey('fullname') ? data.errors.get('fullname') : ''}
@@ -98,7 +98,7 @@ THE SOFTWARE.
                 <div>
                   <label class="app-sign-in-register__form-label ${data.errors.containsKey('email') ? 'alert' : ''}" for="email"
                   >
-                    ${%Email}
+                    ---Translate 577--- ${%Email}
                   </label>
                   <div class="app-sign-in-register__error">
                     ${data.errors.containsKey('email') ? data.errors.get('email') : ''}
@@ -114,7 +114,7 @@ THE SOFTWARE.
               <j:if test="${it.isEnableCaptcha()}">
                 <div>
                   <label class="app-sign-in-register__form-label ${data.errors.containsKey('captcha') ? 'alert' : ''}" for="captcha">
-                    ${%Enter text as shown}
+                    ---Translate 577--- ${%Enter text as shown}
                   </label>
                   <input class="${data.errors.containsKey('captcha') ? 'jenkins-input--error' : ''}"
                          autofocus="${data.errors.containsKey('captcha') ? true : null}"
@@ -128,11 +128,11 @@ THE SOFTWARE.
               <div>
                 <div class="inputHeader password">
                   <label class="app-sign-in-register__form-label ${data.errors.containsKey('password1') ? 'alert' : ''}" for="password1">
-                    ${%Password}
+                    ---Translate 577--- ${%Password}
                   </label>
                   <div class="jenkins-checkbox">
                     <input type="checkbox" id="showPassword" />
-                    <label for="showPassword">${%Show}</label>
+                    <label for="showPassword">---Translate 577--- ${%Show}</label>
                   </div>
                 </div>
                 <div class="app-sign-in-register__error">
@@ -145,11 +145,11 @@ THE SOFTWARE.
                        id="password1"
                        autofocus="${data.errors.containsKey('password1') ? true : null}" />
                 <div id="passwordStrengthWrapper">
-                  ${%Strength}: <span id="passwordStrength"></span>
+                  ---Translate 577--- ${%Strength}: <span id="passwordStrength"></span>
                 </div>
               </div>
               <div class="app-sign-in-register__password-notice">
-                ${%A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.}
+                ---Translate 577--- ${%A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.}
               </div>
               <input class="${data.errors.containsKey('password1') ? 'jenkins-input--error' : ''}"
                       value="${data.password2}"
@@ -160,10 +160,10 @@ THE SOFTWARE.
               <button type="submit"
                       name="Submit"
                       class="jenkins-button jenkins-button--primary">
-                ${%Create account}
+                ---Translate 577--- ${%Create account}
               </button>
               <div class="app-sign-in-register__switcher">
-                <a href="${rootURL}/login">${%or sign in}</a>
+                <a href="${rootURL}/login">---Translate 577--- ${%or sign in}</a>
               </div>
               <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}"/>
               <div class="footer">

@@ -26,6 +26,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="jenkins-alert jenkins-alert-danger">
     <j:out value="${it.message}"/>
-    <a href="${rootURL}/${it.url}/">${%See the log for more details}</a>.
+    <a href="${rootURL}/${it.url}/">---Translate 651--- ${%See the log for more details}</a>.
   </div>
 </j:jelly>

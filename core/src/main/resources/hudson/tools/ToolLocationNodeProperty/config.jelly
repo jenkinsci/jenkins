@@ -24,10 +24,10 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:entry title="${%List of tool locations}" help="/help/tools/tool-location-node-property.html">
+	<f:entry title="---Translate 635--- ${%List of tool locations}" help="/help/tools/tool-location-node-property.html">
 		<f:repeatable var="location" name="locations" items="${instance.locations}">
 			<table width="100%">
-				<f:entry title="${%Name}">
+				<f:entry title="---Translate 635--- ${%Name}">
 				        <div class="jenkins-select">
                   <select class="jenkins-select__input" name="locations.key">
                     <j:forEach var="toolDescriptor" items="${descriptor.toolDescriptors}">
@@ -38,7 +38,7 @@
                   </select>
                 </div>
 				</f:entry>
-				<f:entry title="${%Home}">
+				<f:entry title="---Translate 635--- ${%Home}">
 					<f:textbox name="locations.home" value="${location.home}" />
 				</f:entry>
 				<f:entry title="">

@@ -2,9 +2,9 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <div class="jenkins-alert jenkins-alert-warning">
         <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-            <f:submit name="yes" value="${%Apply Migration}"/>
-            <f:submit name="no" value="${%Dismiss}"/>
+            <f:submit name="yes" value="---Translate 760--- ${%Apply Migration}"/>
+            <f:submit name="no" value="---Translate 760--- ${%Dismiss}"/>
         </form>
-        ${%blurb}
+        ---Translate 760--- ${%blurb}
     </div>
 </j:jelly>

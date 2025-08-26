@@ -27,33 +27,33 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout permission="${app.ADMINISTER}" title="${%Configure log recorder}" type="one-column">
-  <l:breadcrumb title="${%Configure log recorder}" />
+<l:layout permission="${app.ADMINISTER}" title="---Translate 362--- ${%Configure log recorder}" type="one-column">
+  <l:breadcrumb title="---Translate 362--- ${%Configure log recorder}" />
 
   <l:main-panel>
-    <l:app-bar title="${%Configure log recorder}">
-      <t:help href="https://www.jenkins.io/redirect/log-recorders" tooltip="${%Additional information on log levels}" />
+    <l:app-bar title="---Translate 362--- ${%Configure log recorder}">
+      <t:help href="https://www.jenkins.io/redirect/log-recorders" tooltip="---Translate 362--- ${%Additional information on log levels}" />
     </l:app-bar>
 
     <f:form method="post" name="config" action="configSubmit">
       <div class="jenkins-alert jenkins-alert-info jenkins-form-item">
-        ${%fine_warning}
+        ---Translate 362--- ${%fine_warning}
       </div>
       <j:set var="instance" value="${it}" />
-      <f:entry title="${%Name}" help="/help/LogRecorder/name.html">
+      <f:entry title="---Translate 362--- ${%Name}" help="/help/LogRecorder/name.html">
         <f:textbox field="name"/>
       </f:entry>
 
-      <f:entry title="${%Loggers}"
-               description="${%List of loggers and the log levels to record}"
+      <f:entry title="---Translate 362--- ${%Loggers}"
+               description="---Translate 362--- ${%List of loggers and the log levels to record}"
                help="/help/LogRecorder/logger.html">
         <j:set var="instance" value="${null}" />
         <f:repeatable var="instance" items="${it.loggers}" name="loggers">
           <div>
-            <f:entry title="${%Logger}">
+            <f:entry title="---Translate 362--- ${%Logger}">
               <f:textbox  field="name" checkUrl="checkName" checkDependsOn="level" autoCompleteUrl="autoCompleteLoggerName" />
             </f:entry>
-            <f:entry title="${%Log level}">
+            <f:entry title="---Translate 362--- ${%Log level}">
               <div class="jenkins-select">
                 <select class="jenkins-select__input" name="level">
                   <j:forEach var="lv" items="${it.LEVELS}">

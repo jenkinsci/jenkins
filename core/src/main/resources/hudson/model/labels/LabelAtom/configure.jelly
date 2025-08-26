@@ -28,24 +28,24 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" title="${%title(it.displayName)}">
+  <l:layout permission="${app.ADMINISTER}" title="---Translate 545--- ${%title(it.displayName)}">
     <st:include page="sidepanel.jelly"/>
-    <l:breadcrumb title="${%Configure}" />
+    <l:breadcrumb title="---Translate 545--- ${%Configure}" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
 
-        <f:entry title="${%Name}">
+        <f:entry title="---Translate 545--- ${%Name}">
           <f:textbox value="${it.name}" readonly="true" />
         </f:entry>
 
-        <f:entry title="${%Description}">
+        <f:entry title="---Translate 545--- ${%Description}">
           <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
 
         <f:descriptorList descriptors="${it.getApplicablePropertyDescriptors()}" instances="${it.properties}" />
 
         <f:block>
-          <f:submit value="${%Save}"/>
+          <f:submit value="---Translate 545--- ${%Save}"/>
           <f:apply />
         </f:block>
       </f:form>

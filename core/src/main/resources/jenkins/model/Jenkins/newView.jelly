@@ -27,12 +27,12 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <l:layout permission="${app.primaryView.CREATE}" title="${%New View}">
+  <l:layout permission="${app.primaryView.CREATE}" title="---Translate 737--- ${%New View}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%New view}" />
+    <l:breadcrumb title="---Translate 737--- ${%New view}" />
     <l:main-panel>
       <j:invokeStatic var="views" className="hudson.model.View" method="allInstantiable" />
-      <n:form title="${%New View}" nameTitle="${%View name}" action="createView" copyTitle="${%Copy Existing View}"
+      <n:form title="---Translate 737--- ${%New View}" nameTitle="---Translate 737--- ${%View name}" action="createView" copyTitle="---Translate 737--- ${%Copy Existing View}"
               descriptors="${views}" checkUrl="checkViewName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>

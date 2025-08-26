@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <tr id="row${it.id}">
-        <td style="vertical-align: top; padding-right:1em">${%Loading plugin extensions}</td>
+        <td style="vertical-align: top; padding-right:1em">---Translate 523--- ${%Loading plugin extensions}</td>
         <j:set var="status" value="${it.status}"/>
         <td id="status${status.id}">
             <st:include it="${status}" page="status.jelly"/>

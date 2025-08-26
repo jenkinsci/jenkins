@@ -42,7 +42,7 @@ THE SOFTWARE.
       </j:forEach>
 
       <div>
-        <h2>${%Nodes}</h2>
+        <h2>---Translate 448--- ${%Nodes}</h2>
         <j:forEach var="c" items="${it.computers}">
           <j:set var="url" value="${rootURL}/${c.url}"/>
           <nobr>
@@ -54,12 +54,12 @@ THE SOFTWARE.
         </j:forEach>
       </div>
 
-      <h2>${%Projects}</h2>
+      <h2>---Translate 448--- ${%Projects}</h2>
       <j:set var="jobs" value="${it.tiedJobs}" />
       <j:choose>
         <j:when test="${empty(jobs)}">
           <p>
-            ${%None}
+            ---Translate 448--- ${%None}
           </p>
         </j:when>
         <j:otherwise>

@@ -30,8 +30,8 @@ THE SOFTWARE.
   </j:if>
 
   <form action="checkUpdatesServer" method="post">
-    <button id="button-refresh" class="jenkins-button" tooltip="${%lastUpdated(app.updateCenter.lastUpdatedString)}">
-      <l:icon src="symbol-refresh" alt="${%Check now}" />
+    <button id="button-refresh" class="jenkins-button" tooltip="---Translate 337--- ${%lastUpdated(app.updateCenter.lastUpdatedString)}">
+      <l:icon src="symbol-refresh" alt="---Translate 337--- ${%Check now}" />
     </button>
   </form>
 </j:jelly>

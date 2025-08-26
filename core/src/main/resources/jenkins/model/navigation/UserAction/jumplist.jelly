@@ -20,6 +20,6 @@
   <dd:separator />
 
   <dd:item icon="symbol-log-out"
-           text="${%Sign out}"
+           text="---Translate 764--- ${%Sign out}"
            href="${rootURL}/logout" />
 </j:jelly>

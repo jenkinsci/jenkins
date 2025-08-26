@@ -54,6 +54,6 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
-  <local:list title="${%Upstream Projects}" items="${it.upstreamProjects}" up="true" />
-  <local:list title="${%Downstream Projects}" items="${it.downstreamProjects}" up="false" />
+  <local:list title="---Translate 896--- ${%Upstream Projects}" items="${it.upstreamProjects}" up="true" />
+  <local:list title="---Translate 896--- ${%Downstream Projects}" items="${it.downstreamProjects}" up="false" />
 </j:jelly>

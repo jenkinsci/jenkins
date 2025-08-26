@@ -30,8 +30,8 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <j:set var="browserDescriptors" value="${scmd != null ? scmd.browserDescriptors : descriptor.browserDescriptors}"/>
-  <f:dropdownList name="${name}" title="${%Repository browser}" help="/help/scm-browsers/list.html">
-    <f:dropdownListBlock value="auto" title="(${%Auto})" />
+  <f:dropdownList name="${name}" title="---Translate 932--- ${%Repository browser}" help="/help/scm-browsers/list.html">
+    <f:dropdownListBlock value="auto" title="(---Translate 932--- ${%Auto})" />
     <j:set var="currentBrowser" value="${scm.browser}"/>
     <j:forEach var="descriptor" items="${browserDescriptors}" varStatus="loop">
       <j:set var="browser" value="${currentBrowser.descriptor==descriptor ? currentBrowser : null}"/><!-- for compatibility -->

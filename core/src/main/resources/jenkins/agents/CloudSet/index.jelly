@@ -38,21 +38,21 @@ THE SOFTWARE.
       <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
       <j:choose>
         <j:when test="${it.cloudAvailable and it.hasClouds()}">
-          <l:app-bar title="${%Clouds}">
+          <l:app-bar title="---Translate 833--- ${%Clouds}">
             <l:isAdmin>
               <a class="jenkins-button jenkins-button--primary" href="new">
                 <l:icon src="symbol-add"/>
-                ${%newCloud}
+                ---Translate 833--- ${%newCloud}
               </a>
             </l:isAdmin>
           </l:app-bar>
-          <p class="description">${%description}</p>
+          <p class="description">---Translate 833--- ${%description}</p>
           <f:form method="post" name="config" action="reorder">
             <table id="clouds" class="jenkins-table">
               <thead>
                 <tr>
-                  <th tooltip="${%Drag and drop cells to reorder}">${%Order}</th>
-                  <th>${%Name}</th>
+                  <th tooltip="---Translate 833--- ${%Drag and drop cells to reorder}">---Translate 833--- ${%Order}</th>
+                  <th>---Translate 833--- ${%Name}</th>
                   <th/>
                 </tr>
               </thead>
@@ -81,7 +81,7 @@ THE SOFTWARE.
             </table>
             <l:isAdmin>
               <f:bottomButtonBar>
-                <f:submit id="saveButton" value="${%Save}" clazz="jenkins-hidden" />
+                <f:submit id="saveButton" value="---Translate 833--- ${%Save}" clazz="jenkins-hidden" />
               </f:bottomButtonBar>
             </l:isAdmin>
           </f:form>
@@ -89,22 +89,22 @@ THE SOFTWARE.
         </j:when>
         <j:otherwise>
           <div class="empty-state-block">
-            <l:app-bar title="${%Clouds}"/>
+            <l:app-bar title="---Translate 833--- ${%Clouds}"/>
 
             <section class="empty-state-section">
               <j:choose>
                 <j:when test="${it.cloudAvailable}">
                   <j:choose>
                     <j:when test="${h.hasPermission(app.ADMINISTER)}">
-                      <p>${%noCloudAvailableCTA}</p>
+                      <p>---Translate 833--- ${%noCloudAvailableCTA}</p>
                     </j:when>
                     <j:otherwise>
-                      <p>${%noCloudAvailable}</p>
+                      <p>---Translate 833--- ${%noCloudAvailable}</p>
                     </j:otherwise>
                   </j:choose>
                 </j:when>
                 <j:otherwise>
-                  <p>${%noCloudPlugin}</p>
+                  <p>---Translate 833--- ${%noCloudPlugin}</p>
                 </j:otherwise>
               </j:choose>
               <ul class="empty-state-section-list">
@@ -113,7 +113,7 @@ THE SOFTWARE.
                     <li class="content-block">
                       <a href="new"
                          class="content-block__link">
-                        <span>${%newCloud}</span>
+                        <span>---Translate 833--- ${%newCloud}</span>
                         <span class="trailing-icon">
                           <l:icon src="symbol-add"/>
                         </span>
@@ -123,7 +123,7 @@ THE SOFTWARE.
                   <li class="content-block">
                     <a href="${rootURL}/manage/pluginManager/available?filter=${it.cloudUpdateCenterCategoryLabel}"
                        class="content-block__link">
-                      <span>${%installCloudPlugin}</span>
+                      <span>---Translate 833--- ${%installCloudPlugin}</span>
                       <span class="trailing-icon">
                         <l:icon src="symbol-plugins" />
                       </span>
@@ -134,7 +134,7 @@ THE SOFTWARE.
                   <a href="https://www.jenkins.io/redirect/distributed-builds"
                      class="content-block__link"
                      target="_blank" rel="noopener noreferrer">
-                    <span>${%learnMoreDistributedBuilds}</span>
+                    <span>---Translate 833--- ${%learnMoreDistributedBuilds}</span>
                     <span class="trailing-icon">
                       <l:icon src="symbol-help-circle" />
                     </span>

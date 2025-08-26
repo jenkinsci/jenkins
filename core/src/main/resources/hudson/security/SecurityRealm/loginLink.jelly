@@ -30,7 +30,7 @@ THE SOFTWARE.
      data-testid="login"
      href="${rootURL}/${app.securityRealm.loginUrl}?from=${app.securityRealm.from}"
      style="aspect-ratio: unset; padding: 0.5rem 1rem"
-     tooltip="${%signInTooltip}">
-    ${%signIn}
+     tooltip="---Translate 587--- ${%signInTooltip}">
+    ---Translate 587--- ${%signIn}
   </a>
 </j:jelly>

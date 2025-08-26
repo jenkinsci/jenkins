@@ -31,10 +31,10 @@ THE SOFTWARE.
   <j:set var="controls">
     <l:overflowButton icon="symbol-menu" clazz="jenkins-card__reveal">
       <dd:item icon="symbol-rss"
-               text="Atom feed ${%for all}"
+               text="Atom feed ---Translate 689--- ${%for all}"
                href="${it.baseUrl}/rssAll" />
       <dd:item icon="symbol-rss"
-               text="Atom feed ${%for failures}"
+               text="Atom feed ---Translate 689--- ${%for failures}"
                href="${it.baseUrl}/rssFailed" />
     </l:overflowButton>
   </j:set>
@@ -45,15 +45,15 @@ THE SOFTWARE.
        data-page-has-up="${page.hasUpPage}"
        data-page-has-down="${page.hasDownPage}">
     <l:card id="jenkins-builds" title="Builds" controls="${controls}" expandable="${it.baseUrl}/buildTimeTrend">
-      <l:search-bar placeholder="${%find}"
+      <l:search-bar placeholder="---Translate 689--- ${%find}"
                     clazz="${page.runs.isEmpty() and page.queueItems.isEmpty() ? 'jenkins-hidden' : ''}"/>
 
       <div class="app-builds-container">
         <div id="loading-builds" class="app-builds-container__placeholder">
-          <l:spinner text="${%Loading builds...}"/>
+          <l:spinner text="---Translate 689--- ${%Loading builds...}"/>
         </div>
         <div id="no-builds" style="display:none" class="app-builds-container__placeholder">
-          ${%No builds}
+          ---Translate 689--- ${%No builds}
         </div>
 
         <div id="jenkins-build-history" class="app-builds-container__items">
@@ -62,11 +62,11 @@ THE SOFTWARE.
         <div class="app-builds-container__controls jenkins-hidden" id="controls">
           <button class="jenkins-button jenkins-button--tertiary jenkins-card__unveil" id="up">
             <l:icon src="symbol-arrow-left" />
-            <span class="jenkins-visually-hidden">${%Newer builds}</span>
+            <span class="jenkins-visually-hidden">---Translate 689--- ${%Newer builds}</span>
           </button>
           <button class="jenkins-button jenkins-button--tertiary jenkins-card__unveil" id="down">
             <l:icon src="symbol-arrow-right" />
-            <span class="jenkins-visually-hidden">${%Older builds}</span>
+            <span class="jenkins-visually-hidden">---Translate 689--- ${%Older builds}</span>
           </button>
         </div>
       </div>

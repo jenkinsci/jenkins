@@ -28,30 +28,30 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%Project Relationship}">
+  <l:layout title="---Translate 735--- ${%Project Relationship}">
     <st:include page="sidepanel.jelly"/>
-    <l:breadcrumb title="${%Project Relationship}"/>
+    <l:breadcrumb title="---Translate 735--- ${%Project Relationship}"/>
 
     <l:main-panel>
-      <l:app-bar title="${%Project Relationship}">
+      <l:app-bar title="---Translate 735--- ${%Project Relationship}">
         <t:help href="projectRelationship-help"/>
       </l:app-bar>
 
       <p>
-        ${%body}
+        ---Translate 735--- ${%body}
       </p>
 
       <form action="projectRelationship" method="get">
         <div class="jenkins-form-item">
-          <label class="jenkins-form-label" for="lhs">${%upstream project}:</label>
+          <label class="jenkins-form-label" for="lhs">---Translate 735--- ${%upstream project}:</label>
           <f:combobox id="lhs" fillUrl="fillJobNameItems" name="lhs" value="${request2.getParameter('lhs')}"/>
         </div>
 
         <div class="jenkins-form-item">
-          <label class="jenkins-form-label" for="rhs">${%downstream project}:</label>
+          <label class="jenkins-form-label" for="rhs">---Translate 735--- ${%downstream project}:</label>
           <f:combobox id="rhs" fillUrl="fillJobNameItems" name="rhs" value="${request2.getParameter('rhs')}"/>
         </div>
-        <f:submit value="${%Compare}"/>
+        <f:submit value="---Translate 735--- ${%Compare}"/>
 
         <j:if test="${!empty(request2.getParameter('lhs')) and !empty(request2.getParameter('rhs'))}">
           <j:set var="jl" value="${app.getItemByFullName(request2.getParameter('lhs'))}"/>
@@ -68,7 +68,7 @@ THE SOFTWARE.
               <table width="100%">
                 <j:set var="relation" value="${jl.getRelationship(jr)}"/>
                 <j:if test="${empty(relation)}">
-                  <p class="error">${%There are no fingerprint records that connect these two projects.}</p>
+                  <p class="error">---Translate 735--- ${%There are no fingerprint records that connect these two projects.}</p>
                 </j:if>
                 <j:forEach var="e" items="${relation}">
                   <tr>

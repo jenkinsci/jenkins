@@ -25,11 +25,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-    <l:layout title="${%Form post required}">
+    <l:layout title="---Translate 438--- ${%Form post required}">
         <l:main-panel>
-            <p>${%use_post}</p>
+            <p>---Translate 438--- ${%use_post}</p>
             <form method="POST">
-                <input type="submit" value="${%Proceed}"/>
+                <input type="submit" value="---Translate 438--- ${%Proceed}"/>
             </form>
         </l:main-panel>
     </l:layout>

@@ -25,6 +25,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:t="/lib/hudson">
   <j:if test="${!empty(app.nodes) or (it.builtOnStr != null and it.builtOnStr != '')}">
-    ${%on} <t:node value="${it.builtOn}" valueStr="${it.builtOnStr}"/>
+    ---Translate 370--- ${%on} <t:node value="${it.builtOn}" valueStr="${it.builtOnStr}"/>
   </j:if>
 </j:jelly>

@@ -25,36 +25,36 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${!empty(descriptor.installations)}">
-    <f:entry title="${%Maven Version}">
+    <f:entry title="---Translate 628--- ${%Maven Version}">
       <select class="jenkins-input" name="maven.name">
-        <option value="(Default)">(${%Default})</option>
+        <option value="(Default)">(---Translate 628--- ${%Default})</option>
         <j:forEach var="inst" items="${descriptor.installations}">
           <f:option selected="${inst.name==instance.maven.name}" value="${inst.name}">${inst.name}</f:option>
         </j:forEach>
       </select>
     </f:entry>
   </j:if>
-  <f:entry title="${%Goals}">
+  <f:entry title="---Translate 628--- ${%Goals}">
     <f:expandableTextbox field="targets" />
   </f:entry>
   <f:advanced>
-    <f:entry title="${%POM}" help="/plugin/maven-plugin/root-pom.html">
+    <f:entry title="---Translate 628--- ${%POM}" help="/plugin/maven-plugin/root-pom.html">
       <f:textbox field="pom"/>
     </f:entry>
-    <f:entry field="properties" title="${%Properties}">
+    <f:entry field="properties" title="---Translate 628--- ${%Properties}">
       <f:textarea/>
     </f:entry>
-    <f:entry title="${%JVM Options}" help="/plugin/maven-plugin/maven-opts.html">
+    <f:entry title="---Translate 628--- ${%JVM Options}" help="/plugin/maven-plugin/maven-opts.html">
       <f:expandableTextbox field="jvmOptions"/>
     </f:entry>
     <f:entry field="injectBuildVariables">
-      <f:checkbox title="${%Inject build variables}" checked="${it.injectBuildVariables}" />
+      <f:checkbox title="---Translate 628--- ${%Inject build variables}" checked="${it.injectBuildVariables}" />
     </f:entry>
     <f:entry field="usePrivateRepository">
-      <f:checkbox title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html" checked="${it.usesPrivateRepository()}" />
+      <f:checkbox title="---Translate 628--- ${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html" checked="${it.usesPrivateRepository()}" />
     </f:entry>
 
-    <f:dropdownDescriptorSelector title="${%Settings file}"  field="settings" default="${descriptor.defaultSettingsProvider}"/>
-	<f:dropdownDescriptorSelector title="${%Global Settings file}" field="globalSettings"  default="${descriptor.defaultGlobalSettingsProvider}"/>
+    <f:dropdownDescriptorSelector title="---Translate 628--- ${%Settings file}"  field="settings" default="${descriptor.defaultSettingsProvider}"/>
+	<f:dropdownDescriptorSelector title="---Translate 628--- ${%Global Settings file}" field="globalSettings"  default="${descriptor.defaultGlobalSettingsProvider}"/>
   </f:advanced>
 </j:jelly>

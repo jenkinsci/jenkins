@@ -23,10 +23,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <f:entry title="${%Free Space Threshold}" field="freeSpaceThreshold">
+  <f:entry title="---Translate 552--- ${%Free Space Threshold}" field="freeSpaceThreshold">
     <f:textbox default="1GB"/>
   </f:entry>
-  <f:entry title="${%Free Space Warning Threshold}" field="freeSpaceWarningThreshold">
+  <f:entry title="---Translate 552--- ${%Free Space Warning Threshold}" field="freeSpaceWarningThreshold">
     <f:textbox default="2GB"/>
   </f:entry>
 </j:jelly>

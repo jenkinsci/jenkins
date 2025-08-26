@@ -34,13 +34,13 @@ THE SOFTWARE.
                     <j:arg value="${it.name}" />
                 </j:invokeStatic>
                 <j:set var="path" value="parameter/${encodedName}/${encodedName}"/>
-                <a href="${path}">${%open}</a>
+                <a href="${path}">---Translate 431--- ${%open}</a>
                 <st:nbsp/>
-                <a href="${path}/*view*">${%view}</a>
+                <a href="${path}/*view*">---Translate 431--- ${%view}</a>
             </j:when>
             <j:otherwise>
                 <em>
-                    ${%nofile}
+                    ---Translate 431--- ${%nofile}
                 </em>
             </j:otherwise>
         </j:choose>

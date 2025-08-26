@@ -25,18 +25,18 @@ THE SOFTWARE.
 <!-- 3rd party license acknowledgements and  -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:layout title="${%about(it.longName)}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
+  <l:layout title="---Translate 342--- ${%about(it.longName)}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <l:main-panel>
-      <h1>${%about(it.longName+' '+it.version)}</h1>
+      <h1>---Translate 342--- ${%about(it.longName+' '+it.version)}</h1>
 
-      <h3>${%3rd Party Dependencies}</h3>
+      <h3>---Translate 342--- ${%3rd Party Dependencies}</h3>
       <t:thirdPartyLicenses>
         <j:choose>
           <j:when test="${it.hasLicensesXml()}">
             <j:include uri="${it.baseResourceURL}/WEB-INF/licenses.xml" />
           </j:when>
           <j:otherwise>
-            <p>${%No information recorded}</p>
+            <p>---Translate 342--- ${%No information recorded}</p>
           </j:otherwise>
         </j:choose>
       </t:thirdPartyLicenses>

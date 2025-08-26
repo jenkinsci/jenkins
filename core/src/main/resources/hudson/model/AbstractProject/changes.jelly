@@ -27,23 +27,23 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${%changes.title(it.name)}">
+  <l:layout title="---Translate 387--- ${%changes.title(it.name)}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Changes}" />
+    <l:breadcrumb title="---Translate 387--- ${%Changes}" />
     <l:main-panel>
       <j:set var="from" value="${request2.getParameter('from')}"/>
       <j:set var="to" value="${request2.getParameter('to')}"/>
       <j:set var="browser" value="${it.scm.effectiveBrowser}"/> <!-- for compatibility; newer project-changes.jelly override this -->
 
       <h1>
-        ${%Changes}
+        ---Translate 387--- ${%Changes}
         <j:choose>
           <j:when test="${from!=null and to!=null}">
-            ${%range.label(from, to)}
+            ---Translate 387--- ${%range.label(from, to)}
           </j:when>
           <j:otherwise>
-            <j:if test="${from!=null}">${%from.label(from)}</j:if>
-            <j:if test="${to!=null}">${%to.label(to)}</j:if>
+            <j:if test="${from!=null}">---Translate 387--- ${%from.label(from)}</j:if>
+            <j:if test="${to!=null}">---Translate 387--- ${%to.label(to)}</j:if>
           </j:otherwise>
         </j:choose>
       </h1>

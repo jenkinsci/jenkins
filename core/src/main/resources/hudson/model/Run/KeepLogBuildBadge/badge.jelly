@@ -23,4 +23,4 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<l:icon src="symbol-lock-closed" class="icon-sm" tooltip="${%Keep this build forever}:\n${build.whyKeepLog}" xmlns:l="/lib/layout"/>
+<l:icon src="symbol-lock-closed" class="icon-sm" tooltip="---Translate 476--- ${%Keep this build forever}:\n${build.whyKeepLog}" xmlns:l="/lib/layout"/>

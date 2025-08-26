@@ -27,11 +27,11 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-<l:layout title="${%All Jenkins Logs}" type="one-column">
-  <l:breadcrumb title="${%All Jenkins Logs}" />
+<l:layout title="---Translate 367--- ${%All Jenkins Logs}" type="one-column">
+  <l:breadcrumb title="---Translate 367--- ${%All Jenkins Logs}" />
   <l:main-panel>
-    <l:app-bar title="${%All Jenkins Logs}">
-      <l:overflowButton icon="symbol-rss" text="${%Atom feed}" tooltip="${null}">
+    <l:app-bar title="---Translate 367--- ${%All Jenkins Logs}">
+      <l:overflowButton icon="symbol-rss" text="---Translate 367--- ${%Atom feed}" tooltip="${null}">
         <st:include page="feeds.jelly" />
       </l:overflowButton>
     </l:app-bar>

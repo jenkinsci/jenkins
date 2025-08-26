@@ -29,7 +29,7 @@ THE SOFTWARE.
       <p>
         <st:include page="description.jelly" it="${entry.key}"/>
         <j:if test="${entry.value > 1}">
-          <st:nbsp/>${%Ntimes(entry.value)}
+          <st:nbsp/>---Translate 406--- ${%Ntimes(entry.value)}
         </j:if>
       </p>
     </j:forEach>

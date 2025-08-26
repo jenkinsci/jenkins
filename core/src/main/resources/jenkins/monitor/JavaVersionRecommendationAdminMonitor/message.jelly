@@ -26,12 +26,12 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
     <div class="jenkins-alert jenkins-alert-${it.severityAsString}">
         <form id="JavaVersionRecommendationAdminMonitor" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-            <f:submit name="yes" value="${%More Info}"/>
+            <f:submit name="yes" value="---Translate 825--- ${%More Info}"/>
             <l:isAdmin>
-                <f:submit value="${%Ignore}" name="no"/>
+                <f:submit value="---Translate 825--- ${%Ignore}" name="no"/>
             </l:isAdmin>
         </form>
-        <h2>${%Recommended_Java_Version_Heading(it.javaVersion)}</h2>
-        ${%Recommended_Java_Version(it.javaVersion, it.endOfLifeAsDate)}
+        <h2>---Translate 825--- ${%Recommended_Java_Version_Heading(it.javaVersion)}</h2>
+        ---Translate 825--- ${%Recommended_Java_Version(it.javaVersion, it.endOfLifeAsDate)}
     </div>
 </j:jelly>

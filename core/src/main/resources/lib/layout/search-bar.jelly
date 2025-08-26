@@ -58,7 +58,7 @@ THE SOFTWARE.
              spellcheck="false"
              disabled="${attrs.enabled == false ? true : null}" />
       <j:if test="${attrs.hasKeyboardShortcut != 'false'}">
-        <l:keyboard-shortcut shortcut="symbol-search-shortcut" message="${%shortcut}" />
+        <l:keyboard-shortcut shortcut="symbol-search-shortcut" message="---Translate 978--- ${%shortcut}" />
       </j:if>
     </div>
   </div>

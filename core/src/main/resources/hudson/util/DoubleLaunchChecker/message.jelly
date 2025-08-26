@@ -26,21 +26,21 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <div class="jenkins-alert jenkins-alert-warning">
       <p>
-        ${%message(it.home)}
+        ---Translate 662--- ${%message(it.home)}
       </p>
       <table>
         <tr>
-          <td>${%This Jenkins}:</td>
+          <td>---Translate 662--- ${%This Jenkins}:</td>
           <td>${it.id}</td>
         </tr>
         <tr>
-          <td>${%Other Jenkins}:</td>
+          <td>---Translate 662--- ${%Other Jenkins}:</td>
           <td>${it.collidingId}</td>
         </tr>
       </table>
       <div>
         <form method="post" action="${rootURL}/${it.url}/disable">
-          <f:submit value="${%label}" />
+          <f:submit value="---Translate 662--- ${%label}" />
         </form>
       </div>
   </div>

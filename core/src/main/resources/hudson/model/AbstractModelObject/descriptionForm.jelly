@@ -45,8 +45,8 @@ THE SOFTWARE.
                     codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
       </f:entry>
       <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
-        <f:submit value="${%Save}" />
-        <button type="button" class="jenkins-button description-cancel-button">${%Cancel}</button>
+        <f:submit value="---Translate 380--- ${%Save}" />
+        <button type="button" class="jenkins-button description-cancel-button">---Translate 380--- ${%Cancel}</button>
       </div>
     </form>
   </l:ajax>

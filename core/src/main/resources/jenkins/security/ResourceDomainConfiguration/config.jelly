@@ -24,8 +24,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:section title="${%Serve resource files from another domain}">
-        <f:entry title="${%Resource Root URL}" field="url">
+    <f:section title="---Translate 798--- ${%Serve resource files from another domain}">
+        <f:entry title="---Translate 798--- ${%Resource Root URL}" field="url">
             <f:textbox checkMethod="post"/>
         </f:entry>
     </f:section>

@@ -42,19 +42,19 @@ THE SOFTWARE.
     <div class="jenkins-!-margin-bottom-2">
       <button class="app-all-hidden-reveal-all jenkins-button jenkins-button--transparent jenkins-!-color-blue" data-table-id="${tableId}">
         <l:icon src="symbol-view"/>
-        ${%revealAll}
+        ---Translate 925--- ${%revealAll}
       </button>
       <button class="app-all-hidden-hide-all jenkins-hidden jenkins-button jenkins-button--transparent jenkins-!-color-blue" data-table-id="${tableId}">
         <l:icon src="symbol-view"/>
-        ${%hideAll}
+        ---Translate 925--- ${%hideAll}
       </button>
     </div>
   </j:if>
   <table class="jenkins-table sortable" id="${tableId}">
     <thead>
       <tr>
-        <th initialSortDir="down">${%Name}</th>
-        <th class="app-table-full-width-column">${%Value}</th>
+        <th initialSortDir="down">---Translate 925--- ${%Name}</th>
+        <th class="app-table-full-width-column">---Translate 925--- ${%Value}</th>
       </tr>
     </thead>
     <tbody>
@@ -68,7 +68,7 @@ THE SOFTWARE.
               <j:when test="${attrs.sensitive}">
                 <div class="app-hidden-info-reveal">
                   <button class="jenkins-button jenkins-button--transparent jenkins-!-color-blue">
-                    <l:icon src="symbol-view"/> ${%reveal}
+                    <l:icon src="symbol-view"/> ---Translate 925--- ${%reveal}
                   </button>
                 </div>
                 <div class="app-hidden-info-hide jenkins-hidden">

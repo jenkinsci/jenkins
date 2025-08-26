@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName} ${%Load Statistics}" type="one-column">
-    <l:breadcrumb title="${%Load Statistics}"/>
+  <l:layout title="${it.displayName} ---Translate 742--- ${%Load Statistics}" type="one-column">
+    <l:breadcrumb title="---Translate 742--- ${%Load Statistics}"/>
     <l:main-panel>
       <j:set var="prefix" value="overallLoad" />
       <st:include page="main.jelly" from="${it.overallLoad}" />

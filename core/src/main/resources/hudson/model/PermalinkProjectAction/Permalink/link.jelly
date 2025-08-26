@@ -32,7 +32,7 @@ THE SOFTWARE.
   <j:set var="b" value="${it.resolve(job)}"/>
   <j:if test="${b!=null}">
     <li class="permalink-item">
-      <a class="permalink-link model-link inside tl-tr" href="${it.id}/">${%format(it.displayName,b.displayName,b.timestampString)}</a>
+      <a class="permalink-link model-link inside tl-tr" href="${it.id}/">---Translate 471--- ${%format(it.displayName,b.displayName,b.timestampString)}</a>
     </li>
   </j:if>
 </j:jelly>

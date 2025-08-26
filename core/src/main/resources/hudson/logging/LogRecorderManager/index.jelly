@@ -27,20 +27,20 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Log Recorders}" type="one-column">
+<l:layout title="---Translate 365--- ${%Log Recorders}" type="one-column">
   <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
   <l:main-panel xmlns:local="local">
-    <l:app-bar title="${%Log Recorders}">
+    <l:app-bar title="---Translate 365--- ${%Log Recorders}">
       <l:isAdmin>
         <a href="new" class="jenkins-button jenkins-button--primary">
           <l:icon src="symbol-add" />
-          ${%Add recorder}
+          ---Translate 365--- ${%Add recorder}
         </a>
       </l:isAdmin>
       <a href="levels" class="jenkins-button">
-        ${%Log levels}
+        ---Translate 365--- ${%Log levels}
       </a>
-      <t:help tooltip="${%Additional information on log recorders}" href="https://www.jenkins.io/redirect/log-recorders" />
+      <t:help tooltip="---Translate 365--- ${%Additional information on log recorders}" href="https://www.jenkins.io/redirect/log-recorders" />
     </l:app-bar>
 
     <d:taglib uri="local">
@@ -57,12 +57,12 @@ THE SOFTWARE.
     <table id="logRecorders" class="jenkins-table sortable">
       <thead>
         <tr>
-          <th initialSortDir="down">${%Name}</th>
+          <th initialSortDir="down">---Translate 365--- ${%Name}</th>
           <th class="jenkins-table__cell--tight" data-sort-disable="true"/>
         </tr>
       </thead>
       <tbody>
-        <local:row href="all" name="${%All Jenkins Logs}" />
+        <local:row href="all" name="---Translate 365--- ${%All Jenkins Logs}" />
         <j:forEach var="lr" items="${it.recorders}">
           <local:row name="${lr.name}" href="${lr.searchUrl}/">
             <l:isAdmin>

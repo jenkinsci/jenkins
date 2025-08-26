@@ -19,9 +19,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:section title="${%fingerprints}">
+    <f:section title="---Translate 820--- ${%fingerprints}">
         <f:entry>
-            <f:checkbox title="${%fingerprint.clean.disable}" field="fingerprintCleanupDisabled"
+            <f:checkbox title="---Translate 820--- ${%fingerprint.clean.disable}" field="fingerprintCleanupDisabled"
                         default="${it.fingerprintCleanupDisabled}" />
         </f:entry>
         <j:if test="${descriptor.fingerprintStorageDescriptors.size() gt 1}">

@@ -32,7 +32,7 @@ THE SOFTWARE.
     publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
     ]]>
   </st:documentation>
-  <f:descriptorList title="${%Post-build Actions}"
+  <f:descriptorList title="---Translate 907--- ${%Post-build Actions}"
                     descriptors="${h.getPublisherDescriptors(it)}"
                     instances="${it.publishers}" />
 </j:jelly>

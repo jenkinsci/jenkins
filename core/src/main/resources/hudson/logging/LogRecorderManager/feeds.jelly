@@ -26,12 +26,12 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:dd="/lib/layout/dropdowns">
     <dd:item icon="symbol-rss"
-             text="${%All}"
+             text="---Translate 366--- ${%All}"
              href="rss" />
     <dd:item icon="symbol-rss"
-             text="${%WARNING}"
+             text="---Translate 366--- ${%WARNING}"
              href="rss?level=WARNING" />
     <dd:item icon="symbol-rss"
-             text="${%SEVERE}"
+             text="---Translate 366--- ${%SEVERE}"
              href="rss?level=SEVERE" />
 </j:jelly>

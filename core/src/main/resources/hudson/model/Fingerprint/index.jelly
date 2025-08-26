@@ -33,27 +33,27 @@ THE SOFTWARE.
         MD5: ${it.hashString}
       </div>
       <div>
-        ${%introduced(it.timestampString)}
+        ---Translate 432--- ${%introduced(it.timestampString)}
         <j:choose>
           <j:when test="${it.original==null}">
-            ${%outside Jenkins}
+            ---Translate 432--- ${%outside Jenkins}
           </j:when>
           <j:otherwise>
             <t:buildLink job="${it.original.job}" number="${it.original.number}" jobName="${it.original.name}" />
           </j:otherwise>
         </j:choose>
       </div>
-      <h2>${%Usage}</h2>
+      <h2>---Translate 432--- ${%Usage}</h2>
       <j:set var="jobs" value="${it.jobs}"/>
       <j:choose>
         <j:when test="${empty(jobs)}">
           <p>
-            ${%This file has not been used anywhere else.}
+            ---Translate 432--- ${%This file has not been used anywhere else.}
           </p>
         </j:when>
         <j:otherwise>
           <p>
-            ${%This file has been used in the following places}:
+            ---Translate 432--- ${%This file has been used in the following places}:
           </p>
           <table class="fingerprint-summary">
             <j:set var="usages" value="${it.usages}"/>

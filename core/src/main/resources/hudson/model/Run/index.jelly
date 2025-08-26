@@ -52,14 +52,14 @@ THE SOFTWARE.
 
           <div style="float:right; z-index: 1; position:relative; margin-left: 1em">
             <div style="margin-top:1em">
-              ${%startedAgo(it.timestampString)}
+              ---Translate 487--- ${%startedAgo(it.timestampString)}
             </div>
             <div>
               <j:if test="${it.building}">
-                ${%beingExecuted(it.executor.timestampString)}
+                ---Translate 487--- ${%beingExecuted(it.executor.timestampString)}
               </j:if>
               <j:if test="${!it.building}">
-                ${%Took} <a href="${rootURL}/${it.parent.url}buildTimeTrend">${it.durationString}</a>
+                ---Translate 487--- ${%Took} <a href="${rootURL}/${it.parent.url}buildTimeTrend">${it.durationString}</a>
               </j:if>
               <st:include page="details.jelly" optional="true" />
             </div>
@@ -67,7 +67,7 @@ THE SOFTWARE.
 
 
           <table>
-            <t:artifactList build="${it}" caption="${%Build Artifacts}"/>
+            <t:artifactList build="${it}" caption="---Translate 487--- ${%Build Artifacts}"/>
 
             <!-- give actions a chance to contribute summary item -->
             <j:forEach var="a" items="${it.allActions}">

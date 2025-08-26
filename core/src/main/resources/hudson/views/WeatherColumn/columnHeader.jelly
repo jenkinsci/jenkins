@@ -24,7 +24,7 @@ THE SOFTWARE.
 
  <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-    <th class="jenkins-table__cell--tight" tooltip="${%Weather report showing aggregated status of recent builds}">
-        ${%W}
+    <th class="jenkins-table__cell--tight" tooltip="---Translate 686--- ${%Weather report showing aggregated status of recent builds}">
+        ---Translate 686--- ${%W}
     </th>
  </j:jelly>

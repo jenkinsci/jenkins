@@ -25,9 +25,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Builds}" />
+    <l:breadcrumb title="---Translate 535--- ${%Builds}" />
     <l:main-panel>
-      <l:app-bar title="${%Builds}" />
+      <l:app-bar title="---Translate 535--- ${%Builds}" />
 
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>

@@ -31,29 +31,29 @@ THE SOFTWARE.
   <l:layout permission="${it.EXTENDED_READ}" title="${it.displayName}">
     <j:set var="readOnlyMode" value="${!h.hasPermission(it, it.CONFIGURE)}" />
     <st:include page="sidepanel.jelly"/>
-    <l:breadcrumb title="${%Configure}" />
+    <l:breadcrumb title="---Translate 728--- ${%Configure}" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="instance" value="${it.node}" />
         <j:set var="descriptor" value="${instance.descriptor}" />
 
         <!-- Currently not editable
-        <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
+        <f:entry title="---Translate 728--- ${%Description}" help="/help/system-config/master-slave/description.html">
           <f:textbox field="nodeDescription" />
         </f:entry>
         -->
 
-        <f:entry title="${%Number of executors}" field="numExecutors">
+        <f:entry title="---Translate 728--- ${%Number of executors}" field="numExecutors">
           <f:number clazz="non-negative-number-required" min="0" step="1"/>
         </f:entry>
 
-        <f:entry title="${%Labels}" field="labelString">
+        <f:entry title="---Translate 728--- ${%Labels}" field="labelString">
           <f:textbox />
         </f:entry>
 
         <f:slave-mode name="builtin.mode" node="${it.node}"/>
 
-        <f:descriptorList title="${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
+        <f:descriptorList title="---Translate 728--- ${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
 
         <f:saveApplyBar/>
       </f:form>

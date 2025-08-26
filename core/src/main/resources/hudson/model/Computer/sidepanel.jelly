@@ -30,14 +30,14 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task contextMenu="false" href="${rootURL}/${it.url}" icon="${it.iconClassName}" title="${%Status}"/>
-      <l:delete permission="${it.DELETE}" title="${%Delete Agent}" message="${%delete.confirm(it.name)}"/>
+      <l:task contextMenu="false" href="${rootURL}/${it.url}" icon="${it.iconClassName}" title="---Translate 409--- ${%Status}"/>
+      <l:delete permission="${it.DELETE}" title="---Translate 409--- ${%Delete Agent}" message="---Translate 409--- ${%delete.confirm(it.name)}"/>
       <l:task href="${rootURL}/${it.url}configure" icon="symbol-settings" permission="${it.EXTENDED_READ}"
               title="${it.hasPermission(it.CONFIGURE) ? '%Configure' : '%View Configuration'}"/>
-      <l:task href="${rootURL}/${it.url}builds" icon="symbol-build-history" title="${%Build History}"/>
-      <l:task href="${rootURL}/${it.url}load-statistics" icon="symbol-analytics" title="${%Load Statistics}"/>
+      <l:task href="${rootURL}/${it.url}builds" icon="symbol-build-history" title="---Translate 409--- ${%Build History}"/>
+      <l:task href="${rootURL}/${it.url}load-statistics" icon="symbol-analytics" title="---Translate 409--- ${%Load Statistics}"/>
       <j:if test="${it.channel!=null}">
-        <l:task href="${rootURL}/${it.url}script" icon="symbol-terminal" permission="${app.ADMINISTER}" title="${%Script Console}"/>
+        <l:task href="${rootURL}/${it.url}script" icon="symbol-terminal" permission="${app.ADMINISTER}" title="---Translate 409--- ${%Script Console}"/>
       </j:if>
       <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for derived class to add more items -->
       <t:actions />

@@ -40,7 +40,7 @@ THE SOFTWARE.
     </div>
 
     <span tooltip="${tooltip}" data-tooltip-delay="500">
-      ${%startedAgo(object.timestampString)}
+      ---Translate 776--- ${%startedAgo(object.timestampString)}
     </span>
   </div>
 </j:jelly>

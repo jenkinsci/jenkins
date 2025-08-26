@@ -25,30 +25,30 @@ THE SOFTWARE.
 <!-- Delete view -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<l:layout title="${%Safe restart}">
+	<l:layout title="---Translate 748--- ${%Safe restart}">
 		<st:include page="sidepanel.jelly" />
-		<l:breadcrumb title="${%Safe restart}" />
+		<l:breadcrumb title="---Translate 748--- ${%Safe restart}" />
 		<l:main-panel>
-			<l:app-bar title="${%Safe restart}" />
+			<l:app-bar title="---Translate 748--- ${%Safe restart}" />
 			<j:choose>
 				<j:when test="${app.lifecycle.canRestart()}">
-          <p>${%restartWarning}</p>
+          <p>---Translate 748--- ${%restartWarning}</p>
 
           <form method="post" action="safeRestart">
-            <f:entry title="${%Jenkins is restarting banner}"
-                     description="${%description}">
+            <f:entry title="---Translate 748--- ${%Jenkins is restarting banner}"
+                     description="---Translate 748--- ${%description}">
               <f:textbox name="message" value="${app.quietDownReason ?: null}"/>
             </f:entry>
             <f:bottomButtonBar>
-              <f:submit clazz="jenkins-!-destructive-color" value="${%Restart}"/>
+              <f:submit clazz="jenkins-!-destructive-color" value="---Translate 748--- ${%Restart}"/>
               <j:if test="${app.isQuietingDown()}">
-                <f:submit name="cancel" primary="false" value="${%Cancel}"/>
+                <f:submit name="cancel" primary="false" value="---Translate 748--- ${%Cancel}"/>
               </j:if>
             </f:bottomButtonBar>
           </form>
 				</j:when>
 				<j:otherwise>
-					${%cannotRestart}
+					---Translate 748--- ${%cannotRestart}
 				</j:otherwise>
 			</j:choose>
 		</l:main-panel>

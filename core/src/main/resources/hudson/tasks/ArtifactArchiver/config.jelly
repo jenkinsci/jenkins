@@ -24,30 +24,30 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:entry title="${%Files to archive}" field="artifacts">
+	<f:entry title="---Translate 620--- ${%Files to archive}" field="artifacts">
 	  <f:textbox />
 	</f:entry>
   <f:advanced>
-    <f:entry title="${%Excludes}" field="excludes">
+    <f:entry title="---Translate 620--- ${%Excludes}" field="excludes">
       <f:textbox />
     </f:entry>
     <f:entry field="allowEmptyArchive">
-      <f:checkbox title="${%allowEmptyArchive}" />
+      <f:checkbox title="---Translate 620--- ${%allowEmptyArchive}" />
     </f:entry>
     <f:entry field="onlyIfSuccessful">
-      <f:checkbox title="${%onlyIfSuccessful}" />
+      <f:checkbox title="---Translate 620--- ${%onlyIfSuccessful}" />
     </f:entry>
     <f:entry field="fingerprint">
-      <f:checkbox title="${%Fingerprint all archived artifacts}" />
+      <f:checkbox title="---Translate 620--- ${%Fingerprint all archived artifacts}" />
     </f:entry>
     <f:entry field="defaultExcludes">
-      <f:checkbox title="${%defaultExcludes}" default="true" />
+      <f:checkbox title="---Translate 620--- ${%defaultExcludes}" default="true" />
     </f:entry>
     <f:entry field="caseSensitive">
-      <f:checkbox title="${%caseSensitive}" default="true" />
+      <f:checkbox title="---Translate 620--- ${%caseSensitive}" default="true" />
     </f:entry>
     <f:entry field="followSymlinks" >
-      <f:checkbox title="${%followSymlinks}" default="false"/>
+      <f:checkbox title="---Translate 620--- ${%followSymlinks}" default="false"/>
     </f:entry>
   </f:advanced>
 </j:jelly>

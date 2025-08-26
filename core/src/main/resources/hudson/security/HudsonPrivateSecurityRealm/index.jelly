@@ -24,25 +24,25 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <l:layout permission="${app.ADMINISTER}" title="${%Users}" type="one-column">
+  <l:layout permission="${app.ADMINISTER}" title="---Translate 578--- ${%Users}" type="one-column">
     <l:main-panel>
-      <l:app-bar title="${%Users}" subtitle="${it.allUsers.size()}">
+      <l:app-bar title="---Translate 578--- ${%Users}" subtitle="${it.allUsers.size()}">
         <l:isAdmin>
           <a href="addUser" class="jenkins-button jenkins-button--primary">
             <l:icon src="symbol-add" />
-            ${%Create User}
+            ---Translate 578--- ${%Create User}
           </a>
         </l:isAdmin>
       </l:app-bar>
 
-      <p class="jenkins-description">${%blurb}</p>
+      <p class="jenkins-description">---Translate 578--- ${%blurb}</p>
 
       <table class="jenkins-table sortable" id="people">
         <thead>
           <tr>
             <th class="jenkins-table__cell--tight" data-sort-disable="true" />
-            <th initialSortDir="down">${%User ID}</th>
-            <th>${%Name}</th>
+            <th initialSortDir="down">---Translate 578--- ${%User ID}</th>
+            <th>---Translate 578--- ${%Name}</th>
             <th class="jenkins-table__cell--tight" data-sort-disable="true" />
             <th class="jenkins-table__cell--tight" data-sort-disable="true" />
           </tr>
@@ -72,7 +72,7 @@ THE SOFTWARE.
                 <j:if test="${user.canDelete()}">
                   <div class="jenkins-table__cell__button-wrapper">
                     <l:confirmationLink href="${user.url}/doDelete" class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
-                                        post="true" message="${%delete.user(user.displayName)}">
+                                        post="true" message="---Translate 578--- ${%delete.user(user.displayName)}">
                       <l:icon src="symbol-trash" />
                     </l:confirmationLink>
                   </div>

@@ -25,7 +25,7 @@ THE SOFTWARE.
 <!-- About Jenkins page -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:layout type="one-column" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%about(app.VERSION)}">
+  <l:layout type="one-column" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="---Translate 325--- ${%about(app.VERSION)}">
     <l:header>
       <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
     </l:header>
@@ -33,28 +33,28 @@ THE SOFTWARE.
     <l:main-panel>
       <div class="app-about-branding">
         <div class="app-about-branding__aurora"></div>
-        <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}" />
+        <img src="${imagesURL}/svgs/logo.svg" alt="---Translate 325--- ${%logo}" />
       </div>
 
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content">
           <h1 class="app-about-heading">Jenkins</h1>
           <p class="app-about-version">
-            ${%Version} ${app.VERSION}
+            ---Translate 325--- ${%Version} ${app.VERSION}
           </p>
         </div>
         <div class="jenkins-app-bar__controls">
           <a href="https://www.jenkins.io/participate/" class="jenkins-button" target="_blank">
             <l:icon src="symbol-heart" />
-            ${%Get involved}
+            ---Translate 325--- ${%Get involved}
           </a>
         </div>
       </div>
 
-      <p class="app-about-paragraph">${%blurb}</p>
+      <p class="app-about-paragraph">---Translate 325--- ${%blurb}</p>
 
       <div class="jenkins-tab-pane">
-        <h2 class="jenkins-tab-pane__title">${%maven.dependencies}</h2>
+        <h2 class="jenkins-tab-pane__title">---Translate 325--- ${%maven.dependencies}</h2>
         <j:set var="uri" value="${it.licensesURL}"/>
         <j:choose>
           <j:when test="${uri != null}">
@@ -63,19 +63,19 @@ THE SOFTWARE.
             </t:thirdPartyLicenses>
           </j:when>
           <j:otherwise>
-            <p>${%No information recorded}</p>
+            <p>---Translate 325--- ${%No information recorded}</p>
           </j:otherwise>
         </j:choose>
       </div>
 
       <div class="jenkins-tab-pane">
-        <h2 class="jenkins-tab-pane__title">${%static.dependencies}</h2>
+        <h2 class="jenkins-tab-pane__title">---Translate 325--- ${%static.dependencies}</h2>
         <table class="jenkins-table sortable">
           <thead>
             <tr>
-              <th>${%Name}</th>
-              <th>${%Author}</th>
-              <th>${%Licence}</th>
+              <th>---Translate 325--- ${%Name}</th>
+              <th>---Translate 325--- ${%Author}</th>
+              <th>---Translate 325--- ${%Licence}</th>
             </tr>
           </thead>
           <tbody>
@@ -110,11 +110,11 @@ THE SOFTWARE.
       </div>
 
       <div class="jenkins-tab-pane">
-        <h2 class="jenkins-tab-pane__title">${%plugin.dependencies}</h2>
+        <h2 class="jenkins-tab-pane__title">---Translate 325--- ${%plugin.dependencies}</h2>
         <table class="jenkins-table sortable">
           <thead>
             <tr>
-              <th>${%Name}</th>
+              <th>---Translate 325--- ${%Name}</th>
             </tr>
           </thead>
           <tbody>

@@ -26,9 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core">
   <j:if test="${it.launchSupported and it.offline and !it.temporarilyOffline and it.isConnecting()}">
     <p>
-      ${%launchingDescription}
+      ---Translate 591--- ${%launchingDescription}
       <j:if test="${it.hasPermission(it.CONFIGURE) or it.hasPermission(it.CONNECT)}">
-        <a href="log">${%See log for more details}</a>
+        <a href="log">---Translate 591--- ${%See log for more details}</a>
       </j:if>
     </p>
   </j:if>

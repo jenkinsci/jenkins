@@ -32,17 +32,17 @@ THE SOFTWARE.
     <l:header />
     <l:main-panel>
         <h1 style="text-align: center">
-          <img src="${imagesURL}/rage.svg" height="179" width="154"/> <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
+          <img src="${imagesURL}/rage.svg" height="179" width="154"/> <span style="font-size:50px"><st:nbsp/>---Translate 730--- ${%Oops!}</span>
         </h1>
         <div id="error-description">
-          <h2 style="text-align: center">${%problemHappened}</h2>
+          <h2 style="text-align: center">---Translate 730--- ${%problemHappened}</h2>
         <p style="text-align: center">Logging ID=${request2.getAttribute('jenkins.exception.id')}</p>
       </div>
       <j:if test="${app.shouldShowStackTrace()}">
-        <p>${%checkJIRA} ${%vote} ${%pleaseReport} ${%stackTracePlease} ${%checkML}</p>
+        <p>---Translate 730--- ${%checkJIRA} ---Translate 730--- ${%vote} ---Translate 730--- ${%pleaseReport} ---Translate 730--- ${%stackTracePlease} ---Translate 730--- ${%checkML}</p>
         <j:set var="stacktrace" value="${h.printThrowable(request2.getAttribute('jakarta.servlet.error.exception'))}" />
         <h2>
-            ${%Stack trace}
+            ---Translate 730--- ${%Stack trace}
             <l:copyButton text="${stacktrace}"/>
         </h2>
         <pre style="margin:2em; clear:both">${stacktrace}</pre>

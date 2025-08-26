@@ -28,38 +28,38 @@ THE SOFTWARE.
   <st:statusCode value="404"/>
   <l:layout>
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Error}" />
+    <l:breadcrumb title="---Translate 374--- ${%Error}" />
     <l:main-panel>
-      <h1>${%Error: no workspace}</h1>
+      <h1>---Translate 374--- ${%Error: no workspace}</h1>
       <j:choose>
         <j:when test="${it.lastBuild==null}">
           <p>
-            ${%A project won't have any workspace until at least one build is performed.}
+            ---Translate 374--- ${%A project won't have any workspace until at least one build is performed.}
           </p>
         </j:when>
         <j:otherwise>
           <p>
-            ${%There's no workspace for this project. Possible reasons are:}
+            ---Translate 374--- ${%There's no workspace for this project. Possible reasons are:}
           </p>
           <ol>
             <li>
-              ${%The project was renamed recently and no build was done under the new name.}
+              ---Translate 374--- ${%The project was renamed recently and no build was done under the new name.}
             </li>
             <li>
-              ${%The agent this project has run on for the last time was removed.}
+              ---Translate 374--- ${%The agent this project has run on for the last time was removed.}
             </li>
             <li>
-              ${%li3(it.workspace)}
+              ---Translate 374--- ${%li3(it.workspace)}
             </li>
             <li>
-              ${%The workspace was wiped out and no build has been done since then.}
+              ---Translate 374--- ${%The workspace was wiped out and no build has been done since then.}
             </li>
           </ol>
         </j:otherwise>
       </j:choose>
       <p>
       <j:if test="${!it.isDisabled()}">
-        ${%text}
+        ---Translate 374--- ${%text}
       </j:if>
       </p>
     </l:main-panel>

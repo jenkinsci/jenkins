@@ -28,14 +28,14 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:side-panel sticky="true">
-    <l:app-bar title="${%Plugins}" />
+    <l:app-bar title="---Translate 334--- ${%Plugins}" />
     <l:tasks>
-      <l:task href="${rootURL}/manage/pluginManager/" icon="symbol-download" title="${%Updates}" badge="${app.updateCenter.badge}"/>
-      <l:task href="${rootURL}/manage/pluginManager/available" icon="symbol-shopping-bag" title="${%Available plugins}"/>
-      <l:task href="${rootURL}/manage/pluginManager/installed" icon="symbol-plugins" title="${%Installed plugins}"/>
-      <l:task href="${rootURL}/manage/pluginManager/advanced" icon="symbol-settings" title="${%Advanced settings}"/>
+      <l:task href="${rootURL}/manage/pluginManager/" icon="symbol-download" title="---Translate 334--- ${%Updates}" badge="${app.updateCenter.badge}"/>
+      <l:task href="${rootURL}/manage/pluginManager/available" icon="symbol-shopping-bag" title="---Translate 334--- ${%Available plugins}"/>
+      <l:task href="${rootURL}/manage/pluginManager/installed" icon="symbol-plugins" title="---Translate 334--- ${%Installed plugins}"/>
+      <l:task href="${rootURL}/manage/pluginManager/advanced" icon="symbol-settings" title="---Translate 334--- ${%Advanced settings}"/>
       <j:if test="${!app.updateCenter.jobs.isEmpty()}">
-        <l:task href="${rootURL}/manage/pluginManager/updates/" icon="symbol-list" title="${%Download progress}"/>
+        <l:task href="${rootURL}/manage/pluginManager/updates/" icon="symbol-list" title="---Translate 334--- ${%Download progress}"/>
       </j:if>
     </l:tasks>
   </l:side-panel>

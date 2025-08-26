@@ -4,11 +4,11 @@
     <l:header />
     <l:side-panel>
       <l:tasks>
-        <l:task href="configure" icon="icon-up icon-md" title="${%Back to user configuration}"/>
+        <l:task href="configure" icon="icon-up icon-md" title="---Translate 533--- ${%Back to user configuration}"/>
       </l:tasks>
     </l:side-panel>
     <l:main-panel>
-      <h1>${%Error}</h1>
+      <h1>---Translate 533--- ${%Error}</h1>
       <p>${message}</p>
     </l:main-panel>
   </l:layout>

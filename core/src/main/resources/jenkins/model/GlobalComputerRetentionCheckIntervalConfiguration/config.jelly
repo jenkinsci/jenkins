@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <f:entry title="${%Computer Retention Check Interval}" help="/help/system-config/computerRetentionCheckInterval.html">
+  <f:entry title="---Translate 773--- ${%Computer Retention Check Interval}" help="/help/system-config/computerRetentionCheckInterval.html">
     <f:number
       clazz="required number" min="1" max="60"
       field="computerRetentionCheckInterval"
-      checkMessage="${%The Computer Retention Check Interval is mandatory and must be a number greater than zero.}" />
+      checkMessage="---Translate 773--- ${%The Computer Retention Check Interval is mandatory and must be a number greater than zero.}" />
   </f:entry>
 </j:jelly>

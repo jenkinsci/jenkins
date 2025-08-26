@@ -24,25 +24,25 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<l:layout title="${%JENKINS_HOME is almost full}">
+	<l:layout title="---Translate 348--- ${%JENKINS_HOME is almost full}">
 		<l:main-panel>
       <h1>
         <l:icon class="icon-warning icon-xlg"/>
-        ${%blurb}
+        ---Translate 348--- ${%blurb}
       </h1>
 
       <p>
-        ${%description.1(app.rootDir)}
+        ---Translate 348--- ${%description.1(app.rootDir)}
       </p><p>
-        ${%description.2}
+        ---Translate 348--- ${%description.2}
       </p>
 
       <ol>
         <li>
-          ${%solution.1}
+          ---Translate 348--- ${%solution.1}
         </li>
         <li>
-          ${%solution.2}
+          ---Translate 348--- ${%solution.2}
         </li>
         <j:forEach var="s" items="${it.solutions}">
           <li>

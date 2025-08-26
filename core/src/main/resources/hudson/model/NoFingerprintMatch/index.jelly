@@ -25,21 +25,21 @@ THE SOFTWARE.
 <!-- used when fingerprint had no match -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${%No matching record found}">
+  <l:layout title="---Translate 463--- ${%No matching record found}">
     <l:main-panel>
       <h1>
         ${title}
       </h1>
 
       <p>
-        ${%description(it.displayName)}
+        ---Translate 463--- ${%description(it.displayName)}
       </p>
       <ol>
         <li>
-          ${%cause.1}
+          ---Translate 463--- ${%cause.1}
         </li>
         <li>
-          ${%cause.2}
+          ---Translate 463--- ${%cause.2}
         </li>
       </ol>
     </l:main-panel>

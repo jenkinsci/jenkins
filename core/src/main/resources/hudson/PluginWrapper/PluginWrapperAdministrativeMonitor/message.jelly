@@ -2,10 +2,10 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <div class="jenkins-alert jenkins-alert-danger" role="alert">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="correct" value="${%Correct}"/>
+      <f:submit name="correct" value="---Translate 341--- ${%Correct}"/>
     </form>
-    <p>${%blurbOriginal}</p>
-    <p><strong>${%DirectlyDependentPlugins.title}</strong></p>
+    <p>---Translate 341--- ${%blurbOriginal}</p>
+    <p><strong>---Translate 341--- ${%DirectlyDependentPlugins.title}</strong></p>
     <j:forEach items="${it.plugins}" var="plugin">
       <j:if test="${plugin.hasOriginalDependencyErrors()}">
         <dl>
@@ -17,8 +17,8 @@
       </j:if>
     </j:forEach>
     <j:if test="${it.hasAnyDerivedDependencyErrors()}">
-      <p>${%blurbDerived}</p>
-      <p><strong>${%IndirectlyDependentPlugins.title}</strong></p>
+      <p>---Translate 341--- ${%blurbDerived}</p>
+      <p><strong>---Translate 341--- ${%IndirectlyDependentPlugins.title}</strong></p>
       <dl>
         <j:forEach items="${it.plugins}" var="plugin">
           <j:if test="${plugin.hasDerivedDependencyErrors()}">

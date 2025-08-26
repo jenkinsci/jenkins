@@ -39,7 +39,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" it="${it.job}"/>
     <l:main-panel>
       <h1>${it.job.pronoun} ${it.job.displayName}</h1>
-      <p class="jenkins-description">${%description}</p>
+      <p class="jenkins-description">---Translate 466--- ${%description}</p>
       <j:set var="delay" value="${request2.getParameter('delay')}" />
       <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters"
               tableClass="parameters" class="jenkins-form">
@@ -67,7 +67,7 @@ THE SOFTWARE.
             ${it.buildButtonText}
           </button>
           <a href="./" class="jenkins-button">
-            ${%Cancel}
+            ---Translate 466--- ${%Cancel}
           </a>
         </f:bottomButtonBar>
       </f:form>

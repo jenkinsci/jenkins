@@ -11,27 +11,27 @@
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h4 class="modal-title">${%authenticate-security-token.getting.started}</h4>
+                  <h4 class="modal-title">---Translate 719--- ${%authenticate-security-token.getting.started}</h4>
                 </div>
                 <div class="modal-body setup-wizard-heading">
                   <div class="jumbotron welcome-panel offline">
-                    <h1>${%authenticate-security-token.unlock.jenkins}</h1>
-                    <p>${%jenkins.install.findSecurityTokenMessage(it.initialAdminPasswordFile)}</p>
-                    <p>${%authenticate-security-token.copy.password}</p>
+                    <h1>---Translate 719--- ${%authenticate-security-token.unlock.jenkins}</h1>
+                    <p>---Translate 719--- ${%jenkins.install.findSecurityTokenMessage(it.initialAdminPasswordFile)}</p>
+                    <p>---Translate 719--- ${%authenticate-security-token.copy.password}</p>
                     <j:if test="${error}">
                         <div class="jenkins-alert jenkins-alert-danger">
-                          <strong>${%authenticate-security-token.error}</strong> ${%authenticate-security-token.password.incorrect}
+                          <strong>---Translate 719--- ${%authenticate-security-token.error}</strong> ---Translate 719--- ${%authenticate-security-token.password.incorrect}
                         </div>
                     </j:if>
                     <div class="form-group ${error ? 'has-error' : ''}">
-                      <label class="control-label" for="security-token">${%authenticate-security-token.password.administrator}</label>
+                      <label class="control-label" for="security-token">---Translate 719--- ${%authenticate-security-token.password.administrator}</label>
                       <input name="j_username" value="${app.setupWizard.initialSetupAdminUserName}" type="hidden"/>
                       <input id="security-token" class="jenkins-input ${error ? 'danger' : ''}" type="password" name="j_password"/>
                     </div>
                   </div>
                 </div>
                 <div class="modal-footer">
-                  <input type="submit" class="btn btn-primary set-security-key" value="${%authenticate-security-token.continue}"/>
+                  <input type="submit" class="btn btn-primary set-security-key" value="---Translate 719--- ${%authenticate-security-token.continue}"/>
                 </div>
               </div>
             </div>

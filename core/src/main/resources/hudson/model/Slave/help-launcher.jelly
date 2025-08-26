@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:ajax>
     <div>
-      ${%Controls how Jenkins starts this agent.}
+      ---Translate 495--- ${%Controls how Jenkins starts this agent.}
 
       <dl>
         <j:forEach var="d" items="${h.getComputerLauncherDescriptors()}">

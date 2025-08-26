@@ -23,10 +23,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler" xmlns:t="/hudson/tools">
-    <f:entry title="${%Command}" field="command">
+    <f:entry title="---Translate 630--- ${%Command}" field="command">
         <f:textarea checkMethod="post"/>
     </f:entry>
-    <f:entry title="${%Tool Home}" field="toolHome">
+    <f:entry title="---Translate 630--- ${%Tool Home}" field="toolHome">
         <f:textbox/>
     </f:entry>
     <t:label />

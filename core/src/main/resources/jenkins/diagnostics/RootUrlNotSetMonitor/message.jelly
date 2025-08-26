@@ -26,24 +26,24 @@ THE SOFTWARE.
   <div class="jenkins-alert jenkins-alert-warning">
     <l:isAdmin>
       <form method="post" action="${rootURL}/${it.url}/disable">
-        <f:submit value="${%Dismiss}"/>
+        <f:submit value="---Translate 707--- ${%Dismiss}"/>
       </form>
     </l:isAdmin>
     <j:set var="actionAnchor">
-      <a href="${rootURL}/configure">${%actionUrlContent}</a>
+      <a href="${rootURL}/configure">---Translate 707--- ${%actionUrlContent}</a>
     </j:set>
   
     <j:choose>
       <j:when test="${it.isUrlNull()}">
-        ${%urlIsNull}
+        ---Translate 707--- ${%urlIsNull}
       </j:when>
       <j:otherwise>
-        ${%urlIsInvalid}
+        ---Translate 707--- ${%urlIsInvalid}
       </j:otherwise>
     </j:choose>
     <p />
     <l:isAdmin>
-      <j:out value="${%actionToTake(actionAnchor)}"/>
+      <j:out value="---Translate 707--- ${%actionToTake(actionAnchor)}"/>
     </l:isAdmin>
   </div>
 </j:jelly>

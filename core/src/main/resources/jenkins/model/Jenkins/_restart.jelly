@@ -25,19 +25,19 @@ THE SOFTWARE.
 <!-- Delete view -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<l:layout title="${%Restart Jenkins}">
+	<l:layout title="---Translate 749--- ${%Restart Jenkins}">
 		<st:include page="sidepanel.jelly" />
-		<l:breadcrumb title="${%Restart}" />
+		<l:breadcrumb title="---Translate 749--- ${%Restart}" />
 		<l:main-panel>
 			<j:choose>
 				<j:when test="${app.lifecycle.canRestart()}">
 					<form method="post" action="restart">
-						${%Are you sure you want to restart Jenkins?}
-						<f:submit value="${%Yes}" />
+						---Translate 749--- ${%Are you sure you want to restart Jenkins?}
+						<f:submit value="---Translate 749--- ${%Yes}" />
 					</form>
 				</j:when>
 				<j:otherwise>
-					${%Jenkins cannot restart itself as currently configured.}
+					---Translate 749--- ${%Jenkins cannot restart itself as currently configured.}
 				</j:otherwise>
 			</j:choose>
 		</l:main-panel>

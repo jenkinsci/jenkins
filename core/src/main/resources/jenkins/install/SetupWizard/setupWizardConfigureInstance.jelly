@@ -28,11 +28,11 @@ THE SOFTWARE.
     <l:main-panel>
      <div class="configure-instance setup-wizard-heading">
        <form action="${rootURL}/setupWizard/configureInstance" method="post">
-          <h1>${%Instance Configuration}</h1>
+          <h1>---Translate 717--- ${%Instance Configuration}</h1>
           <div style="margin: 2em;">
             <table>
             <tr>
-              <td><label for="root-url">${%Jenkins URL}:</label></td>
+              <td><label for="root-url">---Translate 717--- ${%Jenkins URL}:</label></td>
               <td>
                 <input type="text" name="rootUrl" id="root-url" class="jenkins-input" value="" />
                 <div class="error-panel error" />
@@ -40,7 +40,7 @@ THE SOFTWARE.
             </tr>
             <tr>
               <td colspan="2">
-                <div class="help-text">${%jenkinsURL_help}</div>
+                <div class="help-text">---Translate 717--- ${%jenkinsURL_help}</div>
               </td>
             </tr>
             </table>

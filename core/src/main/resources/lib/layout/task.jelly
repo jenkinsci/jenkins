@@ -297,8 +297,8 @@ THE SOFTWARE.
                 <m:a xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
                      href="${href}"
                      class="task-link task-link-no-confirm ${isCurrent ? 'task-link--active' : ''}"
-                     data-task-success="${%Done.}"
-                     data-task-failure="${%Failed.}"
+                     data-task-success="---Translate 969--- ${%Done.}"
+                     data-task-failure="---Translate 969--- ${%Failed.}"
                      data-task-post="${attrs.post}"
                      ATTRIBUTES="${attrs}"
                      EXCEPT="badge confirmationMessage contextMenu destructive enabled href icon permission permissions post requiresConfirmation title">

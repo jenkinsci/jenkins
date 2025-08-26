@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
-  <l:layout title="${%Available plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
+  <l:layout title="---Translate 338--- ${%Available plugins} - ---Translate 338--- ${%Plugins}" permission="${app.SYSTEM_READ}">
     <st:include page="sidepanel.jelly"/>
     <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
@@ -35,7 +35,7 @@ THE SOFTWARE.
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"
-                        placeholder="${%Search available plugins}"
+                        placeholder="---Translate 338--- ${%Search available plugins}"
                         id="filter-box"
                         autofocus="true"
                         value="${request2.getParameter('filter')}" />
@@ -47,7 +47,7 @@ THE SOFTWARE.
                 <div class="jenkins-dropdown__item__icon">
                   <l:icon src="symbol-download" />
                 </div>
-                ${%Install}
+                ---Translate 338--- ${%Install}
               </button>
               <l:overflowButton id="button-install-after-restart"
                                 icon="symbol-chevron-down"
@@ -58,7 +58,7 @@ THE SOFTWARE.
                     <div class="jenkins-dropdown__item__icon">
                       <l:icon src="symbol-download" />
                     </div>
-                    ${%Install after restart}
+                    ---Translate 338--- ${%Install after restart}
                   </button>
                 </dd:custom>
               </l:overflowButton>
@@ -78,16 +78,16 @@ THE SOFTWARE.
             <tr>
               <l:isAdmin>
                 <th data-sort-disable="true">
-                  ${%Install}
+                  ---Translate 338--- ${%Install}
                 </th>
               </l:isAdmin>
-              <th initialSortDir="down">${%Name}</th>
-              <th>${%Released}</th>
+              <th initialSortDir="down">---Translate 338--- ${%Name}</th>
+              <th>---Translate 338--- ${%Released}</th>
               <j:if test="${app.updateCenter.healthScoresAvailable}">
                 <th>
-                  <j:set var="healthTooltip">${%healthTooltip}</j:set>
+                  <j:set var="healthTooltip">---Translate 338--- ${%healthTooltip}</j:set>
                   <span data-html-tooltip="${healthTooltip}" data-tooltip-interactive="true">
-                    ${%Health}
+                    ---Translate 338--- ${%Health}
                   </span>
                 </th>
               </j:if>

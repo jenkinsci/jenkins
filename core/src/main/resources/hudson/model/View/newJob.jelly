@@ -26,41 +26,41 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
 
-  <l:layout type="one-column" permission="${permission}" title="${%NewJob(it.newPronoun)}">
+  <l:layout type="one-column" permission="${permission}" title="---Translate 540--- ${%NewJob(it.newPronoun)}">
     <l:header>
       <link rel="stylesheet" href="${resURL}/jsbundles/add-item.css" type="text/css" />
       <script src="${resURL}/jsbundles/add-item.js" type="text/javascript" defer="true" />
     </l:header>
 
-    <l:breadcrumb title="${%NewJob(it.newPronoun)}" />
+    <l:breadcrumb title="---Translate 540--- ${%NewJob(it.newPronoun)}" />
 
     <l:main-panel>
     <div id="add-item-panel" style="display: none;">
-      <h1>${%NewJob(it.newPronoun)}</h1>
+      <h1>---Translate 540--- ${%NewJob(it.newPronoun)}</h1>
           <form method="post" action="createItem" name="createItem" id="createItem">
             <div class="header">
               <div class="add-item-name">
-                <label for="name" class="jenkins-form-label">${%ItemName.label}</label>
+                <label for="name" class="jenkins-form-label">---Translate 540--- ${%ItemName.label}</label>
                 <input name="name" class="jenkins-input" id="name" data-valid="false" type="text" tabindex="0" />
-                <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
+                <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ---Translate 540--- ${%ItemName.validation.required}</div>
                 <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
-                <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
+                <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ---Translate 540--- ${%ItemType.validation.required}</div>
               </div>
             </div>
 
             <div>
-              <div class="jenkins-form-label">${%ItemType.label}</div>
+              <div class="jenkins-form-label">---Translate 540--- ${%ItemType.label}</div>
               <div id="items" class="categories flat" role="radiogroup" aria-labelledby="Items" data-valid="false" />
             </div>
 
             <j:if test="${!empty(app.items)}">
               <div class="item-copy">
-                <p class="jenkins-form-label">${%CopyOption.description}</p>
+                <p class="jenkins-form-label">---Translate 540--- ${%CopyOption.description}</p>
                 <div class="add-item-copy">
                   <input type="radio" name="mode" value="copy" />
-                  <label>${%CopyOption.label}</label>
+                  <label>---Translate 540--- ${%CopyOption.label}</label>
                   <j:set var="descriptor" value="${it.descriptor}" />
-                  <s:textbox id="from" data-valid="false" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
+                  <s:textbox id="from" data-valid="false" name="from" placeholder="---Translate 540--- ${%CopyOption.placeholder}" field="copyNewItemFrom"/>
                 </div>
               </div>
             </j:if>

@@ -29,7 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Edit description}" />
+    <l:breadcrumb title="---Translate 379--- ${%Edit description}" />
     <l:main-panel>
       <form action="submitDescription" method="post">
         <table>
@@ -40,7 +40,7 @@ THE SOFTWARE.
                         codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
           </f:entry>
         </table>
-        <f:submit value="${%Save}" />
+        <f:submit value="---Translate 379--- ${%Save}" />
       </form>
     </l:main-panel>
   </l:layout>

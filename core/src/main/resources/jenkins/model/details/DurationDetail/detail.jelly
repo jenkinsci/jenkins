@@ -32,14 +32,14 @@ THE SOFTWARE.
     <div>
       <j:choose>
         <j:when test="${object.building}">
-          ${%beingExecuted(object.executor.timestampString)}
+          ---Translate 775--- ${%beingExecuted(object.executor.timestampString)}
         </j:when>
         <j:otherwise>
-          ${%Took} ${object.durationString}
+          ---Translate 775--- ${%Took} ${object.durationString}
         </j:otherwise>
       </j:choose>
       <j:if test="${!empty(app.nodes) or (object.builtOnStr != null and object.builtOnStr != '')}">
-        ${%on} <t:node value="${object.builtOn}" valueStr="${object.builtOnStr}"/>
+        ---Translate 775--- ${%on} <t:node value="${object.builtOn}" valueStr="${object.builtOnStr}"/>
       </j:if>
       <st:include page="details.jelly" optional="true" />
     </div>

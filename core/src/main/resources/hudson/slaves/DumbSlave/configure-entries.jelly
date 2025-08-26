@@ -29,20 +29,20 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="jenkins-section">
-    <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
+    <f:entry title="---Translate 596--- ${%Description}" help="/help/system-config/master-slave/description.html">
       <f:textarea name="nodeDescription" value="${it.nodeDescription}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
     </f:entry>
   </div>
 
-  <f:entry title="${%Number of executors}" field="numExecutors">
+  <f:entry title="---Translate 596--- ${%Number of executors}" field="numExecutors">
     <f:number clazz="positive-number-required" min="1" step="1" default="1"/>
   </f:entry>
 
-  <f:entry title="${%Remote root directory}" field="remoteFS">
+  <f:entry title="---Translate 596--- ${%Remote root directory}" field="remoteFS">
     <f:textbox />
   </f:entry>
 
-  <f:entry title="${%Labels}" field="labelString">
+  <f:entry title="---Translate 596--- ${%Labels}" field="labelString">
     <f:textbox />
   </f:entry>
 
@@ -50,7 +50,7 @@ THE SOFTWARE.
 
   <!-- TODO: should be packaged as a tag -->
   <j:set var="itDescriptor" value="${descriptor}"/>
-  <f:dropdownList name="slave.launcher" title="${%Launch method}"
+  <f:dropdownList name="slave.launcher" title="---Translate 596--- ${%Launch method}"
                   help="${descriptor.getHelpFile('launcher')}">
     <j:forEach var="d" items="${descriptor.computerLauncherDescriptors(it)}">
       <f:dropdownListBlock value="${d.clazz.name}" name="${d.displayName}"
@@ -68,10 +68,10 @@ THE SOFTWARE.
   <!-- pointless to show this if there's only one option, which is the default -->
   <j:set var="retentionStrategies" value="${descriptor.retentionStrategyDescriptors(it)}"/>
   <j:if test="${retentionStrategies.size() gt 1}">
-    <f:dropdownDescriptorSelector title="${%Availability}" field="retentionStrategy" descriptors="${retentionStrategies}"/>
+    <f:dropdownDescriptorSelector title="---Translate 596--- ${%Availability}" field="retentionStrategy" descriptors="${retentionStrategies}"/>
   </j:if>
 
-  <f:descriptorList title="${%Node Properties}"
+  <f:descriptorList title="---Translate 596--- ${%Node Properties}"
                     descriptors="${descriptor.nodePropertyDescriptors(it)}"
                     field="nodeProperties" />
 

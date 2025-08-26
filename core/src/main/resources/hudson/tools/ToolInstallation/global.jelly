@@ -23,14 +23,14 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
-  <f:section title="${%title(descriptor.displayName)}">
+  <f:section title="---Translate 633--- ${%title(descriptor.displayName)}">
     <d:taglib uri="local">
       <d:tag name="section">
         <!-- While there's no longer a title/description for f:entry at the top level, keep this around for f:entries in tool config pages to be safe -->
         <j:set var="escapeEntryTitleAndDescription" value="true"/>
         <f:entry>
           <f:repeatable name="tool" var="instance" items="${descriptor.installations}" enableTopButton="true"
-                        add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}"
+                        add="---Translate 633--- ${%label.add(descriptor.displayName)}" header="${descriptor.displayName}"
                         noAddButton="${readOnlyMode ? 'true' : null}"
           >
             <j:set var="toolDescriptor" value="${descriptor}" /><!-- to make this descriptor accessible from properties -->
@@ -38,7 +38,7 @@ THE SOFTWARE.
               <st:include page="config.jelly" from="${descriptor}" class="${descriptor.clazz}"/>
               <f:descriptorList descriptors="${descriptor.propertyDescriptors}" field="properties"/>
               <l:isAdmin>
-                <f:repeatableDeleteButton value="${%label.delete(descriptor.displayName)}"/>
+                <f:repeatableDeleteButton value="---Translate 633--- ${%label.delete(descriptor.displayName)}"/>
               </l:isAdmin>
             </div>
           </f:repeatable>
@@ -50,7 +50,7 @@ THE SOFTWARE.
         <local:section/>
       </j:when>
       <j:otherwise>
-        <f:advanced title="${%title(descriptor.displayName)}">
+        <f:advanced title="---Translate 633--- ${%title(descriptor.displayName)}">
           <local:section/>
         </f:advanced>
       </j:otherwise>

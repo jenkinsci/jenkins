@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:s="/lib/form">
-  <l:layout title="${%Installed plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
+  <l:layout title="---Translate 335--- ${%Installed plugins} - ---Translate 335--- ${%Plugins}" permission="${app.SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
     <st:include page="sidepanel.jelly"/>
@@ -40,7 +40,7 @@ THE SOFTWARE.
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"
-                        placeholder="${%Search installed plugins}"
+                        placeholder="---Translate 335--- ${%Search installed plugins}"
                         id="filter-box"
                         autofocus="true"
                         value="${request2.getParameter('filter')}"
@@ -54,39 +54,39 @@ THE SOFTWARE.
             data-is-restart-required="${app.updateCenter.isRestartRequiredForCompletion()}" />
 
       <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
-        <div class="jenkins-alert jenkins-alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
+        <div class="jenkins-alert jenkins-alert-warning"><strong>---Translate 335--- ${%Warning}</strong>: ---Translate 335--- ${%requires.restart}</div>
       </j:if>
 
       <template id="i18n"
-                data-cannot-enable="${%This plugin cannot be enabled}"
-                data-cannot-disable="${%This plugin cannot be disabled}"
-                data-cannot-uninstall="${%This plugin cannot be uninstalled}"
-                data-disabled-dependencies="${%It has one or more unsatisfied dependencies}"
-                data-enabled-dependents="${%It has one or more enabled dependents}"
-                data-installed-dependents="${%It has one or more installed dependents}"
-                data-detached-disable="${%detached-disable}"
-                data-detached-uninstall="${%detached-uninstall}"
-                data-detached-possible-dependents="${%detached-possible-dependents}"
-                data-uninstall-description="${%uninstall-description}" />
+                data-cannot-enable="---Translate 335--- ${%This plugin cannot be enabled}"
+                data-cannot-disable="---Translate 335--- ${%This plugin cannot be disabled}"
+                data-cannot-uninstall="---Translate 335--- ${%This plugin cannot be uninstalled}"
+                data-disabled-dependencies="---Translate 335--- ${%It has one or more unsatisfied dependencies}"
+                data-enabled-dependents="---Translate 335--- ${%It has one or more enabled dependents}"
+                data-installed-dependents="---Translate 335--- ${%It has one or more installed dependents}"
+                data-detached-disable="---Translate 335--- ${%detached-disable}"
+                data-detached-uninstall="---Translate 335--- ${%detached-uninstall}"
+                data-detached-possible-dependents="---Translate 335--- ${%detached-possible-dependents}"
+                data-uninstall-description="---Translate 335--- ${%uninstall-description}" />
 
       <j:choose>
         <j:when test="${noPlugins}">
-          <l:notice icon="symbol-plugins" title="${%No plugins installed}" />
+          <l:notice icon="symbol-plugins" title="---Translate 335--- ${%No plugins installed}" />
         </j:when>
         <j:otherwise>
           <table id="plugins" class="jenkins-table sortable">
             <thead>
             <tr>
-              <th initialSortDir="down">${%Name}</th>
+              <th initialSortDir="down">---Translate 335--- ${%Name}</th>
               <j:if test="${app.updateCenter.healthScoresAvailable}">
                 <th>
-                  <j:set var="healthTooltip">${%healthTooltip}</j:set>
+                  <j:set var="healthTooltip">---Translate 335--- ${%healthTooltip}</j:set>
                   <span data-html-tooltip="${healthTooltip}" data-tooltip-interactive="true">
-                    ${%Health}
+                    ---Translate 335--- ${%Health}
                   </span>
                 </th>
               </j:if>
-              <th class="jenkins-table__cell--tight">${%Enabled}</th>
+              <th class="jenkins-table__cell--tight">---Translate 335--- ${%Enabled}</th>
               <l:isAdmin>
                 <th data-sort-disable="true"/>
               </l:isAdmin>
@@ -102,7 +102,7 @@ THE SOFTWARE.
                       <a href="${p.url}" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
                         ${p.updateInfo.displayName?:p.displayName}
                         <span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">
-                          <span class="jenkins-visually-hidden">${%Version}</span>
+                          <span class="jenkins-visually-hidden">---Translate 335--- ${%Version}</span>
                           ${p.version}
                         </span>
                       </a>
@@ -132,7 +132,7 @@ THE SOFTWARE.
                           ${description}
                         </j:when>
                         <j:otherwise>
-                          ${%No description available.}
+                          ---Translate 335--- ${%No description available.}
                         </j:otherwise>
                       </j:choose>
                     </div>
@@ -140,12 +140,12 @@ THE SOFTWARE.
                     <j:if test="${issueTrackerReportUrl != null}">
                       <div class="excerpt">
                         <a href="${issueTrackerReportUrl}" rel="noopener nofollow noreferrer" target="_blank" class="jenkins-label jenkins-label--tertiary">
-                          ${%reportIssue}
+                          ---Translate 335--- ${%reportIssue}
                         </a>
                       </div>
                     </j:if>
                     <j:if test="${!p.getActiveWarnings().isEmpty()}">
-                      <div class="jenkins-alert jenkins-alert-danger">${%securityWarning}
+                      <div class="jenkins-alert jenkins-alert-danger">---Translate 335--- ${%securityWarning}
                         <ul>
                           <j:forEach var="warning" items="${p.getActiveWarnings()}">
                             <li>
@@ -160,12 +160,12 @@ THE SOFTWARE.
                     <j:if test="${p.isDeprecated()}">
                       <div class="jenkins-alert jenkins-alert-warning">
                         <!-- figure out a way how to present deprecations by multiple update sites instead of just the first one -->
-                        ${%deprecationWarning(p.getDeprecations().get(0).url)}
+                        ---Translate 335--- ${%deprecationWarning(p.getDeprecations().get(0).url)}
                       </div>
                     </j:if>
                     <j:if test="${it.hasAdoptThisPluginLabel(p)}">
                       <div class="jenkins-alert jenkins-alert-warning jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
-                        ${%adoptThisPlugin}
+                        ---Translate 335--- ${%adoptThisPlugin}
                       </div>
                     </j:if>
                   </td>
@@ -179,7 +179,7 @@ THE SOFTWARE.
                             </a>
                           </j:when>
                           <j:otherwise>
-                            <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="${%No health score available}"/>
+                            <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="---Translate 335--- ${%No health score available}"/>
                           </j:otherwise>
                         </j:choose>
                       </span>
@@ -207,7 +207,7 @@ THE SOFTWARE.
                                   action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
                               <button class="jenkins-button jenkins-button--tertiary jenkins-!-color-orange"
                                       style="padding: 0.5rem"
-                                      tooltip="${%downgradeTo(p.backupVersion)}">
+                                      tooltip="---Translate 335--- ${%downgradeTo(p.backupVersion)}">
                                 <l:icon src="symbol-downgrade-circle"/>
                                 <span
                                     style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">
@@ -223,7 +223,7 @@ THE SOFTWARE.
                     <div class="jenkins-table__cell__button-wrapper">
                       <j:choose>
                         <j:when test="${p.isDeleted()}">
-                          <p>${%Uninstallation pending}</p>
+                          <p>---Translate 335--- ${%Uninstallation pending}</p>
                         </j:when>
                         <j:otherwise>
                           <j:if test="${p.hasMandatoryDependents() or p.hasImpliedDependents()}">
@@ -240,7 +240,7 @@ THE SOFTWARE.
                                 </j:when>
                                 <j:otherwise>
                                   <p>
-                                    ${%detached-many-dependents(impliedDependents.size())}
+                                    ---Translate 335--- ${%detached-many-dependents(impliedDependents.size())}
                                   </p>
                                 </j:otherwise>
                               </j:choose>
@@ -250,9 +250,9 @@ THE SOFTWARE.
                             <button data-action="uninstall"
                                     type="button"
                                     class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
-                                    tooltip="${%Uninstall} ${p.updateInfo.displayName ?: p.displayName}"
+                                    tooltip="---Translate 335--- ${%Uninstall} ${p.updateInfo.displayName ?: p.displayName}"
                                     data-href="plugin/${p.shortName}/doUninstall"
-                                    data-message="${%uninstall-title(p.updateInfo.displayName ?: p.displayName)}">
+                                    data-message="---Translate 335--- ${%uninstall-title(p.updateInfo.displayName ?: p.displayName)}">
                               <l:icon src="symbol-close-circle"/>
                             </button>
                           </l:isAdmin>
@@ -302,9 +302,9 @@ THE SOFTWARE.
 
       <div class="warning" id="needRestart" style="display:none; margin: 1em; height: 1em">
         <form method="post" action="${rootURL}/safeRestart">
-          ${%Changes will take effect when you restart Jenkins}
+          ---Translate 335--- ${%Changes will take effect when you restart Jenkins}
           <j:if test="${app.lifecycle.canRestart()}">
-            <s:submit value="${%Restart Once No Jobs Are Running}"/>
+            <s:submit value="---Translate 335--- ${%Restart Once No Jobs Are Running}"/>
           </j:if>
         </form>
       </div>

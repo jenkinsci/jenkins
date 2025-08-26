@@ -25,17 +25,17 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:entry title="${%Startup Schedule}"  help="/descriptor/hudson.triggers.TimerTrigger/help/spec">
+    <f:entry title="---Translate 609--- ${%Startup Schedule}"  help="/descriptor/hudson.triggers.TimerTrigger/help/spec">
         <f:textarea name="retentionStrategy.startTimeSpec" checkUrl="${rootURL}/retentionStrategy/SimpleScheduledRetentionStrategy/check" checkDependsOn=""
                     value="${instance.startTimeSpec}"/>
     </f:entry>
-    <f:entry title="${%Scheduled Uptime}"
-             description="${%uptime.description}">
+    <f:entry title="---Translate 609--- ${%Scheduled Uptime}"
+             description="---Translate 609--- ${%uptime.description}">
         <f:number clazz="required number" min="0"
                name="retentionStrategy.upTimeMins" value="${instance.upTimeMins}"
-               checkMessage="${%Scheduled Uptime is mandatory and must be a number.}"/>
+               checkMessage="---Translate 609--- ${%Scheduled Uptime is mandatory and must be a number.}"/>
     </f:entry>
     <f:entry>
-        <f:checkbox title="${%Keep online while jobs are running}" help="/help/system-config/master-slave/demand/keepUpWhenActive.html" name="retentionStrategy.keepUpWhenActive" checked="${h.defaultToTrue(instance.keepUpWhenActive)}" />
+        <f:checkbox title="---Translate 609--- ${%Keep online while jobs are running}" help="/help/system-config/master-slave/demand/keepUpWhenActive.html" name="retentionStrategy.keepUpWhenActive" checked="${h.defaultToTrue(instance.keepUpWhenActive)}" />
     </f:entry>
 </j:jelly>

@@ -46,11 +46,11 @@ THE SOFTWARE.
     </d:taglib>
 
     <div class="jenkins-icon-size__items jenkins-buttons-row" xmlns:local="local">
-      <span>${%Icon}:</span>
+      <span>---Translate 934--- ${%Icon}:</span>
       <ol>
-        <local:iconSizeLink title="${%S}" sz="16x16" />
-        <local:iconSizeLink title="${%M}" sz="24x24" />
-        <local:iconSizeLink title="${%L}" sz="32x32" />
+        <local:iconSizeLink title="---Translate 934--- ${%S}" sz="16x16" />
+        <local:iconSizeLink title="---Translate 934--- ${%M}" sz="24x24" />
+        <local:iconSizeLink title="---Translate 934--- ${%L}" sz="32x32" />
       </ol>
     </div>
 

@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:entry title="${%View name}"
-    description="${%The name of a global view that will be shown.}">
+    <f:entry title="---Translate 475--- ${%View name}"
+    description="---Translate 475--- ${%The name of a global view that will be shown.}">
       <select class="jenkins-input" name="proxiedViewName">
         <j:forEach var="inst" items="${app.views}">
           <f:option selected="${inst.viewName==it.proxiedViewName}" value="${inst.viewName}">${inst.viewName}</f:option>

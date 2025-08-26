@@ -30,26 +30,26 @@ THE SOFTWARE.
     -->
     <st:statusCode value="${response2.getStatus()}" />
     ${request2.session.setAttribute('from', request2.getAttribute('jakarta.servlet.error.request_uri'))}
-    <l:layout title="${%title(jakarta.servlet.error.message?:'Not Found')}" type="one-column">
+    <l:layout title="---Translate 752--- ${%title(jakarta.servlet.error.message?:'Not Found')}" type="one-column">
         <l:header />
         <l:main-panel>
             <h1 style="text-align: center">
                 <img src="${imagesURL}/rage.svg" height="179" width="154"/>
-                <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
+                <span style="font-size:50px"><st:nbsp/>---Translate 752--- ${%Oops!}</span>
             </h1>
             <div id="error-description" style="text-align: center">
-                <h2>${%title(jakarta.servlet.error.message?:'Not Found')}</h2>
+                <h2>---Translate 752--- ${%title(jakarta.servlet.error.message?:'Not Found')}</h2>
                 <j:if test="${!request2.getAttribute('jenkins.security.ResourceDomainRootAction.error')}">
 	                <p>
 	                    <j:choose>
 	                        <j:when test="${app.useSecurity}">
-                                ${%noAccess}
+                                ---Translate 752--- ${%noAccess}
                                 <j:if test="${h.isAnonymous()}">
-                                    ${%tryLoggingIn}
+                                    ---Translate 752--- ${%tryLoggingIn}
                                 </j:if>
 		                    </j:when>
 		                    <j:otherwise>
-		                        ${%notFound}
+		                        ---Translate 752--- ${%notFound}
                             </j:otherwise>
                         </j:choose>
                     </p>

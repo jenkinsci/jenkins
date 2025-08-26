@@ -38,7 +38,7 @@ THE SOFTWARE.
         <j:if test="${!noLogs}">
           <form method="post" id='clear-logrecorder' action="clear">
             <f:submit icon="symbol-close-circle"
-                      value="${%Clear This Log}"
+                      value="---Translate 361--- ${%Clear This Log}"
                       primary="false" />
           </form>
         </j:if>
@@ -47,19 +47,19 @@ THE SOFTWARE.
         </a>
       </l:isAdmin>
       <l:overflowButton>
-        <dd:header text="${%Atom feed}" />
+        <dd:header text="---Translate 361--- ${%Atom feed}" />
         <st:include it="${it.parent}" page="feeds.jelly" />
         <l:isAdmin>
           <dd:separator />
           <dd:custom>
             <l:confirmationLink class="jenkins-dropdown__item jenkins-!-destructive-color"
                                 href="doDelete"
-                                message="${%delete.logrecorder(it.displayName)}"
+                                message="---Translate 361--- ${%delete.logrecorder(it.displayName)}"
                                 post="true">
               <div class="jenkins-dropdown__item__icon">
                 <l:icon src="symbol-trash" />
               </div>
-              ${%Delete log recorder}
+              ---Translate 361--- ${%Delete log recorder}
             </l:confirmationLink>
           </dd:custom>
         </l:isAdmin>
@@ -67,7 +67,7 @@ THE SOFTWARE.
     </l:app-bar>
 
     <j:if test="${noLogs}">
-      <l:notice title="${%No logs available}" icon="symbol-journal" />
+      <l:notice title="---Translate 361--- ${%No logs available}" icon="symbol-journal" />
     </j:if>
 
     <t:logRecords logRecords="${it.logRecords}"/>

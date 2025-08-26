@@ -2,9 +2,9 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <j:invokeStatic var="allViewsTabBar" className="hudson.views.ViewsTabBar" method="all"/>
   <j:if test="${allViewsTabBar.size() > 1}">
-    <f:dropdownList name="viewsTabBar" title="${%Views Tab Bar}" help="${descriptor.getHelpFile('viewsTabBar')}">
+    <f:dropdownList name="viewsTabBar" title="---Translate 830--- ${%Views Tab Bar}" help="${descriptor.getHelpFile('viewsTabBar')}">
       <j:set var="current" value="${instance['viewsTabBar']}"/>
-      <f:dropdownListBlock title="${%Inherit from Container}" value="" selected="${current == null}"/>
+      <f:dropdownListBlock title="---Translate 830--- ${%Inherit from Container}" value="" selected="${current == null}"/>
       <j:forEach var="descriptor" items="${allViewsTabBar}" varStatus="loop">
         <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}"
                              selected="${current.descriptor==descriptor}" staplerClass="${descriptor.clazz.name}"

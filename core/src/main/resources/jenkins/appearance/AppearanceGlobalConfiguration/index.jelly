@@ -24,26 +24,26 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%Appearance}" permissions="${app.MANAGE_AND_SYSTEM_READ}" type="one-column">
+  <l:layout title="---Translate 834--- ${%Appearance}" permissions="${app.MANAGE_AND_SYSTEM_READ}" type="one-column">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
     <j:set var="pluginsUrl" value="${rootURL}/manage/pluginManager/available?filter=UI Themes" />
     <j:set var="hasPlugins" value="${it.hasPlugins()}" />
 
     <l:main-panel>
-      <l:app-bar title="${%Appearance}">
+      <l:app-bar title="---Translate 834--- ${%Appearance}">
         <j:if test="${hasPlugins}">
           <a href="${pluginsUrl}" class="jenkins-button">
             <l:icon src="symbol-plugins" />
-            ${%findPlugins}
+            ---Translate 834--- ${%findPlugins}
           </a>
         </j:if>
       </l:app-bar>
 
       <j:choose>
         <j:when test="${!hasPlugins}">
-          <l:notice title="${%noPlugins}" icon="symbol-brush-outline">
+          <l:notice title="---Translate 834--- ${%noPlugins}" icon="symbol-brush-outline">
             <a href="${pluginsUrl}">
-              ${%findPlugins}
+              ---Translate 834--- ${%findPlugins}
             </a>
           </l:notice>
         </j:when>

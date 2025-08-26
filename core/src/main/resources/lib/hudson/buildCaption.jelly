@@ -44,11 +44,11 @@ THE SOFTWARE.
     <div class="jenkins-app-bar__controls">
       <j:if test="${it.building}">
         <div class="build-caption-progress-container">
-          ${%Progress}:
+          ---Translate 940--- ${%Progress}:
           <t:buildProgressBar build="${it}" animate="true"/>
           <j:if test="${it.parent.hasAbortPermission()}">
-            <l:stopButton href="stop" confirm="${%confirm(it.fullDisplayName)}"
-                          alt="${%cancel}"/>
+            <l:stopButton href="stop" confirm="---Translate 940--- ${%confirm(it.fullDisplayName)}"
+                          alt="---Translate 940--- ${%cancel}"/>
           </j:if>
         </div>
       </j:if>

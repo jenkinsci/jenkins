@@ -28,10 +28,10 @@ THE SOFTWARE.
     Often this is the only view that you need to override in ToolInstallation.
     If you need to change the view more drastically, override global.jelly.
   </st:documentation>
-  <f:entry title="${%Name}" field="name">
+  <f:entry title="---Translate 634--- ${%Name}" field="name">
     <f:textbox/>
   </f:entry>
-  <f:entry title="${%Installation directory}" field="home">
+  <f:entry title="---Translate 634--- ${%Installation directory}" field="home">
     <f:textbox/>
   </f:entry>
 </j:jelly>

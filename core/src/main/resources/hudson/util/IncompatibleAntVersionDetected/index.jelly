@@ -29,9 +29,9 @@ THE SOFTWARE.
     <l:header title="Jenkins" />
     <l:side-panel />
     <l:main-panel>
-      <h1>${%Error}</h1>
+      <h1>---Translate 655--- ${%Error}</h1>
       <p>
-        ${%errorMessage(it.whereAntIsLoaded)}
+        ---Translate 655--- ${%errorMessage(it.whereAntIsLoaded)}
       </p>
     </l:main-panel>
   </l:layout>

@@ -34,7 +34,7 @@ THE SOFTWARE.
     <x:doctype name="html" />
     <html lang="${request2.getLocale().toLanguageTag()}">
         <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
-            <title>${%Starting Jenkins}</title>
+            <title>---Translate 653--- ${%Starting Jenkins}</title>
             <!-- we do not want bots on this page -->
             <meta name="ROBOTS" content="NOFOLLOW" />
             <!-- mobile friendly layout -->
@@ -48,10 +48,10 @@ THE SOFTWARE.
                       <img src="${imagesURL}/svgs/logo.svg" alt="Jenkins logo" />
                     </div>
                     <h1 class="loading">
-                        <l:spinner text="${%Please wait while Jenkins is getting ready to work}" />
+                        <l:spinner text="---Translate 653--- ${%Please wait while Jenkins is getting ready to work}" />
                     </h1>
                     <p class="restarting">
-                        ${%Your browser will reload automatically when Jenkins is ready}
+                        ---Translate 653--- ${%Your browser will reload automatically when Jenkins is ready}
                     </p>
                 </div>
             </div>

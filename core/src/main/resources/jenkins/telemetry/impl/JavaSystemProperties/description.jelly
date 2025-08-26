@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
     <p>
-        ${%blurb}
+        ---Translate 817--- ${%blurb}
     </p>
     <ul>
         <j:forEach items="${it.properties.entrySet()}" var="e">
@@ -19,6 +19,6 @@
         </j:forEach>
     </ul>
     <p>
-        ${%blurb2}
+        ---Translate 817--- ${%blurb2}
     </p>
 </j:jelly>

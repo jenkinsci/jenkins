@@ -27,19 +27,19 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%Logger Configuration}" type="one-column">
-    <l:breadcrumb title="${%Log Levels}" />
+  <l:layout title="---Translate 364--- ${%Logger Configuration}" type="one-column">
+    <l:breadcrumb title="---Translate 364--- ${%Log Levels}" />
 
     <l:main-panel>
-      <l:app-bar title="${%Logger Configuration}">
-        <t:help tooltip="${%Additional information on log levels}" href="${%url}"/>
+      <l:app-bar title="---Translate 364--- ${%Logger Configuration}">
+        <t:help tooltip="---Translate 364--- ${%Additional information on log levels}" href="---Translate 364--- ${%url}"/>
       </l:app-bar>
 
       <table class="sortable jenkins-table" id="logLevels">
         <thead>
           <tr>
-            <th>${%Name}</th>
-            <th>${%Level}</th>
+            <th>---Translate 364--- ${%Name}</th>
+            <th>---Translate 364--- ${%Level}</th>
           </tr>
         </thead>
         <j:invokeStatic var="lm" className="java.util.logging.LogManager" method="getLogManager"/>
@@ -53,16 +53,16 @@ THE SOFTWARE.
           </j:if>
         </j:forEach>
       </table>
-      <p>${%defaultLoggerMsg}</p>
+      <p>---Translate 364--- ${%defaultLoggerMsg}</p>
       <l:isAdmin>
-        <h2>${%Adjust Levels}</h2>
+        <h2>---Translate 364--- ${%Adjust Levels}</h2>
         <form action="configLogger" method="post" name="configLogger">
           <f:entry>
-            <label class="jenkins-form-label" for="name">${%Name}</label>
+            <label class="jenkins-form-label" for="name">---Translate 364--- ${%Name}</label>
             <input id="name" type="text" class="jenkins-input" name="name" width="40"/>
           </f:entry>
           <f:entry>
-            <label class="jenkins-form-label" for="level">${%Level}</label>
+            <label class="jenkins-form-label" for="level">---Translate 364--- ${%Level}</label>
             <div class="jenkins-select">
               <select id="level" name="level" class="jenkins-select__input">
                 <option>inherit</option>
@@ -79,7 +79,7 @@ THE SOFTWARE.
             </div>
           </f:entry>
           <f:bottomButtonBar>
-            <f:submit value="${%Save}"/>
+            <f:submit value="---Translate 364--- ${%Save}"/>
           </f:bottomButtonBar>
         </form>
       </l:isAdmin>

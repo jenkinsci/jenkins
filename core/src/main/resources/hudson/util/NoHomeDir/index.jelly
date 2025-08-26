@@ -29,12 +29,12 @@ THE SOFTWARE.
     <l:header title="Jenkins" />
     <l:side-panel />
     <l:main-panel>
-      <h1>${%Error}</h1>
+      <h1>---Translate 659--- ${%Error}</h1>
       <p>
-        ${%errorMessage.1(it.home)}
+        ---Translate 659--- ${%errorMessage.1(it.home)}
       </p>
       <p>
-         ${%errorMessage.2}
+         ---Translate 659--- ${%errorMessage.2}
       </p>
     </l:main-panel>
   </l:layout>

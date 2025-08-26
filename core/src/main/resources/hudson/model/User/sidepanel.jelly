@@ -33,12 +33,12 @@ THE SOFTWARE.
     <st:include page="app-bar.jelly" />
 
     <l:tasks>
-      <l:task contextMenu="false" href="${rootURL}/${it.url}/" icon="symbol-person" title="${%Profile}"/>
-      <l:task href="${rootURL}/${it.url}/builds" icon="symbol-build-history" title="${%Builds}"/>
+      <l:task contextMenu="false" href="${rootURL}/${it.url}/" icon="symbol-person" title="---Translate 532--- ${%Profile}"/>
+      <l:task href="${rootURL}/${it.url}/builds" icon="symbol-build-history" title="---Translate 532--- ${%Builds}"/>
       <t:actions actions="${it.propertyActions}"/>
       <t:actions actions="${it.transientActions}"/>
       <j:if test="${it.canDelete()}">
-        <l:delete urlPrefix="${rootURL}/${it.url}" title="${%Delete}" message="${%delete.user(it.displayName)}"/>
+        <l:delete urlPrefix="${rootURL}/${it.url}" title="---Translate 532--- ${%Delete}" message="---Translate 532--- ${%delete.user(it.displayName)}"/>
       </j:if>
     </l:tasks>
   </l:side-panel>

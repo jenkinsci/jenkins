@@ -43,7 +43,7 @@ THE SOFTWARE.
         <j:whitespace>${it.obtainLog().writeLogTo(0,output)}</j:whitespace>
       </pre>
       <form method="post" action="clearError">
-        <f:submit value="${%Clear error to retry}" />
+        <f:submit value="---Translate 499--- ${%Clear error to retry}" />
       </form>
     </j:otherwise>
   </j:choose>

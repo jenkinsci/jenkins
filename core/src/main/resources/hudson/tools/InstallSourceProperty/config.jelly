@@ -28,7 +28,7 @@ THE SOFTWARE.
           <j:arg value="${toolDescriptor.clazz}" type="java.lang.Class" />
         </j:invokeStatic>
         <f:hetero-list name="installers" items="${instance.installers}" descriptors="${descriptors}"
-                       addCaption="${%Add Installer}" deleteCaption="${%Delete Installer}"
+                       addCaption="---Translate 632--- ${%Add Installer}" deleteCaption="---Translate 632--- ${%Delete Installer}"
                        hasHeader="true"/>
     </f:block>
 </j:jelly>

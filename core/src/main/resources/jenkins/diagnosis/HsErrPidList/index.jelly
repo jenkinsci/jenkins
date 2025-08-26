@@ -24,18 +24,18 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:st="jelly:stapler">
-  <l:layout title="${%Java VM Crash Reports}">
+  <l:layout title="---Translate 698--- ${%Java VM Crash Reports}">
     <st:include page="sidepanel" it="${app}"/>
     <l:main-panel>
-      <h1>${%Java VM Crash Reports}</h1>
+      <h1>---Translate 698--- ${%Java VM Crash Reports}</h1>
 
-      <p>${%blurb}</p>
+      <p>---Translate 698--- ${%blurb}</p>
 
       <table class="jenkins-table sortable">
         <thead>
           <tr>
-            <th>${%Name}</th>
-            <th>${%Date}</th>
+            <th>---Translate 698--- ${%Name}</th>
+            <th>---Translate 698--- ${%Date}</th>
             <th/>
           </tr>
         </thead>
@@ -51,11 +51,11 @@ THE SOFTWARE.
               <td data="${f.lastModified}">
                 <i:formatDate value="${f.lastModifiedDate}" type="both" dateStyle="medium" timeStyle="medium"/>
                 <st:nbsp />
-                (${%ago(f.timeSpanString)})
+                (---Translate 698--- ${%ago(f.timeSpanString)})
               </td>
               <td>
                 <form method="post" action="files/${idx.index}/delete" name="${idx}">
-                  <f:submit value="${%Delete}"/>
+                  <f:submit value="---Translate 698--- ${%Delete}"/>
                 </form>
               </td>
             </tr>

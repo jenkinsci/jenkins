@@ -39,7 +39,7 @@ THE SOFTWARE.
         <st:statusCode value="${response2.getStatus()}" />
         <html>
             <head>
-                <title>${%title(jakarta.servlet.error.message?:'Not Found')}</title>
+                <title>---Translate 753--- ${%title(jakarta.servlet.error.message?:'Not Found')}</title>
                 <link rel="icon" href="${resURL}/favicon.svg" type="image/svg+xml" />
                 <link rel="alternate icon" href="${resURL}/favicon.ico" sizes="any" />
                 <!-- TODO Determine need for these -->
@@ -49,11 +49,11 @@ THE SOFTWARE.
             <body style="font-family: system-ui, sans-serif">
                 <h1 style="text-align: center">
                     <img src="${imagesURL}/rage.svg" height="179" width="154" style="vertical-align: middle"/>
-                    <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
+                    <span style="font-size:50px"><st:nbsp/>---Translate 753--- ${%Oops!}</span>
                 </h1>
                 <div style="text-align: center">
-                    <h2>${%title(jakarta.servlet.error.message?:'Not Found')}</h2>
-                    <a href="${h.inferHudsonURL(request2)}">${%Back to Jenkins}</a>
+                    <h2>---Translate 753--- ${%title(jakarta.servlet.error.message?:'Not Found')}</h2>
+                    <a href="${h.inferHudsonURL(request2)}">---Translate 753--- ${%Back to Jenkins}</a>
                 </div>
             </body>
         </html>

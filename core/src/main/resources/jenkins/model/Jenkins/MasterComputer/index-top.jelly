@@ -2,6 +2,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <!-- Node description -->
   <div class="jenkins-!-margin-bottom-5">
-    ${%blurb}
+    ---Translate 727--- ${%blurb}
   </div>
 </j:jelly>

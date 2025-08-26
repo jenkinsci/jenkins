@@ -113,7 +113,7 @@ THE SOFTWARE.
                   <j:set var="lastBuild" value="${job.lastBuild}"/>
                   <j:if test="${lastBuild != null}">
                     <span>
-                      ${%Description(lastBuild.timestampString, lastBuild.durationString)}
+                      ---Translate 927--- ${%Description(lastBuild.timestampString, lastBuild.durationString)}
                     </span>
                   </j:if>
 

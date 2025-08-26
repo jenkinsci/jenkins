@@ -26,11 +26,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="jenkins-alert jenkins-alert-warning">
     <dl>
-      <dt>${%DeprecatedPlugins}</dt>
+      <dt>---Translate 331--- ${%DeprecatedPlugins}</dt>
       <j:forEach var="e" items="${it.getDeprecatedPlugins()}">
         <dd><a href="${e.value}" rel="noopener noreferrer" target="_blank">${e.key.displayName}</a></dd>
       </j:forEach>
     </dl>
-    <p>${%DeprecatedPluginsDescription}</p>
+    <p>---Translate 331--- ${%DeprecatedPluginsDescription}</p>
   </div>
 </j:jelly>

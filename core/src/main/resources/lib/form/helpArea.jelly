@@ -29,7 +29,7 @@ THE SOFTWARE.
   </st:documentation>
   <div class="help-area tr">
       <div class="help">
-        <l:spinner text="${%Loading...}" />
+        <l:spinner text="---Translate 862--- ${%Loading...}" />
       </div>
   </div>
 </j:jelly>

@@ -25,15 +25,15 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:section title="${%API Token}">
+    <f:section title="---Translate 786--- ${%API Token}">
         <f:entry field="tokenGenerationOnCreationEnabled">
-            <f:checkbox title="${%tokenGenerationOnCreationEnabled}" />
+            <f:checkbox title="---Translate 786--- ${%tokenGenerationOnCreationEnabled}" />
         </f:entry>
         <f:entry field="creationOfLegacyTokenEnabled">
-            <f:checkbox title="${%creationOfLegacyTokenEnabled}" />
+            <f:checkbox title="---Translate 786--- ${%creationOfLegacyTokenEnabled}" />
         </f:entry>
         <f:entry field="usageStatisticsEnabled">
-            <f:checkbox title="${%usageStatisticsEnabled}" />
+            <f:checkbox title="---Translate 786--- ${%usageStatisticsEnabled}" />
         </f:entry>
     </f:section>
 </j:jelly>

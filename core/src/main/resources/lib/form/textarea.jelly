@@ -110,8 +110,8 @@ THE SOFTWARE.
       <j:if test="${attrs.previewEndpoint == '/markupFormatter/previewDescription'}">
         ${app.markupFormatter.descriptor.displayName}
       </j:if>
-      <a href="#" class="textarea-show-preview" previewEndpoint="${attrs.previewEndpoint}">${%Preview}</a>
-      <a href="#" class="textarea-hide-preview">${%Hide preview}</a>
+      <a href="#" class="textarea-show-preview" previewEndpoint="${attrs.previewEndpoint}">---Translate 840--- ${%Preview}</a>
+      <a href="#" class="textarea-hide-preview">---Translate 840--- ${%Hide preview}</a>
     </div>
     <div class="textarea-preview">
       <!-- div for preview -->

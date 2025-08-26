@@ -27,5 +27,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:optionalBlock field="concurrentBuild" title="${%title.concurrentbuilds}" inline="true" />
+  <f:optionalBlock field="concurrentBuild" title="---Translate 913--- ${%title.concurrentbuilds}" inline="true" />
 </j:jelly>

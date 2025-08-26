@@ -32,31 +32,31 @@ THE SOFTWARE.
         <j:invokeStatic var="lifecycle" className="hudson.lifecycle.Lifecycle" method="get" />
         <j:choose>
           <j:when test="${lifecycle.canRestart()}">
-            ${%UpgradeComplete(ucData.core.version,rootURL)}
+            ---Translate 505--- ${%UpgradeComplete(ucData.core.version,rootURL)}
           </j:when>
           <j:otherwise>
-            ${%UpgradeCompleteRestartNotSupported(ucData.core.version)}
+            ---Translate 505--- ${%UpgradeCompleteRestartNotSupported(ucData.core.version)}
           </j:otherwise>
         </j:choose>
       </j:when>
       <j:when test="${upJob!=null and upJob.error != null}">
-        ${%UpgradeFailed(ucData.core.version,upJob.errorMessage,rootURL+'/updateCenter/')}
+        ---Translate 505--- ${%UpgradeFailed(ucData.core.version,upJob.errorMessage,rootURL+'/updateCenter/')}
         <j:if test="${ucData.canUpgrade()}">
         <form method="post" action="${rootURL}/updateCenter/upgrade">
-          <f:submit value="${%Retry}"/>
+          <f:submit value="---Translate 505--- ${%Retry}"/>
         </form>
         </j:if>
       </j:when>
       <j:when test="${upJob!=null}">
-        ${%UpgradeProgress(ucData.core.version,rootURL+'/updateCenter/')}
+        ---Translate 505--- ${%UpgradeProgress(ucData.core.version,rootURL+'/updateCenter/')}
       </j:when>
       <j:otherwise>
         <j:set var="changelog_url" value="${app.CHANGELOG_URL}"/>
-        ${%NewVersionAvailable(ucData.core.version,ucData.core.url,changelog_url)}
+        ---Translate 505--- ${%NewVersionAvailable(ucData.core.version,ucData.core.url,changelog_url)}
         <l:isAdmin>
           <j:if test="${ucData.canUpgrade()}">
             <form method="post" action="${rootURL}/updateCenter/upgrade">
-              <f:submit value="${%Or Upgrade Automatically}"/>
+              <f:submit value="---Translate 505--- ${%Or Upgrade Automatically}"/>
             </form>
           </j:if>
         </l:isAdmin>

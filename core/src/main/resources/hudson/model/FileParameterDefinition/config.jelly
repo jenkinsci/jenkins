@@ -26,13 +26,13 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-	<f:entry title="${%File location}" help="/help/parameter/file-name.html">
+	<f:entry title="---Translate 430--- ${%File location}" help="/help/parameter/file-name.html">
 		<f:textbox name="parameter.name" value="${instance.name}" />
 	</f:entry>
 	<!--f:entry>
                <f:checkbox title="Optional" name="parameter.optional" value="${instance.optional}" />
        </f:entry-->
-    <f:entry title="${%Description}" help="/help/parameter/description.html">
+    <f:entry title="---Translate 430--- ${%Description}" help="/help/parameter/description.html">
         <f:textarea name="parameter.description" value="${instance.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription" />
     </f:entry>
 </j:jelly>

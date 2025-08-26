@@ -27,11 +27,11 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.run.parent.displayName} #${it.run.number} ${%Polling Log}">
+  <l:layout title="${it.run.parent.displayName} #${it.run.number} ---Translate 640--- ${%Polling Log}">
     <st:include it="${it.run}" page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>${%Polling Log}</h1>
-      <p>${%blurb}</p>
+      <h1>---Translate 640--- ${%Polling Log}</h1>
+      <p>---Translate 640--- ${%blurb}</p>
 
       <pre>
         <st:getOutput var="output" />

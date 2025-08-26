@@ -15,12 +15,12 @@
 
                 <p style="text-align: center; margin: 10px 0 0 0;">
                     <a href="${rootURL}/manage">
-                        ${%Manage Jenkins}
+                        ---Translate 720--- ${%Manage Jenkins}
                     </a>
                 </p>
             </j:when>
             <j:otherwise>
-               <p>${%no_active_monitors}</p>
+               <p>---Translate 720--- ${%no_active_monitors}</p>
             </j:otherwise>
         </j:choose>
     </l:ajax>

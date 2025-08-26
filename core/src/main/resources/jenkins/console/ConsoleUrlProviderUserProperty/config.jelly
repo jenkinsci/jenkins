@@ -5,6 +5,6 @@
           <!-- Dummy field to always have an entry in form submissions so users can delete all providers. -->
           <f:checkbox field="unused" checked="true" />
         </f:invisibleEntry>
-        <f:repeatableHeteroProperty field="providers" hasHeader="true" oneEach="true" header="${%Providers}" />
+        <f:repeatableHeteroProperty field="providers" hasHeader="true" oneEach="true" header="---Translate 836--- ${%Providers}" />
     </j:if>
 </j:jelly>

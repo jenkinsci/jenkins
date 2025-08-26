@@ -26,5 +26,5 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <button class="jenkins-button jenkins-button--primary jenkins-buttons-row--equal-width" type="submit" id="ok-button">OK</button>
   <st:nbsp/>
-  <f:checkbox title="${%Add to current view}" field="addToCurrentView" checked="${it.addToCurrentView}"/>
+  <f:checkbox title="---Translate 452--- ${%Add to current view}" field="addToCurrentView" checked="${it.addToCurrentView}"/>
 </j:jelly>

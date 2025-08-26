@@ -25,18 +25,18 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:entry field="upstreamProjects" title="${%Projects to watch}">
+    <f:entry field="upstreamProjects" title="---Translate 804--- ${%Projects to watch}">
         <f:textbox autoCompleteDelimChar=","/>
     </f:entry>
     <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold==null || instance.threshold.toString()=='SUCCESS'}"
-           title="${%Trigger only if build is stable}" value="SUCCESS"/>
+           title="---Translate 804--- ${%Trigger only if build is stable}" value="SUCCESS"/>
 
     <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='UNSTABLE'}"
-           title="${%Trigger even if the build is unstable}" value="UNSTABLE"/>
+           title="---Translate 804--- ${%Trigger even if the build is unstable}" value="UNSTABLE"/>
 
     <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='FAILURE'}"
-           title="${%Trigger even if the build fails}" value="FAILURE"/>
+           title="---Translate 804--- ${%Trigger even if the build fails}" value="FAILURE"/>
 
     <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='ABORTED'}"
-           title="${%Always trigger, even if the build is aborted}" value="ABORTED"/>
+           title="---Translate 804--- ${%Always trigger, even if the build is aborted}" value="ABORTED"/>
 </j:jelly>

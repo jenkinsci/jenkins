@@ -25,9 +25,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <div class="jenkins-alert jenkins-alert-warning">
         <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-            <f:submit name="yes" value="${%Disable automatic generation of legacy API tokens}"/>
-            <f:submit name="no" value="${%Dismiss}"/>
+            <f:submit name="yes" value="---Translate 788--- ${%Disable automatic generation of legacy API tokens}"/>
+            <f:submit name="no" value="---Translate 788--- ${%Dismiss}"/>
         </form>
-        ${%warningMessage}
+        ---Translate 788--- ${%warningMessage}
     </div>
 </j:jelly>

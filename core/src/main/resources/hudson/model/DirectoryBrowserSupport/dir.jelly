@@ -48,17 +48,17 @@ THE SOFTWARE.
         </div>
         <j:choose>
           <j:when test="${empty(files)}">
-            ${%No files in directory}
+            ---Translate 428--- ${%No files in directory}
            <j:if test="${showSymlinkWarning}">
              <p>
                 <img id="symlinkalert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
-               ${%Symlinks are hidden}
+               ---Translate 428--- ${%Symlinks are hidden}
              </p>
             </j:if>
            <j:if test="${showTmpDirWarning}">
              <p>
                <img id="tmpdiralert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
-               ${%Tmp directories are hidden}
+               ---Translate 428--- ${%Tmp directories are hidden}
              </p>
             </j:if>
           </j:when>
@@ -91,7 +91,7 @@ THE SOFTWARE.
                         <i:formatDate value="${x.lastModifiedAsCalendar.time}" type="both" dateStyle="medium" timeStyle="medium"/>
                       </j:if>
                       <j:if test="${x.lastModifiedAsCalendar.timeInMillis &lt;= 0}">
-                        ${%N/A}
+                        ---Translate 428--- ${%N/A}
                       </j:if>
                     </td>
                     <td class="fileSize">
@@ -100,11 +100,11 @@ THE SOFTWARE.
                     <td style="display: flex; gap: 1rem;">
                       <j:if test="${x.readable}">
                         <j:if test="${app.fingerprintMap.ready}">
-                          <a class="jenkins-link--with-icon" href="${x.href}/*fingerprint*/" tooltip="${%View fingerprint}">
+                          <a class="jenkins-link--with-icon" href="${x.href}/*fingerprint*/" tooltip="---Translate 428--- ${%View fingerprint}">
                             <l:icon class="symbol-fingerprint" />
                           </a>
                         </j:if>
-                        <a class="jenkins-link--with-icon" href="${x.href}/*view*/" tooltip="${%View}">
+                        <a class="jenkins-link--with-icon" href="${x.href}/*view*/" tooltip="---Translate 428--- ${%View}">
                           <l:icon src="symbol-view" />
                         </a>
                       </j:if>
@@ -117,7 +117,7 @@ THE SOFTWARE.
                   <div style="margin-top: 1em;">
                     <a class="jenkins-link--with-icon" href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
                       <l:icon src="symbol-download"/>
-                      (${%all files in zip})
+                      (---Translate 428--- ${%all files in zip})
                     </a>
                   </div>
                 </td>
@@ -126,13 +126,13 @@ THE SOFTWARE.
            <j:if test="${showSymlinkWarning}">
              <p>
                 <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
-               ${%Symlinks are hidden}
+               ---Translate 428--- ${%Symlinks are hidden}
              </p>
             </j:if>
            <j:if test="${showTmpDirWarning}">
              <p>
                 <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
-               ${%Tmp directories are hidden}
+               ---Translate 428--- ${%Tmp directories are hidden}
              </p>
             </j:if>
           </j:otherwise>

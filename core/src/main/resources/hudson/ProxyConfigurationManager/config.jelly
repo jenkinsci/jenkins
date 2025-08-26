@@ -25,8 +25,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:section title="${%HTTP Proxy Configuration}">
-        <f:advanced title="${%Setup}">
+    <f:section title="---Translate 694--- ${%HTTP Proxy Configuration}">
+        <f:advanced title="---Translate 694--- ${%Setup}">
             <j:scope>
                 <j:set var="descriptor" value="${instance.getProxyDescriptor()}"/>
                 <j:set var="instance" value="${app.proxy}"/>

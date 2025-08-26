@@ -30,7 +30,7 @@ THE SOFTWARE.
 
     <j:if test="${empty(flagConfigs)}">
         <l:notice icon="symbol-flask"
-                  title="${%NoFlagInfo}" />
+                  title="---Translate 772--- ${%NoFlagInfo}" />
     </j:if>
 
     <j:if test="${!empty(flagConfigs)}">
@@ -39,9 +39,9 @@ THE SOFTWARE.
                 <table class="jenkins-table sortable jenkins-!-margin-0">
                     <thead>
                         <tr>
-                            <th>${%FlagDisplayName}</th>
-                            <th width="45%">${%FlagDescription}</th>
-                            <th>${%FlagConfig}</th>
+                            <th>---Translate 772--- ${%FlagDisplayName}</th>
+                            <th width="45%">---Translate 772--- ${%FlagDescription}</th>
+                            <th>---Translate 772--- ${%FlagConfig}</th>
                         </tr>
                     </thead>
                     <tbody>

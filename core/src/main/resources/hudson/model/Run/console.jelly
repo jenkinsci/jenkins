@@ -32,22 +32,22 @@ THE SOFTWARE.
   <l:layout title="${it.fullDisplayName} Console">
     <st:include page="sidepanel.jelly" />
 
-    <l:breadcrumb title="${%Console Output}" />
+    <l:breadcrumb title="---Translate 483--- ${%Console Output}" />
 
     <l:main-panel>
       <j:set var="controls">
         <a class="jenkins-button" href="consoleText" download="${it.displayName}.txt">
           <l:icon src="symbol-download" />
-          ${%Download}
+          ---Translate 483--- ${%Download}
         </a>
-        <l:copyButton ref="out" label="${%Copy}" />
+        <l:copyButton ref="out" label="---Translate 483--- ${%Copy}" />
         <a class="jenkins-button" href="consoleText">
-          ${%View as plain text}
+          ---Translate 483--- ${%View as plain text}
         </a>
       </j:set>
 
       <t:buildCaption controls="${controls}">
-        ${%Console Output}
+        ---Translate 483--- ${%Console Output}
       </t:buildCaption>
 
       <st:include page="console-log.jelly" />

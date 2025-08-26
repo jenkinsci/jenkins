@@ -26,7 +26,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:optionalBlock name="blockBuildWhenUpstreamBuilding"
-		   title="${%Block build when upstream project is building}"
+		   title="---Translate 914--- ${%Block build when upstream project is building}"
 		   help="/help/project-config/block-upstream-building.html"
 		   checked="${it.blockBuildWhenUpstreamBuilding()}"
 		   inline="true" />

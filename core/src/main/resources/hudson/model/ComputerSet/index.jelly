@@ -27,26 +27,26 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-<l:layout title="${%Nodes}" type="one-column">
+<l:layout title="---Translate 423--- ${%Nodes}" type="one-column">
   <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
   <l:main-panel>
-    <l:app-bar title="${%Nodes}">
+    <l:app-bar title="---Translate 423--- ${%Nodes}">
       <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
       <j:if test="${h.hasPermission(createPermission)}">
         <a class="jenkins-button jenkins-button--primary" href="new">
           <l:icon src="symbol-add" />
-          ${%New Node}
+          ---Translate 423--- ${%New Node}
         </a>
       </j:if>
       <j:set var="hasPermission" value="${h.hasAnyPermission(it, app.MANAGE_AND_SYSTEM_READ)}" />
       <j:if test="${hasPermission}">
-        <a class="jenkins-button" href="configure" tooltip="${%Configure Node Monitors}">
-          ${%Configure Monitors}
+        <a class="jenkins-button" href="configure" tooltip="---Translate 423--- ${%Configure Node Monitors}">
+          ---Translate 423--- ${%Configure Monitors}
         </a>
       </j:if>
       <l:hasAdministerOrManage>
         <form method="post" action="updateNow" class="jenkins-!-display-contents">
-          <button tooltip="${%Refresh status}" class="jenkins-button">
+          <button tooltip="---Translate 423--- ${%Refresh status}" class="jenkins-button">
             <l:icon src="symbol-refresh" />
           </button>
         </form>
@@ -60,7 +60,7 @@ THE SOFTWARE.
       <thead>
         <tr>
           <th class="jenkins-table__cell--tight">S</th>
-          <th initialSortDir="down">${%Name}</th>
+          <th initialSortDir="down">---Translate 423--- ${%Name}</th>
           <j:forEach var="m" items="${monitors}">
             <j:if test="${m.columnCaption!=null}">
               <j:set var="tableWidth" value="${tableWidth+1}"/>
@@ -110,7 +110,7 @@ THE SOFTWARE.
 
       <tr class="sortbottom">
         <th />
-        <th>${%Data obtained}</th>
+        <th>---Translate 423--- ${%Data obtained}</th>
         <j:forEach var="m" items="${monitors}">
           <j:if test="${m.columnCaption!=null}">
             <th align="right">
@@ -125,11 +125,11 @@ THE SOFTWARE.
     <t:iconSize>
       <div class="jenkins-buttons-row jenkins-buttons-row--invert">
         <button class="jenkins-button jenkins-button--tertiary" id="button-computer-icon-legend">
-          ${%Legend}
+          ---Translate 423--- ${%Legend}
         </button>
       </div>
     </t:iconSize>
-    <template id="template-computer-icon-legend" data-title="${%Computer icon legend}">
+    <template id="template-computer-icon-legend" data-title="---Translate 423--- ${%Computer icon legend}">
       <st:include page="_legend.jelly"/>
     </template>
     <script src="${resURL}/jsbundles/pages/computer-set.js" type="text/javascript" defer="true" />
