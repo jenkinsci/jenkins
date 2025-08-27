@@ -32,13 +32,19 @@
 
       %breadcrumb-interactive-base {
         @include mixins.item;
-      
+
         --item-background: transparent;
         --item-background--hover: var(--button-background--hover);
         --item-background--active: var(--button-background--active);
         --item-box-shadow--focus: var(--button-box-shadow--focus);
-      
-        &:not(:hover, :active, :focus, [aria-describedby], [aria-expanded="true"]) {
+
+        &:not(
+          :hover,
+          :active,
+          :focus,
+          [aria-describedby],
+          [aria-expanded="true"]
+        ) {
           &::before {
             border-color: transparent;
           }
@@ -48,10 +54,10 @@
       & > a {
         @extend %breadcrumb-interactive-base;
       }
-      
+
       .dropdown-indicator {
         @extend %breadcrumb-interactive-base;
-      
+
         &::before,
         &::after {
           inset: -2px -6px;
