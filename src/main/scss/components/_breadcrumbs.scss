@@ -21,7 +21,7 @@
       a::before {
         content: "";
         position: absolute;
-        inset: -0.5rem -0.75rem !important;
+        inset: 0;
         pointer-events: all !important;
       }
 
@@ -30,29 +30,31 @@
         display: flex;
       }
 
-      & > a,
-      .dropdown-indicator {
-        @include mixins.item($border: false);
-
+      %breadcrumb-interactive-base {
+        @include mixins.item;
+      
         --item-background: transparent;
         --item-background--hover: var(--button-background--hover);
         --item-background--active: var(--button-background--active);
         --item-box-shadow--focus: var(--button-box-shadow--focus);
+      
+        &:not(:hover, :active, :focus, [aria-describedby], [aria-expanded="true"]) {
+          &::before {
+            border-color: transparent;
+          }
+        }
+      }
 
-        transition: opacity var(--standard-transition);
-
+      & > a {
+        @extend %breadcrumb-interactive-base;
+      }
+      
+      .dropdown-indicator {
+        @extend %breadcrumb-interactive-base;
+      
         &::before,
         &::after {
           inset: -2px -6px;
-          border: none;
-        }
-
-        &:hover {
-          opacity: 0.7;
-        }
-
-        &:active {
-          opacity: 0.4;
         }
       }
 
