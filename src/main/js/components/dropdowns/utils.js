@@ -52,6 +52,8 @@ function generateDropdown(element, callback, immediate, options = {}) {
           }
         },
         onHide(instance) {
+          const referenceParent = instance.reference.parentNode;
+          referenceParent.classList.remove("model-link--open");
           if (
             instance.props.trigger === "mouseenter" &&
             !instance.clickToHide
