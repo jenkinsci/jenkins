@@ -24,7 +24,6 @@
 
 package hudson.scheduler;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Calendar;
@@ -118,7 +117,7 @@ public final class CronTabList {
                 if (timezone != null) {
                     LOGGER.log(Level.CONFIG, "CRON with timezone {0}", timezone);
                 } else {
-                    throw new ANTLRException("Invalid or unsupported timezone '" + timezoneString + "'");
+                    throw new IllegalArgumentException("Invalid or unsupported timezone '" + timezoneString + "'");
                 }
                 continue;
             }
@@ -128,7 +127,7 @@ public final class CronTabList {
             try {
                 r.add(new CronTab(line, lineNumber, hash, timezone));
             } catch (IllegalArgumentException e) {
-                throw new ANTLRException(Messages.CronTabList_InvalidInput(line, e.getMessage()), e);
+                throw new IllegalArgumentException(Messages.CronTabList_InvalidInput(line, e.getMessage()), e);
             }
         }
 
