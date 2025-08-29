@@ -10,6 +10,7 @@ permissions:
 jobs:
   determine-version:
     runs-on: ubuntu-latest
+    if: github.repository == 'jenkinsci/jenkins'
     outputs:
       project-version: ${{ steps.set-version.outputs.project-version }}
       is-lts: ${{ steps.set-version.outputs.is-lts }}
@@ -51,7 +52,7 @@ jobs:
 
     runs-on: ubuntu-latest
     needs: determine-version
-    if: ${{ needs.determine-version.outputs.is-rc == 'false' }}
+    if: ${{ needs.determine-version.outputs.is-rc == 'false' && github.repository == 'jenkinsci/jenkins' }}
     steps:
       - name: Fetch war
         id: fetch-war
@@ -84,7 +85,7 @@ jobs:
 
     runs-on: ubuntu-latest
     needs: determine-version
-    if: ${{ needs.determine-version.outputs.is-rc == 'false' }}
+    if: ${{ needs.determine-version.outputs.is-rc == 'false' && github.repository == 'jenkinsci/jenkins'}}
     steps:
       - name: Fetch Deb
         id: fetch-deb
@@ -119,7 +120,7 @@ jobs:
 
     runs-on: ubuntu-latest
     needs: determine-version
-    if: ${{ needs.determine-version.outputs.is-rc == 'false' }}
+    if: ${{ needs.determine-version.outputs.is-rc == 'false' && github.repository == 'jenkinsci/jenkins'}}
     steps:
       - name: Fetch RPM
         id: fetch-rpm
@@ -155,7 +156,7 @@ jobs:
 
     runs-on: ubuntu-latest
     needs: determine-version
-    if: ${{ needs.determine-version.outputs.is-rc == 'false' }}
+    if: ${{ needs.determine-version.outputs.is-rc == 'false' && github.repository == 'jenkinsci/jenkins' }}
     steps:
       - name: Fetch MSI
         id: fetch-msi
@@ -191,7 +192,7 @@ jobs:
 
     runs-on: ubuntu-latest
     needs: determine-version
-    if: ${{ needs.determine-version.outputs.is-rc == 'false' }}
+    if: ${{ needs.determine-version.outputs.is-rc == 'false' && github.repository == 'jenkinsci/jenkins'}}
     steps:
       - name: Fetch suse rpm
         id: fetch-suse-rpm
