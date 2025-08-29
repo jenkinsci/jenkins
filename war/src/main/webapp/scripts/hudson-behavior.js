@@ -1341,14 +1341,26 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       e.onclick = helpButtonOnClick;
-      e.tabIndex = 9999; // make help link unnavigable from keyboard
+      // Allow keyboard navigation - help buttons shoulld be accessible
+      e.addEventListerner('keydown', function(event){
+        if (event.key === 'Enter' || event.key=== ' '){
+          event.preventDefault();
+          helpButtonOnClick.call(this);
+        }
+      });
     },
   );
 
   // legacy class name
   Behaviour.specify("A.help-button", "a-help-button", ++p, function (e) {
     e.onclick = helpButtonOnClick;
-    e.tabIndex = 9999; // make help link unnavigable from keyboard
+    // Allow keyboard navigation - help buttons shoulld be accessible
+    e.addEventListerner('keydown', function(event){
+        if (event.key === 'Enter' || event.key=== ' '){
+          event.preventDefault();
+          helpButtonOnClick.call(this);
+        }
+      });
   });
 
   // Script Console : settings and shortcut key
