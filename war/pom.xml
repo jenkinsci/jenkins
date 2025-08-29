@@ -46,7 +46,7 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <mina-sshd-api.version>2.15.0-161.vb_200831a_c15b_</mina-sshd-api.version>
+    <mina-sshd-api.version>2.16.0-167.va_269f38cc024</mina-sshd-api.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
     <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
 
