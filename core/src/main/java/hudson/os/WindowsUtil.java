@@ -29,10 +29,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.apache.commons.io.IOUtils;
 
 /**
  * Utilities for the Windows Platform.
@@ -119,8 +119,8 @@ public class WindowsUtil {
         Process mklink = execCmd("mklink", "/J", junction.getAbsolutePath(), target.getAbsolutePath());
         int result = mklink.waitFor();
         if (result != 0) {
-            String stderr = IOUtils.toString(mklink.getErrorStream());
-            String stdout = IOUtils.toString(mklink.getInputStream());
+            String stderr = new String(mklink.getErrorStream().readAllBytes(), Charset.defaultCharset());
+            String stdout = new String(mklink.getInputStream().readAllBytes(), Charset.defaultCharset());
             throw new IOException("Process exited with " + result + "\nStandard Output:\n" + stdout + "\nError Output:\n" + stderr);
         }
         return junction;
