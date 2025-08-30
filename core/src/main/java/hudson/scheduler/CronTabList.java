@@ -24,6 +24,7 @@
 
 package hudson.scheduler;
 
+import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Calendar;
@@ -83,9 +84,9 @@ public final class CronTabList {
     public static @CheckForNull String getValidTimezone(String timezone) {
         String[] validIDs = TimeZone.getAvailableIDs();
         for (String str : validIDs) {
-              if (str != null && str.equals(timezone)) {
-                    return timezone;
-              }
+            if (str != null && str.equals(timezone)) {
+                return timezone;
+            }
         }
         return null;
     }
@@ -117,7 +118,11 @@ public final class CronTabList {
                 if (timezone != null) {
                     LOGGER.log(Level.CONFIG, "CRON with timezone {0}", timezone);
                 } else {
-                    throw new IllegalArgumentException("Invalid or unsupported timezone '" + timezoneString + "'");
+                    /*
+                     * @deprecated use {@link IllegalArgumentException}
+                     * Some plugins might not catch : IllegalArgumentException & break
+                     */
+                    throw new ANTLRException("Invalid or unsupported timezone '" + timezoneString + "'");
                 }
                 continue;
             }
@@ -127,7 +132,11 @@ public final class CronTabList {
             try {
                 r.add(new CronTab(line, lineNumber, hash, timezone));
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException(Messages.CronTabList_InvalidInput(line, e.getMessage()), e);
+                /*
+                 * @deprecated use {@link IllegalArgumentException}
+                 * Some plugins might catch : IllegalArgumentException & break
+                 */
+                throw new ANTLRException(Messages.CronTabList_InvalidInput(line, e.getMessage()), e);
             }
         }
 
