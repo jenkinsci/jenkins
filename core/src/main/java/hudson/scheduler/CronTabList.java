@@ -71,7 +71,7 @@ public final class CronTabList {
     public String checkSanity() {
         for (CronTab tab : tabs) {
             String s = tab.checkSanity();
-            if (s != null)     return s;
+            if (s != null) return s;
         }
         return null;
     }
