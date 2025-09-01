@@ -84,9 +84,9 @@ public final class CronTabList {
     public static @CheckForNull String getValidTimezone(String timezone) {
         String[] validIDs = TimeZone.getAvailableIDs();
         for (String str : validIDs) {
-            if (str != null && str.equals(timezone)) {
-                return timezone;
-            }
+              if (str != null && str.equals(timezone)) {
+                    return timezone;
+              }
         }
         return null;
     }
