@@ -119,8 +119,8 @@ public class WindowsUtil {
         Process mklink = execCmd("mklink", "/J", junction.getAbsolutePath(), target.getAbsolutePath());
         int result = mklink.waitFor();
         if (result != 0) {
-            String stderr = new String(mklink.getErrorStream().readAllBytes(), Charset.defaultCharset());
-            String stdout = new String(mklink.getInputStream().readAllBytes(), Charset.defaultCharset());
+            String stderr = new String(mklink.getErrorStream().readAllBytes());
+            String stdout = new String(mklink.getInputStream().readAllBytes());
             throw new IOException("Process exited with " + result + "\nStandard Output:\n" + stdout + "\nError Output:\n" + stderr);
         }
         return junction;
