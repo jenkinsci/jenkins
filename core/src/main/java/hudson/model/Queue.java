@@ -1348,6 +1348,26 @@ public class Queue extends ResourceController implements Saveable {
             return queue._tryWithLock(runnable);
         }
     }
+
+    /**
+     * Invokes the supplied {@link Runnable} if the {@link Queue} lock was obtained within the given timeout.
+     *
+     * @param runnable the operation to perform.
+     * @return {@code true} if the lock was acquired within the timeout and the operation was performed.
+     * @since TODO
+     */
+    public static boolean tryWithLock(Runnable runnable, long timeout, TimeUnit unit) throws InterruptedException {
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
+        final Queue queue = jenkins == null ? null : jenkins.getQueue();
+        if (queue == null) {
+            runnable.run();
+            return true;
+        } else {
+            return queue._tryWithLock(runnable, timeout, unit);
+        }
+    }
+
     /**
      * Wraps a {@link Runnable} with the  {@link Queue} lock held.
      *
@@ -1424,6 +1444,26 @@ public class Queue extends ResourceController implements Saveable {
      */
     protected boolean _tryWithLock(Runnable runnable) {
         if (lock.tryLock()) {
+            try {
+                runnable.run();
+            } finally {
+                lock.unlock();
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Invokes the supplied {@link Runnable} if the {@link Queue} lock was obtained within the given timeout
+     *
+     * @param runnable the operation to perform.
+     * @return {@code true} if the lock was acquired within the timeout and the operation was performed.
+     * @since TODO
+     */
+    protected boolean _tryWithLock(Runnable runnable, long timeout, TimeUnit unit) throws InterruptedException {
+        if (lock.tryLock(timeout, unit)) {
             try {
                 runnable.run();
             } finally {

@@ -99,10 +99,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -449,6 +453,79 @@ public class QueueTest {
             assertThat(r.jenkins.getQueue().getPendingItems(), contains(item1));
             assertTrue(item2.isBlocked());
         });
+    }
+
+    @Test
+    void tryWithTimeoutSuccessfullyAcquired() throws InterruptedException {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            // Submit one task that takes 50ms
+            final AtomicBoolean task1Complete =  new AtomicBoolean(false);
+            executor.submit(Queue.wrapWithLock(() -> {
+                try {
+                    Thread.sleep(50L);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                task1Complete.set(true);
+            }));
+
+            // Try to acquire lock with 100ms timeout
+            final AtomicBoolean task2Complete = new AtomicBoolean(false);
+            boolean result = Queue.tryWithLock(() -> {
+                task2Complete.set(true);
+            }, 100, TimeUnit.MILLISECONDS);
+
+            assertTrue(result);
+            assertTrue(task1Complete.get());
+            assertTrue(task2Complete.get());
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    void tryWithTimeoutFailedToAcquire() throws InterruptedException {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            // Submit one task that takes 100ms
+            final CountDownLatch task1Complete =  new CountDownLatch(1);
+            executor.submit(Queue.wrapWithLock(() -> {
+                try {
+                    Thread.sleep(100L);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                task1Complete.countDown();
+            }));
+
+            // Try to acquire lock with 50ms timeout
+            final AtomicBoolean task2Complete = new AtomicBoolean(false);
+            boolean result = Queue.tryWithLock(() -> {
+                task2Complete.set(true);
+            }, 50, TimeUnit.MILLISECONDS);
+
+            task1Complete.await();
+            assertFalse(result);
+            assertFalse(task2Complete.get());
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    void tryWithTimeoutImmediatelyAcquired() throws InterruptedException {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            final AtomicBoolean taskComplete = new AtomicBoolean(false);
+            boolean result = Queue.tryWithLock(() -> {
+                taskComplete.set(true);
+            }, 1, TimeUnit.MILLISECONDS);
+            assertTrue(result);
+            assertTrue(taskComplete.get());
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     @Issue("JENKINS-27256")
