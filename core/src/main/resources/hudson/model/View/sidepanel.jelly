@@ -28,12 +28,14 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:header title="Jenkins">
-    <link rel="alternate" title="Jenkins:${it.viewName} (all builds)" href="${rootURL}/${it.url}rssAll" type="application/atom+xml" />
-    <link rel="alternate" title="Jenkins:${it.viewName} (all builds) (RSS 2.0)" href="${rootURL}/${it.url}rssAll?flavor=rss20" type="application/rss+xml" />
-    <link rel="alternate" title="Jenkins:${it.viewName} (failed builds)" href="${rootURL}/${it.url}rssFailed" type="application/atom+xml" />
-    <link rel="alternate" title="Jenkins:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
-  </l:header>
+  <j:if test="${h.hasPermission(app.READ)}">
+    <l:header title="Jenkins">
+      <link rel="alternate" title="Jenkins:${it.viewName} (all builds)" href="${rootURL}/${it.url}rssAll" type="application/atom+xml" />
+      <link rel="alternate" title="Jenkins:${it.viewName} (all builds) (RSS 2.0)" href="${rootURL}/${it.url}rssAll?flavor=rss20" type="application/rss+xml" />
+      <link rel="alternate" title="Jenkins:${it.viewName} (failed builds)" href="${rootURL}/${it.url}rssFailed" type="application/atom+xml" />
+      <link rel="alternate" title="Jenkins:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
+    </l:header>
+  </j:if>
   <l:side-panel>
     <l:tasks>
       <st:include page="tasks-top.jelly" it="${it.owner}" optional="true" />
@@ -43,7 +45,7 @@ THE SOFTWARE.
         <l:task href="${rootURL}/${it.viewUrl}newJob" icon="symbol-add" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
       </st:include>
 
-      <l:task href="${rootURL}/${it.viewUrl}builds" icon="symbol-build-history" title="${%Build History}"/>
+      <l:task href="${rootURL}/${it.viewUrl}builds" icon="symbol-build-history" title="${%Build History}" permission="${app.READ}" />
       <j:if test="${it.isEditable()}">
         <!-- /configure URL on Jenkins object is overloaded with Jenkins's system config, so always use the explicit name. -->
         <l:task href="${rootURL}/${it.viewUrl}configure" icon="symbol-settings" permission="${it.CONFIGURE}" title="${%Edit View}"/>
@@ -51,7 +53,7 @@ THE SOFTWARE.
       <j:if test="${it.owner.canDelete(it)}">
         <l:delete permission="${it.DELETE}" title="${%Delete View}" message="${%delete.view(it.displayName)}"/>
       </j:if>
-      <j:if test="${app.fingerprintMap.ready}">
+      <j:if test="${f.hasPemission(app.READ) and app.fingerprintMap.ready}">
         <l:task href="${rootURL}/projectRelationship" icon="symbol-project-relationship" title="${%Project Relationship}"/>
         <l:task href="${rootURL}/fingerprintCheck" icon="icon-fingerprint icon-md" title="${%Check File Fingerprint}"/>
       </j:if>
@@ -62,9 +64,12 @@ THE SOFTWARE.
       <st:include page="tasks-bottom.jelly" it="${it.owner}" optional="true" />
       <t:actions />
     </l:tasks>
-    <j:forEach var="w" items="${it.widgets}">
-      <j:set var="view" value="${it}" /><!-- expose the view that's rendering this sidepanel to the widget -->
-      <st:include it="${w}" page="index.jelly" />
-    </j:forEach>
+
+    <j:if test="${h.hasPermission(app.READ)}">
+      <j:forEach var="w" items="${it.widgets}">
+        <j:set var="view" value="${it}" /><!-- expose the view that's rendering this sidepanel to the widget -->
+        <st:include it="${w}" page="index.jelly" />
+      </j:forEach>
+    </j:if>
   </l:side-panel>
 </j:jelly>
