@@ -11,13 +11,15 @@
 
   <dd:separator />
 
-  <j:forEach var="action" items="${it.actions}">
-    <dd:item icon="${action.iconFileName}"
-             text="${action.displayName}"
-             href="${rootURL}/${it.user.url}/${action.urlName}" />
-  </j:forEach>
+  <j:if test="${app.hasPermission(app.READ)}">
+    <j:forEach var="action" items="${it.actions}">
+      <dd:item icon="${action.iconFileName}"
+               text="${action.displayName}"
+               href="${rootURL}/${it.user.url}/${action.urlName}" />
+    </j:forEach>
 
-  <dd:separator />
+    <dd:separator />
+  </j:if>
 
   <dd:item icon="symbol-log-out"
            text="${%Sign out}"
