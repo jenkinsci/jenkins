@@ -122,6 +122,8 @@ import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.AtmostOneTaskExecutor;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
+import jenkins.util.ThrowingCallable;
+import jenkins.util.ThrowingRunnable;
 import jenkins.util.Timer;
 import net.jcip.annotations.GuardedBy;
 import org.jenkinsci.remoting.RoleChecker;
@@ -1274,6 +1276,22 @@ public class Queue extends ResourceController implements Saveable {
      * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
      * than locking directly on Queue in order to allow for future refactoring.
      * @param runnable the operation to perform.
+     * @throws T if the runnable throws an exception.
+     * @since TODO
+     */
+    public static <T extends Throwable> void runWithLock(ThrowingRunnable<T> runnable) throws T {
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
+        final Queue queue = jenkins == null ? null : jenkins.getQueue();
+        if (queue == null) {
+            runnable.run();
+        } else {
+            queue._runWithLock(runnable);
+        }
+    }
+
+    /**
+     * Prefer {@link #runWithLock}.
      * @since 1.592
      */
     public static void withLock(Runnable runnable) {
@@ -1288,14 +1306,28 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Some operations require the {@link Queue} lock held. Use one of these methods rather
+     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
      * than locking directly on Queue in order to allow for future refactoring.
      *
      * @param callable the operation to perform.
      * @param <V>      the type of return value
-     * @param <T>      the type of exception.
      * @return the result of the callable.
-     * @throws T the exception of the callable
+     * @throws T if the callable throws an exception.
+     * @since TODO
+     */
+    public static <V, T extends Throwable> V callWithLock(ThrowingCallable<V, T> callable) throws T {
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
+        final Queue queue = jenkins == null ? null : jenkins.getQueue();
+        if (queue == null) {
+            return callable.call();
+        } else {
+            return queue._callWithLock(callable);
+        }
+    }
+
+    /**
+     * Prefer {@link #callWithLock}.
      * @since 1.592
      */
     public static <V, T extends Throwable> V withLock(hudson.remoting.Callable<V, T> callable) throws T {
@@ -1310,13 +1342,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
-     * than locking directly on Queue in order to allow for future refactoring.
-     *
-     * @param callable the operation to perform.
-     * @param <V>      the type of return value
-     * @return the result of the callable.
-     * @throws Exception if the callable throws an exception.
+     * Prefer {@link #callWithLock}.
      * @since 1.592
      */
     public static <V> V withLock(java.util.concurrent.Callable<V> callable) throws Exception {
@@ -1402,6 +1428,25 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
      * than locking directly on Queue in order to allow for future refactoring.
+     *
+     * @param runnable the operation to perform.
+     * @param <T>      the type of exception.
+     * @throws T the exception of the runnable
+     * @since TODO
+     */
+    @Override
+    protected <T extends Throwable> void _runWithLock(ThrowingRunnable<T> runnable) throws T {
+        lock.lock();
+        try {
+            runnable.run();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
+     * than locking directly on Queue in order to allow for future refactoring.
      * @param runnable the operation to perform.
      * @since 1.592
      */
@@ -1432,6 +1477,27 @@ public class Queue extends ResourceController implements Saveable {
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
+     * than locking directly on Queue in order to allow for future refactoring.
+     *
+     * @param callable the operation to perform.
+     * @param <V>      the type of return value
+     * @param <T>      the type of exception.
+     * @return the result of the callable.
+     * @throws T the exception of the callable
+     * @since TODO
+     */
+    @Override
+    protected <V, T extends Throwable> V _callWithLock(ThrowingCallable<V, T> callable) throws T {
+        lock.lock();
+        try {
+            return callable.call();
+        } finally {
+            lock.unlock();
         }
     }
 
