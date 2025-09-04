@@ -1306,7 +1306,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
+     * Some operations require the {@link Queue} lock held. Use one of these methods rather
      * than locking directly on Queue in order to allow for future refactoring.
      *
      * @param callable the operation to perform.
