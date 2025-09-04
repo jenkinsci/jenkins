@@ -1311,8 +1311,9 @@ public class Queue extends ResourceController implements Saveable {
      *
      * @param callable the operation to perform.
      * @param <V>      the type of return value
+     * @param <T>      the type of exception.
      * @return the result of the callable.
-     * @throws T if the callable throws an exception.
+     * @throws T the exception of the callable
      * @since TODO
      */
     public static <V, T extends Throwable> V callWithLock(ThrowingCallable<V, T> callable) throws T {
