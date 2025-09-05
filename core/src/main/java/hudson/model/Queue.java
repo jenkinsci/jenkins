@@ -85,6 +85,7 @@ import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1356,7 +1357,7 @@ public class Queue extends ResourceController implements Saveable {
      * @return {@code true} if the lock was acquired within the timeout and the operation was performed.
      * @since TODO
      */
-    public static boolean tryWithLock(Runnable runnable, long timeout, TimeUnit unit) throws InterruptedException {
+    public static boolean tryWithLock(Runnable runnable, Duration timeout) throws InterruptedException {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
         // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
@@ -1364,7 +1365,7 @@ public class Queue extends ResourceController implements Saveable {
             runnable.run();
             return true;
         } else {
-            return queue._tryWithLock(runnable, timeout, unit);
+            return queue._tryWithLock(runnable, timeout);
         }
     }
 
@@ -1462,8 +1463,8 @@ public class Queue extends ResourceController implements Saveable {
      * @return {@code true} if the lock was acquired within the timeout and the operation was performed.
      * @since TODO
      */
-    protected boolean _tryWithLock(Runnable runnable, long timeout, TimeUnit unit) throws InterruptedException {
-        if (lock.tryLock(timeout, unit)) {
+    protected boolean _tryWithLock(Runnable runnable, Duration timeout) throws InterruptedException {
+        if (lock.tryLock(timeout.toNanos(), TimeUnit.NANOSECONDS)) {
             try {
                 runnable.run();
             } finally {

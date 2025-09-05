@@ -91,6 +91,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -474,7 +475,7 @@ public class QueueTest {
             final AtomicBoolean task2Complete = new AtomicBoolean(false);
             boolean result = Queue.tryWithLock(() -> {
                 task2Complete.set(true);
-            }, 100, TimeUnit.MILLISECONDS);
+            }, Duration.ofMillis(100));
 
             assertTrue(result);
             assertTrue(task1Complete.get());
@@ -503,7 +504,7 @@ public class QueueTest {
             final AtomicBoolean task2Complete = new AtomicBoolean(false);
             boolean result = Queue.tryWithLock(() -> {
                 task2Complete.set(true);
-            }, 50, TimeUnit.MILLISECONDS);
+            }, Duration.ofMillis(50));
 
             task1Complete.await();
             assertFalse(result);
@@ -520,7 +521,7 @@ public class QueueTest {
             final AtomicBoolean taskComplete = new AtomicBoolean(false);
             boolean result = Queue.tryWithLock(() -> {
                 taskComplete.set(true);
-            }, 1, TimeUnit.MILLISECONDS);
+            }, Duration.ofMillis(1));
             assertTrue(result);
             assertTrue(taskComplete.get());
         } finally {
