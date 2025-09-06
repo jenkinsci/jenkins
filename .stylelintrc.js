@@ -3,19 +3,19 @@ module.exports = {
   ignoreFiles: ["src/main/scss/_bootstrap.scss"],
   rules: {
     "no-descending-specificity": null,
-    "selector-class-pattern": "[a-z]",
+    "selector-class-pattern": "^[a-z][a-z0-9\\-]+$",
     "selector-id-pattern": "[a-z]",
     "custom-property-pattern": "[a-z]",
     "value-keyword-case": [
       "lower",
-      {
-        camelCaseSvgKeywords: true,
-      },
+      { camelCaseSvgKeywords: true },
     ],
     "property-no-vendor-prefix": null,
     "alpha-value-notation": "number",
     "number-max-precision": 5,
     "no-duplicate-selectors": null,
     "hue-degree-notation": "number",
+    "color-hex-case": "lower",
+    "unit-case": "lower",
   },
 };
