@@ -71,7 +71,7 @@ public final class CronTabList {
     public String checkSanity() {
         for (CronTab tab : tabs) {
             String s = tab.checkSanity();
-            if (s != null)     return s;
+            if (s != null) return s;
         }
         return null;
     }
@@ -118,6 +118,10 @@ public final class CronTabList {
                 if (timezone != null) {
                     LOGGER.log(Level.CONFIG, "CRON with timezone {0}", timezone);
                 } else {
+                    /*
+                     * @deprecated use {@link IllegalArgumentException}
+                     * Some plugins might not catch : IllegalArgumentException & break
+                     */
                     throw new ANTLRException("Invalid or unsupported timezone '" + timezoneString + "'");
                 }
                 continue;
@@ -128,6 +132,10 @@ public final class CronTabList {
             try {
                 r.add(new CronTab(line, lineNumber, hash, timezone));
             } catch (IllegalArgumentException e) {
+                /*
+                 * @deprecated use {@link IllegalArgumentException}
+                 * Some plugins might catch : IllegalArgumentException & break
+                 */
                 throw new ANTLRException(Messages.CronTabList_InvalidInput(line, e.getMessage()), e);
             }
         }
