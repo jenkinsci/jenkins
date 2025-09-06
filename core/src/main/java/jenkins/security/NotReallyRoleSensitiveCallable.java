@@ -1,14 +1,11 @@
 package jenkins.security;
 
 import hudson.remoting.Callable;
+import jenkins.util.ThrowingCallable;
 import org.jenkinsci.remoting.RoleChecker;
 
 /**
- * {@link Callable} adapter for situations where Callable is not used for remoting but
- * just as a convenient function that has parameterized return value and exception type.
- *
- * @author Kohsuke Kawaguchi
- * @since 1.587 / 1.580.1
+ * @deprecated use {@link ThrowingCallable} instead
  */
 public abstract class NotReallyRoleSensitiveCallable<V, T extends Throwable> implements Callable<V, T> {
     @Override

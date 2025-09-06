@@ -162,16 +162,13 @@ public class Nodes implements PersistenceRoot {
             } catch (IOException | RuntimeException e) {
                 // JENKINS-50599: If persisting the node throws an exception, we need to remove the node from
                 // memory before propagating the exception.
-                Queue.withLock(new Runnable() {
-                    @Override
-                    public void run() {
-                        nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> old);
-                        jenkins.updateComputers(node);
-                        if (old != null) {
-                            jenkins.trimLabels(node, old);
-                        } else {
-                            jenkins.trimLabels(node);
-                        }
+                Queue.runWithLock(() -> {
+                    nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> old);
+                    jenkins.updateComputers(node);
+                    if (old != null) {
+                        jenkins.trimLabels(node, old);
+                    } else {
+                        jenkins.trimLabels(node);
                     }
                 });
                 throw e;
@@ -250,13 +247,10 @@ public class Nodes implements PersistenceRoot {
 
         if (oldOne == nodes.get(oldOne.getNodeName())) {
             // use the queue lock until Nodes has a way of directly modifying a single node.
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
-                    Nodes.this.nodes.remove(oldOne.getNodeName());
-                    Nodes.this.nodes.put(newOne.getNodeName(), newOne);
-                    newOne.onLoad(Nodes.this, newOne.getNodeName());
-                }
+            Queue.runWithLock(() -> {
+                Nodes.this.nodes.remove(oldOne.getNodeName());
+                Nodes.this.nodes.put(newOne.getNodeName(), newOne);
+                newOne.onLoad(Nodes.this, newOne.getNodeName());
             });
             updateNode(newOne, false);
             if (!newOne.getNodeName().equals(oldOne.getNodeName())) {
@@ -285,16 +279,13 @@ public class Nodes implements PersistenceRoot {
     public void removeNode(final @NonNull Node node) throws IOException {
         if (node == nodes.get(node.getNodeName())) {
             AtomicBoolean match = new AtomicBoolean();
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
-                    Computer c = node.toComputer();
-                    if (c != null) {
-                        c.recordTermination();
-                        c.disconnect(OfflineCause.create(hudson.model.Messages._Hudson_NodeBeingRemoved()));
-                    }
-                    match.set(node == nodes.remove(node.getNodeName()));
+            Queue.runWithLock(() -> {
+                Computer c = node.toComputer();
+                if (c != null) {
+                    c.recordTermination();
+                    c.disconnect(OfflineCause.create(hudson.model.Messages._Hudson_NodeBeingRemoved()));
                 }
+                match.set(node == nodes.remove(node.getNodeName()));
             });
             // no need for a full save() so we just do the minimum
             LOGGER.fine(() -> "deleting " + new File(getRootDir(), node.getNodeName()));
@@ -354,21 +345,18 @@ public class Nodes implements PersistenceRoot {
                 }
             }
         }
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                newNodes.entrySet().removeIf(stringNodeEntry -> ExtensionList.lookup(NodeListener.class).stream().anyMatch(nodeListener -> {
-                    if (!nodeListener.allowLoad(stringNodeEntry.getValue())) {
-                        LOGGER.log(Level.FINE, () -> "Loading of node " + stringNodeEntry.getKey() + " vetoed by " + nodeListener);
-                        return true;
-                    }
-                    return false;
-                }));
-                nodes.entrySet().removeIf(stringNodeEntry -> !(stringNodeEntry.getValue() instanceof EphemeralNode));
-                nodes.putAll(newNodes);
-                jenkins.updateComputerList();
-                jenkins.trimLabels();
-            }
+        Queue.runWithLock(() -> {
+            newNodes.entrySet().removeIf(stringNodeEntry -> ExtensionList.lookup(NodeListener.class).stream().anyMatch(nodeListener -> {
+                if (!nodeListener.allowLoad(stringNodeEntry.getValue())) {
+                    LOGGER.log(Level.FINE, () -> "Loading of node " + stringNodeEntry.getKey() + " vetoed by " + nodeListener);
+                    return true;
+                }
+                return false;
+            }));
+            nodes.entrySet().removeIf(stringNodeEntry -> !(stringNodeEntry.getValue() instanceof EphemeralNode));
+            nodes.putAll(newNodes);
+            jenkins.updateComputerList();
+            jenkins.trimLabels();
         });
     }
 
