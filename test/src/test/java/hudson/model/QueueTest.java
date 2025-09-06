@@ -101,6 +101,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -457,58 +458,85 @@ public class QueueTest {
     }
 
     @Test
-    void tryWithTimeoutSuccessfullyAcquired() throws InterruptedException {
+    void tryWithTimeoutSuccessfullyAcquired() throws InterruptedException, ExecutionException {
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
-            // Submit one task that takes 50ms
-            final AtomicBoolean task1Complete =  new AtomicBoolean(false);
-            executor.submit(Queue.wrapWithLock(() -> {
+            final CountDownLatch task1Started =  new CountDownLatch(1);
+            final CountDownLatch task1Release = new CountDownLatch(1);
+
+            Future<Void> task1 = executor.submit(Queue.wrapWithLock(() -> {
+                task1Started.countDown();
                 try {
-                    Thread.sleep(50L);
+                    task1Release.await();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                task1Complete.set(true);
+                return null;
             }));
 
-            // Try to acquire lock with 100ms timeout
-            final AtomicBoolean task2Complete = new AtomicBoolean(false);
-            boolean result = Queue.tryWithLock(() -> {
-                task2Complete.set(true);
-            }, Duration.ofMillis(100));
+            // Wait for the first task to be started to ensure it is running and has the lock
+            task1Started.await();
 
-            assertTrue(result);
-            assertTrue(task1Complete.get());
-            assertTrue(task2Complete.get());
+            // Create a task that will need to wait until the first task is complete that will fail to acquire.
+            final AtomicBoolean task2Result = new AtomicBoolean(false);
+            boolean acquired = Queue.tryWithLock(() -> {
+                task2Result.set(true);
+            }, Duration.ofMillis(10));
+            assertFalse(acquired);
+            assertFalse(task2Result.get());
+
+            // Now release the first task and wait (with a long timeout) and we should succeed at getting the lock.
+            final AtomicBoolean task3Result = new AtomicBoolean(false);
+            task1Release.countDown();
+            acquired = Queue.tryWithLock(() -> {
+                task3Result.set(true);
+            }, Duration.ofSeconds(30));
+
+            // First task should complete
+            task1.get();
+
+            // Task 2 should have acquired and completed
+            assertTrue(acquired);
+            assertTrue(task3Result.get());
         } finally {
             executor.shutdownNow();
         }
     }
 
     @Test
-    void tryWithTimeoutFailedToAcquire() throws InterruptedException {
+    void tryWithTimeoutFailedToAcquire() throws InterruptedException, ExecutionException {
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
-            // Submit one task that takes 100ms
-            final CountDownLatch task1Complete =  new CountDownLatch(1);
-            executor.submit(Queue.wrapWithLock(() -> {
+            // Submit one task that will block indefinitely until released
+            final CountDownLatch task1Started =  new CountDownLatch(1);
+            final CountDownLatch task1Release = new CountDownLatch(1);
+            Future<Void> task1 = executor.submit(Queue.wrapWithLock(() -> {
+                task1Started.countDown();
                 try {
-                    Thread.sleep(100L);
+                    task1Release.await();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                task1Complete.countDown();
+                return null;
             }));
 
-            // Try to acquire lock with 50ms timeout
+            // Wait for task 1 to start
+            task1Started.await();
+
+            // Try to acquire lock with 50ms timeout, expecting that it cannot be acquired
             final AtomicBoolean task2Complete = new AtomicBoolean(false);
             boolean result = Queue.tryWithLock(() -> {
                 task2Complete.set(true);
             }, Duration.ofMillis(50));
 
-            task1Complete.await();
+            // Results should indicate the task did not run
             assertFalse(result);
             assertFalse(task2Complete.get());
+
+            // Now release the first task and wait for it to finish
+            task1Release.countDown();
+            task1.get();
+
         } finally {
             executor.shutdownNow();
         }
