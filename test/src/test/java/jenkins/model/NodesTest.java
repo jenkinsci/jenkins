@@ -34,10 +34,12 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
@@ -224,6 +226,32 @@ class NodesTest {
         assertThat(retentionStrategyA.checkCount, equalTo(0));
         r.jenkins.setNumExecutors(1);
         assertThat(retentionStrategyA.checkCount, equalTo(0));
+    }
+
+    @Test
+    void addIfAbsentAddsNewNode() throws Exception {
+        Node newNode = r.createSlave("foo", "", null);
+        r.jenkins.removeNode(newNode);
+        assertThat(r.jenkins.getNodesObject().getNodes().size(), equalTo(0));
+        boolean result = r.jenkins.getNodesObject().addNodeIfAbsent(newNode);
+        assertTrue(result);
+        assertThat(r.jenkins.getNodesObject().getNodes().size(), equalTo(1));
+        assertNotNull(r.jenkins.getNode("foo"));
+    }
+
+    @Test
+    void addIfAbsentDoesNotReplaceOldNode() throws Exception {
+        Node oldNode = r.createSlave("foo", "labels1", null);
+        r.jenkins.removeNode(oldNode);
+        Node newNode = r.createSlave("foo", "labels2", null);
+        r.jenkins.removeNode(newNode);
+        assertThat(r.jenkins.getNodesObject().getNodes().size(), equalTo(0));
+        r.jenkins.addNode(oldNode);
+        assertThat(r.jenkins.getNodesObject().getNodes().size(), equalTo(1));
+        boolean result = r.jenkins.getNodesObject().addNodeIfAbsent(newNode);
+        assertFalse(result);
+        r.jenkins.getNodesObject().load();
+        assertThat(r.jenkins.getNode("foo").getLabelString(), equalTo("labels1"));
     }
 
     public static class MockRetentionStrategy extends RetentionStrategy.Always {
