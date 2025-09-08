@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Check if PR targets LTS branch
         if: startsWith(github.event.pull_request.base.ref, 'stable-')
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
