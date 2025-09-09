@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.139</version>
+    <version>1.140</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.527</revision>
+    <revision>2.528</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-09-02T16:38:59Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-09-09T12:24:10Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -170,7 +170,6 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
-            <runOrder>alphabetical</runOrder>
           </configuration>
         </plugin>
         <plugin>
