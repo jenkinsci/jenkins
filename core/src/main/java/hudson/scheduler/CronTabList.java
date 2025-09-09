@@ -102,6 +102,7 @@ public final class CronTabList {
     /**
      * @param format the crontab entry to be parsed
      * @throws IllegalArgumentException if the crontab entry cannot be parsed
+     * @deprecated ANTLRException - Some plugins might not catch the replacement : IllegalArgumentException & break
      */
     public static CronTabList create(@NonNull String format, Hash hash) {
         Vector<CronTab> r = new Vector<>();
@@ -118,10 +119,6 @@ public final class CronTabList {
                 if (timezone != null) {
                     LOGGER.log(Level.CONFIG, "CRON with timezone {0}", timezone);
                 } else {
-                    /*
-                     * @deprecated use {@link IllegalArgumentException}
-                     * Some plugins might not catch : IllegalArgumentException & break
-                     */
                     throw new ANTLRException("Invalid or unsupported timezone '" + timezoneString + "'");
                 }
                 continue;
@@ -132,10 +129,6 @@ public final class CronTabList {
             try {
                 r.add(new CronTab(line, lineNumber, hash, timezone));
             } catch (IllegalArgumentException e) {
-                /*
-                 * @deprecated use {@link IllegalArgumentException}
-                 * Some plugins might catch : IllegalArgumentException & break
-                 */
                 throw new ANTLRException(Messages.CronTabList_InvalidInput(line, e.getMessage()), e);
             }
         }
