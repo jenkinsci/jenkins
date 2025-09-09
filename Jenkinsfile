@@ -75,6 +75,10 @@ axes.values().combinations {
       // Increment before allocating the node in case it fails
       retryCount = retryCount + 1
       node(agentContainerLabel) {
+        // TODO: remove, here to test retry logic
+        if (retryCount == 0 && platform == 'windows' ) {
+          error '[debug] Forcing a retry on first Windows build attempt'
+        }
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
         stage("${platform.capitalize()} - JDK ${jdk} - Checkout") {
