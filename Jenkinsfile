@@ -67,7 +67,13 @@ axes.values().combinations {
     if (platform == 'windows') {
       agentContainerLabel += '-windows'
     }
+    int retryCount = 0
     retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
+      if (retryCount == 1 && platform == 'windows' ) {
+        agentContainerLabel = agentContainerLabel + '-nonspot'
+      }
+      // Increment before allocating the node in case it fails
+      retryCount = retryCount + 1
       node(agentContainerLabel) {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
