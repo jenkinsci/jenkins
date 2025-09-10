@@ -143,7 +143,7 @@ public class RenderOnDemandClosure {
     /**
      * In JS, navigator.sendBeacon() is used to send the unload request, and always sends POST.
      *
-     * @link <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon">MDN: sendBeacon</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon">MDN: sendBeacon</a>
      */
     @Extension
     public static class ReleaseBoundObjectsCrumbExclusion extends CrumbExclusion {
