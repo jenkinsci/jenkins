@@ -64,8 +64,8 @@ td.no-wrap {
 
 #safe-restart-msg {
   font-weight: bold;
-  color: white;
-  background-color: var(--warning);
+  color: var(--background) !important;
+  background-color: var(--warning-color);
   text-align: center;
   margin-bottom: var(--section-padding);
   padding: 0.5em;
@@ -75,8 +75,8 @@ td.no-wrap {
 
 #shutdown-msg {
   font-weight: bold;
-  color: white;
-  background-color: #ef2929;
+  color: var(--background) !important;
+  background-color: var(--destructive-color);
   text-align: center;
   margin-bottom: var(--section-padding);
   padding: 0.5em;
@@ -148,7 +148,7 @@ td.tab {
 
 pre {
   white-space: pre-wrap;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   margin: 0 0 var(--section-padding);
   padding: 0.8rem 1rem;
   border-radius: var(--form-input-border-radius);
@@ -160,7 +160,7 @@ pre {
   line-height: 1.66;
 
   a {
-    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
 
@@ -290,7 +290,8 @@ pre.console {
   display: none; /* hidden until loaded */
   padding: 1rem;
   margin: 1rem 0;
-  word-break: break-word;
+  overflow-wrap: anywhere;
+  word-break: normal;
   border-radius: var(--form-input-border-radius);
   background-color: var(--button-background);
   border: var(--jenkins-border--subtle);
@@ -327,7 +328,7 @@ pre.console {
 
 .help .from-plugin {
   text-align: right;
-  color: #666;
+  color: var(--text-color-secondary);
 }
 
 .icon-help,
@@ -380,7 +381,7 @@ img.icon-help {
   overflow-y: scroll;
   color: var(--text-color);
   border-radius: var(--form-input-border-radius);
-  box-shadow: 0 10px 20px rgba(black, 0.15);
+  box-shadow: 0 10px 20px rgb(black, 0.15);
   margin-top: 8px;
   margin-left: 3px;
   max-height: 300px;

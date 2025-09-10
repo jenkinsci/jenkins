@@ -26,28 +26,34 @@ package jenkins.health;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.ExtensionList;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 
-public class HealthCheckActionTest {
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+@WithJenkins
+class HealthCheckActionTest {
 
-    @Rule
-    public LoggerRule loggingRule = new LoggerRule().record(HealthCheckAction.class, Level.WARNING).capture(10);
+    private final LogRecorder loggingRule = new LogRecorder().record(HealthCheckAction.class, Level.WARNING).capture(10);
+
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void healthCheck() throws Exception {
-        try (var webClient = r.createWebClient()) {
+    void healthCheck() throws Exception {
+        try (var webClient = r.createWebClient().withRedirectEnabled(false)) {
             var page = webClient.goTo(healthUrl(), "application/json");
             assertThat(page.getWebResponse().getStatusCode(), is(200));
             assertEquals(JSONObject.fromObject("""
@@ -58,13 +64,14 @@ public class HealthCheckActionTest {
         }
     }
 
+
     private static String healthUrl() {
-        return ExtensionList.lookupSingleton(HealthCheckAction.class).getUrlName();
+        return ExtensionList.lookupSingleton(HealthCheckAction.class).getUrlName() + "/";
     }
 
     @Test
-    public void healthCheckSuccessExtension() throws Exception {
-        try (var webClient = r.createWebClient()) {
+    void healthCheckSuccessExtension() throws Exception {
+        try (var webClient = r.createWebClient().withRedirectEnabled(false)) {
             var page = webClient.goTo(healthUrl(), "application/json");
             assertThat(page.getWebResponse().getStatusCode(), is(200));
             assertEquals(JSONObject.fromObject("""
@@ -90,8 +97,8 @@ public class HealthCheckActionTest {
     }
 
     @Test
-    public void healthCheckFailingExtension() throws Exception {
-        try (var webClient = r.createWebClient()) {
+    void healthCheckFailingExtension() throws Exception {
+        try (var webClient = r.createWebClient().withRedirectEnabled(false)) {
             webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
             webClient.getOptions().setPrintContentOnFailingStatusCode(false);
             var page = webClient.goTo(healthUrl(), "application/json");

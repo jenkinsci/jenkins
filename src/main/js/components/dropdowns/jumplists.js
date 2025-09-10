@@ -1,10 +1,22 @@
-import Path from "@/util/path";
-import behaviorShim from "@/util/behavior-shim";
 import Utils from "@/components/dropdowns/utils";
+import behaviorShim from "@/util/behavior-shim";
+import { createElementFromHtml } from "@/util/dom";
+import Path from "@/util/path";
 
 function init() {
   generateJumplistAccessors();
   generateDropdowns();
+}
+function generateDropdownChevron(element) {
+  const isFirefox = navigator.userAgent.indexOf("Firefox") !== -1;
+  // Firefox adds unwanted lines when copying buttons in text, so use a span instead
+  const dropdownChevron = document.createElement(isFirefox ? "span" : "button");
+  dropdownChevron.className = "jenkins-menu-dropdown-chevron";
+  dropdownChevron.dataset.href = element.href;
+  dropdownChevron.addEventListener("click", (event) => {
+    event.preventDefault();
+  });
+  element.appendChild(dropdownChevron);
 }
 
 /*
@@ -12,17 +24,7 @@ function init() {
  */
 function generateJumplistAccessors() {
   behaviorShim.specify("A.model-link", "-jumplist-", 999, (link) => {
-    const isFirefox = navigator.userAgent.indexOf("Firefox") !== -1;
-    // Firefox adds unwanted lines when copying buttons in text, so use a span instead
-    const dropdownChevron = document.createElement(
-      isFirefox ? "span" : "button",
-    );
-    dropdownChevron.className = "jenkins-menu-dropdown-chevron";
-    dropdownChevron.dataset.href = link.href;
-    dropdownChevron.addEventListener("click", (event) => {
-      event.preventDefault();
-    });
-    link.appendChild(dropdownChevron);
+    generateDropdownChevron(link);
   });
 }
 
@@ -31,35 +33,44 @@ function generateJumplistAccessors() {
  */
 function generateDropdowns() {
   behaviorShim.specify(
-    ".hoverable-model-link",
+    ".hoverable-model-link, .hoverable-children-model-link",
     "-hoverable-dropdown-",
     1000,
     (element) =>
       Utils.generateDropdown(
         element,
-        (instance) => {
-          const href = element.href;
-
-          if (element.items) {
-            instance.setContent(Utils.generateDropdownItems(element.items));
-            return;
-          }
-
-          fetch(Path.combinePath(href, "contextMenu"))
-            .then((response) => response.json())
-            .then((json) =>
-              instance.setContent(
-                Utils.generateDropdownItems(
-                  mapChildrenItemsToDropdownItems(json.items),
-                ),
-              ),
-            )
-            .catch((error) => console.log(`Jumplist request failed: ${error}`))
-            .finally(() => (instance.loaded = true));
-        },
-        false,
+        createDropdownContent(
+          element,
+          element.classList.contains("hoverable-model-link"),
+          element.classList.contains("hoverable-children-model-link"),
+          element.href,
+        ),
+        element.items != null,
         {
           trigger: "mouseenter",
+          offset: [-16, 10],
+          animation: "tooltip",
+          touch: false,
+        },
+      ),
+  );
+
+  behaviorShim.specify(
+    ".dropdown-indicator",
+    "-clickable-dropdown-",
+    1000,
+    (element) =>
+      Utils.generateDropdown(
+        element,
+        createDropdownContent(
+          element,
+          element.getAttribute("data-model"),
+          element.getAttribute("data-children"),
+          element.getAttribute("data-href"),
+        ),
+        element.items != null,
+        {
+          trigger: "click focus",
           offset: [-16, 10],
           animation: "tooltip",
           touch: false,
@@ -74,6 +85,7 @@ function generateDropdowns() {
     (element) =>
       Utils.generateDropdown(element, (instance) => {
         const href = element.dataset.href;
+
         const jumplistType = !element.classList.contains("children")
           ? "contextMenu"
           : "childrenContextMenu";
@@ -96,6 +108,86 @@ function generateDropdowns() {
           .finally(() => (instance.loaded = true));
       }),
   );
+}
+
+function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
+  return (instance) => {
+    if (element.items) {
+      instance.setContent(Utils.generateDropdownItems(element.items));
+      return;
+    }
+    const sections = {
+      model: null,
+      children: null,
+    };
+
+    const fetchSection = function (urlSuffix) {
+      return fetch(Path.combinePath(href, urlSuffix))
+        .then((response) => response.json())
+        .then((json) => {
+          const items = Utils.generateDropdownItems(
+            mapChildrenItemsToDropdownItems(json.items),
+          );
+          return items;
+        });
+    };
+
+    const promises = [];
+
+    if (hasModelLink === "true") {
+      promises.push(
+        fetchSection("contextMenu").then((section) => {
+          const dContainer = section;
+          dContainer.prepend(
+            createElementFromHtml(
+              `<p class="jenkins-dropdown__heading">Actions</p>`,
+            ),
+          );
+          sections.model = dContainer;
+        }),
+      );
+    }
+
+    if (hasChildrenLink === "true") {
+      promises.push(
+        fetchSection("childrenContextMenu").then((section) => {
+          const dContainer = section;
+          // add a header for the section
+          dContainer.prepend(
+            createElementFromHtml(
+              `<p class="jenkins-dropdown__heading">Navigation</p>`,
+            ),
+          );
+          sections.children = dContainer;
+        }),
+      );
+    }
+
+    Promise.all(promises)
+      .then(() => {
+        const container = document.createElement("div");
+        container.className = "jenkins-dropdown__split-container";
+        if (sections.model && !sections.children) {
+          container.appendChild(sections.model);
+        } else if (!sections.model && sections.children) {
+          container.appendChild(sections.children);
+        } else if (sections.model && sections.children) {
+          // use the first dropdown and add the second dropdowns choices this way the a11y stays intact
+          const dropbox = sections.model;
+          Array.from(sections.children.children).forEach((item) => {
+            dropbox.appendChild(item);
+          });
+          container.appendChild(dropbox);
+        }
+        instance.setContent(container);
+      })
+      .catch((error) => {
+        console.log(`Dropdown fetch failed: ${error}`);
+      })
+      .finally(() => {
+        instance.loaded = true;
+      });
+  };
 }
 
 /*

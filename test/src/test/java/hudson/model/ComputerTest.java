@@ -35,12 +35,12 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.ExtensionList;
 import hudson.Functions;
@@ -64,27 +64,34 @@ import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.xml.XmlPage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
-import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-@Category(SmokeTest.class)
-public class ComputerTest {
+@Tag("SmokeTest")
+@WithJenkins
+class ComputerTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
-    @Rule public LoggerRule logging = new LoggerRule();
+    private final LogRecorder logging = new LogRecorder();
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void discardLogsAfterDeletion() throws Exception {
+    void discardLogsAfterDeletion() throws Exception {
         DumbSlave delete = j.createOnlineSlave(Jenkins.get().getLabelAtom("delete"));
         DumbSlave keep = j.createOnlineSlave(Jenkins.get().getLabelAtom("keep"));
         File logFile = delete.toComputer().getLogFile();
@@ -92,10 +99,10 @@ public class ComputerTest {
 
         Jenkins.get().removeNode(delete);
 
-        assertFalse("Slave log should be deleted", logFile.exists());
-        assertFalse("Slave log directory should be deleted", logFile.getParentFile().exists());
+        assertFalse(logFile.exists(), "Slave log should be deleted");
+        assertFalse(logFile.getParentFile().exists(), "Slave log directory should be deleted");
 
-        assertTrue("Slave log should be kept", keep.toComputer().getLogFile().exists());
+        assertTrue(keep.toComputer().getLogFile().exists(), "Slave log should be kept");
     }
 
     /**
@@ -103,7 +110,7 @@ public class ComputerTest {
      */
     @Issue("JENKINS-31321")
     @Test
-    public void testProhibitRenameOverExistingNode() throws Exception {
+    void testProhibitRenameOverExistingNode() throws Exception {
         final String NOTE = "Rename node to name of another node should fail.";
 
         Node nodeA = j.createSlave("nodeA", null, null);
@@ -115,13 +122,13 @@ public class ComputerTest {
         form.getInputByName("_.name").setValue("nodeA");
 
         Page page = j.submit(form);
-        assertEquals(NOTE, HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode(), NOTE);
         assertThat(NOTE, page.getWebResponse().getContentAsString(),
                 containsString("Agent called ‘nodeA’ already exists"));
     }
 
     @Test
-    public void doNotShowUserDetailsInOfflineCause() throws Exception {
+    void doNotShowUserDetailsInOfflineCause() throws Exception {
         DumbSlave slave = j.createOnlineSlave();
         final Computer computer = slave.toComputer();
         computer.setTemporarilyOffline(true, new OfflineCause.UserCause(User.getOrCreateByIdOrFullName("username"), "msg"));
@@ -129,7 +136,7 @@ public class ComputerTest {
     }
 
     @Test
-    public void offlineCauseRemainsAfterTemporaryCauseRemoved() throws Exception {
+    void offlineCauseRemainsAfterTemporaryCauseRemoved() throws Exception {
         var agent = j.createSlave();
         var computer = agent.toComputer();
         var initialOfflineCause = new OfflineCause.UserCause(User.getOrCreateByIdOrFullName("username"), "Initial cause");
@@ -143,7 +150,7 @@ public class ComputerTest {
     }
 
     @Test
-    public void computerIconDependsOnOfflineCause() throws Exception {
+    void computerIconDependsOnOfflineCause() throws Exception {
         var agent = j.createSlave();
         var computer = agent.toComputer();
         assertThat(computer.getIcon(), equalTo("symbol-computer-offline"));
@@ -152,8 +159,9 @@ public class ComputerTest {
         assertThat(computer.getIcon(), equalTo(cause.getComputerIcon()));
     }
 
-    @Test @LocalData
-    public void removeUserDetailsFromOfflineCause() throws Exception {
+    @Test
+    @LocalData
+    void removeUserDetailsFromOfflineCause() throws Exception {
         Computer computer = j.jenkins.getComputer("deserialized");
         verifyOfflineCause(computer);
     }
@@ -169,7 +177,7 @@ public class ComputerTest {
 
     @Issue("JENKINS-42969")
     @Test
-    public void addAction() throws Exception {
+    void addAction() throws Exception {
         Computer c = j.createSlave().toComputer();
         class A extends InvisibleAction {}
 
@@ -181,7 +189,7 @@ public class ComputerTest {
     }
 
     @Test
-    public void tiedJobs() throws Exception {
+    void tiedJobs() throws Exception {
         DumbSlave s = j.createOnlineSlave();
         Label l = s.getSelfLabel();
         Computer c = s.toComputer();
@@ -195,7 +203,7 @@ public class ComputerTest {
     }
 
     @Test
-    public void exceptions() throws Exception {
+    void exceptions() {
         logging.record("", Level.WARNING).capture(10);
         boolean ok = false;
         Computer.threadPoolForRemoting.submit(() -> {
@@ -203,12 +211,12 @@ public class ComputerTest {
                 throw new IllegalStateException("oops");
             }
         });
-        await().atMost(15, TimeUnit.SECONDS).until(() -> logging, LoggerRule.recorded(Level.WARNING, anyOf(nullValue(), any(String.class)), isA(IllegalStateException.class)));
+        await().atMost(15, TimeUnit.SECONDS).until(() -> logging, LogRecorder.recorded(Level.WARNING, anyOf(nullValue(), any(String.class)), isA(IllegalStateException.class)));
     }
 
     @Issue("SECURITY-1923")
     @Test
-    public void configDotXmlWithValidXmlAndBadField() throws Exception {
+    void configDotXmlWithValidXmlAndBadField() throws Exception {
         final String CONFIGURATOR = "configure_user";
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -241,18 +249,20 @@ public class ComputerTest {
         boolean createUser = false;
         User badUser = User.getById("foo", createUser);
 
-        assertNull("Should not have created user.", badUser);
+        assertNull(badUser, "Should not have created user.");
     }
 
     private static final String VALID_XML_BAD_FIELD_USER_XML =
-            "<hudson.model.User>\n" +
-                    "  <id>foo</id>\n" +
-                    "  <fullName>Foo User</fullName>\n" +
-                    "  <badField/>\n" +
-                    "</hudson.model.User>\n";
+            """
+                    <hudson.model.User>
+                      <id>foo</id>
+                      <fullName>Foo User</fullName>
+                      <badField/>
+                    </hudson.model.User>
+                    """;
 
     @Test
-    public void testTerminatedNodeStatusPageDoesNotShowTrace() throws Exception {
+    void testTerminatedNodeStatusPageDoesNotShowTrace() throws Exception {
         DumbSlave agent = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
@@ -273,7 +283,7 @@ public class ComputerTest {
     }
 
     @Test
-    public void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
+    void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
         DumbSlave agent = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
@@ -294,8 +304,8 @@ public class ComputerTest {
     }
 
     @Test
-    public void computersCollected() throws Exception {
-        assumeThat("Seems to crash the test JVM at least in CI", Functions.isWindows(), is(false));
+    void computersCollected() throws Exception {
+        assumeFalse(Functions.isWindows(), "Seems to crash the test JVM at least in CI");
         DumbSlave agent = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
@@ -311,4 +321,37 @@ public class ComputerTest {
         MemoryAssert.assertGC(channelRef, false);
     }
 
+    @Test
+    public void isConnectedTest() throws Exception {
+        var agent = j.createSlave();
+        var computer = agent.toComputer();
+
+        // Verify initial state: computer is not connected
+        assertThat(computer.isOnline(), is(false));
+        assertThat(computer.isConnected(), is(false));
+
+        // Connect the computer
+        computer.connect(false);
+        await("computer should be online after connect").until(() -> computer.isOnline(), is(true));
+        assertThat(computer.isConnected(), is(true));
+        assertThat(computer.isOffline(), is(false));
+
+        // Mark computer temporary offline
+        computer.doToggleOffline(null);
+        assertThat("temporary offline agent is still connected", computer.isConnected(), is(true));
+        assertThat("temporary offline agent is not available for scheduling", computer.isOnline(), is(false));
+        assertThat(computer.isOffline(), is(true));
+
+        // Bring it back online
+        computer.doToggleOffline(null);
+        assertThat(computer.isOnline(), is(true));
+        assertThat(computer.isConnected(), is(true)); // channel is still there.
+
+        // Disconnect the computer
+        computer.disconnect(new OfflineCause.UserCause(null, null));
+        // wait for the slave process to be killed
+        await("disconnected agent is not available for scheduling").until(() -> computer.isOnline(), is(false));
+        assertThat(computer.isConnected(), is(false));
+        assertThat(computer.isOffline(), is(true));
+    }
 }

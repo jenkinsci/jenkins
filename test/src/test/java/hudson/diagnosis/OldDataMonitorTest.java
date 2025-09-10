@@ -24,8 +24,8 @@
 
 package hudson.diagnosis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.XmlFile;
 import hudson.model.FreeStyleBuild;
@@ -43,28 +43,36 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import jenkins.model.lazy.BuildReference;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MemoryAssert;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.Stapler;
 
-public class OldDataMonitorTest {
+@WithJenkins
+class OldDataMonitorTest {
 
     static {
         // To make memory run faster:
         System.setProperty(BuildReference.DefaultHolderFactory.MODE_PROPERTY, "weak");
     }
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
 
-    @Ignore("constantly failing on CI builders, makes problems for memory()")
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
+
+    @Disabled("constantly failing on CI builders, makes problems for memory()")
     @Issue("JENKINS-19544")
     @LocalData
-    @Test public void robustness() {
+    @Test
+    void robustness() {
         OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
         FreeStyleProject p = r.jenkins.getItemByFullName("busted", FreeStyleProject.class);
         assertNotNull(p);
@@ -75,7 +83,8 @@ public class OldDataMonitorTest {
     }
 
     @Issue("JENKINS-19544")
-    @Test public void memory() throws Exception {
+    @Test
+    void memory() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject("p");
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
         b.addAction(new BadAction2());
@@ -98,7 +107,8 @@ public class OldDataMonitorTest {
      */
     // Test timeout indicates JENKINS-24763 exists
     @Issue("JENKINS-24763")
-    @Test public void slowDiscard() throws InterruptedException, IOException, ExecutionException {
+    @Test
+    void slowDiscard() throws InterruptedException, IOException, ExecutionException {
         final OldDataMonitor oldDataMonitor = OldDataMonitor.get(r.jenkins);
         final CountDownLatch ensureEntry = new CountDownLatch(1);
         final CountDownLatch preventExit = new CountDownLatch(1);
@@ -132,7 +142,8 @@ public class OldDataMonitorTest {
     }
 
     @Issue("JENKINS-26718")
-    @Test public void unlocatableRun() throws Exception {
+    @Test
+    void unlocatableRun() throws Exception {
         OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
         FreeStyleProject p = r.createFreeStyleProject();
         FreeStyleBuild build = r.buildAndAssertSuccess(p);

@@ -31,6 +31,10 @@ THE SOFTWARE.
     <st:attribute name="text">
       Optional text to be displayed on the button
     </st:attribute>
+    <st:attribute name="html">
+      Optional html to be displayed on the button (only used if 'text' is not provided)
+    </st:attribute>
+
     <st:attribute name="tooltip">
       Optional tooltip of the button, defaults to 'More actions'
     </st:attribute>
@@ -62,8 +66,14 @@ THE SOFTWARE.
         </div>
       </j:otherwise>
     </j:choose>
-
-    ${attrs.text}
+    <j:choose>
+      <j:when test="${attrs.text != null}">
+        ${attrs.text}
+      </j:when>
+      <j:when test="${attrs.html != null}">
+        <j:out value="${attrs.html}" />
+      </j:when>
+    </j:choose>
   </button>
   <template>
     <div class="jenkins-dropdown">

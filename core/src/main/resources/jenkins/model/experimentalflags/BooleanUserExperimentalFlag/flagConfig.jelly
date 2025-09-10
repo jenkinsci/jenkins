@@ -24,12 +24,14 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <select class="jenkins-select__input" name="[${it.flagKey}]">
-        <f:option selected="${flagValue == null}" value="">
-            <j:if test="${it.getDefaultValue() == true}">${%Default_True}</j:if>
-            <j:if test="${it.getDefaultValue() == false}">${%Default_False}</j:if>
-        </f:option>
-        <f:option selected="${flagValue == true}" value="true">${%True}</f:option>
-        <f:option selected="${flagValue == false}" value="false">${%False}</f:option>
-    </select>
+    <div class="jenkins-select">
+        <select class="jenkins-select__input" name="[${it.flagKey}]">
+            <f:option selected="${flagValue == null}" value="">
+                <j:if test="${it.getDefaultValue() == true}">${%Default_True}</j:if>
+                <j:if test="${it.getDefaultValue() == false}">${%Default_False}</j:if>
+            </f:option>
+            <f:option selected="${flagValue == true}" value="true">${%True}</f:option>
+            <f:option selected="${flagValue == false}" value="false">${%False}</f:option>
+        </select>
+    </div>
 </j:jelly>

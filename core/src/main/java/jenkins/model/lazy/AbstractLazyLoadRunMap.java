@@ -26,30 +26,27 @@ package jenkins.model.lazy;
 
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.EXACT;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.RunMap;
 import hudson.model.listeners.RunListener;
+import hudson.util.CopyOnWriteMap;
 import java.io.File;
 import java.io.IOException;
-import java.util.AbstractCollection;
 import java.util.AbstractMap;
-import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.ListIterator;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.TreeMap;
-import java.util.function.IntConsumer;
+import java.util.function.IntPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -86,202 +83,43 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * <p>
  * Some of the {@link SortedMap} operations are inefficiently implemented, by
- * {@linkplain #all() loading all the build records eagerly}. We hope to replace
+ * loading all the build records eagerly. We hope to replace
  * these implementations by more efficient lazy-loading ones as we go.
  *
  * <p>
  * Object lock of {@code this} is used to make sure mutation occurs sequentially.
  * That is, ensure that only one thread is actually calling {@link #retrieve(File)} and
- * updating {@link jenkins.model.lazy.AbstractLazyLoadRunMap.Index#byNumber}.
+ * updating {@link jenkins.model.lazy.AbstractLazyLoadRunMap#core}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.485
  */
 public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> implements SortedMap<Integer, R> {
-    /**
-     * Used in {@link #all()} to quickly determine if we've already loaded everything.
-     */
-    private volatile boolean fullyLoaded;
-
-    /**
-     * Currently visible index.
-     * Updated atomically. Once set to this field, the index object may not be modified.
-     */
-    private volatile Index index = new Index();
-    private LazyLoadRunMapEntrySet<R> entrySet = new LazyLoadRunMapEntrySet<>(this);
-
-    private transient volatile Set<Integer> keySet;
-    private transient volatile Collection<R> values;
+    private final CopyOnWriteMap.Tree<Integer, BuildReference<R>> core = new CopyOnWriteMap.Tree<>(
+            Collections.reverseOrder());
+    private final BuildReferenceMapAdapter.Resolver<R> buildResolver = new BuildReferenceMapAdapterResolver();
+    private final BuildReferenceMapAdapter<R> adapter = new BuildReferenceMapAdapter<>(core, buildResolver) {
+        @Override
+        protected boolean removeValue(R value) {
+            return AbstractLazyLoadRunMap.this.removeValue(value);
+        }
+    };
 
     @Override
     public Set<Integer> keySet() {
-        Set<Integer> ks = keySet;
-        if (ks == null) {
-            ks = new AbstractSet<>() {
-                @Override
-                public Iterator<Integer> iterator() {
-                    return new Iterator() {
-                        private final Iterator<Entry<Integer, R>> it = entrySet().iterator();
-
-                        @Override
-                        public boolean hasNext() {
-                            return it.hasNext();
-                        }
-
-                        @Override
-                        public Integer next() {
-                            return it.next().getKey();
-                        }
-
-                        @Override
-                        public void remove() {
-                            it.remove();
-                        }
-                    };
-                }
-
-                @Override
-                public Spliterator<Integer> spliterator() {
-                    return new Spliterators.AbstractIntSpliterator(
-                            Long.MAX_VALUE,
-                            Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.SORTED) {
-                        private final Iterator<Integer> it = iterator();
-
-                        @Override
-                        public boolean tryAdvance(IntConsumer action) {
-                            if (action == null) {
-                                throw new NullPointerException();
-                            }
-                            if (it.hasNext()) {
-                                action.accept(it.next());
-                                return true;
-                            }
-                            return false;
-                        }
-
-                        @Override
-                        public Comparator<Integer> getComparator() {
-                            return Collections.reverseOrder();
-                        }
-                    };
-                }
-
-                @Override
-                public int size() {
-                    return AbstractLazyLoadRunMap.this.size();
-                }
-
-                @Override
-                public boolean isEmpty() {
-                    return AbstractLazyLoadRunMap.this.isEmpty();
-                }
-
-                @Override
-                public void clear() {
-                    AbstractLazyLoadRunMap.this.clear();
-                }
-
-                @Override
-                public boolean contains(Object k) {
-                    return AbstractLazyLoadRunMap.this.containsKey(k);
-                }
-            };
-            keySet = ks;
-        }
-        return ks;
+        return adapter.keySet();
     }
 
     @Override
     public Collection<R> values() {
-        Collection<R> vals = values;
-        if (vals == null) {
-            vals = new AbstractCollection<>() {
-                @Override
-                public Iterator<R> iterator() {
-                    return new Iterator<>() {
-                        private final Iterator<Entry<Integer, R>> it = entrySet().iterator();
-
-                        @Override
-                        public boolean hasNext() {
-                            return it.hasNext();
-                        }
-
-                        @Override
-                        public R next() {
-                            return it.next().getValue();
-                        }
-
-                        @Override
-                        public void remove() {
-                            it.remove();
-                        }
-                    };
-                }
-
-                @Override
-                public Spliterator<R> spliterator() {
-                    return Spliterators.spliteratorUnknownSize(
-                            iterator(), Spliterator.DISTINCT | Spliterator.ORDERED);
-                }
-
-                @Override
-                public int size() {
-                    return AbstractLazyLoadRunMap.this.size();
-                }
-
-                @Override
-                public boolean isEmpty() {
-                    return AbstractLazyLoadRunMap.this.isEmpty();
-                }
-
-                @Override
-                public void clear() {
-                    AbstractLazyLoadRunMap.this.clear();
-                }
-
-                @Override
-                public boolean contains(Object v) {
-                    return AbstractLazyLoadRunMap.this.containsValue(v);
-                }
-            };
-            values = vals;
-        }
-        return vals;
+        return adapter.values();
     }
 
-    /**
-     * Historical holder for map.
-     *
-     * TODO all this mess including {@link #numberOnDisk} could probably be simplified to a single {@code TreeMap<Integer,BuildReference<R>>}
-     * where a null value means not yet loaded and a broken entry just uses {@code NoHolder}.
-     *
-     * The idiom is that you put yourself in a synchronized block, {@linkplain #copy() make a copy of this},
-     * update the copy, then set it to {@link #index}.
-     */
-    private class Index {
-        /**
-         * Stores the mapping from build number to build, for builds that are already loaded.
-         *
-         * If we have known load failure of the given ID, we record that in the map
-         * by using the null value (not to be confused with a non-null {@link BuildReference}
-         * with null referent, which just means the record was GCed.)
-         */
-        private final TreeMap<Integer, BuildReference<R>> byNumber;
-
-        private Index() {
-            byNumber = new TreeMap<>(Collections.reverseOrder());
-        }
-
-        private Index(Index rhs) {
-            byNumber = new TreeMap<>(rhs.byNumber);
-        }
+    @Override
+    public Set<Entry<Integer, R>> entrySet() {
+        assert baseDirInitialized();
+        return adapter.entrySet();
     }
-
-    /**
-     * Build numbers found on disk, in the ascending order.
-     */
-    // copy on write
-    private volatile SortedIntList numberOnDisk = new SortedIntList(0);
 
     /**
      * Base directory for data.
@@ -329,8 +167,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      * @since 1.507
      */
     public synchronized void purgeCache() {
-        index = new Index();
-        fullyLoaded = false;
         loadNumberOnDisk();
     }
 
@@ -342,7 +178,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
             // the job may have just been created
             kids = MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
-        SortedIntList list = new SortedIntList(kids.length / 2);
+        TreeMap<Integer, BuildReference<R>> newBuildRefsMap = new TreeMap<>();
+        var allower = createLoadAllower();
         for (String s : kids) {
             if (!BUILD_NUMBER.matcher(s).matches()) {
                 // not a build directory
@@ -350,8 +187,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
             }
             try {
                 int buildNumber = Integer.parseInt(s);
-                if (allowLoad(buildNumber)) {
-                    list.add(buildNumber);
+                if (allower.test(buildNumber)) {
+                    newBuildRefsMap.put(buildNumber, new BuildReference<>(s));
                 } else {
                     LOGGER.fine(() -> "declining to consider " + buildNumber + " in " + dir);
                 }
@@ -359,13 +196,17 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
                 // matched BUILD_NUMBER but not an int?
             }
         }
-        list.sort();
-        numberOnDisk = list;
+        core.replaceBy(newBuildRefsMap);
     }
 
     @Restricted(NoExternalUse.class)
     protected boolean allowLoad(int buildNumber) {
         return true;
+    }
+
+    @Restricted(NoExternalUse.class)
+    protected IntPredicate createLoadAllower() {
+        return this::allowLoad;
     }
 
     /**
@@ -377,13 +218,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     public final void recognizeNumber(int buildNumber) {
         if (new File(dir, Integer.toString(buildNumber)).isDirectory()) {
             synchronized (this) {
-                SortedIntList list = new SortedIntList(numberOnDisk);
-                if (list.contains(buildNumber)) {
+                if (this.core.containsKey(buildNumber)) {
                     LOGGER.fine(() -> "already knew about " + buildNumber + " in " + dir);
                 } else {
-                    list.add(buildNumber);
-                    list.sort();
-                    numberOnDisk = list;
+                    core.put(buildNumber, new BuildReference<>(String.valueOf(buildNumber)));
                     LOGGER.fine(() -> "recognizing " + buildNumber + " in " + dir);
                 }
             }
@@ -394,25 +232,36 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
 
     @Override
     public Comparator<? super Integer> comparator() {
-        return Collections.reverseOrder();
+        return core.comparator();
     }
 
     @Override
     public boolean isEmpty() {
-        return search(Integer.MAX_VALUE, DESC) == null;
+        return adapter.isEmpty();
     }
 
     @Override
-    public Set<Entry<Integer, R>> entrySet() {
-        assert baseDirInitialized();
-        return entrySet;
+    public boolean containsKey(Object value) {
+        return adapter.containsKey(value);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return adapter.containsValue(value);
     }
 
     /**
      * Returns a read-only view of records that has already been loaded.
      */
     public SortedMap<Integer, R> getLoadedBuilds() {
-        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<>(this, index.byNumber));
+        TreeMap<Integer, BuildReference<R>> res = new TreeMap<>(Comparator.reverseOrder());
+        for (var entry : this.core.entrySet()) {
+            BuildReference<R> buildRef = entry.getValue();
+            if (buildRef.isSet() && !buildRef.isUnloadable()) {
+                res.put(entry.getKey(), buildRef);
+            }
+        }
+        return new BuildReferenceMapAdapter<>(res, buildResolver);
     }
 
     /**
@@ -423,47 +272,27 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      */
     @Override
     public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
-        // TODO: if this method can produce a lazy map, that'd be wonderful
-        // because due to the lack of floor/ceil/higher/lower kind of methods
-        // to look up keys in SortedMap, various places of Jenkins rely on
-        // subMap+firstKey/lastKey combo.
-
-        R start = search(fromKey, DESC);
-        if (start == null)    return EMPTY_SORTED_MAP;
-
-        R end = search(toKey, ASC);
-        if (end == null)      return EMPTY_SORTED_MAP;
-
-        for (R i = start; i != end; ) {
-            i = search(getNumberOf(i) - 1, DESC);
-            assert i != null;
-        }
-
-        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<>(this, index.byNumber.subMap(fromKey, toKey)));
+        return adapter.subMap(fromKey, toKey);
     }
 
     @Override
     public SortedMap<Integer, R> headMap(Integer toKey) {
-        return subMap(Integer.MAX_VALUE, toKey);
+        return adapter.headMap(toKey);
     }
 
     @Override
     public SortedMap<Integer, R> tailMap(Integer fromKey) {
-        return subMap(fromKey, Integer.MIN_VALUE);
+        return adapter.tailMap(fromKey);
     }
 
     @Override
     public Integer firstKey() {
-        R r = newestBuild();
-        if (r == null)    throw new NoSuchElementException();
-        return getNumberOf(r);
+        return adapter.firstKey();
     }
 
     @Override
     public Integer lastKey() {
-        R r = oldestBuild();
-        if (r == null)    throw new NoSuchElementException();
-        return getNumberOf(r);
+        return adapter.lastKey();
     }
 
     public R newestBuild() {
@@ -476,11 +305,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
 
     @Override
     public R get(Object key) {
-        if (key instanceof Integer) {
-            int n = (Integer) key;
-            return get(n);
-        }
-        return super.get(key);
+        return adapter.get(key);
     }
 
     public R get(int n) {
@@ -496,7 +321,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      * @since 2.14
      */
     public boolean runExists(int number) {
-        return numberOnDisk.contains(number);
+        return this.core.containsKey(number);
     }
 
     /**
@@ -511,72 +336,51 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      *      If DESC, finds the closest #M that satisfies M ≤ N.
      */
     public @CheckForNull R search(final int n, final Direction d) {
-        switch (d) {
-        case EXACT:
-            return getByNumber(n);
-        case ASC:
-            for (int m : numberOnDisk) {
-                if (m < n) {
-                    // TODO could be made more efficient with numberOnDisk.find
-                    continue;
-                }
-                R r = getByNumber(m);
-                if (r != null) {
-                    return r;
-                }
-            }
-            return null;
-        case DESC:
-            // TODO again could be made more efficient
-            ListIterator<Integer> iterator = numberOnDisk.listIterator(numberOnDisk.size());
-            while (iterator.hasPrevious()) {
-                int m = iterator.previous();
-                if (m > n) {
-                    continue;
-                }
-                R r = getByNumber(m);
-                if (r != null) {
-                    return r;
-                }
-            }
-            return null;
-        default:
-            throw new AssertionError();
+        if (d == EXACT) {
+            return this.adapter.get(n);
         }
+        // prepare sub map, where we need to find first resolvable entry
+        NavigableMap<Integer, BuildReference<R>> subCore = (d == ASC)
+                ? core.headMap(n, true).descendingMap()
+                : core.tailMap(n, true);
+        // wrap with BuildReferenceMapAdapter to skip unresolvable entries
+        return new BuildReferenceMapAdapter<>(subCore, buildResolver).values().stream().findFirst().orElse(null);
     }
 
     public R getById(String id) {
         return getByNumber(Integer.parseInt(id));
     }
 
-    public R getByNumber(int n) {
-        Index snapshot = index;
-        if (snapshot.byNumber.containsKey(n)) {
-            BuildReference<R> ref = snapshot.byNumber.get(n);
-            if (ref == null) {
-                LOGGER.fine(() -> "known failure of #" + n + " in " + dir);
-                return null;
-            }
-            R v = unwrap(ref);
-            if (v != null) {
+    /**
+     * Ensure loading referent object if needed, cache it and return
+     * Save that object as 'unloadable' in case of failure to avoid next load attempts
+     *
+     * @param ref reference object to be resolved
+     * @return R referent build object, or null if it can't be resolved
+     */
+    private R resolveBuildRef(BuildReference<R> ref) {
+        if (ref == null || ref.isUnloadable()) {
+            return null;
+        }
+        R v;
+        if ((v = ref.get()) != null) {
+            return v; // already in memory
+        }
+        // otherwise fall through to load
+        synchronized (this) {
+            if ((v = ref.get()) != null) {
                 return v; // already in memory
             }
-            // otherwise fall through to load
-        }
-        synchronized (this) {
-            if (index.byNumber.containsKey(n)) { // JENKINS-22767: recheck inside lock
-                BuildReference<R> ref = index.byNumber.get(n);
-                if (ref == null) {
-                    LOGGER.fine(() -> "known failure of #" + n + " in " + dir);
+            int n = ref.number;
+            if (allowLoad(n)) {
+                v = load(n);
+                // save if build unloadable
+                if (v == null) {
+                    ref.setUnloadable();
                     return null;
                 }
-                R v = unwrap(ref);
-                if (v != null) {
-                    return v;
-                }
-            }
-            if (allowLoad(n)) {
-                return load(n, null);
+                ref.set(v);
+                return v;
             } else {
                 LOGGER.fine(() -> "declining to load " + n + " in " + dir);
                 return null;
@@ -584,17 +388,25 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         }
     }
 
+    public R getByNumber(int n) {
+        return adapter.get(n);
+    }
+
     /**
      * @return the highest recorded build number, or 0 if there are none
      */
     @Restricted(NoExternalUse.class)
     public synchronized int maxNumberOnDisk() {
-        return numberOnDisk.max();
+        try {
+            return this.core.firstKey();
+        } catch (NoSuchElementException ignored) {
+            return 0;
+        }
     }
 
     protected final synchronized void proposeNewNumber(int number) throws IllegalStateException {
         if (number <= maxNumberOnDisk()) {
-            throw new IllegalStateException("JENKINS-27530: cannot create a build with number " + number + " since that (or higher) is already in use among " + numberOnDisk);
+            throw new IllegalStateException("JENKINS-27530: cannot create a build with number " + number + " since that (or higher) is already in use among " + keySet());
         }
     }
 
@@ -609,95 +421,36 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     @Override
     public synchronized R put(Integer key, R r) {
         int n = getNumberOf(r);
-
-        Index copy = copy();
-        BuildReference<R> ref = createReference(r);
-        BuildReference<R> old = copy.byNumber.put(n, ref);
-        index = copy;
-
-        if (!numberOnDisk.contains(n)) {
-            SortedIntList a = new SortedIntList(numberOnDisk);
-            a.add(n);
-            a.sort();
-            numberOnDisk = a;
-        }
-
-        entrySet.clearCache();
-
-        return unwrap(old);
-    }
-
-    private R unwrap(BuildReference<R> ref) {
-        return ref != null ? ref.get() : null;
+        BuildReference<R> old = core.put(n, createReference(r));
+        return resolveBuildRef(old);
     }
 
     @Override
-    public synchronized void putAll(Map<? extends Integer, ? extends R> rhs) {
-        Index copy = copy();
-        for (R r : rhs.values()) {
-            BuildReference<R> ref = createReference(r);
-            copy.byNumber.put(getNumberOf(r), ref);
+    public synchronized void putAll(Map<? extends Integer, ? extends R> newData) {
+        TreeMap<Integer, BuildReference<R>> newWrapperData = new TreeMap<>();
+        for (Map.Entry<? extends Integer, ? extends R> entry : newData.entrySet()) {
+            newWrapperData.put(entry.getKey(), createReference(entry.getValue()));
         }
-        index = copy;
+        core.putAll(newWrapperData);
     }
 
-    /**
-     * Loads all the build records to fully populate the map.
-     * Calling this method results in eager loading everything,
-     * so the whole point of this class is to avoid this call as much as possible
-     * for typical code path.
-     *
-     * @return
-     *      fully populated map.
-     */
-    /*package*/ TreeMap<Integer, BuildReference<R>> all() {
-        if (!fullyLoaded) {
-            synchronized (this) {
-                if (!fullyLoaded) {
-                    Index copy = copy();
-                    for (Integer number : numberOnDisk) {
-                        if (!copy.byNumber.containsKey(number))
-                            load(number, copy);
-                    }
-                    index = copy;
-                    fullyLoaded = true;
-                }
-            }
-        }
-        return index.byNumber;
+    @Override
+    public R remove(Object key) {
+        return adapter.remove(key);
     }
-
-    /**
-     * Creates a duplicate for the COW data structure in preparation for mutation.
-     */
-    private Index copy() {
-        return new Index(index);
-   }
 
     /**
      * Tries to load the record #N.
      *
      * @return null if the data failed to load.
      */
-    private R load(int n, Index editInPlace) {
+    private R load(int n) {
         assert Thread.holdsLock(this);
         assert dir != null;
-        R v = load(new File(dir, String.valueOf(n)), editInPlace);
-        if (v == null && editInPlace != null) {
-            // remember the failure.
-            // if editInPlace==null, we can create a new copy for this, but not sure if it's worth doing,
-            // TODO should we also update numberOnDisk?
-            editInPlace.byNumber.put(n, null);
-        }
-        return v;
+        return load(new File(dir, String.valueOf(n)));
     }
 
-    /**
-     * @param editInPlace
-     *      If non-null, update this data structure.
-     *      Otherwise do a copy-on-write of {@link #index}
-     */
-    private R load(File dataDir, Index editInPlace) {
+    private R load(File dataDir) {
         assert Thread.holdsLock(this);
         try {
             R r = retrieve(dataDir);
@@ -705,15 +458,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
                 LOGGER.fine(() -> "nothing in " + dataDir);
                 return null;
             }
-
-            Index copy = editInPlace != null ? editInPlace : new Index(index);
-
-            BuildReference<R> ref = createReference(r);
-            BuildReference<R> old = copy.byNumber.put(getNumberOf(r), ref);
-            assert old == null || old.get() == null : "tried to overwrite " + old + " with " + ref;
-
-            if (editInPlace == null)  index = copy;
-
             return r;
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load " + dataDir, e);
@@ -740,7 +484,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         return new BuildReference<>(getIdOf(r), r);
     }
 
-
     /**
      * Parses {@code R} instance from data in the specified directory.
      *
@@ -752,31 +495,22 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      */
     protected abstract R retrieve(File dir) throws IOException;
 
+    protected abstract Class<R> getBuildClass();
+
     public synchronized boolean removeValue(R run) {
-        Index copy = copy();
-        int n = getNumberOf(run);
-        BuildReference<R> old = copy.byNumber.remove(n);
-        SortedIntList a = new SortedIntList(numberOnDisk);
-        a.removeValue(n);
-        numberOnDisk = a;
-        this.index = copy;
-
-        entrySet.clearCache();
-
-        return old != null;
+        return core.remove(getNumberOf(run)) != null;
     }
 
     /**
      * Replaces all the current loaded Rs with the given ones.
      */
-    public synchronized void reset(TreeMap<Integer, R> builds) {
-        Index index = new Index();
+    public synchronized void reset(Map<Integer, R> builds) {
+        TreeMap<Integer, BuildReference<R>> copy = new TreeMap<>();
         for (R r : builds.values()) {
-            BuildReference<R> ref = createReference(r);
-            index.byNumber.put(getNumberOf(r), ref);
+            copy.put(getNumberOf(r), createReference(r));
         }
 
-        this.index = index;
+        this.core.replaceBy(copy);
     }
 
     @Override
@@ -793,7 +527,22 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         ASC, DESC, EXACT
     }
 
-    private static final SortedMap EMPTY_SORTED_MAP = Collections.unmodifiableSortedMap(new TreeMap());
+    private class BuildReferenceMapAdapterResolver implements BuildReferenceMapAdapter.Resolver<R> {
+        @Override
+        public R resolveBuildRef(BuildReference<R> buildRef) {
+            return AbstractLazyLoadRunMap.this.resolveBuildRef(buildRef);
+        }
+
+        @Override
+        public Integer getNumberOf(R build) {
+            return AbstractLazyLoadRunMap.this.getNumberOf(build);
+        }
+
+        @Override
+        public Class<R> getBuildClass() {
+            return AbstractLazyLoadRunMap.this.getBuildClass();
+        }
+    }
 
     static final Logger LOGGER = Logger.getLogger(AbstractLazyLoadRunMap.class.getName());
 }

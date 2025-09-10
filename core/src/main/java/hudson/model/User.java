@@ -52,12 +52,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -67,12 +70,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.scm.RunWithSCM;
 import jenkins.search.SearchGroup;
+import jenkins.security.HMACConfidentialKey;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
@@ -174,7 +179,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     @SuppressFBWarnings(value = "SS_SHOULD_BE_STATIC", justification = "Reserved for future use")
     private final int version = 10; // Not currently used, but it may be helpful in the future to store a version.
-    private String id;
+    String id;
     private volatile String fullName;
     private volatile String description;
 
@@ -184,6 +189,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     static {
         XSTREAM.alias("user", User.class);
     }
+
+    private User() {}
 
     private User(String id, String fullName) {
         this.id = id;
@@ -199,6 +206,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private void load(String userId) {
         clearExistingProperties();
         loadFromUserConfigFile(userId);
+        fixUpAfterLoad();
+    }
+
+    private void fixUpAfterLoad() {
         removeNullsThatFailedToLoad();
         allocateDefaultPropertyInstancesAsNeeded();
         setUserToProperties();
@@ -225,9 +236,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private void loadFromUserConfigFile(String userId) {
+        AllUsers.getInstance().migrateUserIdMapper();
         XmlFile config = getConfigFile();
         try {
-            if (config != null && config.exists()) {
+            if (config.exists()) {
                 config.unmarshal(this);
                 this.id = userId;
             }
@@ -241,8 +253,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private XmlFile getConfigFile() {
-        File existingUserFolder = getExistingUserFolder();
-        return existingUserFolder == null ? null : new XmlFile(XSTREAM, new File(existingUserFolder, CONFIG_XML));
+        return new XmlFile(XSTREAM, new File(getUserFolderFor(id), CONFIG_XML));
     }
 
     /**
@@ -571,10 +582,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     private static @Nullable User getOrCreateById(@NonNull String id, @NonNull String fullName, boolean create) {
         User u = AllUsers.get(id);
-        if (u == null && (create || UserIdMapper.getInstance().isMapped(id))) {
+        if (u == null && create) {
             u = new User(id, fullName);
             AllUsers.put(id, u);
-            if (!id.equals(fullName) && !UserIdMapper.getInstance().isMapped(id)) {
+            if (!id.equals(fullName)) {
                 try {
                     u.save();
                 } catch (IOException x) {
@@ -691,7 +702,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Restricted(Beta.class)
     public static void reload() throws IOException {
-        UserIdMapper.getInstance().reload();
         AllUsers.reload();
     }
 
@@ -708,6 +718,32 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             or greater issues in the realm change, could affect currently logged
             in users and even the user making the change. */
         try {
+            var subdirectories = getRootDir().listFiles();
+            if (subdirectories != null) {
+                for (var oldDirectory : subdirectories) {
+                    var dirName = oldDirectory.getName();
+                    if (!HASHED_DIRNAMES.matcher(dirName).matches()) {
+                        continue;
+                    }
+                    var xml = new XmlFile(XSTREAM, new File(oldDirectory, CONFIG_XML));
+                    if (!xml.exists()) {
+                        continue;
+                    }
+                    try {
+                        var user = (User) xml.read();
+                        if (user.id == null) {
+                            continue;
+                        }
+                        var newDirectory = getUserFolderFor(user.id);
+                        if (!oldDirectory.equals(newDirectory)) {
+                            Files.move(oldDirectory.toPath(), newDirectory.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            LOGGER.info(() -> "migrated " + oldDirectory + " to " + newDirectory);
+                        }
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, "failed to migrate " + xml, x);
+                    }
+                }
+            }
             reload();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to perform rekey operation.", e);
@@ -777,17 +813,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         if (ExtensionList.lookup(AllUsers.class).isEmpty()) {
             return;
         }
-        UserIdMapper.getInstance().clear();
         AllUsers.clear();
     }
 
-    private static File getConfigFileFor(String id) {
-        return new File(getUserFolderFor(id), "config.xml");
-    }
-
-    private static File getUserFolderFor(String id) {
-        return new File(getRootDir(), idStrategy().filenameOf(id));
-    }
     /**
      * Returns the folder that store all the user information.
      * Useful for plugins to save a user-specific file aside the config.xml.
@@ -799,11 +827,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
 
     public @CheckForNull File getUserFolder() {
-        return getExistingUserFolder();
-    }
-
-    private @CheckForNull File getExistingUserFolder() {
-        return UserIdMapper.getInstance().getDirectory(id);
+        var d = getUserFolderFor(id);
+        return d.isDirectory() ? d : null;
     }
 
     /**
@@ -811,6 +836,21 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     static File getRootDir() {
         return new File(Jenkins.get().getRootDir(), "users");
+    }
+
+    private static final int PREFIX_MAX = 14;
+    private static final Pattern DISALLOWED_PREFIX_CHARS = Pattern.compile("[^A-Za-z0-9]");
+    static final Pattern HASHED_DIRNAMES = Pattern.compile("[a-z0-9]{0," + PREFIX_MAX + "}_[a-f0-9]{64}");
+    private static final HMACConfidentialKey DIRNAMES = new HMACConfidentialKey(User.class, "DIRNAMES");
+
+    private static String getUserFolderNameFor(String id) {
+        var fullPrefix = DISALLOWED_PREFIX_CHARS.matcher(id).replaceAll("").toLowerCase(Locale.ROOT);
+        return (fullPrefix.length() > PREFIX_MAX ? fullPrefix.substring(0, PREFIX_MAX) : fullPrefix) + '_' + DIRNAMES.mac(idStrategy().keyFor(id));
+    }
+
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "sanitized")
+    static File getUserFolderFor(String id) {
+        return new File(getRootDir(), getUserFolderNameFor(id));
     }
 
     /**
@@ -852,17 +892,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         if (BulkChange.contains(this)) {
             return;
         }
-        XmlFile xmlFile = new XmlFile(XSTREAM, constructUserConfigFile());
+        XmlFile xmlFile = getConfigFile();
         xmlFile.write(this);
         SaveableListener.fireOnChange(this, xmlFile);
-    }
-
-    private File constructUserConfigFile() throws IOException {
-        return new File(putUserFolderIfAbsent(), CONFIG_XML);
-    }
-
-    private File putUserFolderIfAbsent() throws IOException {
-        return UserIdMapper.getInstance().putIfAbsent(id, true);
     }
 
     /**
@@ -872,17 +904,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public void delete() throws IOException {
         String idKey = idStrategy().keyFor(id);
-        File existingUserFolder = getExistingUserFolder();
-        UserIdMapper.getInstance().remove(id);
         AllUsers.remove(id);
-        deleteExistingUserFolder(existingUserFolder);
+        Util.deleteRecursive(getUserFolderFor(id));
         UserDetailsCache.get().invalidate(idKey);
-    }
-
-    private void deleteExistingUserFolder(File existingUserFolder) throws IOException {
-        if (existingUserFolder != null && existingUserFolder.exists()) {
-            Util.deleteRecursive(existingUserFolder);
-        }
     }
 
     /**
@@ -947,7 +971,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public boolean canDelete() {
         final IdStrategy strategy = idStrategy();
         return hasPermission(Jenkins.ADMINISTER) && !strategy.equals(id, Jenkins.getAuthentication2().getName())
-                && UserIdMapper.getInstance().isMapped(id);
+                && getUserFolder() != null;
     }
 
     /**
@@ -1074,14 +1098,68 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Restricted(NoExternalUse.class)
     public static final class AllUsers {
 
+        private boolean migratedUserIdMapper;
         private final ConcurrentMap<String, User> byName = new ConcurrentHashMap<>();
 
-        @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
-        public static void scanAll() {
-            for (String userId : UserIdMapper.getInstance().getConvertedUserIds()) {
-                User user = new User(userId, userId);
-                getInstance().byName.putIfAbsent(idStrategy().keyFor(userId), user);
+        @SuppressWarnings("deprecation")
+        synchronized void migrateUserIdMapper() {
+            if (!migratedUserIdMapper) {
+                try {
+                    UserIdMapper.migrate();
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, null, x);
+                }
+                migratedUserIdMapper = true;
             }
+        }
+
+        @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
+        public static void scanAll() throws IOException {
+            DIRNAMES.createMac(); // force the key to be saved during startup
+            var instance = getInstance();
+            instance.migrateUserIdMapper();
+            var subdirectories = getRootDir().listFiles();
+            if (subdirectories == null) {
+                return;
+            }
+            var byName = instance.byName;
+            var idStrategy = idStrategy();
+            for (var dir : subdirectories) {
+                var dirName = dir.getName();
+                if (!HASHED_DIRNAMES.matcher(dirName).matches()) {
+                    LOGGER.fine(() -> "ignoring unrecognized dir " + dir);
+                    continue;
+                }
+                var xml = new XmlFile(XSTREAM, new File(dir, CONFIG_XML));
+                if (!xml.exists()) {
+                    LOGGER.fine(() -> "ignoring dir " + dir + " with no " + CONFIG_XML);
+                    continue;
+                }
+                var user = new User();
+                try {
+                    xml.unmarshal(user);
+                } catch (Exception x) {
+                    LOGGER.log(Level.WARNING, "failed to load " + xml, x);
+                    continue;
+                }
+                if (user.id == null) {
+                    LOGGER.warning(() -> "ignoring " + xml + " with no <id>");
+                    continue;
+                }
+                var expectedFolderName = getUserFolderNameFor(user.id);
+                if (!dirName.equals(expectedFolderName)) {
+                    LOGGER.warning(() -> "ignoring " + xml + " with <id> " + user.id + " expected to be in " + expectedFolderName);
+                    continue;
+                }
+                user.fixUpAfterLoad();
+                var old = byName.put(idStrategy.keyFor(user.id), user);
+                if (old != null) {
+                    LOGGER.warning(() -> "entry for " + user.id + " in " + dir + " duplicates one seen earlier for " + old.id);
+                } else {
+                    LOGGER.fine(() -> "successfully loaded " + user.id + " from " + xml);
+                }
+            }
+            LOGGER.fine(() -> "loaded " + byName.size() + " entries");
         }
 
         /**
@@ -1094,7 +1172,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return ExtensionList.lookupSingleton(AllUsers.class);
         }
 
-        private static void reload() {
+        private static void reload() throws IOException {
             getInstance().byName.clear();
             UserDetailsCache.get().invalidateAll();
             scanAll();
@@ -1252,7 +1330,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                         UserDetails userDetails = UserDetailsCache.get().loadUserByUsername(idOrFullName);
                         return userDetails.getUsername();
                     } catch (UsernameNotFoundException x) {
-                        LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
+                        LOGGER.log(Level.FINER, "not sure whether " + idOrFullName + " is a valid username or not", x);
                     } catch (ExecutionException x) {
                         LOGGER.log(Level.FINE, "could not look up " + idOrFullName, x);
                     } finally {

@@ -41,25 +41,31 @@ import jenkins.security.ApiTokenProperty;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Stapler;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-public class WhoAmITest {
+@WithJenkins
+class WhoAmITest {
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("SECURITY-1695")
-    public void whoAmI_regular_doesNotProvideSensitiveInformation() throws Exception {
+    void whoAmI_regular_doesNotProvideSensitiveInformation() throws Exception {
         j.jenkins.setSecurityRealm(new SecurityRealmImpl());
 
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -100,7 +106,7 @@ public class WhoAmITest {
 
     @Test
     @Issue("SECURITY-1695")
-    public void whoAmI_regularApi_doesNotProvideSensitiveInformation() throws Exception {
+    void whoAmI_regularApi_doesNotProvideSensitiveInformation() throws Exception {
         j.jenkins.setSecurityRealm(new SecurityRealmImpl());
 
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -144,7 +150,7 @@ public class WhoAmITest {
 
     @Test
     @Issue("SECURITY-1697")
-    public void whoAmI_basic_doesNotProvideSensitiveInformation() throws Exception {
+    void whoAmI_basic_doesNotProvideSensitiveInformation() throws Exception {
         j.jenkins.setSecurityRealm(new SecurityRealmImpl());
 
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -174,7 +180,7 @@ public class WhoAmITest {
 
     @Test
     @Issue("SECURITY-1697")
-    public void whoAmI_apiToken_doesNotProvideSensitiveInformation() throws Exception {
+    void whoAmI_apiToken_doesNotProvideSensitiveInformation() throws Exception {
         j.jenkins.setSecurityRealm(new SecurityRealmImpl());
 
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()

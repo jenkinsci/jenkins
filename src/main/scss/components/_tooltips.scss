@@ -17,14 +17,14 @@
 
   // We style tables as they have additional margin/border radius when in tooltips
   .jenkins-tooltip--table-wrapper {
-    background-color: rgba(black, 0.05);
+    background-color: oklch(from var(--text-color-secondary) l c h / 0.075);
     margin: -0.45rem -0.8rem;
     border-radius: 0.6rem;
   }
 
   .jenkins-table {
     --table-background: transparent;
-    --table-border-radius: 8px;
+    --card-border-color: transparent;
 
     margin: 0;
     width: 450px;

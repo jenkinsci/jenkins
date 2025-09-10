@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.SortedMap;
+import java.util.function.IntPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
@@ -94,7 +95,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      *      Used to create new instance of {@link Run}.
      * @since 2.451
      */
-    public RunMap(@NonNull Job<?, ?> job, Constructor cons) {
+    public RunMap(@NonNull Job<?, ?> job, Constructor<R> cons) {
         this.job = Objects.requireNonNull(job);
         this.cons = cons;
         initBaseDir(job.getBuildDir());
@@ -104,7 +105,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      * @deprecated Use {@link #RunMap(Job, Constructor)}.
      */
     @Deprecated
-    public RunMap(File baseDir, Constructor cons) {
+    public RunMap(File baseDir, Constructor<R> cons) {
         job = null;
         this.cons = cons;
         initBaseDir(baseDir);
@@ -186,6 +187,8 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      */
     public interface Constructor<R extends Run<?, R>> {
         R create(File dir) throws IOException;
+
+        Class<R> getBuildClass();
     }
 
     @Override
@@ -200,7 +203,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
 
     /**
      * Add a <em>new</em> build to the map.
-     * Do not use when loading existing builds (use {@link #put(Integer, Object)}).
+     * Do not use when loading existing builds (use {@link #putAll(Map)}).
      */
     @Override
     public R put(R r) {
@@ -240,6 +243,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
         return r.createReference();
     }
 
+    @Restricted(NoExternalUse.class)
     @Override
     protected boolean allowLoad(int buildNumber) {
         if (job == null) {
@@ -254,6 +258,27 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
         }
         LOGGER.finest(() -> "no RunListener declined to load " + buildNumber + " in " + job + " so proceeding");
         return true;
+    }
+
+    @Restricted(NoExternalUse.class)
+    @Override
+    protected IntPredicate createLoadAllower() {
+        if (job == null) {
+            LOGGER.fine(() -> "deprecated constructor without Job used on " + dir);
+            return buildNumber -> true;
+        }
+        @SuppressWarnings("unchecked")
+        var allowers = RunListener.all().stream().map(l -> l.createLoadAllower(job)).toList();
+        return buildNumber -> {
+            for (var allower : allowers) {
+                if (!allower.test(buildNumber)) {
+                    LOGGER.finer(() -> allower + " declined to load " + buildNumber + " in " + job);
+                    return false;
+                }
+            }
+            LOGGER.finest(() -> "no RunListener declined to load " + buildNumber + " in " + job + " so proceeding");
+            return true;
+        };
     }
 
     @Override
@@ -273,6 +298,11 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
         }
         LOGGER.fine(() -> "no config.xml in " + d);
         return null;
+    }
+
+    @Override
+    protected Class<R> getBuildClass() {
+        return cons.getBuildClass();
     }
 
     /**

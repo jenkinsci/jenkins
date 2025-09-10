@@ -3,19 +3,20 @@
 .jenkins-breadcrumbs {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  margin-left: 0.625rem;
+  gap: 0.5rem;
+  margin-left: -2rem;
   overflow: hidden;
 
   &__list {
-    display: contents;
+    display: flex;
 
     & > * {
       z-index: 1;
     }
 
     &-item {
-      display: contents;
+      display: flex;
+      align-items: center;
 
       a::before {
         content: "";
@@ -24,13 +25,19 @@
         pointer-events: all !important;
       }
 
-      & > a {
+      .dropdown-indicator {
+        margin-right: 4px;
+        display: flex;
+      }
+
+      & > a,
+      .dropdown-indicator {
         @include mixins.item($border: false);
 
         --item-background: transparent;
-        --item-background--hover: transparent;
-        --item-background--active: transparent;
-        --item-box-shadow--focus: transparent;
+        --item-background--hover: var(--button-background--hover);
+        --item-background--active: var(--button-background--active);
+        --item-box-shadow--focus: var(--button-box-shadow--focus);
 
         transition: opacity var(--standard-transition);
 
@@ -52,39 +59,31 @@
       & > a,
       span {
         position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
         font-size: var(--font-size-sm);
         font-weight: var(--font-bold-weight);
         margin: 0;
-        padding: 0;
+        padding: 4px 8px;
         color: inherit;
         text-decoration: none;
         text-wrap: nowrap;
         flex-shrink: 0;
+        overflow: hidden;
+        max-width: 25ch;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       // '/' separator between two items
       &::before {
-        content: "";
+        content: "/";
         position: relative;
-        width: 1rem;
-        height: 1.25rem;
         flex-shrink: 0;
-        mask-size: contain;
-        mask-position: center;
-        mask-repeat: no-repeat;
-        mask-image: url("data:image/svg+xml,%3Csvg width='10' height='20' viewBox='0 0 10 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 18L8 2' stroke='black' stroke-width='1.5px' stroke-linecap='round'/%3E%3C/svg%3E%0A");
-        background: color-mix(
-          in sRGB,
-          var(--text-color-secondary) 30%,
-          transparent
-        );
+        color: color-mix(in sRGB, var(--text-color-secondary) 30%, transparent);
+        padding-left: 4px;
+        padding-right: 4px;
 
         @media (prefers-contrast: more) {
-          background: var(--text-color);
+          color: var(--text-color);
         }
       }
     }
@@ -101,7 +100,6 @@
   outline: none;
   cursor: pointer;
   padding: 0;
-  pointer-events: none;
   transition: var(--standard-transition);
   background: transparent;
   top: 4px;

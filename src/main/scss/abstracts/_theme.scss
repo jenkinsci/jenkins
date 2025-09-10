@@ -68,7 +68,7 @@ $semantics: (
   --unstable-build-icon-color: var(--orange);
 
   // Background colors
-  --background: var(--white);
+  --background: rgb(254 254 254);
 
   // Header
   --header-background: var(--background);
@@ -79,7 +79,7 @@ $semantics: (
   // App bar
   --bottom-app-bar-shadow: color-mix(
     in sRGB,
-    var(--text-color-secondary) 7.5%,
+    var(--text-color-secondary) 8%,
     transparent
   );
 
@@ -90,14 +90,8 @@ $semantics: (
     var(--success-color) 10%,
     transparent
   );
-  --alert-success-border-color: color-mix(
-    in sRGB,
-    var(--success-color) 5%,
-    transparent
-  );
   --alert-info-text-color: var(--blue);
   --alert-info-bg-color: color-mix(in sRGB, var(--blue) 10%, transparent);
-  --alert-info-border-color: color-mix(in sRGB, var(--blue) 5%, transparent);
   --alert-warning-text-color: color-mix(
     in sRGB,
     var(--warning-color) 80%,
@@ -108,20 +102,10 @@ $semantics: (
     var(--warning-color) 10%,
     transparent
   );
-  --alert-warning-border-color: color-mix(
-    in sRGB,
-    var(--warning-color) 5%,
-    transparent
-  );
   --alert-danger-text-color: var(--error-color);
   --alert-danger-bg-color: color-mix(
     in sRGB,
     var(--error-color) 10%,
-    transparent
-  );
-  --alert-danger-border-color: color-mix(
-    in sRGB,
-    var(--error-color) 5%,
     transparent
   );
 
@@ -132,14 +116,15 @@ $semantics: (
   --jenkins-border-width: 1.5px;
   --jenkins-border-color: color-mix(
     in sRGB,
-    var(--text-color-secondary) 15%,
+    var(--text-color-secondary) 17.5%,
     var(--card-background)
   );
   --jenkins-border-color--subtle: color-mix(
     in sRGB,
-    currentColor 1.5%,
+    var(--text-color) 3.5%,
     transparent
   );
+  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.08);
 
   /* This is a harsher border - for dividers, content blocks and more */
   --jenkins-border: var(--jenkins-border-width) solid
@@ -148,10 +133,12 @@ $semantics: (
   /* This is a subtle border - for increasing contrast on elements, such as buttons, menu and more */
   --jenkins-border--subtle: var(--jenkins-border-width) solid
     var(--jenkins-border-color--subtle);
-  --jenkins-border--subtle-shadow: 0 0 0 1.5px
+  --jenkins-border--inherit-subtle: var(--jenkins-border-width) solid
+    var(--jenkins-border-color--inherit-subtle);
+  --jenkins-border--subtle-shadow: 0 0 0 var(--jenkins-border-width)
     var(--jenkins-border-color--subtle);
 
-  @media (resolution <= 1x) {
+  @media (resolution <= 1dppx) {
     --jenkins-border-width: 2px;
   }
 
@@ -160,10 +147,15 @@ $semantics: (
     --focus-input-border: var(--text-color);
     --jenkins-border-color: var(--text-color);
     --jenkins-border-color--subtle: var(--text-color);
+    --jenkins-border-color--inherit-subtle: var(--text-color);
   }
 
   // Table
-  --table-background: oklch(from var(--text-color-secondary) l c h / 0.075);
+  --table-background: color-mix(
+    in oklch,
+    var(--text-color-secondary) 7.5%,
+    var(--white)
+  );
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
@@ -192,21 +184,6 @@ $semantics: (
   --link-text-decoration--active: underline;
   --link-font-weight: var(--font-bold-weight);
 
-  // Command Palette
-  --command-palette-results-backdrop-filter: saturate(1.5) blur(5px);
-  --command-palette-inset-shadow:
-    inset 0 0 2px 2px rgb(255 255 255 / 0.1),
-    var(--jenkins-border--subtle-shadow),
-    0 5px 10px var(--jenkins-border-color--subtle);
-
-  ::backdrop {
-    --command-palette-backdrop-background: color-mix(
-      in sRGB,
-      var(--black) 17.5%,
-      transparent
-    );
-  }
-
   // Tooltips
   --tooltip-backdrop-filter: contrast(1.1) saturate(2) blur(20px);
   --tooltip-color: var(--text-color);
@@ -221,13 +198,20 @@ $semantics: (
     0 2px 10px rgb(0 0 20 / 0.05), inset 0 -1px 2px rgb(255 255 255 / 0.025);
 
   // Dialogs
-  ::backdrop {
-    --dialog-backdrop-background: hsl(240 10% 20% / 0.8);
-  }
-
+  --dialog-background: var(--card-background);
   --dialog-box-shadow:
-    var(--jenkins-border--subtle-shadow), 0 10px 40px rgb(0 0 20 / 0.15),
-    0 2px 15px rgb(0 0 20 / 0.05), inset 0 0 2px 2px rgb(255 255 255 / 0.025);
+    var(--jenkins-border--subtle-shadow), 0 5px 25px rgb(0 0 10 / 0.025),
+    0 0 1.5px color-mix(in sRGB, var(--black) 20%, transparent),
+    inset 0 0 0 1px rgb(255 255 255 / 0.05);
+
+  ::backdrop {
+    --dialog-backdrop-backdrop-filter: blur(0.25px);
+    --dialog-backdrop-background: color-mix(
+      in sRGB,
+      var(--black) 10%,
+      color-mix(in sRGB, var(--background) 55%, transparent)
+    );
+  }
 
   // Dark link
   --link-dark-color: var(--text-color);
@@ -251,10 +235,10 @@ $semantics: (
   --pane-link-color--visited: black;
 
   // Cards
-  --card-background: var(--background);
+  --card-background: var(--white);
   --card-background--hover: transparent;
   --card-background--active: transparent;
-  --card-border-color: oklch(from var(--text-color-secondary) l c h / 0.15);
+  --card-border-color: var(--jenkins-border-color);
   --card-border-color--hover: oklch(
     from var(--text-color-secondary) l c h / 0.3
   );
@@ -268,20 +252,12 @@ $semantics: (
   }
 
   // Tab bar
-  --tabs-background: oklch(from var(--text-color-secondary) l c h / 0.1);
-  --tabs-item-background: transparent;
   --tabs-item-foreground: color-mix(
     in sRGB,
     var(--text-color-secondary),
     var(--text-color)
   );
-  --tabs-item-background--hover: rgb(0 0 0 / 0.05);
-  --tabs-item-foreground--hover: var(--text-color);
-  --tabs-item-background--active: rgb(0 0 0 / 0.1);
-  --tabs-item-foreground--active: var(--text-color);
-  --tabs-item-background--selected: white;
-  --tabs-item-foreground--selected: var(--link-color);
-  --tabs-border-radius: calc((10px + 34px) / 2);
+  --tabs-item-background--selected: var(--white);
 
   // Side panel
   --side-panel-width: 340px;
@@ -290,11 +266,7 @@ $semantics: (
 
   // Form
   --section-padding: 1.625rem;
-  --input-color: color-mix(
-    in sRGB,
-    var(--text-color-secondary) 1.5%,
-    var(--background)
-  );
+  --input-color: var(--white);
   --input-border: color-mix(
     in sRGB,
     var(--text-color-secondary) 25%,
