@@ -24,10 +24,15 @@
 
 package hudson.widgets;
 
+import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor;
+import hudson.security.csrf.CrumbExclusion;
 import hudson.util.PackedMap;
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,6 +138,23 @@ public class RenderOnDemandClosure {
                 }
             }
         };
+    }
+
+    /**
+     * In JS, navigator.sendBeacon() is used to send the unload request, and always sends POST.
+     *
+     * @link <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon">MDN: sendBeacon</a>
+     */
+    @Extension
+    public static class ReleaseBoundObjectsCrumbExclusion extends CrumbExclusion {
+        @Override
+        public boolean process(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+            if (request.getPathInfo().startsWith("/$stapler/bound/release/")) {
+                chain.doFilter(request, response);
+                return true;
+            }
+            return false;
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(RenderOnDemandClosure.class.getName());

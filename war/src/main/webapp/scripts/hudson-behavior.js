@@ -1039,12 +1039,12 @@ function renderOnDemand(e, callback, noBehaviour) {
   });
 }
 
-window.addEventListener("unload", function () {
+window.addEventListener("pagehide", function () {
   let element = document.querySelector("#render-on-demand-proxies-release");
   let jsonString = element.dataset.proxies;
   let json = JSON.parse(jsonString);
   json.forEach(function (url) {
-    fetch(url);
+    navigator.sendBeacon(url);
   });
 });
 
