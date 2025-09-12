@@ -117,6 +117,22 @@ public abstract class OfflineCause implements IOfflineCause {
             return cause.toString();
         }
 
+        /**
+         * Returns the cause of the channel termination if it's an ExportedBean,
+         * null otherwise. This allows the API to export the cause details when
+         * the exception has the @ExportedBean annotation.
+         *
+         * @return the cause if it's exportable, null otherwise
+         * @since 2.529
+         */
+        @Exported
+        public Exception getCause() {
+            if (cause != null && cause.getClass().isAnnotationPresent(ExportedBean.class)) {
+                return cause;
+            }
+            return null;
+        }
+
         @Override public String toString() {
             return Messages.OfflineCause_connection_was_broken_simple();
         }
