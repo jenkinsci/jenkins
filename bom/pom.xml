@@ -41,7 +41,7 @@ THE SOFTWARE.
     <commons-fileupload2.version>2.0.0-M4</commons-fileupload2.version>
     <groovy.version>2.4.21</groovy.version>
     <jelly.version>1.1-jenkins-20250731</jelly.version>
-    <stapler.version>2014.v1f888f8f0b_84</stapler.version>
+    <stapler.version>2030.v88a_855365981</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -63,7 +63,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>6.2.9</version>
+        <version>6.2.10</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -71,7 +71,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/reference/6.3/getting-spring-security.html#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>6.5.2</version>
+        <version>6.5.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

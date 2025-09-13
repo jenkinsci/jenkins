@@ -54,7 +54,7 @@ jobs:
           repositories: >-
             ["jenkins.io"]
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Publish jenkins.io changelog draft

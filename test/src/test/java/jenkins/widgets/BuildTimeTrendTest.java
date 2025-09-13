@@ -207,7 +207,17 @@ class BuildTimeTrendTest {
         @Override
         protected SortedMap<Integer, NonAbstractBuild> _getRuns() {
             if (runMap == null) {
-                runMap = new RunMap<>(this.getBuildDir(), this::createBuildFromDir);
+                runMap = new RunMap<>(this.getBuildDir(), new RunMap.Constructor<NonAbstractBuild>() {
+                    @Override
+                    public NonAbstractBuild create(File dir) throws IOException {
+                        return createBuildFromDir(dir);
+                    }
+
+                    @Override
+                    public Class<NonAbstractBuild> getBuildClass() {
+                        return NonAbstractBuild.class;
+                    }
+                });
             }
             return runMap;
         }
