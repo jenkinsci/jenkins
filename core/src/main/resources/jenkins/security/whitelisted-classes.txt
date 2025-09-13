@@ -55,6 +55,8 @@ java.net.URI
 java.net.URL
 java.security.KeyRep
 java.time.Ser
+java.time.ZoneId
+java.time.ZoneRegion
 java.util.ArrayDeque
 java.util.ArrayList
 java.util.Arrays$ArrayList
