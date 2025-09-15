@@ -129,6 +129,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         doSetName(name);
     }
 
+    @NonNull
     @Override
     @Exported(visibility = 999)
     public String getName() {
@@ -470,6 +471,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     @Override
     public abstract Collection<? extends Job> getAllJobs();
 
+    @NonNull
     @Override
     @Exported
     public final String getFullName() {

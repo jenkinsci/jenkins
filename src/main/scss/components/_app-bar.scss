@@ -18,6 +18,22 @@
     flex-direction: column;
     min-height: 2.25rem;
     flex-grow: 1;
+    max-width: 1200px;
+    text-overflow: ellipsis;
+
+    // Jobs have their SVGs nested inside of a link
+    & > a > svg,
+    & > svg {
+      width: 2rem !important;
+      height: 2rem !important;
+      margin-left: -0.1875rem;
+    }
+
+    & > img {
+      width: 2.375rem;
+      height: 2.375rem;
+      margin-left: -0.375rem;
+    }
   }
 
   .jenkins-app-bar__controls {
@@ -77,6 +93,16 @@
     }
   }
 
+  // This would ideally use :has instead but HTMLUnit doesn't support it
+  &--with-icon {
+    .jenkins-app-bar__content {
+      align-items: center;
+      justify-content: start;
+      flex-direction: row;
+      gap: 0.875rem;
+    }
+  }
+
   h1,
   h2 {
     margin: 0;
@@ -97,18 +123,6 @@
   gap: 0.875rem;
   max-width: 1200px;
   text-overflow: ellipsis;
-
-  svg {
-    width: 2rem !important;
-    height: 2rem !important;
-    margin-left: -0.1875rem;
-  }
-
-  img {
-    width: 2.375rem;
-    height: 2.375rem;
-    margin-left: -0.375rem;
-  }
 }
 
 $bottom-app-bar-padding: 0.875rem;

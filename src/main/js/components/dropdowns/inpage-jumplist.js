@@ -5,7 +5,7 @@ import { toId } from "@/util/dom";
  * sections on the page (if using <f:breadcrumb-config-outline />)
  */
 function init() {
-  const inpageNavigationBreadcrumb = document.querySelector("#inpage-nav span");
+  const inpageNavigationBreadcrumb = document.querySelector("#inpage-nav div");
 
   if (inpageNavigationBreadcrumb) {
     inpageNavigationBreadcrumb.items = Array.from(

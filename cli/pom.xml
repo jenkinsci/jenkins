@@ -15,7 +15,7 @@
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <mina-sshd.version>2.15.0</mina-sshd.version>
+    <mina-sshd.version>2.16.0</mina-sshd.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
   </properties>
@@ -36,11 +36,6 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
       <optional>true</optional>
     </dependency>
     <dependency>

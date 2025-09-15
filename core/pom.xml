@@ -118,11 +118,6 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.infradna.tool</groupId>
-      <artifactId>bridge-method-annotation</artifactId>
-      <version>${bridge-method-injector.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
       <exclusions>
@@ -167,6 +162,11 @@ THE SOFTWARE.
       <!-- Jenkins doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.jenkins.tools</groupId>
+      <artifactId>bridge-method-annotation</artifactId>
+      <version>${bridge-method-injector.version}</version>
     </dependency>
     <dependency>
       <!-- needed by Jelly -->
@@ -447,11 +447,6 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
       <scope>test</scope>
@@ -568,7 +563,7 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <groupId>com.infradna.tool</groupId>
+        <groupId>io.jenkins.tools</groupId>
         <artifactId>bridge-method-injector</artifactId>
         <executions>
           <execution>

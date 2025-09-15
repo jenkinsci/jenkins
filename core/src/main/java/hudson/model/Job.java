@@ -77,6 +77,7 @@ import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -210,9 +211,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         // This code can be deleted after several Jenkins releases,
         // when it is likely that everyone is running a version equal or higher to this version.
         var buildDirPath = getBuildDir().toPath();
-        if (Files.deleteIfExists(buildDirPath.resolve("legacyIds"))) {
+        Path legacyIds = buildDirPath.resolve("legacyIds");
+        if (Files.exists(legacyIds)) {
             LOGGER.info("Deleting legacyIds file in " + buildDirPath + ". See https://issues.jenkins"
                         + ".io/browse/JENKINS-75465 for more information.");
+            Files.delete(legacyIds);
         }
 
         TextFile f = getNextBuildNumberFile();

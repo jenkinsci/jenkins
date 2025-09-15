@@ -241,7 +241,7 @@ public class ExecutorTest {
     }
 
     @Test
-    public void recordCauseOfInterruption() throws Exception {
+    void recordCauseOfInterruption() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(TestBuilder.of((build, launcher, listener) -> {
             Executor exec = build.getExecutor();

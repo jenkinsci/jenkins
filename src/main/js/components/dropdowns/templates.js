@@ -57,10 +57,6 @@ function dropdown() {
         referenceParent.classList.add("model-link--open");
       }
     },
-    onHide: (instance) => {
-      const referenceParent = instance.reference.parentNode;
-      referenceParent.classList.remove("model-link--open");
-    },
   };
 }
 
@@ -84,7 +80,9 @@ function menuItem(options) {
   const tag = itemOptions.type === "link" ? "a" : "button";
 
   const item = createElementFromHtml(`
-      <${tag} class="jenkins-dropdown__item ${itemOptions.clazz ? xmlEscape(itemOptions.clazz) : ""}" ${itemOptions.url ? `href="${xmlEscape(itemOptions.url)}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}>
+      <${tag} class="jenkins-dropdown__item ${itemOptions.clazz ? xmlEscape(itemOptions.clazz) : ""}"
+        ${itemOptions.url ? `href="${xmlEscape(itemOptions.url)}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}
+        ${itemOptions.tooltip ? `data-html-tooltip="${xmlEscape(itemOptions.tooltip)}"` : ""}>
           ${
             itemOptions.icon
               ? `<div class="jenkins-dropdown__item__icon">${
