@@ -6,6 +6,7 @@ on:
       - "master"
 jobs:
   label:
+    if: ${{ github.repository_owner == 'jenkinsci' }}
     runs-on: ubuntu-latest
     permissions:
       issues: write
