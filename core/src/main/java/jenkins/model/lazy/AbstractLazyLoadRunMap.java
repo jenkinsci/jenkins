@@ -82,11 +82,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * from concurrent modifications, where another thread deletes a build while one thread iterates them.
  *
  * <p>
- * Some of the {@link SortedMap} operations are inefficiently implemented, by
- * loading all the build records eagerly. We hope to replace
- * these implementations by more efficient lazy-loading ones as we go.
- *
- * <p>
  * Object lock of {@code this} is used to make sure mutation occurs sequentially.
  * That is, ensure that only one thread is actually calling {@link #retrieve(File)} and
  * updating {@link jenkins.model.lazy.AbstractLazyLoadRunMap#core}.
@@ -116,7 +111,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     }
 
     @Override
-    public Set<Entry<Integer, R>> entrySet() {
+    public Set<Map.Entry<Integer, R>> entrySet() {
         assert baseDirInitialized();
         return adapter.entrySet();
     }
