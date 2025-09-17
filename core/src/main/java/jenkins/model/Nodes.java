@@ -141,6 +141,35 @@ public class Nodes implements PersistenceRoot {
     }
 
     /**
+     * Adds a node if a node with the given name doesn't already exist. This is equivalent to
+     *
+     * <pre>
+     * if (nodes.getNode(node.getNodeName()) == null) {
+     *     nodes.addNode(node);
+     * }
+     * </pre>
+     *
+     * except that it happens atomically.
+     *
+     * @param node the new node.
+     * @return True if the node was added. False otherwise (indicating a node with the given name already exists)
+     * @throws IOException if the list of nodes could not be persisted.
+     * @since TODO
+     */
+    public boolean addNodeIfAbsent(final @NonNull Node node) throws IOException {
+        if (ENFORCE_NAME_RESTRICTIONS) {
+            Jenkins.checkGoodName(node.getNodeName());
+        }
+
+        Node old = nodes.putIfAbsent(node.getNodeName(), node);
+        if (old == null) {
+            handleAddedNode(node, null);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Adds a node. If a node of the same name already exists then that node will be replaced.
      *
      * @param node the new node.
@@ -153,34 +182,38 @@ public class Nodes implements PersistenceRoot {
 
         Node old = nodes.put(node.getNodeName(), node);
         if (node != old) {
-            node.onLoad(this, node.getNodeName());
-            jenkins.updateNewComputer(node);
-            jenkins.trimLabels(node, old);
-            // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
-            try {
-                node.save();
-            } catch (IOException | RuntimeException e) {
-                // JENKINS-50599: If persisting the node throws an exception, we need to remove the node from
-                // memory before propagating the exception.
-                Queue.withLock(new Runnable() {
-                    @Override
-                    public void run() {
-                        nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> old);
-                        jenkins.updateComputers(node);
-                        if (old != null) {
-                            jenkins.trimLabels(node, old);
-                        } else {
-                            jenkins.trimLabels(node);
-                        }
+            handleAddedNode(node, old);
+        }
+    }
+
+    private void handleAddedNode(final @NonNull Node node, final Node old) throws IOException {
+        node.onLoad(this, node.getNodeName());
+        jenkins.updateNewComputer(node);
+        jenkins.trimLabels(node, old);
+        // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
+        try {
+            node.save();
+        } catch (IOException | RuntimeException e) {
+            // JENKINS-50599: If persisting the node throws an exception, we need to remove the node from
+            // memory before propagating the exception.
+            Queue.withLock(new Runnable() {
+                @Override
+                public void run() {
+                    nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> old);
+                    jenkins.updateComputers(node);
+                    if (old != null) {
+                        jenkins.trimLabels(node, old);
+                    } else {
+                        jenkins.trimLabels(node);
                     }
-                });
-                throw e;
-            }
-            if (old != null) {
-                NodeListener.fireOnUpdated(old, node);
-            } else {
-                NodeListener.fireOnCreated(node);
-            }
+                }
+            });
+            throw e;
+        }
+        if (old != null) {
+            NodeListener.fireOnUpdated(old, node);
+        } else {
+            NodeListener.fireOnCreated(node);
         }
     }
 
