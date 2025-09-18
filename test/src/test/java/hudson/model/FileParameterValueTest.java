@@ -466,13 +466,9 @@ class FileParameterValueTest {
         assertNotEquals(nonNullParam, nullParam1);
     }
 
-    private File createParamFile(String fileName) {
+    private File createParamFile(String fileName) throws IOException {
         File f = new File(tmp, fileName);
-        try {
-            FileUtils.writeStringToFile(f, "content", StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        FileUtils.writeStringToFile(f, "content", StandardCharsets.UTF_8);
         return f;
     }
 }
