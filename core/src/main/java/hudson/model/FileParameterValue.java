@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.fileupload2.core.FileItemFactory;
@@ -88,7 +89,7 @@ public class FileParameterValue extends ParameterValue {
     private final String originalFileName;
 
 
-    private final String tmpFileName;
+    private String tmpFileName;
 
     /**
      * Overrides the location in the build to place this file. Initially set to {@link #getName()}
@@ -119,7 +120,9 @@ public class FileParameterValue extends ParameterValue {
     protected FileParameterValue(String name, FileItem file, String originalFileName) {
         super(name);
         try {
-            File tmp = Files.createTempFile("jenkins", "parameter").toFile();
+            File dir = new File(Jenkins.get().getRootDir(), "fileParameterValueFiles");
+            Files.createDirectories(dir.toPath());
+            File tmp = Files.createTempFile(dir.toPath(), "jenkins", ".tmp").toFile();
             FileUtils.copyInputStreamToFile(file.getInputStream(), tmp);
             tmpFileName = tmp.getAbsolutePath();
         } catch (IOException e) {
@@ -199,34 +202,38 @@ public class FileParameterValue extends ParameterValue {
             @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
                 if (location != null && !location.isBlank() && file != null && file.getName() != null && !file.getName().isBlank()) {
-                    listener.getLogger().println("Copying file to " + location);
-                    FilePath ws = build.getWorkspace();
-                    if (ws == null) {
-                        throw new IllegalStateException("The workspace should be created when setUp method is called");
-                    }
-                    if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && (PROHIBITED_DOUBLE_DOT.matcher(location).matches() || !ws.isDescendant(location))) {
-                        listener.error("Rejecting file path escaping base directory with relative path: " + location);
-                        // force the build to fail
-                        return null;
-                    }
-                    FilePath locationFilePath = ws.child(location);
-                    locationFilePath.getParent().mkdirs();
-
-                    // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
-                    if (locationFilePath.exists() && !locationFilePath.isDirectory()) {
-                        locationFilePath.delete();
-                    }
-
-                    File tmp = new File(tmpFileName);
                     try {
-                        Files.deleteIfExists(tmp.toPath());
-                    } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "Unable to delete temporary file {0} for parameter {1} of job {2}",
-                                new Object[]{tmp.getAbsolutePath(), getName(), build.getParent().getName()});
-                    }
+                        listener.getLogger().println("Copying file to " + location);
+                        FilePath ws = build.getWorkspace();
+                        if (ws == null) {
+                            throw new IllegalStateException("The workspace should be created when setUp method is called");
+                        }
+                        if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && (PROHIBITED_DOUBLE_DOT.matcher(location).matches() || !ws.isDescendant(location))) {
+                            listener.error("Rejecting file path escaping base directory with relative path: " + location);
+                            // force the build to fail
+                            return null;
+                        }
+                        FilePath locationFilePath = ws.child(location);
+                        locationFilePath.getParent().mkdirs();
 
-                    locationFilePath.copyFrom(file);
-                    locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
+                        // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
+                        if (locationFilePath.exists() && !locationFilePath.isDirectory()) {
+                            locationFilePath.delete();
+                        }
+                        locationFilePath.copyFrom(file);
+                        locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
+                    } finally {
+                        if (tmpFileName != null) {
+                            File tmp = new File(tmpFileName);
+                            try {
+                                Files.deleteIfExists(tmp.toPath());
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING, "Unable to delete temporary file {0} for parameter {1} of job {2}",
+                                        new Object[]{tmp.getAbsolutePath(), getName(), build.getParent().getName()});
+                            }
+                        }
+                        tmpFileName = null;
+                    }
                 }
                 return new Environment() {};
             }

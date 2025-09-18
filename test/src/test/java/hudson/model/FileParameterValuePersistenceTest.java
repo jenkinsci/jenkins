@@ -119,6 +119,7 @@ class FileParameterValuePersistenceTest {
     @TestExtension("fileParameterValueIsRetained")
     public static final class Block extends QueueTaskDispatcher {
         private boolean ready;
+
         @Override
         public CauseOfBlockage canTake(Node node, Queue.BuildableItem item) {
             return ready ? null : new CauseOfBlockage.BecauseNodeIsBusy(node);
