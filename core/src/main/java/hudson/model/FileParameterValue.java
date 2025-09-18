@@ -198,7 +198,7 @@ public class FileParameterValue extends ParameterValue {
     public BuildWrapper createBuildWrapper(AbstractBuild<?, ?> build) {
         createFile();
         return new BuildWrapper() {
-            @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
+            @SuppressFBWarnings(value = {"NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", "PATH_TRAVERSAL_IN"}, justification = "TODO needs triage, False positive, the path is a temporary file")
             @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
                 if (location != null && !location.isBlank() && file != null && file.getName() != null && !file.getName().isBlank()) {
@@ -306,6 +306,7 @@ public class FileParameterValue extends ParameterValue {
     @Extension
     public static class CancelledQueueListener extends QueueListener {
 
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "False positive, the path is a temporary file")
         @Override
         public void onLeft(Queue.LeftItem li) {
             if (li.isCancelled()) {
