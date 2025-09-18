@@ -306,7 +306,6 @@ public class FileParameterValue extends ParameterValue {
     @Extension
     public static class CancelledQueueListener extends QueueListener {
 
-        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "False positive, the path is a temporary file")
         @Override
         public void onLeft(Queue.LeftItem li) {
             if (li.isCancelled()) {
@@ -315,18 +314,21 @@ public class FileParameterValue extends ParameterValue {
                     a.getAllParameters().stream()
                             .filter(p -> p instanceof FileParameterValue)
                             .map(p -> (FileParameterValue) p)
-                            .forEach(p -> {
-                                if (p.tmpFileName != null) {
-                                    File tmp = new File(p.tmpFileName);
-                                    try {
-                                        Files.deleteIfExists(tmp.toPath());
-                                    } catch (IOException e) {
-                                        LOGGER.log(Level.WARNING, "Unable to delete temporary file {0} for parameter {1} of task {2}",
-                                                new Object[]{tmp.getAbsolutePath(), p.getName(), li.task.getName()});
-                                    }
-                                }
-                            });
+                            .forEach(this::deleteTmpFile);
                 });
+            }
+        }
+
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "False positive, the path is a temporary file")
+        private void deleteTmpFile(FileParameterValue p) {
+            if (p.tmpFileName != null) {
+                File tmp = new File(p.tmpFileName);
+                try {
+                    Files.deleteIfExists(tmp.toPath());
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Unable to delete temporary file {0} for parameter {1}",
+                            new Object[]{tmp.getAbsolutePath(), p.getName()});
+                }
             }
         }
     }
