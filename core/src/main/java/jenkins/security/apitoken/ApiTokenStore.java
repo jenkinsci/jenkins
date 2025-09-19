@@ -368,7 +368,7 @@ public class ApiTokenStore {
         private String name;
         private final Secret value;
         private final Date creationDate;
-        private final Date expirationDate;
+        private Date expirationDate;
 
         private HashedToken(@NonNull String name, @NonNull Secret value) {
             this.uuid = UUID.randomUUID().toString();
@@ -475,8 +475,8 @@ public class ApiTokenStore {
             return uuid;
         }
 
-        public boolean isLegacy() {
-            return this.value.version.equals(LEGACY_VERSION);
+        public void setExpirationDate(Date expirationDate) {
+            this.expirationDate = expirationDate;
         }
 
         public void setName(String name) {
