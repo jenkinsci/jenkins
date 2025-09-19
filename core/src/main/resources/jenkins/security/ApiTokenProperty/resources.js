@@ -348,3 +348,104 @@ Behaviour.specify(
     };
   },
 );
+
+(function () {
+  const extendButtons = document.querySelectorAll(".api-token-property-token-extend");
+  extendButtons.forEach((extendButton) => {
+      const targetUrl = extendButton.dataset.targetUrl;
+      const tokenUuid = extendButton.dataset.tokenUuid;
+      const prompt = extendButton.dataset.promptMessage;
+      const expirationMessage = extendButton.dataset.messageExpiration;
+      const extendMessage = extendButton.dataset.extend;
+      const successTitle = extendButton.dataset.successTitle;
+      const cancelMessage = extendButton.dataset.cancel;
+      const doneMessage = extendButton.dataset.buttonDone;
+
+      extendButton.addEventListener("click", () => {
+          const content = document.createElement("div");
+          const expirationBlock = document.createElement("div");
+          expirationBlock.className = "expiration-block";
+          content.appendChild(expirationBlock);
+
+          const expirationLabel = document.createElement("label");
+          expirationLabel.textContent = expirationMessage;
+          expirationBlock.appendChild(expirationLabel);
+
+          const expirationSelect = document.createElement("select");
+          expirationSelect.className = "token-expiration-select";
+          expirationBlock.appendChild(expirationSelect);
+
+          const noExpirationOption = document.createElement("option");
+          noExpirationOption.value = "no-expiration";
+          noExpirationOption.textContent = "No expiration";
+          expirationSelect.appendChild(noExpirationOption);
+
+          const thirtyDaysOption = document.createElement("option");
+          thirtyDaysOption.value = "30-days";
+          thirtyDaysOption.textContent = "30 days";
+          expirationSelect.appendChild(thirtyDaysOption);
+
+          const ninetyDaysOption = document.createElement("option");
+          ninetyDaysOption.value = "90-days";
+          ninetyDaysOption.textContent = "90 days";
+          expirationSelect.appendChild(ninetyDaysOption);
+
+          const oneYearOption = document.createElement("option");
+          oneYearOption.value = "1-year";
+          oneYearOption.textContent = "1 year";
+          expirationSelect.appendChild(oneYearOption);
+
+          const customOption = document.createElement("option");
+          customOption.value = "custom";
+          customOption.textContent = "Custom";
+          expirationSelect.appendChild(customOption);
+
+          const customDateBlock = document.createElement("div");
+          customDateBlock.className = "custom-date-block";
+          customDateBlock.style.display = "none";
+          expirationBlock.appendChild(customDateBlock);
+
+          const customDateInput = document.createElement("input");
+          customDateInput.type = "date";
+          customDateBlock.appendChild(customDateInput);
+
+          expirationSelect.addEventListener("change", () => {
+              if (expirationSelect.value === "custom") {
+                  customDateBlock.style.display = "block";
+              } else {
+                  customDateBlock.style.display = "none";
+              }
+          });
+
+          dialog.confirm(prompt, {
+              content: content,
+              okText: extendMessage,
+              cancelText: cancelMessage,
+              onOk: () => {
+                  let expiration = expirationSelect.value;
+                  if (expiration === "custom") {
+                      expiration = customDateInput.value;
+                  }
+                  fetch(targetUrl + "?tokenUuid=" + tokenUuid + "&expiration=" + expiration, {
+                      method: "POST",
+                      headers: {
+                          "Content-Type": "application/x-www-form-urlencoded",
+                          [crumb.headerName]: crumb.value,
+                      },
+                  }).then((rsp) => {
+                      if (rsp.ok) {
+                          rsp.json().then((json) => {
+                              const tokenExpiration = document.querySelector("#" + tokenUuid + " .token-expiration");
+                              tokenExpiration.textContent = json.tokenExpiration;
+                              dialog.alert(successTitle, {
+                                  okText: doneMessage,
+                              });
+                          });
+                      } else {
+                          rsp.text().then((text) => {
+                              dialog.alert(text);
+                          });
+                      }
+                  });
+              },
+})();

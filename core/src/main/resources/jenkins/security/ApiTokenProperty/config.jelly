@@ -49,6 +49,21 @@ THE SOFTWARE.
                 <l:icon src="symbol-trash" class="icon-sm"/>
             </button>
         </d:tag>
+        <d:tag name="extendButton">
+            <button type="button"
+                    class="jenkins-button jenkins-button--tertiary api-token-property-token-extend"
+                    data-target-url="${descriptor.descriptorFullUrl}/extend"
+                    data-prompt-message="${%Extend token expiration}"
+                    data-extend="${%Extend}"
+                    data-success-title="${%successfully extended}"
+                    data-cancel="${%Cancel}"
+                    data-button-done="${%Done}"
+                    data-message-expiration="${%Expiration}"
+                    data-token-uuid="${token.uuid}"
+                    tooltip="${%Extend Expiration}">
+                <l:icon src="symbol-calendar" class="icon-sm"/>
+            </button>
+        </d:tag>
         <d:tag name="addButton">
             <j:if test="${descriptor.hasCurrentUserRightToGenerateNewToken(it)}">
                 <button class="api-token-property-add jenkins-button jenkins-button--secondary" type="button"
@@ -195,6 +210,9 @@ THE SOFTWARE.
                             </div>
                             <div class="token-controls">
                                 <local:editButton/>
+                                <j:if test="${token.expirationDate != null}">
+                                    <local:extendButton/>
+                                </j:if>
                                 <local:revokeButton/>
                             </div>
                         </div>
