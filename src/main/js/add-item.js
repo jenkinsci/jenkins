@@ -105,11 +105,16 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".categories .active").forEach((item) => {
         item.classList.remove("active");
       });
+      const checkedOption = document.querySelector('input[name="mode"]:checked')
+      if (checkedOption !== null) {
+          checkedOption.checked = false;
+      }
       setFieldValidationStatus("items", false);
     }
 
     function cleanCopyFromOption() {
       copyRadio?.removeAttribute("checked");
+      copyRadio.checked = false;
       if (copyFromInput) {
         copyFromInput.value = "";
       }
@@ -305,9 +310,11 @@ document.addEventListener("DOMContentLoaded", () => {
     function copyFromFieldEvent() {
       if (getCopyFromValue() === "") {
         copyRadio.removeAttribute("checked");
+        copyRadio.checked = false;
       } else {
         cleanItemSelection();
         copyRadio.setAttribute("checked", true);
+        copyRadio.checked = true;
         setFieldValidationStatus("from", true);
         if (!getFieldValidationStatus("name")) {
           activateValidationMessage("#itemname-required", ".add-item-name");
