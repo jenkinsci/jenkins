@@ -105,40 +105,133 @@ function addToken(button) {
   const targetUrl = button.dataset.targetUrl;
   const promptMessage = button.dataset.promptMessage;
   const promptName = button.dataset.messageName;
+  const expirationMessage = button.dataset.messageExpiration;
+  const generateMessage = button.dataset.generate;
+  const cancelMessage = button.dataset.cancel;
+  const doneMessage = button.dataset.buttonDone;
+
   dialog
     .prompt(promptMessage, {
       message: promptName,
-      okText: button.dataset.generate,
-      cancelText: button.dataset.cancel,
+      okText: generateMessage,
+      cancelText: cancelMessage,
       maxWidth: "400px",
       minWidth: "400px",
     })
     .then(
       (tokenName) => {
-        fetch(targetUrl, {
-          body: new URLSearchParams({ newTokenName: tokenName }),
-          method: "post",
-          headers: crumb.wrap({
-            "Content-Type": "application/x-www-form-urlencoded",
-          }),
-        }).then((rsp) => {
-          if (rsp.ok) {
-            rsp.json().then((json) => {
-              if (json.status === "error") {
-                dialog.alert(json.message, {
-                  type: "destructive",
-                });
-              } else {
-                appendTokenToTable(json.data);
-                showToken(
-                  json.data.tokenName,
-                  json.data.tokenValue,
-                  button.dataset.buttonDone,
-                );
-              }
-            });
+        const content = document.createElement("div");
+        const nameAndExpiration = document.createElement("div");
+        nameAndExpiration.className = "name-and-expiration";
+        content.appendChild(nameAndExpiration);
+
+        const nameBlock = document.createElement("div");
+        nameBlock.className = "name-block";
+        nameAndExpiration.appendChild(nameBlock);
+
+        const nameLabel = document.createElement("label");
+        nameLabel.textContent = promptName;
+        nameBlock.appendChild(nameLabel);
+
+        const nameInput = document.createElement("input");
+        nameInput.className = "token-name-input";
+        nameInput.type = "text";
+        nameBlock.appendChild(nameInput);
+
+        const expirationBlock = document.createElement("div");
+        expirationBlock.className = "expiration-block";
+        nameAndExpiration.appendChild(expirationBlock);
+
+        const expirationLabel = document.createElement("label");
+        expirationLabel.textContent = expirationMessage;
+        expirationBlock.appendChild(expirationLabel);
+
+        const expirationSelect = document.createElement("select");
+        expirationSelect.className = "token-expiration-select";
+        expirationBlock.appendChild(expirationSelect);
+
+        const noExpirationOption = document.createElement("option");
+        noExpirationOption.value = "no-expiration";
+        noExpirationOption.textContent = "No expiration";
+        expirationSelect.appendChild(noExpirationOption);
+
+        const thirtyDaysOption = document.createElement("option");
+        thirtyDaysOption.value = "30-days";
+        thirtyDaysOption.textContent = "30 days";
+        expirationSelect.appendChild(thirtyDaysOption);
+
+        const ninetyDaysOption = document.createElement("option");
+        ninetyDaysOption.value = "90-days";
+        ninetyDaysOption.textContent = "90 days";
+        expirationSelect.appendChild(ninetyDaysOption);
+
+        const oneYearOption = document.createElement("option");
+        oneYearOption.value = "1-year";
+        oneYearOption.textContent = "1 year";
+        expirationSelect.appendChild(oneYearOption);
+
+        const customOption = document.createElement("option");
+        customOption.value = "custom";
+        customOption.textContent = "Custom";
+        expirationSelect.appendChild(customOption);
+
+        const customDateBlock = document.createElement("div");
+        customDateBlock.className = "custom-date-block";
+        customDateBlock.style.display = "none";
+        expirationBlock.appendChild(customDateBlock);
+
+        const customDateInput = document.createElement("input");
+        customDateInput.type = "date";
+        customDateBlock.appendChild(customDateInput);
+
+        expirationSelect.addEventListener("change", () => {
+          if (expirationSelect.value === "custom") {
+            customDateBlock.style.display = "block";
+          } else {
+            customDateBlock.style.display = "none";
           }
         });
+
+        dialog.confirm(prompt, {
+          content: content,
+          okText: generateMessage,
+          cancelText: cancelMessage,
+          maxWidth: "400px",
+          minWidth: "400px",
+        }).then(
+          () => {
+            const tokenName = nameInput.value;
+            let expiration = expirationSelect.value;
+            if (expiration === "custom") {
+              expiration = customDateInput.value;
+            }
+            fetch(targetUrl + "?newTokenName=" + tokenName + "&expiration=" + expiration, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                [crumb.headerName]: crumb.value,
+              },
+            }).then((rsp) => {
+              if (rsp.ok) {
+                rsp.json().then((json) => {
+                  if (json.status === "error") {
+                    dialog.alert(json.message, {
+                      type: "destructive",
+                    });
+                  } else {
+                    appendTokenToTable(json.data);
+                    showToken(
+                      json.data.tokenName,
+                      json.data.tokenValue,
+                      button.dataset.buttonDone,
+                    );
+                  }
+                });
+              }
+            });
+          },
+          () => {},
+        );
       },
       () => {},
     );

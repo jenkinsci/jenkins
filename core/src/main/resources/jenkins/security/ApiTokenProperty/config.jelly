@@ -57,7 +57,8 @@ THE SOFTWARE.
                         data-generate="${%GenerateNewToken}" data-success-title="${%successfully created}"
                         data-cancel="${%Cancel}"
                         data-button-done="${%Done}"
-                        data-message-name="${%Name}">${%AddNewToken}</button>
+                        data-message-name="${%Name}"
+                        data-message-expiration="${%Expiration}">${%AddNewToken}</button>
             </j:if>
         </d:tag>
     </d:taglib>
@@ -131,12 +132,17 @@ THE SOFTWARE.
                                         <span class="token-name">${token.name}</span>
                                 </div>
                                 <j:set var="creationDateFormat" value="${%NoCreationDate}" />
+                                <j:set var="expirationDateFormat" value="${%NoExpirationDate}" />
                                 <j:if test="${token.creationDate != null}">
                                     <i:formatDate var="creationDateFormat" value="${token.creationDate}" type="both" dateStyle="medium" timeStyle="medium" />
                                     <!--TODO convert to "Today", "Tomorrow", "4 days ago", "2 weeks ago", etc. -->
                                 </j:if>
+                                <j:if test="${token.expirationDate != null}">
+                                    <i:formatDate var="expirationDateFormat" value="${token.expirationDate}" type="both" dateStyle="medium" timeStyle="medium" />
+                                </j:if>
                                 <div class="token-stats">
                                     <span class="token-creation ${oldClazz}" tooltip="${creationDateFormat}">${token.createdDaysAgo()}</span>
+                                    <span class="token-expiration" tooltip="${expirationDateFormat}">${token.expiresInDays()}</span>
                                     <span class="token-last-used">
                                         <j:choose>
                                             <j:when test="${isStatisticsEnabled}">

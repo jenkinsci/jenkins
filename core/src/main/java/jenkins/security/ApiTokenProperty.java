@@ -331,6 +331,37 @@ public class ApiTokenProperty extends UserProperty {
             }
             return Messages.ApiTokenProperty_lastUsedDaysAgo(period.getDays());
         }
+
+        public String expiresInDays() {
+            if (expirationDate == null) {
+                return Messages.ApiTokenProperty_NoExpiration();
+            }
+            LocalDate ed = expirationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            Period period = Period.between(now, ed);
+            if (period.isNegative()) {
+                return Messages.ApiTokenProperty_Expired();
+            }
+            if (period.getYears() > 1) {
+                return Messages.ApiTokenProperty_expiresInYears(period.getYears());
+            }
+            if (period.getYears() == 1) {
+                return Messages.ApiTokenProperty_expiresInAYear();
+            }
+            if (period.getMonths() > 1) {
+                return Messages.ApiTokenProperty_expiresInMonths(period.getMonths());
+            }
+            if (period.getMonths() == 1) {
+                return Messages.ApiTokenProperty_expiresInAMonth();
+            }
+            if (period.getDays() > 1) {
+                return Messages.ApiTokenProperty_expiresInDays(period.getDays());
+            }
+            if (period.getDays() == 1) {
+                return Messages.ApiTokenProperty_expiresInADay();
+            }
+            return Messages.ApiTokenProperty_expiresToday();
+        }
     }
 
     /**
@@ -569,31 +600,53 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         @RequirePOST
-        public HttpResponse doGenerateNewToken(@AncestorInPath User u, @QueryParameter String newTokenName) throws IOException {
-            if (!hasCurrentUserRightToGenerateNewToken(u)) {
+        public HttpResponse doGenerateNewToken(
+                StaplerRequest2 request,
+                @QueryParameter(required = true) String newTokenName,
+                @QueryParameter(required = true) String expiration)
+                throws IOException {
+            if (canCurrentUserControlObject(ADMIN_CAN_GENERATE_NEW_TOKENS, user)) {
+                if (newTokenName == null || newTokenName.isBlank()) {
+                    return HttpResponses.error(400, "The token name cannot be empty");
+                }
+
+                Date expirationDate = null;
+                if (expiration != null && !expiration.equals("no-expiration")) {
+                    if (expiration.equals("30-days")) {
+                        expirationDate = Date.from(Instant.now().plus(30, ChronoUnit.DAYS));
+                    } else if (expiration.equals("90-days")) {
+                        expirationDate = Date.from(Instant.now().plus(90, ChronoUnit.DAYS));
+                    } else if (expiration.equals("1-year")) {
+                        expirationDate = Date.from(Instant.now().plus(365, ChronoUnit.DAYS));
+                    } else {
+                        try {
+                            expirationDate = Date.from(LocalDate.parse(expiration).atStartOfDay(ZoneId.systemDefault()).toInstant());
+                        } catch (Exception e) {
+                            return HttpResponses.error(400, "Invalid custom date format");
+                        }
+                    }
+                }
+
+                TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(newTokenName, expirationDate);
+                user.save();
+
+                ApiTokenStats.SingleTokenStats stats = tokenStats.findTokenStatsById(tokenUuidAndPlainValue.tokenUuid);
+                TokenInfoAndStats tokenInfoAndStats = new TokenInfoAndStats(
+                        tokenStore.findTokenByUuid(tokenUuidAndPlainValue.tokenUuid),
+                        stats
+                );
+
+                JSONObject json = new JSONObject();
+                json.put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
+                json.put("tokenName", newTokenName);
+                json.put("tokenValue", tokenUuidAndPlainValue.plainValue);
+                json.put("tokenCreationDate", tokenInfoAndStats.createdDaysAgo());
+                json.put("tokenExpiration", tokenInfoAndStats.expiresInDays());
+
+                return HttpResponses.okJSON(json);
+            } else {
                 return HttpResponses.forbidden();
             }
-
-            final String tokenName;
-            if (newTokenName == null || newTokenName.isBlank()) {
-                tokenName = Messages.Token_Created_on(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
-            } else {
-                tokenName = newTokenName;
-            }
-
-            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
-            if (p == null) {
-                p = forceNewInstance(u, false);
-                u.addProperty(p);
-            }
-
-            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName);
-
-            Map<String, String> data = new HashMap<>();
-            data.put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
-            data.put("tokenName", tokenName);
-            data.put("tokenValue", tokenUuidAndPlainValue.plainValue);
-            return HttpResponses.okJSON(data);
         }
 
         /**
