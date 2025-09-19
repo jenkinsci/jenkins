@@ -174,6 +174,14 @@ public class ApiTokenStore {
      * Result meant to be sent / displayed and then discarded.
      */
     public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) {
+        return generateNewToken(name, null);
+    }
+
+    /**
+     * Create a new token with the given name and return it id and secret value.
+     * Result meant to be sent / displayed and then discarded.
+     */
+    public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable Date expirationDate) {
         // 16x8=128bit worth of randomness, using brute-force you need on average 2^127 tries (~10^37)
         byte[] random = new byte[16];
         RANDOM.nextBytes(random);
@@ -182,7 +190,7 @@ public class ApiTokenStore {
         String tokenTheUserWillUse = HASH_VERSION + secretValue;
         assert tokenTheUserWillUse.length() == 2 + 32;
 
-        HashedToken token = prepareAndStoreToken(name, secretValue);
+        HashedToken token = prepareAndStoreToken(name, secretValue, expirationDate);
 
         return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse);
     }
@@ -219,10 +227,14 @@ public class ApiTokenStore {
     }
 
     private @NonNull HashedToken prepareAndStoreToken(@NonNull String name, @NonNull String tokenPlainValue) {
+        return prepareAndStoreToken(name, tokenPlainValue, null);
+    }
+
+    private @NonNull HashedToken prepareAndStoreToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable Date expirationDate) {
         String secretValueHashed = this.plainSecretToHashInHex(tokenPlainValue);
 
         HashValue hashValue = new HashValue(HASH_VERSION, secretValueHashed);
-        HashedToken token = HashedToken.buildNew(name, hashValue);
+        HashedToken token = HashedToken.buildNew(name, hashValue, expirationDate);
 
         this.addToken(token);
         return token;
@@ -300,6 +312,15 @@ public class ApiTokenStore {
         return null;
     }
 
+    public synchronized @CheckForNull HashedToken findTokenByUuid(@NonNull String tokenUuid) {
+        for (HashedToken token : tokenList) {
+            if (token.uuid.equals(tokenUuid)) {
+                return token;
+            }
+        }
+        return null;
+    }
+
     /**
      * Remove a token given its identifier. Effectively make it unusable for future connection.
      *
@@ -343,6 +364,18 @@ public class ApiTokenStore {
         return false;
     }
 
+    public synchronized boolean extendExpiration(@NonNull String tokenUuid, @NonNull Date newExpirationDate) {
+        for (HashedToken token : tokenList) {
+            if (token.uuid.equals(tokenUuid)) {
+                token.setExpirationDate(newExpirationDate);
+                return true;
+            }
+        }
+
+        LOGGER.log(Level.FINER, "The target token for extend expiration does not exist, for uuid = {0}", tokenUuid);
+        return false;
+    }
+
     @Immutable
     private static class HashValue implements Serializable {
 
@@ -363,14 +396,16 @@ public class ApiTokenStore {
         }
     }
 
-    public static class HashedToken {
+    public static class HashedToken implements Serializable {
+        private static final long serialVersionUID = 1L;
+        
         private final String uuid;
         private String name;
-        private final Secret value;
+        private final HashValue value;
         private final Date creationDate;
         private Date expirationDate;
 
-        private HashedToken(@NonNull String name, @NonNull Secret value) {
+        private HashedToken(@NonNull String name, @NonNull HashValue value) {
             this.uuid = UUID.randomUUID().toString();
             this.name = name;
             this.value = value;
@@ -378,7 +413,7 @@ public class ApiTokenStore {
             this.expirationDate = null;
         }
 
-        private HashedToken(@NonNull String name, @NonNull Secret value, @NonNull Date expirationDate) {
+        private HashedToken(@NonNull String name, @NonNull HashValue value, @NonNull Date expirationDate) {
             this.uuid = UUID.randomUUID().toString();
             this.name = name;
             this.value = value;
@@ -389,45 +424,38 @@ public class ApiTokenStore {
         /**
          * To be used only for the legacy token
          */
-        private HashedToken() {
-            this.init();
-        }
-
-        private Object readResolve() {
-            this.init();
-            return this;
-        }
-
-        private void init() {
-            if (this.uuid == null) {
-                this.uuid = UUID.randomUUID().toString();
-            }
+        private HashedToken(String uuid, String name, HashValue value, Date creationDate, Date expirationDate) {
+            this.uuid = uuid;
+            this.name = name;
+            this.value = value;
+            this.creationDate = creationDate;
+            this.expirationDate = expirationDate;
         }
 
         public static @NonNull HashedToken buildNew(@NonNull String name, @NonNull HashValue value) {
-            HashedToken result = new HashedToken();
-            result.name = name;
-            result.creationDate = new Date();
-
-            result.value = value;
-
-            return result;
+            return new HashedToken(name, value);
+        }
+        
+        public static @NonNull HashedToken buildNew(@NonNull String name, @NonNull HashValue value, @Nullable Date expirationDate) {
+            if (expirationDate == null) {
+                return new HashedToken(name, value);
+            } else {
+                return new HashedToken(name, value, expirationDate);
+            }
         }
 
         public static @NonNull HashedToken buildNewFromLegacy(@NonNull HashValue value, boolean migrationFromExistingLegacy) {
-            HashedToken result = new HashedToken();
-            result.name = Messages.ApiTokenProperty_LegacyTokenName();
+            String name = Messages.ApiTokenProperty_LegacyTokenName();
+            Date creationDate;
             if (migrationFromExistingLegacy) {
                 // we do not know when the legacy token was created
-                result.creationDate = null;
+                creationDate = null;
             } else {
                 // it comes from a manual action, so we set the creation date to now
-                result.creationDate = new Date();
+                creationDate = new Date();
             }
 
-            result.value = value;
-
-            return result;
+            return new HashedToken(UUID.randomUUID().toString(), name, value, creationDate, null);
         }
 
         public void rename(String newName) {
@@ -467,6 +495,9 @@ public class ApiTokenStore {
          * Relevant only if the lastUseDate is not null
          */
         public long getNumDaysCreation() {
+            if (creationDate == null) {
+                return -1;
+            }
             return ChronoUnit.DAYS.between(creationDate.toInstant(), Instant.now());
         }
 
@@ -481,6 +512,10 @@ public class ApiTokenStore {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        public boolean isLegacy() {
+            return value.version.equals(LEGACY_VERSION);
         }
     }
 }

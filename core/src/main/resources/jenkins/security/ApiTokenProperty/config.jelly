@@ -97,6 +97,7 @@ THE SOFTWARE.
                 </button>
                 <local:editButton/>
                 <local:revokeButton/>
+                <local:extendButton/>
             </div>
         </div>
     </div>
@@ -200,9 +201,7 @@ THE SOFTWARE.
                                                 </j:choose>
                                             </j:when>
                                             <j:otherwise>
-                                                <span class="no-statistics" tooltip="${%StatisticsDisabled.Title}">
-                                                    ${%StatisticsDisabled}
-                                                </span>
+                                                <span class="token-last-used-not-tracked">${%TokenUsageNotTracked}</span>
                                             </j:otherwise>
                                         </j:choose>
                                     </span>
@@ -210,24 +209,29 @@ THE SOFTWARE.
                             </div>
                             <div class="token-controls">
                                 <local:editButton/>
-                                <j:if test="${token.expirationDate != null}">
-                                    <local:extendButton/>
-                                </j:if>
                                 <local:revokeButton/>
+                                <local:extendButton/>
                             </div>
                         </div>
                     </j:forEach>
                 </div>
-                <local:addButton/>
+                <div class="add-token-container">
+                    <local:addButton/>
+                </div>
             </div>
         </div>
     </f:entry>
     <j:if test="${descriptor.mustDisplayLegacyApiToken(it)}">
-        <f:advanced title="${%Show Legacy API Token}">
-            <f:entry title="${%Legacy API Token}" field="apiToken">
-                <f:readOnlyTextbox id="apiToken" default="${descriptor.noLegacyToken}"/>
-            </f:entry>
-            <f:validateButton title="${%Change API Token}" method="changeToken" clazz="ignore-dirty-panel"/>
-        </f:advanced>
+        <f:entry title="${%LegacyToken}" help="/help/user/api-token.html">
+            <div class="legacy-token-container">
+                <f:password value="${instance.apiToken}" name="apiToken" id="apiToken" readOnly="true" style="display:none"/>
+                <div class="legacy-token-value">${instance.apiToken}</div>
+                <div class="legacy-token-controls">
+                    <l:copyButton text="${instance.apiToken}" clazz="jenkins-hidden" tooltip="${%CopyToken}" iconOnly="true"/>
+                    <button class="jenkins-button jenkins-button--secondary" type="button" id="change-token-button"
+                            data-target-url="${descriptor.descriptorFullUrl}/changeToken">${%ChangeToken}</button>
+                </div>
+            </div>
+        </f:entry>
     </j:if>
 </j:jelly>
