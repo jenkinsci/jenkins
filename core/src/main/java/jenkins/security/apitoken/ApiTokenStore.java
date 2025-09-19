@@ -35,6 +35,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -361,17 +363,32 @@ public class ApiTokenStore {
         }
     }
 
-    public static class HashedToken implements Serializable {
-
-        private static final long serialVersionUID = 1L;
-
-        // allow us to rename the token and link the statistics
-        private String uuid;
+    public static class HashedToken {
+        private final String uuid;
         private String name;
-        private Date creationDate;
+        private final Secret value;
+        private final Date creationDate;
+        private final Date expirationDate;
 
-        private HashValue value;
+        private HashedToken(@NonNull String name, @NonNull Secret value) {
+            this.uuid = UUID.randomUUID().toString();
+            this.name = name;
+            this.value = value;
+            this.creationDate = new Date();
+            this.expirationDate = null;
+        }
 
+        private HashedToken(@NonNull String name, @NonNull Secret value, @NonNull Date expirationDate) {
+            this.uuid = UUID.randomUUID().toString();
+            this.name = name;
+            this.value = value;
+            this.creationDate = new Date();
+            this.expirationDate = expirationDate;
+        }
+
+        /**
+         * To be used only for the legacy token
+         */
         private HashedToken() {
             this.init();
         }
@@ -441,16 +458,21 @@ public class ApiTokenStore {
         }
 
         // used by Jelly view
+        public Date getExpirationDate() {
+            return expirationDate;
+        }
+
+        // used by Jelly view
         /**
          * Relevant only if the lastUseDate is not null
          */
         public long getNumDaysCreation() {
-            return creationDate == null ? 0 : Util.daysElapsedSince(creationDate);
+            return ChronoUnit.DAYS.between(creationDate.toInstant(), Instant.now());
         }
 
         // used by Jelly view
         public String getUuid() {
-            return this.uuid;
+            return uuid;
         }
 
         public boolean isLegacy() {

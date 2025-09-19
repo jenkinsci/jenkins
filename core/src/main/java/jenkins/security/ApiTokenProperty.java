@@ -251,6 +251,7 @@ public class ApiTokenProperty extends UserProperty {
         public final Date creationDate;
         public final long numDaysCreation;
         public final boolean isLegacy;
+        public final Date expirationDate;
 
         public final int useCounter;
         public final Date lastUseDate;
@@ -262,6 +263,7 @@ public class ApiTokenProperty extends UserProperty {
             this.creationDate = token.getCreationDate();
             this.numDaysCreation = token.getNumDaysCreation();
             this.isLegacy = token.isLegacy();
+            this.expirationDate = token.getExpirationDate();
 
             this.useCounter = stats.getUseCounter();
             this.lastUseDate = stats.getLastUseDate();
