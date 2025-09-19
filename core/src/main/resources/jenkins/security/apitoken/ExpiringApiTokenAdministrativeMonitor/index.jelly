@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+    <l:main-panel>
+        <h1>${%Expiring API Tokens}</h1>
+        <p>${%The following API tokens are expiring soon:}</p>
+        <table class="jenkins-table">
+            <thead>
+                <tr>
+                    <th>${%User}</th>
+                    <th>${%Token Name}</th>
+                    <th>${%Expires}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <j:forEach var="tokenInfo" items="${it.expiringTokens}">
+                    <tr>
+                        <td>
+                            <a href="${rootURL}/${tokenInfo.user.url}">${tokenInfo.user.fullName}</a>
+                        </td>
+                        <td>${tokenInfo.token.name}</td>
+                        <td>${tokenInfo.token.expiresInDays()}</td>
+                    </tr>
+                </j:forEach>
+            </tbody>
+        </table>
+    </l:main-panel>
+</j:jelly>
