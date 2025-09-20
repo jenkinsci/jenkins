@@ -114,7 +114,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function cleanCopyFromOption() {
       copyRadio?.removeAttribute("checked");
-      copyRadio.checked = false;
+      if (copyRadio !== null) {
+        copyRadio.checked = false;
+      }
       if (copyFromInput) {
         copyFromInput.value = "";
       }
