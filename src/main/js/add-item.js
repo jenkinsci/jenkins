@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const checkedOption = document.querySelector(
         'input[name="mode"]:checked',
       );
-      if (checkedOption !== null) {
+      if (checkedOption) {
         checkedOption.checked = false;
       }
       setFieldValidationStatus("items", false);
@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function cleanCopyFromOption() {
       copyRadio?.removeAttribute("checked");
-      if (copyRadio !== null) {
+      if (copyRadio) {
         copyRadio.checked = false;
       }
       if (copyFromInput) {
