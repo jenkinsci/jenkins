@@ -39,7 +39,7 @@
 .jenkins-section__items {
   display: grid;
   grid-template-columns: 1fr;
-  grid-gap: var(--section-padding);
+  gap: var(--section-padding);
 
   @media screen and (width >= 800px) {
     grid-template-columns: 1fr 1fr;

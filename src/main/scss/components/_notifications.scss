@@ -9,7 +9,7 @@
   max-width: min(600px, #{string.unquote("calc(100vw - 2.4rem)")});
   display: grid;
   grid-template-columns: auto 1fr;
-  grid-gap: 1.5ch;
+  gap: 1.5ch;
   padding: 0.8rem;
   border-radius: var(--form-input-border-radius);
   font-weight: var(--font-bold-weight);
