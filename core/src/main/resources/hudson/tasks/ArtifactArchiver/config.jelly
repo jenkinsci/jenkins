@@ -49,6 +49,9 @@ THE SOFTWARE.
     <f:entry field="followSymlinks" >
       <f:checkbox title="${%followSymlinks}" default="false"/>
     </f:entry>
+    <f:entry title="Include empty directories" field="includeEmptyDirs">
+        <f:checkbox />
+    </f:entry>
   </f:advanced>
 </j:jelly>
 
