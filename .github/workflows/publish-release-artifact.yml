@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   determine-version:
+    if: ${{ github.repository_owner == 'jenkinsci' }}
     runs-on: ubuntu-latest
     outputs:
       project-version: ${{ steps.set-version.outputs.project-version }}
