@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:x="jelly:xml" xmlns:l="/lib/layout">
   <st:documentation>
     <st:attribute name="title" use="required">
       The title for the application bar
@@ -31,14 +31,27 @@ THE SOFTWARE.
     <st:attribute name="headingLevel">
       Defaults to h1
     </st:attribute>
+    <st:attribute name="subtitle">
+      The subtitle for the application bar
+    </st:attribute>
+    <st:attribute name="icon" since="TODO">
+      Optional icon for the application bar
+    </st:attribute>
     Generates a row containing the page title and an optional set of controls
   </st:documentation>
 
   <j:if test="${mode=='main-panel' or mode=='side-panel'}">
-    <div class="jenkins-app-bar">
+    <div class="jenkins-app-bar ${attrs.icon != null ? 'jenkins-app-bar--with-icon' :''}">
       <div class="jenkins-app-bar__content">
+        <j:if test="${attrs.icon != null}">
+          <l:icon src="${attrs.icon}" class="jenkins-avatar" />
+        </j:if>
+
         <x:element name="${headingLevel ?: 'h1'}">
           ${title}
+          <j:if test="${attrs.subtitle != null}">
+            <span class="jenkins-app-bar__subtitle">${attrs.subtitle}</span>
+          </j:if>
         </x:element>
       </div>
       <div class="jenkins-app-bar__controls">

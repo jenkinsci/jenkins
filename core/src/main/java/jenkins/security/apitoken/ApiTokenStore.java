@@ -51,7 +51,6 @@ import java.util.stream.Collectors;
 import jenkins.security.Messages;
 import net.jcip.annotations.Immutable;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -110,7 +109,7 @@ public class ApiTokenStore {
             }
 
             String name = receivedTokenData.getString("tokenName");
-            if (StringUtils.isBlank(name)) {
+            if (name == null || name.isBlank()) {
                 LOGGER.log(Level.INFO, "Empty name received for {0}, we do not care about it", hashedToken.uuid);
                 return;
             }
@@ -305,7 +304,6 @@ public class ApiTokenStore {
      * @param tokenUuid The identifier of the token, could be retrieved directly from the {@link HashedToken#getUuid()}
      * @return the revoked token corresponding to the given {@code tokenUuid} if one was found, otherwise {@code null}
      */
-    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Only used during revocation.")
     public synchronized @CheckForNull HashedToken revokeToken(@NonNull String tokenUuid) {
         for (Iterator<HashedToken> iterator = tokenList.iterator(); iterator.hasNext(); ) {
             HashedToken token = iterator.next();

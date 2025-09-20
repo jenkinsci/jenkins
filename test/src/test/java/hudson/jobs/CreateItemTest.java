@@ -25,55 +25,65 @@
 package hudson.jobs;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.Failure;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.ListView;
+import hudson.model.User;
 import hudson.model.listeners.ItemListener;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.text.MessageFormat;
+import jenkins.model.Jenkins;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests the /createItem REST API.
  *
  * @author Christopher Simons
  */
-public class CreateItemTest {
-    @Rule
-    public JenkinsRule rule = new JenkinsRule();
+@WithJenkins
+class CreateItemTest {
 
-    @Before
-    public void setup() {
+    private JenkinsRule rule;
+
+    @BeforeEach
+    void setUp(JenkinsRule j) {
+        rule = j;
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
     }
 
     @Issue("JENKINS-31235")
     @Test
-    public void testCreateItemFromCopy() throws Exception {
+    void testCreateItemFromCopy() throws Exception {
         rule.jenkins.setCrumbIssuer(null);
 
         String sourceJobName = "sourceJob";
         rule.createFreeStyleProject(sourceJobName);
 
         String newJobName = "newJob";
-        URL apiURL = new URL(MessageFormat.format(
+        URL apiURL = new URI(MessageFormat.format(
                     "{0}createItem?mode=copy&from={1}&name={2}",
-                    rule.getURL().toString(), sourceJobName, newJobName));
+                    rule.getURL().toString(), sourceJobName, newJobName)).toURL();
 
         WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
         deleteContentTypeHeader(request);
@@ -81,23 +91,23 @@ public class CreateItemTest {
         Page p = rule.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false)
                 .getPage(request);
-        assertEquals("Creating job from copy should succeed.",
-                HttpURLConnection.HTTP_OK,
-                p.getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_OK,
+                p.getWebResponse().getStatusCode(),
+                "Creating job from copy should succeed.");
     }
 
     @Issue("JENKINS-34691")
     @Test
-    public void vetoCreateItemFromCopy() throws Exception {
+    void vetoCreateItemFromCopy() throws Exception {
         rule.jenkins.setCrumbIssuer(null);
 
         String sourceJobName = "sourceJob";
         rule.createFreeStyleProject(sourceJobName);
 
         String newJobName = "newJob";
-        URL apiURL = new URL(MessageFormat.format(
+        URL apiURL = new URI(MessageFormat.format(
                     "{0}createItem?mode=copy&from={1}&name={2}",
-                    rule.getURL().toString(), sourceJobName, newJobName));
+                    rule.getURL().toString(), sourceJobName, newJobName)).toURL();
 
         WebRequest request = new WebRequest(apiURL, HttpMethod.POST);
         deleteContentTypeHeader(request);
@@ -106,9 +116,9 @@ public class CreateItemTest {
                 .withThrowExceptionOnFailingStatusCode(false)
                 .getPage(request);
 
-        assertEquals("Creating job from copy should fail.",
-                HttpURLConnection.HTTP_BAD_REQUEST,
-                p.getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST,
+                p.getWebResponse().getStatusCode(),
+                "Creating job from copy should fail.");
         assertThat(rule.jenkins.getItem("newJob"), nullValue());
     }
 
@@ -117,17 +127,17 @@ public class CreateItemTest {
     }
 
     @Test
-    public void createWithFolderPaths() throws Exception {
+    void createWithFolderPaths() throws Exception {
         rule.jenkins.setCrumbIssuer(null);
         rule.createFolder("d1").createProject(FreeStyleProject.class, "p");
         MockFolder d2 = rule.createFolder("d2");
 
         JenkinsRule.WebClient wc = rule.createWebClient();
 
-        wc.getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p2&from=../d1/p"), HttpMethod.POST));
+        wc.getPage(new WebRequest(new URI(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p2&from=../d1/p").toURL(), HttpMethod.POST));
         assertNotNull(d2.getItem("p2"));
 
-        wc.getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p3&from=/d1/p"), HttpMethod.POST));
+        wc.getPage(new WebRequest(new URI(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p3&from=/d1/p").toURL(), HttpMethod.POST));
         assertNotNull(d2.getItem("p3"));
     }
 
@@ -141,4 +151,50 @@ public class CreateItemTest {
         }
     }
 
+    @Issue("JENKINS-74795")
+    @Test
+    void testCreateItemDoesNotPopulateDefaultView() throws Exception {
+        // Create a view that only displays jobs that start with 'a-'
+        FreeStyleProject aJob = rule.createFreeStyleProject("a-freestyle-job");
+        ListView aView = new ListView("a-view");
+        aView.setIncludeRegex("a-.*");
+        rule.jenkins.addView(aView);
+        assertThat(aView.getItems(), containsInAnyOrder(aJob));
+        assertFalse(aView.isDefault()); // Not yet the default view
+
+        // Create a view that only displays jobs that start with 'b-'
+        FreeStyleProject bJob = rule.createFreeStyleProject("b-freestyle-job");
+        ListView bView = new ListView("b-view");
+        bView.setIncludeRegex("b-.*");
+        rule.jenkins.addView(bView);
+        assertThat(bView.getItems(), containsInAnyOrder(bJob));
+        assertFalse(bView.isDefault()); // Not the default view
+
+        // Make the a-view the default
+        rule.jenkins.setPrimaryView(aView);
+        assertTrue(aView.isDefault()); // Now a-view is the default view
+
+        // Use createItem API to create a new job
+        User user = User.getById("user", true);
+        rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
+        rule.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ, Item.CREATE)
+                .everywhere()
+                .to(user.getId()));
+        String b2JobName = "b-freestyle-job-2";
+        try (JenkinsRule.WebClient wc = rule.createWebClient()) {
+            wc.login(user.getId());
+            WebRequest request = new WebRequest(wc.createCrumbedUrl("createItem?name=" + b2JobName), HttpMethod.POST);
+            request.setAdditionalHeader("Content-Type", "application/xml");
+            request.setRequestBody("<project/>");
+            wc.getPage(request);
+        }
+        FreeStyleProject b2Job = rule.jenkins.getItemByFullName(b2JobName, FreeStyleProject.class);
+        assertThat(bView.getItems(), containsInAnyOrder(bJob, b2Job));
+        assertFalse(bView.isDefault());
+
+        // Confirm new job is not visible in default view
+        assertTrue(aView.isDefault()); // a-view is still the default view
+        assertThat(aView.getItems(), containsInAnyOrder(aJob));
+    }
 }

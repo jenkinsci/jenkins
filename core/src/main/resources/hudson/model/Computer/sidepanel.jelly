@@ -31,7 +31,7 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <l:task contextMenu="false" href="${rootURL}/${it.url}" icon="${it.iconClassName}" title="${%Status}"/>
-      <l:task confirmationMessage="${%delete.confirm(it.name)}" href="${rootURL}/${it.url}doDelete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete Agent}" post="true" requiresConfirmation="true"/>
+      <l:delete permission="${it.DELETE}" title="${%Delete Agent}" message="${%delete.confirm(it.name)}"/>
       <l:task href="${rootURL}/${it.url}configure" icon="symbol-settings" permission="${it.EXTENDED_READ}"
               title="${it.hasPermission(it.CONFIGURE) ? '%Configure' : '%View Configuration'}"/>
       <l:task href="${rootURL}/${it.url}builds" icon="symbol-build-history" title="${%Build History}"/>

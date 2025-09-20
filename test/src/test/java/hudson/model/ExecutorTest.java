@@ -3,40 +3,48 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
-import hudson.tasks.Builder;
 import hudson.util.OneShotEvent;
 import java.io.IOException;
-import java.util.concurrent.Future;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
+@WithJenkins
 public class ExecutorTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-4756")
-    public void whenAnExecutorDiesHardANewExecutorTakesItsPlace() throws Exception {
+    void whenAnExecutorDiesHardANewExecutorTakesItsPlace() throws Exception {
         j.jenkins.setNumExecutors(1);
 
         Computer c = j.jenkins.toComputer();
@@ -78,17 +86,15 @@ public class ExecutorTest {
      * Makes sure that the cause of interruption is properly recorded.
      */
     @Test
-    public void abortCause() throws Exception {
+    void abortCause() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
-        Future<FreeStyleBuild> r = startBlockingBuild(p);
+        FreeStyleBuild b = startBlockingBuild(p);
 
         User johnny = User.getOrCreateByIdOrFullName("Johnny");
         p.getLastBuild().getExecutor().interrupt(Result.FAILURE,
                 new UserInterruption(johnny),   // test the merge semantics
                 new UserInterruption(johnny));
-
-        FreeStyleBuild b = r.get();
 
         // make sure this information is recorded
         j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
@@ -101,44 +107,50 @@ public class ExecutorTest {
     }
 
     @Test
-    public void disconnectCause() throws Exception {
+    void disconnectCause() throws Exception {
         DumbSlave slave = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(slave);
 
-        Future<FreeStyleBuild> r = startBlockingBuild(p);
+        FreeStyleBuild b = startBlockingBuild(p);
         User johnny = User.getOrCreateByIdOrFullName("Johnny");
 
         p.getLastBuild().getBuiltOn().toComputer().disconnect(
                 new OfflineCause.UserCause(johnny, "Taking offline to break your build")
         );
 
-        FreeStyleBuild b = r.get();
-
         j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
         j.assertLogContains("Finished: FAILURE", b);
-        j.assertLogContains("Build step 'BlockingBuilder' marked build as failure", b);
+        j.assertLogContains("Build step 'TestBuilder' marked build as failure", b);
         j.assertLogContains("Agent went offline during the build", b);
-        j.assertLogContains("Disconnected by Johnny : Taking offline to break your build", b);
+        // The test reports a legacy code cause in up to 10% of jobs on ci.jenkins.io.
+        // Accept either cause and assert the expected message for each type of cause.
+        if (p.getLastBuild().getCause(Cause.class) instanceof Cause.UserIdCause) {
+            j.assertLogContains("Disconnected by Johnny : Taking offline to break your build", b);
+        } else {
+            assertThat(p.getLastBuild().getCause(Cause.class), instanceOf(Cause.LegacyCodeCause.class));
+            j.assertLogContains((new Cause.LegacyCodeCause()).getShortDescription(), b);
+        }
     }
 
     @Issue("SECURITY-611")
     @Test
-    public void apiPermissions() throws Exception {
+    void apiPermissions() throws Exception {
         DumbSlave slave = new DumbSlave("slave", j.jenkins.getRootDir().getAbsolutePath(), j.createComputerLauncher(null));
         slave.setNumExecutors(2);
         j.jenkins.addNode(slave);
         FreeStyleProject publicProject = j.createFreeStyleProject("public-project");
         publicProject.setAssignedNode(slave);
-        startBlockingBuild(publicProject);
         FreeStyleProject secretProject = j.createFreeStyleProject("secret-project");
         secretProject.setAssignedNode(slave);
-        startBlockingBuild(secretProject);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.READ).everywhere().toEveryone().
             grant(Item.READ).onItems(publicProject).toEveryone().
             grant(Item.READ).onItems(secretProject).to("has-security-clearance"));
+
+        FreeStyleBuild b1 = startBlockingBuild(publicProject);
+        FreeStyleBuild b2 = startBlockingBuild(secretProject);
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.withBasicCredentials("has-security-clearance");
@@ -151,16 +163,21 @@ public class ExecutorTest {
         api = wc.goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, allOf(containsString("public-project"), not(containsString("secret-project"))));
+
+        b1.doStop();
+        b2.doStop();
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(b1));
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(b2));
     }
 
     @Test
     @Issue("SECURITY-2120")
-    public void disconnectCause_WithoutTrace() throws Exception {
+    void disconnectCause_WithoutTrace() throws Exception {
         DumbSlave slave = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(slave);
 
-        Future<FreeStyleBuild> r = startBlockingBuild(p);
+        FreeStyleBuild b = startBlockingBuild(p);
 
         String message = "It went away";
         p.getLastBuild().getBuiltOn().toComputer().disconnect(
@@ -168,29 +185,32 @@ public class ExecutorTest {
         );
 
         OfflineCause offlineCause = p.getLastBuild().getBuiltOn().toComputer().getOfflineCause();
-        Assert.assertThat(offlineCause.toString(), not(containsString(message)));
+        assertThat(offlineCause.toString(), not(containsString(message)));
+
+        b.doStop();
+        j.waitForCompletion(b);
     }
 
     /**
      * Start a project with an infinite build step
      *
      * @param project {@link FreeStyleProject} to start
-     * @return A {@link Future} object represents the started build
+     * @return the started build (the caller should wait for its completion)
      * @throws Exception if somethink wrong happened
      */
-    public static Future<FreeStyleBuild> startBlockingBuild(FreeStyleProject project) throws Exception {
+    public static FreeStyleBuild startBlockingBuild(FreeStyleProject project) throws Exception {
         final OneShotEvent e = new OneShotEvent();
 
         project.getBuildersList().add(new BlockingBuilder(e));
 
-        Future<FreeStyleBuild> r = project.scheduleBuild2(0);
+        FreeStyleBuild b = project.scheduleBuild2(0).waitForStart();
         e.block();  // wait until we are safe to interrupt
-        assertTrue(project.getLastBuild().isBuilding());
+        assertTrue(b.isBuilding());
 
-        return r;
+        return b;
     }
 
-    private static final class BlockingBuilder extends Builder {
+    private static final class BlockingBuilder extends TestBuilder {
         private final OneShotEvent e;
 
         private BlockingBuilder(OneShotEvent e) {
@@ -201,16 +221,52 @@ public class ExecutorTest {
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             VirtualChannel channel = launcher.getChannel();
             Node node = build.getBuiltOn();
+            channel.call(node.getClockDifferenceCallable()); // warm up class loading
 
             e.signal(); // we are safe to be interrupted
             for (;;) {
                 // Keep using the channel
-                channel.call(node.getClockDifferenceCallable());
+                try {
+                    channel.call(node.getClockDifferenceCallable());
+                } catch (IOException x) {
+                    if (x.getMessage().contains("RemoteClassLoader.ClassLoaderProxy")) {
+                        Functions.printStackTrace(x, listener.error("TODO unreproducible error from MultiClassLoaderSerializer.Input.readClassLoader"));
+                    } else {
+                        throw x;
+                    }
+                }
                 Thread.sleep(100);
             }
         }
-
-        @TestExtension
-        public static class DescriptorImpl extends Descriptor<Builder> {}
     }
+
+    @Test
+    void recordCauseOfInterruption() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(TestBuilder.of((build, launcher, listener) -> {
+            Executor exec = build.getExecutor();
+            exec.interrupt(Result.NOT_BUILT, new TestCauseOfInterruption("one"), new TestCauseOfInterruption("two"));
+            exec.recordCauseOfInterruption(build, listener);
+            exec.interrupt(Result.NOT_BUILT, new TestCauseOfInterruption("three"), new TestCauseOfInterruption("four"));
+            exec.recordCauseOfInterruption(build, listener);
+        }));
+        FreeStyleBuild b = j.buildAndAssertStatus(Result.NOT_BUILT, p);
+        assertThat(b.getActions(InterruptedBuildAction.class).stream().map(iba -> iba.getCauses().stream().map(CauseOfInterruption::getShortDescription).toList()).toList(), is(List.of(List.of("one", "two", "three", "four"))));
+    }
+
+    private static final class TestCauseOfInterruption extends CauseOfInterruption {
+        private final String msg;
+
+        TestCauseOfInterruption(String msg) {
+            this.msg = msg;
+
+        }
+
+        @Override
+        public String getShortDescription() {
+            return msg;
+        }
+    }
+
+
 }

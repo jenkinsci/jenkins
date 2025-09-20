@@ -1,12 +1,14 @@
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.markup.MarkupFormatter;
@@ -25,27 +27,29 @@ import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSelect;
 import org.htmlunit.html.HtmlTextInput;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ErrorCollector;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author huybrechts
  */
-public class ParametersTest {
+@WithJenkins
+class ParametersTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Rule
-    public ErrorCollector collector = new ErrorCollector();
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void parameterTypes() throws Exception {
+    void parameterTypes() throws Exception {
         FreeStyleProject otherProject = j.createFreeStyleProject();
         j.buildAndAssertSuccess(otherProject);
 
@@ -102,7 +106,7 @@ public class ParametersTest {
     }
 
     @Test
-    public void choiceWithLTGT() throws Exception {
+    void choiceWithLTGT() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
                 new ChoiceParameterDefinition("choice", "Choice 1\nChoice <2>", "choice description"));
@@ -135,7 +139,7 @@ public class ParametersTest {
     }
 
     @Test
-    public void sensitiveParameters() throws Exception {
+    void sensitiveParameters() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
                 new PasswordParameterDefinition("password", "12345", "password description"));
@@ -152,7 +156,7 @@ public class ParametersTest {
     }
 
     @Test
-    public void nonSensitiveParameters() throws Exception {
+    void nonSensitiveParameters() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
                 new StringParameterDefinition("string", "defaultValue", "string description"));
@@ -169,7 +173,7 @@ public class ParametersTest {
     }
 
     @Test
-    public void mixedSensitivity() throws Exception {
+    void mixedSensitivity() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
                 new StringParameterDefinition("string", "defaultValue", "string description"),
@@ -192,7 +196,7 @@ public class ParametersTest {
 
     @Test
     @Issue("JENKINS-3539")
-    public void fileParameterNotSet() throws Exception {
+    void fileParameterNotSet() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
                 new FileParameterDefinition("filename", "description"));
@@ -206,12 +210,12 @@ public class ParametersTest {
         j.submit(form);
         j.waitUntilNoActivity();
 
-        assertFalse("file must not exist", project.getSomeWorkspace().child("filename").exists());
+        assertFalse(project.getSomeWorkspace().child("filename").exists(), "file must not exist");
     }
 
     @Test
     @Issue("JENKINS-11543")
-    public void unicodeParametersArePresetCorrectly() throws Exception {
+    void unicodeParametersArePresetCorrectly() throws Exception {
         final FreeStyleProject p = j.createFreeStyleProject();
         ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
                 new StringParameterDefinition("sname:a¶‱ﻷ", "svalue:a¶‱ﻷ", "sdesc:a¶‱ﻷ"),
@@ -233,7 +237,7 @@ public class ParametersTest {
 
     @Issue("SECURITY-353")
     @Test
-    public void xss() throws Exception {
+    void xss() throws Exception {
         j.jenkins.setMarkupFormatter(new MyMarkupFormatter());
         FreeStyleProject p = j.createFreeStyleProject("p");
         StringParameterDefinition param = new StringParameterDefinition("<param name>", "<param default>", "<param description>");
@@ -242,14 +246,16 @@ public class ParametersTest {
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "build?delay=0sec");
-        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_BAD_METHOD)); // 405 to dissuade scripts from thinking this triggered the build
-        String text = page.getWebResponse().getContentAsString();
-        collector.checkThat("build page should escape param name", text, containsString("&lt;param name&gt;"));
-        collector.checkThat("build page should not leave param name unescaped", text, not(containsString("<param name>")));
-        collector.checkThat("build page should escape param default", text, containsString("&lt;param default&gt;"));
-        collector.checkThat("build page should not leave param default unescaped", text, not(containsString("<param default>")));
-        collector.checkThat("build page should mark up param description", text, containsString("<b>[</b>param description<b>]</b>"));
-        collector.checkThat("build page should not leave param description unescaped", text, not(containsString("<param description>")));
+        assertThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_BAD_METHOD)); // 405 to dissuade scripts from thinking this triggered the build
+        final String text = page.getWebResponse().getContentAsString();
+        assertAll(
+                () -> assertThat("build page should escape param name", text, containsString("&lt;param name&gt;")),
+                () -> assertThat("build page should not leave param name unescaped", text, not(containsString("<param name>"))),
+                () -> assertThat("build page should escape param default", text, containsString("&lt;param default&gt;")),
+                () -> assertThat("build page should not leave param default unescaped", text, not(containsString("<param default>"))),
+                () -> assertThat("build page should mark up param description", text, containsString("<b>[</b>param description<b>]</b>")),
+                () -> assertThat("build page should not leave param description unescaped", text, not(containsString("<param description>")))
+        );
         HtmlForm form = page.getFormByName("parameters");
         HtmlTextInput value = form.getInputByValue("<param default>");
         value.setText("<param value>");
@@ -257,18 +263,20 @@ public class ParametersTest {
         j.waitUntilNoActivity();
         FreeStyleBuild b = p.getBuildByNumber(1);
         page = j.createWebClient().getPage(b, "parameters/");
-        text = page.getWebResponse().getContentAsString();
-        collector.checkThat("parameters page should escape param name", text, containsString("&lt;param name&gt;"));
-        collector.checkThat("parameters page should not leave param name unescaped", text, not(containsString("<param name>")));
-        collector.checkThat("parameters page should escape param value", text, containsString("&lt;param value&gt;"));
-        collector.checkThat("parameters page should not leave param value unescaped", text, not(containsString("<param value>")));
-        collector.checkThat("parameters page should mark up param description", text, containsString("<b>[</b>param description<b>]</b>"));
-        collector.checkThat("parameters page should not leave param description unescaped", text, not(containsString("<param description>")));
+        final String text2 = page.getWebResponse().getContentAsString();
+        assertAll(
+                () -> assertThat("parameters page should escape param name", text2, containsString("&lt;param name&gt;")),
+                () -> assertThat("parameters page should not leave param name unescaped", text2, not(containsString("<param name>"))),
+                () -> assertThat("parameters page should escape param value", text2, containsString("&lt;param value>")),
+                () -> assertThat("parameters page should not leave param value unescaped", text2, not(containsString("<param value>"))),
+                () -> assertThat("parameters page should mark up param description", text2, containsString("<b>[</b>param description<b>]</b>")),
+                () -> assertThat("parameters page should not leave param description unescaped", text2, not(containsString("<param description>")))
+        );
     }
 
     @Test
     @Issue("JENKINS-69637")
-    public void emptyParameterDefinitionProperty() throws Exception {
+    void emptyParameterDefinitionProperty() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty());
 
@@ -277,13 +285,13 @@ public class ParametersTest {
         HtmlPage page;
 
         page = wc.getPage(p, "build?delay=0sec");
-        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_BAD_METHOD));
+        assertThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_BAD_METHOD));
         HtmlForm form = page.getFormByName("parameters");
         page = j.submit(form);
-        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_OK));
+        assertThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_OK));
         j.waitUntilNoActivity();
         FreeStyleBuild b = p.getBuildByNumber(1);
-        collector.checkThat(b.getResult(), is(Result.SUCCESS));
+        assertThat(b.getResult(), is(Result.SUCCESS));
     }
 
     static class MyMarkupFormatter extends MarkupFormatter {

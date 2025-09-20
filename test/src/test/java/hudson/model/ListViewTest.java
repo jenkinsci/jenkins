@@ -29,10 +29,10 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -46,6 +46,8 @@ import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -58,42 +60,45 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.AlertHandler;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.core.Authentication;
 import org.xml.sax.SAXException;
 
-public class ListViewTest {
+@WithJenkins
+class ListViewTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Rule public TestName testName = new TestName();
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-15309")
     @LocalData
-    @Test public void nullJobNames() {
+    @Test
+    void nullJobNames() {
         assertTrue(j.jenkins.getView("v").getItems().isEmpty());
     }
 
     @Test
-    public void testJobLinksAreValid() throws Exception {
+    void testJobLinksAreValid() throws Exception {
       /*
        * jenkins
        * + -- folder1
@@ -137,7 +142,8 @@ public class ListViewTest {
     }
 
     @Issue("JENKINS-20415")
-    @Test public void nonTopLevelItemGroup() throws Exception {
+    @Test
+    void nonTopLevelItemGroup() throws Exception {
         MatrixProject mp = j.jenkins.createProject(MatrixProject.class, "mp");
         mp.setAxes(new AxisList(new TextAxis("axis", "one", "two")));
         assertEquals(2, mp.getItems().size());
@@ -150,7 +156,8 @@ public class ListViewTest {
     }
 
     @Issue("JENKINS-18680")
-    @Test public void renamesMovesAndDeletes() throws Exception {
+    @Test
+    void renamesMovesAndDeletes() throws Exception {
         MockFolder top = j.createFolder("top");
         MockFolder sub = top.createProject(MockFolder.class, "sub");
         FreeStyleProject p1 = top.createProject(FreeStyleProject.class, "p1");
@@ -174,7 +181,8 @@ public class ListViewTest {
     }
 
     @Issue("JENKINS-23893")
-    @Test public void renameJobContainedInTopLevelView() throws Exception {
+    @Test
+    void renameJobContainedInTopLevelView() throws Exception {
         ListView view = new ListView("view", j.jenkins);
         j.jenkins.addView(view);
         FreeStyleProject job = j.createFreeStyleProject("old_name");
@@ -185,12 +193,13 @@ public class ListViewTest {
 
         job.renameTo("new_name");
 
-        assertFalse("old job name is still contained: " + view.jobNames, view.jobNames.contains("old_name"));
+        assertFalse(view.jobNames.contains("old_name"), "old job name is still contained: " + view.jobNames);
         assertTrue(view.contains(job));
         assertTrue(view.jobNamesContains(job));
     }
 
-    @Test public void renameContainedJob() throws Exception {
+    @Test
+    void renameContainedJob() throws Exception {
         MockFolder folder = j.createFolder("folder");
         ListView view = new ListView("view", folder);
         folder.addView(view);
@@ -203,13 +212,14 @@ public class ListViewTest {
 
         job.renameTo("new_name");
 
-        assertFalse("old job name is still contained", view.jobNames.contains("old_name"));
+        assertFalse(view.jobNames.contains("old_name"), "old job name is still contained");
         assertTrue(view.contains(job));
         assertTrue(view.jobNamesContains(job));
     }
 
     @Issue("JENKINS-23893")
-    @Test public void deleteJobContainedInTopLevelView() throws Exception {
+    @Test
+    void deleteJobContainedInTopLevelView() throws Exception {
         ListView view = new ListView("view", j.jenkins);
         j.jenkins.addView(view);
         FreeStyleProject job = j.createFreeStyleProject("project");
@@ -224,7 +234,8 @@ public class ListViewTest {
         assertFalse(view.jobNamesContains(job));
     }
 
-    @Test public void deleteContainedJob() throws Exception {
+    @Test
+    void deleteContainedJob() throws Exception {
         MockFolder folder = j.createFolder("folder");
         ListView view = new ListView("view", folder);
         folder.addView(view);
@@ -241,7 +252,8 @@ public class ListViewTest {
     }
 
     @Issue("JENKINS-22769")
-    @Test public void renameJobInViewYouCannotSee() throws Exception {
+    @Test
+    void renameJobInViewYouCannotSee() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new AllButViewsAuthorizationStrategy());
         final FreeStyleProject p = j.createFreeStyleProject("p1");
@@ -255,13 +267,14 @@ public class ListViewTest {
     }
 
     @Issue("JENKINS-41128")
-    @Test public void addJobUsingAPI() throws Exception {
+    @Test
+    void addJobUsingAPI(TestInfo info) throws Exception {
         ListView v = new ListView("view", j.jenkins);
         j.jenkins.addView(v);
-        StaplerRequest req = mock(StaplerRequest.class);
-        StaplerResponse rsp = mock(StaplerResponse.class);
+        StaplerRequest2 req = mock(StaplerRequest2.class);
+        StaplerResponse2 rsp = mock(StaplerResponse2.class);
 
-        String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), testName.getMethodName())), StandardCharsets.UTF_8);
+        String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), info.getTestMethod().orElseThrow().getName())), StandardCharsets.UTF_8);
 
         when(req.getMethod()).thenReturn("POST");
         when(req.getParameter("name")).thenReturn("job1");
@@ -274,7 +287,8 @@ public class ListViewTest {
     }
 
     @Issue("JENKINS-23411")
-    @Test public void doRemoveJobFromViewNullItem() throws Exception {
+    @Test
+    void doRemoveJobFromViewNullItem() throws Exception {
         MockFolder folder = j.createFolder("folder");
         ListView view = new ListView("view", folder);
         folder.addView(view);
@@ -296,7 +310,8 @@ public class ListViewTest {
     }
 
     @Issue("JENKINS-71200")
-    @Test public void doApplyDoNotOverloadElements() throws Exception {
+    @Test
+    void doApplyDoNotOverloadElements() throws Exception {
         MockFolder folder = j.createFolder("folder");
         FreeStyleProject job = folder.createProject(FreeStyleProject.class, "elements");
         ListView view = new ListView("view", folder);
@@ -309,10 +324,11 @@ public class ListViewTest {
         HtmlPage page = webClient.goTo(view.getUrl() + "configure");
         HtmlForm form = page.getFormByName("viewConfig");
         j.assertGoodStatus(j.submit(form));
-        Assert.assertFalse("No alert expected", alerts.get());
+        assertFalse(alerts.get(), "No alert expected");
     }
 
-    @Test public void getItemsNames() throws Exception {
+    @Test
+    void getItemsNames() throws Exception {
         MockFolder f1 = j.createFolder("f1");
         MockFolder f2 = j.createFolder("f2");
         FreeStyleProject p1 = j.createFreeStyleProject("p1");
@@ -332,7 +348,8 @@ public class ListViewTest {
         assertThat(lv.getItems(), containsInAnyOrder(p1, p2, p3, p4));
     }
 
-    @Test public void getItemsRegex() throws Exception {
+    @Test
+    void getItemsRegex() throws Exception {
         MockFolder f1 = j.createFolder("f1");
         MockFolder f2 = j.createFolder("f2");
         FreeStyleProject p1 = j.createFreeStyleProject("p1");
@@ -351,7 +368,8 @@ public class ListViewTest {
         assertThat(lv.getItems(), containsInAnyOrder(f1, f2));
     }
 
-    @Test public void withJobViewFilter() throws Exception {
+    @Test
+    void withJobViewFilter() throws Exception {
         MockFolder f1 = j.createFolder("f1");
         MockFolder f2 = j.createFolder("f2");
         FreeStyleProject p1 = j.createFreeStyleProject("p1");
@@ -367,7 +385,9 @@ public class ListViewTest {
     }
 
     @Issue("JENKINS-62661")
-    @Test @LocalData public void migrateStatusFilter() {
+    @Test
+    @LocalData
+    void migrateStatusFilter() {
         View v = j.jenkins.getView("testview");
         assertThat(v, notNullValue());
         assertThat(v, instanceOf(ListView.class));

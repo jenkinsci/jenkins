@@ -24,9 +24,9 @@
 
 package hudson.util.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeNoException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.FilePath;
 import hudson.Functions;
@@ -36,23 +36,32 @@ import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import java.util.HashSet;
+import java.util.Set;
+import org.apache.tools.tar.TarEntry;
+import org.apache.tools.tar.TarInputStream;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
-public class TarArchiverTest {
+class TarArchiverTest {
 
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    private File tmp;
 
     /**
      * Makes sure that permissions are properly stored in the tar file.
      */
     @Issue("JENKINS-9397")
-    @Test public void permission() throws Exception {
+    @Test
+    void permission() throws Exception {
         assumeFalse(Functions.isWindows());
 
         File tar = File.createTempFile("test", "tar");
@@ -107,34 +116,58 @@ public class TarArchiverTest {
         try {
             assertEquals(0, new LocalLauncher(StreamTaskListener.fromStdout()).launch().cmds(cmds).pwd(dir).join());
         } catch (IOException x) { // perhaps restrict to x.message.contains("Cannot run program")? or "error=2, No such file or directory"?
-            assumeNoException("failed to run " + Arrays.toString(cmds), x);
+            assumeTrue(false, "failed to run " + Arrays.toString(cmds) + ": " + x);
         }
     }
 
     @Issue("JENKINS-14922")
-    @Test public void brokenSymlinks() throws Exception {
+    @Test
+    void brokenSymlinks() throws Exception {
         assumeFalse(Functions.isWindows());
-        File dir = tmp.getRoot();
+        File dir = tmp;
         Util.createSymlink(dir, "nonexistent", "link", TaskListener.NULL);
         try (OutputStream out = OutputStream.nullOutputStream()) {
             new FilePath(dir).tar(out, "**");
         }
     }
 
+    @Disabled("TODO fails to add empty directories to archive")
+    @Issue("JENKINS-73837")
+    @Test
+    void emptyDirectory() throws Exception {
+        Path tar = File.createTempFile("test.tar", null, tmp).toPath();
+        Path root = newFolder(tmp, "junit").toPath();
+        Files.createDirectory(root.resolve("foo"));
+        Files.createDirectory(root.resolve("bar"));
+        Files.writeString(root.resolve("bar/file.txt"), "foobar", StandardCharsets.UTF_8);
+        try (OutputStream out = Files.newOutputStream(tar)) {
+            new FilePath(root.toFile()).tar(out, "**");
+        }
+        Set<String> names = new HashSet<>();
+        try (InputStream is = Files.newInputStream(tar);
+                TarInputStream tis = new TarInputStream(is, StandardCharsets.UTF_8.name())) {
+            TarEntry te;
+            while ((te = tis.getNextEntry()) != null) {
+                names.add(te.getName());
+            }
+        }
+        assertEquals(Set.of("foo/", "bar/", "bar/file.txt"), names);
+    }
 
     /**
      * Test backing up an open file
      */
 
     @Issue("JENKINS-20187")
-    @Test public void growingFileTar() throws Exception {
-        File file = new File(tmp.getRoot(), "growing.file");
+    @Test
+    void growingFileTar() throws Exception {
+        File file = new File(tmp, "growing.file");
         GrowingFileRunnable runnable1 = new GrowingFileRunnable(file);
         Thread t1 = new Thread(runnable1);
         t1.start();
 
         try (OutputStream out = OutputStream.nullOutputStream()) {
-            new FilePath(tmp.getRoot()).tar(out, "**");
+            new FilePath(tmp).tar(out, "**");
         }
 
         runnable1.doFinish();
@@ -172,6 +205,15 @@ public class TarArchiverTest {
                 throw ex;
             }
         }
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            throw new IOException("Couldn't create folders " + root);
+        }
+        return result;
     }
 
 }

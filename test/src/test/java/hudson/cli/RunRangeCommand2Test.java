@@ -30,7 +30,8 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
@@ -40,25 +41,29 @@ import hudson.model.labels.LabelAtom;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author pjanouse
  */
-public class RunRangeCommand2Test {
+@WithJenkins
+class RunRangeCommand2Test {
 
     private CLICommandInvoker command;
 
-    @Rule public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, new RunRangeCommandTest.DummyRangeCommand());
     }
 
-    @Test public void dummyRangeShouldFailIfJobNameIsEmptyOnEmptyJenkins() throws Exception {
+    @Test
+    void dummyRangeShouldFailIfJobNameIsEmptyOnEmptyJenkins() throws Exception {
         j.buildAndAssertSuccess(j.createFreeStyleProject("aProject"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds().size(), equalTo(1));
 
@@ -70,7 +75,8 @@ public class RunRangeCommand2Test {
         assertThat(result.stderr(), containsString("ERROR: No such job ''"));
     }
 
-    @Test public void dummyRangeShouldFailIfJobNameIsSpaceOnEmptyJenkins() throws Exception {
+    @Test
+    void dummyRangeShouldFailIfJobNameIsSpaceOnEmptyJenkins() throws Exception {
         j.buildAndAssertSuccess(j.createFreeStyleProject("aProject"));
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds().size(), equalTo(1));
 
@@ -82,7 +88,8 @@ public class RunRangeCommand2Test {
         assertThat(result.stderr(), containsString("ERROR: No such job ' '"));
     }
 
-    @Test public void dummyRangeShouldSuccessEvenTheBuildIsRunning() throws Exception {
+    @Test
+    void dummyRangeShouldSuccessEvenTheBuildIsRunning() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo 1\r\nping -n 10 127.0.0.1 >nul") : new Shell("echo 1\nsleep 10"));
         FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
@@ -96,7 +103,8 @@ public class RunRangeCommand2Test {
         j.assertBuildStatusSuccess(j.waitForCompletion(build));
     }
 
-    @Test public void dummyRangeShouldSuccessEvenTheBuildIsStuckInTheQueue() throws Exception {
+    @Test
+    void dummyRangeShouldSuccessEvenTheBuildIsStuckInTheQueue() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(new Shell("echo 1\nsleep 10"));
         project.setAssignedLabel(new LabelAtom("never_created"));
@@ -112,6 +120,7 @@ public class RunRangeCommand2Test {
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
+        assertTrue(j.jenkins.getQueue().cancel(project));
     }
 
 }

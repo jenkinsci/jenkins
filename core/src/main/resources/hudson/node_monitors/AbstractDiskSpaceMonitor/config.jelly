@@ -26,4 +26,7 @@ THE SOFTWARE.
   <f:entry title="${%Free Space Threshold}" field="freeSpaceThreshold">
     <f:textbox default="1GB"/>
   </f:entry>
+  <f:entry title="${%Free Space Warning Threshold}" field="freeSpaceWarningThreshold">
+    <f:textbox default="2GB"/>
+  </f:entry>
 </j:jelly>

@@ -32,7 +32,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
-import hudson.util.RunList;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -50,6 +49,7 @@ import jenkins.model.BuildDiscarderDescriptor;
 import jenkins.util.io.CompositeIOException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * Default implementation of {@link BuildDiscarder}.
@@ -108,6 +108,12 @@ public class LogRotator extends BuildDiscarder {
      */
     private final Integer artifactNumToKeep;
 
+    /**
+     * If enabled also remove last successful build.
+     * @since 2.474
+     */
+    private boolean removeLastBuild;
+
     @DataBoundConstructor
     public LogRotator(String daysToKeepStr, String numToKeepStr, String artifactDaysToKeepStr, String artifactNumToKeepStr) {
         this (parse(daysToKeepStr), parse(numToKeepStr),
@@ -140,6 +146,11 @@ public class LogRotator extends BuildDiscarder {
 
     }
 
+    @DataBoundSetter
+    public void setRemoveLastBuild(boolean removeLastBuild) {
+        this.removeLastBuild = removeLastBuild;
+    }
+
     @Override
     @SuppressWarnings("rawtypes")
     public void perform(Job<?, ?> job) throws IOException, InterruptedException {
@@ -148,25 +159,17 @@ public class LogRotator extends BuildDiscarder {
 
         LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
 
-        // always keep the last successful and the last stable builds
-        Run lsb = job.getLastSuccessfulBuild();
-        Run lstb = job.getLastStableBuild();
+        // if configured keep the last successful and the last stable builds
+        Run lsb = removeLastBuild ? null : job.getLastSuccessfulBuild();
+        Run lstb = removeLastBuild ? null : job.getLastStableBuild();
 
         if (numToKeep != -1) {
-            // Note that RunList.size is deprecated, and indeed here we are loading all the builds of the job.
-            // However we would need to load the first numToKeep anyway, just to skip over them;
-            // and we would need to load the rest anyway, to delete them.
-            // (Using RunMap.headMap would not suffice, since we do not know if some recent builds have been deleted for other reasons,
-            // so simply subtracting numToKeep from the currently last build number might cause us to delete too many.)
-            RunList<? extends Run<?, ?>> builds = job.getBuilds();
-            for (Run r : builds.subList(Math.min(builds.size(), numToKeep), builds.size())) {
-                if (shouldKeepRun(r, lsb, lstb)) {
-                    continue;
-                }
+            job.getBuildsAsMap().entrySet().stream().skip(numToKeep).map(Map.Entry::getValue)
+                    .filter(r -> !shouldKeepRun(r, lsb, lstb)).forEach(r -> {
                 LOGGER.log(FINE, "{0} is to be removed", r);
                 try { r.delete(); }
                 catch (IOException ex) { exceptionMap.computeIfAbsent(r, key -> new HashSet<>()).add(ex); }
-            }
+            });
         }
 
         if (daysToKeep != -1) {
@@ -187,15 +190,12 @@ public class LogRotator extends BuildDiscarder {
         }
 
         if (artifactNumToKeep != null && artifactNumToKeep != -1) {
-            RunList<? extends Run<?, ?>> builds = job.getBuilds();
-            for (Run r : builds.subList(Math.min(builds.size(), artifactNumToKeep), builds.size())) {
-                if (shouldKeepRun(r, lsb, lstb)) {
-                    continue;
-                }
+            job.getBuildsAsMap().entrySet().stream().skip(artifactNumToKeep).map(Map.Entry::getValue)
+                    .filter(r -> !shouldKeepRun(r, lsb, lstb)).forEach(r -> {
                 LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
                 try { r.deleteArtifacts(); }
                 catch (IOException ex) { exceptionMap.computeIfAbsent(r, key -> new HashSet<>()).add(ex); }
-            }
+            });
         }
 
         if (artifactDaysToKeep != null && artifactDaysToKeep != -1) {
@@ -238,7 +238,7 @@ public class LogRotator extends BuildDiscarder {
             LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s the last stable build", r);
             return true;
         }
-        if (r.isBuilding()) {
+        if (r.isLogUpdated()) {
             LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s still building", r);
             return true;
         }
@@ -268,6 +268,10 @@ public class LogRotator extends BuildDiscarder {
 
     public int getArtifactNumToKeep() {
         return unbox(artifactNumToKeep);
+    }
+
+    public boolean isRemoveLastBuild() {
+        return removeLastBuild;
     }
 
     public String getDaysToKeepStr() {

@@ -26,7 +26,7 @@ Remoting updates in the core are subject to the process though.
 === Communication channels
 
 * Mailing list: link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List]
-* Chat for runtime Jenkins release coordination: `#jenkins-release` on Libera IRC
+* Chat for runtime Jenkins release coordination takes place in link:https://matrix.to/#/#jenkins-release:matrix.org[#jenkins-release:matrix.org].
 ** All async communications should go to the developer mailing list
 
 === Roles

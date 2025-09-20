@@ -2,12 +2,12 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.model.Descriptor.FormException;
 import hudson.model.LoadStatistics.LoadStatisticsUpdater;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.Node.Mode;
@@ -18,17 +18,18 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
 import java.io.IOException;
 import java.util.Collections;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Test that a {@link Label}'s {@link LoadStatistics#queueLength} correctly
  * reflects the queued builds.
  */
-public class LabelLoadStatisticsQueueLengthTest {
+@WithJenkins
+class LabelLoadStatisticsQueueLengthTest {
     private static final String LABEL_STRING = LabelLoadStatisticsQueueLengthTest.class
             .getSimpleName();
 
@@ -46,14 +47,11 @@ public class LabelLoadStatisticsQueueLengthTest {
         }
     };
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    /**
-     * Setup
-     */
-    @Before
-    public void createNodeWithLabels() throws IOException, FormException {
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
         // Node with this test's labels is required in order for the labels to
         // be considered valid.
         DumbSlave node = new DumbSlave(
@@ -67,8 +65,8 @@ public class LabelLoadStatisticsQueueLengthTest {
     /**
      * Teardown
      */
-    @After
-    public void clearQueue() {
+    @AfterEach
+    void clearQueue() {
         j.getInstance().getQueue().clear();
     }
 
@@ -79,7 +77,7 @@ public class LabelLoadStatisticsQueueLengthTest {
      * queue, and continues to do so if the {@link Project}'s label is changed.
      */
     @Test
-    public void queueLengthReflectsBuildableItemsAssignedLabel()
+    void queueLengthReflectsBuildableItemsAssignedLabel()
             throws Exception {
         final Label label = Label.get(LABEL_STRING);
         final Label altLabel = Label.get(ALT_LABEL_STRING);
@@ -87,7 +85,7 @@ public class LabelLoadStatisticsQueueLengthTest {
         FreeStyleProject project = createTestProject();
 
         // Before queueing the builds the rolling queue length should be 0.
-        assertEquals("Initially the rolling queue length for the label is 0.", 0f, label.loadStatistics.queueLength.getLatest(TimeScale.SEC10), 0.0);
+        assertEquals(0f, label.loadStatistics.queueLength.getLatest(TimeScale.SEC10), 0.0, "Initially the rolling queue length for the label is 0.");
 
         // Add the job to the build queue several times with an assigned label.
         for (int i = 0; i < 3; i++) {
@@ -97,13 +95,13 @@ public class LabelLoadStatisticsQueueLengthTest {
         }
 
         // Verify that the real queue length is 3.
-        assertEquals("The job is queued as often as it was scheduled.", 3, j
-                .getInstance().getQueue().getItems(project).size());
+        assertEquals(3, j
+                .getInstance().getQueue().getItems(project).size(), "The job is queued as often as it was scheduled.");
 
         maintainQueueAndForceRunOfLoadStatisticsUpdater(project);
 
-        assertEquals("The job is still queued as often as it was scheduled.", 3, j
-                .getInstance().getQueue().getItems(project).size());
+        assertEquals(3, j
+                .getInstance().getQueue().getItems(project).size(), "The job is still queued as often as it was scheduled.");
 
 
         float labelQueueLength = label.loadStatistics.queueLength
@@ -130,7 +128,7 @@ public class LabelLoadStatisticsQueueLengthTest {
      * label is changed.
      */
     @Test
-    public void queueLengthReflectsJobsAssignedLabel() throws Exception {
+    void queueLengthReflectsJobsAssignedLabel() throws Exception {
         final Label label = Label.get(LABEL_STRING);
         final Label altLabel = Label.get(ALT_LABEL_STRING);
 
@@ -139,8 +137,8 @@ public class LabelLoadStatisticsQueueLengthTest {
         project.setAssignedLabel(label);
 
         // Before queueing the builds the rolling queue lengths should be 0.
-        assertEquals("Initially the rolling queue length for the label is 0.", 0f, label.loadStatistics.queueLength.getLatest(TimeScale.SEC10), 0.0);
-        assertEquals("Initially the rolling queue length for the alt label is 0.", 0f, altLabel.loadStatistics.queueLength.getLatest(TimeScale.SEC10), 0.0);
+        assertEquals(0f, label.loadStatistics.queueLength.getLatest(TimeScale.SEC10), 0.0, "Initially the rolling queue length for the label is 0.");
+        assertEquals(0f, altLabel.loadStatistics.queueLength.getLatest(TimeScale.SEC10), 0.0, "Initially the rolling queue length for the alt label is 0.");
 
         // Add the job to the build queue several times.
         for (int i = 0; i < 3; i++) {
@@ -150,16 +148,16 @@ public class LabelLoadStatisticsQueueLengthTest {
         }
 
         // Verify that the real queue length is 3.
-        assertEquals("The job is queued as often as it was scheduled.", 3, j
-                .getInstance().getQueue().getItems(project).size());
+        assertEquals(3, j
+                .getInstance().getQueue().getItems(project).size(), "The job is queued as often as it was scheduled.");
 
         maintainQueueAndForceRunOfLoadStatisticsUpdater(project);
 
         float labelQueueLength = label.loadStatistics.queueLength
                 .getLatest(TimeScale.SEC10);
         assertTrue(
-                "After LoadStatisticsUpdater runs, the queue length load statistic for the label is greater than 0.",
-                labelQueueLength > 0f);
+                labelQueueLength > 0f,
+                "After LoadStatisticsUpdater runs, the queue length load statistic for the label is greater than 0.");
 
         // Assign an alternate label to the job and update the load stats.
         project.setAssignedLabel(altLabel);
@@ -169,14 +167,14 @@ public class LabelLoadStatisticsQueueLengthTest {
         float labelQueueLengthNew = label.loadStatistics.queueLength
                 .getLatest(TimeScale.SEC10);
         assertTrue(
-                "After assigning an alternate label to the job, the queue length load statistic for the queued builds should decrease.",
-                labelQueueLengthNew < labelQueueLength);
+                labelQueueLengthNew < labelQueueLength,
+                "After assigning an alternate label to the job, the queue length load statistic for the queued builds should decrease.");
 
         float altLabelQueueLength = altLabel.loadStatistics.queueLength
                 .getLatest(TimeScale.SEC10);
         assertTrue(
-                "After assigning an alternate label to the job, the queue length load statistic for the alternate label should be greater than 0.",
-                altLabelQueueLength > 0f);
+                altLabelQueueLength > 0f,
+                "After assigning an alternate label to the job, the queue length load statistic for the alternate label should be greater than 0.");
     }
 
     private FreeStyleProject createTestProject() throws IOException {
@@ -203,9 +201,7 @@ public class LabelLoadStatisticsQueueLengthTest {
             Thread.sleep(10);
         }
 
-        assertTrue(
-                "After waiting there are buildable items in the build queue.",
-                queue.getBuildableItems().size() > 0);
+        assertFalse(queue.getBuildableItems().isEmpty(), "After waiting there are buildable items in the build queue.");
 
         // create a LoadStatisticsUpdater, and run it in order to update the
         // load stats for all the labels

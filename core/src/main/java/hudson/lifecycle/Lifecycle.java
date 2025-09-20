@@ -28,7 +28,12 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.Functions;
+import hudson.PluginManager;
 import hudson.Util;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
+import hudson.util.BootFailure;
+import hudson.util.JenkinsReloadFailed;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -37,9 +42,13 @@ import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.FileUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Provides the capability for starting/stopping/restarting/uninstalling Hudson.
@@ -48,7 +57,8 @@ import org.apache.commons.io.FileUtils;
  * The steps to perform these operations depend on how Hudson is launched,
  * so the concrete instance of this method (which is VM-wide singleton) is discovered
  * by looking up a FQCN from the system property "hudson.lifecycle".
- *
+ * (This may be set to a class defined in a plugin,
+ * in which case the singleton switches during startup.)
  * @author Kohsuke Kawaguchi
  * @since 1.254
  */
@@ -57,9 +67,8 @@ public abstract class Lifecycle implements ExtensionPoint {
 
     /**
      * Gets the singleton instance.
-     *
-     * @return never null
      */
+    @NonNull
     public static synchronized Lifecycle get() {
         if (INSTANCE == null) {
             Lifecycle instance;
@@ -81,9 +90,8 @@ public abstract class Lifecycle implements ExtensionPoint {
                     x.initCause(e);
                     throw x;
                 } catch (ClassNotFoundException e) {
-                    NoClassDefFoundError x = new NoClassDefFoundError(e.getMessage());
-                    x.initCause(e);
-                    throw x;
+                    LOGGER.log(Level.FINE, e, () -> "Failed to load " + p + " so will try again later");
+                    instance = new PlaceholderLifecycle();
                 } catch (InvocationTargetException e) {
                     Throwable t = e.getCause();
                     if (t instanceof RuntimeException) {
@@ -117,13 +125,13 @@ public abstract class Lifecycle implements ExtensionPoint {
                     // if run on Unix, we can do restart
                     try {
                         instance = new UnixLifecycle();
-                    } catch (final IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation", e);
+                    } catch (final Throwable t) {
+                        LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation", t);
                         instance = new Lifecycle() {
                             @Override
                             public void verifyRestartable() throws RestartNotSupportedException {
                                 throw new RestartNotSupportedException(
-                                        "Failed to install embedded lifecycle implementation, so cannot restart: " + e, e);
+                                        "Failed to install embedded lifecycle implementation, so cannot restart: " + t, t);
                             }
                         };
                     }
@@ -305,6 +313,43 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public void onStatusUpdate(String status) {
         LOGGER.log(Level.INFO, status);
+    }
+
+    /**
+     * Whether {@link PluginManager#dynamicLoad(File)} should be supported at all.
+     * If not, {@link RestartRequiredException} will always be thrown.
+     * @return true by default
+     * @since 2.449
+     */
+    @Restricted(Beta.class)
+    public boolean supportsDynamicLoad() {
+        return true;
+    }
+
+    /**
+     * Called when Jenkins has failed to boot.
+     * @param problem a boot failure (could be {@link JenkinsReloadFailed})
+     * @since 2.469
+     */
+    public void onBootFailure(BootFailure problem) {
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static final class PlaceholderLifecycle extends ExitLifecycle {
+
+        @Initializer(after = InitMilestone.PLUGINS_STARTED, before = InitMilestone.EXTENSIONS_AUGMENTED)
+        public static synchronized void replacePlaceholder() {
+            if (get() instanceof PlaceholderLifecycle) {
+                String p = SystemProperties.getString("hudson.lifecycle");
+                try {
+                    INSTANCE = (Lifecycle) Jenkins.get().getPluginManager().uberClassLoader.loadClass(p).getConstructor().newInstance();
+                    LOGGER.fine(() -> "Updated to " + INSTANCE);
+                } catch (Exception | LinkageError x) {
+                    LOGGER.log(Level.WARNING, x, () -> "Failed to load " + p + "; using fallback exit lifecycle");
+                }
+            }
+        }
+
     }
 
     private static final Logger LOGGER = Logger.getLogger(Lifecycle.class.getName());

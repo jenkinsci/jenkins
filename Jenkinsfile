@@ -14,12 +14,12 @@ properties([
 
 def axes = [
   platforms: ['linux', 'windows'],
-  jdks: [11, 17, 19],
+  jdks: [17, 21],
 ]
 
 stage('Record build') {
   retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-    node('maven-11') {
+    node('maven-17') {
       infra.checkoutSCM()
 
       /*
@@ -118,10 +118,12 @@ axes.values().combinations {
               }
               mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
             }
-            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
-              infra.runMaven(mavenOptions, jdk)
-              if (isUnix()) {
-                sh 'git add . && git diff --exit-code HEAD'
+            withChecks(name: 'Tests', includeStage: true) {
+              realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+                infra.runMaven(mavenOptions, jdk)
+                if (isUnix()) {
+                  sh 'git add . && git diff --exit-code HEAD'
+                }
               }
             }
           }
@@ -219,10 +221,13 @@ athAxes.values().combinations {
         // Just to be safe
         deleteDir()
         checkout scm
-        infra.withArtifactCachingProxy {
-          sh "bash ath.sh ${jdk} ${browser}"
+
+        withChecks(name: 'Tests', includeStage: true) {
+          infra.withArtifactCachingProxy {
+            sh "bash ath.sh ${jdk} ${browser}"
+          }
+          junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
         }
-        junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
         /*
          * Currently disabled, as the fact that this is a manually created subset will confuse Launchable,
          * which expects this to be a full build. When we implement subsetting, this can be re-enabled using

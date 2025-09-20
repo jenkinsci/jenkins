@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:x="jelly:xml" xmlns:dd="/lib/layout/dropdowns">
   <st:documentation> <![CDATA[
     This tag inside <l:tasks> tag renders the left navigation bar of Jenkins.
     Each <task> tag gets an icon and link.
@@ -66,20 +66,39 @@ THE SOFTWARE.
 
       If both permission and permissions is set, then permissions will be used
     </st:attribute>
-    <st:attribute name="post" type="boolean" since="1.504">
+    <st:attribute name="post" type="boolean">
       If true, send a POST rather than a GET request.
       (onclick supersedes this except in the context menu.)
+      (since 1.504)
     </st:attribute>
-    <st:attribute name="requiresConfirmation" type="boolean" since="1.512">
+    <st:attribute name="requiresConfirmation" type="boolean">
       If true, require confirmation before clicking.
       Generally used with post="true".
       (onclick supersedes this except in the context menu.)
+      (since 1.512)
     </st:attribute>
-    <st:attribute name="badge" since="TODO">
+    <st:attribute name="onclick" deprecated="true">
+      Onclick inline JS handler. Deprecated, specify data-callback attribute instead.
+    </st:attribute>
+    <st:attribute name="data-callback" since="2.437">
+      Name of a global function to call when clicked.
+      It will be called with an element (currently 'a') as first argument, and the event as second argument.
+      You can specify further data-* attributes to customize behavior, those will be defined on the element passed as first argument.
+      See https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset for more information about these attributes.
+      Has no effect if you specify the 'requiresConfirmation' attribute.
+      Has no effect on menu items showing in context menus, only 'href', 'post', and 'requiresConfirmation' attributes substantially change behavior there.
+      Set 'contextMenu' to 'false' to remove this task from those menus.
+    </st:attribute>
+    <st:attribute name="badge" type="jenkins.management.Badge">
       If set, displays the value as a small badge on the right side of the sidepanel item.
+      (since 2.401)
     </st:attribute>
-    <st:attribute name="confirmationMessage" since="1.512">
+    <st:attribute name="confirmationMessage">
       Message to use for confirmation, if requested; defaults to title.
+      (since 1.512)
+    </st:attribute>
+    <st:attribute name="destructive" type="boolean" since="2.415">
+      Show red confirmation button.
     </st:attribute>
   </st:documentation>
 
@@ -114,9 +133,11 @@ THE SOFTWARE.
       </j:when>
       <j:set var="match" value="${isCurrent or hasMatchingChild}" />
 
+      <!--
       <j:if test="${attrs.permission != null}">
         <j:set var="hasPermission" value="${h.hasPermission(it, attrs.permission)}" />
       </j:if>
+      -->
 
       <!--
       The icon attribute can be an icon class spec, or can be the url of an icon image.
@@ -128,6 +149,116 @@ THE SOFTWARE.
       icon class spec from the icon metadata, otherwise we create an icon element instance using
       icon attribute value as an icon "src" (Vs class spec).
       -->
+
+      <j:when test="${isInPrimaryHeader}">
+        <j:scope>
+
+        <!--  we are rendering inside the modern header this is for compatibility, so we do not need to worry about jumplists which was introduced in the new header -->
+        <j:if test="${enabled != false}"> <!-- no rendering at all for disabled tasks in the header -->
+
+            <!-- there was no custom action and we have no icon so this is intended to be hidden -->
+            <j:if test="${icon != null}">
+
+              <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
+
+              <j:set var="jumplist">
+                <j:if test="${match}">
+                  <j:scope>
+                    <j:set var="isInPrimaryHeader" value="false" />
+                    <d:invokeBody />
+                  </j:scope>
+                </j:if>
+              </j:set>
+
+              <j:if test="${jumplist.length() == 0}">
+                <j:set var="tooltip">
+                  <div style="text-align: center;">${title}</div>
+                  <j:if test="${badge != null}">
+                    <div style="text-align: center; color: var(--text-color-secondary)">${badge.tooltip}</div>
+                  </j:if>
+                </j:set>
+              </j:if>
+
+              <j:set var="interactive" value="${jumplist.length() gt 0}" />
+
+              <x:element name="${action.urlName == null ? 'button' : 'a'}">
+                <x:attribute name="data-dropdown">${interactive}</x:attribute>
+                <x:attribute name="id">root-action-${action.class.simpleName}</x:attribute>
+                <j:if test="${requiresConfirmation}">
+                  <x:attribute name="href">#</x:attribute>
+                  <x:attribute name="data-url">${href}</x:attribute>
+                  <x:attribute name="data-post">${post}</x:attribute>
+                  <x:attribute name="data-message">${confirmationMessage}</x:attribute>
+                  <x:attribute name="data-title">${title}</x:attribute>
+                  <x:attribute name="data-destructive">${destructive}</x:attribute>
+                </j:if>
+                <j:if test="${!requiresConfirmation}">
+                  <x:attribute name="href">${href}</x:attribute>
+                </j:if>
+                <j:if test="${interactive}">
+                  <x:attribute name="data-tippy-offset">[0, 10]</x:attribute>
+                </j:if>
+                <j:if test="${!interactive}">
+                  <x:attribute name="data-html-tooltip" escapeText="false"><j:out value="${tooltip}" /></x:attribute>
+                </j:if>
+                <x:attribute name="data-tooltip-interactive">${interactive}</x:attribute>
+                <x:attribute name="data-tippy-animation">tooltip</x:attribute>
+                <x:attribute name="data-tippy-theme">${interactive ? 'dropdown' : 'tooltip'}</x:attribute>
+                <x:attribute name="data-tippy-trigger">mouseenter focus</x:attribute>
+                <x:attribute name="data-tippy-touch">${interactive}</x:attribute>
+                <x:attribute name="data-type">header-action</x:attribute>
+                <x:attribute name="draggable">false</x:attribute>
+                <x:attribute name="class">jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'} ${requiresConfirmation ? 'confirmation-link' : ''}</x:attribute>
+                <l:icon src="${icon}" class="''"/>
+                <span class="jenkins-visually-hidden" data-type="action-label">${title}</span>
+                <j:if test="${badge != null}">
+                  <span class="jenkins-badge jenkins-!-${badge.severity}-color" />
+                </j:if>
+              </x:element>
+
+              <j:if test="${interactive}">
+                <template>
+                  <div class="jenkins-dropdown">
+                    <!--  add the action title back into the dropdown -->
+                    <dd:header text="${title}"/>
+                    <!--  TODO we are missing some styling the icon and text have no space inbetween -->
+                    <dd:custom>
+                      <div class="tasks">
+                        <j:out value="${jumplist}" />
+                      </div>
+                    </dd:custom>
+                  </div>
+                </template>
+              </j:if>
+            </j:if>
+          </j:if>
+        </j:scope>
+      </j:when>
+      <j:when test="${isInSecondaryHeader}">
+        <!--  no extra menus...just some small stuff.... -->
+        <j:choose>
+          <j:when test="${requiresConfirmation}">
+            <dd:custom>
+                <l:confirmationLink class="jenkins-dropdown__item" href="${href}" post="${post}" message="${confirmationMessage ?: ''}" title="${title}">
+                  <div class="jenkins-dropdown__item__icon">
+                    <l:icon src="${icon}" />
+                  </div>
+                  ${title}
+                  <l:badge badge="${attrs.badge}" class="jenkins-dropdown__item__badge"/>
+                </l:confirmationLink>
+            </dd:custom>
+          </j:when>
+          <j:otherwise>
+            <j:set var="badgeClazz" value="${badge == null ? '' : 'jenkins-badge jenkins-!-${badge.severity}-color'}"/>
+            <dd:item icon="${action.iconClassName != null ? action.iconClassName : action.iconFileName}"
+                     text="${action.displayName}"
+                     href="${href}"
+                     badge="${action.badge}">
+            </dd:item>
+          </j:otherwise>
+        </j:choose>
+      </j:when>
+      <!--  regular sidebar not the new header -->
       <j:when test="${enabled==false}">
         <div class="task disabled">
           <span class="task-link-wrapper">
@@ -136,11 +267,7 @@ THE SOFTWARE.
                 <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
-              <j:if test="${attrs.badge != null}">
-                <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                  ${attrs.badge.text}
-                </span>
-              </j:if>
+              <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
             </span>
           </span>
         </div>
@@ -153,48 +280,36 @@ THE SOFTWARE.
             <j:set var="iconXml">
               <l:icon src="${icon}" />
             </j:set>
-            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true') : null}
-            <j:set var="id" value="${h.generateId()}"/>
-            <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
-                <script>
-                    function postRequest_${id}(a) {
-                      fetch(a.href, {
-                        method: 'post',
-                        headers: crumb.wrap({}),
-                      })
-                      hoverNotification('${%Done.}', a.parentNode);
-                      return false;
-                    }
-                </script>
-            </j:if>
+            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true', null, confirmationMessage ?: null) : null}
 
             <j:choose>
               <j:when test="${requiresConfirmation and not attrs.onClick}">
-                <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+                <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: ''}" title="${title}">
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
-                  <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                      ${attrs.badge.text}
-                    </span>
-                  </j:if>
+                  <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
                 </l:confirmationLink>
               </j:when>
 
               <j:otherwise>
-                <a href="${href}" class="task-link ${isCurrent ? 'task-link--active' : ''}" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}">
+                <m:a xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+                     href="${href}"
+                     class="task-link task-link-no-confirm ${isCurrent ? 'task-link--active' : ''}"
+                     data-task-success="${%Done.}"
+                     data-task-failure="${%Failed.}"
+                     data-task-post="${attrs.post}"
+                     ATTRIBUTES="${attrs}"
+                     EXCEPT="badge confirmationMessage contextMenu destructive enabled href icon permission permissions post requiresConfirmation title">
+                  <!-- all documented attributes except onclick and data-* are in EXCEPT -->
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
-                  <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                      ${attrs.badge.text}
-                    </span>
-                  </j:if>
-                </a>
+                  <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
+                </m:a>
+                <st:adjunct includes="lib.layout.task.task" />
               </j:otherwise>
             </j:choose>
           </span>

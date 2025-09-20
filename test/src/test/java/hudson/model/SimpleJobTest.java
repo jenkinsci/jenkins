@@ -1,188 +1,114 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import org.junit.Rule;
-import org.junit.Test;
+import java.util.logging.Level;
+import jenkins.model.lazy.LazyBuildMixIn;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Unit test for {@link Job}.
  */
-@SuppressWarnings("rawtypes")
-public class SimpleJobTest {
+@WithJenkins
+class SimpleJobTest {
 
-    @Rule
-    public JenkinsRule rule = new JenkinsRule();
+    private final LogRecorder logging = new LogRecorder().record(LazyBuildMixIn.class, Level.FINE);
 
-    @Test
-    public void testGetEstimatedDuration() throws IOException {
+    private static JenkinsRule r;
 
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
-
-        Job project = createMockProject(runs);
-
-        TestBuild previousPreviousBuild = new TestBuild(project, Result.SUCCESS, 20, null);
-        runs.put(3, previousPreviousBuild);
-
-        TestBuild previousBuild = new TestBuild(project, Result.SUCCESS, 15, previousPreviousBuild);
-        runs.put(2, previousBuild);
-
-        TestBuild lastBuild = new TestBuild(project, Result.SUCCESS, 42, previousBuild);
-        runs.put(1, lastBuild);
-
-        // without assuming to know too much about the internal calculation
-        // we can only assume that the result is between the maximum and the minimum
-        assertTrue("Expected < 42, but was " + project.getEstimatedDuration(), project.getEstimatedDuration() < 42);
-        assertTrue("Expected > 15, but was " + project.getEstimatedDuration(), project.getEstimatedDuration() > 15);
+    @BeforeAll
+    static void setUp(JenkinsRule rule) {
+        r = rule;
     }
 
     @Test
-    public void testGetEstimatedDurationWithOneRun() throws IOException {
+    void testGetEstimatedDuration() throws Exception {
+        var project = r.createFreeStyleProject("testGetEstimatedDuration");
 
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
+        var b1 = r.buildAndAssertSuccess(project);
+        b1.duration = 200;
+        assertEquals(200, project.getEstimatedDuration());
 
-        Job project = createMockProject(runs);
+        var b2 = r.buildAndAssertSuccess(project);
+        b2.duration = 150;
+        assertEquals(175, project.getEstimatedDuration());
 
-        TestBuild lastBuild = new TestBuild(project, Result.SUCCESS, 42, null);
-        runs.put(1, lastBuild);
-
-        assertEquals(42, project.getEstimatedDuration());
+        var b3 = r.buildAndAssertSuccess(project);
+        b3.duration = 400;
+        assertEquals(250, project.getEstimatedDuration());
     }
 
     @Test
-    public void testGetEstimatedDurationWithFailedRun() throws IOException {
+    void testGetEstimatedDurationWithOneRun() throws Exception {
+        var project = r.createFreeStyleProject("testGetEstimatedDurationWithOneRun");
 
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
-
-        Job project = createMockProject(runs);
-
-        TestBuild lastBuild = new TestBuild(project, Result.FAILURE, 42, null);
-        runs.put(1, lastBuild);
-
-        assertEquals(42, project.getEstimatedDuration());
+        var b1 = r.buildAndAssertSuccess(project);
+        b1.duration = 420;
+        assertEquals(420, project.getEstimatedDuration());
     }
 
     @Test
-    public void testGetEstimatedDurationWithNoRuns() {
+    void testGetEstimatedDurationWithFailedRun() throws Exception {
+        var project = r.createFreeStyleProject("testGetEstimatedDurationWithFailedRun");
 
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
+        var b1 = r.buildAndAssertSuccess(project);
+        b1.result = Result.FAILURE;
+        b1.duration = 420;
+        assertEquals(420, project.getEstimatedDuration());
+    }
 
-        Job project = createMockProject(runs);
+    @Test
+    void testGetEstimatedDurationWithNoRuns() throws Exception {
+        var project = r.createFreeStyleProject("testGetEstimatedDurationWithNoRuns");
 
         assertEquals(-1, project.getEstimatedDuration());
     }
 
     @Test
-    public void testGetEstimatedDurationIfPrevious3BuildsFailed() throws IOException {
+    void testGetEstimatedDurationIfPrevious3BuildsFailed() throws Exception {
+        var project = r.createFreeStyleProject("testGetEstimatedDurationIfPrevious3BuildsFailed");
 
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
+        var b1 = r.buildAndAssertSuccess(project);
+        b1.result = Result.UNSTABLE;
+        b1.duration = 100;
+        assertEquals(100, project.getEstimatedDuration());
 
-        Job project = createMockProject(runs);
+        var b2 = r.buildAndAssertSuccess(project);
+        b2.duration = 200;
+        assertEquals(150, project.getEstimatedDuration());
 
-        TestBuild prev5Build = new TestBuild(project, Result.UNSTABLE, 1, null);
-        runs.put(6, prev5Build);
+        var b3 = r.buildAndAssertSuccess(project);
+        b3.duration = 300;
+        assertEquals(200, project.getEstimatedDuration());
 
-        TestBuild prev4Build = new TestBuild(project, Result.SUCCESS, 1, prev5Build);
-        runs.put(5, prev4Build);
+        var b4 = r.buildAndAssertSuccess(project);
+        b4.result = Result.FAILURE;
+        b4.duration = 500;
+        assertEquals(200, project.getEstimatedDuration());
 
-        TestBuild prev3Build = new TestBuild(project, Result.SUCCESS, 1, prev4Build);
-        runs.put(4, prev3Build);
+        var b5 = r.buildAndAssertSuccess(project);
+        b5.result = Result.FAILURE;
+        b5.duration = 500;
+        assertEquals(200, project.getEstimatedDuration());
 
-        TestBuild previous2Build = new TestBuild(project, Result.FAILURE, 50, prev3Build);
-        runs.put(3, previous2Build);
-
-        TestBuild previousBuild = new TestBuild(project, Result.FAILURE, 50, previous2Build);
-        runs.put(2, previousBuild);
-
-        TestBuild lastBuild = new TestBuild(project, Result.FAILURE, 50, previousBuild);
-        runs.put(1, lastBuild);
-
-        // failed builds must not be used, if there are successfulBuilds available.
-        assertEquals(1, project.getEstimatedDuration());
+        var b6 = r.buildAndAssertSuccess(project);
+        b6.result = Result.FAILURE;
+        b6.duration = 500;
+        assertEquals(200, project.getEstimatedDuration());
     }
 
     @Test
-    public void testGetEstimatedDurationIfNoSuccessfulBuildTakeDurationOfFailedBuild() throws IOException {
+    void testGetEstimatedDurationIfNoSuccessfulBuildTakeDurationOfFailedBuild() throws Exception {
+        var project = r.createFreeStyleProject("testGetEstimatedDurationIfNoSuccessfulBuildTakeDurationOfFailedBuild");
 
-        final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
-
-        Job project = createMockProject(runs);
-
-        TestBuild lastBuild = new TestBuild(project, Result.FAILURE, 50, null);
-        runs.put(1, lastBuild);
-
-        assertEquals(50, project.getEstimatedDuration());
+        var b1 = r.buildAndAssertSuccess(project);
+        b1.result = Result.FAILURE;
+        b1.duration = 500;
+        assertEquals(500, project.getEstimatedDuration());
     }
 
-    private Job createMockProject(final SortedMap<Integer, TestBuild> runs) {
-        return new TestJob(runs);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static class TestBuild extends Run {
-
-        TestBuild(Job project, Result result, long duration, TestBuild previousBuild) throws IOException {
-            super(project);
-            this.result = result;
-            this.duration = duration;
-            this.previousBuild = previousBuild;
-        }
-
-        @Override
-        public int compareTo(Run o) {
-            return 0;
-        }
-
-        @Override
-        public Result getResult() {
-            return result;
-        }
-
-        @Override
-        public boolean isBuilding() {
-            return false;
-        }
-
-    }
-
-    private class TestJob extends Job implements TopLevelItem {
-
-        int i;
-        private final SortedMap<Integer, TestBuild> runs;
-
-        TestJob(SortedMap<Integer, TestBuild> runs) {
-            super(rule.jenkins, "name");
-            this.runs = runs;
-            i = 1;
-        }
-
-        @Override
-        public int assignBuildNumber() {
-            return i++;
-        }
-
-        @Override
-        public SortedMap<Integer, ? extends Run> _getRuns() {
-            return runs;
-        }
-
-        @Override
-        public boolean isBuildable() {
-            return true;
-        }
-
-        @Override
-        protected void removeRun(Run run) {
-        }
-
-        @Override
-        public TopLevelItemDescriptor getDescriptor() {
-            throw new AssertionError();
-        }
-    }
 }

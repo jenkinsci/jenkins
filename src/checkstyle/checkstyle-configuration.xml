@@ -10,6 +10,7 @@
     <property name="max" value="240"/>
     <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
   </module>
+  <module name="SuppressWarningsFilter" />
   <module name="TreeWalker">
     <!--
       Annotations: https://checkstyle.sourceforge.io/config_annotation.html
@@ -38,6 +39,7 @@
     <module name="StringLiteralEquality"/>
     <module name="SuperClone"/>
     <module name="SuperFinalize"/>
+    <module name="SuppressWarningsHolder" />
     <module name="UnnecessarySemicolonAfterOuterTypeDeclaration"/>
     <module name="UnnecessarySemicolonAfterTypeMemberDeclaration"/>
     <module name="UnnecessarySemicolonInEnumeration"/>
@@ -58,7 +60,7 @@
       <!-- prevent the use of jsr-305 annotations and Spring utilities -->
       <property name="illegalClasses" value="javax.annotation.MatchesPattern.Checker, javax.annotation.Nonnegative.Checker, javax.annotation.Nonnull.Checker, javax.annotation.RegEx.Checker, javax.annotation.CheckForNull, javax.annotation.CheckForSigned, javax.annotation.CheckReturnValue, javax.annotation.Detainted, javax.annotation.MatchesPattern, javax.annotation.Nonnegative, javax.annotation.Nonnull, javax.annotation.Nullable, javax.annotation.OverridingMethodsMustInvokeSuper, javax.annotation.ParametersAreNonnullByDefault, javax.annotation.ParametersAreNullableByDefault, javax.annotation.PropertyKey, javax.annotation.RegEx, javax.annotation.Signed, javax.annotation.Syntax, javax.annotation.Tainted, javax.annotation.Untainted, javax.annotation.WillClose, javax.annotation.WillCloseWhenClosed, javax.annotation.WillNotClose, javax.annotation.concurrent.GuardedBy, javax.annotation.concurrent.Immutable, javax.annotation.concurrent.NotThreadSafe, javax.annotation.concurrent.ThreadSafe, javax.annotation.meta.TypeQualifierValidator, javax.annotation.meta.When, javax.annotation.meta.Exclusive, javax.annotation.meta.Exhaustive, javax.annotation.meta.TypeQualifier, javax.annotation.meta.TypeQualifierDefault, javax.annotation.meta.TypeQualifierNickname, org.apache.log4j.Logger, org.springframework.util.Assert, org.springframework.util.StringUtils"/>
       <!-- Prevent the expansion of Guava usages and ban internal library packages -->
-      <property name="illegalPkgs" value="com.google.common.base, com.google.common.escape, com.google.common.eventbus, com.google.common.graph, com.google.common.hash, com.google.common.html, com.google.common.io, com.google.common.math, com.google.common.net, com.google.common.reflect, com.google.common.xml, com.google.thirdparty, jline.internal"/>
+      <property name="illegalPkgs" value="com.google.common.base, com.google.common.eventbus, com.google.common.graph, com.google.common.hash, com.google.common.html, com.google.common.io, com.google.common.math, com.google.common.net, com.google.common.reflect, com.google.common.xml, com.google.thirdparty, jline.internal"/>
     </module>
     <module name="RedundantImport"/>
     <module name="UnusedImports"/>

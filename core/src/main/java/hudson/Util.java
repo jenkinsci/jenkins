@@ -43,6 +43,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -83,12 +84,15 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -108,10 +112,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import jenkins.model.Jenkins;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.PathRemover;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -121,6 +125,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -630,7 +635,6 @@ public class Util {
      *      The stream will be closed by this method at the end of this method.
      * @return
      *      32-char wide string
-     * @see DigestUtils#md5Hex(InputStream)
      */
     @NonNull
     public static String getDigestOf(@NonNull InputStream source) throws IOException {
@@ -705,13 +709,7 @@ public class Util {
 
     @NonNull
     public static String toHexString(@NonNull byte[] data, int start, int len) {
-        StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < len; i++) {
-            int b = data[start + i] & 0xFF;
-            if (b < 16)    buf.append('0');
-            buf.append(Integer.toHexString(b));
-        }
-        return buf.toString();
+        return HexFormat.of().formatHex(data, start, len);
     }
 
     @NonNull
@@ -721,12 +719,7 @@ public class Util {
 
     @NonNull
     public static byte[] fromHexString(@NonNull String data) {
-        if (data.length() % 2 != 0)
-            throw new IllegalArgumentException("data must have an even number of hexadecimal digits");
-        byte[] r = new byte[data.length() / 2];
-        for (int i = 0; i < data.length(); i += 2)
-            r[i / 2] = (byte) Integer.parseInt(data.substring(i, i + 2), 16);
-        return r;
+        return HexFormat.of().parseHex(data);
     }
 
     /**
@@ -1520,6 +1513,10 @@ public class Util {
      *                                  does not contain the specified method.
      */
     public static boolean isOverridden(@NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
+        if (base == derived) {
+            // If base and derived are the same type, the method is not overridden by definition
+            return false;
+        }
         // If derived is not a subclass or implementor of base, it can't override any method
         // Technically this should also be triggered when base == derived, because it can't override its own method, but
         // the unit tests explicitly test for that as working.
@@ -1654,7 +1651,7 @@ public class Util {
      * @since 2.3 / 1.651.2
      */
     public static boolean isSafeToRedirectTo(@NonNull String uri) {
-        return !isAbsoluteUri(uri) && !uri.startsWith("//");
+        return !isAbsoluteUri(uri) && !uri.startsWith("\\") && !uri.replace('\\', '/').startsWith("//");
     }
 
     /**
@@ -1846,9 +1843,11 @@ public class Util {
     /**
      * Find the specific ancestor, or throw an exception.
      * Useful for an ancestor we know is inside the URL to ease readability
+     *
+     * @since 2.475
      */
     @Restricted(NoExternalUse.class)
-    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest request, @NonNull Class<T> clazz) {
+    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest2 request, @NonNull Class<T> clazz) {
         T t = request.findAncestorObject(clazz);
         if (t == null) {
             throw new IllegalArgumentException("No ancestor of type " + clazz.getName() + " in the request");
@@ -1856,9 +1855,43 @@ public class Util {
         return t;
     }
 
+    /**
+     * @deprecated use {@link #getNearestAncestorOfTypeOrThrow(StaplerRequest2, Class)}
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest request, @NonNull Class<T> clazz) {
+        return getNearestAncestorOfTypeOrThrow(StaplerRequest.toStaplerRequest2(request), clazz);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void printRedirect(String contextPath, String redirectUrl, String message, PrintWriter out) {
+        out.printf(
+                "<html><head>" +
+                "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
+                "<script id='redirect' data-redirect-url='%1$s' src='" +
+                contextPath + Jenkins.RESOURCE_PATH +
+                "/scripts/redirect.js'></script>" +
+                "</head>" +
+                "<body style='background-color:white; color:white;'>%n" +
+                "%2$s%n" +
+                "<!--%n", Functions.htmlAttributeEscape(redirectUrl), message);
+    }
+
+    /**
+     * @deprecated use {@link #XS_DATETIME_FORMATTER2}
+     */
+    @Deprecated
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", new SimpleTimeZone(0, "GMT"));
 
+    public static final DateTimeFormatter XS_DATETIME_FORMATTER2 =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
+
     // Note: RFC822 dates must not be localized!
+    /**
+     * @deprecated use {@link DateTimeFormatter#RFC_1123_DATE_TIME}
+     */
+    @Deprecated
     public static final FastDateFormat RFC822_DATETIME_FORMATTER
             = FastDateFormat.getInstance("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 
@@ -1926,5 +1959,39 @@ public class Util {
 
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
+    }
+
+    /**
+     * Returns SHA-256 Digest of input bytes
+     */
+    @Restricted(NoExternalUse.class)
+    public static byte[] getSHA256DigestOf(@NonNull byte[] input) {
+        try {
+                MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+                messageDigest.update(input);
+                return messageDigest.digest();
+        } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
+            throw new IllegalStateException("SHA-256 could not be instantiated, but is required to" +
+                    " be implemented by the language specification", noSuchAlgorithmException);
+        }
+    }
+
+    /**
+     * Returns Hex string of SHA-256 Digest of passed input
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getHexOfSHA256DigestOf(byte[] input) {
+        //get hex string of sha 256 of payload
+        byte[] payloadDigest = Util.getSHA256DigestOf(input);
+        return (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
+    }
+
+
+    /**
+     * Returns Hex string of SHA-256 Digest of passed string
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getHexOfSHA256DigestOf(String input) {
+        return getHexOfSHA256DigestOf(input.getBytes(StandardCharsets.UTF_8));
     }
 }

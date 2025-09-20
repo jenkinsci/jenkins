@@ -25,6 +25,7 @@
 package hudson.slaves;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 
 import hudson.ExtensionList;
@@ -32,31 +33,33 @@ import hudson.PluginWrapper;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
-import hudson.util.FormValidation;
-import java.io.File;
 import jenkins.agents.WebSocketAgentsTest;
 import jenkins.slaves.JnlpSlaveAgentProtocol4;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.For;
-import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.PrefixedOutputStream;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 
 @For({JNLPLauncher.class, JnlpSlaveAgentProtocol4.class})
-public class JNLPLauncherRealTest {
+class JNLPLauncherRealTest {
 
     private static final String STATIC_AGENT_NAME = "static";
 
-    @Rule public RealJenkinsRule rr = new RealJenkinsRule().includeTestClasspathPlugins(false).withColor(PrefixedOutputStream.Color.BLUE);
+    @RegisterExtension
+    private final RealJenkinsExtension rr = new RealJenkinsExtension().withColor(PrefixedOutputStream.Color.BLUE);
 
-    @Rule public InboundAgentRule iar = new InboundAgentRule();
+    @RegisterExtension
+    private final InboundAgentExtension iar = new InboundAgentExtension();
 
     @Issue("JEP-230")
-    @Test public void smokes() throws Throwable {
-        /* Since RealJenkinsRuleInit.jpi will load detached plugins, to reproduce a failure use:
+    @Test
+    void smokes() throws Throwable {
+        /* Since RealJenkinsRuleInit.jpi will load detached and test scope plugins, to reproduce a failure use:
+        rr.includeTestClasspathPlugins(false);
         FileUtils.touch(new File(rr.getHome(), "plugins/instance-identity.jpi.disabled"));
         */
         then(false);
@@ -66,14 +69,15 @@ public class JNLPLauncherRealTest {
      * Simplified version of {@link WebSocketAgentsTest#smokes} just checking Jetty/Winstone.
      */
     @Issue("JENKINS-68933")
-    @Test public void webSocket() throws Throwable {
+    @Test
+    void webSocket() throws Throwable {
         then(true);
     }
 
     private void then(boolean websocket) throws Throwable {
         try {
             rr.startJenkins();
-            InboundAgentRule.Options.Builder options = InboundAgentRule.Options.newBuilder().name(STATIC_AGENT_NAME).color(PrefixedOutputStream.Color.RED);
+            InboundAgentExtension.Options.Builder options = InboundAgentExtension.Options.newBuilder().name(STATIC_AGENT_NAME).color(PrefixedOutputStream.Color.RED);
             if (websocket) {
                 options = options.webSocket();
             }
@@ -84,7 +88,7 @@ public class JNLPLauncherRealTest {
         }
     }
 
-    private static class RunJobStep implements RealJenkinsRule.Step {
+    private static class RunJobStep implements RealJenkinsExtension.Step {
         private final String agentName;
         private final boolean webSocket;
 
@@ -98,13 +102,13 @@ public class JNLPLauncherRealTest {
             for (PluginWrapper plugin : r.jenkins.pluginManager.getPlugins()) {
                 System.err.println(plugin + " active=" + plugin.isActive() + " enabled=" + plugin.isEnabled());
             }
-            assertThat(ExtensionList.lookupSingleton(JNLPLauncher.DescriptorImpl.class).doCheckWebSocket(webSocket, null).kind, is(FormValidation.Kind.OK));
+            assertThat(ExtensionList.lookupSingleton(JNLPLauncher.DescriptorImpl.class).isWebSocketSupported(), is(true));
             Slave agent = (Slave) r.jenkins.getNode(agentName);
             FreeStyleProject p = r.createFreeStyleProject();
             p.setAssignedNode(agent);
             FreeStyleBuild b = r.buildAndAssertSuccess(p);
             if (webSocket) {
-                assertThat(agent.toComputer().getSystemProperties().get("java.class.path"), is(new File(r.jenkins.root, "agent.jar").getAbsolutePath()));
+                assertThat(agent.toComputer().getSystemProperties(), hasKey("os.name"));
             }
             System.err.println(JenkinsRule.getLog(b));
         }

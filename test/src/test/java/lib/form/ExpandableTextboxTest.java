@@ -27,9 +27,9 @@ package lib.form;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.htmlunit.HttpMethod.POST;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.FreeStyleProject;
@@ -41,32 +41,39 @@ import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNodeList;
-import org.htmlunit.html.HtmlButtonInput;
+import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTextArea;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 import org.w3c.dom.NodeList;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ExpandableTextboxTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class ExpandableTextboxTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-2816")
     @Test
-    public void testMultiline() throws Exception {
+    void testMultiline() throws Exception {
         // because attribute values are normalized, it's not very easy to encode multi-line string as @value. So let's use the system message here.
         j.jenkins.setSystemMessage("foo\nbar\nzot");
         HtmlPage page = evaluateAsHtml("<l:layout><l:main-panel><table><j:set var='instance' value='${it}'/><f:expandableTextbox field='systemMessage' /></table></l:main-panel></l:layout>");
@@ -90,7 +97,7 @@ public class ExpandableTextboxTest {
     }
 
     @Test
-    public void noInjectionArePossible() throws Exception {
+    void noInjectionArePossible() throws Exception {
         TestRootAction testParams = j.jenkins.getExtensionList(UnprotectedRootAction.class).get(TestRootAction.class);
         assertNotNull(testParams);
 
@@ -120,11 +127,10 @@ public class ExpandableTextboxTest {
         assertNotEquals("hacked", p.getTitleText());
     }
 
-    private HtmlButtonInput getExpandButton(HtmlPage page) {
-        DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("input");
-        // the first one is the text input
-        assertEquals(2, buttons.size());
-        return (HtmlButtonInput) buttons.get(1);
+    private HtmlButton getExpandButton(HtmlPage page) {
+        DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("button");
+        assertEquals(1, buttons.size());
+        return (HtmlButton) buttons.get(0);
     }
 
     @TestExtension("noInjectionArePossible")
@@ -148,14 +154,14 @@ public class ExpandableTextboxTest {
         }
 
         @WebMethod(name = "submit")
-        public HttpResponse doSubmit(StaplerRequest request) {
+        public HttpResponse doSubmit(StaplerRequest2 request) {
             return HttpResponses.plainText("method:" + request.getMethod());
         }
     }
 
     @Test
     @Issue("SECURITY-1498")
-    public void noXssUsingInputValue() throws Exception {
+    void noXssUsingInputValue() throws Exception {
         ExpandableTextBoxProperty xssProperty = new ExpandableTextBoxProperty("</textarea><h1>HACK</h1>");
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(xssProperty);
@@ -166,7 +172,7 @@ public class ExpandableTextboxTest {
         int numberOfH1Before = configurePage.getElementsByTagName("h1").size();
 
         HtmlInput xssInput = configurePage.getElementByName("_.theField");
-        HtmlInput expandButton = (HtmlInput) xssInput.getParentNode().getNextSibling().getFirstChild();
+        HtmlButton expandButton = (HtmlButton) xssInput.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
 
         // no additional h1, meaning the "payload" is not interpreted
@@ -177,7 +183,7 @@ public class ExpandableTextboxTest {
 
     @Test
     @Issue("JENKINS-67627")
-    public void expandsIntoNewlines() throws Exception {
+    void expandsIntoNewlines() throws Exception {
         OptionalJobProperty property = new ExpandableTextBoxProperty("foo bar baz"); // A bit of a misnomer here, we're using code for an existing test
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(property);
@@ -186,7 +192,7 @@ public class ExpandableTextboxTest {
         HtmlPage configurePage = wc.getPage(p, "configure");
 
         HtmlInput input = configurePage.getElementByName("_.theField");
-        HtmlInput expandButton = (HtmlInput) input.getParentNode().getNextSibling().getFirstChild();
+        HtmlButton expandButton = (HtmlButton) input.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
         final DomElement textArea = configurePage.getElementByName("_.theField");
         assertThat(textArea, instanceOf(HtmlTextArea.class));
@@ -197,6 +203,7 @@ public class ExpandableTextboxTest {
 
         private String theField;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public ExpandableTextBoxProperty(String theField) {
             this.theField = theField;
         }

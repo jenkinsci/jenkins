@@ -27,8 +27,19 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout permission="${h.ADMINISTER}" title="${%scriptConsole}">
-    <st:include page="sidepanel.jelly" />
+  <st:documentation>
+    <st:attribute name="layout" use="optional">
+      Specify which layout to be use for the page.
+      See the type in layout for more details.
+      By default, it is `two-column`.
+    </st:attribute>
+  </st:documentation>
+
+  <j:set var="layout" value="${attrs.layout != null ? attrs.layout : 'two-column'}" />
+  <l:layout permission="${app.ADMINISTER}" title="${%scriptConsole}" type="${layout}">
+    <j:if test="${layout == 'two-column'}">
+      <st:include page="sidepanel.jelly" />
+    </j:if>
 
     <l:breadcrumb title="${%scriptConsole}"/>
     <l:main-panel>
@@ -46,7 +57,7 @@ THE SOFTWARE.
           </p>
 
           <form action="script" method="post">
-            <textarea id="script" name="script" class="script">${request.getParameter('script')}</textarea>
+            <textarea id="script" name="script" class="script">${request2.getParameter('script')}</textarea>
             <div align="right">
               <f:submit  value="${%Run}"/>
             </div>

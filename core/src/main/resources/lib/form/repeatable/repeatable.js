@@ -43,8 +43,7 @@ var repeatableSupport = {
     // importNode isn't supported in IE.
     // nc = document.importNode(node,true);
     var nc = document.createElement("div");
-    nc.className = "repeated-chunk";
-    nc.style.opacity = 0;
+    nc.className = "repeated-chunk fade-in";
     nc.setAttribute("name", this.name);
     nc.innerHTML = this.blockHTML;
     if (!addOnTop) {
@@ -60,15 +59,7 @@ var repeatableSupport = {
       registerSortableDragDrop(nc);
     }
 
-    new YAHOO.util.Anim(
-      nc,
-      {
-        opacity: { to: 1 },
-      },
-      0.2,
-      YAHOO.util.Easing.easeIn
-    ).animate();
-
+    nc.classList.remove("fade-in");
     Behaviour.applySubtree(nc, true);
     this.update();
   },
@@ -83,7 +74,7 @@ var repeatableSupport = {
       var addButtonElements = Array.from(this.container.children).filter(
         function (b) {
           return b.classList.contains("repeatable-add");
-        }
+        },
       );
 
       if (addButtonElements.length == 2) {
@@ -96,7 +87,7 @@ var repeatableSupport = {
         addButtonElements = Array.from(this.container.children).filter(
           function (b) {
             return b.classList.contains("repeatable-add");
-          }
+          },
         );
 
         if (addButtonElements.length == 1 && this.enableTopButton) {
@@ -125,35 +116,38 @@ var repeatableSupport = {
 
   // called when 'delete' button is clicked
   onDelete: function (n) {
-    n = findAncestorClass(n, "repeated-chunk");
-    var a = new YAHOO.util.Anim(
-      n,
-      {
-        opacity: { to: 0 },
-        height: { to: 0 },
-      },
-      0.2,
-      YAHOO.util.Easing.easeIn
-    );
-    a.onComplete.subscribe(function () {
+    n = n.closest(".repeated-chunk");
+    n.ontransitionend = function (evt) {
+      if (evt.pseudoElement || !n.parentNode) {
+        return;
+      }
       var p = n.parentNode;
       p.removeChild(n);
       if (p.tag) {
         p.tag.update();
       }
+
       layoutUpdateCallback.call();
-    });
-    a.animate();
+    };
+    if (isRunAsTest) {
+      // transition end not triggered in tests
+      n.ontransitionend.call(n, {});
+    }
+    n.style.maxHeight = n.offsetHeight + "px";
+    n.classList.add("fade-out");
+    setTimeout(() => {
+      n.style.maxHeight = "0";
+    }, 0);
   },
 
   // called when 'add' button is clicked
   onAdd: function (n) {
     var addOnTop = false;
+    if (n.classList.contains("repeatable-add-top")) {
+      addOnTop = true;
+    }
     while (n.tag == null) {
       n = n.parentNode;
-      if (n.classList.contains("repeatable-add-top")) {
-        addOnTop = true;
-      }
     }
     n.tag.expand(addOnTop);
     // Hack to hide tool home when a new tool has some installers.
@@ -169,7 +163,7 @@ var repeatableSupport = {
 };
 
 // do the ones that extract innerHTML so that they can get their original HTML before
-// other behavior rules change them (like YUI buttons.)
+// other behavior rules change them.
 Behaviour.specify("DIV.repeated-container", "repeatable", -100, function (e) {
   if (isInsideRemovable(e)) {
     return;
@@ -194,7 +188,7 @@ Behaviour.specify(
       repeatableSupport.onAdd(button);
     });
     button = null; // avoid memory leak
-  }
+  },
 );
 
 /**
@@ -221,9 +215,9 @@ Behaviour.specify(
     input.parentNode.replaceChild(button, input);
     console.warn(
       "Adapted element to new markup, it should be changed to use f:repeatableDeleteButton instead in the plugin",
-      button
+      button,
     );
-  }
+  },
 );
 
 Behaviour.specify(
@@ -234,7 +228,7 @@ Behaviour.specify(
     e.addEventListener("click", function () {
       repeatableSupport.onDelete(e);
     });
-  }
+  },
 );
 
 // radio buttons in repeatable content

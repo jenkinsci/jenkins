@@ -27,16 +27,18 @@ package jenkins.security.stapler;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.List;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
-public class PreventRoutingTest extends StaplerAbstractTest {
+@WithJenkins
+class PreventRoutingTest extends StaplerAbstractTest {
 
     @TestExtension
     public static class TargetNull extends AbstractUnprotectedRootAction implements StaplerProxy {
@@ -58,8 +60,8 @@ public class PreventRoutingTest extends StaplerAbstractTest {
 
     @Test
     // TODO un-ignore once we use a Stapler release with the fix for this
-    @Ignore("Does not behave as intended before https://github.com/stapler/stapler/pull/149")
-    public void getTargetNull_isNotRoutable() throws Exception {
+    @Disabled("Does not behave as intended before https://github.com/stapler/stapler/pull/149")
+    void getTargetNull_isNotRoutable() {
         assertNotReachable("target-null/legitRoutable");
     }
 
@@ -82,7 +84,7 @@ public class PreventRoutingTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getTargetNewObject_isNotRoutable() throws Exception {
+    void getTargetNewObject_isNotRoutable() {
         assertNotReachable("target-new-object/legitRoutable");
     }
 
@@ -105,7 +107,7 @@ public class PreventRoutingTest extends StaplerAbstractTest {
     }
 
     private static void notStaplerGetter(@NonNull Object o) {
-        StaplerRequest req = Stapler.getCurrentRequest();
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
         if (req != null) {
             List<Ancestor> ancestors = req.getAncestors();
             if (!ancestors.isEmpty() && ancestors.get(ancestors.size() - 1).getObject() == o) {
@@ -115,7 +117,7 @@ public class PreventRoutingTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void regularGetter_notARequest() throws Exception {
+    void regularGetter_notARequest() throws Exception {
         assertReachable("not-a-request/legitRoutable2");
         assertNotReachable("not-a-request/legitRoutable");
     }

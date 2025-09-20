@@ -25,15 +25,13 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -58,22 +56,28 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.Page;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class SlaveTest {
+@WithJenkins
+class SlaveTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Makes sure that a form validation method gets inherited.
      */
     @Test
-    public void formValidation() throws Exception {
+    void formValidation() throws Exception {
         j.executeOnServer(() -> {
             assertNotNull(j.jenkins.getDescriptor(DumbSlave.class).getCheckUrl("remoteFS"));
             return null;
@@ -84,7 +88,7 @@ public class SlaveTest {
      * Programmatic config.xml submission.
      */
     @Test
-    public void slaveConfigDotXml() throws Exception {
+    void slaveConfigDotXml() throws Exception {
         DumbSlave s = j.createSlave();
         JenkinsRule.WebClient wc = j.createWebClient();
         Page p = wc.goTo("computer/" + s.getNodeName() + "/config.xml", "application/xml");
@@ -118,7 +122,7 @@ public class SlaveTest {
     }
 
     @Test
-    public void remoteFsCheck() throws Exception {
+    void remoteFsCheck() throws Exception {
         DumbSlave.DescriptorImpl d = j.jenkins.getDescriptorByType(DumbSlave.DescriptorImpl.class);
         assertEquals(FormValidation.ok(), d.doCheckRemoteFS("c:\\"));
         assertEquals(FormValidation.ok(), d.doCheckRemoteFS("/tmp"));
@@ -129,7 +133,7 @@ public class SlaveTest {
 
     @Test
     @Issue("SECURITY-195")
-    public void shouldNotEscapeJnlpSlavesResources() throws Exception {
+    void shouldNotEscapeJnlpSlavesResources() throws Exception {
         Slave slave = j.createSlave();
 
         // Spot-check correct requests
@@ -157,17 +161,16 @@ public class SlaveTest {
         assertJnlpJarUrlFails(slave, "./../foo/bar");
     }
 
-    private void assertJnlpJarUrlFails(@NonNull Slave slave, @NonNull String url) throws Exception {
+    private void assertJnlpJarUrlFails(@NonNull Slave slave, @NonNull String url) {
         // Raw access to API
         Slave.JnlpJar jnlpJar = slave.getComputer().getJnlpJars(url);
-        assertThrows(MalformedURLException.class, () -> jnlpJar.getURL());
+        assertThrows(MalformedURLException.class, jnlpJar::getURL);
     }
 
     private void assertJnlpJarUrlIsAllowed(@NonNull Slave slave, @NonNull String url) throws Exception {
         // Raw access to API
         Slave.JnlpJar jnlpJar = slave.getComputer().getJnlpJars(url);
         assertNotNull(jnlpJar.getURL());
-
 
         // Access from a Web client
         JenkinsRule.WebClient client = j.createWebClient();
@@ -177,13 +180,13 @@ public class SlaveTest {
 
     @Test
     @Issue("JENKINS-36280")
-    public void launcherFiltering() {
+    void launcherFiltering() {
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
         DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> descriptors =
                 j.getInstance().getDescriptorList(ComputerLauncher.class);
-        assumeThat("we need at least two launchers to test this", descriptors.size(), not(anyOf(is(0), is(1))));
-        assertThat(descriptor.computerLauncherDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[descriptors.size()])));
+        assumeTrue(descriptors.size() > 1, "we need at least two launchers to test this");
+        assertThat(descriptor.computerLauncherDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[0])));
 
         Descriptor<ComputerLauncher> victim = descriptors.iterator().next();
         assertThat(descriptor.computerLauncherDescriptors(null), hasItem(victim));
@@ -195,12 +198,12 @@ public class SlaveTest {
 
     @Test
     @Issue("JENKINS-36280")
-    public void retentionFiltering() {
+    void retentionFiltering() {
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
         DescriptorExtensionList<RetentionStrategy<?>, Descriptor<RetentionStrategy<?>>> descriptors = RetentionStrategy.all();
-        assumeThat("we need at least two retention strategies to test this", descriptors.size(), not(anyOf(is(0), is(1))));
-        assertThat(descriptor.retentionStrategyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[descriptors.size()])));
+        assumeTrue(descriptors.size() > 1, "we need at least two retention strategies to test this");
+        assertThat(descriptor.retentionStrategyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[0])));
 
         Descriptor<RetentionStrategy<?>> victim = descriptors.iterator().next();
         assertThat(descriptor.retentionStrategyDescriptors(null), hasItem(victim));
@@ -212,13 +215,13 @@ public class SlaveTest {
 
     @Test
     @Issue("JENKINS-36280")
-    public void propertyFiltering() {
+    void propertyFiltering() {
         j.jenkins.setAuthorizationStrategy(new ProjectMatrixAuthorizationStrategy()); // otherwise node descriptor is not available
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
         DescriptorExtensionList<NodeProperty<?>, NodePropertyDescriptor> descriptors = NodeProperty.all();
-        assumeThat("we need at least two node properties to test this", descriptors.size(), not(anyOf(is(0), is(1))));
-        assertThat(descriptor.nodePropertyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[descriptors.size()])));
+        assumeTrue(descriptors.size() > 1, "we need at least two node properties to test this");
+        assertThat(descriptor.nodePropertyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[0])));
 
         NodePropertyDescriptor victim = descriptors.iterator().next();
         assertThat(descriptor.nodePropertyDescriptors(null), hasItem(victim));

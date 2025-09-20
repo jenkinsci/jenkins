@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
   <st:documentation> <![CDATA[
     Repeatable blocks used to present UI where the user can configure multiple entries
     of the same kind (see the Java installations configuration in the system config.)
@@ -134,8 +134,7 @@ THE SOFTWARE.
     <!-- The first DIV is the master copy. -->
     <div class="repeated-chunk to-be-removed" name="${name}">
       <div class="repeated-chunk__header">
-        <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/></j:if>
-        ${header}
+        <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}</j:if>
       </div>
       <j:scope>
         <j:set var="${var}" value="${null}"/>
@@ -144,6 +143,7 @@ THE SOFTWARE.
     </div>
     <j:if test="${!empty(items) and !attrs.noAddButton and attrs.enableTopButton}">
       <button type="button" class="jenkins-button repeatable-add repeatable-add-top">
+        <l:icon src="symbol-add"/>
         ${attrs.add?:'%Add'}
       </button>
     </j:if>
@@ -151,7 +151,9 @@ THE SOFTWARE.
     <j:forEach var="loop" varStatus="loopStatus" items="${items}">
       <div class="repeated-chunk" name="${name}">
         <j:set var="${var}" value="${loop}" />
-        <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}">${header}</div></j:if>
+        <div class="repeated-chunk__header">
+          <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}</j:if>
+        </div>
         <d:invokeBody />
       </div>
     </j:forEach>
@@ -161,7 +163,9 @@ THE SOFTWARE.
       <j:forEach begin="${h.size2(items)}" end="${minimum-1}" var="i">
         <j:set var="${var}" value="${null}" />
         <div class="repeated-chunk" name="${name}">
-          <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}">${header}</div></j:if>
+          <div class="repeated-chunk__header">
+            <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}</j:if>
+          </div>
           <d:invokeBody />
         </div>
       </j:forEach>
@@ -170,6 +174,7 @@ THE SOFTWARE.
     <div class="repeatable-insertion-point" />
     <j:if test="${!attrs.noAddButton}">
       <button type="button" class="jenkins-button repeatable-add">
+        <l:icon src="symbol-add"/>
         ${attrs.add?:'%Add'}
       </button>
     </j:if>

@@ -155,16 +155,13 @@ THE SOFTWARE.
                     <a href="#" class="action" id="legacy-api-token-monitor-select-recent">${%only recent}</a>
                 </div>
                 
-                <div class="action-panel">
-                    <span class="yui-button">
-                        <button class="action-revoke-selected"
-                                data-url="${rootURL}/${it.url}/revokeAllSelected"
-                                data-confirm-template="${%RevokeAllSelected_confirm}" 
-                                data-nothing-selected="${%RevokeAllSelected_nothing}">
-                            ${%RevokeAllSelected}
-                        </button>
-                    </span>
-                </div>
+                <button type="button" class="action-revoke-selected jenkins-button jenkins-button--primary"
+                        data-url="${rootURL}/${it.url}/revokeAllSelected"
+                        data-confirm-template="${%RevokeAllSelected_confirm}"
+                        data-confirm-title="${%RevokeAllSelected_title}"
+                        data-nothing-selected="${%RevokeAllSelected_nothing}">
+                    ${%RevokeAllSelected}
+                </button>
             </div>
         </l:main-panel>
     </l:layout>

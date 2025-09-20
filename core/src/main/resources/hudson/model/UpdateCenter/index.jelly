@@ -30,6 +30,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout title="${%Download progress} - ${%Plugins}" permission="${app.SYSTEM_READ}">
   <st:adjunct includes="hudson.model.UpdateCenter.update-center" />
+  <st:adjunct includes="hudson.model.UpdateCenter._download-failure" />
   <st:include page="sidepanel.jelly" it="${app.pluginManager}" />
   <l:main-panel>
     <h1>${%Download progress}</h1>

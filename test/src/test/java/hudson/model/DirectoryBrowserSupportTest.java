@@ -33,11 +33,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.sun.management.UnixOperatingSystemMXBean;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -88,31 +90,43 @@ import org.htmlunit.Page;
 import org.htmlunit.UnexpectedPage;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Assume;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class DirectoryBrowserSupportTest {
+@WithJenkins
+class DirectoryBrowserSupportTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    private JenkinsRule.WebClient getWebClient() {
+        var wc = j.createWebClient();
+        wc.getOptions().setJavaScriptEnabled(false);
+        return wc;
+    }
 
     /**
      * Double dots that appear in file name is OK.
      */
     @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
     @Test
-    public void doubleDots() throws Exception {
+    void doubleDots() throws Exception {
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
         if (Functions.isWindows())
@@ -122,7 +136,7 @@ public class DirectoryBrowserSupportTest {
         j.buildAndAssertSuccess(p);
 
         // can we see it?
-        j.createWebClient().goTo("job/" + p.getName() + "/ws/abc..def", "application/octet-stream");
+        getWebClient().goTo("job/" + p.getName() + "/ws/abc..def", "application/octet-stream");
 
         // TODO: implement negative check to make sure we aren't serving unexpected directories.
         // the following trivial attempt failed. Someone in between is normalizing.
@@ -141,20 +155,23 @@ public class DirectoryBrowserSupportTest {
      */
     @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
     @Test
-    public void doubleDots2() throws Exception {
-        Assume.assumeFalse("can't test this on Windows", Functions.isWindows());
+    void doubleDots2() throws Exception {
+        assumeFalse(Functions.isWindows(), "can't test this on Windows");
 
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new Shell("mkdir abc; touch abc/def.bin"));
         j.buildAndAssertSuccess(p);
 
-        // can we see it?
-        j.createWebClient().goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin", "application/octet-stream");
+        try (JenkinsRule.WebClient wc = getWebClient()) {
+            // normal path provided by the UI succeeds
+            Page page = wc.goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin", "application/octet-stream");
+            assertEquals(200, page.getWebResponse().getStatusCode());
+        }
     }
 
     @Test
-    public void nonAsciiChar() throws Exception {
+    void nonAsciiChar() throws Exception {
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
@@ -167,11 +184,11 @@ public class DirectoryBrowserSupportTest {
         j.buildAndAssertSuccess(p);
 
         // can we see it?
-        j.createWebClient().goTo("job/" + p.getName() + "/ws/%e6%bc%a2%e5%ad%97.bin", "application/octet-stream");
+        getWebClient().goTo("job/" + p.getName() + "/ws/%e6%bc%a2%e5%ad%97.bin", "application/octet-stream");
     }
 
     @Test
-    public void glob() throws Exception {
+    void glob() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -187,22 +204,22 @@ public class DirectoryBrowserSupportTest {
             }
         });
         j.buildAndAssertSuccess(p);
-        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/**/*.java").asNormalizedText();
-        assertTrue(text, text.contains("X.java"));
-        assertTrue(text, text.contains("XTest.java"));
-        assertFalse(text, text.contains("pom.xml"));
-        assertFalse(text, text.contains("x.txt"));
+        String text = getWebClient().goTo("job/" + p.getName() + "/ws/**/*.java").asNormalizedText();
+        assertTrue(text.contains("X.java"), text);
+        assertTrue(text.contains("XTest.java"), text);
+        assertFalse(text.contains("pom.xml"), text);
+        assertFalse(text.contains("x.txt"), text);
     }
 
     @Issue("JENKINS-19752")
     @Test
-    public void zipDownload() throws Exception {
+    void zipDownload() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(new SingleFileSCM("artifact.out", "Hello world!"));
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
         j.buildAndAssertSuccess(p);
 
-        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+        HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
         Page download = page.getAnchorByHref("./*zip*/archive.zip").click();
         File zipfile = download((UnexpectedPage) download);
 
@@ -211,7 +228,7 @@ public class DirectoryBrowserSupportTest {
         InputStream is = readzip.getInputStream(readzip.getEntry("archive/artifact.out"));
 
         // ZipException in case of JENKINS-19752
-        assertNotEquals("Downloaded zip file must not be empty", is.read(), -1);
+        assertNotEquals(-1, is.read(), "Downloaded zip file must not be empty");
 
         is.close();
         readzip.close();
@@ -219,7 +236,7 @@ public class DirectoryBrowserSupportTest {
     }
 
     @Test
-    public void zipDownloadFileLeakMx_hypothesis() throws Exception {
+    void zipDownloadFileLeakMx_hypothesis() throws Exception {
         // this test is meant to just ensure zipDownloadFileLeakMx hypothesis about the UI work fine
 
         String content = "Hello world!";
@@ -228,15 +245,15 @@ public class DirectoryBrowserSupportTest {
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
         j.buildAndAssertSuccess(p);
 
-        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+        HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
         Page downloadPage = page.getAnchorByHref("artifact.out").click();
         assertEquals(content, downloadPage.getWebResponse().getContentAsString());
     }
 
     @Test
     @Issue({"JENKINS-64632", "JENKINS-61121"})
-    public void zipDownloadFileLeakMx() throws Exception {
-        Assume.assumeFalse(Functions.isWindows());
+    void zipDownloadFileLeakMx() throws Exception {
+        assumeFalse(Functions.isWindows());
 
         int numOfClicks = 10;
         int totalRuns = 10;
@@ -251,7 +268,7 @@ public class DirectoryBrowserSupportTest {
             p.getPublishersList().add(new ArtifactArchiver("*", "", true));
             j.buildAndAssertSuccess(p);
 
-            HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+            HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
             for (int clicks = 0; clicks < numOfClicks; clicks++) {
                 page.getAnchorByHref("artifact.out").click();
             }
@@ -286,7 +303,7 @@ public class DirectoryBrowserSupportTest {
 
         String summary = String.join("\n", messages);
         System.out.println("Summary of the test: \n" + summary);
-        assertTrue("There should be no difference greater than " + numOfClicks + ", but the output was: \n" + summary, freeFromLeak);
+        assertTrue(freeFromLeak, "There should be no difference greater than " + numOfClicks + ", but the output was: \n" + summary);
     }
 
     private long getOpenFdCount() {
@@ -299,22 +316,22 @@ public class DirectoryBrowserSupportTest {
 
     @Issue("SECURITY-95")
     @Test
-    public void contentSecurityPolicy() throws Exception {
+    void contentSecurityPolicy() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(new SingleFileSCM("test.html", "<html><body><h1>Hello world!</h1></body></html>"));
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
         j.buildAndAssertSuccess(p);
 
-        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
+        HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
         for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-            assertEquals("Header set: " + header, DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue(header));
+            assertEquals(DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue(header), "Header set: " + header);
         }
 
         String propName = DirectoryBrowserSupport.class.getName() + ".CSP";
         String initialValue = System.getProperty(propName);
         try {
             System.setProperty(propName, "");
-            page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
+            page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
             List<String> headers = page.getWebResponse().getResponseHeaders().stream().map(NameValuePair::getName).collect(Collectors.toList());
             for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
                 assertThat(headers, not(hasItem(header)));
@@ -342,13 +359,13 @@ public class DirectoryBrowserSupportTest {
 
     @Issue("JENKINS-49635")
     @Test
-    public void externalURLDownload() throws Exception {
+    void externalURLDownload() throws Exception {
         ArtifactManagerConfiguration.get().getArtifactManagerFactories().add(new ExternalArtifactManagerFactory());
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(new SingleFileSCM("f", "Hello world!"));
         p.getPublishersList().add(new ArtifactArchiver("f"));
         j.buildAndAssertSuccess(p);
-        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+        HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
         Page download = page.getAnchorByText("f").click();
         assertEquals("Hello world!", download.getWebResponse().getContentAsString());
     }
@@ -373,7 +390,7 @@ public class DirectoryBrowserSupportTest {
             return null;
         }
 
-        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws Exception {
+        public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws Exception {
             String hash = req.getRestOfPath().substring(1);
             for (byte[] file : files) {
                 if (Util.getDigestOf(new ByteArrayInputStream(file)).equals(hash)) {
@@ -575,7 +592,7 @@ public class DirectoryBrowserSupportTest {
 
     @Test
     @Issue("SECURITY-904")
-    public void symlink_outsideWorkspace_areNotAllowed() throws Exception {
+    void symlink_outsideWorkspace_areNotAllowed() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -611,7 +628,7 @@ public class DirectoryBrowserSupportTest {
 
         j.buildAndAssertSuccess(p);
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         { // workspace root must be reachable (regular case)
             Page page = wc.goTo(p.getUrl() + "ws/", null);
@@ -714,7 +731,7 @@ public class DirectoryBrowserSupportTest {
      */
     @Test
     @Issue("SECURITY-904")
-    public void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
+    void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -756,7 +773,7 @@ public class DirectoryBrowserSupportTest {
 
         j.buildAndAssertSuccess(p);
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         // the pattern allow us to search inside the files / folders,
@@ -786,8 +803,8 @@ public class DirectoryBrowserSupportTest {
     // to achieve that they should already have access to the system or the Script Console.
     @Test
     @Issue("SECURITY-904")
-    public void junctionAndSymlink_outsideWorkspace_areNotAllowed_windowsJunction() throws Exception {
-        Assume.assumeTrue(Functions.isWindows());
+    void junctionAndSymlink_outsideWorkspace_areNotAllowed_windowsJunction() throws Exception {
+        assumeTrue(Functions.isWindows());
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -819,7 +836,7 @@ public class DirectoryBrowserSupportTest {
 
         j.buildAndAssertSuccess(p);
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         { // workspace root must be reachable (regular case)
             Page page = wc.goTo(p.getUrl() + "ws/", null);
@@ -947,7 +964,7 @@ public class DirectoryBrowserSupportTest {
 
     @Test
     @Issue("SECURITY-904")
-    public void directSymlink_forTestingZip() throws Exception {
+    void directSymlink_forTestingZip() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         j.buildAndAssertSuccess(p);
@@ -972,7 +989,7 @@ public class DirectoryBrowserSupportTest {
         c3.mkdirs();
         c3.child("to_secrets3").symlinkTo(secretsFolder.getAbsolutePath(), TaskListener.NULL);
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         {
             Page zipPage = wc.goTo(p.getUrl() + "ws/*zip*/ws.zip", null);
@@ -1006,7 +1023,7 @@ public class DirectoryBrowserSupportTest {
 
     @Test
     @Issue({"SECURITY-904", "SECURITY-1452"})
-    public void symlink_insideWorkspace_areNotAllowedAnymore() throws Exception {
+    void symlink_insideWorkspace_areNotAllowedAnymore() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         // build once to have the workspace set up
@@ -1039,7 +1056,7 @@ public class DirectoryBrowserSupportTest {
 
         j.buildAndAssertSuccess(p);
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         { // workspace root must be reachable (regular case)
             Page page = wc.goTo(p.getUrl() + "ws/", null);
@@ -1101,49 +1118,23 @@ public class DirectoryBrowserSupportTest {
 
     @Test
     @Issue("SECURITY-2481")
-    public void windows_cannotViewAbsolutePath() throws Exception {
-        Assume.assumeTrue("can only be tested this on Windows", Functions.isWindows());
+    void windows_cannotViewAbsolutePath() throws Exception {
+        assumeTrue(Functions.isWindows(), "can only be tested this on Windows");
 
         Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
         String content = "random data provided as fixed value";
         Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
-        JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
-
-        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(404));
-    }
-
-    @Test
-    @Issue("SECURITY-2481")
-    public void windows_canViewAbsolutePath_withEscapeHatch() throws Exception {
-        Assume.assumeTrue("can only be tested this on Windows", Functions.isWindows());
-
-        String originalValue = System.getProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
-        System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, "true");
-        try {
-            Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
-            String content = "random data provided as fixed value";
-            Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
-
-            JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-            Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
-
-            MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(200));
-            MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), containsString(content));
-        } finally {
-            if (originalValue == null) {
-                System.clearProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
-            } else {
-                System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, originalValue);
-            }
+        try (JenkinsRule.WebClient wc = getWebClient()) {
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            HtmlPage page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*");
+            assertEquals(404, page.getWebResponse().getStatusCode());
         }
-
     }
 
     @Test
     @Issue("SECURITY-1807")
-    public void tmpNotListed() throws Exception {
+    void tmpNotListed() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -1156,14 +1147,14 @@ public class DirectoryBrowserSupportTest {
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/").asNormalizedText();
-        assertTrue(text, text.contains("anotherDir"));
-        assertFalse(text, text.contains("subdir"));
+        String text = getWebClient().goTo("job/" + p.getName() + "/ws/").asNormalizedText();
+        assertTrue(text.contains("anotherDir"), text);
+        assertFalse(text.contains("subdir"), text);
     }
 
     @Test
     @Issue("SECURITY-1807")
-    public void tmpNotListedWithGlob() throws Exception {
+    void tmpNotListedWithGlob() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
@@ -1186,16 +1177,16 @@ public class DirectoryBrowserSupportTest {
 
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/**/*.txt").asNormalizedText();
-        assertTrue(text, text.contains("one.txt"));
-        assertTrue(text, text.contains("two.txt"));
-        assertFalse(text, text.contains("three.txt"));
-        assertFalse(text, text.contains("four.txt"));
+        String text = getWebClient().goTo("job/" + p.getName() + "/ws/**/*.txt").asNormalizedText();
+        assertTrue(text.contains("one.txt"), text);
+        assertTrue(text.contains("two.txt"), text);
+        assertFalse(text.contains("three.txt"), text);
+        assertFalse(text.contains("four.txt"), text);
     }
 
     @Test
     @Issue("SECURITY-1807")
-    public void noDirectAccessToTmp() throws Exception {
+    void noDirectAccessToTmp() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -1215,7 +1206,7 @@ public class DirectoryBrowserSupportTest {
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         Page page = wc.goTo(p.getUrl() + "ws/anotherDir/", null);
@@ -1232,7 +1223,7 @@ public class DirectoryBrowserSupportTest {
 
     @Test
     @Issue("SECURITY-1807")
-    public void tmpNotListedInPlain() throws Exception {
+    void tmpNotListedInPlain() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -1245,14 +1236,14 @@ public class DirectoryBrowserSupportTest {
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/*plain*", "text/plain").getWebResponse().getContentAsString();
-        assertTrue(text, text.contains("anotherDir"));
-        assertFalse(text, text.contains("subdir"));
+        String text = getWebClient().goTo("job/" + p.getName() + "/ws/*plain*", "text/plain").getWebResponse().getContentAsString();
+        assertTrue(text.contains("anotherDir"), text);
+        assertFalse(text.contains("subdir"), text);
     }
 
     @Test
     @Issue("SECURITY-1807")
-    public void tmpNotListedInZipWithoutGlob() throws Exception {
+    void tmpNotListedInZipWithoutGlob() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -1278,7 +1269,7 @@ public class DirectoryBrowserSupportTest {
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         //http://localhost:54407/jenkins/job/test0/ws/**/*.txt/*zip*/glob.zip
@@ -1305,7 +1296,7 @@ public class DirectoryBrowserSupportTest {
 
     @Test
     @Issue("SECURITY-1807")
-    public void tmpNotListedInZipWithGlob() throws Exception {
+    void tmpNotListedInZipWithGlob() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -1331,7 +1322,7 @@ public class DirectoryBrowserSupportTest {
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
 
-        JenkinsRule.WebClient wc = j.createWebClient();
+        JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         Page zipPage = wc.goTo("job/" + p.getName() + "/ws/**/*.txt/*zip*/glob.zip", null);
@@ -1346,13 +1337,13 @@ public class DirectoryBrowserSupportTest {
     }
 
     @Test
-    public void canViewRelativePath() throws Exception {
+    void canViewRelativePath() throws Exception {
         File testFile = new File(j.jenkins.getRootDir(), "userContent/test.txt");
         String content = "random data provided as fixed value";
 
         Files.writeString(testFile.toPath(), content, StandardCharsets.UTF_8);
 
-        JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = getWebClient().withThrowExceptionOnFailingStatusCode(false);
         Page page = wc.goTo("userContent/test.txt/*view*", null);
 
         MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(200));

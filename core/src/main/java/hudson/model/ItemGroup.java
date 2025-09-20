@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jenkins.model.FullyNamed;
+import jenkins.model.FullyNamedModelObject;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -41,19 +43,7 @@ import org.springframework.security.access.AccessDeniedException;
  * @author Kohsuke Kawaguchi
  * @see ItemGroupMixIn
  */
-public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject {
-    /**
-     * Gets the full name of this {@link ItemGroup}.
-     *
-     * @see Item#getFullName()
-     */
-    String getFullName();
-
-    /**
-     * @see Item#getFullDisplayName()
-     */
-    String getFullDisplayName();
-
+public interface ItemGroup<T extends Item> extends FullyNamed, FullyNamedModelObject, PersistenceRoot {
     /**
      * Gets all the items in this collection in a read-only view.
      */
@@ -176,4 +166,17 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
     // TODO could delegate to allItems overload taking Authentication, but perhaps more useful to introduce a variant to perform preauth filtering using Predicate and check Item.READ afterwards
     // or return a Stream<Item> and provide a Predicate<Item> public static Items.readable(), and see https://stackoverflow.com/q/22694884/12916 if you are looking for just one result
 
+    /**
+     * Determines the item name based on a logic that can be overridden (e.g. by AbstractFolder).
+     *
+     * Defaults to the item root directory name.
+     *
+     * @param dir The root directory the item was loaded from.
+     * @param item the partially loaded item (take care what methods you call, the item will not have a reference to its parent).
+     *
+     * @since 2.444
+     */
+    default String getItemName(File dir, T item) {
+        return dir.getName();
+    }
 }

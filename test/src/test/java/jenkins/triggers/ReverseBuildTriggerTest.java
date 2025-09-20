@@ -27,8 +27,8 @@ package jenkins.triggers;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.model.Cause;
 import hudson.model.Computer;
@@ -40,37 +40,32 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.User;
 import hudson.tasks.BuildTrigger;
-import hudson.tasks.BuildTriggerTest;
 import hudson.triggers.Trigger;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
+@WithJenkins
 public class ReverseBuildTriggerTest {
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
+    private JenkinsRule r;
 
-    @Rule public JenkinsRule r = new JenkinsRule();
-
-    @Before
-    public void runMoreQuickly() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        r = rule;
         r.jenkins.setQuietPeriod(0);
     }
 
-    @Test public void configRoundtrip() throws Exception {
+    @Test
+    void configRoundtrip() throws Exception {
         r.createFreeStyleProject("upstream");
         FreeStyleProject downstream = r.createFreeStyleProject("downstream");
         FreeStyleProject wayDownstream = r.createFreeStyleProject("wayDownstream");
@@ -88,8 +83,8 @@ public class ReverseBuildTriggerTest {
         assertEquals(Result.SUCCESS, bt.getThreshold());
     }
 
-    /** @see BuildTriggerTest#downstreamProjectSecurity */
-    @Test public void upstreamProjectSecurity() throws Exception {
+    @Test
+    void upstreamProjectSecurity() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
                 .grant(Jenkins.READ).everywhere().to("alice", "bob")
@@ -112,43 +107,47 @@ public class ReverseBuildTriggerTest {
         FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
         r.assertLogContains(downstreamName, b);
         r.waitUntilNoActivity();
-        assertNotNull(JenkinsRule.getLog(b), downstream.getLastBuild());
+        assertNotNull(downstream.getLastBuild(), JenkinsRule.getLog(b));
         assertEquals(1, downstream.getLastBuild().number);
         // A QIA is configured but does not specify any authentication for downstream, so upstream should not trigger it:
-        Map<String, org.acegisecurity.Authentication> qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("admin").impersonate());
-        qiaConfig.put(downstreamName, Jenkins.ANONYMOUS);
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .add(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("admin").impersonate2())
+                        .authenticate(downstreamName, Jenkins.ANONYMOUS2));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogContains(downstreamName, b);
         r.assertLogContains(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f("anonymous", upstreamName, downstreamName), b);
         r.waitUntilNoActivity();
         assertEquals(1, downstream.getLastBuild().number);
         // Auth for upstream is defined but cannot see downstream, so no message is printed about it:
-        qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("bob").impersonate());
-        qiaConfig.put(downstreamName, Jenkins.ANONYMOUS);
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .replace(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("bob").impersonate2())
+                        .authenticate(downstreamName, Jenkins.ANONYMOUS2));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogNotContains(downstreamName, b);
         r.waitUntilNoActivity();
         assertEquals(1, downstream.getLastBuild().number);
         // Alice can see upstream, so downstream gets built, but the upstream build cannot see downstream:
         auth.grant(Item.READ).onItems(upstream).to("alice", "bob");
-        qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("bob").impersonate());
-        qiaConfig.put(downstreamName, User.get("alice").impersonate());
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .replace(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("bob").impersonate2())
+                        .authenticate(downstreamName, User.get("alice").impersonate2()));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogNotContains(downstreamName, b);
         r.waitUntilNoActivity();
         assertEquals(2, downstream.getLastBuild().number);
         assertEquals(new Cause.UpstreamCause((Run) b), downstream.getLastBuild().getCause(Cause.UpstreamCause.class));
         // Now if upstream build is permitted to report on downstream:
-        qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("admin").impersonate());
-        qiaConfig.put(downstreamName, User.get("alice").impersonate());
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .replace(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("admin").impersonate2())
+                        .authenticate(downstreamName, User.get("alice").impersonate2()));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogContains(downstreamName, b);
         r.waitUntilNoActivity();
@@ -164,10 +163,11 @@ public class ReverseBuildTriggerTest {
                 .grant(Item.DISCOVER).onItems(upstream).to("alice");
         r.jenkins.setAuthorizationStrategy(auth);
         auth.grant(Item.READ).onItems(downstream).to("alice");
-        qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("bob").impersonate());
-        qiaConfig.put(downstreamName, User.get("alice").impersonate());
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .replace(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("bob").impersonate2())
+                        .authenticate(downstreamName, User.get("alice").impersonate2()));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogNotContains(downstreamName, b);
         r.waitUntilNoActivity();
@@ -177,10 +177,11 @@ public class ReverseBuildTriggerTest {
         // so no message is printed about it, and no Exception neither (JENKINS-42707)
         auth.grant(Item.READ).onItems(upstream).to("bob");
         auth.grant(Item.DISCOVER).onItems(upstream).to("anonymous");
-        qiaConfig = new HashMap<>();
-        qiaConfig.put(upstreamName, User.get("bob").impersonate());
-        qiaConfig.put(downstreamName, Jenkins.ANONYMOUS);
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        QueueItemAuthenticatorConfiguration.get()
+                .getAuthenticators()
+                .replace(new MockQueueItemAuthenticator()
+                        .authenticate(upstreamName, User.get("bob").impersonate2())
+                        .authenticate(downstreamName, Jenkins.ANONYMOUS2));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogNotContains(downstreamName, b);
         r.assertLogNotContains("Please login to access job " + upstreamName, b);
@@ -190,7 +191,7 @@ public class ReverseBuildTriggerTest {
 
     @Issue("JENKINS-29876")
     @Test
-    public void nullJobInTriggerNotCausesNPE() throws Exception {
+    void nullJobInTriggerNotCausesNPE() throws Exception {
         final FreeStyleProject upstreamJob = r.createFreeStyleProject("upstream");
 
         //job with trigger.job == null
@@ -217,7 +218,7 @@ public class ReverseBuildTriggerTest {
 
     @Issue("JENKINS-45909")
     @Test
-    public void nullUpstreamProjectsNoNPE() throws Exception {
+    void nullUpstreamProjectsNoNPE() throws Exception {
         //job with trigger.upstreamProjects == null
         final FreeStyleProject downstreamJob1 = r.createFreeStyleProject("downstream1");
         ReverseBuildTrigger trigger = new ReverseBuildTrigger(null);
@@ -232,7 +233,7 @@ public class ReverseBuildTriggerTest {
 
     @Issue("JENKINS-46161")
     @Test
-    public void testGetUpstreamProjectsShouldNullSafe() throws Exception {
+    void testGetUpstreamProjectsShouldNullSafe() {
         ReverseBuildTrigger trigger1 = new ReverseBuildTrigger(null);
         String upstream1 = trigger1.getUpstreamProjects();
         assertEquals("", upstream1);

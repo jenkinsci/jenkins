@@ -27,10 +27,11 @@ package hudson.model;
 import static java.util.Objects.requireNonNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeNoException;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateFactory;
@@ -39,26 +40,28 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import net.sf.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Quick test for {@link UpdateCenter}.
  *
  * @author Kohsuke Kawaguchi
  */
-public class UpdateCenterTest {
-    @Test public void data() {
+class UpdateCenterTest {
+
+    @Test
+    void data() {
         try {
             doData("https://updates.jenkins.io/update-center.json?version=build");
             doData("https://updates.jenkins.io/stable/update-center.json?version=build");
         } catch (Exception x) {
             // TODO this should not be in core at all; should be in repo built by a separate job somewhere
-            assumeNoException("Might be no Internet connectivity, or might start failing due to expiring certificate through no fault of code changes", x);
+            assumeTrue(false, "Might be no Internet connectivity, or might start failing due to expiring certificate through no fault of code changes: " + x);
         }
     }
 
     private void doData(String location) throws Exception {
-        URL url = new URL(location);
+        URL url = new URI(location).toURL();
         String jsonp = DownloadService.loadJSON(url);
         JSONObject json = JSONObject.fromObject(jsonp);
 

@@ -1,0 +1,11 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    This trial collects two timestamps:
+    <ul>
+        <li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/System.html#nanoTime()"><code>System#nanoTime</code></a> when the trial was initialized (corresponds roughly to when Jenkins was started)</li>
+        <li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/System.html#nanoTime()"><code>System#nanoTime</code></a> when the trial data was collected (i.e., when it was prepared just before submission)</li>
+    </ul>
+
+    Additionally this trial collects the list of installed plugins, their version, and the version of Jenkins.
+    This data will help understand unexpected submission frequency of other trials' data.
+</j:jelly>

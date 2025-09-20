@@ -36,14 +36,14 @@ THE SOFTWARE.
 
     <l:breadcrumb title="${%Configuration}" />
 
-    <l:side-panel>
+    <l:side-panel sticky="true">
       <l:app-bar title="${%Configure}" />
-      <div id="tasks" />
+      <div id="tasks">
+        <l:skeleton type="side-panel" />
+      </div>
     </l:side-panel>
 
     <l:main-panel>
-      <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
-
       <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
         <l:app-bar title="${%General}" headingLevel="h2">
           <p:config-disableBuild />
@@ -52,7 +52,9 @@ THE SOFTWARE.
         <j:set var="descriptor" value="${it.descriptor}" />
         <j:set var="instance" value="${it}" />
 
-        <div class="jenkins-section jenkins-section--no-border jenkins-!-margin-top-6">
+        <l:skeleton />
+
+        <div class="jenkins-section jenkins-section--no-border jenkins-!-margin-top-3">
           <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
             <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
           </f:entry>
@@ -63,16 +65,8 @@ THE SOFTWARE.
         <!-- additional entries from derived classes -->
         <st:include page="configure-entries.jelly" />
 
-        <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
-          <f:bottomButtonBar>
-            <f:submit value="${%Save}" />
-            <f:apply value="${%Apply}" />
-          </f:bottomButtonBar>
-        </j:if>
+        <f:saveApplyBar/>
       </f:form>
-      <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
-        <st:adjunct includes="lib.form.confirm" />
-      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

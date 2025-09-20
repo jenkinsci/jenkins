@@ -26,7 +26,11 @@ package hudson.model;
 
 import hudson.Extension;
 import hudson.Util;
+import hudson.util.HudsonIsLoading;
+import hudson.util.HudsonIsRestarting;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -36,16 +40,19 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerFallback;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
- * Adds the "Manage Jenkins" link to the top page.
+ * Adds the "Manage Jenkins" link to the navigation bar.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal = 100) @Symbol("manageJenkins")
+@Extension(ordinal = 998) @Symbol("manageJenkins")
 public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelObjectWithContextMenu {
+
+    private static final Logger LOGGER = Logger.getLogger(ManageJenkinsAction.class.getName());
+
     @Override
     public String getIconFileName() {
         if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ))
@@ -65,12 +72,17 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
     }
 
     @Override
+    public boolean isPrimaryAction() {
+        return true;
+    }
+
+    @Override
     public Object getStaplerFallback() {
         return Jenkins.get();
     }
 
     @Override
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws JellyException, IOException {
+    public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws JellyException, IOException {
         return new ContextMenu().from(this, request, response, "index");
     }
 
@@ -79,13 +91,46 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
      * menu.
      */
     @Restricted(NoExternalUse.class)
-    public void addContextMenuItem(ContextMenu menu, String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge) {
-        if (Stapler.getCurrentRequest().findAncestorObject(this.getClass()) != null || !Util.isSafeToRedirectTo(url)) {
+    public void addContextMenuItem(ContextMenu menu, String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge, String message) {
+        if (Stapler.getCurrentRequest2().findAncestorObject(this.getClass()) != null || !Util.isSafeToRedirectTo(url)) {
             // Default behavior if the URL is absolute or scheme-relative, or the current object is an ancestor (i.e. would resolve correctly)
-            menu.add(url, icon, iconXml, text, post, requiresConfirmation, badge);
+            menu.add(url, icon, iconXml, text, post, requiresConfirmation, badge, message);
             return;
         }
         // If neither is the case, rewrite the relative URL to point to inside the /manage/ URL space
-        menu.add("manage/" + url, icon, iconXml, text, post, requiresConfirmation, badge);
+        menu.add("manage/" + url, icon, iconXml, text, post, requiresConfirmation, badge, message);
     }
+
+    /** Unlike {@link Jenkins#getActiveAdministrativeMonitors} this checks for activation lazily. */
+    @Override
+    public Badge getBadge() {
+        if (!(AdministrativeMonitor.hasPermissionToDisplay())) {
+            return null;
+        }
+
+        var app = Jenkins.get().getServletContext().getAttribute("app");
+        if (app instanceof HudsonIsLoading || app instanceof HudsonIsRestarting) {
+            return null;
+        }
+
+        if (Jenkins.get().administrativeMonitors.stream().anyMatch(m -> m.isSecurity() && isActive(m))) {
+            return new Badge("1+", Messages.ManageJenkinsAction_notifications(),
+                    Badge.Severity.DANGER);
+        } else if (Jenkins.get().administrativeMonitors.stream().anyMatch(m -> !m.isSecurity() && isActive(m))) {
+            return new Badge("1+", Messages.ManageJenkinsAction_notifications(),
+                    Badge.Severity.WARNING);
+        } else {
+            return null;
+        }
+    }
+
+    private static boolean isActive(AdministrativeMonitor m) {
+        try {
+            return !m.isActivationFake() && m.hasRequiredPermission() && m.isEnabled() && m.isActivated();
+        } catch (Throwable x) {
+            LOGGER.log(Level.WARNING, null, x);
+            return false;
+        }
+    }
+
 }

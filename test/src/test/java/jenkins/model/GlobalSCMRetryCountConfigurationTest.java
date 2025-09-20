@@ -29,40 +29,47 @@ import static org.hamcrest.Matchers.equalTo;
 
 import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Stapler;
 
 /**
  * Tests of {@link GlobalSCMRetryCountConfiguration}.
  * @author Panagiotis Galatsanos
  */
-public class GlobalSCMRetryCountConfigurationTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class GlobalSCMRetryCountConfigurationTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-36387")
-    public void shouldExceptOnNullScmRetryCount() throws Exception {
+    void shouldExceptOnNullScmRetryCount() {
         try {
             JSONObject json = new JSONObject();
             GlobalSCMRetryCountConfiguration gc = (GlobalSCMRetryCountConfiguration)
                     GlobalConfiguration.all().getDynamic("jenkins.model.GlobalSCMRetryCountConfiguration");
 
             json.element("scmCheckoutRetryCount", 5);
-            gc.configure(Stapler.getCurrentRequest(), json);
+            gc.configure(Stapler.getCurrentRequest2(), json);
             assertThat("Wrong value, it should be equal to 5",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(5));
 
             json.element("scmCheckoutRetryCount", 3);
-            gc.configure(Stapler.getCurrentRequest(), json);
+            gc.configure(Stapler.getCurrentRequest2(), json);
             assertThat("Wrong value, it should be equal to 3",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(3));
 
             JSONObject emptyJson = new JSONObject();
-            gc.configure(Stapler.getCurrentRequest(), emptyJson);
+            gc.configure(Stapler.getCurrentRequest2(), emptyJson);
         } catch (Descriptor.FormException e) {
             assertThat("Scm Retry count value changed! This shouldn't happen.",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(3));

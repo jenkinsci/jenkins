@@ -36,10 +36,9 @@ THE SOFTWARE.
       </l:overflowButton>
     </l:app-bar>
 
-    <div class="alert alert-info">
-      Log messages at a level lower than INFO are never recorded in the Jenkins log. Use <a href=".">log recorders</a> to record these log messages.
+    <div class="jenkins-alert jenkins-alert-info">
+      Log messages at a level more verbose than INFO (i.e., CONFIG, FINE, FINER, FINEST) are never recorded in the Jenkins log. Use <a href=".">log recorders</a> to record these log messages.
     </div>
-
     <t:logRecords logRecords="${h.logRecords}"/>
   </l:main-panel>
 </l:layout>

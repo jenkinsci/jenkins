@@ -39,24 +39,28 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
-import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException2;
-import hudson.util.FormApply;
+import hudson.tasks.UserAvatarResolver;
 import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -66,28 +70,28 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+import java.util.regex.Pattern;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.scm.RunWithSCM;
+import jenkins.search.SearchGroup;
+import jenkins.security.HMACConfidentialKey;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -120,7 +124,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
+public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Loadable, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
 
     public static final XStream2 XSTREAM = new XStream2();
     private static final Logger LOGGER = Logger.getLogger(User.class.getName());
@@ -173,8 +177,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private static final String[] ILLEGAL_PERSISTED_USERNAMES = new String[]{ACL.ANONYMOUS_USERNAME,
             ACL.SYSTEM_USERNAME, UNKNOWN_USERNAME};
 
+    @SuppressFBWarnings(value = "SS_SHOULD_BE_STATIC", justification = "Reserved for future use")
     private final int version = 10; // Not currently used, but it may be helpful in the future to store a version.
-    private String id;
+    String id;
     private volatile String fullName;
     private volatile String description;
 
@@ -185,15 +190,26 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         XSTREAM.alias("user", User.class);
     }
 
+    private User() {}
+
     private User(String id, String fullName) {
         this.id = id;
         this.fullName = fullName;
         load(id);
     }
 
+    @Override
+    public void load() {
+        load(id);
+    }
+
     private void load(String userId) {
         clearExistingProperties();
         loadFromUserConfigFile(userId);
+        fixUpAfterLoad();
+    }
+
+    private void fixUpAfterLoad() {
         removeNullsThatFailedToLoad();
         allocateDefaultPropertyInstancesAsNeeded();
         setUserToProperties();
@@ -220,9 +236,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private void loadFromUserConfigFile(String userId) {
+        AllUsers.getInstance().migrateUserIdMapper();
         XmlFile config = getConfigFile();
         try {
-            if (config != null && config.exists()) {
+            if (config.exists()) {
                 config.unmarshal(this);
                 this.id = userId;
             }
@@ -236,8 +253,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private XmlFile getConfigFile() {
-        File existingUserFolder = getExistingUserFolder();
-        return existingUserFolder == null ? null : new XmlFile(XSTREAM, new File(existingUserFolder, CONFIG_XML));
+        return new XmlFile(XSTREAM, new File(getUserFolderFor(id), CONFIG_XML));
     }
 
     /**
@@ -274,6 +290,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Override
     public @NonNull String getSearchUrl() {
         return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
+    }
+
+    @Override
+    public String getSearchIcon() {
+        return UserAvatarResolver.resolve(this, "48x48");
+    }
+
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.UserSearchGroup.class);
     }
 
     /**
@@ -335,6 +361,29 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         p.setUser(this);
         properties = ps;
         save();
+    }
+
+    /**
+     * Expand {@link #addProperty(UserProperty)} for multiple properties to be done at once.
+     * Expected to be used by the categorized configuration pages to update part of the properties.
+     * The properties not included in the list will be let untouched.
+     * It will call the {@link UserProperty#setUser(User)} method and at the end, {@link #save()} once.
+     *
+     * @since 2.468
+     */
+    public synchronized void addProperties(@NonNull List<UserProperty> multipleProperties) throws IOException {
+        List<UserProperty> newProperties = new ArrayList<>(this.properties);
+        for (UserProperty property : multipleProperties) {
+            UserProperty oldProp = getProperty(property.getClass());
+            if (oldProp != null) {
+                newProperties.remove(oldProp);
+            }
+            newProperties.add(property);
+            property.setUser(this);
+        }
+
+        this.properties = newProperties;
+        this.save();
     }
 
     /**
@@ -461,7 +510,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Accepts the new description.
      */
     @RequirePOST
-    public void doSubmitDescription(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doSubmitDescription(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
 
         description = req.getParameter("description");
@@ -533,10 +582,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     private static @Nullable User getOrCreateById(@NonNull String id, @NonNull String fullName, boolean create) {
         User u = AllUsers.get(id);
-        if (u == null && (create || UserIdMapper.getInstance().isMapped(id))) {
+        if (u == null && create) {
             u = new User(id, fullName);
             AllUsers.put(id, u);
-            if (!id.equals(fullName) && !UserIdMapper.getInstance().isMapped(id)) {
+            if (!id.equals(fullName)) {
                 try {
                     u.save();
                 } catch (IOException x) {
@@ -649,11 +698,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * To be called from {@link Jenkins#reload} only.
+     * Called from {@link Jenkins#reload}.
      */
-    @Restricted(NoExternalUse.class)
+    @Restricted(Beta.class)
     public static void reload() throws IOException {
-        UserIdMapper.getInstance().reload();
         AllUsers.reload();
     }
 
@@ -670,6 +718,32 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             or greater issues in the realm change, could affect currently logged
             in users and even the user making the change. */
         try {
+            var subdirectories = getRootDir().listFiles();
+            if (subdirectories != null) {
+                for (var oldDirectory : subdirectories) {
+                    var dirName = oldDirectory.getName();
+                    if (!HASHED_DIRNAMES.matcher(dirName).matches()) {
+                        continue;
+                    }
+                    var xml = new XmlFile(XSTREAM, new File(oldDirectory, CONFIG_XML));
+                    if (!xml.exists()) {
+                        continue;
+                    }
+                    try {
+                        var user = (User) xml.read();
+                        if (user.id == null) {
+                            continue;
+                        }
+                        var newDirectory = getUserFolderFor(user.id);
+                        if (!oldDirectory.equals(newDirectory)) {
+                            Files.move(oldDirectory.toPath(), newDirectory.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            LOGGER.info(() -> "migrated " + oldDirectory + " to " + newDirectory);
+                        }
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, "failed to migrate " + xml, x);
+                    }
+                }
+            }
             reload();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to perform rekey operation.", e);
@@ -739,17 +813,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         if (ExtensionList.lookup(AllUsers.class).isEmpty()) {
             return;
         }
-        UserIdMapper.getInstance().clear();
         AllUsers.clear();
     }
 
-    private static File getConfigFileFor(String id) {
-        return new File(getUserFolderFor(id), "config.xml");
-    }
-
-    private static File getUserFolderFor(String id) {
-        return new File(getRootDir(), idStrategy().filenameOf(id));
-    }
     /**
      * Returns the folder that store all the user information.
      * Useful for plugins to save a user-specific file aside the config.xml.
@@ -761,11 +827,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
 
     public @CheckForNull File getUserFolder() {
-        return getExistingUserFolder();
-    }
-
-    private @CheckForNull File getExistingUserFolder() {
-        return UserIdMapper.getInstance().getDirectory(id);
+        var d = getUserFolderFor(id);
+        return d.isDirectory() ? d : null;
     }
 
     /**
@@ -773,6 +836,21 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     static File getRootDir() {
         return new File(Jenkins.get().getRootDir(), "users");
+    }
+
+    private static final int PREFIX_MAX = 14;
+    private static final Pattern DISALLOWED_PREFIX_CHARS = Pattern.compile("[^A-Za-z0-9]");
+    static final Pattern HASHED_DIRNAMES = Pattern.compile("[a-z0-9]{0," + PREFIX_MAX + "}_[a-f0-9]{64}");
+    private static final HMACConfidentialKey DIRNAMES = new HMACConfidentialKey(User.class, "DIRNAMES");
+
+    private static String getUserFolderNameFor(String id) {
+        var fullPrefix = DISALLOWED_PREFIX_CHARS.matcher(id).replaceAll("").toLowerCase(Locale.ROOT);
+        return (fullPrefix.length() > PREFIX_MAX ? fullPrefix.substring(0, PREFIX_MAX) : fullPrefix) + '_' + DIRNAMES.mac(idStrategy().keyFor(id));
+    }
+
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "sanitized")
+    static File getUserFolderFor(String id) {
+        return new File(getRootDir(), getUserFolderNameFor(id));
     }
 
     /**
@@ -789,7 +867,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.600
      */
     public static boolean isIdOrFullnameAllowed(@CheckForNull String id) {
-        if (StringUtils.isBlank(id)) {
+        if (id == null || id.isBlank()) {
             return false;
         }
         final String trimmedId = id.trim();
@@ -814,17 +892,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         if (BulkChange.contains(this)) {
             return;
         }
-        XmlFile xmlFile = new XmlFile(XSTREAM, constructUserConfigFile());
+        XmlFile xmlFile = getConfigFile();
         xmlFile.write(this);
         SaveableListener.fireOnChange(this, xmlFile);
-    }
-
-    private File constructUserConfigFile() throws IOException {
-        return new File(putUserFolderIfAbsent(), CONFIG_XML);
-    }
-
-    private File putUserFolderIfAbsent() throws IOException {
-        return UserIdMapper.getInstance().putIfAbsent(id, true);
     }
 
     /**
@@ -834,17 +904,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public void delete() throws IOException {
         String idKey = idStrategy().keyFor(id);
-        File existingUserFolder = getExistingUserFolder();
-        UserIdMapper.getInstance().remove(id);
         AllUsers.remove(id);
-        deleteExistingUserFolder(existingUserFolder);
+        Util.deleteRecursive(getUserFolderFor(id));
         UserDetailsCache.get().invalidate(idKey);
-    }
-
-    private void deleteExistingUserFolder(File existingUserFolder) throws IOException {
-        if (existingUserFolder != null && existingUserFolder.exists()) {
-            Util.deleteRecursive(existingUserFolder);
-        }
     }
 
     /**
@@ -855,52 +917,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Accepts submission from the configuration page.
-     */
-    @POST
-    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
-        checkPermission(Jenkins.ADMINISTER);
-
-        JSONObject json = req.getSubmittedForm();
-        String oldFullName = this.fullName;
-        fullName = json.getString("fullName");
-        description = json.getString("description");
-
-        List<UserProperty> props = new ArrayList<>();
-        int i = 0;
-        for (UserPropertyDescriptor d : UserProperty.all()) {
-            UserProperty p = getProperty(d.clazz);
-
-            JSONObject o = json.optJSONObject("userProperty" + i++);
-            if (o != null) {
-                if (p != null) {
-                    p = p.reconfigure(req, o);
-                } else {
-                    p = d.newInstance(req, o);
-                }
-            }
-
-            if (p != null) {
-                p.setUser(this);
-                props.add(p);
-            }
-        }
-        this.properties = props;
-
-        save();
-
-        if (oldFullName != null && !oldFullName.equals(this.fullName)) {
-            UserDetailsCache.get().invalidate(oldFullName);
-        }
-
-        FormApply.success(".").generateResponse(req, rsp, this);
-    }
-
-    /**
      * Deletes this user from Hudson.
      */
     @RequirePOST
-    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
         if (idStrategy().equals(id, Jenkins.getAuthentication2().getName())) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");
@@ -912,15 +932,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         rsp.sendRedirect2("../..");
     }
 
-    public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssAll(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds().newBuilds());
     }
 
-    public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssFailed(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().regressionOnly());
     }
 
-    public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssLatest(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<>();
         for (Job<?, ?> p : Jenkins.get().allItems(Job.class)) {
             for (Run<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
@@ -951,7 +971,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public boolean canDelete() {
         final IdStrategy strategy = idStrategy();
         return hasPermission(Jenkins.ADMINISTER) && !strategy.equals(id, Jenkins.getAuthentication2().getName())
-                && UserIdMapper.getInstance().isMapped(id);
+                && getUserFolder() != null;
     }
 
     /**
@@ -1028,7 +1048,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     @Override
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         return new ContextMenu().from(this, request, response);
     }
 
@@ -1078,14 +1098,68 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Restricted(NoExternalUse.class)
     public static final class AllUsers {
 
+        private boolean migratedUserIdMapper;
         private final ConcurrentMap<String, User> byName = new ConcurrentHashMap<>();
 
-        @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
-        public static void scanAll() {
-            for (String userId : UserIdMapper.getInstance().getConvertedUserIds()) {
-                User user = new User(userId, userId);
-                getInstance().byName.putIfAbsent(idStrategy().keyFor(userId), user);
+        @SuppressWarnings("deprecation")
+        synchronized void migrateUserIdMapper() {
+            if (!migratedUserIdMapper) {
+                try {
+                    UserIdMapper.migrate();
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, null, x);
+                }
+                migratedUserIdMapper = true;
             }
+        }
+
+        @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
+        public static void scanAll() throws IOException {
+            DIRNAMES.createMac(); // force the key to be saved during startup
+            var instance = getInstance();
+            instance.migrateUserIdMapper();
+            var subdirectories = getRootDir().listFiles();
+            if (subdirectories == null) {
+                return;
+            }
+            var byName = instance.byName;
+            var idStrategy = idStrategy();
+            for (var dir : subdirectories) {
+                var dirName = dir.getName();
+                if (!HASHED_DIRNAMES.matcher(dirName).matches()) {
+                    LOGGER.fine(() -> "ignoring unrecognized dir " + dir);
+                    continue;
+                }
+                var xml = new XmlFile(XSTREAM, new File(dir, CONFIG_XML));
+                if (!xml.exists()) {
+                    LOGGER.fine(() -> "ignoring dir " + dir + " with no " + CONFIG_XML);
+                    continue;
+                }
+                var user = new User();
+                try {
+                    xml.unmarshal(user);
+                } catch (Exception x) {
+                    LOGGER.log(Level.WARNING, "failed to load " + xml, x);
+                    continue;
+                }
+                if (user.id == null) {
+                    LOGGER.warning(() -> "ignoring " + xml + " with no <id>");
+                    continue;
+                }
+                var expectedFolderName = getUserFolderNameFor(user.id);
+                if (!dirName.equals(expectedFolderName)) {
+                    LOGGER.warning(() -> "ignoring " + xml + " with <id> " + user.id + " expected to be in " + expectedFolderName);
+                    continue;
+                }
+                user.fixUpAfterLoad();
+                var old = byName.put(idStrategy.keyFor(user.id), user);
+                if (old != null) {
+                    LOGGER.warning(() -> "entry for " + user.id + " in " + dir + " duplicates one seen earlier for " + old.id);
+                } else {
+                    LOGGER.fine(() -> "successfully loaded " + user.id + " from " + xml);
+                }
+            }
+            LOGGER.fine(() -> "loaded " + byName.size() + " entries");
         }
 
         /**
@@ -1098,7 +1172,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return ExtensionList.lookupSingleton(AllUsers.class);
         }
 
-        private static void reload() {
+        private static void reload() throws IOException {
             getInstance().byName.clear();
             UserDetailsCache.get().invalidateAll();
             scanAll();
@@ -1135,7 +1209,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @see FullNameIdResolver
      * @since 1.479
      */
-    public abstract static class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
+    public abstract static class CanonicalIdResolver implements Describable<CanonicalIdResolver>, ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
          * context key for realm (domain) where idOrFullName has been retrieved from.
@@ -1256,7 +1330,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                         UserDetails userDetails = UserDetailsCache.get().loadUserByUsername(idOrFullName);
                         return userDetails.getUsername();
                     } catch (UsernameNotFoundException x) {
-                        LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
+                        LOGGER.log(Level.FINER, "not sure whether " + idOrFullName + " is a valid username or not", x);
                     } catch (ExecutionException x) {
                         LOGGER.log(Level.FINE, "could not look up " + idOrFullName, x);
                     } finally {

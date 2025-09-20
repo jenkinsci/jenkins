@@ -152,49 +152,11 @@ public class IOUtils {
         }
     }
 
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#DIR_SEPARATOR_UNIX}
-     */
-    @Deprecated
-    public static final char DIR_SEPARATOR_UNIX       = org.apache.commons.io.IOUtils.DIR_SEPARATOR_UNIX;
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#DIR_SEPARATOR_WINDOWS}
-     */
-    @Deprecated
-    public static final char DIR_SEPARATOR_WINDOWS    = org.apache.commons.io.IOUtils.DIR_SEPARATOR_WINDOWS;
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#DIR_SEPARATOR}
-     */
-    @Deprecated
-    public static final char DIR_SEPARATOR            = org.apache.commons.io.IOUtils.DIR_SEPARATOR;
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#LINE_SEPARATOR_UNIX}
-     */
-    @Deprecated
-    public static final String LINE_SEPARATOR_UNIX    = org.apache.commons.io.IOUtils.LINE_SEPARATOR_UNIX;
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#LINE_SEPARATOR_WINDOWS}
-     */
-    @Deprecated
-    public static final String LINE_SEPARATOR_WINDOWS = org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#LINE_SEPARATOR}
-     */
-    @Deprecated
-    public static final String LINE_SEPARATOR;
-
     static {
         // avoid security issues
         StringWriter buf = new StringWriter(4);
         PrintWriter out = new PrintWriter(buf);
         out.println();
-        LINE_SEPARATOR = buf.toString();
     }
 
     /**

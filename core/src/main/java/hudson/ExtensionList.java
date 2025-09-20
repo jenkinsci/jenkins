@@ -36,10 +36,12 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -48,6 +50,8 @@ import java.util.logging.Logger;
 import jenkins.ExtensionComponentSet;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Retains the known extension instances for the given type 'T'.
@@ -335,27 +339,44 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     /**
      * Used during {@link Jenkins#refreshExtensions()} to add new components into existing {@link ExtensionList}s.
      * Do not call from anywhere else.
+     * @return true if {@link #fireOnChangeListeners} should be called on {@code this} after all lists have been refreshed.
      */
-    public void refresh(ExtensionComponentSet delta) {
-        boolean fireOnChangeListeners = false;
+    @Restricted(NoExternalUse.class)
+    public boolean refresh(ExtensionComponentSet delta) {
         synchronized (getLoadLock()) {
             if (extensions == null)
-                return;     // not yet loaded. when we load it, we'll load everything visible by then, so no work needed
+                return false;     // not yet loaded. when we load it, we'll load everything visible by then, so no work needed
 
-            Collection<ExtensionComponent<T>> found = load(delta);
-            if (!found.isEmpty()) {
-                List<ExtensionComponent<T>> l = new ArrayList<>(extensions);
-                l.addAll(found);
-                extensions = sort(l);
-                fireOnChangeListeners = true;
+            Collection<ExtensionComponent<T>> newComponents = load(delta);
+            if (!newComponents.isEmpty()) {
+                // We check to ensure that we do not insert duplicate instances of already-loaded extensions into the list.
+                // This can happen when dynamically loading a plugin with an extension A that itself loads another
+                // extension B from the same plugin in some contexts, such as in A's constructor or via a method in A called
+                // by an ExtensionListListener. In those cases, ExtensionList.refresh may be called on a list that already
+                // includes the new extensions. Note that ExtensionComponent objects are always unique, even when
+                // ExtensionComponent.getInstance is identical, so we have to track the components and instances separately
+                // to handle ordinal sorting and check for dupes.
+                List<ExtensionComponent<T>> components = new ArrayList<>(extensions);
+                Set<T> instances = Collections.newSetFromMap(new IdentityHashMap<>());
+                for (ExtensionComponent<T> component : components) {
+                    instances.add(component.getInstance());
+                }
+                boolean fireListeners = false;
+                for (ExtensionComponent<T> newComponent : newComponents) {
+                    if (instances.add(newComponent.getInstance())) {
+                        fireListeners = true;
+                        components.add(newComponent);
+                    }
+                }
+                extensions = sort(new ArrayList<>(components));
+                return fireListeners;
             }
         }
-        if (fireOnChangeListeners) {
-            fireOnChangeListeners();
-        }
+        return false;
     }
 
-    private void fireOnChangeListeners() {
+    @Restricted(NoExternalUse.class)
+    public void fireOnChangeListeners() {
         for (ExtensionListListener listener : listeners) {
             try {
                 listener.onChange();
@@ -450,10 +471,38 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      */
     public static @NonNull <U> U lookupSingleton(Class<U> type) {
         ExtensionList<U> all = lookup(type);
-        if (all.size() != 1) {
+        if (Main.isUnitTest && all.isEmpty()) {
+            throw new IllegalStateException("Found no instances of " + type.getName() +
+                " registered (possible annotation processor issue); try using `mvn clean test -Dtest=…` rather than an IDE test runner");
+        } else if (all.size() != 1) {
             throw new IllegalStateException("Expected 1 instance of " + type.getName() + " but got " + all.size());
         }
         return all.get(0);
+    }
+
+    /**
+     * Convenience method allowing lookup of the instance of a given type with the highest ordinal.
+     * Equivalent to {@code ExtensionList.lookup(type).get(0)} if there is at least one instance,
+     * and throws an {@link IllegalStateException} otherwise if no instance could be found.
+     *
+     * @param type The type to look up.
+     * @return the singleton instance of the given type in its list.
+     * @throws IllegalStateException if there are no instances
+     *
+     * @since 2.435
+     */
+    public static @NonNull <U> U lookupFirst(Class<U> type) {
+        var all = lookup(type);
+        if (!all.isEmpty()) {
+            return all.get(0);
+        } else {
+            if (Main.isUnitTest) {
+                throw new IllegalStateException("Found no instances of " + type.getName() +
+                        " registered (possible annotation processor issue); try using `mvn clean test -Dtest=…` rather than an IDE test runner");
+            } else {
+                throw new IllegalStateException("Found no instances of " + type.getName() + " registered");
+            }
+        }
     }
 
     /**

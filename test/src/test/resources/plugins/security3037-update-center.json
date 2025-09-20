@@ -50,7 +50,7 @@ updateCenter.post(
       "previousTimestamp": "2022-05-24T12:27:03.00Z<img src=x onerror=alert(1)>",
       "previousVersion": "<img src=x onerror=alert(1)>581.v0c46fa_697ffd",
       "releaseTimestamp": "2022-06-29T21:02:16.00Z<img src=x onerror=alert(1)>",
-      "requiredCore": "2.999<img src=x onerror=alert(1)>",
+      "requiredCore": "9999999<img src=x onerror=alert(1)>",
       "scm": "https://github.com/jenkinsci/workflow-aggregator-plugin<img src=x onerror=alert(1)>",
       "sha1": "6iNlKTnXvr4W+9Svwy1+ctyqgvo=<img src=x onerror=alert(1)>",
       "sha256": "P0SFgnqOBFZjxkdKORiQUbrhdlfW5YU7tOpe85bfGWE=<img src=x onerror=alert(1)>",

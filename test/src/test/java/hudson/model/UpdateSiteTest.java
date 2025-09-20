@@ -24,12 +24,12 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.PluginWrapper;
 import hudson.model.UpdateSite.Data;
@@ -38,6 +38,7 @@ import hudson.util.PersistedList;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -54,29 +55,33 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
 import org.apache.commons.io.FilenameUtils;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.io.Content;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.eclipse.jetty.util.Callback;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
+@WithJenkins
 public class UpdateSiteTest {
-
-    @Rule public JenkinsRule j = new JenkinsRule();
-
     private final String RELATIVE_BASE = "/_relative/";
     private Server server;
     private URL baseUrl;
+
+    private JenkinsRule j;
 
     private static String getResource(String resourceName) throws IOException {
         try {
@@ -109,36 +114,40 @@ public class UpdateSiteTest {
     /**
      * Startup a web server to access resources via HTTP.
      */
-    @Before
-    public void setUpWebServer() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
         server = new Server();
         ServerConnector connector = new ServerConnector(server);
         server.addConnector(connector);
-        server.setHandler(new AbstractHandler() {
+        server.setHandler(new Handler.Abstract() {
             @Override
-            public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
+            public boolean handle(Request request, Response response, Callback callback) throws IOException {
+                String target = request.getHttpURI().getPath();
                 if (target.startsWith(RELATIVE_BASE)) {
                     target = target.substring(RELATIVE_BASE.length());
                 }
                 String responseBody = getResource(target);
                 if (responseBody != null) {
-                    baseRequest.setHandled(true);
-                    response.setContentType("text/plain; charset=utf-8");
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getOutputStream().write(responseBody.getBytes(StandardCharsets.UTF_8));
+                    response.getHeaders().add(HttpHeader.CONTENT_TYPE, "text/plain; charset=utf-8");
+                    response.setStatus(HttpStatus.OK_200);
+                    Content.Sink.write(response, true, responseBody, callback);
+                    return true;
                 }
+                return false;
             }
         });
         server.start();
-        baseUrl = new URL("http", "localhost", connector.getLocalPort(), RELATIVE_BASE);
+        baseUrl = new URI("http", null, "localhost", connector.getLocalPort(), RELATIVE_BASE, null, null).toURL();
     }
 
-    @After
-    public void shutdownWebserver() throws Exception {
+    @AfterEach
+    void shutdownWebserver() throws Exception {
         server.stop();
     }
 
-    @Test public void relativeURLs() throws Exception {
+    @Test
+    void relativeURLs() throws Exception {
         URL url = new URL(baseUrl, "/plugins/htmlpublisher-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
         overrideUpdateSite(site);
@@ -151,17 +160,19 @@ public class UpdateSiteTest {
         assertEquals("http://nowhere.net/dummy.hpi", data.plugins.get("dummy").url);
 
         UpdateSite.Plugin htmlPublisherPlugin = data.plugins.get("htmlpublisher");
-        assertEquals("Wrong name of plugin found", "HTML Publisher", htmlPublisherPlugin.getDisplayName());
+        assertEquals("HTML Publisher", htmlPublisherPlugin.getDisplayName(), "Wrong name of plugin found");
     }
 
-    @Test public void wikiUrlFromSingleSite() throws Exception {
+    @Test
+    void wikiUrlFromSingleSite() throws Exception {
         UpdateSite site = getUpdateSite("/plugins/htmlpublisher-update-center.json");
         overrideUpdateSite(site);
         PluginWrapper wrapper = buildPluginWrapper("dummy", "https://wiki.jenkins.io/display/JENKINS/dummy");
         assertEquals("https://plugins.jenkins.io/dummy", wrapper.getUrl());
     }
 
-    @Test public void wikiUrlFromMoreSites() throws Exception {
+    @Test
+    void wikiUrlFromMoreSites() throws Exception {
         UpdateSite site = getUpdateSite("/plugins/htmlpublisher-update-center.json");
         UpdateSite alternativeSite = getUpdateSite("/plugins/alternative-update-center.json", "alternative");
         overrideUpdateSite(site, alternativeSite);
@@ -176,15 +187,17 @@ public class UpdateSiteTest {
         assertEquals("https://plugins.jenkins.io/foo", wrapper.getUrl());
     }
 
-    @Test public void updateDirectlyWithJson() throws Exception {
+    @Test
+    void updateDirectlyWithJson() throws Exception {
         UpdateSite us = new UpdateSite("default", new URL(baseUrl, "update-center.json").toExternalForm());
         assertNull(us.getPlugin("AdaptivePlugin"));
         assertEquals(FormValidation.ok(), us.updateDirectly(/* TODO the certificate is now expired, and downloading a fresh copy did not seem to help */false).get());
         assertNotNull(us.getPlugin("AdaptivePlugin"));
     }
 
-    @Test public void lackOfDataDoesNotFailWarningsCode() {
-        assertNull("plugin data is not present", j.jenkins.getUpdateCenter().getSite("default").getData());
+    @Test
+    void lackOfDataDoesNotFailWarningsCode() {
+        assertNull(j.jenkins.getUpdateCenter().getSite("default").getData(), "plugin data is not present");
 
         // nothing breaking?
         j.jenkins.getExtensionList(UpdateSiteWarningsMonitor.class).get(0).getActivePluginWarningsByPlugin();
@@ -192,21 +205,37 @@ public class UpdateSiteTest {
         j.jenkins.getExtensionList(UpdateSiteWarningsConfiguration.class).get(0).getAllWarnings();
     }
 
-    @Test public void incompleteWarningsJson() throws Exception {
+    @Test
+    void incompleteWarningsJson() throws Exception {
         UpdateSite site = getUpdateSite("/plugins/warnings-update-center-malformed.json");
         overrideUpdateSite(site);
-        assertEquals("number of warnings", 7, site.getData().getWarnings().size());
-        assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
+        assertEquals(7, site.getData().getWarnings().size(), "number of warnings");
+        assertNotEquals(Collections.emptyMap(), site.getData().plugins, "plugin data is present");
     }
 
-    @Test public void getAvailables() throws Exception {
+    @Issue("JENKINS-73760")
+    @Test
+    void isLegacyDefault() {
+        assertFalse(new UpdateSite(null, "url").isLegacyDefault(), "isLegacyDefault should be false with null id");
+        assertFalse(
+                new UpdateSite("dummy", "http://updates.jenkins-ci.org/").isLegacyDefault(),
+                "isLegacyDefault should be false when id is not default and url is http://updates.jenkins-ci.org/");
+        assertTrue(
+                new UpdateSite(UpdateCenter.PREDEFINED_UPDATE_SITE_ID, "http://updates.jenkins-ci.org/").isLegacyDefault(),
+                "isLegacyDefault should be true when id is default and url is http://updates.jenkins-ci.org/");
+        assertFalse(new UpdateSite(null, null).isLegacyDefault(), "isLegacyDefault should be false with null url");
+    }
+
+    @Test
+    void getAvailables() throws Exception {
         UpdateSite site = getUpdateSite("/plugins/available-update-center.json");
         List<UpdateSite.Plugin> available = site.getAvailables();
         assertEquals("ALowTitle", available.get(0).getDisplayName());
         assertEquals("TheHighTitle", available.get(1).getDisplayName());
     }
 
-    @Test public void deprecations() throws Exception {
+    @Test
+    void deprecations() throws Exception {
         UpdateSite site = getUpdateSite("/plugins/deprecations-update-center.json");
 
         // present in plugins section of update-center.json, not deprecated

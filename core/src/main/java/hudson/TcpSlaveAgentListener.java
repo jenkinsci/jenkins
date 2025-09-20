@@ -206,6 +206,7 @@ public final class TcpSlaveAgentListener extends Thread {
     /**
      * Initiates the shuts down of the listener.
      */
+    @SuppressFBWarnings(value = "UNENCRYPTED_SOCKET", justification = "TODO needs triage")
     public void shutdown() {
         shuttingDown = true;
         try {
@@ -271,14 +272,11 @@ public final class TcpSlaveAgentListener extends Thread {
                     String protocol = s.substring(9);
                     AgentProtocol p = AgentProtocol.of(protocol);
                     if (p != null) {
-                        if (Jenkins.get().getAgentProtocols().contains(protocol)) {
-                            LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, () -> "Accepted " + protocol + " connection " + connectionInfo);
-                            p.handle(this.s);
-                        } else {
-                            error("Disabled protocol:" + s, this.s);
-                        }
-                    } else
+                        LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, () -> "Accepted " + protocol + " connection " + connectionInfo);
+                        p.handle(this.s);
+                    } else {
                         error("Unknown protocol:", this.s);
+                    }
                 } else {
                     error("Unrecognized protocol: " + s, this.s);
                 }
@@ -314,6 +312,7 @@ public final class TcpSlaveAgentListener extends Thread {
                 if (header.startsWith("GET / ")) {
                     response = "HTTP/1.0 200 OK\r\n" +
                             "Content-Type: text/plain;charset=UTF-8\r\n" +
+                            "X-Content-Type-Options: nosniff\r\n" +
                             "\r\n" +
                             "Jenkins-Agent-Protocols: " + getAgentProtocolNames() + "\r\n" +
                             "Jenkins-Version: " + Jenkins.VERSION + "\r\n" +
@@ -364,18 +363,8 @@ public final class TcpSlaveAgentListener extends Thread {
         }
 
         @Override
-        public boolean isRequired() {
-            return true;
-        }
-
-        @Override
         public String getName() {
             return "Ping";
-        }
-
-        @Override
-        public String getDisplayName() {
-            return Messages.TcpSlaveAgentListener_PingAgentProtocol_displayName();
         }
 
         @Override

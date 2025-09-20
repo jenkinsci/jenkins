@@ -15,8 +15,8 @@
             Extra CSS classes passed to the icon. Currently only the 'svg-icon' class is applied by default.
         </st:attribute>
 
-        <st:attribute name="id" since="2.289">
-            ID of the icon element.
+        <st:attribute name="id">
+            ID of the icon element. Since 2.289.
         </st:attribute>
 
         <st:attribute name="href">

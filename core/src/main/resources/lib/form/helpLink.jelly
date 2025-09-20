@@ -29,12 +29,12 @@ THE SOFTWARE.
     a spacer if none is available.
 
     The help link is rendered as a table cell with an (?) icon.
-    If the user clicks it, the content of the HTML fragment at the given URL 
+    If the user clicks it, the content of the HTML fragment at the given URL
     is rendered in the area designated as <f:helpArea> by the caller,
     usually in a row beneath the item with help.
-    
+
     The alternative spacer is just an empty table cell.
-    
+
     This tag was introduced to ensure that the space reserved for help items
     is consistent over the UI whether or not help exists.
 
@@ -49,14 +49,14 @@ THE SOFTWARE.
       ]]>
     </st:attribute>
     <st:attribute name="featureName">
-      Name of the feature described by the help text, used for constructing the 
+      Name of the feature described by the help text, used for constructing the
       icon's alt attribute. Optional.
     </st:attribute>
   </st:documentation>
   <j:choose>
     <j:when test="${attrs.url!=null}">
-      <j:set var="altText" value="${attrs.featureName != null ? '%Help for feature:' + ' ' + h.escape(attrs.featureName) : '%Help'}" />
-      <a href="#" class="jenkins-help-button" tooltip="${altText}" helpURL="${rootURL}${attrs.url}">
+      <j:set var="altText" value="${attrs.featureName != null ? '%Help for feature:' + ' ' + attrs.featureName : '%Help'}" />
+      <a href="#" class="jenkins-help-button" aria-label="${altText}" helpURL="${rootURL}${attrs.url}">
         <!-- .jenkins-help-button span element is required as it's restyled in CSS -->
         <span>?</span>
       </a>

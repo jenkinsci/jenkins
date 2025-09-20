@@ -27,8 +27,10 @@ THE SOFTWARE.
   <s:documentation> <![CDATA[
     Submit button. This should be always used instead of the plain <button> tag.
     ]]>
-    <s:attribute name="id" since="2.376">
+    <s:attribute name="id">
       If specified the ID of the button.
+
+      @since 2.376
     </s:attribute>
     <s:attribute name="name">
       If specified, becomes the value of the name attribute.
@@ -39,16 +41,20 @@ THE SOFTWARE.
       The text of the submit button, defaults to 'Submit'
       It's recommended to be more descriptive when possible, e.g. 'Create', 'Next'
     </s:attribute>
-    <s:attribute name="primary" since="2.376">
+    <s:attribute name="primary">
       Sets whether this button is a primary button or not.
       Defaults to true.
+
+      @since 2.376
     </s:attribute>
-    <s:attribute name="icon" since="TODO" />
+    <s:attribute name="icon">
+      @since 2.411
+    </s:attribute>
     <s:attribute name="clazz" />
   </s:documentation>
 
-  <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" formNoValidate="formNoValidate"
-          class="jenkins-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
+  <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" value="${attrs.value ?: '%Submit'}" formNoValidate="formNoValidate"
+          class="jenkins-button jenkins-submit-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
     <j:if test="${attrs.icon != null}">
       <l:icon src="${attrs.icon}" />
     </j:if>

@@ -24,23 +24,31 @@
 
 package jenkins.model;
 
+import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.isA;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
+import hudson.Functions;
 import hudson.XmlFile;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
+import hudson.model.AllView;
 import hudson.model.Computer;
 import hudson.model.Failure;
 import hudson.model.FreeStyleProject;
@@ -50,6 +58,7 @@ import hudson.model.Node;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.Saveable;
+import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
@@ -63,30 +72,46 @@ import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.VersionNumber;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.Socket;
+import java.net.URI;
 import java.net.URL;
-import java.util.Collections;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import jenkins.AgentProtocol;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+import org.apache.commons.io.FileUtils;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.TextPage;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
@@ -98,19 +123,74 @@ import org.mockito.Mockito;
  * @see Jenkins
  * @see JenkinsRule
  */
-@Category(SmokeTest.class)
+@Tag("SmokeTest")
+@WithJenkins
 public class JenkinsTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    @TempDir
+    private File tmp;
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    @Test
+    @Issue("SECURITY-3498")
+    void testPaneToggleCollapse() {
+        try (WebClient wc = j.createWebClient()) {
+            final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("toggleCollapse?paneId=foo"));
+            // @POST responds 404 when the verb is wrong; @RequirePOST would respond 405.
+            assertThat(ex.getStatusCode(), is(HttpServletResponse.SC_NOT_FOUND));
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-3073")
+    void verifyUploadedFingerprintFilePermission() throws Exception {
+        assumeFalse(Functions.isWindows());
+
+        HtmlPage page = j.createWebClient().goTo("fingerprintCheck");
+        HtmlForm form = page.getForms().get(0);
+        File dir = newFolder(tmp, "junit");
+        File plugin = new File(dir, "htmlpublisher.jpi");
+        // We're using a plugin to have a file above DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD
+        FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
+        form.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        j.submit(form);
+
+        File filesRef = Files.createTempFile("tmp", ".tmp").toFile();
+        File filesTmpDir = filesRef.getParentFile();
+        filesRef.deleteOnExit();
+
+        final Set<PosixFilePermission>[] filesPermission = new Set[]{new HashSet<>()};
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> {
+                    Optional<File> lastUploadedPlugin = Arrays.stream(Objects.requireNonNull(
+                                    filesTmpDir.listFiles((file, fileName) ->
+                                            fileName.startsWith("jenkins-multipart-uploads")))).
+                            max(Comparator.comparingLong(File::lastModified));
+                    if (lastUploadedPlugin.isPresent()) {
+                        filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPlugin.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+        assertEquals(EnumSet.of(OWNER_EXECUTE, OWNER_READ, OWNER_WRITE), filesPermission[0]);
+    }
 
     @Issue("SECURITY-406")
     @Test
-    public void testUserCreationFromUrlForAdmins() throws Exception {
+    void testUserCreationFromUrlForAdmins() throws Exception {
         WebClient wc = j.createWebClient();
 
-        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+        assertNull(User.getById("nonexistent", false), "User not supposed to exist");
         wc.assertFails("user/nonexistent", 404);
-        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+        assertNull(User.getById("nonexistent", false), "User not supposed to exist");
 
         try {
             User.ALLOW_USER_CREATION_VIA_URL = true;
@@ -118,7 +198,7 @@ public class JenkinsTest {
             // expected to work
             wc.goTo("user/nonexistent2");
 
-            assertNotNull("User supposed to exist", User.getById("nonexistent2", false));
+            assertNotNull(User.getById("nonexistent2", false), "User supposed to exist");
 
         } finally {
             User.ALLOW_USER_CREATION_VIA_URL = false;
@@ -126,7 +206,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testIsDisplayNameUniqueTrue() throws Exception {
+    void testIsDisplayNameUniqueTrue() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
@@ -136,12 +216,12 @@ public class JenkinsTest {
         p.setDisplayName("displayName");
 
         Jenkins jenkins = Jenkins.get();
-        assertTrue(jenkins.isDisplayNameUnique("displayName1", curJobName));
-        assertTrue(jenkins.isDisplayNameUnique(jobName, curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, "displayName1", curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, jobName, curJobName));
     }
 
     @Test
-    public void testIsDisplayNameUniqueFalse() throws Exception {
+    void testIsDisplayNameUniqueFalse() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         final String displayName = "displayName";
@@ -153,11 +233,11 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        assertFalse(jenkins.isDisplayNameUnique(displayName, curJobName));
+        assertFalse(jenkins.isDisplayNameUnique(jenkins, displayName, curJobName));
     }
 
     @Test
-    public void testIsDisplayNameUniqueSameAsCurrentJob() throws Exception {
+    void testIsDisplayNameUniqueSameAsCurrentJob() throws Exception {
         final String curJobName = "curJobName";
         final String displayName = "currentProjectDisplayName";
 
@@ -166,33 +246,33 @@ public class JenkinsTest {
 
         Jenkins jenkins = Jenkins.get();
         // should be true as we don't test against the current job
-        assertTrue(jenkins.isDisplayNameUnique(displayName, curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jenkins, displayName, curJobName));
     }
 
     @Test
-    public void testIsNameUniqueTrue() throws Exception {
+    void testIsNameUniqueTrue() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         j.createFreeStyleProject(curJobName);
         j.createFreeStyleProject(jobName);
 
         Jenkins jenkins = Jenkins.get();
-        assertTrue(jenkins.isNameUnique("jobName1", curJobName));
+        assertTrue(jenkins.isNameUnique(jenkins, "jobName1", curJobName));
     }
 
     @Test
-    public void testIsNameUniqueFalse() throws Exception {
+    void testIsNameUniqueFalse() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         j.createFreeStyleProject(curJobName);
         j.createFreeStyleProject(jobName);
 
         Jenkins jenkins = Jenkins.get();
-        assertFalse(jenkins.isNameUnique(jobName, curJobName));
+        assertFalse(jenkins.isNameUnique(jenkins, jobName, curJobName));
     }
 
     @Test
-    public void testIsNameUniqueSameAsCurrentJob() throws Exception {
+    void testIsNameUniqueSameAsCurrentJob() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         j.createFreeStyleProject(curJobName);
@@ -200,11 +280,11 @@ public class JenkinsTest {
 
         Jenkins jenkins = Jenkins.get();
         // true because we don't test against the current job
-        assertTrue(jenkins.isNameUnique(curJobName, curJobName));
+        assertTrue(jenkins.isNameUnique(jenkins, curJobName, curJobName));
     }
 
     @Test
-    public void testDoCheckDisplayNameUnique() throws Exception {
+    void testDoCheckDisplayNameUnique() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
@@ -214,12 +294,12 @@ public class JenkinsTest {
         p.setDisplayName("displayName");
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName("1displayName", curJobName);
+        FormValidation v = jenkins.checkDisplayName("1displayName", curProject);
         assertEquals(FormValidation.ok(), v);
     }
 
     @Test
-    public void testDoCheckDisplayNameSameAsDisplayName() throws Exception {
+    void testDoCheckDisplayNameSameAsDisplayName() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         final String displayName = "displayName";
@@ -230,12 +310,12 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName(displayName, curJobName);
+        FormValidation v = jenkins.checkDisplayName(displayName, curProject);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
     @Test
-    public void testDoCheckDisplayNameSameAsJobName() throws Exception {
+    void testDoCheckDisplayNameSameAsJobName() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         final String displayName = "displayName";
@@ -246,12 +326,12 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName(jobName, curJobName);
+        FormValidation v = jenkins.checkDisplayName(jobName, curProject);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
     @Test
-    public void testDoCheckViewName_GoodName() throws Exception {
+    void testDoCheckViewName_GoodName() {
         String[] viewNames = new String[] {
             "",
             "Jenkins",
@@ -265,7 +345,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testDoCheckViewName_NotGoodName() throws Exception {
+    void testDoCheckViewName_NotGoodName() {
         String[] viewNames = new String[] {
             "Jenkins?",
             "Jenkins*",
@@ -291,8 +371,9 @@ public class JenkinsTest {
     /**
      * Makes sure access to "/foobar" for UnprotectedRootAction gets through.
      */
-    @Test @Issue("JENKINS-14113")
-    public void testUnprotectedRootAction() throws Exception {
+    @Test
+    @Issue("JENKINS-14113")
+    void testUnprotectedRootAction() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
         WebClient wc = j.createWebClient();
@@ -307,7 +388,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testDoScript() throws Exception {
+    void testDoScript() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
@@ -337,7 +418,7 @@ public class JenkinsTest {
 
     @Test
     @Issue("JENKINS-58548")
-    public void testDoScriptTextDoesNotOutputExtraWhitespace() throws Exception {
+    void testDoScriptTextDoesNotOutputExtraWhitespace() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         WebClient wc = j.createWebClient().login("admin");
         TextPage page = wc.getPage(new WebRequest(wc.createCrumbedUrl("scriptText?script=print 'hello'"), HttpMethod.POST));
@@ -345,7 +426,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testDoEval() throws Exception {
+    void testDoEval() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
@@ -361,19 +442,19 @@ public class JenkinsTest {
 
         wc.withBasicApiToken(User.getById("bob", true));
         Page page = eval(wc);
-        assertEquals("bob has only READ",
-                HttpURLConnection.HTTP_FORBIDDEN,
-                page.getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN,
+                page.getWebResponse().getStatusCode(),
+                "bob has only READ");
 
         wc.withBasicApiToken(User.getById("charlie", true));
         page = eval(wc);
-        assertEquals("charlie has ADMINISTER and READ",
-                HttpURLConnection.HTTP_OK,
-                page.getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_OK,
+                page.getWebResponse().getStatusCode(),
+                "charlie has ADMINISTER and READ");
     }
 
     private Page eval(WebClient wc) throws Exception {
-        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URI(wc.getContextPath() + "eval").toURL(), HttpMethod.POST);
         req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
         return wc.getPage(req);
@@ -417,8 +498,9 @@ public class JenkinsTest {
         }
     }
 
-    @Test @Issue("JENKINS-20866")
-    public void testErrorPageShouldBeAnonymousAccessible() throws Exception {
+    @Test
+    @Issue("JENKINS-20866")
+    void testErrorPageShouldBeAnonymousAccessible() throws Exception {
         HudsonPrivateSecurityRealm s = new HudsonPrivateSecurityRealm(false, false, null);
         User alice = s.createAccount("alice", "alice");
         j.jenkins.setSecurityRealm(s);
@@ -433,7 +515,7 @@ public class JenkinsTest {
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("error/reportError");
 
-        assertEquals(p.asNormalizedText(), HttpURLConnection.HTTP_BAD_REQUEST, p.getWebResponse().getStatusCode());  // not 403 forbidden
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, p.getWebResponse().getStatusCode(), p.asNormalizedText());  // not 403 forbidden
         assertTrue(p.getWebResponse().getContentAsString().contains("My car is black"));
     }
 
@@ -460,8 +542,9 @@ public class JenkinsTest {
         }
     }
 
-    @Test @Issue("JENKINS-23551")
-    public void testComputerListenerNotifiedOnRestart() {
+    @Test
+    @Issue("JENKINS-23551")
+    void testComputerListenerNotifiedOnRestart() {
         // Simulate restart calling listeners
         for (RestartListener listener : RestartListener.all())
             listener.onRestart();
@@ -475,7 +558,8 @@ public class JenkinsTest {
     public static final ComputerListener listenerMock = Mockito.mock(ComputerListener.class);
 
     @Test
-    public void runScriptOnOfflineComputer() throws Exception {
+    void runScriptOnOfflineComputer() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Test fails on CI Windows VM since transition to AWS");
         DumbSlave slave = j.createSlave(true);
         j.disconnectSlave(slave);
 
@@ -494,7 +578,7 @@ public class JenkinsTest {
 
     @Test
     @Issue("JENKINS-38487")
-    public void startupShouldNotFailOnIOExceptionOnlineListener() {
+    void startupShouldNotFailOnIOExceptionOnlineListener() {
         // We do nothing, IOExceptionOnOnlineListener & JenkinsRule should cause the
         // boot failure if the issue is not fixed.
 
@@ -515,7 +599,7 @@ public class JenkinsTest {
 
     @Test
     @Issue("JENKINS-57111")
-    public void startupShouldNotFailOnRuntimeExceptionOnlineListener() {
+    void startupShouldNotFailOnRuntimeExceptionOnlineListener() {
         // We do nothing, RuntimeExceptionOnOnlineListener & JenkinsRule should cause the
         // boot failure if the issue is not fixed.
         assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
@@ -534,176 +618,21 @@ public class JenkinsTest {
     }
 
     @Test
-    @Issue("JENKINS-39465")
-    public void agentProtocols_singleEnable_roundtrip() throws Exception {
-        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-
-        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
-        newProtocols.add(MockOptInProtocol1.NAME);
-        j.jenkins.setAgentProtocols(newProtocols);
-        j.jenkins.save();
-        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
-        assertProtocolEnabled(MockOptInProtocol1.NAME, "before the roundtrip");
-
-        j.jenkins.reload();
-
-        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
-        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, reloadedProtocols);
-        assertThat("We should have additional enabled protocol",
-                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 1));
-        assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
-    }
-
-    @Test
-    @Issue("JENKINS-39465")
-    public void agentProtocols_multipleDisable_roundtrip() throws Exception {
-        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-        assertProtocolEnabled(MockOptOutProtocol1.NAME, "after startup");
-
-        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
-        newProtocols.remove(MockOptOutProtocol1.NAME);
-        j.jenkins.setAgentProtocols(newProtocols);
-        j.jenkins.save();
-        assertProtocolDisabled(MockOptOutProtocol1.NAME, "before the roundtrip");
-        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
-        j.jenkins.reload();
-
-        assertNotSame("The protocol list must have been really refreshed", agentProtocolsBeforeReload, j.jenkins.getAgentProtocols());
-        assertThat("We should have disabled one protocol",
-                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 1));
-
-        assertProtocolDisabled(MockOptOutProtocol1.NAME, "after the roundtrip");
-    }
-
-    @Test
-    @Issue("JENKINS-39465")
-    public void agentProtocols_multipleEnable_roundtrip() throws Exception {
-        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
-        newProtocols.add(MockOptInProtocol1.NAME);
-        newProtocols.add(MockOptInProtocol2.NAME);
-        j.jenkins.setAgentProtocols(newProtocols);
-        j.jenkins.save();
-
-        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
-        assertProtocolEnabled(MockOptInProtocol1.NAME, "before the roundtrip");
-        assertProtocolEnabled(MockOptInProtocol2.NAME, "before the roundtrip");
-
-        j.jenkins.reload();
-
-        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
-        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, reloadedProtocols);
-        assertThat("There should be two additional enabled protocols",
-                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 2));
-        assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
-        assertProtocolEnabled(MockOptInProtocol2.NAME, "after the roundtrip");
-    }
-
-    @Test
-    @Issue("JENKINS-39465")
-    public void agentProtocols_singleDisable_roundtrip() throws Exception {
-        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-        final String protocolToDisable1 = MockOptOutProtocol1.NAME;
-        final String protocolToDisable2 = MockOptOutProtocol2.NAME;
-
-        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
-        newProtocols.remove(protocolToDisable1);
-        newProtocols.remove(protocolToDisable2);
-        j.jenkins.setAgentProtocols(newProtocols);
-        j.jenkins.save();
-        assertProtocolDisabled(protocolToDisable1, "before the roundtrip");
-        assertProtocolDisabled(protocolToDisable2, "before the roundtrip");
-        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
-        j.jenkins.reload();
-
-        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, j.jenkins.getAgentProtocols());
-        assertThat("We should have disabled two protocols",
-                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
-        assertProtocolDisabled(protocolToDisable1, "after the roundtrip");
-        assertProtocolDisabled(protocolToDisable2, "after the roundtrip");
-    }
-
-    private void assertProtocolDisabled(String protocolName, @CheckForNull String stage) {
-        assertThat(protocolName + " must be disabled. Stage=" + (stage != null ? stage : "undefined"),
-                j.jenkins.getAgentProtocols(), not(hasItem(protocolName)));
-    }
-
-    private void assertProtocolEnabled(String protocolName, @CheckForNull String stage) {
-        assertThat(protocolName + " must be enabled. Stage=" + (stage != null ? stage : "undefined"),
-                j.jenkins.getAgentProtocols(), hasItem(protocolName));
-    }
-
-    @TestExtension
-    public static class MockOptInProtocol1 extends MockOptInProtocol {
-
-        static final String NAME = "MOCK-OPTIN-1";
-
-        @Override
-        public String getName() {
-            return NAME;
+    void getComputers() throws Exception {
+        List<Slave> agents = new ArrayList<>();
+        for (String n : List.of("zestful", "bilking", "grouchiest")) {
+            agents.add(j.createSlave(n, null, null));
         }
-    }
-
-    @TestExtension
-    public static class MockOptInProtocol2 extends MockOptInProtocol {
-
-        static final String NAME = "MOCK-OPTIN-2";
-
-        @Override
-        public String getName() {
-            return NAME;
+        for (Slave agent : agents) {
+            j.waitOnline(agent);
         }
-    }
-
-    private abstract static class MockOptInProtocol extends AgentProtocol {
-        @Override
-        public boolean isOptIn() {
-            return true;
-        }
-
-        @Override
-        public void handle(Socket socket) throws IOException, InterruptedException {
-            throw new IOException("This is a mock agent protocol. It cannot be used for connection");
-        }
-    }
-
-    @TestExtension
-    public static class MockOptOutProtocol1 extends MockOptOutProtocol {
-
-        static final String NAME = "MOCK-OPTOUT-1";
-
-        @Override
-        public String getName() {
-            return NAME;
-        }
-    }
-
-    @TestExtension
-    public static class MockOptOutProtocol2 extends MockOptOutProtocol {
-
-        static final String NAME = "MOCK-OPTOUT-2";
-
-        @Override
-        public String getName() {
-            return NAME;
-        }
-    }
-
-    private abstract static class MockOptOutProtocol extends AgentProtocol {
-        @Override
-        public boolean isOptIn() {
-            return false;
-        }
-
-        @Override
-        public void handle(Socket socket) throws IOException, InterruptedException {
-            throw new IOException("This is a mock agent protocol. It cannot be used for connection");
-        }
+        assertThat(Stream.of(j.jenkins.getComputers()).map(Computer::getName).toArray(String[]::new),
+            arrayContaining("", "bilking", "grouchiest", "zestful"));
     }
 
     @Issue("JENKINS-42577")
     @Test
-    public void versionIsSavedInSave() throws Exception {
+    void versionIsSavedInSave() throws Exception {
         Jenkins.VERSION = "1.0";
         j.jenkins.save();
         VersionNumber storedVersion = Jenkins.getStoredVersion();
@@ -716,27 +645,28 @@ public class JenkinsTest {
         assertNull(nullVersion);
     }
 
+    // Sources: https://github.com/Vlatombe/jenkins-47406
     @Issue("JENKINS-47406")
     @Test
-    @WithPlugin("jenkins-47406.hpi") // Sources: https://github.com/Vlatombe/jenkins-47406
-    public void jobCreatedByInitializerIsRetained() {
-        assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
+    @WithPlugin("jenkins-47406.hpi")
+    void jobCreatedByInitializerIsRetained() {
+        assertNotNull(j.jenkins.getItem("JENKINS-47406"), "JENKINS-47406 should exist");
     }
 
     @Issue("SECURITY-2047")
     @Test
-    public void testLogin123() throws Exception {
+    void testLogin123() {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         WebClient wc = j.createWebClient();
 
-        FailingHttpStatusCodeException e = assertThrows("Page should be protected.", FailingHttpStatusCodeException.class, () -> wc.goTo("login123"));
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("login123"), "Page should be protected.");
         assertThat(e.getStatusCode(), is(403));
     }
 
     @Issue("SECURITY-2047")
     @Test
-    public void testLogin123WithRead() throws Exception {
+    void testLogin123WithRead() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
                 grant(Jenkins.READ).everywhere().to("bob"));
@@ -749,7 +679,7 @@ public class JenkinsTest {
     }
 
     @Test
-    public void testLogin() throws Exception {
+    void testLogin() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
                 grant(Jenkins.READ).everywhere().to("bob"));
@@ -762,7 +692,7 @@ public class JenkinsTest {
 
     @Issue("JENKINS-68055")
     @Test
-    public void testTrimLabelsRetainsLabelExpressions() throws Exception {
+    void testTrimLabelsRetainsLabelExpressions() throws Exception {
         Node n = j.createOnlineSlave();
         n.setLabelString("test expression");
 
@@ -776,11 +706,11 @@ public class JenkinsTest {
     }
 
     @Test
-    public void reloadShouldNotSaveConfig() throws Exception {
+    void reloadShouldNotSaveConfig() throws Exception {
         SaveableListenerImpl saveListener = ExtensionList.lookupSingleton(SaveableListenerImpl.class);
         saveListener.reset();
         j.jenkins.reload();
-        assertFalse("Jenkins object should not have been saved.", saveListener.wasCalled());
+        assertFalse(saveListener.wasCalled(), "Jenkins object should not have been saved.");
     }
 
     @TestExtension("reloadShouldNotSaveConfig")
@@ -820,4 +750,56 @@ public class JenkinsTest {
             return "login123";
         }
     }
+
+    @Test
+    void checkInitialView() {
+        assertTrue(CheckInitialViewExtension.hasPrimaryView);
+    }
+
+    @TestExtension(value = "checkInitialView")
+    public static class CheckInitialViewExtension implements RootAction {
+        private static boolean hasPrimaryView;
+
+        @Initializer(after = InitMilestone.SYSTEM_CONFIG_LOADED, before = InitMilestone.JOB_CONFIG_ADAPTED)
+        public static void checkViews() {
+            hasPrimaryView = Jenkins.get().getPrimaryView() != null;
+        }
+
+
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public String getUrlName() {
+            return null;
+        }
+    }
+
+    @Test
+    void reloadViews() throws Exception {
+        assertThat(j.jenkins.getPrimaryView(), isA(AllView.class));
+        assertThat(j.jenkins.getViews(), contains(isA(AllView.class)));
+        Files.writeString(j.jenkins.getConfigFile().getFile().toPath(), "<broken");
+        assertThrows(ReactorException.class, j.jenkins::reload);
+        j.createWebClient().goTo("manage/");
+        assertThat(j.jenkins.getPrimaryView(), isA(AllView.class));
+        assertThat(j.jenkins.getViews(), contains(isA(AllView.class)));
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            throw new IOException("Couldn't create folders " + root);
+        }
+        return result;
+    }
+
 }

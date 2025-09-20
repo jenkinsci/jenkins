@@ -24,31 +24,31 @@
 
 package jenkins.security.seed;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.model.User;
-import java.net.URL;
+import java.net.URI;
 import java.util.concurrent.atomic.AtomicReference;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
 @For(UserSeedProperty.class)
-public class UserSeedPropertyRestartTest {
+class UserSeedPropertyRestartTest {
 
-    @Rule
-    public JenkinsSessionRule sessions = new JenkinsSessionRule();
+    @RegisterExtension
+    private final JenkinsSessionExtension sessions = new JenkinsSessionExtension();
 
     @Test
     @Issue("SECURITY-901")
-    public void initialSeedIsSaved() throws Throwable {
+    void initialSeedIsSaved() throws Throwable {
         AtomicReference<String> initialSeedRef = new AtomicReference<>();
 
         sessions.then(j -> {
@@ -68,7 +68,7 @@ public class UserSeedPropertyRestartTest {
 
     @Test
     @Issue("SECURITY-901")
-    public void renewSeedSavesTheChange() throws Throwable {
+    void renewSeedSavesTheChange() throws Throwable {
         AtomicReference<String> initialSeedRef = new AtomicReference<>();
         AtomicReference<String> seedRef = new AtomicReference<>();
 
@@ -95,7 +95,7 @@ public class UserSeedPropertyRestartTest {
 
     private static void requestRenewSeedForUser(User user, JenkinsRule j) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
-        WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + user.getUrl() + "/descriptorByName/" + UserSeedProperty.class.getName() + "/renewSessionSeed/"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(j.jenkins.getRootUrl() + user.getUrl() + "/descriptorByName/" + UserSeedProperty.class.getName() + "/renewSessionSeed/").toURL(), HttpMethod.POST);
         wc.getPage(request);
     }
 }

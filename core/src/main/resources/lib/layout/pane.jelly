@@ -52,14 +52,16 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <j:set var="paneIsCollapsed" value="${h.isCollapsed(attrs.id)}" />
-  <div class="pane-frame track-mouse ${paneIsCollapsed ? 'collapsed' : 'expanded'}" id="${attrs.id}">
+  <div class="pane-frame ${paneIsCollapsed ? 'collapsed' : 'expanded'}" id="${attrs.id}">
     <div class="pane-header">
       <span class="pane-header-title">
         <j:out value="${title}"/>
       </span>
 
       <j:if test="${attrs.id != null}">
-        <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
+        <st:adjunct includes="lib.form.link.link"/>
+        <!-- TODO improve l:link so the `a` can be changed to `l:link`. -->
+        <a class="collapse post" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
            title="${paneIsCollapsed ? '%expand' : '%collapse'}">
 
           <j:set var="svgIconId" value="${paneIsCollapsed ? 'chevron-up' : 'chevron-down'}" />

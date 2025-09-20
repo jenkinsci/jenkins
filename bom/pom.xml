@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -38,10 +38,10 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <asm.version>9.5</asm.version>
-    <slf4jVersion>2.0.7</slf4jVersion>
-    <stapler.version>1785.vf9cb_74a_b_ec5b_</stapler.version>
+    <commons-fileupload2.version>2.0.0-M4</commons-fileupload2.version>
     <groovy.version>2.4.21</groovy.version>
+    <jelly.version>1.1-jenkins-20250731</jelly.version>
+    <stapler.version>2033.va_95221851a_23</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -54,17 +54,24 @@ THE SOFTWARE.
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.28</version>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-bom</artifactId>
+        <version>2.0.17</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
-        <!-- https://docs.spring.io/spring-security/site/docs/5.5.4/reference/html5/#getting-maven-no-boot -->
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-framework-bom</artifactId>
+        <version>6.2.11</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <!-- https://docs.spring.io/spring-security/reference/6.3/getting-spring-security.html#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.8.4</version>
+        <version>6.5.4</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -72,7 +79,7 @@ THE SOFTWARE.
         <!-- JENKINS-21160: Remoting also depends on args4j; please update accordingly -->
         <groupId>args4j</groupId>
         <artifactId>args4j</artifactId>
-        <version>2.33</version>
+        <version>2.37</version>
       </dependency>
       <dependency>
         <groupId>com.github.spotbugs</groupId>
@@ -82,18 +89,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>32.1.1-jre</version>
-      </dependency>
-      <dependency>
-        <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
-        <groupId>com.jcraft</groupId>
-        <artifactId>jzlib</artifactId>
-        <version>1.1.3-kohsuke-1</version>
-      </dependency>
-      <dependency>
-        <groupId>com.sun.solaris</groupId>
-        <artifactId>embedded_su4j</artifactId>
-        <version>1.1</version>
+        <version>33.4.8-jre</version>
       </dependency>
       <dependency>
         <groupId>com.sun.xml.txw2</groupId>
@@ -103,17 +99,17 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.20</version>
+        <version>1.4.21</version>
       </dependency>
       <dependency>
         <groupId>commons-beanutils</groupId>
         <artifactId>commons-beanutils</artifactId>
-        <version>1.9.4</version>
+        <version>1.11.0</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.16.0</version>
+        <version>1.19.0</version>
       </dependency>
       <dependency>
         <groupId>commons-collections</groupId>
@@ -121,24 +117,9 @@ THE SOFTWARE.
         <version>3.2.2</version>
       </dependency>
       <dependency>
-        <groupId>commons-fileupload</groupId>
-        <artifactId>commons-fileupload</artifactId>
-        <version>1.5</version>
-      </dependency>
-      <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
-        <version>2.13.0</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-jelly</groupId>
-        <artifactId>commons-jelly-tags-fmt</artifactId>
-        <version>1.0</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-jelly</groupId>
-        <artifactId>commons-jelly-tags-xml</artifactId>
-        <version>1.1</version>
+        <version>2.20.0</version>
       </dependency>
       <dependency>
         <groupId>commons-lang</groupId>
@@ -146,14 +127,14 @@ THE SOFTWARE.
         <version>2.6</version>
       </dependency>
       <dependency>
-        <groupId>io.jenkins.stapler</groupId>
-        <artifactId>jenkins-stapler-support</artifactId>
-        <version>1.1</version>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>5.0.0</version>
       </dependency>
       <dependency>
         <groupId>jakarta.servlet.jsp.jstl</groupId>
         <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
-        <version>1.2.7</version>
+        <version>2.0.0</version>
       </dependency>
       <dependency>
         <groupId>jaxen</groupId>
@@ -163,7 +144,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.13.0</version>
+        <version>5.17.0</version>
       </dependency>
       <dependency>
         <groupId>net.java.sezpoz</groupId>
@@ -175,12 +156,6 @@ THE SOFTWARE.
         <artifactId>jcip-annotations</artifactId>
         <version>1.0</version>
       </dependency>
-      <!-- TODO remove after determining this will not break plugins -->
-      <dependency>
-        <groupId>net.sf.kxml</groupId>
-        <artifactId>kxml2</artifactId>
-        <version>2.3.0</version>
-      </dependency>
       <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-runtime</artifactId>
@@ -189,22 +164,47 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.10.13</version>
+        <version>1.10.15</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
-        <artifactId>commons-compress</artifactId>
-        <version>1.23.0</version>
+        <artifactId>commons-fileupload2</artifactId>
+        <version>${commons-fileupload2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-fileupload2-core</artifactId>
+        <version>${commons-fileupload2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-fileupload2-distribution</artifactId>
+        <version>${commons-fileupload2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-fileupload2-jakarta-servlet5</artifactId>
+        <version>${commons-fileupload2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-fileupload2-jakarta-servlet6</artifactId>
+        <version>${commons-fileupload2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-fileupload2-javax</artifactId>
+        <version>${commons-fileupload2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-fileupload2-portlet</artifactId>
+        <version>${commons-fileupload2.version}</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-all</artifactId>
         <version>${groovy.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.connectbot.jbcrypt</groupId>
-        <artifactId>jbcrypt</artifactId>
-        <version>1.0.0</version>
       </dependency>
       <dependency>
         <!-- Groovy shell uses this, but it doesn't declare the dependency -->
@@ -215,7 +215,22 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>annotation-indexer</artifactId>
-        <version>1.17</version>
+        <version>1.18</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>commons-jelly</artifactId>
+        <version>${jelly.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>commons-jelly-tags-fmt</artifactId>
+        <version>${jelly.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>commons-jelly-tags-xml</artifactId>
+        <version>${jelly.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
@@ -225,27 +240,27 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>crypto-util</artifactId>
-        <version>1.9</version>
+        <version>1.11</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>memory-monitor</artifactId>
-        <version>1.12</version>
+        <version>1.13</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>symbol-annotation</artifactId>
-        <version>1.24</version>
+        <version>1.25</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>task-reactor</artifactId>
-        <version>1.8</version>
+        <version>1.9</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>version-number</artifactId>
-        <version>1.11</version>
+        <version>1.12</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
@@ -260,7 +275,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.hudson</groupId>
         <artifactId>commons-jelly-tags-define</artifactId>
-        <version>1.1-jenkins-20230124</version>
+        <version>${jelly.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
@@ -268,14 +283,9 @@ THE SOFTWARE.
         <version>1.31</version>
       </dependency>
       <dependency>
-        <groupId>org.jvnet.robust-http-client</groupId>
-        <artifactId>robust-http-client</artifactId>
-        <version>1.2</version>
-      </dependency>
-      <dependency>
         <groupId>org.jvnet.winp</groupId>
         <artifactId>winp</artifactId>
-        <version>1.30</version>
+        <version>1.31</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
@@ -288,11 +298,6 @@ THE SOFTWARE.
         <version>1.2</version>
       </dependency>
       <dependency>
-        <groupId>org.kohsuke.jinterop</groupId>
-        <artifactId>j-interop</artifactId>
-        <version>2.0.8-kohsuke-1</version>
-      </dependency>
-      <dependency>
         <groupId>org.kohsuke.metainf-services</groupId>
         <artifactId>metainf-services</artifactId>
         <version>1.11</version>
@@ -300,7 +305,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>json-lib</artifactId>
-        <version>2.4-jenkins-3</version>
+        <version>2.4-jenkins-15</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
@@ -314,70 +319,20 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>stapler-adjunct-timeline</artifactId>
-        <version>1.5</version>
-      </dependency>
-      <dependency>
-        <groupId>org.kohsuke.stapler</groupId>
         <artifactId>stapler-groovy</artifactId>
         <version>${stapler.version}</version>
       </dependency>
+      <!-- Override the outdated managed dependency on asm in guice-parent -->
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-analysis</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-commons</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-tree</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-util</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.samba.jcifs</groupId>
-        <artifactId>jcifs</artifactId>
-        <version>1.3.18-kohsuke-1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>jcl-over-slf4j</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>log4j-over-slf4j</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <!-- SLF4J used in maven-plugin and possibly others -->
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-jdk14</artifactId>
-        <version>${slf4jVersion}</version>
+        <version>9.8</version>
       </dependency>
       <dependency>
         <!-- provided by jcl-over-slf4j -->
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
-        <version>1.2</version>
+        <version>1.3.5</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>

@@ -24,14 +24,15 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.AnnotatedLargeText;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -47,23 +48,23 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jenkins.model.Jenkins;
 import org.apache.commons.jelly.XMLOutput;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.localizer.LocaleProvider;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 import org.mockito.Mockito;
 
-public class RunTest {
+class RunTest {
     private static final String SAMPLE_BUILD_OUTPUT = "Sample build output abc123.\n";
 
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    private File tmp;
 
     @Issue("JENKINS-15816")
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
-    public void timezoneOfID() throws Exception {
+    void timezoneOfID() throws Exception {
         TimeZone origTZ = TimeZone.getDefault();
         try {
             final Run r;
@@ -71,11 +72,7 @@ public class RunTest {
             TimeZone.setDefault(TimeZone.getTimeZone("America/Chicago"));
             ExecutorService svc = Executors.newSingleThreadExecutor();
             try {
-                r = svc.submit(new Callable<Run>() {
-                    @Override public Run call() {
-                        return new Run(new StubJob(), 1234567890) {};
-                    }
-                }).get();
+                r = svc.submit((Callable<Run>) () -> new Run(new StubJob(), 1234567890) {}).get();
                 TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
                 id = r.getId();
                 // explicitly cast to callable to make the Eclipse compiler happy
@@ -109,7 +106,7 @@ public class RunTest {
     }
 
     @Test
-    public void artifactListDisambiguation1() throws Exception {
+    void artifactListDisambiguation1() {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/j.xml");
         assertEquals("c.xml", a.get(0).getDisplayPath());
         assertEquals("g.xml", a.get(1).getDisplayPath());
@@ -117,7 +114,7 @@ public class RunTest {
     }
 
     @Test
-    public void artifactListDisambiguation2() throws Exception {
+    void artifactListDisambiguation2() {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/g.xml");
         assertEquals("c.xml", a.get(0).getDisplayPath());
         assertEquals("f/g.xml", a.get(1).getDisplayPath());
@@ -125,7 +122,7 @@ public class RunTest {
     }
 
     @Test
-    public void artifactListDisambiguation3() throws Exception {
+    void artifactListDisambiguation3() {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a.xml", "a/a.xml");
         assertEquals("a.xml", a.get(0).getDisplayPath());
         assertEquals("a/a.xml", a.get(1).getDisplayPath());
@@ -134,7 +131,7 @@ public class RunTest {
     @Issue("JENKINS-26777")
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     @Test
-    public void getDurationString() {
+    void getDurationString() {
       LocaleProvider providerToRestore = LocaleProvider.getProvider();
       try {
         // This test expects English texts.
@@ -150,10 +147,10 @@ public class RunTest {
         r.onStartBuilding();
         String msg;
         msg = r.getDurationString();
-        assertTrue(msg, msg.endsWith(" and counting"));
+        assertTrue(msg.endsWith(" and counting"), msg);
         r.onEndBuilding();
         msg = r.getDurationString();
-        assertFalse(msg, msg.endsWith(" and counting"));
+        assertFalse(msg.endsWith(" and counting"), msg);
       } finally {
         LocaleProvider.setProvider(providerToRestore);
       }
@@ -162,9 +159,9 @@ public class RunTest {
     @Issue("JENKINS-27441")
     @SuppressWarnings("deprecation")
     @Test
-    public void getLogReturnsAnEmptyListWhenCalledWith0() throws Exception {
+    void getLogReturnsAnEmptyListWhenCalledWith0() throws Exception {
         Job j = Mockito.mock(Job.class);
-        File tempBuildDir = tmp.newFolder();
+        File tempBuildDir = newFolder(tmp, "junit");
         Mockito.when(j.getBuildDir()).thenReturn(tempBuildDir);
         Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
         File f = r.getLogFile();
@@ -178,9 +175,9 @@ public class RunTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void getLogReturnsAnRightOrder() throws Exception {
+    void getLogReturnsAnRightOrder() throws Exception {
         Job j = Mockito.mock(Job.class);
-        File tempBuildDir = tmp.newFolder();
+        File tempBuildDir = newFolder(tmp, "junit");
         Mockito.when(j.getBuildDir()).thenReturn(tempBuildDir);
         Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
         File f = r.getLogFile();
@@ -197,15 +194,15 @@ public class RunTest {
         for (int i = 1; i < 10; i++) {
             assertEquals("dummy" + (10 + i), logLines.get(i));
         }
-        int truncatedCount = 10 * ("dummyN".length() + System.getProperty("line.separator").length()) - 2;
+        int truncatedCount = 10 * ("dummyN".length() + System.lineSeparator().length()) - 2;
         assertEquals("[...truncated " + truncatedCount + " B...]", logLines.get(0));
     }
 
     @SuppressWarnings("deprecation")
     @Test
-    public void getLogReturnsAllLines() throws Exception {
+    void getLogReturnsAllLines() throws Exception {
         Job j = Mockito.mock(Job.class);
-        File tempBuildDir = tmp.newFolder();
+        File tempBuildDir = newFolder(tmp, "junit");
         Mockito.when(j.getBuildDir()).thenReturn(tempBuildDir);
         Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
         File f = r.getLogFile();
@@ -223,7 +220,7 @@ public class RunTest {
     }
 
     @Test
-    public void compareRunsFromSameJobWithDifferentNumbers() throws Exception {
+    void compareRunsFromSameJobWithDifferentNumbers() throws Exception {
         final Jenkins group = Mockito.mock(Jenkins.class);
         Mockito.when(group.getFullName()).thenReturn("j");
         final Job j = Mockito.mock(Job.class);
@@ -245,7 +242,7 @@ public class RunTest {
 
     @Issue("JENKINS-42319")
     @Test
-    public void compareRunsFromDifferentParentsWithSameNumber() throws Exception {
+    void compareRunsFromDifferentParentsWithSameNumber() throws Exception {
         final Jenkins group1 = Mockito.mock(Jenkins.class);
         final Jenkins group2 = Mockito.mock(Jenkins.class);
         final Job j1 = Mockito.mock(Job.class);
@@ -271,17 +268,22 @@ public class RunTest {
     }
 
     @Test
-    public void willTriggerLogToStartWithNextFullLine() throws Exception {
+    void willTriggerLogToStartWithNextFullLine() throws Exception {
         assertWriteLogToEquals(new String(new char[2]).replace("\0", SAMPLE_BUILD_OUTPUT) + "Finished: SUCCESS.\n", 2 * SAMPLE_BUILD_OUTPUT.length() + 10);
     }
 
     @Test
-    public void wontPushOffsetOnRenderingFromBeginning() throws Exception {
+    void wontPushOffsetOnRenderingFromBeginning() throws Exception {
         assertWriteLogToEquals(new String(new char[5]).replace("\0", SAMPLE_BUILD_OUTPUT) + "Finished: SUCCESS.\n", 0);
     }
 
     @Test
-    public void willRenderNothingIfOffsetSetOnLastLine() throws Exception {
+    void wontPushOffsetOnRenderingFromBeginningOfLine() throws Exception {
+        assertWriteLogToEquals(new String(new char[3]).replace("\0", SAMPLE_BUILD_OUTPUT) + "Finished: SUCCESS.\n", 2 * SAMPLE_BUILD_OUTPUT.length());
+    }
+
+    @Test
+    void willRenderNothingIfOffsetSetOnLastLine() throws Exception {
         assertWriteLogToEquals("", 5 * SAMPLE_BUILD_OUTPUT.length() + 6);
     }
 
@@ -314,5 +316,14 @@ public class RunTest {
             r.writeLogTo(offset, xmlOutput);
             assertEquals(expectedOutput, writer.toString());
         }
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            throw new IOException("Couldn't create folders " + root);
+        }
+        return result;
     }
 }

@@ -26,18 +26,26 @@ package lib.layout;
 
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlLink;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class LayoutTest {
+@WithJenkins
+class LayoutTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-21254")
-    @Test public void rejectedLinks() throws Exception {
+    @Test
+    void rejectedLinks() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         JenkinsRule.WebClient wc = r.createWebClient();
@@ -51,6 +59,12 @@ public class LayoutTest {
             System.err.println("checking " + href);
             wc.goTo(href.substring(prefix.length()), null);
         }
+    }
+
+    @Test
+    void fullScreen() throws Exception {
+        // Example page using <l:layout type="full-screen">:
+        r.createWebClient().goTo("setupWizard/proxy-configuration");
     }
 
 }

@@ -33,7 +33,7 @@ function selectFresh(anchor) {
   var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = parent.querySelectorAll(
-    ".token-to-revoke.fresh-token"
+    ".token-to-revoke.fresh-token",
   );
 
   checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
@@ -43,7 +43,7 @@ function selectRecent(anchor) {
   var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = parent.querySelectorAll(
-    ".token-to-revoke.recent-token"
+    ".token-to-revoke.recent-token",
   );
 
   checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
@@ -87,33 +87,36 @@ function confirmAndRevokeAllSelected(button) {
 
   if (allCheckedCheckBoxes.length === 0) {
     var nothingSelected = button.getAttribute("data-nothing-selected");
-    alert(nothingSelected);
+    dialog.alert(nothingSelected);
   } else {
+    var confirmTitle = button.getAttribute("data-confirm-title");
     var confirmMessageTemplate = button.getAttribute("data-confirm-template");
     var confirmMessage = confirmMessageTemplate.replace(
       "%num%",
-      allCheckedCheckBoxes.length
+      allCheckedCheckBoxes.length,
     );
-    if (confirm(confirmMessage)) {
-      var url = button.getAttribute("data-url");
-      var selectedValues = [];
+    dialog
+      .confirm(confirmTitle, { message: confirmMessage, type: "destructive" })
+      .then(
+        () => {
+          var url = button.getAttribute("data-url");
+          var selectedValues = [];
 
-      for (var i = 0; i < allCheckedCheckBoxes.length; i++) {
-        var checkBox = allCheckedCheckBoxes[i];
-        var userId = checkBox.getAttribute("data-user-id");
-        var uuid = checkBox.getAttribute("data-uuid");
-        selectedValues.push({ userId: userId, uuid: uuid });
-      }
+          for (var i = 0; i < allCheckedCheckBoxes.length; i++) {
+            var checkBox = allCheckedCheckBoxes[i];
+            var userId = checkBox.getAttribute("data-user-id");
+            var uuid = checkBox.getAttribute("data-uuid");
+            selectedValues.push({ userId: userId, uuid: uuid });
+          }
 
-      // TODO simplify when Prototype.js is removed
-      fetch(url, {
-        method: "post",
-        body: Object.toJSON
-          ? Object.toJSON({ values: selectedValues })
-          : JSON.stringify({ values: selectedValues }),
-        headers: crumb.wrap({ "Content-Type": "application/json" }),
-      }).then(() => window.location.reload());
-    }
+          fetch(url, {
+            method: "post",
+            body: JSON.stringify({ values: selectedValues }),
+            headers: crumb.wrap({ "Content-Type": "application/json" }),
+          }).then(() => window.location.reload());
+        },
+        () => {},
+      );
   }
 }
 

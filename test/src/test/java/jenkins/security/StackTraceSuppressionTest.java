@@ -29,32 +29,37 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 
 import hudson.model.FreeStyleProject;
+import hudson.model.InvisibleAction;
 import hudson.model.ItemGroup;
+import hudson.model.RootAction;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.User;
 import java.io.IOException;
 import jenkins.model.Jenkins;
 import org.htmlunit.html.HtmlPage;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.WebMethod;
 import org.xml.sax.SAXException;
 
-public class StackTraceSuppressionTest {
+@WithJenkins
+class StackTraceSuppressionTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         clearProperties();
     }
 
-    @After
-    public void teardown() {
+    @AfterEach
+    void teardown() {
         clearProperties();
     }
 
@@ -63,7 +68,7 @@ public class StackTraceSuppressionTest {
     }
 
     @Test
-    public void authenticationManageException() throws Exception {
+    void authenticationManageException() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("alice"));
         User alice = User.getById("alice", true);
@@ -79,7 +84,7 @@ public class StackTraceSuppressionTest {
     }
 
     @Test
-    public void nonexistentAdjunct() throws Exception {
+    void nonexistentAdjunct() throws Exception {
         /* This test belongs in Stapler but it's easy to put it together here.
            This test is based upon Stapler throwing an exception for this broken request.
            If Stapler is improved to better handle this error, this test may erroneously fail. */
@@ -92,7 +97,7 @@ public class StackTraceSuppressionTest {
     }
 
     @Test
-    public void nonexistentAdjunctShowsTrace() throws Exception {
+    void nonexistentAdjunctShowsTrace() throws Exception {
         /* This test belongs in Stapler but it's easy to put it together here.
            This test is based upon Stapler throwing an exception for this broken request.
            If Stapler is improved to better handle this error, this test may erroneously fail. */
@@ -104,7 +109,7 @@ public class StackTraceSuppressionTest {
     }
 
     @Test
-    public void exception() throws Exception {
+    void exception() throws Exception {
         /* This test is based upon an incomplete / incorrect project implementation
            throwing an uncaught exception.
            If Jenkins is improved to better handle this error, this test may erroneously fail. */
@@ -116,7 +121,7 @@ public class StackTraceSuppressionTest {
     }
 
     @Test
-    public void exceptionShowsTrace() throws Exception {
+    void exceptionShowsTrace() throws Exception {
         /* This test is based upon an incomplete / incorrect project implementation
            throwing an uncaught exception.
            If Jenkins is improved to better handle this error, this test may erroneously fail. */
@@ -128,20 +133,16 @@ public class StackTraceSuppressionTest {
     }
 
     @Test
-    public void exceptionEndpoint() throws Exception {
-        /* This test is based upon a testing endpoint that really shouldn't exist in production code.
-           If Jenkins is improved to eliminate this endpoint, this test may erroneously fail. */
+    void exceptionEndpoint() throws Exception {
         String relativePath = "exception";
-        String detailString = "Jenkins.doException";
+        String detailString = "ExceptionAction.doException";
         checkSuppressedStack(relativePath, detailString);
     }
 
     @Test
-    public void exceptionEndpointShowsTrace() throws Exception {
-        /* This test is based upon a testing endpoint that really shouldn't exist in production code.
-           If Jenkins is improved to eliminate this endpoint, this test may erroneously fail. */
+    void exceptionEndpointShowsTrace() throws Exception {
         String relativePath = "exception";
-        String detailString = "Jenkins.doException";
+        String detailString = "ExceptionAction.doException";
         checkDisplayedStackTrace(relativePath, detailString);
     }
 
@@ -161,7 +162,7 @@ public class StackTraceSuppressionTest {
     }
 
     private void checBaseResponseContent(String content) {
-        assertThat(content, containsString("A problem occurred while processing the request."));
+        assertThat(content, containsString("A problem occurred while processing the request"));
         assertThat(content, containsString("Logging ID="));
         assertThat(content, containsString("Oops!"));
     }
@@ -186,6 +187,20 @@ public class StackTraceSuppressionTest {
         checBaseResponseContent(content);
         assertThat(content, containsString("Stack trace"));
         assertThat(content, containsString(detailString));
+    }
+
+    /* Replacement for historical Jenkins#doException URL */
+    @TestExtension
+    public static class ExceptionAction extends InvisibleAction implements RootAction {
+        @WebMethod(name = "")
+        public void doException() {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public String getUrlName() {
+            return "exception";
+        }
     }
 
 }

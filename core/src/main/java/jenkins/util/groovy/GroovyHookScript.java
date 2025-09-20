@@ -7,6 +7,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
+import hudson.model.User;
+import io.jenkins.servlet.ServletContextWrapper;
+import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -14,8 +17,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
+import jenkins.util.ScriptListener;
 import jenkins.util.SystemProperties;
 
 /**
@@ -53,7 +56,7 @@ public class GroovyHookScript {
     }
 
     private GroovyHookScript(String hook, Jenkins j) {
-        this(hook, j.servletContext, j.getRootDir(), j.getPluginManager().uberClassLoader);
+        this(hook, j.getServletContext(), j.getRootDir(), j.getPluginManager().uberClassLoader);
     }
 
     public GroovyHookScript(String hook, @NonNull ServletContext servletContext, @NonNull File jenkinsHome, @NonNull ClassLoader loader) {
@@ -61,6 +64,14 @@ public class GroovyHookScript {
         this.servletContext = servletContext;
         this.rootDir = ROOT_PATH != null ? new File(ROOT_PATH) : jenkinsHome;
         this.loader = loader;
+    }
+
+    /**
+     * @deprecated use {@link #GroovyHookScript(String, ServletContext, File, ClassLoader)}
+     */
+    @Deprecated
+    public GroovyHookScript(String hook, @NonNull javax.servlet.ServletContext servletContext, @NonNull File jenkinsHome, @NonNull ClassLoader loader) {
+        this(hook, ServletContextWrapper.toJakartaServletContext(servletContext), jenkinsHome, loader);
     }
 
     public GroovyHookScript bind(String name, Object o) {
@@ -133,6 +144,7 @@ public class GroovyHookScript {
     @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "Groovy hook scripts are a feature, not a bug")
     protected void execute(GroovyCodeSource s) {
         try {
+            ScriptListener.fireScriptExecution(s.getScriptText(), bindings, this.getClass(), s.getFile(), this.getClass().getName() + ":" + hook, User.current());
             createShell().evaluate(s);
         } catch (RuntimeException x) {
             LOGGER.log(WARNING, "Failed to run script " + s.getName(), x);

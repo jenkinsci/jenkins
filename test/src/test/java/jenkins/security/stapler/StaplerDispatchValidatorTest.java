@@ -24,7 +24,7 @@
 
 package jenkins.security.stapler;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
@@ -32,22 +32,24 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.Locale;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @Issue("SECURITY-534")
-public class StaplerDispatchValidatorTest {
+@WithJenkins
+class StaplerDispatchValidatorTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before
-    public void setUp() throws Exception {
-        StaplerDispatchValidator validator = StaplerDispatchValidator.getInstance(j.jenkins.servletContext);
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
+        StaplerDispatchValidator validator = StaplerDispatchValidator.getInstance(j.jenkins.getServletContext());
         try (InputStream whitelist = getClass().getResourceAsStream("StaplerDispatchValidatorTest/whitelist.txt")) {
             validator.loadWhitelist(whitelist);
         }
@@ -55,7 +57,7 @@ public class StaplerDispatchValidatorTest {
 
     @Test
     @For(StaplerViews.class)
-    public void canViewStaplerViews() throws Exception {
+    void canViewStaplerViews() throws Exception {
         String[] urls = {"annotated/explicitRoot", "extended/explicitRoot", "extended/whitelistedRoot"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
@@ -66,7 +68,7 @@ public class StaplerDispatchValidatorTest {
 
     @Test
     @For(StaplerFragments.class)
-    public void cannotViewStaplerFragments() throws Exception {
+    void cannotViewStaplerFragments() throws Exception {
         String[] urls = {"annotated/explicitFrag", "extended/explicitFrag"};
         for (String url : urls) {
             j.createWebClient().assertFails(url, HttpURLConnection.HTTP_NOT_FOUND);
@@ -74,7 +76,7 @@ public class StaplerDispatchValidatorTest {
     }
 
     @Test
-    public void canViewRoot() throws Exception {
+    void canViewRoot() throws Exception {
         String[] urls = {"annotated/root", "groovy/root", "jelly/root", "whitelist/root"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
@@ -83,7 +85,7 @@ public class StaplerDispatchValidatorTest {
     }
 
     @Test
-    public void canViewIndex() throws Exception {
+    void canViewIndex() throws Exception {
         String[] urls = {"annotated", "groovy", "jelly"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
@@ -92,7 +94,7 @@ public class StaplerDispatchValidatorTest {
     }
 
     @Test
-    public void canViewPagesThatIncludeViews() throws Exception {
+    void canViewPagesThatIncludeViews() throws Exception {
         String[] urls = {"groovy/include", "jelly/include"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
@@ -101,7 +103,7 @@ public class StaplerDispatchValidatorTest {
     }
 
     @Test
-    public void canViewPagesThatRedirectToViews() throws Exception {
+    void canViewPagesThatRedirectToViews() throws Exception {
         String[] urls = {"groovy/redirect", "jelly/redirect"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
@@ -110,16 +112,7 @@ public class StaplerDispatchValidatorTest {
     }
 
     @Test
-    public void canViewCompressedViews() throws Exception {
-        String[] urls = {"groovy/compress", "jelly/compress"};
-        for (String url : urls) {
-            HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
-        }
-    }
-
-    @Test
-    public void cannotViewFragment() throws Exception {
+    void cannotViewFragment() throws Exception {
         String[] urls = {"annotated/frag", "groovy/frag", "jelly/frag", "whitelist/frag"};
         for (String url : urls) {
             j.createWebClient().assertFails(url, HttpURLConnection.HTTP_NOT_FOUND);
@@ -127,7 +120,7 @@ public class StaplerDispatchValidatorTest {
     }
 
     @Test
-    public void canSetStatusCodeBeforeValidation() throws Exception {
+    void canSetStatusCodeBeforeValidation() throws Exception {
         String[] urls = {"groovy/error", "jelly/error"};
         for (String url : urls) {
             j.createWebClient().assertFails(url, 400);

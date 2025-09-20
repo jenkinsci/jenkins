@@ -33,6 +33,9 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
@@ -54,25 +57,27 @@ import hudson.slaves.Cloud;
 import hudson.slaves.NodeProvisioner;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import jenkins.model.IComputer;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.util.antlr.JenkinsANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -104,21 +109,6 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         this.name = name;
          // passing these causes an infinite loop - getTotalExecutors(),getBusyExecutors());
         this.loadStatistics = new LoadStatistics(0, 0) {
-            @Override
-            public int computeIdleExecutors() {
-                return Label.this.getIdleExecutors();
-            }
-
-            @Override
-            public int computeTotalExecutors() {
-                return Label.this.getTotalExecutors();
-            }
-
-            @Override
-            public int computeQueueLength() {
-                return Jenkins.get().getQueue().countBuildableItemsFor(Label.this);
-            }
-
             @Override
             protected Set<Node> getNodes() {
                 return Label.this.getNodes();
@@ -210,18 +200,6 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return nodes.size() == 1 && nodes.iterator().next().getSelfLabel().equals(this);
     }
 
-    private static class NodeSorter implements Comparator<Node>, Serializable {
-        private static final long serialVersionUID = -7368519598046684532L;
-
-        @Override
-        public int compare(Node o1, Node o2) {
-            if (o1 == o2) {
-                return 0;
-            }
-            return o1 instanceof Jenkins ? -1 : o2 instanceof Jenkins ? 1 : o1.getNodeName().compareTo(o2.getNodeName());
-        }
-    }
-
     /**
      * Gets all {@link Node}s that belong to this label.
      */
@@ -242,10 +220,29 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     @Restricted(DoNotUse.class) // Jelly
-    public Set<Node> getSortedNodes() {
-        Set<Node> r = new TreeSet<>(new NodeSorter());
-        r.addAll(getNodes());
-        return r;
+    @NonNull
+    public Collection<? extends IComputer> getComputers() {
+        return ExtensionList.lookupFirst(LabelComputerSource.class).get(this).stream().sorted(Comparator.comparing(IComputer::getName)).toList();
+    }
+
+    /**
+     * Allows plugins to override the displayed list of computers per label.
+     * @see ComputerSet.ComputerSource
+     */
+    @Restricted(Beta.class)
+    public interface LabelComputerSource extends ExtensionPoint {
+        @NonNull
+        Collection<? extends IComputer> get(@NonNull Label label);
+    }
+
+    @Extension(ordinal = -1)
+    @Restricted(DoNotUse.class)
+    public static class LabelComputerSourceImpl implements LabelComputerSource {
+        @Override
+        @NonNull
+        public Collection<? extends IComputer> get(@NonNull Label label) {
+            return label.getNodes().stream().map(Node::toComputer).filter(Objects::nonNull).toList();
+        }
     }
 
     /**
@@ -454,7 +451,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public abstract <V, P> V accept(LabelVisitor<V, P> visitor, P param);
 
     /**
-     * Lists up all the atoms contained in in this label.
+     * Lists all the atoms contained in this label.
      *
      * @since 1.420
      */
@@ -548,7 +545,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     @Override
-    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         ContextMenu menu = new ContextMenu();
         for (Node node : getNodes()) {
             menu.add(node);
@@ -591,11 +588,17 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public static Set<LabelAtom> parse(@CheckForNull String labels) {
         final Set<LabelAtom> r = new TreeSet<>();
         labels = fixNull(labels);
-        if (labels.length() > 0) {
-            final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
-            while (tokenizer.hasMoreTokens())
-                r.add(Jenkins.get().getLabelAtom(tokenizer.nextToken()));
+        if (!labels.isEmpty()) {
+            Jenkins j = Jenkins.get();
+            LabelAtom labelAtom = j.tryGetLabelAtom(labels);
+            if (labelAtom == null) {
+                final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
+                while (tokenizer.hasMoreTokens())
+                    r.add(j.getLabelAtom(tokenizer.nextToken()));
+            } else {
+                r.add(labelAtom);
             }
+        }
         return r;
     }
 

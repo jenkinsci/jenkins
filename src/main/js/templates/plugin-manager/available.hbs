@@ -1,0 +1,91 @@
+{{#each plugins}}
+    <tr data-plugin-id="{{ this.name }}" data-plugin-version="{{ this.version }}">
+        {{#if @root/admin }}
+            <td class="jenkins-table__cell--checkbox">
+                <span class="jenkins-checkbox">
+                    <input type="checkbox" name="plugin.{{ this.name }}.{{ this.sourceId }}" id="plugin.{{ this.name }}.{{ this.sourceId }}">
+                    <label for="plugin.{{ this.name }}.{{ this.sourceId }}"></label>
+                </span>
+            </td>
+        {{/if}}
+        <td>
+            <div>
+                <a href="{{ this.wiki }}" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
+                    {{ this.displayName }}
+                    <span class="jenkins-visually-hidden">Version</span>
+                    <span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">{{ this.version }}</span>
+                </a>
+            </div>
+            {{#if this.categories }}
+                <div class="app-plugin-manager__categories">
+                    {{#each this.categories }}
+                        <a href="?filter={{ this }}" class="jenkins-table__link jenkins-table__badge">
+                        {{ this }}
+                        </a>
+                    {{/each}}
+                </div>
+            {{/if}}
+            {{#if this.excerpt }}
+                <div class="except">
+                    {{{ this.excerpt }}}
+                </div>
+            {{/if}}
+            {{#if this.newerCoreRequired }}
+                <div class="jenkins-alert jenkins-alert-danger">
+                    {{{ this.newerCoreRequired }}}
+                </div>
+            {{/if}}
+            {{#if this.unresolvedSecurityWarnings }}
+                <div class="jenkins-alert jenkins-alert-danger">
+                    {{ this.unresolvedSecurityWarnings.text }}
+                    <ul>
+                        {{#each this.unresolvedSecurityWarnings.warnings}}
+                            <li>
+                                <a href="{{ this.url }}" target="_blank" rel="noopener noreferrer">
+                                    {{ this.message }}
+                                </a>
+                            </li>
+                        {{/each}}
+                    </ul>
+                </div>
+            {{/if}}
+            {{#if this.deprecated }}
+                <div class="jenkins-alert jenkins-alert-warning">
+                    {{{ this.deprecated }}}
+                </div>
+            {{/if}}
+            {{#if this.adoptMe }}
+                <div class="jenkins-alert jenkins-alert-warning">
+                    {{{ this.adoptMe }}}
+                </div>
+            {{/if}}
+        </td>
+        {{#if this.releaseTimestamp }}
+            <td style="width: 20%" data="{{ this.releaseTimestamp.iso8601 }}">
+                <time datetime="{{ this.releaseTimestamp.iso8601 }}">
+                    {{ this.releaseTimestamp.displayValue }}
+                </time>
+            </td>
+        {{else}}
+            <td style="width: 20%"></td>
+        {{/if}}
+        {{#if @root/includeHealthScores }}
+        <td style="width: 15%">
+            <div>
+                {{#if this.healthScore }}
+                    <a href="{{ this.wiki }}/healthScore"
+                       class="jenkins-healthScore--badge jenkins-healthScore--{{ this.healthScoreClass }}"
+                       target="_blank" rel="noopener noreferrer">
+                        {{ this.healthScore }}
+                    </a>
+                {{else}}
+                  <div class="icon-lg">
+                    <!-- symbol: status-aborted -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><ellipse cx="256" cy="256" rx="210" ry="210" fill="none" stroke="var(--text-color-secondary)" stroke-linecap="round" stroke-miterlimit="10" stroke-width="36" /><path fill="none" stroke="var(--text-color-secondary)" stroke-linecap="round" stroke-linejoin="round" stroke-width="36" d="M192 320l128-128" /></svg>
+                  </div>
+                {{/if}}
+            </div>
+        </td>
+        {{/if}}
+    </tr>
+{{/each}}

@@ -33,7 +33,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * {@link ParameterDefinition} that is either 'true' or 'false'.
@@ -59,8 +59,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
-        if (defaultValue instanceof BooleanParameterValue) {
-            BooleanParameterValue value = (BooleanParameterValue) defaultValue;
+        if (defaultValue instanceof BooleanParameterValue value) {
             return new BooleanParameterDefinition(getName(), value.value, getDescription());
         } else {
             return this;
@@ -80,7 +79,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
-    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+    public ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
         BooleanParameterValue value = req.bindJSON(BooleanParameterValue.class, jo);
         value.setDescription(getDescription());
         return value;

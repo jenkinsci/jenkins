@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 /**
  * {@link ClassLoader} that masks a specified set of classes
@@ -42,32 +42,27 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MaskingClassLoader extends ClassLoader {
+public class MaskingClassLoader extends DelegatingClassLoader {
     /**
      * Prefix of the packages that should be hidden.
      */
-    private final List<String> masksClasses = new CopyOnWriteArrayList<>();
+    private final List<String> masksClasses;
 
-    private final List<String> masksResources = new CopyOnWriteArrayList<>();
-
-    static {
-        registerAsParallelCapable();
-    }
+    private final List<String> masksResources;
 
     public MaskingClassLoader(ClassLoader parent, String... masks) {
         this(parent, Arrays.asList(masks));
     }
 
     public MaskingClassLoader(ClassLoader parent, Collection<String> masks) {
-        super(parent);
-        this.masksClasses.addAll(masks);
+        super("Masking ClassLoader of " + parent.getName(), parent);
+        this.masksClasses = List.copyOf(masks);
 
         /*
          * The name of a resource is a '/'-separated path name
          */
-        for (String mask : masks) {
-            masksResources.add(mask.replace('.', '/'));
-        }
+        this.masksResources =
+                masks.stream().map(mask -> mask.replace('.', '/')).collect(Collectors.toUnmodifiableList());
     }
 
     @Override
@@ -92,13 +87,6 @@ public class MaskingClassLoader extends ClassLoader {
         if (isMasked(name)) return Collections.emptyEnumeration();
 
         return super.getResources(name);
-    }
-
-    public void add(String prefix) {
-        masksClasses.add(prefix);
-        if (prefix != null) {
-            masksResources.add(prefix.replace('.', '/'));
-        }
     }
 
     private boolean isMasked(String name) {

@@ -30,8 +30,8 @@ THE SOFTWARE.
     <st:attribute name="items" use="required">
       A Map object that gets rendered as a table.
     </st:attribute>
-    <st:attribute name="sensitive" use="optional" since="2.385">
-      Set to true if the information shown in the table is sensitive and should be hidden by default.
+    <st:attribute name="sensitive" use="optional">
+      Set to true if the information shown in the table is sensitive and should be hidden by default. Since 2.385.
     </st:attribute>
   </st:documentation>
   <j:if test="${attrs.sensitive}">

@@ -29,34 +29,34 @@ import static org.awaitility.Awaitility.await;
 import hudson.ExtensionList;
 import java.time.Duration;
 import java.util.logging.Level;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.PrefixedOutputStream;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 
-public final class DoubleLaunchCheckerTest {
+class DoubleLaunchCheckerTest {
 
-    @Rule
-    public RealJenkinsRule mainController = new RealJenkinsRule().
+    @RegisterExtension
+    private final RealJenkinsExtension mainController = new RealJenkinsExtension().
         withName("main").
         withColor(PrefixedOutputStream.Color.BLUE).
         withLogger(DoubleLaunchChecker.class, Level.FINE);
 
-    @Rule
-    public RealJenkinsRule duplicateController = new RealJenkinsRule(mainController).
+    @RegisterExtension
+    private final RealJenkinsExtension duplicateController = new RealJenkinsExtension(mainController).
         withName("dupe").
         withColor(PrefixedOutputStream.Color.RED).
         withLogger(DoubleLaunchChecker.class, Level.FINE);
 
     @Test
-    public void activated() throws Throwable {
+    void activated() throws Throwable {
         mainController.startJenkins();
         duplicateController.startJenkins();
         mainController.runRemotely(DoubleLaunchCheckerTest::waitForWarning);
     }
 
-    private static void waitForWarning(JenkinsRule r) throws Throwable {
+    private static void waitForWarning(JenkinsRule r) {
         await().atMost(Duration.ofMinutes(3)).until(ExtensionList.lookupSingleton(DoubleLaunchChecker.class)::isActivated);
     }
 

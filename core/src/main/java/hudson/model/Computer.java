@@ -26,7 +26,7 @@
 
 package hudson.model;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -41,9 +41,10 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Queue.FlyweightTask;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
+import hudson.node_monitors.AbstractDiskSpaceMonitor;
+import hudson.node_monitors.DiskSpaceMonitorNodeProperty;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -61,15 +62,19 @@ import hudson.slaves.OfflineCause.ByCLI;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.triggers.SafeTimerTask;
+import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
+import hudson.util.FormApply;
 import hudson.util.Futures;
 import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
+import jakarta.servlet.ServletException;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,15 +84,18 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -101,8 +109,12 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.servlet.ServletException;
+import jenkins.model.DisplayExecutor;
+import jenkins.model.IComputer;
+import jenkins.model.IDisplayExecutor;
 import jenkins.model.Jenkins;
+import jenkins.search.SearchGroup;
+import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.ImpersonatingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.stapler.StaplerDispatchable;
@@ -112,9 +124,6 @@ import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import jenkins.widgets.HasWidgets;
 import net.jcip.annotations.GuardedBy;
-import org.apache.commons.lang.StringUtils;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -126,8 +135,8 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -147,7 +156,7 @@ import org.kohsuke.stapler.verb.POST;
  * if a {@link Node} is configured (probably temporarily) with 0 executors,
  * you won't have a {@link Computer} object for it (except for the built-in node,
  * which always gets its {@link Computer} in case we have no static executors and
- * we need to run a {@link FlyweightTask} - see JENKINS-7291 for more discussion.)
+ * we need to run a {@link Queue.FlyweightTask} - see JENKINS-7291 for more discussion.)
  *
  * Also, even if you remove a {@link Node}, it takes time for the corresponding
  * {@link Computer} to be removed, if some builds are already in progress on that
@@ -161,7 +170,7 @@ import org.kohsuke.stapler.verb.POST;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner, StaplerProxy, HasWidgets {
+public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, IComputer, ExecutorListener, DescriptorByNameOwner, StaplerProxy, HasWidgets {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<>();
     // TODO:
@@ -175,11 +184,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected volatile OfflineCause offlineCause;
 
     private long connectTime = 0;
-
-    /**
-     * True if Jenkins shouldn't start new builds on this node.
-     */
-    private boolean temporarilyOffline;
 
     /**
      * {@link Node} object may be created and deleted independently
@@ -224,7 +228,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.607
      */
     public void recordTermination() {
-        StaplerRequest request = Stapler.getCurrentRequest();
+        StaplerRequest2 request = Stapler.getCurrentRequest2();
         if (request != null) {
             terminatedBy.add(new TerminationRequest(
                     String.format("Termination requested at %s by %s [id=%d] from HTTP request for %s",
@@ -348,12 +352,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
-    @NonNull
-    @Override
-    public ACL getACL() {
-        return Jenkins.get().getAuthorizationStrategy().getACL(this);
-    }
-
     /**
      * If the computer was offline (either temporarily or not),
      * this method will return the cause.
@@ -362,31 +360,27 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      null if the system was put offline without given a cause.
      */
     @Exported
+    @Override
     public OfflineCause getOfflineCause() {
+        var node = getNode();
+        if (node != null) {
+            var temporaryOfflineCause = node.getTemporaryOfflineCause();
+            if (temporaryOfflineCause != null) {
+                return temporaryOfflineCause;
+            }
+        }
         return offlineCause;
     }
 
-    /**
-     * If the computer was offline (either temporarily or not),
-     * this method will return the cause as a string (without user info).
-     *
-     * @return
-     *      empty string if the system was put offline without given a cause.
-     */
-    @Exported
-    public String getOfflineCauseReason() {
-        if (offlineCause == null) {
-            return "";
-        }
-        // fetch the localized string for "Disconnected By"
-        String gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("", "");
-        // regex to remove commented reason base string
-        String gsub1 = "^" + gsub_base + "[\\w\\W]* \\: ";
-        // regex to remove non-commented reason base string
-        String gsub2 = "^" + gsub_base + "[\\w\\W]*";
+    @Override
+    public boolean hasOfflineCause() {
+        return offlineCause != null;
+    }
 
-        String newString = offlineCause.toString().replaceAll(gsub1, "");
-        return newString.replaceAll(gsub2, "");
+    @Exported
+    @Override
+    public String getOfflineCauseReason() {
+        return IComputer.super.getOfflineCauseReason();
     }
 
     /**
@@ -413,7 +407,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * If {@link #getChannel()}==null, attempts to relaunch the agent.
      */
-    public abstract void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException;
+    public abstract void doLaunchSlaveAgent(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException;
 
     /**
      * @deprecated since 2009-01-06.  Use {@link #connect(boolean)}
@@ -424,7 +418,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Do the same as {@link #doLaunchSlaveAgent(StaplerRequest, StaplerResponse)}
+     * Do the same as {@link #doLaunchSlaveAgent(StaplerRequest2, StaplerResponse2)}
      * but outside the context of serving a request.
      *
      * <p>
@@ -553,7 +547,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Deprecated
     public void cliOffline(String cause) throws ExecutionException, InterruptedException {
         checkPermission(DISCONNECT);
-        setTemporarilyOffline(true, new ByCLI(cause));
+        setTemporaryOfflineCause(new ByCLI(cause));
     }
 
     /**
@@ -562,7 +556,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Deprecated
     public void cliOnline() throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
-        setTemporarilyOffline(false, null);
+        setTemporaryOfflineCause(null);
     }
 
     /**
@@ -578,9 +572,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return numExecutors;
     }
 
-    /**
-     * Returns {@link Node#getNodeName() the name of the node}.
-     */
     public @NonNull String getName() {
         return nodeName != null ? nodeName : "";
     }
@@ -618,17 +609,33 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return LabelAtom.get(nodeName != null ? nodeName : Jenkins.get().getSelfLabel().toString()).loadStatistics;
     }
 
+    @Deprecated
+    @Restricted(DoNotUse.class)
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }
 
     @Exported
+    @Override
     public boolean isOffline() {
-        return temporarilyOffline || getChannel() == null;
+        return isTemporarilyOffline() || getChannel() == null;
     }
 
     public final boolean isOnline() {
         return !isOffline();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Uses {@link #getChannel()} to check the connection.
+     * A connected agent may still be offline for scheduling if marked temporarily offline.
+     * @return {@code true} if the agent is connected, {@code false} otherwise.
+     * @see #isOffline()
+     */
+    @Override
+    public boolean isConnected() {
+        return getChannel() != null;
     }
 
     /**
@@ -639,12 +646,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public boolean isManualLaunchAllowed() {
         return getRetentionStrategy().isManualLaunchAllowed(this);
     }
-
-
-    /**
-     * Is a {@link #connect(boolean)} operation in progress?
-     */
-    public abstract boolean isConnecting();
 
     /**
      * Returns true if this computer is supposed to be launched via inbound protocol.
@@ -657,14 +658,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return false;
     }
 
-    /**
-     * Returns true if this computer can be launched by Hudson proactively and automatically.
-     *
-     * <p>
-     * For example, inbound agents return {@code false} from this, because the launch process
-     * needs to be initiated from the agent side.
-     */
     @Exported
+    @Override
     public boolean isLaunchSupported() {
         return true;
     }
@@ -685,85 +680,89 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @Deprecated
     public boolean isTemporarilyOffline() {
-        return temporarilyOffline;
+        var node = getNode();
+        return node != null && node.isTemporarilyOffline();
+    }
+
+    /**
+     * Allows a caller to define an {@link OfflineCause} for a computer that has never been online.
+     * @since 2.483
+     */
+    public void setOfflineCause(OfflineCause cause) {
+        this.offlineCause = cause;
     }
 
     /**
      * @deprecated as of 1.320.
-     *      Use {@link #setTemporarilyOffline(boolean, OfflineCause)}
+     *      Use {@link #setTemporaryOfflineCause(OfflineCause)}
      */
     @Deprecated
     public void setTemporarilyOffline(boolean temporarilyOffline) {
-        setTemporarilyOffline(temporarilyOffline, null);
+        setTemporaryOfflineCause(temporarilyOffline ? new OfflineCause.LegacyOfflineCause() : null);
+    }
+
+    /**
+     * @deprecated
+     *      Use {@link #setTemporaryOfflineCause(OfflineCause)} instead.
+     */
+    @Deprecated(since = "2.482")
+    public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
+        if (cause == null) {
+            setTemporarilyOffline(temporarilyOffline);
+        } else {
+            setTemporaryOfflineCause(temporarilyOffline ? cause : null);
+        }
     }
 
     /**
      * Marks the computer as temporarily offline. This retains the underlying
      * {@link Channel} connection, but prevent builds from executing.
      *
-     * @param cause
-     *      If the first argument is true, specify the reason why the node is being put
-     *      offline.
+     * @param temporaryOfflineCause The reason why the node is being put offline.
+     *                                If null, this cancels the status
+     * @since 2.482
      */
-    public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
-        offlineCause = temporarilyOffline ? cause : null;
-        this.temporarilyOffline = temporarilyOffline;
-        Node node = getNode();
-        if (node != null) {
-            node.setTemporaryOfflineCause(offlineCause);
+    public void setTemporaryOfflineCause(@CheckForNull OfflineCause temporaryOfflineCause) {
+        var node = getNode();
+        if (node == null) {
+            throw new IllegalStateException("Can't set a temporary offline cause if the node has been removed");
         }
-        synchronized (statusChangeLock) {
-            statusChangeLock.notifyAll();
-        }
-        if (temporarilyOffline) {
-            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(this, cause));
-        } else {
-            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOnline(this));
-        }
+        node.setTemporaryOfflineCause(temporaryOfflineCause);
     }
 
     /**
-     * Returns the icon for this computer.
-     *
-     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
-     *
-     * @see #getIconClassName()
+     * @since 2.482
+     * @return If the node is temporarily offline, the reason why.
      */
+    @SuppressWarnings("unused") // used by setOfflineCause.jelly
+    public String getTemporaryOfflineCauseReason() {
+        var node = getNode();
+        if (node == null) {
+            // Node was deleted; computer still exists
+            return null;
+        }
+        var cause = node.getTemporaryOfflineCause();
+        if (cause instanceof OfflineCause.UserCause userCause) {
+            return userCause.getMessage();
+        }
+        return cause != null ? cause.toString() : "";
+    }
+
     @Exported
+    @Override
     public String getIcon() {
-        // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
-        // There is a "technical" reason the computer will not accept new builds
-        if (isOffline() || !isAcceptingTasks()) return "symbol-computer-offline";
-        return "symbol-computer";
+        return IComputer.super.getIcon();
     }
 
     /**
-     * Returns the class name that will be used to lookup the icon.
-     *
-     * This class name will be added as a class tag to the html img tags where the icon should
-     * show up followed by a size specifier given by {@link Icon#toNormalizedIconSizeClass(String)}
-     * The conversion of class tag to src tag is registered through {@link IconSet#addIcon(Icon)}
-     *
-     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
+     * {@inheritDoc}
      *
      * @see #getIcon()
      */
     @Exported
+    @Override
     public String getIconClassName() {
-        // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
-        // There is a "technical" reason the computer will not accept new builds
-        if (isOffline() || !isAcceptingTasks()) return "symbol-computer-offline";
-        return "symbol-computer";
-    }
-
-    public String getIconAltText() {
-        // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "[temporarily offline by user]";
-        // There is a "technical" reason the computer will not accept new builds
-        if (isOffline() || !isAcceptingTasks()) return "[offline]";
-        return "[online]";
+        return IComputer.super.getIconClassName();
     }
 
     @Exported
@@ -775,6 +774,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return Messages.Computer_Caption(nodeName);
     }
 
+    @Override
+    @NonNull
     public String getUrl() {
         return "computer/" + Util.fullEncode(getName()) + "/";
     }
@@ -794,7 +795,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public RunList getBuilds() {
-        return RunList.fromJobs((Iterable) Jenkins.get().allItems(Job.class)).node(getNode());
+        return RunList.fromJobs((Iterable) Jenkins.get().allItems(AbstractProject.class)).node(getNode());
     }
 
     /**
@@ -809,20 +810,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             this.nodeName = null;
 
         setNumExecutors(node.getNumExecutors());
-        if (this.temporarilyOffline) {
-            // When we get a new node, push our current temp offline
-            // status to it (as the status is not carried across
-            // configuration changes that recreate the node).
-            // Since this is also called the very first time this
-            // Computer is created, avoid pushing an empty status
-            // as that could overwrite any status that the Node
-            // brought along from its persisted config data.
-            node.setTemporaryOfflineCause(this.offlineCause);
-        }
     }
 
     /**
-     * Called by {@link Jenkins#updateComputerList()} to notify {@link Computer} that it will be discarded.
+     * Called by {@link Jenkins#updateComputerList(boolean, Collection)} to notify {@link Computer} that it will be discarded.
      *
      * <p>
      * Note that at this point {@link #getNode()} returns null.
@@ -837,7 +828,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Called by {@link Jenkins#updateComputerList()} to notify {@link Computer} that it will be discarded.
+     * Called by {@link Jenkins#updateComputerList(boolean, Collection)} to notify {@link Computer} that it will be discarded.
      *
      * <p>
      * Note that at this point {@link #getNode()} returns null.
@@ -942,19 +933,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return n;
     }
 
-    /**
-     * Returns the number of {@link Executor}s that are doing some work right now.
-     */
+    @Override
     public final int countBusy() {
         return countExecutors() - countIdle();
     }
 
     /**
-     * Returns the current size of the executor pool for this computer.
+     * {@inheritDoc}
      * This number may temporarily differ from {@link #getNumExecutors()} if there
      * are busy tasks when the configured size is decreased.  OneOffExecutors are
      * not included in this count.
      */
+    @Override
     public final int countExecutors() {
         return executors.size();
     }
@@ -991,14 +981,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Used to render the list of executors.
-     * @return a snapshot of the executor display information
+     * {@inheritDoc}
      * @since 1.607
      */
-    @Restricted(NoExternalUse.class)
-    public List<DisplayExecutor> getDisplayExecutors() {
+    @Override
+    @NonNull
+    public List<IDisplayExecutor> getDisplayExecutors() {
         // The size may change while we are populating, but let's start with a reasonable guess to minimize resizing
-        List<DisplayExecutor> result = new ArrayList<>(executors.size() + oneOffExecutors.size());
+        List<IDisplayExecutor> result = new ArrayList<>(executors.size() + oneOffExecutors.size());
         int index = 0;
         for (Executor e : executors) {
             if (e.isDisplayCell()) {
@@ -1097,6 +1087,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     if (ciBase != null) { // TODO confirm safe to assume non-null and use getInstance()
                         ciBase.removeComputer(Computer.this);
                     }
+                } else if (isIdle()) {
+                    threadPoolForRemoting.submit(() -> Listeners.notify(ComputerListener.class, false, l -> l.onIdle(this)));
                 }
             }
         };
@@ -1135,6 +1127,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return getUrl();
     }
 
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.ComputerSearchGroup.class);
+    }
+
     /**
      * {@link RetentionStrategy} associated with this computer.
      *
@@ -1153,6 +1150,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (hasPermission(CONNECT)) {
             for (NodeMonitor monitor : NodeMonitor.getAll())
                 r.put(monitor.getClass().getName(), monitor.data(this));
+        }
+        return r;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public Map<NodeMonitor, Object> getMonitoringData() {
+        Map<NodeMonitor, Object> r = new LinkedHashMap<>();
+        for (NodeMonitor monitor : NodeMonitor.getAll()) {
+            if (monitor.getColumnCaption() != null) {
+                r.put(monitor, monitor.data(this));
+            }
         }
         return r;
     }
@@ -1365,7 +1373,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 Executors.newCachedThreadPool(
                     new ExceptionCatchingThreadFactory(
                         new NamingThreadFactory(
-                            new DaemonThreadFactory(), "Computer.threadPoolForRemoting")))), ACL.SYSTEM2));
+                            new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()),
+                            "Computer.threadPoolForRemoting")))),
+            ACL.SYSTEM2));
 
 //
 //
@@ -1373,12 +1383,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 //
 //
     @Restricted(DoNotUse.class)
-    public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssAll(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds());
     }
 
     @Restricted(DoNotUse.class)
-    public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssFailed(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly());
     }
 
@@ -1389,7 +1399,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 2.215
      */
     @Restricted(DoNotUse.class)
-    public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRssLatest(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<>();
         for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
             if (p.getLastBuild() != null) {
@@ -1406,24 +1416,23 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @RequirePOST
     public HttpResponse doToggleOffline(@QueryParameter String offlineMessage) throws IOException, ServletException {
-        if (!temporarilyOffline) {
-            checkPermission(DISCONNECT);
-            offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
-            setTemporarilyOffline(!temporarilyOffline,
-                    new OfflineCause.UserCause(User.current(), offlineMessage));
-        } else {
-            checkPermission(CONNECT);
-            setTemporarilyOffline(!temporarilyOffline, null);
+        var node = getNode();
+        if (node == null) {
+            return HttpResponses.notFound();
         }
-        return HttpResponses.redirectToDot();
+        if (node.isTemporarilyOffline()) {
+            checkPermission(CONNECT);
+            setTemporaryOfflineCause(null);
+            return HttpResponses.redirectToDot();
+        } else {
+            return doChangeOfflineCause(offlineMessage);
+        }
     }
 
     @RequirePOST
     public HttpResponse doChangeOfflineCause(@QueryParameter String offlineMessage) throws IOException, ServletException {
         checkPermission(DISCONNECT);
-        offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
-        setTemporarilyOffline(true,
-                new OfflineCause.UserCause(User.current(), offlineMessage));
+        setTemporaryOfflineCause(new OfflineCause.UserCause(User.current(), Util.fixEmptyAndTrim(offlineMessage)));
         return HttpResponses.redirectToDot();
     }
 
@@ -1434,12 +1443,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Dumps the contents of the export table.
      */
-    public void doDumpExportTable(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+    public void doDumpExportTable(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, InterruptedException {
         // this is a debug probe and may expose sensitive information
         checkPermission(Jenkins.ADMINISTER);
 
         rsp.setContentType("text/plain");
-        try (PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req))) {
+        try (PrintWriter w = new PrintWriter(rsp.getWriter())) {
             VirtualChannel vc = getChannel();
             if (vc instanceof Channel) {
                 w.println("Controller to agent");
@@ -1470,18 +1479,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * For system diagnostics.
      * Run arbitrary Groovy script.
      */
-    public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doScript(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         _doScript(req, rsp, "_script.jelly");
     }
 
     /**
      * Run arbitrary Groovy script and return result as plain text.
      */
-    public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doScriptText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         _doScript(req, rsp, "_scriptText.jelly");
     }
 
-    protected void _doScript(StaplerRequest req, StaplerResponse rsp, String view) throws IOException, ServletException {
+    protected void _doScript(StaplerRequest2 req, StaplerResponse2 rsp, String view) throws IOException, ServletException {
         Jenkins._doScript(req, rsp, req.getView(this, view), getChannel(), getACL());
     }
 
@@ -1489,7 +1498,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Accepts the update to the node configuration.
      */
     @POST
-    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+    public void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
         String proposedName = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
@@ -1506,22 +1515,30 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         String nExecutors = req.getSubmittedForm().getString("numExecutors");
-        if (StringUtils.isBlank(nExecutors) || Integer.parseInt(nExecutors) <= 0) {
+        if (nExecutors == null || nExecutors.isBlank() || Integer.parseInt(nExecutors) <= 0) {
             throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 
         Node result = node.reconfigure(req, req.getSubmittedForm());
         Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
 
+        if (result.getNodeProperty(DiskSpaceMonitorNodeProperty.class) != null) {
+            for (NodeMonitor monitor : NodeMonitor.getAll()) {
+                if (monitor instanceof AbstractDiskSpaceMonitor) {
+                    monitor.data(this);
+                }
+            }
+        }
+
         // take the user back to the agent top page.
-        rsp.sendRedirect2("../" + result.getNodeName() + '/');
+        FormApply.success("../" + result.getNodeName() + '/').generateResponse(req, rsp, null);
     }
 
     /**
      * Accepts {@code config.xml} submission, as well as serve it.
      */
     @WebMethod(name = "config.xml")
-    public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
+    public void doConfigDotXml(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException, ServletException {
 
         if (req.getMethod().equals("GET")) {
@@ -1532,7 +1549,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             if (node == null) {
                 throw HttpResponses.notFound();
             }
-            Jenkins.XSTREAM2.toXMLUTF8(node, rsp.getOutputStream());
+            if (hasPermission(CONFIGURE)) {
+                Jenkins.XSTREAM2.toXMLUTF8(node, rsp.getOutputStream());
+            } else {
+                var baos = new ByteArrayOutputStream();
+                Jenkins.XSTREAM2.toXMLUTF8(node, baos);
+                String xml = baos.toString(StandardCharsets.UTF_8);
+
+                xml = ExtendedReadRedaction.applyAll(xml);
+                org.apache.commons.io.IOUtils.write(xml, rsp.getOutputStream(), StandardCharsets.UTF_8);
+            }
             return;
         }
         if (req.getMethod().equals("POST")) {
@@ -1600,7 +1626,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Handles incremental log.
      */
-    public void doProgressiveLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doProgressiveLog(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         getLogText().doProgressText(req, rsp);
     }
 
@@ -1631,15 +1657,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return e != null ? e.getOwner() : null;
     }
 
-    /**
-     * Returns {@code true} if the computer is accepting tasks. Needed to allow agents programmatic suspension of task
-     * scheduling that does not overlap with being offline.
-     *
-     * @return {@code true} if the computer is accepting tasks
-     * @see hudson.slaves.RetentionStrategy#isAcceptingTasks(Computer)
-     * @see hudson.model.Node#isAcceptingTasks()
-     */
     @OverrideMustInvoke
+    @Override
     public boolean isAcceptingTasks() {
         final Node node = getNode();
         return getRetentionStrategy().isAcceptingTasks(this) && (node == null || node.isAcceptingTasks());
@@ -1677,6 +1696,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         relocateOldLogs(Jenkins.get().getRootDir());
     }
 
+    @SuppressFBWarnings(value = "REDOS", justification = "TODO needs triage")
     /*package*/ static void relocateOldLogs(File dir) {
         final Pattern logfile = Pattern.compile("slave-(.*)\\.log(\\.[0-9]+)?");
         File[] logfiles = dir.listFiles((dir1, name) -> logfile.matcher(name).matches());
@@ -1699,79 +1719,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
-    /**
-     * A value class to provide a consistent snapshot view of the state of an executor to avoid race conditions
-     * during rendering of the executors list.
-     *
-     * @since 1.607
-     */
-    @Restricted(NoExternalUse.class)
-    public static class DisplayExecutor implements ModelObject {
-
-        @NonNull
-        private final String displayName;
-        @NonNull
-        private final String url;
-        @NonNull
-        private final Executor executor;
-
-        public DisplayExecutor(@NonNull String displayName, @NonNull String url, @NonNull Executor executor) {
-            this.displayName = displayName;
-            this.url = url;
-            this.executor = executor;
-        }
-
+    @Extension(ordinal = Double.MAX_VALUE)
+    @Restricted(DoNotUse.class)
+    public static class InternalComputerListener extends ComputerListener {
         @Override
-        @NonNull
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        @NonNull
-        public String getUrl() {
-            return url;
-        }
-
-        @NonNull
-        public Executor getExecutor() {
-            return executor;
-        }
-
-        @Override
-        public String toString() {
-            String sb = "DisplayExecutor{" + "displayName='" + displayName + '\'' +
-                    ", url='" + url + '\'' +
-                    ", executor=" + executor +
-                    '}';
-            return sb;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            DisplayExecutor that = (DisplayExecutor) o;
-
-            return executor.equals(that.executor);
-        }
-
-        @Extension(ordinal = Double.MAX_VALUE)
-        @Restricted(DoNotUse.class)
-        public static class InternalComputerListener extends ComputerListener {
-            @Override
-            public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
-                c.cachedEnvironment = null;
-            }
-        }
-
-        @Override
-        public int hashCode() {
-            return executor.hashCode();
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            c.cachedEnvironment = null;
         }
     }
 

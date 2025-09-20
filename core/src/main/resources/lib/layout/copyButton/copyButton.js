@@ -3,38 +3,38 @@ Behaviour.specify(
   "copyButton",
   0,
   function (copyButton) {
-    copyButton.addEventListener("click", () => {
-      // HTMLUnit 2.70.0 does not recognize isSecureContext
-      // https://issues.jenkins.io/browse/JENKINS-70895
-      if (!window.isRunAsTest && isSecureContext) {
-        // Make an invisible textarea element containing the text
-        const fakeInput = document.createElement("textarea");
-        fakeInput.value = copyButton.getAttribute("text");
-        fakeInput.style.width = "1px";
-        fakeInput.style.height = "1px";
-        fakeInput.style.border = "none";
-        fakeInput.style.padding = "0px";
-        fakeInput.style.position = "absolute";
-        fakeInput.style.top = "-99999px";
-        fakeInput.style.left = "-99999px";
-        fakeInput.setAttribute("tabindex", "-1");
-        document.body.appendChild(fakeInput);
+    if (isSecureContext) {
+      copyButton.addEventListener("click", () => {
+        var text = copyButton.getAttribute("text");
+        if (copyButton.hasAttribute("ref")) {
+          var ref = copyButton.getAttribute("ref");
+          var target = document.getElementById(ref);
+          if (target) {
+            text = target.innerText;
+          }
+        }
 
-        // Select the text and copy it to the clipboard
-        fakeInput.select();
-        navigator.clipboard.writeText(fakeInput.value);
-
-        // Remove the textarea element
-        document.body.removeChild(fakeInput);
-
-        // Show the completion message
-        hoverNotification(copyButton.getAttribute("message"), copyButton);
-      } else {
-        hoverNotification(
-          "Copy is only supported with a secure (HTTPS) connection",
-          copyButton
-        );
-      }
-    });
-  }
+        // Copy the text to the clipboard
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            copyButton.classList.add("jenkins-copy-button--copied");
+            setTimeout(() => {
+              copyButton.classList.remove("jenkins-copy-button--copied");
+            }, 2000);
+          })
+          .catch(() => {
+            hoverNotification(
+              "Could not get permission to write to clipboard",
+              copyButton,
+            );
+          });
+      });
+    } else {
+      copyButton.disabled = true;
+      copyButton.removeAttribute("tooltip");
+      const parent = copyButton.parentElement;
+      parent.setAttribute("tooltip", parent.dataset.messageInsecure);
+    }
+  },
 );

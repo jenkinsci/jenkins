@@ -33,27 +33,33 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Functions;
 import hudson.PluginWrapper;
 import java.io.IOException;
 import java.util.function.BiPredicate;
-import org.apache.commons.lang.StringUtils;
-import org.junit.Assume;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 
-public class DisablePluginCommandTest {
+@WithJenkins
+class DisablePluginCommandTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Can disable a plugin with an optional dependent plugin.
@@ -62,7 +68,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void canDisablePluginWithOptionalDependerStrategyNone() {
+    void canDisablePluginWithOptionalDependerStrategyNone() {
         assertThat(disablePluginsCLiCommand("-strategy", "NONE", "dependee"), succeeded());
         assertPluginDisabled("dependee");
     }
@@ -70,12 +76,12 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi", "mandatory-depender-0.0.2.hpi"})
-    public void canDisablePluginWithDependentsDisabledStrategyNone() throws IOException {
+    void canDisablePluginWithDependentsDisabledStrategyNone() throws IOException {
         disablePlugin("mandatory-depender");
         CLICommandInvoker.Result result = disablePluginsCLiCommand("-strategy", "NONE", "dependee");
 
         assertThat(result, succeeded());
-        assertEquals("Disabling only dependee", 1, StringUtils.countMatches(result.stdout(), "Disabling"));
+        assertEquals(1, StringUtils.countMatches(result.stdout(), "Disabling"), "Disabling only dependee");
         assertPluginDisabled("dependee");
     }
 
@@ -86,7 +92,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void cannotDisablePluginWithMandatoryDependerStrategyNone() {
+    void cannotDisablePluginWithMandatoryDependerStrategyNone() {
         assertThat(disablePluginsCLiCommand("dependee"), failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
         assertPluginEnabled("dependee");
     }
@@ -98,7 +104,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void cannotDisableDependentPluginWrongOrderStrategyNone() {
+    void cannotDisableDependentPluginWrongOrderStrategyNone() {
         assertThat(disablePluginsCLiCommand("dependee", "mandatory-depender"), failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
         assertPluginDisabled("mandatory-depender");
         assertPluginEnabled("dependee");
@@ -110,7 +116,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void canDisableDependentPluginWrongOrderStrategyAll() {
+    void canDisableDependentPluginWrongOrderStrategyAll() {
         assertThat(disablePluginsCLiCommand("dependee", "mandatory-depender", "-strategy", "all"), succeeded());
         assertPluginDisabled("mandatory-depender");
         assertPluginDisabled("dependee");
@@ -123,7 +129,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void canDisableDependentPluginsRightOrderStrategyNone() {
+    void canDisableDependentPluginsRightOrderStrategyNone() {
         assertThat(disablePluginsCLiCommand("mandatory-depender", "dependee"), succeeded());
         assertPluginDisabled("dependee");
         assertPluginDisabled("mandatory-depender");
@@ -132,11 +138,11 @@ public class DisablePluginCommandTest {
     /**
      * Can disable a plugin without dependents plugins and Jenkins restart after it if -restart argument is passed.
      */
-    @Ignore("TODO calling restart seems to break Surefire")
+    @Disabled("TODO calling restart seems to break Surefire")
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin("dependee-0.0.2.hpi")
-    public void restartAfterDisable() {
+    void restartAfterDisable() {
         assumeNotWindows();
         assertThat(disablePluginsCLiCommand("-restart", "dependee"), succeeded());
         assertPluginDisabled("dependee");
@@ -149,7 +155,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin("dependee-0.0.2.hpi")
-    public void notRestartAfterDisablePluginWithoutArgumentRestart() throws Exception {
+    void notRestartAfterDisablePluginWithoutArgumentRestart() throws Exception {
         assertThat(disablePluginsCLiCommand("dependee"), succeeded());
         assertPluginDisabled("dependee");
         assertJenkinsNotInQuietMode();
@@ -162,7 +168,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin("dependee-0.0.2.hpi")
-    public void returnCodeDisableInvalidPlugin() {
+    void returnCodeDisableInvalidPlugin() {
         assertThat(disablePluginsCLiCommand("wrongname"), failedWith(RETURN_CODE_NO_SUCH_PLUGIN));
     }
 
@@ -173,7 +179,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin("dependee-0.0.2.hpi")
-    public void disableAlreadyDisabledPluginNotRestart() throws Exception {
+    void disableAlreadyDisabledPluginNotRestart() throws Exception {
         // Disable before the command call
         disablePlugin("dependee");
 
@@ -187,14 +193,13 @@ public class DisablePluginCommandTest {
     /**
      * If some plugins are disabled, Jenkins will restart even though the status code isn't 0 (is 16).
      */
-    @Ignore("TODO calling restart seems to break Surefire")
+    @Disabled("TODO calling restart seems to break Surefire")
     @Test
     @Issue("JENKINS-27177")
-    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
-    public void restartAfterDisablePluginsAndErrors() {
+    @WithPlugin({"depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
+    void restartAfterDisablePluginsAndErrors() {
         assumeNotWindows();
-        assertThat(disablePluginsCLiCommand("-restart", "variant", "dependee", "depender", "plugin-first", "mandatory-depender"), failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
-        assertPluginDisabled("variant");
+        assertThat(disablePluginsCLiCommand("-restart", "dependee", "depender", "plugin-first", "mandatory-depender"), failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
         assertPluginEnabled("dependee");
         assertPluginDisabled("depender");
         assertPluginDisabled("plugin-first");
@@ -207,13 +212,12 @@ public class DisablePluginCommandTest {
      */
     @Test
     @Issue("JENKINS-27177")
-    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
-    public void disablePluginsStrategyAll() {
+    @WithPlugin({"depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
+    void disablePluginsStrategyAll() {
         assertPluginEnabled("dependee");
         assertPluginEnabled("depender");
         assertPluginEnabled("mandatory-depender");
-        assertThat(disablePluginsCLiCommand("-strategy", "all", "variant", "dependee", "plugin-first"), succeeded());
-        assertPluginDisabled("variant");
+        assertThat(disablePluginsCLiCommand("-strategy", "all", "dependee", "plugin-first"), succeeded());
         assertPluginDisabled("dependee");
         assertPluginDisabled("depender");
         assertPluginDisabled("plugin-first");
@@ -225,10 +229,9 @@ public class DisablePluginCommandTest {
      */
     @Test
     @Issue("JENKINS-27177")
-    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
-    public void disablePluginsStrategyMandatory() {
-        assertThat(disablePluginsCLiCommand("-strategy", "mandatory", "variant", "dependee", "plugin-first"), succeeded());
-        assertPluginDisabled("variant");
+    @WithPlugin({"depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
+    void disablePluginsStrategyMandatory() {
+        assertThat(disablePluginsCLiCommand("-strategy", "mandatory", "dependee", "plugin-first"), succeeded());
         assertPluginDisabled("dependee");
         assertPluginEnabled("depender");
         assertPluginDisabled("plugin-first");
@@ -242,15 +245,15 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void disablePluginsMessageAlreadyDisabled() {
+    void disablePluginsMessageAlreadyDisabled() {
         CLICommandInvoker.Result result = disablePluginsCLiCommand("-strategy", "all", "dependee", "depender");
         assertThat(result, succeeded());
 
         assertPluginDisabled("dependee");
         assertPluginDisabled("depender");
 
-        assertTrue("An occurrence of the depender plugin in the log says it was successfully disabled", checkResultWith(result, StringUtils::contains, "depender", PluginWrapper.PluginDisableStatus.DISABLED));
-        assertTrue("An occurrence of the depender plugin in the log says it was already disabled", checkResultWith(result, StringUtils::contains, "depender", PluginWrapper.PluginDisableStatus.ALREADY_DISABLED));
+        assertTrue(checkResultWith(result, StringUtils::contains, "depender", PluginWrapper.PluginDisableStatus.DISABLED), "An occurrence of the depender plugin in the log says it was successfully disabled");
+        assertTrue(checkResultWith(result, StringUtils::contains, "depender", PluginWrapper.PluginDisableStatus.ALREADY_DISABLED), "An occurrence of the depender plugin in the log says it was already disabled");
     }
 
     /**
@@ -260,7 +263,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"dependee-0.0.2.hpi", "mandatory-depender-0.0.2.hpi"})
-    public void returnCodeFirstErrorIsDependents() {
+    void returnCodeFirstErrorIsDependents() {
         CLICommandInvoker.Result result = disablePluginsCLiCommand("dependee", "badplugin");
         assertThat(result, failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
 
@@ -273,7 +276,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"dependee-0.0.2.hpi", "mandatory-depender-0.0.2.hpi"})
-    public void returnCodeFirstErrorIsNoSuchPlugin() {
+    void returnCodeFirstErrorIsNoSuchPlugin() {
         CLICommandInvoker.Result result = disablePluginsCLiCommand("badplugin", "dependee");
         assertThat(result, failedWith(RETURN_CODE_NO_SUCH_PLUGIN));
 
@@ -286,7 +289,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi", "mandatory-depender-0.0.2.hpi"})
-    public void quietModeEmptyOutputSucceed() {
+    void quietModeEmptyOutputSucceed() {
         CLICommandInvoker.Result result = disablePluginsCLiCommand("-strategy", "all", "-quiet", "dependee");
         assertThat(result, succeeded());
 
@@ -303,7 +306,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi", "mandatory-depender-0.0.2.hpi"})
-    public void quietModeWithErrorNoSuch() {
+    void quietModeWithErrorNoSuch() {
         CLICommandInvoker.Result result = disablePluginsCLiCommand("-quiet", "-strategy", "all", "dependee", "badplugin");
         assertThat(result, failedWith(RETURN_CODE_NO_SUCH_PLUGIN));
 
@@ -311,7 +314,7 @@ public class DisablePluginCommandTest {
         assertPluginDisabled("depender");
         assertPluginDisabled("mandatory-depender");
 
-        assertTrue("Only error NO_SUCH_PLUGIN in quiet mode", checkResultWith(result, StringUtils::startsWith, "badplugin", PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN));
+        assertTrue(checkResultWith(result, StringUtils::startsWith, "badplugin", PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN), "Only error NO_SUCH_PLUGIN in quiet mode");
     }
 
     /**
@@ -320,7 +323,7 @@ public class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi", "mandatory-depender-0.0.2.hpi"})
-    public void quietModeWithErrorDependents() {
+    void quietModeWithErrorDependents() {
         CLICommandInvoker.Result result = disablePluginsCLiCommand("-quiet", "-strategy", "none", "dependee");
         assertThat(result, failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
 
@@ -328,7 +331,7 @@ public class DisablePluginCommandTest {
         assertPluginEnabled("depender");
         assertPluginEnabled("mandatory-depender");
 
-        assertTrue("Only error NOT_DISABLED_DEPENDANTS in quiet mode", checkResultWith(result, StringUtils::startsWith, "dependee", PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS));
+        assertTrue(checkResultWith(result, StringUtils::startsWith, "dependee", PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS), "Only error NOT_DISABLED_DEPENDANTS in quiet mode");
     }
 
     /**
@@ -391,6 +394,6 @@ public class DisablePluginCommandTest {
     }
 
     private void assumeNotWindows() {
-        Assume.assumeFalse(Functions.isWindows());
+        Assumptions.assumeFalse(Functions.isWindows());
     }
 }

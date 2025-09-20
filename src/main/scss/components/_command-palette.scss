@@ -1,0 +1,210 @@
+@use "../abstracts/mixins";
+@use "../base/breakpoints";
+
+.jenkins-command-palette__dialog {
+  background: none;
+  border: none;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  user-select: none;
+
+  &::backdrop {
+    background: var(--dialog-backdrop-background);
+    backdrop-filter: var(--dialog-backdrop-backdrop-filter);
+    animation: jenkins-dialog-backdrop-animate-in 0.075s linear;
+  }
+
+  &[open] {
+    animation: command-palette-animate-in 0.075s cubic-bezier(0, 0.68, 0.5, 1.5);
+  }
+
+  &[closing] {
+    animation: command-palette-animate-out 0.05s linear;
+
+    &::backdrop {
+      animation: jenkins-dialog-backdrop-animate-out 0.05s linear;
+    }
+  }
+}
+
+@keyframes command-palette-animate-in {
+  from {
+    translate: 0 4px;
+    scale: 98.5%;
+    opacity: 0;
+    transform: rotateX(30deg);
+  }
+}
+
+@keyframes command-palette-animate-out {
+  to {
+    scale: 98.5%;
+    opacity: 0;
+  }
+}
+
+.jenkins-command-palette__wrapper {
+  --inset: 10vh;
+
+  width: 100%;
+  height: 100%;
+  max-height: 100dvh;
+  overflow: scroll;
+  padding-top: var(--inset);
+
+  @media (max-width: breakpoints.$tablet-breakpoint) {
+    --inset: 10vh;
+  }
+}
+
+.jenkins-command-palette {
+  position: relative;
+  width: 50vw;
+  max-width: 650px;
+  color: var(--text-color);
+  pointer-events: auto;
+  margin: 0 auto var(--inset);
+
+  @media (max-width: breakpoints.$tablet-breakpoint) {
+    width: calc(100% - (var(--section-padding) * 2));
+  }
+
+  &__search {
+    --search-bar-height: 3rem !important;
+
+    background: var(--dialog-background);
+    box-shadow: var(--dialog-box-shadow);
+    margin-bottom: var(--section-padding);
+    border-radius: 1rem;
+    transition: var(--standard-transition);
+    z-index: 10;
+    max-width: unset;
+
+    input {
+      padding: 0 0.5rem 0 45px;
+      background: transparent !important;
+
+      --input-border: transparent;
+      --input-border-hover: transparent;
+
+      border-radius: inherit;
+
+      &::before,
+      &::after {
+        border-radius: inherit;
+      }
+    }
+
+    &::before {
+      content: unset;
+    }
+  }
+
+  &__results-container {
+    display: flex;
+    flex-direction: column;
+    border-radius: 1rem;
+    background: var(--dialog-background);
+    box-shadow: var(--dialog-box-shadow);
+
+    // If set to 0, Safari won't always show the backdrop-filter
+    height: 1px;
+    transition: height 0.15s ease;
+    overflow: hidden;
+    will-change: height;
+  }
+
+  &__results {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+
+    &__heading {
+      font-size: var(--font-size-sm);
+      margin: 0;
+      padding: 0.375rem 0.625rem;
+      color: var(--text-color-secondary);
+
+      &:not(:first-of-type) {
+        padding-top: 1.375rem;
+      }
+    }
+
+    &__item {
+      @include mixins.item($border: false);
+
+      --item-background--hover: color-mix(
+        in sRGB,
+        var(--text-color-secondary) 15%,
+        transparent
+      );
+      --item-background--active: color-mix(
+        in sRGB,
+        var(--text-color-secondary) 20%,
+        transparent
+      );
+
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0.625rem;
+      border-radius: 0.5rem;
+      color: var(--text-color) !important;
+
+      &--hover {
+        &::before {
+          background-color: var(--item-background--hover);
+          border: var(--jenkins-border--subtle) !important;
+        }
+      }
+
+      &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.375rem;
+        height: 1.375rem;
+        margin-right: 0.625rem;
+        overflow: hidden;
+        pointer-events: none;
+        color: var(--text-color);
+
+        svg,
+        img {
+          width: 1.25rem;
+          height: 1.25rem;
+        }
+      }
+
+      &__description {
+        opacity: 0.5;
+        margin-left: 1ch;
+      }
+
+      &__chevron {
+        position: absolute;
+        top: calc(50% - 8px);
+        right: 12.5px;
+        width: 16px;
+        height: 16px;
+        opacity: 0.5;
+      }
+    }
+  }
+
+  &__info {
+    font-size: var(--font-size-sm);
+    margin: 0;
+    padding: 0 0.625rem;
+    line-height: 42px;
+    color: var(--text-color);
+
+    span {
+      color: var(--text-color-secondary);
+    }
+  }
+}

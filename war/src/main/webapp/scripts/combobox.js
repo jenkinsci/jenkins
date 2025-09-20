@@ -89,7 +89,7 @@ function ComboBox(idOrField, callback, config) {
       : idOrField;
   if (typeof this.field == "undefined") {
     alert(
-      "You have specified an invalid id for the field you want to turn into a combo box"
+      "You have specified an invalid id for the field you want to turn into a combo box",
     );
   }
   this.dropdown = document.createElement("div");

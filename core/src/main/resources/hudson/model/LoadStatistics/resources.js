@@ -29,7 +29,7 @@
       if (graphLocation) {
         const type = timespanSelect.value;
         const parentSelector = graphLocation.getAttribute(
-          "data-graph-parent-selector"
+          "data-graph-parent-selector",
         );
         const baseUrl = graphLocation.getAttribute("data-graph-base-url");
         const graphAlt = graphLocation.getAttribute("data-graph-alt");
@@ -52,6 +52,7 @@
             "&height=500";
           const graphImgTag = document.createElement("img");
           graphImgTag.src = graphUrl;
+          graphImgTag.classList.add("jenkins-graph-card");
           graphImgTag.srcset = graphUrl + "&scale=2 2x";
           graphImgTag.alt = graphAlt;
           graphLocation.innerHTML = graphImgTag.outerHTML;

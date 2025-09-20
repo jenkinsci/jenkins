@@ -1,78 +1,20 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
-    <header id="page-header" class="page-header">
-        <div class="page-header__brand">
-            <div class="logo">
-                <a id="jenkins-home-link" href="${rootURL}/">
-                    <img id="jenkins-head-icon" src="${imagesURL}/svgs/logo.svg" alt="[${logoAlt}]" />
-                    <img id="jenkins-name-icon" src="${imagesURL}/title.svg" alt="${title}" width="139" height="34" />
-                </a>
-            </div>
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+  <header id="page-header" class="jenkins-header">
+    <st:include page="prefix" optional="true" />
 
-            <a class="page-header__brand-link" href="${rootURL}/">
-                <img src="${imagesURL}/svgs/logo.svg"
-                     alt="[${logoAlt}]"
-                     class="page-header__brand-image" />
-                <span class="page-header__brand-name">Jenkins</span>
-            </a>
-        </div>
+    <div class="jenkins-header__main">
+      <div class="jenkins-header__navigation">
+        <st:include page="logo" />
 
-        <div class="searchbox hidden-xs">
-            <!-- search box -->
-            <j:set var="searchURL" value="${h.searchURL}"/>
-            <form action="${searchURL}" method="get" style="position:relative;" class="no-json" name="search" role="search">
-                <!-- this div is used to calculate the width of the text box -->
-                <div id="search-box-sizer"/>
-                <div id="searchform">
-                    <input name="q" placeholder="${searchPlaceholder}" id="search-box" class="main-search__input" value="${request.getParameter('q')}" role="searchbox" />
+        <l:breadcrumbBar>
+          <j:out value="${breadcrumbs}" />
+        </l:breadcrumbBar>
+      </div>
+    </div>
 
-                    <span class="main-search__icon-leading">
-                        <l:icon src="symbol-search"/>
-                    </span>
-                    <a href="${searchHelpUrl}" class="main-search__icon-trailing">
-                        <l:icon src="symbol-help-circle"/>
-                    </a>
+    <h:actions />
+  </header>
 
-                    <div id="search-box-completion" data-search-url="${searchURL}" />
-                    <st:adjunct includes="jenkins.views.JenkinsHeader.search-box" />
-                </div>
-            </form>
-        </div>
-
-        <div class="login page-header__hyperlinks">
-            <div id="visible-am-insertion" class="page-header__am-wrapper" />
-            <div id="visible-sec-am-insertion" class="page-header__am-wrapper" />
-
-            <!-- login field -->
-            <j:if test="${app.useSecurity}">
-                <j:choose>
-                    <j:when test="${!h.isAnonymous()}">
-                        <j:invokeStatic var="user" className="hudson.model.User" method="current" />
-                        <j:choose>
-                            <j:when test="${user.fullName == null || user.fullName.trim().isEmpty()}">
-                                <j:set var="userName" value="${user.id}"/>
-                            </j:when>
-                            <j:otherwise>
-                                <j:set var="userName" value="${user.fullName}"/>
-                            </j:otherwise>
-                        </j:choose>
-                        <a href="${rootURL}/${user.url}" class="model-link">
-                            <l:icon src="symbol-person-circle" class="icon-md"/>
-                            <span class="hidden-xs hidden-sm">${userName}</span>
-                        </a>
-                        <j:if test="${app.securityRealm.canLogOut()}">
-                            <a href="${rootURL}/logout">
-                                <l:icon src="symbol-log-out" class="icon-md" />
-                                <span class="hidden-xs hidden-sm">${logout}</span>
-                            </a>
-                        </j:if>
-                    </j:when>
-                    <j:otherwise>
-                        <st:include it="${app.securityRealm}" page="loginLink.jelly" />
-                    </j:otherwise>
-                </j:choose>
-            </j:if>
-        </div>
-    </header>
-    <script src="${resURL}/jsbundles/keyboard-shortcuts.js" type="text/javascript"/>
+  <script src="${resURL}/jsbundles/header.js" type="text/javascript" />
 </j:jelly>

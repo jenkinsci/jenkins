@@ -3,7 +3,28 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   if (!config) {
     config = "";
   }
-  config = eval("({" + config + "})");
+  try {
+    config = JSON.parse("{" + config + "}");
+  } catch (ex) {
+    /*
+     * Attempt to parse fairly common legacy format whose exact content is:
+     * mode:'<MIME>'
+     */
+    let match = config.match("^mode: ?'([^']+)'$");
+    if (match) {
+      console.log(
+        "Parsing simple legacy codemirror-config value using fallback: " +
+          config,
+      );
+      config = { mode: match[1] };
+    } else {
+      console.log(
+        "Failed to parse codemirror-config '{" + config + "}' as JSON",
+        ex,
+      );
+      config = {};
+    }
+  }
   if (!config.onBlur) {
     config.onBlur = function (editor) {
       editor.save();
@@ -45,7 +66,8 @@ Behaviour.specify(
     hidePreview.style.display = "none";
     previewDiv.style.display = "none";
 
-    showPreview.onclick = function () {
+    showPreview.onclick = function (event) {
+      event.preventDefault();
       // Several TEXTAREAs may exist if CodeMirror is enabled. The first one has reference to the CodeMirror object.
       var textarea = e.parentNode.getElementsByTagName("TEXTAREA")[0];
       var text = "";
@@ -67,7 +89,9 @@ Behaviour.specify(
 
       fetch(rootURL + showPreview.getAttribute("previewEndpoint"), {
         method: "post",
-        headers: crumb.wrap({}),
+        headers: crumb.wrap({
+          "Content-Type": "application/x-www-form-urlencoded",
+        }),
         body: new URLSearchParams({
           text: text,
         }),
@@ -76,18 +100,17 @@ Behaviour.specify(
           if (rsp.ok) {
             render(responseText);
           } else {
-            render(
-              rsp.status + " " + rsp.statusText + "<HR/>" + rsp.responseText
-            );
+            render(rsp.status + " " + rsp.statusText + "<HR/>" + responseText);
           }
           return false;
         });
       });
     };
 
-    hidePreview.onclick = function () {
+    hidePreview.onclick = function (event) {
+      event.preventDefault();
       hidePreview.style.display = "none";
       previewDiv.style.display = "none";
     };
-  }
+  },
 );

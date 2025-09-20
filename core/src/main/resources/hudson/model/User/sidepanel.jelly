@@ -30,15 +30,15 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:header />
   <l:side-panel>
+    <st:include page="app-bar.jelly" />
+
     <l:tasks>
-      <l:task contextMenu="false" href="${rootURL}/asynchPeople/" icon="symbol-people" title="${%People}"/>
-      <l:task contextMenu="false" href="${rootURL}/${it.url}/" icon="symbol-person" title="${%Status}"/>
+      <l:task contextMenu="false" href="${rootURL}/${it.url}/" icon="symbol-person" title="${%Profile}"/>
       <l:task href="${rootURL}/${it.url}/builds" icon="symbol-build-history" title="${%Builds}"/>
-      <l:task href="${rootURL}/${it.url}/configure" icon="symbol-settings" permission="${app.ADMINISTER}" title="${%Configure}"/>
       <t:actions actions="${it.propertyActions}"/>
       <t:actions actions="${it.transientActions}"/>
       <j:if test="${it.canDelete()}">
-        <l:task confirmationMessage="${%delete.user(it.displayName)}" href="${rootURL}/${it.url}/doDelete" icon="icon-edit-delete icon-md" title="${%Delete}" post="true" requiresConfirmation="true"/>
+        <l:delete urlPrefix="${rootURL}/${it.url}" title="${%Delete}" message="${%delete.user(it.displayName)}"/>
       </j:if>
     </l:tasks>
   </l:side-panel>
