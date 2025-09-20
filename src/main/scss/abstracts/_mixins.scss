@@ -24,8 +24,6 @@
   }
 
   @media (prefers-contrast: more) {
-    text-decoration: underline;
-
     &:hover {
       text-decoration-thickness: 3px;
     }
