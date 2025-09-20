@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
         item.classList.remove("active");
       });
       const checkedOption = document.querySelector(
-        'input[name="mode"]:checked',
+        '#createItem input[name="mode"]:checked',
       );
       if (checkedOption) {
         checkedOption.checked = false;
