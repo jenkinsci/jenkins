@@ -105,9 +105,11 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".categories .active").forEach((item) => {
         item.classList.remove("active");
       });
-      const checkedOption = document.querySelector('input[name="mode"]:checked')
+      const checkedOption = document.querySelector(
+        'input[name="mode"]:checked',
+      );
       if (checkedOption !== null) {
-          checkedOption.checked = false;
+        checkedOption.checked = false;
       }
       setFieldValidationStatus("items", false);
     }
