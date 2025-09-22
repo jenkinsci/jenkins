@@ -143,7 +143,7 @@ THE SOFTWARE.
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>976.vb_d9493c2eb_09</version>
+        <version>989.va_20a_1a_57710a_</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -232,7 +232,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.1040.v8a_e6330a_54e3</version>
+      <version>6.1042.v37b_8229708e4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -369,7 +369,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.7-860.v1251c115c90c</version>
+                  <version>5.3.8-876.vb_c62a_27d9a_77</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>bootstrap5-api.jpi</destFileName>
