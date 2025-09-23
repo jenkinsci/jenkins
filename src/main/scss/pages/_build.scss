@@ -93,55 +93,6 @@
   }
 }
 
-.app-build__clock {
-  position: relative;
-  width: 1.5rem;
-  height: 1.5rem;
-  flex-shrink: 0;
-  scale: 0.75;
-
-  &__hours,
-  &__minutes {
-    position: absolute;
-    inset: 0;
-    border-radius: 100%;
-
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: 11px;
-      left: 11px;
-      width: 2px;
-      background: currentColor;
-      border-radius: 2px;
-    }
-  }
-
-  &__hours {
-    rotate: var(--hours);
-
-    &::after {
-      height: 6px;
-    }
-  }
-
-  &__minutes {
-    rotate: var(--minutes);
-
-    &::after {
-      height: 8px;
-    }
-  }
-
-  &::after {
-    position: absolute;
-    content: "";
-    inset: 0;
-    border-radius: 100%;
-    border: 2px solid currentColor;
-  }
-}
-
 .app-console-output-widget {
   overflow-y: auto;
   margin: 0 -1rem -1rem;
