@@ -268,27 +268,184 @@ public class CloudProvisioningLimits {
      * Determines if a node belongs to a specific cloud.
      * This is a heuristic approach since there's no standard way to link nodes to clouds.
      *
+     * Cloud plugins can improve this by:
+     * 1. Adding cloud name/ID to node properties
+     * 2. Using naming conventions in node names
+     * 3. Storing cloud reference in node metadata
+     *
      * @param node the node to check
      * @param cloud the cloud to check against
      * @return true if the node likely belongs to the cloud
      */
     private boolean belongsToCloud(Node node, Cloud cloud) {
-        // This is a basic implementation - cloud plugins would need to override this
-        // or provide a better mechanism to identify their nodes
-        return node.getDisplayName().contains(cloud.name) ||
-               node.getNodeName().contains(cloud.name);
+        if (node == null || cloud == null) {
+            return false;
+        }
+
+        String nodeName = node.getNodeName();
+        String displayName = node.getDisplayName();
+        String cloudName = cloud.name;
+
+        // Check various naming patterns commonly used by cloud plugins
+        if (nodeName != null && (
+            nodeName.contains(cloudName) ||
+            nodeName.startsWith(cloudName + "-") ||
+            nodeName.endsWith("-" + cloudName))) {
+            return true;
+        }
+
+        if (displayName != null && (
+            displayName.contains(cloudName) ||
+            displayName.startsWith(cloudName + "-") ||
+            displayName.endsWith("-" + cloudName))) {
+            return true;
+        }
+
+        // Check if node properties contain cloud information
+        // This would be more reliable if cloud plugins stored cloud references
+        try {
+            // Use reflection to check for cloud-specific properties
+            String className = node.getClass().getSimpleName().toLowerCase();
+            String cloudClassName = cloud.getClass().getSimpleName().toLowerCase();
+
+            // Match patterns like "EC2Slave" with "EC2Cloud"
+            if (className.contains("slave") && cloudClassName.contains("cloud")) {
+                String nodeType = className.replace("slave", "");
+                String cloudType = cloudClassName.replace("cloud", "");
+                if (nodeType.equals(cloudType)) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            // Ignore reflection errors
+            LOGGER.log(Level.FINEST, "Error checking node class relationship", e);
+        }
+
+        return false;
     }
 
     /**
      * Extracts the template ID from a node for a given cloud.
-     * This is a heuristic approach - cloud plugins would need to provide better mechanisms.
+     * This is a heuristic approach - cloud plugins should provide better mechanisms.
+     *
+     * Common patterns:
+     * - Node name: "template-name-instance-id"
+     * - Display name: "Template Name (instance-id)"
+     * - Node properties containing template information
      *
      * @param node the node
      * @param cloud the cloud
      * @return the template ID or null
      */
     private String extractTemplateId(Node node, Cloud cloud) {
-        // Basic implementation - cloud plugins would override this
+        if (node == null) {
+            return null;
+        }
+
+        String nodeName = node.getNodeName();
+        String displayName = node.getDisplayName();
+
+        // Try to extract from node name first
+        if (nodeName != null) {
+            String templateId = extractTemplateFromName(nodeName, cloud.name);
+            if (templateId != null) {
+                return templateId;
+            }
+        }
+
+        // Try to extract from display name
+        if (displayName != null && !displayName.equals(nodeName)) {
+            String templateId = extractTemplateFromName(displayName, cloud.name);
+            if (templateId != null) {
+                return templateId;
+            }
+        }
+
+        // Could be extended to check node properties for template information
+        // This would require cloud plugins to store template references
+
         return null;
+    }
+
+    /**
+     * Helper method to extract template ID from a name string.
+     *
+     * @param name the name to parse
+     * @param cloudName the cloud name to remove from the template name
+     * @return the template ID or null
+     */
+    private String extractTemplateFromName(String name, String cloudName) {
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
+
+        // Remove cloud name prefix if present
+        String cleanName = name;
+        if (name.startsWith(cloudName + "-")) {
+            cleanName = name.substring(cloudName.length() + 1);
+        }
+
+        // Look for common patterns:
+        // "template-name-instance-id" -> "template-name"
+        // "template_name_instance_id" -> "template_name"
+        if (cleanName.contains("-")) {
+            String[] parts = cleanName.split("-");
+            if (parts.length >= 2) {
+                // Check if last part looks like an instance ID (numbers, uuid, etc.)
+                String lastPart = parts[parts.length - 1];
+                if (isLikelyInstanceId(lastPart)) {
+                    // Join all parts except the last one
+                    return String.join("-", java.util.Arrays.copyOf(parts, parts.length - 1));
+                }
+            }
+        }
+
+        if (cleanName.contains("_")) {
+            String[] parts = cleanName.split("_");
+            if (parts.length >= 2) {
+                String lastPart = parts[parts.length - 1];
+                if (isLikelyInstanceId(lastPart)) {
+                    return String.join("_", java.util.Arrays.copyOf(parts, parts.length - 1));
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Heuristic to determine if a string looks like an instance ID.
+     *
+     * @param str the string to check
+     * @return true if it looks like an instance ID
+     */
+    private boolean isLikelyInstanceId(String str) {
+        if (str == null || str.length() < 3) {
+            return false;
+        }
+
+        // Check for common instance ID patterns
+        // Numbers only
+        if (str.matches("\\d+")) {
+            return true;
+        }
+
+        // UUID-like (contains hyphens and alphanumeric)
+        if (str.matches("[0-9a-fA-F-]+") && str.contains("-")) {
+            return true;
+        }
+
+        // AWS instance ID pattern (i-xxxxxxxxx)
+        if (str.matches("i-[0-9a-fA-F]+")) {
+            return true;
+        }
+
+        // Random alphanumeric (common for auto-generated IDs)
+        if (str.matches("[a-zA-Z0-9]+") && str.length() > 6) {
+            // Check if it's not a common word (simple heuristic)
+            return !str.matches(".*[aeiou]{2,}.*"); // Avoid words with double vowels
+        }
+
+        return false;
     }
 }
