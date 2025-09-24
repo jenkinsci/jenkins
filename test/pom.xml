@@ -232,7 +232,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.1042.v37b_8229708e4</version>
+      <version>6.1045.vb_ddd55e2d03f</version>
       <scope>test</scope>
     </dependency>
     <dependency>
