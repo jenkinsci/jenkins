@@ -248,6 +248,55 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return canProvision(state.getLabel());
     }
 
+    /**
+     * Returns true if this cloud supports provisioning limits to prevent over-provisioning.
+     *
+     * When this returns true, the {@link CloudProvisioningLimits} system will enforce
+     * the caps returned by {@link #getGlobalProvisioningCap()} and {@link #getTemplateProvisioningCap(String)}.
+     *
+     * Cloud implementations that want to use provisioning limits should override this method
+     * to return true and implement the cap methods appropriately.
+     *
+     * @return true if this cloud supports provisioning limits, false otherwise
+     * @since 2.530
+     */
+    public boolean supportsProvisioningLimits() {
+        return false;
+    }
+
+    /**
+     * Returns the global provisioning cap for this cloud.
+     *
+     * This represents the maximum number of executors that can be provisioned
+     * across all templates/configurations for this cloud. When this limit is reached,
+     * no new nodes will be provisioned until existing nodes are terminated.
+     *
+     * Only effective when {@link #supportsProvisioningLimits()} returns true.
+     *
+     * @return the maximum number of executors, or {@link Integer#MAX_VALUE} for unlimited
+     * @since 2.530
+     */
+    public int getGlobalProvisioningCap() {
+        return Integer.MAX_VALUE;
+    }
+
+    /**
+     * Returns the provisioning cap for a specific template.
+     *
+     * This represents the maximum number of executors that can be provisioned
+     * for a specific template or configuration within this cloud. The templateId
+     * parameter allows clouds to have different limits for different node types.
+     *
+     * Only effective when {@link #supportsProvisioningLimits()} returns true.
+     *
+     * @param templateId the identifier for the template (implementation-specific)
+     * @return the maximum number of executors for this template, or {@link Integer#MAX_VALUE} for unlimited
+     * @since 2.530
+     */
+    public int getTemplateProvisioningCap(String templateId) {
+        return Integer.MAX_VALUE;
+    }
+
     @Override
     public Descriptor<Cloud> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(getClass());
