@@ -7,6 +7,7 @@ import hudson.model.LoadStatistics;
 import hudson.model.Queue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -52,10 +53,11 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
         int cloudsAttempted = 0;
         int cloudsSkipped = 0;
 
-        Jenkins jenkinsInstance = Jenkins.get();
+        // Get intelligently ordered list of clouds for optimal provisioning
+        List<Cloud> orderedClouds = CloudStateManager.getInstance().getOptimalCloudOrder(label, remainingDemand);
 
-        // Try provisioning across multiple clouds for better utilization and failover
-        for (Cloud cloud : jenkinsInstance.clouds) {
+        // Try provisioning across clouds in optimal order for better utilization and failover
+        for (Cloud cloud : orderedClouds) {
             if (remainingDemand <= 0) {
                 break; // Demand satisfied
             }
@@ -215,18 +217,23 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
                                                                                       int requestedExecutors,
                                                                                       Label label,
                                                                                       @NonNull ProvisioningMetrics.ProvisioningAttemptContext metricsContext) {
+        long startTime = System.currentTimeMillis();
+
         try {
             LOGGER.log(Level.FINE, "Attempting to provision {0} executors from cloud {1} for label {2}",
                 new Object[]{requestedExecutors, cloud.name, label});
 
             Collection<NodeProvisioner.PlannedNode> plannedNodes = cloud.provision(cloudState, requestedExecutors);
+            long duration = System.currentTimeMillis() - startTime;
 
             if (plannedNodes == null || plannedNodes.isEmpty()) {
                 String reason = "Cloud returned no planned nodes";
                 LOGGER.log(Level.INFO, "Cloud {0} returned no planned nodes for {1} requested executors",
                     new Object[]{cloud.name, requestedExecutors});
 
+                // Record failure in metrics and cloud state
                 ProvisioningMetrics.getInstance().recordProvisioningFailure(metricsContext, reason);
+                CloudStateManager.getInstance().recordProvisioningResult(cloud, false, duration, requestedExecutors, 0);
                 return null;
             }
 
@@ -237,25 +244,30 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
                 LOGGER.log(Level.WARNING, "Cloud {0} returned planned nodes with zero total executors",
                     cloud.name);
 
+                // Record failure in metrics and cloud state
                 ProvisioningMetrics.getInstance().recordProvisioningFailure(metricsContext, reason);
+                CloudStateManager.getInstance().recordProvisioningResult(cloud, false, duration, requestedExecutors, 0);
                 return null;
             }
 
             LOGGER.log(Level.FINE, "Cloud {0} successfully planned {1} nodes with {2} total executors",
                 new Object[]{cloud.name, plannedNodes.size(), actualExecutors});
 
-            // Record successful provisioning in metrics
+            // Record successful provisioning in metrics and cloud state
             ProvisioningMetrics.getInstance().recordProvisioningSuccess(metricsContext, actualExecutors);
+            CloudStateManager.getInstance().recordProvisioningResult(cloud, true, duration, requestedExecutors, actualExecutors);
 
             return plannedNodes;
 
         } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
             String reason = "Exception during provisioning: " + e.getClass().getSimpleName();
             LOGGER.log(Level.WARNING, "Exception while provisioning from cloud " + cloud.name +
                 " for " + requestedExecutors + " executors: " + e.getMessage(), e);
 
-            // Record failure in metrics
+            // Record failure in metrics and cloud state
             ProvisioningMetrics.getInstance().recordProvisioningFailure(metricsContext, reason);
+            CloudStateManager.getInstance().recordProvisioningResult(cloud, false, duration, requestedExecutors, 0);
 
             // Cancel any pending reservations that may have been made
             if (cloud.supportsProvisioningLimits()) {
