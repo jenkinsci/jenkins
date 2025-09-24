@@ -4,10 +4,12 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Label;
 import hudson.model.LoadStatistics;
+import hudson.model.Queue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -68,6 +70,9 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
 
                 // Register the planned nodes with provisioning limits
                 registerPlannedNodes(cloud, plannedNodes);
+
+                // Link queue items to planned nodes for tracking causal relationship
+                linkQueueItemsToPlannedNodes(strategyState, plannedNodes, cloud);
 
                 strategyState.recordPendingLaunches(plannedNodes);
                 availableCapacity += plannedNodes.size();
@@ -159,6 +164,62 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
             LOGGER.log(Level.FINE, "Registered planned node {0} with {1} executors for cloud {2}, template {3}",
                 new Object[]{plannedNode.displayName, executors, cloud.name, templateId});
         }
+    }
+
+    /**
+     * Links queue items to planned nodes for tracking causal relationship.
+     *
+     * This method addresses the core issue identified in BEE-60267: the lack of
+     * causal linkage between Queue.Item and provisioned cloud agents. By establishing
+     * this linkage, we can later cancel provisioning when queue items are removed
+     * and prevent over-provisioning.
+     *
+     * @param strategyState the current provisioning strategy state
+     * @param plannedNodes the planned nodes that were created
+     * @param cloud the cloud that created the planned nodes
+     */
+    protected void linkQueueItemsToPlannedNodes(@NonNull NodeProvisioner.StrategyState strategyState,
+                                                @NonNull Collection<NodeProvisioner.PlannedNode> plannedNodes,
+                                                @NonNull Cloud cloud) {
+        if (plannedNodes.isEmpty()) {
+            return;
+        }
+
+        // Get the queue items that are driving the demand for this label
+        Collection<Queue.Item> queueItems = getQueueItemsForLabel(strategyState.getLabel());
+
+        if (queueItems.isEmpty()) {
+            LOGGER.log(Level.FINE, "No queue items found for label {0}, cannot link to planned nodes",
+                strategyState.getLabel());
+            return;
+        }
+
+        LOGGER.log(Level.FINE, "Linking {0} queue items to {1} planned nodes for label {2}",
+            new Object[]{queueItems.size(), plannedNodes.size(), strategyState.getLabel()});
+
+        // Link all queue items to all planned nodes
+        // This is a simplified approach - in practice, we might want more sophisticated
+        // mapping logic based on specific requirements or queue item priorities
+        QueueItemTracker.getInstance().linkQueueItemsToNodes(queueItems, plannedNodes, cloud);
+    }
+
+    /**
+     * Gets the queue items that are buildable for the specified label.
+     *
+     * This method retrieves the queue items that are currently waiting for
+     * executors on the specified label. These are the items that drive
+     * provisioning demand.
+     *
+     * @param label the label to find queue items for
+     * @return collection of queue items for the label
+     */
+    protected Collection<Queue.Item> getQueueItemsForLabel(Label label) {
+        Jenkins jenkins = Jenkins.get();
+        // Get all buildable items and filter by label
+        return jenkins.getQueue().getBuildableItems().stream()
+            .filter(item -> item.getAssignedLabel() == label ||
+                           (label == null && item.getAssignedLabel() == null))
+            .collect(Collectors.toList());
     }
 
     /**
