@@ -29,6 +29,7 @@ import hudson.Extension;
 import hudson.model.Node;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import jenkins.model.NodeListener;
 
 /**
@@ -50,15 +51,40 @@ public class ProvisioningNodeListener extends NodeListener {
     /**
      * Called when a node is created in Jenkins.
      *
-     * This method ensures that newly created nodes are properly accounted for
-     * in the provisioning limits system. This is particularly important during
-     * Jenkins startup when existing nodes need to be registered.
+     * This enhanced method ensures that newly created nodes are properly accounted for
+     * in both the provisioning limits system and metrics tracking. This is particularly
+     * important during Jenkins startup when existing nodes need to be registered.
      *
      * @param node the node being created
      */
     @Override
     protected void onCreated(@NonNull Node node) {
         LOGGER.log(Level.FINE, "Node created: {0}", node.getDisplayName());
+
+        // Track node availability in metrics
+        try {
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
+            if (jenkins != null) {
+                // Find the cloud that created this node for metrics tracking
+                for (Cloud cloud : jenkins.clouds) {
+                    if (belongsToCloud(node, cloud)) {
+                        int executors = node.getNumExecutors();
+
+                        // Record node availability in metrics
+                        // Note: We don't have the exact provisioning-to-available duration here,
+                        // so we record it as 0 for nodes discovered at startup
+                        ProvisioningMetrics.getInstance().recordNodeAvailability(cloud.name, executors, 0L);
+
+                        LOGGER.log(Level.FINE, "Recorded node availability in metrics: cloud={0}, executors={1}",
+                            new Object[]{cloud.name, executors});
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error recording node availability metrics for node " +
+                node.getDisplayName() + ": " + e.getMessage(), e);
+        }
 
         // During startup, nodes may be loaded that were previously provisioned
         // We don't need to register them again as initInstance() handles this
@@ -121,5 +147,59 @@ public class ProvisioningNodeListener extends NodeListener {
             LOGGER.log(Level.WARNING, "Failed to unregister node " + node.getDisplayName() +
                 " from provisioning limits", e);
         }
+    }
+
+    /**
+     * Determines if a node belongs to a particular cloud.
+     *
+     * This method uses heuristics to match nodes to clouds based on naming patterns.
+     * Cloud implementations should ideally provide better mechanisms for this mapping.
+     *
+     * @param node the node to check
+     * @param cloud the cloud to check against
+     * @return true if the node appears to belong to the cloud
+     */
+    private boolean belongsToCloud(@NonNull Node node, @NonNull Cloud cloud) {
+        if (node == null || cloud == null) {
+            return false;
+        }
+
+        String nodeName = node.getNodeName();
+        String displayName = node.getDisplayName();
+        String cloudName = cloud.name;
+
+        // Check various naming patterns commonly used by cloud plugins
+        if (nodeName != null && (
+            nodeName.contains(cloudName) ||
+            nodeName.startsWith(cloudName + "-") ||
+            nodeName.endsWith("-" + cloudName))) {
+            return true;
+        }
+
+        if (displayName != null && (
+            displayName.contains(cloudName) ||
+            displayName.startsWith(cloudName + "-") ||
+            displayName.endsWith("-" + cloudName))) {
+            return true;
+        }
+
+        // Check if node properties contain cloud information
+        try {
+            // Use reflection to check for cloud-specific properties
+            String className = node.getClass().getSimpleName().toLowerCase();
+            String cloudClassName = cloud.getClass().getSimpleName().toLowerCase();
+
+            // Simple heuristic: if node class name contains cloud class prefix
+            if (cloudClassName.length() > 3) {
+                String cloudPrefix = cloudClassName.substring(0, cloudClassName.length() - 5); // Remove "Cloud"
+                if (className.contains(cloudPrefix.toLowerCase())) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.FINEST, "Error checking node-cloud relationship via reflection: " + e.getMessage());
+        }
+
+        return false;
     }
 }

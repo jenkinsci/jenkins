@@ -33,6 +33,7 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
     public NodeProvisioner.StrategyDecision apply(@NonNull NodeProvisioner.StrategyState strategyState) {
         final Label label = strategyState.getLabel();
         long startTime = System.currentTimeMillis();
+        String strategyName = this.getClass().getSimpleName();
 
         LoadStatistics.LoadStatisticsSnapshot snapshot = strategyState.getSnapshot();
         int availableCapacity = calculateAvailableCapacity(snapshot, strategyState);
@@ -86,9 +87,13 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
                 continue;
             }
 
-            // Attempt provisioning with error handling
+            // Start metrics tracking for this provisioning attempt
+            ProvisioningMetrics.ProvisioningAttemptContext metricsContext =
+                ProvisioningMetrics.getInstance().startProvisioningAttempt(cloud, strategyName, label, requestedExecutors);
+
+            // Attempt provisioning with error handling and metrics tracking
             Collection<NodeProvisioner.PlannedNode> plannedNodes =
-                attemptProvisioning(cloud, cloudState, requestedExecutors, label);
+                attemptProvisioningWithMetrics(cloud, cloudState, requestedExecutors, label, metricsContext);
 
             if (plannedNodes != null && !plannedNodes.isEmpty()) {
                 int provisionedCount = plannedNodes.size();
@@ -192,21 +197,24 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
     }
 
     /**
-     * Attempts provisioning with proper error handling and recovery.
+     * Attempts provisioning with proper error handling, recovery, and metrics tracking.
      *
-     * This method wraps the cloud provisioning call with error handling to ensure
-     * that failures in one cloud don't prevent trying other clouds.
+     * This enhanced method wraps the cloud provisioning call with error handling to ensure
+     * that failures in one cloud don't prevent trying other clouds, while also tracking
+     * comprehensive metrics for monitoring and optimization.
      *
      * @param cloud the cloud to provision from
      * @param cloudState the cloud state
      * @param requestedExecutors the number of executors requested
      * @param label the label being provisioned for
+     * @param metricsContext the metrics context for tracking this attempt
      * @return the planned nodes, or null if provisioning failed
      */
-    protected Collection<NodeProvisioner.PlannedNode> attemptProvisioning(@NonNull Cloud cloud,
-                                                                           @NonNull Cloud.CloudState cloudState,
-                                                                           int requestedExecutors,
-                                                                           Label label) {
+    protected Collection<NodeProvisioner.PlannedNode> attemptProvisioningWithMetrics(@NonNull Cloud cloud,
+                                                                                      @NonNull Cloud.CloudState cloudState,
+                                                                                      int requestedExecutors,
+                                                                                      Label label,
+                                                                                      @NonNull ProvisioningMetrics.ProvisioningAttemptContext metricsContext) {
         try {
             LOGGER.log(Level.FINE, "Attempting to provision {0} executors from cloud {1} for label {2}",
                 new Object[]{requestedExecutors, cloud.name, label});
@@ -214,27 +222,40 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
             Collection<NodeProvisioner.PlannedNode> plannedNodes = cloud.provision(cloudState, requestedExecutors);
 
             if (plannedNodes == null || plannedNodes.isEmpty()) {
+                String reason = "Cloud returned no planned nodes";
                 LOGGER.log(Level.INFO, "Cloud {0} returned no planned nodes for {1} requested executors",
                     new Object[]{cloud.name, requestedExecutors});
+
+                ProvisioningMetrics.getInstance().recordProvisioningFailure(metricsContext, reason);
                 return null;
             }
 
             // Validate the planned nodes
             int actualExecutors = plannedNodes.stream().mapToInt(node -> node.numExecutors).sum();
             if (actualExecutors <= 0) {
+                String reason = "Planned nodes have zero total executors";
                 LOGGER.log(Level.WARNING, "Cloud {0} returned planned nodes with zero total executors",
                     cloud.name);
+
+                ProvisioningMetrics.getInstance().recordProvisioningFailure(metricsContext, reason);
                 return null;
             }
 
             LOGGER.log(Level.FINE, "Cloud {0} successfully planned {1} nodes with {2} total executors",
                 new Object[]{cloud.name, plannedNodes.size(), actualExecutors});
 
+            // Record successful provisioning in metrics
+            ProvisioningMetrics.getInstance().recordProvisioningSuccess(metricsContext, actualExecutors);
+
             return plannedNodes;
 
         } catch (Exception e) {
+            String reason = "Exception during provisioning: " + e.getClass().getSimpleName();
             LOGGER.log(Level.WARNING, "Exception while provisioning from cloud " + cloud.name +
                 " for " + requestedExecutors + " executors: " + e.getMessage(), e);
+
+            // Record failure in metrics
+            ProvisioningMetrics.getInstance().recordProvisioningFailure(metricsContext, reason);
 
             // Cancel any pending reservations that may have been made
             if (cloud.supportsProvisioningLimits()) {
