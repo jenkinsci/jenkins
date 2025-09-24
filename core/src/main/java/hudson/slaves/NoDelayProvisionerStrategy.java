@@ -32,41 +32,68 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
     @Override
     public NodeProvisioner.StrategyDecision apply(@NonNull NodeProvisioner.StrategyState strategyState) {
         final Label label = strategyState.getLabel();
+        long startTime = System.currentTimeMillis();
 
         LoadStatistics.LoadStatisticsSnapshot snapshot = strategyState.getSnapshot();
-        int availableCapacity = snapshot.getAvailableExecutors() // live executors
-                + snapshot.getConnectingExecutors() // executors present but not yet connected
-                + strategyState
-                        .getPlannedCapacitySnapshot() // capacity added by previous strategies from previous rounds
-                + strategyState.getAdditionalPlannedCapacity(); // capacity added by previous strategies _this round_
+        int availableCapacity = calculateAvailableCapacity(snapshot, strategyState);
         int currentDemand = snapshot.getQueueLength();
-        LOGGER.log(
-                Level.FINE, "Available capacity={0}, currentDemand={1}", new Object[] {availableCapacity, currentDemand
-                });
-        if (availableCapacity < currentDemand) {
-            Jenkins jenkinsInstance = Jenkins.get();
-            for (Cloud cloud : jenkinsInstance.clouds) {
-                Cloud.CloudState cloudState = new Cloud.CloudState(label, 0);
-                if (!cloud.canProvision(cloudState)) {
-                    continue;
-                }
 
-                // Check if this cloud supports no-delay provisioning
-                if (!supportsNoDelayProvisioning(cloud)) {
-                    continue;
-                }
+        LOGGER.log(Level.FINE, "NoDelay strategy for label {0}: Available capacity={1}, currentDemand={2}",
+                new Object[] {label, availableCapacity, currentDemand});
 
-                int requestedExecutors = currentDemand - availableCapacity;
+        if (availableCapacity >= currentDemand) {
+            LOGGER.log(Level.FINE, "Demand already satisfied, no provisioning needed");
+            return NodeProvisioner.StrategyDecision.PROVISIONING_COMPLETED;
+        }
 
-                // Check provisioning limits before attempting to provision
-                if (!checkProvisioningLimits(cloud, null, requestedExecutors)) {
-                    LOGGER.log(Level.INFO, "Skipping cloud {0} due to provisioning limits", cloud.name);
-                    continue;
-                }
+        int remainingDemand = currentDemand - availableCapacity;
+        int totalProvisioned = 0;
+        int cloudsAttempted = 0;
+        int cloudsSkipped = 0;
 
-                Collection<NodeProvisioner.PlannedNode> plannedNodes =
-                        cloud.provision(cloudState, requestedExecutors);
-                LOGGER.log(Level.FINE, "Planned {0} new nodes", plannedNodes.size());
+        Jenkins jenkinsInstance = Jenkins.get();
+
+        // Try provisioning across multiple clouds for better utilization and failover
+        for (Cloud cloud : jenkinsInstance.clouds) {
+            if (remainingDemand <= 0) {
+                break; // Demand satisfied
+            }
+
+            cloudsAttempted++;
+
+            Cloud.CloudState cloudState = new Cloud.CloudState(label, 0);
+            if (!cloud.canProvision(cloudState)) {
+                cloudsSkipped++;
+                LOGGER.log(Level.FINEST, "Cloud {0} cannot provision for label {1}",
+                    new Object[]{cloud.name, label});
+                continue;
+            }
+
+            // Check if this cloud supports no-delay provisioning
+            if (!supportsNoDelayProvisioning(cloud)) {
+                cloudsSkipped++;
+                LOGGER.log(Level.FINEST, "Cloud {0} does not support no-delay provisioning", cloud.name);
+                continue;
+            }
+
+            int requestedExecutors = Math.min(remainingDemand, getMaxProvisioningBatchSize(cloud));
+
+            // Check provisioning limits before attempting to provision
+            if (!checkProvisioningLimits(cloud, null, requestedExecutors)) {
+                cloudsSkipped++;
+                LOGGER.log(Level.INFO, "Skipping cloud {0} due to provisioning limits (requested: {1})",
+                    new Object[]{cloud.name, requestedExecutors});
+                continue;
+            }
+
+            // Attempt provisioning with error handling
+            Collection<NodeProvisioner.PlannedNode> plannedNodes =
+                attemptProvisioning(cloud, cloudState, requestedExecutors, label);
+
+            if (plannedNodes != null && !plannedNodes.isEmpty()) {
+                int provisionedCount = plannedNodes.size();
+                totalProvisioned += provisionedCount;
+                remainingDemand -= provisionedCount;
 
                 // Register the planned nodes with provisioning limits
                 registerPlannedNodes(cloud, plannedNodes);
@@ -75,19 +102,151 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
                 linkQueueItemsToPlannedNodes(strategyState, plannedNodes, cloud);
 
                 strategyState.recordPendingLaunches(plannedNodes);
-                availableCapacity += plannedNodes.size();
-                LOGGER.log(Level.FINE, "After provisioning, available capacity={0}, currentDemand={1}", new Object[] {
-                    availableCapacity, currentDemand,
-                });
-                break;
+
+                LOGGER.log(Level.INFO, "Successfully provisioned {0} executors from cloud {1} for label {2}",
+                    new Object[]{provisionedCount, cloud.name, label});
+
+                // Update available capacity
+                availableCapacity += provisionedCount;
+            } else {
+                cloudsSkipped++;
+                LOGGER.log(Level.INFO, "Cloud {0} failed to provision {1} executors for label {2}",
+                    new Object[]{cloud.name, requestedExecutors, label});
             }
         }
-        if (availableCapacity >= currentDemand) {
-            LOGGER.log(Level.FINE, "Provisioning completed");
+
+        long duration = System.currentTimeMillis() - startTime;
+
+        // Enhanced logging with strategy execution metrics
+        LOGGER.log(Level.FINE, "NoDelay strategy completed for label {0}: " +
+            "Total provisioned={1}, Remaining demand={2}, Duration={3}ms, " +
+            "Clouds attempted={4}, Clouds skipped={5}",
+            new Object[]{label, totalProvisioned, remainingDemand, duration,
+                cloudsAttempted, cloudsSkipped});
+
+        if (remainingDemand <= 0) {
+            LOGGER.log(Level.FINE, "Provisioning completed, demand fully satisfied");
             return NodeProvisioner.StrategyDecision.PROVISIONING_COMPLETED;
         } else {
-            LOGGER.log(Level.FINE, "Provisioning not complete, consulting remaining strategies");
+            LOGGER.log(Level.FINE, "Provisioning not complete, {0} demand remaining, consulting other strategies",
+                remainingDemand);
             return NodeProvisioner.StrategyDecision.CONSULT_REMAINING_STRATEGIES;
+        }
+    }
+
+    /**
+     * Calculates the total available capacity including pending reservations.
+     *
+     * This enhanced calculation considers pending provisioning reservations to avoid
+     * over-provisioning due to concurrent strategy executions.
+     *
+     * @param snapshot the load statistics snapshot
+     * @param strategyState the current strategy state
+     * @return the total available capacity
+     */
+    protected int calculateAvailableCapacity(@NonNull LoadStatistics.LoadStatisticsSnapshot snapshot,
+                                           @NonNull NodeProvisioner.StrategyState strategyState) {
+        return snapshot.getAvailableExecutors() // live executors
+                + snapshot.getConnectingExecutors() // executors present but not yet connected
+                + strategyState.getPlannedCapacitySnapshot() // capacity added by previous strategies from previous rounds
+                + strategyState.getAdditionalPlannedCapacity(); // capacity added by previous strategies _this round_
+    }
+
+    /**
+     * Gets the maximum provisioning batch size for a cloud.
+     *
+     * This prevents excessive provisioning requests and allows for better resource
+     * distribution across multiple clouds.
+     *
+     * @param cloud the cloud to check
+     * @return the maximum batch size for provisioning
+     */
+    protected int getMaxProvisioningBatchSize(@NonNull Cloud cloud) {
+        // Use reflection to check if cloud has a preferred batch size
+        try {
+            java.lang.reflect.Method method = cloud.getClass().getMethod("getMaxBatchSize");
+            if (method.getReturnType() == int.class) {
+                int batchSize = (Integer) method.invoke(cloud);
+                return Math.max(1, batchSize); // Ensure at least 1
+            }
+        } catch (NoSuchMethodException e) {
+            // Method doesn't exist, use default
+            LOGGER.log(Level.FINEST, "Cloud {0} does not have getMaxBatchSize method, using default", cloud.name);
+        } catch (IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
+            // Method couldn't be invoked, use default
+            LOGGER.log(Level.FINEST, "Cloud {0} getMaxBatchSize method could not be invoked, using default: {1}",
+                new Object[]{cloud.name, e.getMessage()});
+        }
+
+        // Default batch size - reasonable for most cloud providers
+        if (cloud.supportsProvisioningLimits()) {
+            int globalCap = cloud.getGlobalProvisioningCap();
+            if (globalCap != Integer.MAX_VALUE) {
+                // Limit batch to 25% of global cap to allow multiple concurrent requests
+                return Math.max(1, globalCap / 4);
+            }
+        }
+
+        // Conservative default
+        return 10;
+    }
+
+    /**
+     * Attempts provisioning with proper error handling and recovery.
+     *
+     * This method wraps the cloud provisioning call with error handling to ensure
+     * that failures in one cloud don't prevent trying other clouds.
+     *
+     * @param cloud the cloud to provision from
+     * @param cloudState the cloud state
+     * @param requestedExecutors the number of executors requested
+     * @param label the label being provisioned for
+     * @return the planned nodes, or null if provisioning failed
+     */
+    protected Collection<NodeProvisioner.PlannedNode> attemptProvisioning(@NonNull Cloud cloud,
+                                                                           @NonNull Cloud.CloudState cloudState,
+                                                                           int requestedExecutors,
+                                                                           Label label) {
+        try {
+            LOGGER.log(Level.FINE, "Attempting to provision {0} executors from cloud {1} for label {2}",
+                new Object[]{requestedExecutors, cloud.name, label});
+
+            Collection<NodeProvisioner.PlannedNode> plannedNodes = cloud.provision(cloudState, requestedExecutors);
+
+            if (plannedNodes == null || plannedNodes.isEmpty()) {
+                LOGGER.log(Level.INFO, "Cloud {0} returned no planned nodes for {1} requested executors",
+                    new Object[]{cloud.name, requestedExecutors});
+                return null;
+            }
+
+            // Validate the planned nodes
+            int actualExecutors = plannedNodes.stream().mapToInt(node -> node.numExecutors).sum();
+            if (actualExecutors <= 0) {
+                LOGGER.log(Level.WARNING, "Cloud {0} returned planned nodes with zero total executors",
+                    cloud.name);
+                return null;
+            }
+
+            LOGGER.log(Level.FINE, "Cloud {0} successfully planned {1} nodes with {2} total executors",
+                new Object[]{cloud.name, plannedNodes.size(), actualExecutors});
+
+            return plannedNodes;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Exception while provisioning from cloud " + cloud.name +
+                " for " + requestedExecutors + " executors: " + e.getMessage(), e);
+
+            // Cancel any pending reservations that may have been made
+            if (cloud.supportsProvisioningLimits()) {
+                try {
+                    CloudProvisioningLimits.getInstance().cancelPendingProvisioning(cloud, null, requestedExecutors);
+                } catch (Exception cleanupException) {
+                    LOGGER.log(Level.WARNING, "Failed to cleanup pending reservations for cloud " + cloud.name +
+                        ": " + cleanupException.getMessage(), cleanupException);
+                }
+            }
+
+            return null;
         }
     }
 
