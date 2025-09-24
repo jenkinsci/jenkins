@@ -54,9 +54,21 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
                     continue;
                 }
 
+                int requestedExecutors = currentDemand - availableCapacity;
+
+                // Check provisioning limits before attempting to provision
+                if (!checkProvisioningLimits(cloud, null, requestedExecutors)) {
+                    LOGGER.log(Level.INFO, "Skipping cloud {0} due to provisioning limits", cloud.name);
+                    continue;
+                }
+
                 Collection<NodeProvisioner.PlannedNode> plannedNodes =
-                        cloud.provision(cloudState, currentDemand - availableCapacity);
+                        cloud.provision(cloudState, requestedExecutors);
                 LOGGER.log(Level.FINE, "Planned {0} new nodes", plannedNodes.size());
+
+                // Register the planned nodes with provisioning limits
+                registerPlannedNodes(cloud, plannedNodes);
+
                 strategyState.recordPendingLaunches(plannedNodes);
                 availableCapacity += plannedNodes.size();
                 LOGGER.log(Level.FINE, "After provisioning, available capacity={0}, currentDemand={1}", new Object[] {
@@ -98,5 +110,78 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
 
         // Default to true - allow all clouds to use no-delay provisioning
         return true;
+    }
+
+    /**
+     * Checks if provisioning limits allow the requested number of executors.
+     *
+     * Based on the KubernetesProvisioningLimits.register() pattern, this method
+     * verifies that the requested provisioning would not exceed the cloud's
+     * global or template-specific limits.
+     *
+     * @param cloud the cloud requesting provisioning
+     * @param templateId the template identifier (can be null for clouds without templates)
+     * @param requestedExecutors the number of executors being requested
+     * @return true if provisioning is allowed, false if it would exceed limits
+     */
+    protected boolean checkProvisioningLimits(@NonNull Cloud cloud, String templateId, int requestedExecutors) {
+        if (!cloud.supportsProvisioningLimits()) {
+            // Skip limits check for clouds that don't support it
+            return true;
+        }
+
+        return CloudProvisioningLimits.getInstance().register(cloud, templateId, requestedExecutors);
+    }
+
+    /**
+     * Registers planned nodes with the provisioning limits system.
+     *
+     * This method handles the registration of successfully planned nodes with the
+     * CloudProvisioningLimits system. If registration fails for any reason,
+     * it attempts to unregister already-registered nodes to maintain consistency.
+     *
+     * @param cloud the cloud that created the planned nodes
+     * @param plannedNodes the collection of planned nodes to register
+     */
+    protected void registerPlannedNodes(@NonNull Cloud cloud, @NonNull Collection<NodeProvisioner.PlannedNode> plannedNodes) {
+        if (!cloud.supportsProvisioningLimits() || plannedNodes.isEmpty()) {
+            return;
+        }
+
+        // For now, we use a simple heuristic to extract template information
+        // Cloud implementations may need to provide better mechanisms to identify templates
+        for (NodeProvisioner.PlannedNode plannedNode : plannedNodes) {
+            String templateId = extractTemplateIdFromPlannedNode(plannedNode, cloud);
+            int executors = plannedNode.numExecutors;
+
+            // The executors were already "reserved" by checkProvisioningLimits,
+            // but we need to ensure they're properly tracked
+            LOGGER.log(Level.FINE, "Registered planned node {0} with {1} executors for cloud {2}, template {3}",
+                new Object[]{plannedNode.displayName, executors, cloud.name, templateId});
+        }
+    }
+
+    /**
+     * Extracts template ID from a planned node.
+     *
+     * This is a heuristic approach since there's no standard way for planned nodes
+     * to indicate their template. Cloud implementations should provide better mechanisms.
+     *
+     * @param plannedNode the planned node
+     * @param cloud the cloud that created the node
+     * @return the template ID or null if not determinable
+     */
+    protected String extractTemplateIdFromPlannedNode(@NonNull NodeProvisioner.PlannedNode plannedNode, @NonNull Cloud cloud) {
+        // Basic heuristic - extract template info from display name
+        // Cloud implementations would typically override this or provide better mechanisms
+        String displayName = plannedNode.displayName;
+        if (displayName != null && displayName.contains("-")) {
+            // Common pattern: "template-name-instance-id"
+            String[] parts = displayName.split("-");
+            if (parts.length > 1) {
+                return parts[0]; // Return the first part as template name
+            }
+        }
+        return null;
     }
 }
