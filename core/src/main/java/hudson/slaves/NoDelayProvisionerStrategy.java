@@ -141,9 +141,8 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
     /**
      * Registers planned nodes with the provisioning limits system.
      *
-     * This method handles the registration of successfully planned nodes with the
-     * CloudProvisioningLimits system. If registration fails for any reason,
-     * it attempts to unregister already-registered nodes to maintain consistency.
+     * This enhanced method confirms provisioning by moving reservations from pending to active.
+     * This is part of the concurrent provisioning tracking improvements in Phase 2.2.
      *
      * @param cloud the cloud that created the planned nodes
      * @param plannedNodes the collection of planned nodes to register
@@ -153,15 +152,15 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
             return;
         }
 
-        // For now, we use a simple heuristic to extract template information
-        // Cloud implementations may need to provide better mechanisms to identify templates
+        // Confirm provisioning for each planned node, moving from pending to active
         for (NodeProvisioner.PlannedNode plannedNode : plannedNodes) {
             String templateId = extractTemplateIdFromPlannedNode(plannedNode, cloud);
             int executors = plannedNode.numExecutors;
 
-            // The executors were already "reserved" by checkProvisioningLimits,
-            // but we need to ensure they're properly tracked
-            LOGGER.log(Level.FINE, "Registered planned node {0} with {1} executors for cloud {2}, template {3}",
+            // Confirm the provisioning - this moves the reservation from pending to active
+            CloudProvisioningLimits.getInstance().confirmProvisioning(cloud, templateId, executors);
+
+            LOGGER.log(Level.FINE, "Confirmed provisioning of planned node {0} with {1} executors for cloud {2}, template {3}",
                 new Object[]{plannedNode.displayName, executors, cloud.name, templateId});
         }
     }

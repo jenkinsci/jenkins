@@ -30,6 +30,7 @@ import hudson.model.Node;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -62,6 +63,26 @@ public class CloudProvisioningLimits {
      */
     private final ConcurrentMap<String, AtomicInteger> templateExecutorCounts = new ConcurrentHashMap<>();
 
+    /**
+     * Tracks pending provisioning requests that have been approved but not yet completed.
+     * This prevents race conditions where multiple threads see the same available capacity.
+     */
+    private final ConcurrentMap<String, AtomicInteger> pendingCloudExecutors = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, AtomicInteger> pendingTemplateExecutors = new ConcurrentHashMap<>();
+
+    /**
+     * Read-write lock for coordinating batch operations and ensuring consistency
+     * during concurrent access to multiple data structures.
+     */
+    private final ReentrantReadWriteLock batchLock = new ReentrantReadWriteLock();
+
+    /**
+     * Tracks concurrent access statistics for monitoring provisioning patterns.
+     */
+    private final AtomicInteger concurrentRegistrations = new AtomicInteger(0);
+    private final AtomicInteger totalRegistrationAttempts = new AtomicInteger(0);
+    private final AtomicInteger rejectedRegistrations = new AtomicInteger(0);
+
     private CloudProvisioningLimits() {
         // Singleton
     }
@@ -78,6 +99,9 @@ public class CloudProvisioningLimits {
     /**
      * Registers a provisioning request and checks if it would exceed limits.
      *
+     * This enhanced version provides better concurrent access handling by using
+     * read-write locks and pending reservations to prevent race conditions.
+     *
      * Based on KubernetesProvisioningLimits.register() method.
      *
      * @param cloud the cloud requesting provisioning
@@ -85,88 +109,258 @@ public class CloudProvisioningLimits {
      * @param executors the number of executors being requested
      * @return true if provisioning is allowed, false if it would exceed limits
      */
-    public synchronized boolean register(@NonNull Cloud cloud, String templateId, int executors) {
+    public boolean register(@NonNull Cloud cloud, String templateId, int executors) {
+        totalRegistrationAttempts.incrementAndGet();
+
         if (!cloud.supportsProvisioningLimits()) {
             // Skip limits for clouds that don't support them
             return true;
         }
 
-        String cloudKey = cloud.name;
-        String templateKey = templateId != null ? cloudKey + ":" + templateId : null;
+        // Use read lock for the limit checking phase
+        batchLock.readLock().lock();
+        try {
+            concurrentRegistrations.incrementAndGet();
 
-        // Check global cloud limit
+            String cloudKey = cloud.name;
+            String templateKey = templateId != null ? cloudKey + ":" + templateId : null;
+
+            // Check limits including pending reservations to prevent race conditions
+            if (!checkLimitsWithPending(cloud, cloudKey, templateKey, executors)) {
+                rejectedRegistrations.incrementAndGet();
+                return false;
+            }
+
+            // Reserve the executors in pending counts
+            reservePendingExecutors(cloudKey, templateKey, executors);
+
+            LOGGER.log(Level.FINE, "Reserved {0} executors for cloud {1}, template {2}",
+                new Object[]{executors, cloudKey, templateId});
+
+            return true;
+        } finally {
+            try {
+                concurrentRegistrations.decrementAndGet();
+            } finally {
+                batchLock.readLock().unlock();
+            }
+        }
+    }
+
+    /**
+     * Checks provisioning limits including pending reservations.
+     *
+     * @param cloud the cloud requesting provisioning
+     * @param cloudKey the cloud key
+     * @param templateKey the template key (can be null)
+     * @param executors the number of executors being requested
+     * @return true if within limits, false otherwise
+     */
+    private boolean checkLimitsWithPending(@NonNull Cloud cloud, String cloudKey, String templateKey, int executors) {
+        // Check global cloud limit including pending
         int globalCap = cloud.getGlobalProvisioningCap();
         if (globalCap != Integer.MAX_VALUE) {
             int currentCloudCount = cloudExecutorCounts.computeIfAbsent(cloudKey, k -> new AtomicInteger(0)).get();
-            if (currentCloudCount + executors > globalCap) {
-                LOGGER.log(Level.INFO, "Reached global provisioning cap for cloud {0}. Current: {1}, Requested: {2}, Cap: {3}",
-                    new Object[]{cloudKey, currentCloudCount, executors, globalCap});
+            int pendingCloudCount = pendingCloudExecutors.computeIfAbsent(cloudKey, k -> new AtomicInteger(0)).get();
+            int totalCount = currentCloudCount + pendingCloudCount + executors;
+
+            if (totalCount > globalCap) {
+                LOGGER.log(Level.INFO, "Would exceed global provisioning cap for cloud {0}. " +
+                    "Current: {1}, Pending: {2}, Requested: {3}, Cap: {4}",
+                    new Object[]{cloudKey, currentCloudCount, pendingCloudCount, executors, globalCap});
                 return false;
             }
         }
 
-        // Check template-specific limit
+        // Check template-specific limit including pending
         if (templateKey != null) {
-            int templateCap = cloud.getTemplateProvisioningCap(templateId);
+            int templateCap = cloud.getTemplateProvisioningCap(extractTemplateIdFromKey(templateKey));
             if (templateCap != Integer.MAX_VALUE) {
                 int currentTemplateCount = templateExecutorCounts.computeIfAbsent(templateKey, k -> new AtomicInteger(0)).get();
-                if (currentTemplateCount + executors > templateCap) {
-                    LOGGER.log(Level.INFO, "Reached template provisioning cap for {0}. Current: {1}, Requested: {2}, Cap: {3}",
-                        new Object[]{templateKey, currentTemplateCount, executors, templateCap});
+                int pendingTemplateCount = pendingTemplateExecutors.computeIfAbsent(templateKey, k -> new AtomicInteger(0)).get();
+                int totalCount = currentTemplateCount + pendingTemplateCount + executors;
+
+                if (totalCount > templateCap) {
+                    LOGGER.log(Level.INFO, "Would exceed template provisioning cap for {0}. " +
+                        "Current: {1}, Pending: {2}, Requested: {3}, Cap: {4}",
+                        new Object[]{templateKey, currentTemplateCount, pendingTemplateCount, executors, templateCap});
                     return false;
                 }
             }
         }
 
-        // Register the provisioning
-        cloudExecutorCounts.computeIfAbsent(cloudKey, k -> new AtomicInteger(0)).addAndGet(executors);
+        return true;
+    }
+
+    /**
+     * Reserves executors in pending counts.
+     *
+     * @param cloudKey the cloud key
+     * @param templateKey the template key (can be null)
+     * @param executors the number of executors to reserve
+     */
+    private void reservePendingExecutors(String cloudKey, String templateKey, int executors) {
+        pendingCloudExecutors.computeIfAbsent(cloudKey, k -> new AtomicInteger(0)).addAndGet(executors);
         if (templateKey != null) {
-            templateExecutorCounts.computeIfAbsent(templateKey, k -> new AtomicInteger(0)).addAndGet(executors);
+            pendingTemplateExecutors.computeIfAbsent(templateKey, k -> new AtomicInteger(0)).addAndGet(executors);
+        }
+    }
+
+    /**
+     * Extracts template ID from a template key.
+     *
+     * @param templateKey the template key in format "cloudname:templateid"
+     * @return the template ID portion
+     */
+    private String extractTemplateIdFromKey(String templateKey) {
+        int colonIndex = templateKey.indexOf(':');
+        return colonIndex >= 0 ? templateKey.substring(colonIndex + 1) : templateKey;
+    }
+
+    /**
+     * Confirms provisioning after successful node creation, moving from pending to active counts.
+     *
+     * This method should be called when planned nodes successfully become active nodes.
+     *
+     * @param cloud the cloud that completed provisioning
+     * @param templateId the template identifier (can be null)
+     * @param executors the number of executors that were successfully provisioned
+     */
+    public void confirmProvisioning(@NonNull Cloud cloud, String templateId, int executors) {
+        if (!cloud.supportsProvisioningLimits()) {
+            return;
         }
 
-        LOGGER.log(Level.FINE, "Registered {0} executors for cloud {1}, template {2}",
-            new Object[]{executors, cloudKey, templateId});
+        batchLock.writeLock().lock();
+        try {
+            String cloudKey = cloud.name;
+            String templateKey = templateId != null ? cloudKey + ":" + templateId : null;
 
-        return true;
+            // Move from pending to active counts
+            AtomicInteger pendingCloud = pendingCloudExecutors.get(cloudKey);
+            if (pendingCloud != null) {
+                int newPending = pendingCloud.addAndGet(-executors);
+                if (newPending <= 0) {
+                    pendingCloudExecutors.remove(cloudKey);
+                }
+            }
+
+            if (templateKey != null) {
+                AtomicInteger pendingTemplate = pendingTemplateExecutors.get(templateKey);
+                if (pendingTemplate != null) {
+                    int newPending = pendingTemplate.addAndGet(-executors);
+                    if (newPending <= 0) {
+                        pendingTemplateExecutors.remove(templateKey);
+                    }
+                }
+            }
+
+            // Add to active counts
+            cloudExecutorCounts.computeIfAbsent(cloudKey, k -> new AtomicInteger(0)).addAndGet(executors);
+            if (templateKey != null) {
+                templateExecutorCounts.computeIfAbsent(templateKey, k -> new AtomicInteger(0)).addAndGet(executors);
+            }
+
+            LOGGER.log(Level.FINE, "Confirmed provisioning of {0} executors for cloud {1}, template {2}",
+                new Object[]{executors, cloudKey, templateId});
+
+        } finally {
+            batchLock.writeLock().unlock();
+        }
     }
 
     /**
      * Unregisters executors when nodes are terminated or provisioning fails.
      *
+     * This enhanced version handles both active and pending executor counts.
+     *
      * @param cloud the cloud that was provisioning
      * @param templateId the template identifier (can be null)
      * @param executors the number of executors to unregister
      */
-    public synchronized void unregister(@NonNull Cloud cloud, String templateId, int executors) {
+    public void unregister(@NonNull Cloud cloud, String templateId, int executors) {
         if (!cloud.supportsProvisioningLimits()) {
             return;
         }
 
-        String cloudKey = cloud.name;
-        String templateKey = templateId != null ? cloudKey + ":" + templateId : null;
+        batchLock.writeLock().lock();
+        try {
+            String cloudKey = cloud.name;
+            String templateKey = templateId != null ? cloudKey + ":" + templateId : null;
 
-        // Unregister from cloud count
-        AtomicInteger cloudCount = cloudExecutorCounts.get(cloudKey);
-        if (cloudCount != null) {
-            int newValue = cloudCount.addAndGet(-executors);
-            if (newValue <= 0) {
-                cloudExecutorCounts.remove(cloudKey);
-            }
-        }
-
-        // Unregister from template count
-        if (templateKey != null) {
-            AtomicInteger templateCount = templateExecutorCounts.get(templateKey);
-            if (templateCount != null) {
-                int newValue = templateCount.addAndGet(-executors);
+            // Unregister from active cloud count
+            AtomicInteger cloudCount = cloudExecutorCounts.get(cloudKey);
+            if (cloudCount != null) {
+                int newValue = cloudCount.addAndGet(-executors);
                 if (newValue <= 0) {
-                    templateExecutorCounts.remove(templateKey);
+                    cloudExecutorCounts.remove(cloudKey);
                 }
             }
+
+            // Unregister from active template count
+            if (templateKey != null) {
+                AtomicInteger templateCount = templateExecutorCounts.get(templateKey);
+                if (templateCount != null) {
+                    int newValue = templateCount.addAndGet(-executors);
+                    if (newValue <= 0) {
+                        templateExecutorCounts.remove(templateKey);
+                    }
+                }
+            }
+
+            LOGGER.log(Level.FINE, "Unregistered {0} active executors for cloud {1}, template {2}",
+                new Object[]{executors, cloudKey, templateId});
+
+        } finally {
+            batchLock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Cancels pending provisioning, removing reservations that were made but never fulfilled.
+     *
+     * This method should be called when provisioning fails or is cancelled before nodes are created.
+     *
+     * @param cloud the cloud that was provisioning
+     * @param templateId the template identifier (can be null)
+     * @param executors the number of executors to cancel
+     */
+    public void cancelPendingProvisioning(@NonNull Cloud cloud, String templateId, int executors) {
+        if (!cloud.supportsProvisioningLimits()) {
+            return;
         }
 
-        LOGGER.log(Level.FINE, "Unregistered {0} executors for cloud {1}, template {2}",
-            new Object[]{executors, cloudKey, templateId});
+        batchLock.writeLock().lock();
+        try {
+            String cloudKey = cloud.name;
+            String templateKey = templateId != null ? cloudKey + ":" + templateId : null;
+
+            // Remove from pending cloud count
+            AtomicInteger pendingCloud = pendingCloudExecutors.get(cloudKey);
+            if (pendingCloud != null) {
+                int newPending = pendingCloud.addAndGet(-executors);
+                if (newPending <= 0) {
+                    pendingCloudExecutors.remove(cloudKey);
+                }
+            }
+
+            // Remove from pending template count
+            if (templateKey != null) {
+                AtomicInteger pendingTemplate = pendingTemplateExecutors.get(templateKey);
+                if (pendingTemplate != null) {
+                    int newPending = pendingTemplate.addAndGet(-executors);
+                    if (newPending <= 0) {
+                        pendingTemplateExecutors.remove(templateKey);
+                    }
+                }
+            }
+
+            LOGGER.log(Level.FINE, "Cancelled pending provisioning of {0} executors for cloud {1}, template {2}",
+                new Object[]{executors, cloudKey, templateId});
+
+        } finally {
+            batchLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -447,5 +641,112 @@ public class CloudProvisioningLimits {
         }
 
         return false;
+    }
+
+    /**
+     * Gets current concurrent access statistics for monitoring provisioning patterns.
+     *
+     * @return a map containing concurrent access statistics
+     */
+    public java.util.Map<String, Integer> getConcurrentAccessStatistics() {
+        java.util.Map<String, Integer> stats = new java.util.HashMap<>();
+        stats.put("currentConcurrentRegistrations", concurrentRegistrations.get());
+        stats.put("totalRegistrationAttempts", totalRegistrationAttempts.get());
+        stats.put("rejectedRegistrations", rejectedRegistrations.get());
+        stats.put("successfulRegistrations", totalRegistrationAttempts.get() - rejectedRegistrations.get());
+
+        // Calculate success rate
+        int total = totalRegistrationAttempts.get();
+        if (total > 0) {
+            int successRate = ((total - rejectedRegistrations.get()) * 100) / total;
+            stats.put("successRatePercentage", successRate);
+        } else {
+            stats.put("successRatePercentage", 100);
+        }
+
+        return stats;
+    }
+
+    /**
+     * Gets pending executor counts for monitoring pending provisioning.
+     *
+     * @return a map containing pending counts by cloud and template
+     */
+    public java.util.Map<String, Integer> getPendingExecutorCounts() {
+        java.util.Map<String, Integer> pending = new java.util.HashMap<>();
+
+        batchLock.readLock().lock();
+        try {
+            // Add cloud pending counts
+            for (java.util.Map.Entry<String, AtomicInteger> entry : pendingCloudExecutors.entrySet()) {
+                pending.put("cloud:" + entry.getKey(), entry.getValue().get());
+            }
+
+            // Add template pending counts
+            for (java.util.Map.Entry<String, AtomicInteger> entry : pendingTemplateExecutors.entrySet()) {
+                pending.put("template:" + entry.getKey(), entry.getValue().get());
+            }
+        } finally {
+            batchLock.readLock().unlock();
+        }
+
+        return pending;
+    }
+
+    /**
+     * Resets concurrent access statistics.
+     * This method can be useful for monitoring over specific time periods.
+     */
+    public void resetStatistics() {
+        totalRegistrationAttempts.set(0);
+        rejectedRegistrations.set(0);
+        LOGGER.log(Level.INFO, "Reset CloudProvisioningLimits concurrent access statistics");
+    }
+
+    /**
+     * Gets a summary of current provisioning state for debugging and monitoring.
+     *
+     * @return a formatted string containing current state information
+     */
+    public String getProvisioningStateSummary() {
+        StringBuilder summary = new StringBuilder();
+        summary.append("CloudProvisioningLimits State Summary:\n");
+
+        batchLock.readLock().lock();
+        try {
+            // Active counts
+            summary.append("Active Cloud Executors: ").append(cloudExecutorCounts.size()).append(" clouds\n");
+            for (java.util.Map.Entry<String, AtomicInteger> entry : cloudExecutorCounts.entrySet()) {
+                summary.append("  ").append(entry.getKey()).append(": ").append(entry.getValue().get()).append("\n");
+            }
+
+            summary.append("Active Template Executors: ").append(templateExecutorCounts.size()).append(" templates\n");
+            for (java.util.Map.Entry<String, AtomicInteger> entry : templateExecutorCounts.entrySet()) {
+                summary.append("  ").append(entry.getKey()).append(": ").append(entry.getValue().get()).append("\n");
+            }
+
+            // Pending counts
+            summary.append("Pending Cloud Executors: ").append(pendingCloudExecutors.size()).append(" clouds\n");
+            for (java.util.Map.Entry<String, AtomicInteger> entry : pendingCloudExecutors.entrySet()) {
+                summary.append("  ").append(entry.getKey()).append(": ").append(entry.getValue().get()).append("\n");
+            }
+
+            summary.append("Pending Template Executors: ").append(pendingTemplateExecutors.size()).append(" templates\n");
+            for (java.util.Map.Entry<String, AtomicInteger> entry : pendingTemplateExecutors.entrySet()) {
+                summary.append("  ").append(entry.getKey()).append(": ").append(entry.getValue().get()).append("\n");
+            }
+
+            // Statistics
+            java.util.Map<String, Integer> stats = getConcurrentAccessStatistics();
+            summary.append("Concurrent Access Statistics:\n");
+            for (java.util.Map.Entry<String, Integer> entry : stats.entrySet()) {
+                summary.append("  ").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+            }
+
+        } finally {
+            batchLock.readLock().unlock();
+        }
+
+        return summary.toString();
     }
 }
