@@ -5,7 +5,6 @@ import hudson.Extension;
 import hudson.model.Label;
 import hudson.model.LoadStatistics;
 import hudson.model.Queue;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,6 +20,36 @@ import org.jenkinsci.Symbol;
  *
  * This strategy provisions new nodes without delay when there is excess demand, making it suitable
  * for cloud environments where rapid scaling is desired and billing is fine-grained (e.g., per-minute).
+ *
+ * <p>This implementation is designed to work generically with any {@link Cloud} implementation.
+ * Cloud-specific plugins can extend this class and override specific methods to customize behavior
+ * for their cloud type while inheriting the core provisioning logic and BEE-60267 over-provisioning
+ * protection.</p>
+ *
+ * <h3>Extension Points for Plugin Authors</h3>
+ * <p>Plugin authors can extend this class and override:</p>
+ * <ul>
+ *   <li>{@link #shouldProcessCloud(Cloud, Label)} - to filter which clouds this strategy handles</li>
+ *   <li>{@link #supportsNoDelayProvisioning(Cloud)} - to determine no-delay provisioning support</li>
+ *   <li>{@link #getMaxProvisioningBatchSize(Cloud)} - to customize batch sizing per cloud</li>
+ *   <li>{@link #extractTemplateIdFromPlannedNode(NodeProvisioner.PlannedNode, Cloud)} - to improve template identification</li>
+ * </ul>
+ *
+ * <h3>Example Usage</h3>
+ * <pre>{@code
+ * @Extension(ordinal = 100)
+ * public class EC2NoDelayProvisionerStrategy extends NoDelayProvisionerStrategy {
+ *     @Override
+ *     protected boolean shouldProcessCloud(Cloud cloud, Label label) {
+ *         return cloud instanceof AmazonEC2Cloud;
+ *     }
+ *
+ *     @Override
+ *     protected boolean supportsNoDelayProvisioning(Cloud cloud) {
+ *         return ((AmazonEC2Cloud) cloud).isNoDelayProvisioning();
+ *     }
+ * }
+ * }</pre>
  *
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  * @since 2.530
@@ -77,6 +106,14 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
             }
 
             cloudsAttempted++;
+
+            // Check if this strategy should process this cloud
+            if (!shouldProcessCloud(cloud, label)) {
+                cloudsSkipped++;
+                LOGGER.log(Level.FINEST, "Strategy {0} skipping cloud {1} for label {2}",
+                    new Object[]{this.getClass().getSimpleName(), cloud.name, label});
+                continue;
+            }
 
             Cloud.CloudState cloudState = new Cloud.CloudState(label, 0);
             if (!cloud.canProvision(cloudState)) {
@@ -177,38 +214,23 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
      * Gets the maximum provisioning batch size for a cloud.
      *
      * This prevents excessive provisioning requests and allows for better resource
-     * distribution across multiple clouds.
+     * distribution across multiple clouds. Cloud-specific strategies can override
+     * this method to provide custom batch sizing logic.
      *
      * @param cloud the cloud to check
      * @return the maximum batch size for provisioning
      */
     protected int getMaxProvisioningBatchSize(@NonNull Cloud cloud) {
-        // Use reflection to check if cloud has a preferred batch size
-        try {
-            java.lang.reflect.Method method = cloud.getClass().getMethod("getMaxBatchSize");
-            if (method.getReturnType() == int.class) {
-                int batchSize = (Integer) method.invoke(cloud);
-                return Math.max(1, batchSize); // Ensure at least 1
-            }
-        } catch (NoSuchMethodException e) {
-            // Method doesn't exist, use default
-            LOGGER.log(Level.FINEST, "Cloud {0} does not have getMaxBatchSize method, using default", cloud.name);
-        } catch (IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
-            // Method couldn't be invoked, use default
-            LOGGER.log(Level.FINEST, "Cloud {0} getMaxBatchSize method could not be invoked, using default: {1}",
-                new Object[]{cloud.name, e.getMessage()});
-        }
-
-        // Default batch size - reasonable for most cloud providers
+        // Calculate based on provisioning limits if available
         if (cloud.supportsProvisioningLimits()) {
             int globalCap = cloud.getGlobalProvisioningCap();
-            if (globalCap != Integer.MAX_VALUE) {
+            if (globalCap != Integer.MAX_VALUE && globalCap > 0) {
                 // Limit batch to 25% of global cap to allow multiple concurrent requests
                 return Math.max(1, globalCap / 4);
             }
         }
 
-        // Conservative default
+        // Conservative default that works for any cloud type
         return 10;
     }
 
@@ -298,28 +320,37 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
     }
 
     /**
+     * Determines whether this strategy should process a specific cloud.
+     *
+     * This method provides a central extension point for cloud-specific strategies
+     * to filter which clouds they handle. The default implementation processes
+     * all clouds, but plugin-specific strategies can override this to target
+     * specific cloud types.
+     *
+     * @param cloud the cloud to check
+     * @param label the label being provisioned for (may be null)
+     * @return true if this strategy should process the cloud, false to skip it
+     */
+    protected boolean shouldProcessCloud(@NonNull Cloud cloud, Label label) {
+        // Default implementation processes all clouds
+        // Plugin-specific strategies can override this for cloud-type filtering
+        // Example: return cloud instanceof AmazonEC2Cloud;
+        return true;
+    }
+
+    /**
      * Determines whether a cloud supports no-delay provisioning.
      *
      * This default implementation returns true for all clouds, allowing any cloud to use
-     * the no-delay strategy. Cloud implementations can override this behavior by implementing
-     * a method to indicate their no-delay provisioning preference.
+     * the no-delay strategy. Cloud-specific strategy implementations can override this
+     * method to provide custom logic for determining no-delay provisioning support.
      *
      * @param cloud the cloud to check
      * @return true if the cloud supports no-delay provisioning, false otherwise
      */
     protected boolean supportsNoDelayProvisioning(Cloud cloud) {
-        // Use reflection to check if the cloud has a method to indicate no-delay provisioning support
-        try {
-            java.lang.reflect.Method method = cloud.getClass().getMethod("isNoDelayProvisioning");
-            if (method.getReturnType() == boolean.class) {
-                return (Boolean) method.invoke(cloud);
-            }
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            // Method doesn't exist or couldn't be invoked, fall back to default behavior
-            LOGGER.log(Level.FINEST, "Cloud {0} does not have isNoDelayProvisioning method, defaulting to true", cloud.getClass().getName());
-        }
-
         // Default to true - allow all clouds to use no-delay provisioning
+        // Plugin-specific strategies can override this method to provide custom logic
         return true;
     }
 
