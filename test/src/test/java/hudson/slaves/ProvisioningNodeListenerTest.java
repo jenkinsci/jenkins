@@ -55,8 +55,8 @@ class ProvisioningNodeListenerTest {
         limits = CloudProvisioningLimits.getInstance();
         cloud = new MockCloudWithLimits("test-cloud", 5, 3, "template1");
 
-        // Clear any existing state
-        limits.initInstance();
+        // Clear any existing state for proper test isolation
+        limits.resetForTesting();
     }
 
     @Test
@@ -99,6 +99,7 @@ class ProvisioningNodeListenerTest {
         // Set up: Add cloud to Jenkins and register some executors
         r.jenkins.clouds.add(cloud);
         assertTrue(limits.register(cloud, "template1", 2));
+        limits.confirmProvisioning(cloud, "template1", 2);
         assertEquals(2, limits.getCloudExecutorCount("test-cloud"));
         assertEquals(2, limits.getTemplateExecutorCount("test-cloud", "template1"));
 
@@ -123,6 +124,7 @@ class ProvisioningNodeListenerTest {
     void testOnDeletedHandlesUnknownNodes() throws Exception {
         // Register some executors for our cloud
         assertTrue(limits.register(cloud, "template1", 2));
+        limits.confirmProvisioning(cloud, "template1", 2);
         assertEquals(2, limits.getCloudExecutorCount("test-cloud"));
 
         // Create a node that doesn't belong to any known cloud
@@ -166,6 +168,7 @@ class ProvisioningNodeListenerTest {
 
         // Register some executors
         assertTrue(limits.register(cloud, "template1", 2));
+        limits.confirmProvisioning(cloud, "template1", 2);
         assertEquals(2, limits.getCloudExecutorCount("test-cloud"));
 
         // Create and add a node to Jenkins
@@ -190,8 +193,11 @@ class ProvisioningNodeListenerTest {
     void testMultipleNodeDeletions() throws Exception {
         // Set up multiple registrations
         assertTrue(limits.register(cloud, "template1", 1));
+        limits.confirmProvisioning(cloud, "template1", 1);
         assertTrue(limits.register(cloud, "template1", 1));
+        limits.confirmProvisioning(cloud, "template1", 1);
         assertTrue(limits.register(cloud, "template2", 1));
+        limits.confirmProvisioning(cloud, "template2", 1);
         assertEquals(3, limits.getCloudExecutorCount("test-cloud"));
         assertEquals(2, limits.getTemplateExecutorCount("test-cloud", "template1"));
         assertEquals(1, limits.getTemplateExecutorCount("test-cloud", "template2"));

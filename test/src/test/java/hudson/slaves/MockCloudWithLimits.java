@@ -30,7 +30,6 @@ import hudson.slaves.NodeProvisioner.PlannedNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Mock cloud implementation for testing the CloudProvisioningLimits system.
@@ -46,7 +45,7 @@ public class MockCloudWithLimits extends Cloud {
     private final int globalCap;
     private final int templateCap;
     private final boolean supportsLimits;
-    private final AtomicInteger provisioningCount = new AtomicInteger(0);
+    private volatile int provisioningCount = 0;
     private final String templateId;
 
     /**
@@ -101,12 +100,22 @@ public class MockCloudWithLimits extends Cloud {
         return true; // Always can provision (limits are checked elsewhere)
     }
 
+    /**
+     * Indicates whether this cloud supports no-delay provisioning.
+     * This method is called by NoDelayProvisionerStrategy via reflection.
+     *
+     * @return true to indicate this mock cloud supports no-delay provisioning
+     */
+    public boolean isNoDelayProvisioning() {
+        return true;
+    }
+
     @Override
     public Collection<PlannedNode> provision(CloudState state, int excessWorkload) {
         Collection<PlannedNode> result = new ArrayList<>();
 
         for (int i = 0; i < excessWorkload; i++) {
-            int nodeNumber = provisioningCount.incrementAndGet();
+            int nodeNumber = incrementProvisioningCount();
             String nodeName = name + "-" + (templateId != null ? templateId + "-" : "") + "node-" + nodeNumber;
 
             PlannedNode plannedNode = new PlannedNode(
@@ -176,15 +185,24 @@ public class MockCloudWithLimits extends Cloud {
      *
      * @return the number of nodes this cloud has provisioned
      */
-    public int getProvisioningCount() {
-        return provisioningCount.get();
+    public synchronized int getProvisioningCount() {
+        return provisioningCount;
     }
 
     /**
      * Resets the provisioning count (for test cleanup).
      */
-    public void resetProvisioningCount() {
-        provisioningCount.set(0);
+    public synchronized void resetProvisioningCount() {
+        provisioningCount = 0;
+    }
+
+    /**
+     * Increments and returns the provisioning count (thread-safe).
+     *
+     * @return the incremented provisioning count
+     */
+    private synchronized int incrementProvisioningCount() {
+        return ++provisioningCount;
     }
 
     /**

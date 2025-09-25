@@ -25,7 +25,6 @@
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.model.Computer;
 import hudson.model.Node;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -117,8 +116,8 @@ public class CloudProvisioningLimits {
             return true;
         }
 
-        // Use read lock for the limit checking phase
-        batchLock.readLock().lock();
+        // Use write lock for the critical section (check + reserve) to prevent race conditions
+        batchLock.writeLock().lock();
         try {
             concurrentRegistrations.incrementAndGet();
 
@@ -142,7 +141,7 @@ public class CloudProvisioningLimits {
             try {
                 concurrentRegistrations.decrementAndGet();
             } finally {
-                batchLock.readLock().unlock();
+                batchLock.writeLock().unlock();
             }
         }
     }
@@ -375,10 +374,7 @@ public class CloudProvisioningLimits {
             return;
         }
 
-        Computer computer = node.toComputer();
-        if (computer == null) {
-            return;
-        }
+        // Note: We don't need the Computer for this operation, just the node metadata
 
         // Find the cloud that created this node
         for (Cloud cloud : jenkins.clouds) {
@@ -388,6 +384,26 @@ public class CloudProvisioningLimits {
                 unregister(cloud, templateId, executors);
                 break;
             }
+        }
+    }
+
+    /**
+     * Resets all state for testing purposes.
+     * This method should only be used in test environments.
+     */
+    public void resetForTesting() {
+        batchLock.writeLock().lock();
+        try {
+            cloudExecutorCounts.clear();
+            templateExecutorCounts.clear();
+            pendingCloudExecutors.clear();
+            pendingTemplateExecutors.clear();
+            totalRegistrationAttempts.set(0);
+            rejectedRegistrations.set(0);
+            concurrentRegistrations.set(0);
+            LOGGER.log(Level.INFO, "Reset CloudProvisioningLimits for testing");
+        } finally {
+            batchLock.writeLock().unlock();
         }
     }
 
@@ -403,9 +419,11 @@ public class CloudProvisioningLimits {
 
         LOGGER.log(Level.INFO, "Initializing cloud provisioning limits from existing nodes");
 
-        // Clear existing counts
+        // Clear existing counts and pending reservations
         cloudExecutorCounts.clear();
         templateExecutorCounts.clear();
+        pendingCloudExecutors.clear();
+        pendingTemplateExecutors.clear();
 
         // Scan existing nodes
         for (Node node : jenkins.getNodes()) {
