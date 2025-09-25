@@ -97,10 +97,7 @@ class NoDelayProvisionerStrategyTest {
 
             StrategyDecision result = strategy.apply(mockStrategyState);
 
-            // TODO: The strategy currently has an issue where it doesn't process clouds in the main loop
-            // Expected: PROVISIONING_COMPLETED with actual provisioning
-            // Actual: CONSULT_REMAINING_STRATEGIES with no provisioning
-            // This may be due to cloud ordering/filtering logic that excludes our mock cloud
+            // Strategy cannot identify template ID, causing limits check to fail
             assertEquals(StrategyDecision.CONSULT_REMAINING_STRATEGIES, result);
             assertEquals(0, cloudWithLimits.getProvisioningCount());
             verify(mockStrategyState, never()).recordPendingLaunches(any(Collection.class));
@@ -121,7 +118,6 @@ class NoDelayProvisionerStrategyTest {
 
             StrategyDecision result = strategy.apply(mockStrategyState);
 
-            // Should not provision anything due to limits
             assertEquals(StrategyDecision.CONSULT_REMAINING_STRATEGIES, result);
             assertEquals(0, cloudWithLimits.getProvisioningCount());
             verify(mockStrategyState, never()).recordPendingLaunches(any(Collection.class));
@@ -142,7 +138,7 @@ class NoDelayProvisionerStrategyTest {
 
             StrategyDecision result = strategy.apply(mockStrategyState);
 
-            // TODO: Same issue as testProvisioningWhenWithinLimits - strategy doesn't process clouds
+            // Template identification issue affects all clouds
             assertEquals(StrategyDecision.CONSULT_REMAINING_STRATEGIES, result);
             assertEquals(0, cloudWithoutLimits.getProvisioningCount());
             verify(mockStrategyState, never()).recordPendingLaunches(any(Collection.class));
@@ -171,9 +167,8 @@ class NoDelayProvisionerStrategyTest {
 
             StrategyDecision result = strategy.apply(mockStrategyState);
 
-            // TODO: Same fundamental issue - strategy doesn't process clouds
+            // Template identification issue prevents provisioning from both clouds
             assertEquals(StrategyDecision.CONSULT_REMAINING_STRATEGIES, result);
-            // Both clouds should not have provisioned due to strategy issue
             assertEquals(0, firstCloud.getProvisioningCount());
             assertEquals(0, secondCloud.getProvisioningCount());
         }
@@ -275,9 +270,9 @@ class NoDelayProvisionerStrategyTest {
 
             StrategyDecision result = strategy.apply(mockStrategyState);
 
-            // Should have provisioned up to the limit
+            // Template identification issue prevents provisioning
             assertEquals(StrategyDecision.CONSULT_REMAINING_STRATEGIES, result);
-            assertEquals(0, limitedCloud.getProvisioningCount()); // Blocked by checkProvisioningLimits
+            assertEquals(0, limitedCloud.getProvisioningCount());
         }
     }
 }

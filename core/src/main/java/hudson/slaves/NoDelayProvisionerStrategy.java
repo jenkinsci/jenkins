@@ -6,6 +6,7 @@ import hudson.model.Label;
 import hudson.model.LoadStatistics;
 import hudson.model.Queue;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,6 +56,19 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
 
         // Get intelligently ordered list of clouds for optimal provisioning
         List<Cloud> orderedClouds = CloudStateManager.getInstance().getOptimalCloudOrder(label, remainingDemand);
+
+        // Fallback: if CloudStateManager returns empty list (e.g., in test environments),
+        // use all available clouds from Jenkins instance
+        if (orderedClouds.isEmpty()) {
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
+            if (jenkins != null && !jenkins.clouds.isEmpty()) {
+                orderedClouds = new ArrayList<>(jenkins.clouds);
+                LOGGER.log(Level.FINE, "CloudStateManager returned empty list, using fallback with {0} clouds",
+                    orderedClouds.size());
+            }
+        }
+
+        LOGGER.log(Level.FINE, "Processing {0} clouds for provisioning", orderedClouds.size());
 
         // Try provisioning across clouds in optimal order for better utilization and failover
         for (Cloud cloud : orderedClouds) {
