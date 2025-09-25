@@ -1,0 +1,38 @@
+$icon-size: 1.125rem;
+
+.jenkins-details {
+  display: flex;
+  gap: 0.75rem 1.25rem;
+  flex-wrap: wrap;
+
+  &__item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem;
+    font-weight: normal;
+    color: var(--text-color-secondary);
+
+    &__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      align-self: start;
+      width: $icon-size;
+      height: 1lh;
+
+      svg {
+        width: $icon-size;
+        height: $icon-size;
+
+        * {
+          stroke-width: 40px;
+        }
+      }
+    }
+  }
+
+  &__separator {
+    color: var(--text-color-secondary);
+    opacity: 0.5;
+  }
+}

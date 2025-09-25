@@ -55,7 +55,7 @@
 
     .jenkins-card {
       &:first-of-type {
-        grid-column: span 2;
+        grid-column: span 3;
       }
 
       &:last-of-type {
@@ -69,7 +69,7 @@
 
     .jenkins-card {
       &:first-of-type {
-        grid-column: span 3;
+        grid-column: span 4;
       }
 
       &:last-of-type {
@@ -83,62 +83,13 @@
 
     .jenkins-card {
       &:first-of-type {
-        grid-column: span 3;
+        grid-column: span 5;
       }
 
       &:last-of-type {
         grid-column: span 5;
       }
     }
-  }
-}
-
-.app-build__clock {
-  position: relative;
-  width: 1.5rem;
-  height: 1.5rem;
-  flex-shrink: 0;
-  scale: 0.75;
-
-  &__hours,
-  &__minutes {
-    position: absolute;
-    inset: 0;
-    border-radius: 100%;
-
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: 11px;
-      left: 11px;
-      width: 2px;
-      background: currentColor;
-      border-radius: 2px;
-    }
-  }
-
-  &__hours {
-    rotate: var(--hours);
-
-    &::after {
-      height: 6px;
-    }
-  }
-
-  &__minutes {
-    rotate: var(--minutes);
-
-    &::after {
-      height: 8px;
-    }
-  }
-
-  &::after {
-    position: absolute;
-    content: "";
-    inset: 0;
-    border-radius: 100%;
-    border: 2px solid currentColor;
   }
 }
 
