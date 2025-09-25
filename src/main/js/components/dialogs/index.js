@@ -292,6 +292,36 @@ function init() {
       return dialog.show();
     },
   };
+
+  behaviorShim.specify(
+    "[data-type='dialog-opener']",
+    "-dialog-",
+    1000,
+    (element) => {
+      element.addEventListener("click", () => {
+        const templateId = element.dataset.dialogId + "-template";
+
+        function render() {
+          const template = document.querySelector("#" + templateId);
+          const title = template.dataset.title;
+          const content = template.content.firstElementChild.cloneNode(true);
+
+          behaviorShim.applySubtree(content, false);
+          dialog.modal(content, {
+            maxWidth: "550px",
+            title: title,
+          });
+        }
+
+        if (document.querySelector("#" + templateId)) {
+          render();
+          return;
+        }
+
+        renderOnDemand(document.querySelector("." + templateId), render);
+      });
+    },
+  );
 }
 
 export default { init };
