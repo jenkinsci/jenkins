@@ -33,7 +33,6 @@ THE SOFTWARE.
       <script src="${resURL}/jsbundles/pages/job.js" type="text/javascript" defer="true" />
 
       <j:set var="controls">
-        <t:editDescriptionButton permission="${it.UPDATE}"/>
         <l:hasPermission permission="${it.UPDATE}">
           <st:include page="logKeep.jelly" />
         </l:hasPermission>
@@ -41,7 +40,11 @@ THE SOFTWARE.
 
       <t:buildCaption controls="${controls}">${it.displayName}</t:buildCaption>
 
-      <l:details-bar it="${it}" />
+      <l:details-bar it="${it}">
+        <t:editDescriptionButton permission="${it.UPDATE}"
+                                 hideText="true"
+                                 clazz="jenkins-details__button" />
+      </l:details-bar>
 
       <div>
         <t:editableDescription permission="${it.UPDATE}" hideButton="true"/>
