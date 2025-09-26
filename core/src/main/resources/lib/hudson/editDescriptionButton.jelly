@@ -13,11 +13,8 @@
         <st:attribute name="submissionUrl">
             Optional submission URL. If not specified, will use 'submitDescription'.
         </st:attribute>
-        <st:attribute name="clazz">
-            Additional CSS classes.
-        </st:attribute>
-        <st:attribute name="hideText">
-            If enabled, the button label will be hidden and a tooltip visible.
+        <st:attribute name="compact">
+            If set, the button becomes compact and the button label hides.
         </st:attribute>
     </st:documentation>
 
@@ -36,14 +33,14 @@
 
     <l:hasPermission permission="${permission}">
         <st:adjunct includes="lib.hudson.editable-description" />
-        <a class="jenkins-button jenkins-hidden ${attrs.clazz}"
+        <a class="jenkins-button jenkins-hidden ${attrs.compact ? 'jenkins-details__button' : ''}"
              id="description-link"
              href="editDescription"
              data-description="${actualDescription}"
              data-url="${submissionUrl}"
-             tooltip="${attrs.hideText ? label : null}">
+             tooltip="${!attrs.compact ? label : null}">
             <l:icon src="symbol-description" />
-            <j:if test="${!attrs.hideText}">
+            <j:if test="${!attrs.compact}">
                 ${label}
             </j:if>
         </a>

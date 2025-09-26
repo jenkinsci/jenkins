@@ -41,9 +41,7 @@ THE SOFTWARE.
       <t:buildCaption controls="${controls}">${it.displayName}</t:buildCaption>
 
       <l:details-bar it="${it}">
-        <t:editDescriptionButton permission="${it.UPDATE}"
-                                 hideText="true"
-                                 clazz="jenkins-details__button" />
+        <t:editDescriptionButton permission="${it.UPDATE}" compact="true" />
       </l:details-bar>
 
       <div>
