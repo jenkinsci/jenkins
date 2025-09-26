@@ -27,6 +27,10 @@ THE SOFTWARE.
     <st:attribute name="title" use="required">
       The title for the dialog.
     </st:attribute>
+    <st:attribute name="hash">
+      An optional hash for the dialog. When provided, the dialog can be opened and navigated
+      directly using its unique URL hash.
+    </st:attribute>
 
     A lazy-loaded dialog. Set 'data-type="dialog-opener"' and 'data-dialog-id="${dialogId}"'
     on your button to open the dialog.
@@ -34,9 +38,9 @@ THE SOFTWARE.
 
   <j:set var="dialogId" value="${h.generateId()}" scope="parent" />
 
-  <l:renderOnDemand clazz="${dialogId}-template" tag="template" capture="it,dialogId">
+  <l:renderOnDemand clazz="dialog-${dialogId}-template dialog-${attrs.hash}-hash" tag="template" capture="it,dialogId">
     <l:ajax>
-      <template id="${dialogId}-template" data-title="${attrs.title}">
+      <template id="dialog-${dialogId}-template" data-title="${attrs.title}">
         <d:invokeBody />
       </template>
     </l:ajax>

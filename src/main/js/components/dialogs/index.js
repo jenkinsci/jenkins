@@ -189,6 +189,13 @@ Dialog.prototype.show = function () {
       (e) => {
         e.preventDefault();
 
+        // Clear any hash
+        history.pushState(
+          "",
+          document.title,
+          window.location.pathname + window.location.search,
+        );
+
         this.dialog.setAttribute("closing", "");
 
         this.dialog.addEventListener(
@@ -232,6 +239,34 @@ Dialog.prototype.show = function () {
     }
   });
 };
+
+function renderOnDemandDialog(dialogId) {
+  const templateId = "dialog-" + dialogId + "-template";
+
+  function render() {
+    const template = document.querySelector("#" + templateId);
+    const title = template.dataset.title;
+    const hash = template.dataset.dialogHash;
+    const content = template.content.firstElementChild.cloneNode(true);
+
+    if (hash) {
+      window.location.hash = hash;
+    }
+
+    behaviorShim.applySubtree(content, false);
+    dialog.modal(content, {
+      maxWidth: "550px",
+      title: title,
+    });
+  }
+
+  if (document.querySelector("#" + templateId)) {
+    render();
+    return;
+  }
+
+  renderOnDemand(document.querySelector("." + templateId), render);
+}
 
 function init() {
   window.dialog = {
@@ -299,29 +334,22 @@ function init() {
     1000,
     (element) => {
       element.addEventListener("click", () => {
-        const templateId = element.dataset.dialogId + "-template";
-
-        function render() {
-          const template = document.querySelector("#" + templateId);
-          const title = template.dataset.title;
-          const content = template.content.firstElementChild.cloneNode(true);
-
-          behaviorShim.applySubtree(content, false);
-          dialog.modal(content, {
-            maxWidth: "550px",
-            title: title,
-          });
-        }
-
-        if (document.querySelector("#" + templateId)) {
-          render();
-          return;
-        }
-
-        renderOnDemand(document.querySelector("." + templateId), render);
+        renderOnDemandDialog(element.dataset.dialogId);
       });
     },
   );
+
+  // Open the relevant dialog if the hash is set
+  if (window.location.hash) {
+    const element = document.querySelector(
+      ".dialog-" + window.location.hash.substring(1) + "-hash",
+    );
+    if (element) {
+      renderOnDemandDialog(
+        element.className.match(/dialog-(id\d+)-template/)[1],
+      );
+    }
+  }
 }
 
 export default { init };
