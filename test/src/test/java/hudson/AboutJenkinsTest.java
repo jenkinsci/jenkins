@@ -97,7 +97,7 @@ class AboutJenkinsTest {
             assertThat(page.getTitleText(), containsString("Jenkins"));
         }
 
-        { // admin can access it
+        { // admin can access About Jenkins page
             wc.login(ADMIN);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
@@ -105,21 +105,21 @@ class AboutJenkinsTest {
             assertThat(page.getTitleText(), containsString("About Jenkins"));
         }
 
-        { // manager can access it
+        { // manager can access About Jenkins page
             wc.login(MANAGER);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
             assertThat(page.getTitleText(), containsString("About Jenkins"));
         }
 
-        { // readonly can access it
+        { // readonly can access About Jenkins page
             wc.login(READONLY);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
             assertThat(page.getTitleText(), containsString("About Jenkins"));
         }
 
-        { // manager-readonly can access it
+        { // manager-readonly can access About Jenkins page
             wc.login(MANAGER_READONLY);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
