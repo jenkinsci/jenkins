@@ -84,6 +84,12 @@ class AboutJenkinsTest {
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 
+        { // anonymous user cannot see About Jenkins page -> redirect to sign in page
+            HtmlPage page = wc.goTo("about/");
+            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+            assertThat(page.getTitleText(), containsString("Sign in - Jenkins"));
+        }
+
         { // user cannot see it
             wc.login(USER);
             HtmlPage page = wc.goTo("about/");
