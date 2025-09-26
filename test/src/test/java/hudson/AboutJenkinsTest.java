@@ -52,7 +52,7 @@ class AboutJenkinsTest {
 
     @Test
     @Issue("SECURITY-771")
-    void onlyAdminOrManageOrSystemReadCanReadAbout() throws Exception {
+    void onlyAdminOrManagerOrSystemReadCanSeeAboutPage() throws Exception {
         final String ADMIN = "admin";
         final String USER = "user";
         final String MANAGER = "manager";
