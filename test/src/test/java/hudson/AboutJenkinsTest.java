@@ -90,10 +90,11 @@ class AboutJenkinsTest {
             assertThat(page.getTitleText(), containsString("Sign in - Jenkins"));
         }
 
-        { // user cannot see it
+        { // user cannot see About Jenkins page -> redirect to Access Denied Jenkins page
             wc.login(USER);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
+            assertThat(page.getTitleText(), containsString("Jenkins"));
         }
 
         { // admin can access it
