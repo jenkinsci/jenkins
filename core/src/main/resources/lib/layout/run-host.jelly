@@ -1,0 +1,103 @@
+<!--
+The MIT License
+
+Copyright (c) 2023, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:dd="/lib/layout/dropdowns" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
+  <l:layout title="${it.displayName} - ${it.object.displayName}">
+    <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
+
+    <j:choose>
+      <j:when test="${newBuildPage}">
+        <l:main-panel>
+          <j:set var="buildUrl" value="${h.decompose(request2)}" />
+
+          <div class="build-bar">
+            <div class="idkyet">
+              <a class="buildicon" href="${rootURL}/${it.object.url}" tabindex="-1">
+                <l:icon alt="${it.iconColor.description}"
+                        src="symbol-status-${it.object.iconColor.iconName}" />
+              </a>
+              <j:if test="${it.object.previousBuild != null}">
+                <a href="${buildUrl.previousBuildUrl}"
+                   class="jenkins-button jenkins-button--tertiary"
+                   aria-label="Previous build">
+                  <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" />
+                </a>
+              </j:if>
+              <h1>${it.object.displayName}</h1>
+              <j:if test="${it.object.nextBuild != null}">
+                <a href="${buildUrl.nextBuildUrl}"
+                   class="jenkins-button jenkins-button--tertiary"
+                   aria-label="Next build">
+                  <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" />
+                </a>
+              </j:if>
+            </div>
+
+            <j:set var="url" value="${h.getNearestAncestorUrl(request2, it.object)}"/>
+
+            <div>
+              <l:tabs items="${it.object.runTabs}" />
+            </div>
+
+            <div class="jenkins-app-bar__controls">
+              <j:if test="${it.object.building}">
+                  <j:if test="${it.object.parent.hasAbortPermission()}">
+                    <button class="jenkins-button jenkins-!-error-color">
+                      <l:icon src="symbol-stop-circle-outline plugin-ionicons-api"/>
+                      ${%Cancel}
+                    </button>
+                  </j:if>
+              </j:if>
+
+              <l:overflowButton>
+                <dd:custom>
+                  <l:tasks>
+                    <j:set var="buildUrl" value="${h.decompose(request2)}" />
+                    <st:include page="tasks.jelly" from="${it.object}" it="${it.object}" optional="true" />
+                    <st:include page="actions.jelly" from="${it.object}" it="${it.object}" />
+                    <t:actions actions="${it.object.transientActions}" />
+                    <st:include page="delete.jelly" from="${it.object}" it="${it.object}" />
+                  </l:tasks>
+                </dd:custom>
+              </l:overflowButton>
+            </div>
+
+            <st:adjunct includes="lib.hudson.build-caption" />
+          </div>
+
+          <div class="plugin-content">
+            <d:invokeBody />
+          </div>
+        </l:main-panel>
+      </j:when>
+      <j:otherwise>
+        <!-- Hacky -->
+        <l:main-panel>
+          <d:invokeBody />
+        </l:main-panel>
+      </j:otherwise>
+    </j:choose>
+  </l:layout>
+</j:jelly>

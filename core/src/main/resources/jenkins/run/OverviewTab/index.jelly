@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright (c) 2025 Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,34 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
-	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-    <j:set var="escapeEntryTitleAndDescription" value="false"/>
-    <j:set var="readOnlyMode" value="true"/>
-    <div>
-      <f:checkbox title="${h.escape(it.name)}" name="value" checked="${it.value}" description="${it.formattedDescription}" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <l:run-host>
+    <l:app-bar title="${it.displayName}" headingLevel="h2">
+      <l:details-bar it="${it.object}" />
+      <t:editDescriptionButton permission="${it.object.UPDATE}"
+                               compact="true" />
+    </l:app-bar>
+
+    <j:set var="it" value="${it.object}" />
+
+    <t:editableDescription permission="${it.UPDATE}" hideButton="true" />
+
+    <div class="cards">
+      <j:forEach var="a" items="${it.runTabs}">
+        <st:include page="widget.jelly" from="${a}" optional="true" it="${a}" />
+      </j:forEach>
+
+      <l:card title="Legacy">
+        <table>
+          <j:forEach var="a" items="${it.allActions}">
+            <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+          </j:forEach>
+
+          <st:include page="summary.jelly" optional="true" />
+        </table>
+
+        <st:include page="main.jelly" optional="true" />
+      </l:card>
     </div>
+  </l:run-host>
 </j:jelly>

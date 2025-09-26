@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025, Jan Faracik
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,25 +22,28 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model.experimentalflags;
+package jenkins.run;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
-import hudson.Extension;
+import hudson.model.Actionable;
 
-@Extension
-public class NewBuildPageUserExperimentalFlag extends BooleanUserExperimentalFlag {
-    public NewBuildPageUserExperimentalFlag() {
-        super("new-build-page.flag");
+public class OverviewTab extends Tab {
+
+    public OverviewTab(Actionable object) {
+        super(object);
+    }
+
+    @Override
+    public String getIconFileName() {
+        return "symbol-grid-outline plugin-ionicons-api";
     }
 
     @Override
     public String getDisplayName() {
-        return "New build page";
+        return "Overview";
     }
 
-    @Nullable
     @Override
-    public String getShortDescription() {
-        return "Enables a revamped build page. This feature is still a work in progress, so some things might not work perfectly yet.";
+    public String getUrlName() {
+        return null;
     }
 }

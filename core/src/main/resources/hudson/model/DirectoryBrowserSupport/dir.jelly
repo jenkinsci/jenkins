@@ -25,119 +25,125 @@ THE SOFTWARE.
 <!-- Show files in the workspace -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.title} : ${path}">
-    <st:include page="sidepanel.jelly" it="${it.owner}"/>
-    <l:breadcrumb title="${it.title}" />
-    <l:main-panel>
-      <h1><l:breakable value="${it.title}"/></h1>
-      <div class="dirTree">
+  <j:set var="dir" value="${it}" />
+
+  <j:new className="jenkins.run.ArtifactsTab" var="it">
+    <j:arg value="${it.owner}" />
+  </j:new>
+
+  <l:run-host>
+    <j:set var="action" value="${it}" />
+    <j:set var="it" value="${dir}" />
+
+    <l:app-bar title="${action.displayName}" />
+
+    <div class="dirTree">
       <!-- parent path -->
-        <div class="parentPath">
-          <form>
-            <a href="${topPath}">${it.owner.name}</a> /
-            <j:forEach var="p" items="${parentPath}">
-              <a href="${p.href}">${p.title}</a>
-              /
-            </j:forEach>
-            <input type="text" name="pattern" value="${pattern}" class="jenkins-input" id="pattern" data-restofpath="${request2.restOfPath}" data-backpath="${backPath}" />
-            <button class="jenkins-button" id="pattern-submit">
-              <l:icon src="symbol-arrow-right" />
-            </button>
-          </form>
-          <st:adjunct includes="hudson.model.DirectoryBrowserSupport.pattern" />
-        </div>
-        <j:choose>
-          <j:when test="${empty(files)}">
-            ${%No files in directory}
-           <j:if test="${showSymlinkWarning}">
-             <p>
-                <img id="symlinkalert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
-               ${%Symlinks are hidden}
-             </p>
-            </j:if>
-           <j:if test="${showTmpDirWarning}">
-             <p>
-               <img id="tmpdiralert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
-               ${%Tmp directories are hidden}
-             </p>
-            </j:if>
-          </j:when>
-          <j:otherwise>
-            <table class="fileList">
-              <j:forEach var="f" items="${files}">
-                <j:set var="x" value="${f.get(f.size()-1)}"/>
-                <tr>
-                  <td>
-                    <l:icon class="${x.iconClassName} icon-sm"/>
-                  </td>
-                  <td>
-                    <j:forEach var="t" items="${f}" varStatus="st">
+      <div class="parentPath">
+        <form>
+          <a href="${topPath}">${it.owner.name}</a> /
+          <j:forEach var="p" items="${parentPath}">
+            <a href="${p.href}">${p.title}</a>
+            /
+          </j:forEach>
+          <input type="text" name="pattern" value="${pattern}" class="jenkins-input" id="pattern" data-restofpath="${request2.restOfPath}" data-backpath="${backPath}" />
+          <button class="jenkins-button" id="pattern-submit">
+            <l:icon src="symbol-arrow-right" />
+          </button>
+        </form>
+        <st:adjunct includes="hudson.model.DirectoryBrowserSupport.pattern" />
+      </div>
+      <j:choose>
+        <j:when test="${empty(files)}">
+          ${%No files in directory}
+          <j:if test="${showSymlinkWarning}">
+            <p>
+              <img id="symlinkalert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
+              ${%Symlinks are hidden}
+            </p>
+          </j:if>
+          <j:if test="${showTmpDirWarning}">
+            <p>
+              <img id="tmpdiralert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
+              ${%Tmp directories are hidden}
+            </p>
+          </j:if>
+        </j:when>
+        <j:otherwise>
+          <table class="fileList">
+            <j:forEach var="f" items="${files}">
+              <j:set var="x" value="${f.get(f.size()-1)}"/>
+              <tr>
+                <td>
+                  <l:icon class="${x.iconClassName} icon-sm"/>
+                </td>
+                <td>
+                  <j:forEach var="t" items="${f}" varStatus="st">
 
-                      <j:choose>
-                        <j:when test="${x.readable}">
-                          <a href="${t.href}">${t.title}</a>
-                        </j:when>
-                        <j:otherwise>
-                          ${t.title}
-                        </j:otherwise>
-                      </j:choose>
+                    <j:choose>
+                      <j:when test="${x.readable}">
+                        <a href="${t.href}">${t.title}</a>
+                      </j:when>
+                      <j:otherwise>
+                        ${t.title}
+                      </j:otherwise>
+                    </j:choose>
 
-                      <j:if test="${!st.last}">/</j:if>
-                    </j:forEach>
+                    <j:if test="${!st.last}">/</j:if>
+                  </j:forEach>
+                </td>
+                <j:if test="${!x.folder}">
+                  <td class="fileSize">
+                    <j:if test="${x.lastModifiedAsCalendar.timeInMillis &gt; 0}">
+                      <i:formatDate value="${x.lastModifiedAsCalendar.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+                    </j:if>
+                    <j:if test="${x.lastModifiedAsCalendar.timeInMillis &lt;= 0}">
+                      ${%N/A}
+                    </j:if>
                   </td>
-                  <j:if test="${!x.folder}">
-                    <td class="fileSize">
-                      <j:if test="${x.lastModifiedAsCalendar.timeInMillis &gt; 0}">
-                        <i:formatDate value="${x.lastModifiedAsCalendar.time}" type="both" dateStyle="medium" timeStyle="medium"/>
-                      </j:if>
-                      <j:if test="${x.lastModifiedAsCalendar.timeInMillis &lt;= 0}">
-                        ${%N/A}
-                      </j:if>
-                    </td>
-                    <td class="fileSize">
-                      ${h.humanReadableByteSize(x.getSize())}
-                    </td>
-                    <td style="display: flex; gap: 1rem;">
-                      <j:if test="${x.readable}">
-                        <j:if test="${app.fingerprintMap.ready}">
-                          <a class="jenkins-link--with-icon" href="${x.href}/*fingerprint*/" tooltip="${%View fingerprint}">
-                            <l:icon class="symbol-fingerprint" />
-                          </a>
-                        </j:if>
-                        <a class="jenkins-link--with-icon" href="${x.href}/*view*/" tooltip="${%View}">
-                          <l:icon src="symbol-view" />
+                  <td class="fileSize">
+                    ${h.humanReadableByteSize(x.getSize())}
+                  </td>
+                  <td style="display: flex; gap: 1rem;">
+                    <j:if test="${x.readable}">
+                      <j:if test="${app.fingerprintMap.ready}">
+                        <a class="jenkins-link--with-icon" href="${x.href}/*fingerprint*/" tooltip="${%View fingerprint}">
+                          <l:icon class="symbol-fingerprint" />
                         </a>
                       </j:if>
-                    </td>
-                  </j:if>
-                </tr>
-              </j:forEach>
-              <tr>
-                <td style="text-align:right;" colspan="3">
-                  <div style="margin-top: 1em;">
-                    <a class="jenkins-link--with-icon" href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
-                      <l:icon src="symbol-download"/>
-                      (${%all files in zip})
-                    </a>
-                  </div>
-                </td>
+                      <a class="jenkins-link--with-icon" href="${x.href}/*view*/" tooltip="${%View}">
+                        <l:icon src="symbol-view" />
+                      </a>
+                    </j:if>
+                  </td>
+                </j:if>
               </tr>
-           </table>
-           <j:if test="${showSymlinkWarning}">
-             <p>
-                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
-               ${%Symlinks are hidden}
-             </p>
-            </j:if>
-           <j:if test="${showTmpDirWarning}">
-             <p>
-                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
-               ${%Tmp directories are hidden}
-             </p>
-            </j:if>
-          </j:otherwise>
-        </j:choose>
-      </div>
-    </l:main-panel>
-  </l:layout>
+            </j:forEach>
+            <tr>
+              <td style="text-align:right;" colspan="3">
+                <div style="margin-top: 1em;">
+                  <a class="jenkins-link--with-icon" href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
+                    <l:icon src="symbol-download"/>
+                    (${%all files in zip})
+                  </a>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <j:if test="${showSymlinkWarning}">
+            <p>
+              <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
+              ${%Symlinks are hidden}
+            </p>
+          </j:if>
+          <j:if test="${showTmpDirWarning}">
+            <p>
+              <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
+              ${%Tmp directories are hidden}
+            </p>
+          </j:if>
+        </j:otherwise>
+      </j:choose>
+    </div>
+  </l:run-host>
 </j:jelly>

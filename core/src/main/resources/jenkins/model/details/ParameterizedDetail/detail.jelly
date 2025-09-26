@@ -1,9 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
-
-Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
+Copyright (c) 2025 Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Displays the console output
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <j:new className="jenkins.run.ConsoleTab" var="it">
-    <j:arg value="${it}"/>
-  </j:new>
+  <l:dialog title="${it.displayName}" hash="parameters">
+    <div class="app-parameters-dialog">
+      <j:invokeStatic var="currentThread" className="java.lang.Thread" method="currentThread" />
+      <j:invoke var="buildClass" on="${currentThread.contextClassLoader}" method="loadClass">
+        <j:arg value="hudson.model.Run" />
+      </j:invoke>
+      <j:set var="build" value="${request2.findAncestorObject(buildClass)}" />
+      <j:set var="escapeEntryTitleAndDescription" value="true" /> <!-- SECURITY-353 defense unless overridden -->
+      <j:set var="readOnlyMode" value="true"/>
+      <j:forEach var="parameterValue" items="${it.action.parameters}">
+        <st:include it="${parameterValue}" page="value.jelly" />
+      </j:forEach>
+    </div>
+  </l:dialog>
 
-  <l:run-host>
-    <l:app-bar title="${%Console}">
-      <a class="jenkins-button" href="consoleText" download="${it.object.displayName}.txt">
-        <l:icon src="symbol-download" />
-        ${%Download}
-      </a>
-      <l:copyButton ref="out" label="${%Copy}" />
-      <a class="jenkins-button" href="consoleText">
-        ${%View as plain text}
-      </a>
-    </l:app-bar>
-
-    <j:set var="it" value="${it.object}" />
-    <st:include page="console-log.jelly" />
-  </l:run-host>
+  <button class="jenkins-details__item"
+          data-type="dialog-opener"
+          data-dialog-id="${dialogId}">
+    <div class="jenkins-details__item__icon">
+      <l:icon src="${it.iconClassName}" />
+    </div>
+    <span>
+      ${it.displayName}
+    </span>
+  </button>
 </j:jelly>

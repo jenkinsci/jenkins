@@ -3,3 +3,132 @@
 @use "components";
 @use "form";
 @use "pages";
+
+body {
+  // make this a linear gradient, so overflow is the right colour
+  background-color: color-mix(in srgb, var(--text-color-secondary) 3%, var(--background));
+}
+
+.build-bar {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 2.875rem;
+  margin-top: -5px;
+  padding-bottom: 10px;
+  z-index: 1;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -1000px;
+    left: calc(var(--section-padding) * -1);
+    right: calc(var(--section-padding) * -1);
+    bottom: 0;
+    background-color: var(--background);
+    border-bottom: var(--jenkins-border);
+    z-index: -1;
+  }
+
+  .idkyet {
+    justify-self: start;
+  }
+
+  & > div {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .jenkins-app-bar__controls {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    gap: 0.75rem;
+  }
+}
+
+.idkyet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+
+  .buildicon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-left: -0.25rem;
+
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  h1 {
+    margin-bottom: 0;
+    font-size: 1.25rem;
+  }
+
+  .jenkins-button {
+    border-radius: 100px;
+    aspect-ratio: 1;
+    padding: 0;
+    margin-inline: -1rem;
+
+    &:not(:hover) {
+      color: color-mix(in srgb, var(--text-color-secondary) 75%, transparent) !important;
+    }
+
+    &::before, &::after {
+      inset: 7px;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+}
+
+.plugin-content {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--section-padding);
+  margin-inline: calc(var(--section-padding) * -1);
+
+  .jenkins-app-bar {
+    margin-bottom: 0;
+    min-height: 5rem;
+  }
+
+  & > pre {
+    background: var(--card-background);
+    border: var(--card-border-width) solid var(--card-border-color);
+  }
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: calc(var(--section-padding) / 2);
+
+  & > div {
+    border-radius: var(--form-input-border-radius);
+    min-height: 450px;
+    max-height: 450px;
+    margin-bottom: 0;
+
+    &:first-of-type {
+      grid-column: 1 / 4;
+    }
+
+    &:last-of-type {
+      grid-column: 1 / 5;
+    }
+  }
+}

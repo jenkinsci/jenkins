@@ -1,4 +1,5 @@
 @use "../base/breakpoints";
+@use "../components/dialogs";
 
 .build-caption-progress-container {
   display: flex;
@@ -105,5 +106,15 @@
     padding: 0;
     line-height: 1.75;
     font-size: var(--font-size-sm);
+  }
+}
+
+.app-parameters-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: dialogs.$jenkins-dialog-padding;
+
+  & > * {
+    margin-bottom: 0;
   }
 }
