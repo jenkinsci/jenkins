@@ -40,7 +40,7 @@ THE SOFTWARE.
 
   <l:renderOnDemand clazz="dialog-${dialogId}-template dialog-${attrs.hash}-hash" tag="template" capture="it,dialogId">
     <l:ajax>
-      <template id="dialog-${dialogId}-template" data-title="${attrs.title}">
+      <template id="dialog-${dialogId}-template" data-title="${attrs.title}" data-dialog-hash="${attrs.hash}">
         <d:invokeBody />
       </template>
     </l:ajax>
