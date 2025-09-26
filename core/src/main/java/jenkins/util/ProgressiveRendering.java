@@ -134,23 +134,12 @@ public abstract class ProgressiveRendering {
                     ((ScheduledExecutorService) executorService).schedule(new Runnable() {
                         @Override public void run() {
                             LOG.log(Level.FINE, "some time has elapsed since {0} finished, so releasing", boundId);
-                            release();
+                            boundObjectTable.release(boundId);
                         }
                     }, timeout() /* add some grace period for browser/network overhead */ * 2, TimeUnit.MILLISECONDS);
                 }
             }
         });
-    }
-
-    /** {@link BoundObjectTable#releaseMe} just cannot work the way we need it to. */
-    private void release() {
-        try {
-            Method release = BoundObjectTable.Table.class.getDeclaredMethod("release", String.class);
-            release.setAccessible(true);
-            release.invoke(boundObjectTable, boundId);
-        } catch (Exception x) {
-            LOG.log(Level.WARNING, "failed to unbind " + boundId, x);
-        }
     }
 
     /**
@@ -281,7 +270,7 @@ public abstract class ProgressiveRendering {
         r.put("status", statusJSON);
         if (statusJSON instanceof String) { // somehow completed
             LOG.log(Level.FINE, "finished in news so releasing {0}", boundId);
-            release();
+            boundObjectTable.release(boundId);
         }
         lastNewsTime = System.currentTimeMillis();
         LOG.log(Level.FINER, "news from {0}", uri);

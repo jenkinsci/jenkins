@@ -58,8 +58,10 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
+import hudson.util.CachingClassLoader;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.ExistenceCheckingClassLoader;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import hudson.util.Retrier;
@@ -106,13 +108,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
@@ -2400,45 +2400,50 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * {@link ClassLoader} that can see all plugins.
      */
-    public static final class UberClassLoader extends ClassLoader {
+    public static final class UberClassLoader extends CachingClassLoader {
         private final List<PluginWrapper> activePlugins;
 
-        /** Cache of loaded, or known to be unloadable, classes. */
-        private final ConcurrentMap<String, Optional<Class<?>>> loaded = new ConcurrentHashMap<>();
-
-        static {
-            registerAsParallelCapable();
-        }
-
+        /**
+         * The servlet container's {@link ClassLoader} (the parent of Jenkins core) is
+         * parallel-capable and maintains its own growing {@link Map} of {@link
+         * ClassLoader#getClassLoadingLock} objects per class name for every load attempt (including
+         * misses), and we cannot override this behavior. Wrap the servlet container {@link
+         * ClassLoader} in {@link ExistenceCheckingClassLoader} to avoid calling {@link
+         * ClassLoader#getParent}'s {@link ClassLoader#loadClass(String, boolean)} at all for misses
+         * by first checking if the resource exists. If the resource does not exist, we immediately
+         * throw {@link ClassNotFoundException}. As a result, the servlet container's {@link
+         * ClassLoader} is never asked to try and fail, and it never creates/retains lock objects
+         * for those misses.
+         */
         public UberClassLoader(List<PluginWrapper> activePlugins) {
-            super("UberClassLoader", PluginManager.class.getClassLoader());
+            super("UberClassLoader", new ExistenceCheckingClassLoader(PluginManager.class.getClassLoader()));
             this.activePlugins = activePlugins;
         }
 
         @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
             for (String namePrefixToSkip : CLASS_PREFIXES_TO_SKIP) {
                 if (name.startsWith(namePrefixToSkip)) {
                     throw new ClassNotFoundException("ignoring " + name);
                 }
             }
-            return loaded.computeIfAbsent(name, this::computeValue).orElseThrow(() -> new ClassNotFoundException(name));
+            return super.loadClass(name, resolve);
         }
 
-        private Optional<Class<?>> computeValue(String name) {
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
             for (PluginWrapper p : activePlugins) {
                 try {
                     if (FAST_LOOKUP) {
-                        return Optional.of(ClassLoaderReflectionToolkit.loadClass(p.classLoader, name));
+                        return ClassLoaderReflectionToolkit.loadClass(p.classLoader, name);
                     } else {
-                        return Optional.of(p.classLoader.loadClass(name));
+                        return p.classLoader.loadClass(name);
                     }
                 } catch (ClassNotFoundException e) {
                     // Not found. Try the next class loader.
                 }
             }
-            // Not found in any of the class loaders. Delegate.
-            return Optional.empty();
+            throw new ClassNotFoundException(name);
         }
 
         @Override
@@ -2468,10 +2473,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
             return Collections.enumeration(resources);
-        }
-
-        void clearCacheMisses() {
-            loaded.values().removeIf(Optional::isEmpty);
         }
 
         @Override

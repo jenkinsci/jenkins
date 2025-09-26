@@ -24,31 +24,31 @@
   },
   "devDependencies": {
     "@babel/cli": "7.28.3",
-    "@babel/core": "7.28.3",
+    "@babel/core": "7.28.4",
     "@babel/preset-env": "7.28.3",
-    "@eslint/js": "9.33.0",
+    "@eslint/js": "9.36.0",
     "babel-loader": "10.0.0",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "7.1.2",
     "css-minimizer-webpack-plugin": "7.0.2",
-    "eslint": "9.33.0",
+    "eslint": "9.36.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-formatter-checkstyle": "8.40.0",
-    "globals": "16.3.0",
+    "globals": "16.4.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.9.4",
     "postcss": "8.5.6",
-    "postcss-loader": "8.1.1",
-    "postcss-preset-env": "10.2.4",
+    "postcss-loader": "8.2.0",
+    "postcss-preset-env": "10.4.0",
     "postcss-scss": "4.0.9",
     "prettier": "3.6.2",
-    "sass": "1.90.0",
+    "sass": "1.92.1",
     "sass-loader": "16.0.5",
     "style-loader": "4.0.0",
-    "stylelint": "16.23.1",
+    "stylelint": "16.24.0",
     "stylelint-checkstyle-reporter": "1.1.1",
     "stylelint-config-standard-scss": "15.0.1",
-    "webpack": "5.101.1",
+    "webpack": "5.101.3",
     "webpack-cli": "6.0.1",
     "webpack-remove-empty-scripts": "1.1.1"
   },
@@ -66,7 +66,7 @@
     "not IE 11"
   ],
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   },
-  "packageManager": "yarn@4.9.2"
+  "packageManager": "yarn@4.10.2"
 }

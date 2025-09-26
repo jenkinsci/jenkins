@@ -42,17 +42,13 @@ import java.util.stream.Collectors;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MaskingClassLoader extends ClassLoader {
+public class MaskingClassLoader extends DelegatingClassLoader {
     /**
      * Prefix of the packages that should be hidden.
      */
     private final List<String> masksClasses;
 
     private final List<String> masksResources;
-
-    static {
-        registerAsParallelCapable();
-    }
 
     public MaskingClassLoader(ClassLoader parent, String... masks) {
         this(parent, Arrays.asList(masks));

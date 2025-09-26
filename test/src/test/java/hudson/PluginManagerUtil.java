@@ -34,8 +34,6 @@ import org.apache.commons.io.FileUtils;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
@@ -47,12 +45,12 @@ public class PluginManagerUtil {
     public static JenkinsSessionExtension newJenkinsSessionExtension() {
         return new JenkinsSessionExtension() {
             private int port;
-            private Description description;
+            private org.junit.runner.Description description;
 
             @Override
             public void beforeEach(ExtensionContext context) {
                 super.beforeEach(context);
-                description = Description.createTestDescription(
+                description = org.junit.runner.Description.createTestDescription(
                         context.getTestClass().map(Class::getName).orElse(null),
                         context.getTestMethod().map(Method::getName).orElse(null),
                         context.getTestMethod().map(Method::getAnnotations).orElse(null));
@@ -62,7 +60,7 @@ public class PluginManagerUtil {
             public void then(Step s) throws Throwable {
                 CustomJenkinsRule r = new CustomJenkinsRule(getHome(), port);
                 r.apply(
-                        new Statement() {
+                        new org.junit.runners.model.Statement() {
                             @Override
                             public void evaluate() throws Throwable {
                                 port = r.getPort();
@@ -73,18 +71,19 @@ public class PluginManagerUtil {
                 ).evaluate();
             }
 
-            private static final class CustomJenkinsRule extends JenkinsRule {
-                CustomJenkinsRule(File home, int port) {
-                    setPluginManager(null);
-                    with(() -> home);
-                    localPort = port;
-                }
-
-                int getPort() {
-                    return localPort;
-                }
-            }
         };
+    }
+
+    private static final class CustomJenkinsRule extends JenkinsRule {
+        CustomJenkinsRule(File home, int port) {
+            setPluginManager(null);
+            with(() -> home);
+            localPort = port;
+        }
+
+        int getPort() {
+            return localPort;
+        }
     }
 
     public static void dynamicLoad(String plugin, Jenkins jenkins) throws IOException, InterruptedException, RestartRequiredException {

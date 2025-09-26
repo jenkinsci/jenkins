@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.137</version>
+    <version>1.140</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.524</revision>
+    <revision>2.530</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-08-12T13:07:48Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-09-23T12:23:57Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3327.v868139a_d00e0</remoting.version>
+    <remoting.version>3341.v0766d82b_dec0</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -96,9 +96,10 @@ THE SOFTWARE.
     <antlr.version>4.13.2</antlr.version>
     <bridge-method-injector.version>1.32</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
+    <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.13</winstone.version>
-    <node.version>24.6.0</node.version>
+    <winstone.version>8.13.1</winstone.version>
+    <node.version>24.8.0</node.version>
   </properties>
 
   <!--
@@ -169,7 +170,6 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
-            <runOrder>alphabetical</runOrder>
           </configuration>
         </plugin>
         <plugin>
@@ -281,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>11.0.0</version>
+              <version>11.0.1</version>
             </dependency>
           </dependencies>
           <executions>

@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -320,4 +321,37 @@ class ComputerTest {
         MemoryAssert.assertGC(channelRef, false);
     }
 
+    @Test
+    public void isConnectedTest() throws Exception {
+        var agent = j.createSlave();
+        var computer = agent.toComputer();
+
+        // Verify initial state: computer is not connected
+        assertThat(computer.isOnline(), is(false));
+        assertThat(computer.isConnected(), is(false));
+
+        // Connect the computer
+        computer.connect(false);
+        await("computer should be online after connect").until(() -> computer.isOnline(), is(true));
+        assertThat(computer.isConnected(), is(true));
+        assertThat(computer.isOffline(), is(false));
+
+        // Mark computer temporary offline
+        computer.doToggleOffline(null);
+        assertThat("temporary offline agent is still connected", computer.isConnected(), is(true));
+        assertThat("temporary offline agent is not available for scheduling", computer.isOnline(), is(false));
+        assertThat(computer.isOffline(), is(true));
+
+        // Bring it back online
+        computer.doToggleOffline(null);
+        assertThat(computer.isOnline(), is(true));
+        assertThat(computer.isConnected(), is(true)); // channel is still there.
+
+        // Disconnect the computer
+        computer.disconnect(new OfflineCause.UserCause(null, null));
+        // wait for the slave process to be killed
+        await("disconnected agent is not available for scheduling").until(() -> computer.isOnline(), is(false));
+        assertThat(computer.isConnected(), is(false));
+        assertThat(computer.isOffline(), is(true));
+    }
 }
