@@ -95,24 +95,28 @@ class AboutJenkinsTest {
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
             assertThat(page.getWebResponse().getContentAsString(), containsString("Mavenized dependencies"));
+            assertThat(page.getTitleText(), containsString("About Jenkins"));
         }
 
         { // manager can access it
             wc.login(MANAGER);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+            assertThat(page.getTitleText(), containsString("About Jenkins"));
         }
 
         { // readonly can access it
             wc.login(READONLY);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+            assertThat(page.getTitleText(), containsString("About Jenkins"));
         }
 
         { // manager-readonly can access it
             wc.login(MANAGER_READONLY);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+            assertThat(page.getTitleText(), containsString("About Jenkins"));
         }
     }
 
