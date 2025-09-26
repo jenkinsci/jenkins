@@ -38,7 +38,7 @@
              href="editDescription"
              data-description="${actualDescription}"
              data-url="${submissionUrl}"
-             tooltip="${!attrs.compact ? label : null}">
+             tooltip="${attrs.compact ? label : null}">
             <l:icon src="symbol-description" />
             <j:if test="${!attrs.compact}">
                 ${label}
