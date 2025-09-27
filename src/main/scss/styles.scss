@@ -4,6 +4,16 @@
 @use "form";
 @use "pages";
 
+#description {
+  #description-content, .jenkins-buttons-row {
+    margin-bottom: var(--section-padding);
+
+    &:empty {
+      display: none;
+    }
+  }
+}
+
 body {
   // make this a linear gradient, so overflow is the right colour
   background-color: color-mix(in srgb, var(--text-color-secondary) 3%, var(--background));
@@ -16,8 +26,8 @@ body {
   align-items: center;
   min-height: 2.875rem;
   margin-top: -5px;
-  padding-bottom: 10px;
-  z-index: 1;
+  padding-bottom: 0.75rem;
+  z-index: 2;
 
   &::before {
     content: "";
@@ -27,7 +37,7 @@ body {
     right: calc(var(--section-padding) * -1);
     bottom: 0;
     background-color: var(--background);
-    border-bottom: var(--jenkins-border);
+    border-bottom: var(--jenkins-border-width) solid var(--card-border-color);
     z-index: -1;
   }
 
