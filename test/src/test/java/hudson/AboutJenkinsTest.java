@@ -52,31 +52,31 @@ class AboutJenkinsTest {
     }
 
     private void setupTestAuthorization() {
-        final String USER = "user";
-        final String READONLY = "readonly";
         final String ADMIN = "admin";
         final String MANAGER = "manager";
         final String MANAGER_READONLY = "manager-readonly";
+        final String USER = "user";
+        final String READONLY = "readonly";
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                // full access
+                // admin full access
                 .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN)
-
-                // Read access only (should NOT access About page)
-                .grant(Jenkins.READ).everywhere().to(USER)
 
                 // Read and Manage
                 .grant(Jenkins.READ).everywhere().to(MANAGER)
                 .grant(Jenkins.MANAGE).everywhere().to(MANAGER)
 
-                // System read only (should NOT access About page)
-                .grant(Jenkins.SYSTEM_READ).everywhere().to(READONLY)
-
                 // Read, Manage and System read
                 .grant(Jenkins.READ).everywhere().to(MANAGER_READONLY)
                 .grant(Jenkins.MANAGE).everywhere().to(MANAGER_READONLY)
                 .grant(Jenkins.SYSTEM_READ).everywhere().to(MANAGER_READONLY)
+
+                // Read access only (should NOT access About Jenkins page)
+                .grant(Jenkins.READ).everywhere().to(USER)
+
+                // System read only (should NOT access About Jenkins page)
+                .grant(Jenkins.SYSTEM_READ).everywhere().to(READONLY)
         );
     }
 
@@ -89,17 +89,7 @@ class AboutJenkinsTest {
 
     @Test
     @Issue("SECURITY-771")
-    void onlyAdminOrManagerOrSystemReadCanSeeAboutPage() throws Exception {
-        // only READ permission: user cannot see About Jenkins page -> redirect to Access Denied Jenkins page
-        HtmlPage userPage = accessAsUser("user");
-        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, userPage.getWebResponse().getStatusCode());
-        assertThat(userPage.getTitleText(), containsString("Jenkins"));
-
-        // SYSTEM_READ permission: readonly cannot see About Jenkins page -> redirect to Access Denied Jenkins page
-        HtmlPage readonlyPage = accessAsUser("readonly");
-        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, readonlyPage.getWebResponse().getStatusCode());
-        assertThat(readonlyPage.getTitleText(), containsString("Jenkins"));
-
+    void onlyAdminOrManagerOrSystemReadManagerCanSeeAboutPage() throws Exception {
         // ADMINISTER permission: admin can see About Jenkins page
         HtmlPage adminPage = accessAsUser("admin");
         assertEquals(HttpURLConnection.HTTP_OK, adminPage.getWebResponse().getStatusCode());
@@ -109,20 +99,33 @@ class AboutJenkinsTest {
         // MANAGE permission: manager can see About Jenkins page
         HtmlPage managerPage = accessAsUser("manager");
         assertEquals(HttpURLConnection.HTTP_OK, managerPage.getWebResponse().getStatusCode());
+        assertThat(managerPage.getWebResponse().getContentAsString(), containsString("Mavenized dependencies"));
         assertThat(managerPage.getTitleText(), containsString("About Jenkins"));
 
         // MANAGE + SYSTEM_READ permissions: manager-readonly can see About Jenkins page
         HtmlPage managerReadonlyPage = accessAsUser("manager-readonly");
         assertEquals(HttpURLConnection.HTTP_OK, managerReadonlyPage.getWebResponse().getStatusCode());
+        assertThat(managerReadonlyPage.getWebResponse().getContentAsString(), containsString("Mavenized dependencies"));
         assertThat(managerReadonlyPage.getTitleText(), containsString("About Jenkins"));
     }
 
     @Test
-    void anonymousCannotSeeAboutPage() throws Exception {
+    void anonymousOrReadUserOrSystemReadUserCannotSeeAboutPage() throws Exception {
+        // anonymous user cannot see About Jenkins page -> redirect to sign in page
         HtmlPage anonymousPage = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false)
                 .goTo("about/");
         assertEquals(HttpURLConnection.HTTP_OK, anonymousPage.getWebResponse().getStatusCode());
         assertThat(anonymousPage.getTitleText(), containsString("Sign in - Jenkins"));
+
+        // only READ permission: user cannot see About Jenkins page -> redirect to Access Denied Jenkins page
+        HtmlPage userPage = accessAsUser("user");
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, userPage.getWebResponse().getStatusCode());
+        assertThat(userPage.getTitleText(), containsString("Jenkins"));
+
+        // SYSTEM_READ permission: readonly cannot see About Jenkins page -> redirect to Access Denied Jenkins page
+        HtmlPage readonlyPage = accessAsUser("readonly");
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, readonlyPage.getWebResponse().getStatusCode());
+        assertThat(readonlyPage.getTitleText(), containsString("Jenkins"));
     }
 }
