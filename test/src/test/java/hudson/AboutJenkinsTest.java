@@ -88,10 +88,18 @@ class AboutJenkinsTest {
     }
 
     private HtmlPage accessAsUser(String username) throws Exception {
-        return j.createWebClient()
-                .withThrowExceptionOnFailingStatusCode(false)
-                .login(username)
-                .goTo(ABOUT_PAGE_URL);
+        try (JenkinsRule.WebClient webClient = j.createWebClient()) {
+            webClient.withThrowExceptionOnFailingStatusCode(false);
+            webClient.login(username);
+            return webClient.goTo(ABOUT_PAGE_URL);
+        }
+    }
+
+    private HtmlPage accessAsAnonymous() throws Exception {
+        try (JenkinsRule.WebClient webClient = j.createWebClient()) {
+            webClient.withThrowExceptionOnFailingStatusCode(false);
+            return webClient.goTo(ABOUT_PAGE_URL);
+        }
     }
 
     @Test
@@ -120,9 +128,7 @@ class AboutJenkinsTest {
     @Issue("SECURITY-771")
     void usersWithBasicPermissionsCannotSeeAboutPage() throws Exception {
         // anonymous user cannot see About Jenkins page -> redirect to sign in page
-        HtmlPage anonymousPage = j.createWebClient()
-                .withThrowExceptionOnFailingStatusCode(false)
-                .goTo(ABOUT_PAGE_URL);
+        HtmlPage anonymousPage = accessAsAnonymous();
         assertEquals(HttpURLConnection.HTTP_OK, anonymousPage.getWebResponse().getStatusCode());
         assertThat(anonymousPage.getTitleText(), containsString(SIGN_IN_PAGE_TITLE));
 
