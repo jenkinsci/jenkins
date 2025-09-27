@@ -154,7 +154,7 @@ public class Nodes implements PersistenceRoot {
      * @param node the new node.
      * @return True if the node was added. False otherwise (indicating a node with the given name already exists)
      * @throws IOException if the list of nodes could not be persisted.
-     * @since TODO
+     * @since 2.529
      */
     public boolean addNodeIfAbsent(final @NonNull Node node) throws IOException {
         if (ENFORCE_NAME_RESTRICTIONS) {
