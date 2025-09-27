@@ -52,6 +52,12 @@ class AboutJenkinsTest {
     private static final String SIGN_IN_PAGE_TITLE = "Sign in";
     private static final String MAVENIZED_DEPS_TEXT = "Mavenized dependencies";
 
+    private static final String ADMIN_USER = "admin";
+    private static final String MANAGER_USER = "manager";
+    private static final String MANAGER_READONLY_USER = "manager-readonly";
+    private static final String READONLY_USER = "readonly";
+    private static final String REGULAR_USER = "user";
+
     @BeforeEach
     void setUp(JenkinsRule rule) {
         j = rule;
@@ -59,31 +65,25 @@ class AboutJenkinsTest {
     }
 
     private void setupTestAuthorization() {
-        final String ADMIN = "admin";
-        final String MANAGER = "manager";
-        final String MANAGER_READONLY = "manager-readonly";
-        final String USER = "user";
-        final String READONLY = "readonly";
-
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 // admin full access
-                .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN)
+                .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN_USER)
 
                 // Read and Manage
-                .grant(Jenkins.READ).everywhere().to(MANAGER)
-                .grant(Jenkins.MANAGE).everywhere().to(MANAGER)
+                .grant(Jenkins.READ).everywhere().to(MANAGER_USER)
+                .grant(Jenkins.MANAGE).everywhere().to(MANAGER_USER)
 
                 // Read, Manage and System read
-                .grant(Jenkins.READ).everywhere().to(MANAGER_READONLY)
-                .grant(Jenkins.MANAGE).everywhere().to(MANAGER_READONLY)
-                .grant(Jenkins.SYSTEM_READ).everywhere().to(MANAGER_READONLY)
+                .grant(Jenkins.READ).everywhere().to(MANAGER_READONLY_USER)
+                .grant(Jenkins.MANAGE).everywhere().to(MANAGER_READONLY_USER)
+                .grant(Jenkins.SYSTEM_READ).everywhere().to(MANAGER_READONLY_USER)
 
                 // Read access only (should NOT access About Jenkins page)
-                .grant(Jenkins.READ).everywhere().to(USER)
+                .grant(Jenkins.READ).everywhere().to(REGULAR_USER)
 
                 // System read only (should NOT access About Jenkins page)
-                .grant(Jenkins.SYSTEM_READ).everywhere().to(READONLY)
+                .grant(Jenkins.SYSTEM_READ).everywhere().to(READONLY_USER)
         );
     }
 
@@ -98,19 +98,19 @@ class AboutJenkinsTest {
     @Issue("SECURITY-771")
     void userWithAdminOrManagerOrSystemReadManagerPermissionCanSeeAboutPage() throws Exception {
         // ADMINISTER permission: admin can see About Jenkins page
-        HtmlPage adminPage = accessAsUser("admin");
+        HtmlPage adminPage = accessAsUser(ADMIN_USER);
         assertEquals(HttpURLConnection.HTTP_OK, adminPage.getWebResponse().getStatusCode());
         assertThat(adminPage.getWebResponse().getContentAsString(), containsString(MAVENIZED_DEPS_TEXT));
         assertThat(adminPage.getTitleText(), containsString(ABOUT_PAGE_TITLE));
 
         // MANAGE permission: manager can see About Jenkins page
-        HtmlPage managerPage = accessAsUser("manager");
+        HtmlPage managerPage = accessAsUser(MANAGER_USER);
         assertEquals(HttpURLConnection.HTTP_OK, managerPage.getWebResponse().getStatusCode());
         assertThat(managerPage.getWebResponse().getContentAsString(), containsString(MAVENIZED_DEPS_TEXT));
         assertThat(managerPage.getTitleText(), containsString(ABOUT_PAGE_TITLE));
 
         // MANAGE + SYSTEM_READ permissions: manager-readonly can see About Jenkins page
-        HtmlPage managerReadonlyPage = accessAsUser("manager-readonly");
+        HtmlPage managerReadonlyPage = accessAsUser(MANAGER_READONLY_USER);
         assertEquals(HttpURLConnection.HTTP_OK, managerReadonlyPage.getWebResponse().getStatusCode());
         assertThat(managerReadonlyPage.getWebResponse().getContentAsString(), containsString(MAVENIZED_DEPS_TEXT));
         assertThat(managerReadonlyPage.getTitleText(), containsString(ABOUT_PAGE_TITLE));
@@ -127,12 +127,12 @@ class AboutJenkinsTest {
         assertThat(anonymousPage.getTitleText(), containsString(SIGN_IN_PAGE_TITLE));
 
         // only READ permission: user cannot see About Jenkins page -> redirect to Access Denied Jenkins page
-        HtmlPage userPage = accessAsUser("user");
+        HtmlPage userPage = accessAsUser(READONLY_USER);
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, userPage.getWebResponse().getStatusCode());
         assertThat(userPage.getTitleText(), containsString(JENKINS_PAGE_TITLE));
 
         // SYSTEM_READ permission: readonly cannot see About Jenkins page -> redirect to Access Denied Jenkins page
-        HtmlPage readonlyPage = accessAsUser("readonly");
+        HtmlPage readonlyPage = accessAsUser(REGULAR_USER);
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, readonlyPage.getWebResponse().getStatusCode());
         assertThat(readonlyPage.getTitleText(), containsString(JENKINS_PAGE_TITLE));
     }
