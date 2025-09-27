@@ -127,12 +127,12 @@ class AboutJenkinsTest {
         assertThat(anonymousPage.getTitleText(), containsString(SIGN_IN_PAGE_TITLE));
 
         // only READ permission: user cannot see About Jenkins page -> redirect to Access Denied Jenkins page
-        HtmlPage userPage = accessAsUser(READONLY_USER);
+        HtmlPage userPage = accessAsUser(REGULAR_USER);
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, userPage.getWebResponse().getStatusCode());
         assertThat(userPage.getTitleText(), containsString(JENKINS_PAGE_TITLE));
 
         // SYSTEM_READ permission: readonly cannot see About Jenkins page -> redirect to Access Denied Jenkins page
-        HtmlPage readonlyPage = accessAsUser(REGULAR_USER);
+        HtmlPage readonlyPage = accessAsUser(READONLY_USER);
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, readonlyPage.getWebResponse().getStatusCode());
         assertThat(readonlyPage.getTitleText(), containsString(JENKINS_PAGE_TITLE));
     }
