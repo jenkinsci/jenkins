@@ -26,24 +26,18 @@ package jenkins.util.java;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.test.For;
 
-@For(JavaUtils.class)
 class JavaUtilsTest {
 
     @Test
     void verifyJava8() {
-        assumeTrue(System.getProperty("java.version").startsWith("1."), "Test is for Java 8 only");
-        assertFalse(JavaUtils.isRunningWithPostJava8(), "isRunningWithPostJava8() should return false on Java 8 and below");
+        assertFalse(JavaUtils.isRunningWithJava8OrBelow());
     }
 
     @Test
     void verifyPostJava8() {
-        assumeFalse(System.getProperty("java.version").startsWith("1."), "Test is for Java 9+ only");
-        assertTrue(JavaUtils.isRunningWithPostJava8(), "isRunningWithPostJava8() should return true on Java 9 and above");
+        assertTrue(JavaUtils.isRunningWithPostJava8());
     }
 }
