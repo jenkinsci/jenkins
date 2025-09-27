@@ -48,15 +48,14 @@ class AboutJenkinsTest {
     @BeforeEach
     void setUp(JenkinsRule rule) {
         j = rule;
+        setupTestAuthorization();
     }
 
-    @Test
-    @Issue("SECURITY-771")
-    void onlyAdminOrManagerOrSystemReadCanSeeAboutPage() throws Exception {
-        final String ADMIN = "admin";
+    private void setupTestAuthorization() {
         final String USER = "user";
-        final String MANAGER = "manager";
         final String READONLY = "readonly";
+        final String ADMIN = "admin";
+        final String MANAGER = "manager";
         final String MANAGER_READONLY = "manager-readonly";
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -64,15 +63,14 @@ class AboutJenkinsTest {
                 // full access
                 .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN)
 
-                // Read access
+                // Read access only (should NOT access About page)
                 .grant(Jenkins.READ).everywhere().to(USER)
 
                 // Read and Manage
                 .grant(Jenkins.READ).everywhere().to(MANAGER)
                 .grant(Jenkins.MANAGE).everywhere().to(MANAGER)
 
-                // Read and System read
-                .grant(Jenkins.READ).everywhere().to(READONLY)
+                // System read only (should NOT access About page)
                 .grant(Jenkins.SYSTEM_READ).everywhere().to(READONLY)
 
                 // Read, Manage and System read
@@ -80,51 +78,51 @@ class AboutJenkinsTest {
                 .grant(Jenkins.MANAGE).everywhere().to(MANAGER_READONLY)
                 .grant(Jenkins.SYSTEM_READ).everywhere().to(MANAGER_READONLY)
         );
-
-        JenkinsRule.WebClient wc = j.createWebClient()
-                .withThrowExceptionOnFailingStatusCode(false);
-
-        { // anonymous user cannot see About Jenkins page -> redirect to sign in page
-            HtmlPage page = wc.goTo("about/");
-            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-            assertThat(page.getTitleText(), containsString("Sign in - Jenkins"));
-        }
-
-        { // user cannot see About Jenkins page -> redirect to Access Denied Jenkins page
-            wc.login(USER);
-            HtmlPage page = wc.goTo("about/");
-            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
-            assertThat(page.getTitleText(), containsString("Jenkins"));
-        }
-
-        { // admin can access About Jenkins page
-            wc.login(ADMIN);
-            HtmlPage page = wc.goTo("about/");
-            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-            assertThat(page.getWebResponse().getContentAsString(), containsString("Mavenized dependencies"));
-            assertThat(page.getTitleText(), containsString("About Jenkins"));
-        }
-
-        { // manager can access About Jenkins page
-            wc.login(MANAGER);
-            HtmlPage page = wc.goTo("about/");
-            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-            assertThat(page.getTitleText(), containsString("About Jenkins"));
-        }
-
-        { // readonly can access About Jenkins page
-            wc.login(READONLY);
-            HtmlPage page = wc.goTo("about/");
-            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-            assertThat(page.getTitleText(), containsString("About Jenkins"));
-        }
-
-        { // manager-readonly can access About Jenkins page
-            wc.login(MANAGER_READONLY);
-            HtmlPage page = wc.goTo("about/");
-            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-            assertThat(page.getTitleText(), containsString("About Jenkins"));
-        }
     }
 
+    private HtmlPage accessAsUser(String username) throws Exception {
+        return j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false)
+                .login(username)
+                .goTo("about/");
+    }
+
+    @Test
+    @Issue("SECURITY-771")
+    void onlyAdminOrManagerOrSystemReadCanSeeAboutPage() throws Exception {
+        // only READ permission: user cannot see About Jenkins page -> redirect to Access Denied Jenkins page
+        HtmlPage userPage = accessAsUser("user");
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, userPage.getWebResponse().getStatusCode());
+        assertThat(userPage.getTitleText(), containsString("Jenkins"));
+
+        // SYSTEM_READ permission: readonly cannot see About Jenkins page -> redirect to Access Denied Jenkins page
+        HtmlPage readonlyPage = accessAsUser("readonly");
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, readonlyPage.getWebResponse().getStatusCode());
+        assertThat(readonlyPage.getTitleText(), containsString("Jenkins"));
+
+        // ADMINISTER permission: admin can see About Jenkins page
+        HtmlPage adminPage = accessAsUser("admin");
+        assertEquals(HttpURLConnection.HTTP_OK, adminPage.getWebResponse().getStatusCode());
+        assertThat(adminPage.getWebResponse().getContentAsString(), containsString("Mavenized dependencies"));
+        assertThat(adminPage.getTitleText(), containsString("About Jenkins"));
+
+        // MANAGE permission: manager can see About Jenkins page
+        HtmlPage managerPage = accessAsUser("manager");
+        assertEquals(HttpURLConnection.HTTP_OK, managerPage.getWebResponse().getStatusCode());
+        assertThat(managerPage.getTitleText(), containsString("About Jenkins"));
+
+        // MANAGE + SYSTEM_READ permissions: manager-readonly can see About Jenkins page
+        HtmlPage managerReadonlyPage = accessAsUser("manager-readonly");
+        assertEquals(HttpURLConnection.HTTP_OK, managerReadonlyPage.getWebResponse().getStatusCode());
+        assertThat(managerReadonlyPage.getTitleText(), containsString("About Jenkins"));
+    }
+
+    @Test
+    void anonymousCannotSeeAboutPage() throws Exception {
+        HtmlPage anonymousPage = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false)
+                .goTo("about/");
+        assertEquals(HttpURLConnection.HTTP_OK, anonymousPage.getWebResponse().getStatusCode());
+        assertThat(anonymousPage.getTitleText(), containsString("Sign in - Jenkins"));
+    }
 }
