@@ -96,7 +96,7 @@ class AboutJenkinsTest {
 
     @Test
     @Issue("SECURITY-771")
-    void userWithAdminOrManagerOrSystemReadManagerPermissionCanSeeAboutPage() throws Exception {
+    void usersWithElevatedPermissionsCanSeeAboutPage() throws Exception {
         // ADMINISTER permission: admin can see About Jenkins page
         HtmlPage adminPage = accessAsUser(ADMIN_USER);
         assertEquals(HttpURLConnection.HTTP_OK, adminPage.getWebResponse().getStatusCode());
@@ -118,7 +118,7 @@ class AboutJenkinsTest {
 
     @Test
     @Issue("SECURITY-771")
-    void userWithOnlyAnonymousOrReadUserOrSystemReadPermissionCannotSeeAboutPage() throws Exception {
+    void usersWithBasicPermissionsCannotSeeAboutPage() throws Exception {
         // anonymous user cannot see About Jenkins page -> redirect to sign in page
         HtmlPage anonymousPage = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false)
