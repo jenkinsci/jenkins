@@ -86,3 +86,95 @@ $border-radius: 19px;
   margin: 2.2rem 0 1.4rem;
   padding: 0;
 }
+
+.new-tabs {
+  position: relative;
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-left: -0.25rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: var(--jenkins-border--subtle);
+    border-radius: 100px;
+    opacity: 0;
+    transition: var(--standard-transition);
+  }
+
+  &:hover::before {
+    opacity: 1;
+    inset: -4px;
+    background: var(--card-background);
+  }
+
+  a {
+    border-radius: 100px;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+
+      * {
+        stroke-width: 40px;
+      }
+    }
+
+    &:not(.jenkins-button--tertiary) {
+      pointer-events: none;
+      font-weight: var(--font-bold-weight);
+
+      .pill::before {
+        border: var(--jenkins-border-width) solid color-mix(in srgb, var(--color, currentColor) 20%, transparent);
+      }
+    }
+
+    &.jenkins-button--tertiary {
+      color: color-mix(in srgb, var(--text-color-secondary) 75%, var(--text-color)) !important;
+
+      &::before, &::after {
+        inset: 3px;
+      }
+    }
+
+    &:hover {
+      color: var(--text-color) !important;
+
+      &::before, &::after {
+        inset: 1.5px;
+      }
+
+      .pill::before {
+        border: var(--jenkins-border-width) solid color-mix(in srgb, var(--color, currentColor) 20%, transparent);
+      }
+    }
+
+    .pill {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 100px;
+      font-size: 12px;
+      min-width: 20px;
+      text-align: center;
+      padding-inline: 6px;
+      text-box: cap alphabetic;
+      height: 20px;
+      z-index: 0;
+      margin-right: -0.25rem;
+      transition: border var(--standard-transition);
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: color-mix(in srgb, var(--color, var(--background)) 5%, var(--background));
+        border: var(--jenkins-border-width) solid color-mix(in srgb, var(--color, currentColor) 10%, transparent);
+        z-index: -1;
+      }
+    }
+  }
+}
