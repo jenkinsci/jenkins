@@ -30,3 +30,4 @@ jobs:
             regression-fix
             removed
             skip-changelog
+            documentation
