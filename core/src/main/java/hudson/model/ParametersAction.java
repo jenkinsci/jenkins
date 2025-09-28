@@ -48,6 +48,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.RunAction2;
+import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -208,6 +209,12 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     @Override
     public String getIconFileName() {
+        Boolean newBuildPageEnabled = new NewBuildPageUserExperimentalFlag().getFlagValue();
+
+        if (newBuildPageEnabled) {
+            return null;
+        }
+
         return "symbol-parameters";
     }
 
