@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: Jenkins
+type: software
+repository-code: 'https://github.com/jenkinsci/jenkins'
+url: 'https://jenkins.io/'
+abstract: >-
+  In a nutshell, Jenkins is the leading open-source automation server.
+  Built with Java, it provides over 2,000 plugins to support automating virtually anything,
+  so that humans can spend their time doing things machines cannot.
+keywords:
+  - jenkins
+  - continuous-integration
+  - continuous-delivery
+  - pipelines
+  - automation
+license: MIT
