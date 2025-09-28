@@ -1355,7 +1355,7 @@ public class Queue extends ResourceController implements Saveable {
      *
      * @param runnable the operation to perform.
      * @return {@code true} if the lock was acquired within the timeout and the operation was performed.
-     * @since TODO
+     * @since 2.529
      */
     public static boolean tryWithLock(Runnable runnable, Duration timeout) throws InterruptedException {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
@@ -1461,7 +1461,7 @@ public class Queue extends ResourceController implements Saveable {
      *
      * @param runnable the operation to perform.
      * @return {@code true} if the lock was acquired within the timeout and the operation was performed.
-     * @since TODO
+     * @since 2.529
      */
     protected boolean _tryWithLock(Runnable runnable, Duration timeout) throws InterruptedException {
         if (lock.tryLock(timeout.toNanos(), TimeUnit.NANOSECONDS)) {
