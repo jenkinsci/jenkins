@@ -369,7 +369,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>6.0.0-1146.v5c8f3b_8f0573</version>
+                  <version>6.0.0-1165.vd1283a_3e37d4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
