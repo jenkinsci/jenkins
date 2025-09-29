@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import static hudson.Functions.getAvatar;
+
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -456,6 +458,13 @@ public abstract class Cause {
         public String getUserUrl() {
             final User user = userId == null ? null : User.getById(userId, false);
             return user != null ? user.getUrl() : null;
+        }
+
+        @Restricted(DoNotUse.class) // for Jelly
+        @CheckForNull
+        public String getUserAvatar() {
+            final User user = userId == null ? null : User.getById(userId, false);
+            return user != null ? getAvatar(user, "48x48") : null;
         }
 
         @Override

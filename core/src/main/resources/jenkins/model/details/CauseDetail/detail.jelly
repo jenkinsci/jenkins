@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Michael B. Donohue, Alan Harder
+Copyright (c) 2025 Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,17 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
-
-  <j:if test="${!newBuildPage}">
-    <t:summary icon="symbol-trigger">
-      <j:forEach var="entry" items="${it.causeCounts.entrySet()}">
-        <p>
-          <st:include page="description.jelly" it="${entry.key}"/>
-          <j:if test="${entry.value > 1}">
-            <st:nbsp/>${%Ntimes(entry.value)}
-          </j:if>
-        </p>
-      </j:forEach>
-    </t:summary>
-  </j:if>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <j:forEach var="entry" items="${it.causeCounts.entrySet()}">
+    <st:include page="detail.jelly" it="${entry.key}" optional="true">
+      <div class="jenkins-details__item">
+        <div class="jenkins-details__item__icon">
+          <l:icon src="symbol-information-circle" />
+        </div>
+        <div>
+          <st:include page="description.jelly" it="${entry.key}" />
+        </div>
+      </div>
+    </st:include>
+  </j:forEach>
 </j:jelly>

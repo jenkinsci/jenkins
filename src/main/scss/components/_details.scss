@@ -5,7 +5,7 @@ $icon-size: 1.125rem;
 .jenkins-details {
   display: flex;
   align-items: center;
-  gap: 0.625rem 1.25rem;
+  gap: 0.25rem 1.25rem;
   flex-wrap: wrap;
 
   button.jenkins-details__item,
@@ -37,12 +37,12 @@ $icon-size: 1.125rem;
       width: $icon-size;
       height: 2rem;
 
-      svg {
+      svg, img {
         width: $icon-size;
         height: $icon-size;
 
         * {
-          stroke-width: 40px;
+          stroke-width: 36px;
         }
       }
     }
@@ -52,5 +52,27 @@ $icon-size: 1.125rem;
     color: var(--text-color-secondary);
     opacity: 0.5;
     margin-inline: -0.5rem;
+  }
+
+  &__button {
+    --button-background: transparent !important;
+
+    min-width: 51px;
+    min-height: 2rem;
+    padding-block: 0;
+    color: var(--text-color-secondary) !important;
+
+    &:not(:hover, :active, :focus-visible) {
+      --jenkins-border--subtle: var(--jenkins-border);
+    }
+
+    svg {
+      width: $icon-size;
+      height: $icon-size;
+
+      * {
+        stroke-width: 36px;
+      }
+    }
   }
 }
