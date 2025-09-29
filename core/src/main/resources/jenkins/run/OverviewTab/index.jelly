@@ -26,9 +26,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:run-host>
     <l:app-bar title="${it.displayName}" headingLevel="h2">
-      <l:details-bar it="${it.object}" />
-      <t:editDescriptionButton permission="${it.object.UPDATE}"
-                               compact="true" />
+      <l:details-bar it="${it.object}">
+        <t:editDescriptionButton permission="${it.object.UPDATE}"
+                                 compact="true" />
+      </l:details-bar>
     </l:app-bar>
 
     <j:set var="it" value="${it.object}" />

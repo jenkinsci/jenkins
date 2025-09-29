@@ -73,13 +73,10 @@ THE SOFTWARE.
 
               <l:overflowButton>
                 <dd:custom>
-                  <l:tasks>
-                    <j:set var="buildUrl" value="${h.decompose(request2)}" />
-                    <st:include page="tasks.jelly" from="${it.object}" it="${it.object}" optional="true" />
-                    <st:include page="actions.jelly" from="${it.object}" it="${it.object}" />
-                    <t:actions actions="${it.object.transientActions}" />
-                    <st:include page="delete.jelly" from="${it.object}" it="${it.object}" />
-                  </l:tasks>
+                  <div class="app-build-overflow">
+                    <j:set var="mode" value="side-panel" />
+                    <st:include page="sidepanel.jelly" it="${it.object}" />
+                  </div>
                 </dd:custom>
               </l:overflowButton>
             </div>
