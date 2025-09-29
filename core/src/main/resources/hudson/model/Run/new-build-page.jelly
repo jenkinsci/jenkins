@@ -30,13 +30,15 @@ THE SOFTWARE.
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
       <j:set var="controls">
+        <l:hasPermission permission="${it.UPDATE}">
+          <st:include page="logKeep.jelly" />
+        </l:hasPermission>
         <l:overflowButton>
           <dd:custom>
-            <l:hasPermission permission="${it.UPDATE}">
-              <st:include page="logKeep.jelly" />
-            </l:hasPermission>
-            <j:set var="mode" value="side-panel" />
-            <st:include page="sidepanel.jelly" />
+            <div class="app-build-overflow">
+              <j:set var="mode" value="side-panel" />
+              <st:include page="sidepanel.jelly" />
+            </div>
           </dd:custom>
         </l:overflowButton>
       </j:set>
