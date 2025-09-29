@@ -30,7 +30,6 @@ THE SOFTWARE.
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
       <j:set var="controls">
-        <t:editDescriptionButton permission="${it.UPDATE}"/>
         <l:overflowButton>
           <dd:custom>
             <l:hasPermission permission="${it.UPDATE}">
@@ -44,7 +43,9 @@ THE SOFTWARE.
 
       <t:buildCaption controls="${controls}">${it.displayName}</t:buildCaption>
 
-      <l:details-bar it="${it}" />
+      <l:details-bar it="${it}">
+        <t:editDescriptionButton permission="${it.UPDATE}" compact="true" />
+      </l:details-bar>
 
       <div>
         <t:editableDescription permission="${it.UPDATE}" hideButton="true"/>
