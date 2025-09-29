@@ -30,17 +30,29 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
+      <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
       <j:set var="buildUrl" value="${h.decompose(request2)}" />
-      <st:include page="tasks.jelly"/>
-      <st:include page="delete.jelly" />
-      <st:include page="actions.jelly" />
-      <t:actions actions="${it.transientActions}"/>
-      <j:if test="${it.previousBuild!=null}">
-        <l:task contextMenu="false" href="${buildUrl.previousBuildUrl}" icon="icon-previous icon-md" title="${%Previous Build}"/>
-      </j:if>
-      <j:if test="${it.nextBuild!=null}">
-        <l:task contextMenu="false" href="${buildUrl.nextBuildUrl}" icon="icon-next icon-md" title="${%Next Build}"/>
-      </j:if>
+
+      <j:choose>
+        <j:when test="${newBuildPage}">
+          <st:include page="tasks.jelly"/>
+          <st:include page="actions.jelly" />
+          <t:actions actions="${it.transientActions}"/>
+          <st:include page="delete.jelly" />
+        </j:when>
+        <j:otherwise>
+          <st:include page="tasks.jelly"/>
+          <st:include page="delete.jelly" />
+          <st:include page="actions.jelly" />
+          <t:actions actions="${it.transientActions}"/>
+          <j:if test="${it.previousBuild!=null}">
+            <l:task contextMenu="false" href="${buildUrl.previousBuildUrl}" icon="icon-previous icon-md" title="${%Previous Build}"/>
+          </j:if>
+          <j:if test="${it.nextBuild!=null}">
+            <l:task contextMenu="false" href="${buildUrl.nextBuildUrl}" icon="icon-next icon-md" title="${%Next Build}"/>
+          </j:if>
+        </j:otherwise>
+      </j:choose>
     </l:tasks>
   </l:side-panel>
 </j:jelly>
