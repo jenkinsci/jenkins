@@ -41,7 +41,7 @@ THE SOFTWARE.
     <commons-fileupload2.version>2.0.0-M4</commons-fileupload2.version>
     <groovy.version>2.4.21</groovy.version>
     <jelly.version>1.1-jenkins-20250731</jelly.version>
-    <stapler.version>2030.v88a_855365981</stapler.version>
+    <stapler.version>2036.v69a_e0454da_b_9</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -63,7 +63,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>6.2.10</version>
+        <version>6.2.11</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -71,7 +71,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/reference/6.3/getting-spring-security.html#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>6.5.3</version>
+        <version>6.5.5</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -89,7 +89,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>33.4.8-jre</version>
+        <version>33.5.0-jre</version>
       </dependency>
       <dependency>
         <groupId>com.sun.xml.txw2</groupId>
@@ -144,7 +144,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.17.0</version>
+        <version>5.18.0</version>
       </dependency>
       <dependency>
         <groupId>net.java.sezpoz</groupId>

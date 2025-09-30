@@ -828,23 +828,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Called by {@link Jenkins#updateComputerList(boolean, Collection)} to notify {@link Computer} that it will be discarded.
-     *
-     * <p>
-     * Note that at this point {@link #getNode()} returns null.
-     *
-     * <p>
-     * Note that the Queue lock is already held when this method is called.
-     *
-     * @see #onRemoved()
-     */
-    @Restricted(NoExternalUse.class)
-    @GuardedBy("hudson.model.Queue.lock")
-    /*package*/ void inflictMortalWound() {
-        setNumExecutors(0);
-    }
-
-    /**
      * Called by {@link Jenkins} when this computer is removed.
      *
      * <p>
@@ -865,7 +848,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Calling path, *means protected by Queue.withLock
      *
      * Computer.doConfigSubmit -> Computer.replaceBy ->Jenkins.setNodes* ->Computer.setNode
-     * AbstractCIBase.updateComputerList->Computer.inflictMortalWound*
+     * AbstractCIBase.updateComputerList->Computer.setNumExecutors*
      * AbstractCIBase.updateComputerList->AbstractCIBase.updateComputer* ->Computer.setNode
      * AbstractCIBase.updateComputerList->AbstractCIBase.killComputer->Computer.kill
      * Computer.constructor->Computer.setNode
@@ -873,8 +856,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @param n number of executors
      */
+    @Restricted(NoExternalUse.class)
     @GuardedBy("hudson.model.Queue.lock")
-    private void setNumExecutors(int n) {
+    public void setNumExecutors(int n) {
         this.numExecutors = n;
         final int diff = executors.size() - n;
 

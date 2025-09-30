@@ -23,23 +23,15 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:i="jelly:fmt" xmlns:l="/lib/layout">
   <j:set var="object" value="${it.getObject()}" />
   <i:formatDate var="tooltip" value="${object.timestamp.time}" type="both" dateStyle="long" timeStyle="medium" />
 
-  <div class="jenkins-card__details__item">
-    <j:set var="minutes" value="${360 * (object.timestamp.time.minutes / 60)}" />
-    <i:formatDate var="hours" value="${object.timestamp.time}" pattern="h" />
-    <j:set var="hours" value="${360 * (hours / 12) + (30 * (object.timestamp.time.minutes / 60))}" />
-
-    <div class="jenkins-card__details__item__icon">
-      <div class="app-build__clock" style="--hours: ${hours}deg; --minutes: ${minutes}deg">
-        <span class="app-build__clock__hours" />
-        <span class="app-build__clock__minutes" />
-      </div>
+  <div class="jenkins-details__item" tooltip="${tooltip}" data-tooltip-delay="500">
+    <div class="jenkins-details__item__icon">
+      <l:icon src="symbol-clock" />
     </div>
-
-    <span tooltip="${tooltip}" data-tooltip-delay="500">
+    <span>
       ${%startedAgo(object.timestampString)}
     </span>
   </div>

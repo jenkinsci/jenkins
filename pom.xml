@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.528</revision>
+    <revision>2.530</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-09-09T12:24:10Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-09-23T12:23:57Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3327.v868139a_d00e0</remoting.version>
+    <remoting.version>3341.v0766d82b_dec0</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -98,8 +98,8 @@ THE SOFTWARE.
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.13</winstone.version>
-    <node.version>24.7.0</node.version>
+    <winstone.version>8.13.1</winstone.version>
+    <node.version>24.9.0</node.version>
   </properties>
 
   <!--
@@ -281,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>11.0.1</version>
+              <version>11.1.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -433,7 +433,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.1</version>
+            <version>1.15.4</version>
             <executions>
               <execution>
                 <id>install node and corepack</id>
@@ -511,7 +511,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.1</version>
+            <version>1.15.4</version>
             <executions>
               <execution>
                 <id>yarn lint:ci</id>
@@ -556,7 +556,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.1</version>
+            <version>1.15.4</version>
             <executions>
               <execution>
                 <id>yarn lint</id>
