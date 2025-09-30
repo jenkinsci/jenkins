@@ -35,7 +35,14 @@ THE SOFTWARE.
     <j:set var="action" value="${it}" />
     <j:set var="it" value="${dir}" />
 
-    <l:app-bar title="${action.displayName}" />
+    <l:app-bar title="${action.displayName}">
+      <a class="jenkins-button"
+         href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
+        <l:icon src="symbol-download"/>
+        <j:set var="last" value="${parentPath.getLast().title}" />
+        ${last == null ? '%Download all' : '%Download folder'}
+      </a>
+    </l:app-bar>
 
     <div class="dirTree">
       <!-- parent path -->
@@ -122,10 +129,7 @@ THE SOFTWARE.
             <tr>
               <td style="text-align:right;" colspan="3">
                 <div style="margin-top: 1em;">
-                  <a class="jenkins-link--with-icon" href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
-                    <l:icon src="symbol-download"/>
-                    (${%all files in zip})
-                  </a>
+
                 </div>
               </td>
             </tr>
