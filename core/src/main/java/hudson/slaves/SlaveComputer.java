@@ -916,16 +916,20 @@ public class SlaveComputer extends Computer {
     protected void kill() {
         super.kill();
         closeChannel();
-        try {
-            log.close();
-        } catch (IOException x) {
-            LOGGER.log(Level.WARNING, "Failed to close agent log", x);
-        }
-
+        closeLog();
         try {
             Util.deleteRecursive(getLogDir());
         } catch (IOException ex) {
             logger.log(Level.WARNING, "Unable to delete agent logs", ex);
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void closeLog() {
+        try {
+            log.close();
+        } catch (IOException x) {
+            LOGGER.log(Level.WARNING, "Failed to close agent log", x);
         }
     }
 
