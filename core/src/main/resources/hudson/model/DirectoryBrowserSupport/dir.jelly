@@ -126,13 +126,6 @@ THE SOFTWARE.
                 </j:if>
               </tr>
             </j:forEach>
-            <tr>
-              <td style="text-align:right;" colspan="3">
-                <div style="margin-top: 1em;">
-
-                </div>
-              </td>
-            </tr>
           </table>
           <j:if test="${showSymlinkWarning}">
             <p>
