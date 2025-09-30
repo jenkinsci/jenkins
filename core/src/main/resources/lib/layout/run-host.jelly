@@ -90,7 +90,8 @@ THE SOFTWARE.
         </l:main-panel>
       </j:when>
       <j:otherwise>
-        <!-- Hacky -->
+        <st:include page="sidepanel.jelly" it="${it.object}" />
+
         <l:main-panel>
           <d:invokeBody />
         </l:main-panel>
