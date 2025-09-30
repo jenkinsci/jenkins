@@ -31,16 +31,19 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.FilePath;
 import hudson.Functions;
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.NameValuePair;
@@ -426,5 +429,46 @@ class FileParameterValueTest {
                 System.setProperty(DirectoryBrowserSupport.class.getName() + ".CSP", initialValue);
             }
         }
+    }
+
+    @Issue("JENKINS-19017")
+    @Test
+    void compareParamsWithSameName() throws IOException {
+        final String paramName = "MY_FILE_PARAM"; // Same paramName (location) reproduces the bug
+        File ws_param1 = createParamFile("ws_param1.txt");
+        File ws_param2 = createParamFile("ws_param2.txt");
+
+        final FileParameterValue param1 = new FileParameterValue(paramName, ws_param1, "param1.txt");
+        final FileParameterValue param2 = new FileParameterValue(paramName, ws_param2, "param2.txt");
+
+        assertNotEquals(param1, param2, "Files with same locations should be considered as different");
+        assertNotEquals(param2, param1, "Files with same locations should be considered as different");
+    }
+
+    @Test
+    void compareNullParams() throws IOException {
+        final String paramName = "MY_FILE_PARAM";
+        File ws_param1 = createParamFile("ws_param1.txt");
+        File null_param1 = createParamFile("null_param1.txt");
+        File null_param2 = createParamFile("null_param2.txt");
+        FileParameterValue nonNullParam = new FileParameterValue(paramName, ws_param1, "param1.txt");
+        FileParameterValue nullParam1 = new FileParameterValue(null, null_param1, "null_param1.txt");
+        FileParameterValue nullParam2 = new FileParameterValue(null, null_param2, "null_param2.txt");
+
+        // Combine nulls
+        assertEquals(nullParam1, nullParam1);
+        assertEquals(nullParam1, nullParam2);
+        assertEquals(nullParam2, nullParam1);
+        assertEquals(nullParam2, nullParam2);
+
+        // Compare with non-null
+        assertNotEquals(nullParam1, nonNullParam);
+        assertNotEquals(nonNullParam, nullParam1);
+    }
+
+    private File createParamFile(String fileName) throws IOException {
+        File f = new File(tmp, fileName);
+        FileUtils.writeStringToFile(f, "content", StandardCharsets.UTF_8);
+        return f;
     }
 }
