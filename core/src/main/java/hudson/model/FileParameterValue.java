@@ -26,9 +26,11 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.model.queue.QueueListener;
 import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
 import java.io.File;
@@ -39,12 +41,17 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.fileupload2.core.FileItemFactory;
 import org.apache.commons.fileupload2.core.FileItemHeaders;
 import org.apache.commons.fileupload2.core.FileItemHeadersProvider;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -58,6 +65,9 @@ import org.kohsuke.stapler.StaplerResponse2;
  * @author Kohsuke Kawaguchi
  */
 public class FileParameterValue extends ParameterValue {
+
+    private static final Logger LOGGER = Logger.getLogger(FileParameterValue.class.getName());
+
     private static final String FOLDER_NAME = "fileParameters";
     private static final Pattern PROHIBITED_DOUBLE_DOT = Pattern.compile(".*[\\\\/]\\.\\.[\\\\/].*");
     private static final long serialVersionUID = -143427023159076073L;
@@ -71,12 +81,15 @@ public class FileParameterValue extends ParameterValue {
     public static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE =
             SystemProperties.getBoolean(FileParameterValue.class.getName() + ".allowFolderTraversalOutsideWorkspace");
 
-    private final transient FileItem file;
+    private transient FileItem file;
 
     /**
      * The name of the originally uploaded file.
      */
     private final String originalFileName;
+
+
+    private String tmpFileName;
 
     /**
      * Overrides the location in the build to place this file. Initially set to {@link #getName()}
@@ -106,6 +119,16 @@ public class FileParameterValue extends ParameterValue {
 
     protected FileParameterValue(String name, FileItem file, String originalFileName) {
         super(name);
+        try {
+            File dir = new File(Jenkins.get().getRootDir(), "fileParameterValueFiles");
+            Files.createDirectories(dir.toPath());
+            File tmp = Files.createTempFile(dir.toPath(), "jenkins", ".tmp").toFile();
+            FileUtils.copyInputStreamToFile(file.getInputStream(), tmp);
+            tmpFileName = tmp.getAbsolutePath();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         this.file = file;
         this.originalFileName = originalFileName;
         setLocation(name);
@@ -149,7 +172,17 @@ public class FileParameterValue extends ParameterValue {
         return originalFileName;
     }
 
+    private void createFile() {
+        if (file == null && tmpFileName != null) {
+            File tmp = new File(tmpFileName);
+            if (tmp.exists()) {
+                file = new FileItemImpl2(tmp);
+            }
+        }
+    }
+
     public FileItem getFile2() {
+        createFile();
         return file;
     }
 
@@ -163,31 +196,44 @@ public class FileParameterValue extends ParameterValue {
 
     @Override
     public BuildWrapper createBuildWrapper(AbstractBuild<?, ?> build) {
+        createFile();
         return new BuildWrapper() {
-            @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
+            @SuppressFBWarnings(value = {"NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", "PATH_TRAVERSAL_IN"}, justification = "TODO needs triage, False positive, the path is a temporary file")
             @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-                if (location != null && !location.isEmpty() && file.getName() != null && !file.getName().isEmpty()) {
-                    listener.getLogger().println("Copying file to " + location);
-                    FilePath ws = build.getWorkspace();
-                    if (ws == null) {
-                        throw new IllegalStateException("The workspace should be created when setUp method is called");
-                    }
-                    if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && (PROHIBITED_DOUBLE_DOT.matcher(location).matches() || !ws.isDescendant(location))) {
-                        listener.error("Rejecting file path escaping base directory with relative path: " + location);
-                        // force the build to fail
-                        return null;
-                    }
-                    FilePath locationFilePath = ws.child(location);
-                    locationFilePath.getParent().mkdirs();
+                if (location != null && !location.isBlank() && file != null && file.getName() != null && !file.getName().isBlank()) {
+                    try {
+                        listener.getLogger().println("Copying file to " + location);
+                        FilePath ws = build.getWorkspace();
+                        if (ws == null) {
+                            throw new IllegalStateException("The workspace should be created when setUp method is called");
+                        }
+                        if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && (PROHIBITED_DOUBLE_DOT.matcher(location).matches() || !ws.isDescendant(location))) {
+                            listener.error("Rejecting file path escaping base directory with relative path: " + location);
+                            // force the build to fail
+                            return null;
+                        }
+                        FilePath locationFilePath = ws.child(location);
+                        locationFilePath.getParent().mkdirs();
 
-                    // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
-                    if (locationFilePath.exists() && !locationFilePath.isDirectory()) {
-                        locationFilePath.delete();
+                        // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
+                        if (locationFilePath.exists() && !locationFilePath.isDirectory()) {
+                            locationFilePath.delete();
+                        }
+                        locationFilePath.copyFrom(file);
+                        locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
+                    } finally {
+                        if (tmpFileName != null) {
+                            File tmp = new File(tmpFileName);
+                            try {
+                                Files.deleteIfExists(tmp.toPath());
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING, "Unable to delete temporary file {0} for parameter {1} of job {2}",
+                                        new Object[]{tmp.getAbsolutePath(), getName(), build.getParent().getName()});
+                            }
+                        }
+                        tmpFileName = null;
                     }
-
-                    locationFilePath.copyFrom(file);
-                    locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
                 }
                 return new Environment() {};
             }
@@ -255,6 +301,36 @@ public class FileParameterValue extends ParameterValue {
 
     private File getFileParameterFolderUnderBuild(AbstractBuild<?, ?> build) {
         return new File(build.getRootDir(), FOLDER_NAME);
+    }
+
+    @Extension
+    public static class CancelledQueueListener extends QueueListener {
+
+        @Override
+        public void onLeft(Queue.LeftItem li) {
+            if (li.isCancelled()) {
+                List<ParametersAction> actions = li.getActions(ParametersAction.class);
+                actions.forEach(a -> {
+                    a.getAllParameters().stream()
+                            .filter(p -> p instanceof FileParameterValue)
+                            .map(p -> (FileParameterValue) p)
+                            .forEach(this::deleteTmpFile);
+                });
+            }
+        }
+
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "False positive, the path is a temporary file")
+        private void deleteTmpFile(FileParameterValue p) {
+            if (p.tmpFileName != null) {
+                File tmp = new File(p.tmpFileName);
+                try {
+                    Files.deleteIfExists(tmp.toPath());
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Unable to delete temporary file {0} for parameter {1}",
+                            new Object[]{tmp.getAbsolutePath(), p.getName()});
+                }
+            }
+        }
     }
 
     /**
