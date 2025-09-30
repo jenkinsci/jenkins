@@ -73,7 +73,7 @@ axes.values().combinations {
         agentContainerLabel = agentContainerLabel + '-nonspot'
       }
       // Increment before allocating the node in case it fails
-      retryCount = retryCount + 1
+      retryCount++
       node(agentContainerLabel) {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
