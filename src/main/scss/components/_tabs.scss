@@ -126,14 +126,20 @@ $border-radius: 19px;
       font-weight: var(--font-bold-weight);
 
       .pill::before {
-        border: var(--jenkins-border-width) solid color-mix(in srgb, var(--color, currentColor) 20%, transparent);
+        border: var(--jenkins-border-width) solid
+          color-mix(in sRGB, var(--color, currentColor) 20%, transparent);
       }
     }
 
     &.jenkins-button--tertiary {
-      color: color-mix(in srgb, var(--text-color-secondary) 75%, var(--text-color)) !important;
+      color: color-mix(
+        in sRGB,
+        var(--text-color-secondary) 75%,
+        var(--text-color)
+      ) !important;
 
-      &::before, &::after {
+      &::before,
+      &::after {
         inset: 3px;
       }
     }
@@ -141,12 +147,14 @@ $border-radius: 19px;
     &:hover {
       color: var(--text-color) !important;
 
-      &::before, &::after {
+      &::before,
+      &::after {
         inset: 1.5px;
       }
 
       .pill::before {
-        border: var(--jenkins-border-width) solid color-mix(in srgb, var(--color, currentColor) 20%, transparent);
+        border: var(--jenkins-border-width) solid
+          color-mix(in sRGB, var(--color, currentColor) 20%, transparent);
       }
     }
 
@@ -171,8 +179,13 @@ $border-radius: 19px;
         position: absolute;
         inset: 0;
         border-radius: inherit;
-        background: color-mix(in srgb, var(--color, var(--background)) 5%, var(--background));
-        border: var(--jenkins-border-width) solid color-mix(in srgb, var(--color, currentColor) 10%, transparent);
+        background: color-mix(
+          in sRGB,
+          var(--color, var(--background)) 5%,
+          var(--background)
+        );
+        border: var(--jenkins-border-width) solid
+          color-mix(in sRGB, var(--color, currentColor) 10%, transparent);
         z-index: -1;
       }
     }

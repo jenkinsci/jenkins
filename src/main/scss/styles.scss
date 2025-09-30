@@ -5,7 +5,8 @@
 @use "pages";
 
 #description {
-  #description-content, .jenkins-buttons-row {
+  #description-content,
+  .jenkins-buttons-row {
     margin-bottom: var(--section-padding);
 
     &:empty {
@@ -16,7 +17,11 @@
 
 body {
   // make this a linear gradient, so overflow is the right colour
-  background-color: color-mix(in srgb, var(--text-color-secondary) 3%, var(--background));
+  background-color: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 3%,
+    var(--background)
+  );
 }
 
 .build-bar {
@@ -32,10 +37,7 @@ body {
   &::before {
     content: "";
     position: absolute;
-    top: -1000px;
-    left: calc(var(--section-padding) * -1);
-    right: calc(var(--section-padding) * -1);
-    bottom: 0;
+    inset: -1000px calc(var(--section-padding) * -1) 0;
     background-color: var(--background);
     border-bottom: var(--jenkins-border-width) solid var(--card-border-color);
     z-index: -1;
@@ -91,10 +93,15 @@ body {
     margin-inline: -1rem;
 
     &:not(:hover) {
-      color: color-mix(in srgb, var(--text-color-secondary) 75%, transparent) !important;
+      color: color-mix(
+        in sRGB,
+        var(--text-color-secondary) 75%,
+        transparent
+      ) !important;
     }
 
-    &::before, &::after {
+    &::before,
+    &::after {
       inset: 7px;
     }
 
