@@ -2,6 +2,7 @@ package jenkins.run;
 
 import hudson.model.Action;
 import hudson.model.Actionable;
+import jenkins.model.Badgeable;
 
 public abstract class Tab implements Action, Badgeable {
 
