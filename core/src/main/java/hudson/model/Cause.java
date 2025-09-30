@@ -447,23 +447,27 @@ public abstract class Cause {
             return  userId != null ? userId : User.getUnknown().getId();
         }
 
+        private User getUser() {
+            return userId == null ? null : User.getById(userId, false);
+        }
+
         @Exported(visibility = 3)
         public String getUserName() {
-            final User user = userId == null ? null : User.getById(userId, false);
+            final User user = getUser();
             return user == null ? "anonymous" : user.getDisplayName();
         }
 
         @Restricted(DoNotUse.class) // for Jelly
         @CheckForNull
         public String getUserUrl() {
-            final User user = userId == null ? null : User.getById(userId, false);
+            final User user = getUser();
             return user != null ? user.getUrl() : null;
         }
 
         @Restricted(DoNotUse.class) // for Jelly
         @CheckForNull
         public String getUserAvatar() {
-            final User user = userId == null ? null : User.getById(userId, false);
+            final User user = getUser();
             return user != null ? getAvatar(user, "48x48") : null;
         }
 
