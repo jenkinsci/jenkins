@@ -119,8 +119,7 @@ body:has(.build-bar) {
   margin-inline: calc(var(--section-padding) * -1);
 
   .jenkins-app-bar {
-    margin-bottom: 0;
-    min-height: 5rem;
+    margin-block: 1.0625rem;
   }
 
   & > pre {

@@ -14,6 +14,7 @@ import hudson.model.Actionable;
  * Tabs may also implement {@link Badgeable} to display a visual badge associated
  * with the tab’s action
  * </p>
+ *
  * @since TODO
  */
 public abstract class Tab implements Action, Badgeable {
