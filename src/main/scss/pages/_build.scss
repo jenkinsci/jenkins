@@ -94,6 +94,20 @@
   }
 }
 
+.app-build-overflow {
+  #side-panel {
+    width: 250px !important;
+
+    #tasks {
+      margin: 0;
+
+      .task {
+        margin-left: unset !important;
+      }
+    }
+  }
+}
+
 .app-console-output-widget {
   overflow-y: auto;
   margin: 0 -1rem -1rem;
