@@ -25,6 +25,7 @@
 package jenkins.run;
 
 import hudson.model.Actionable;
+import jenkins.model.Tab;
 
 public class ConsoleTab extends Tab {
 

@@ -5,6 +5,7 @@ import hudson.Extension;
 import hudson.model.Run;
 import java.util.Collection;
 import java.util.Collections;
+import jenkins.model.Tab;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
 import jenkins.scm.RunWithSCM;

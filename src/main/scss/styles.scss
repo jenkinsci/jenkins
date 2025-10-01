@@ -15,7 +15,7 @@
   }
 }
 
-body {
+body:has(.build-bar) {
   // make this a linear gradient, so overflow is the right colour
   background-color: color-mix(
     in sRGB,
