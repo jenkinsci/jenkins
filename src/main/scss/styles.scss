@@ -127,24 +127,3 @@ body:has(.build-bar) {
     border: var(--card-border-width) solid var(--card-border-color);
   }
 }
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: calc(var(--section-padding) / 2);
-
-  & > div {
-    border-radius: var(--form-input-border-radius);
-    min-height: 450px;
-    max-height: 450px;
-    margin-bottom: 0;
-
-    &:first-of-type {
-      grid-column: 1 / 4;
-    }
-
-    &:last-of-type {
-      grid-column: 1 / 5;
-    }
-  }
-}

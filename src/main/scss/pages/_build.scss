@@ -33,12 +33,12 @@
     grid-template-columns: 1fr 1fr;
     margin-top: calc(var(--section-padding) * -0.25);
 
-    .jenkins-card {
+    & > div {
       overflow: clip;
       margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
 
       &:first-of-type {
-        grid-column: span 2;
+        grid-column: span 1;
       }
 
       &:last-of-type {
@@ -54,9 +54,9 @@
   @media (width >= 1300px) {
     grid-template-columns: 1fr 1fr 1fr;
 
-    .jenkins-card {
+    & > div {
       &:first-of-type {
-        grid-column: span 3;
+        grid-column: span 2;
       }
 
       &:last-of-type {
@@ -68,9 +68,9 @@
   @media (width >= 1600px) {
     grid-template-columns: 1fr 1fr 1fr 1fr;
 
-    .jenkins-card {
+    & > div {
       &:first-of-type {
-        grid-column: span 4;
+        grid-column: span 3;
       }
 
       &:last-of-type {
@@ -82,9 +82,9 @@
   @media (width >= 1900px) {
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 
-    .jenkins-card {
+    & > div {
       &:first-of-type {
-        grid-column: span 5;
+        grid-column: span 4;
       }
 
       &:last-of-type {

@@ -36,7 +36,7 @@ THE SOFTWARE.
 
     <t:editableDescription permission="${it.UPDATE}" hideButton="true" />
 
-    <div class="cards">
+    <div class="app-build__grid">
       <j:forEach var="a" items="${it.runTabs}">
         <st:include page="widget.jelly" from="${a}" optional="true" it="${a}" />
       </j:forEach>
