@@ -1286,6 +1286,11 @@ function rowvgStartEachRow(recursive, f) {
     registerRegexpValidator(e, /./, "Field is required");
   });
 
+  // validate required form values
+  Behaviour.specify("INPUT.not-blank", "input-not-blank", ++p, function (e) {
+    registerRegexpValidator(e, /\S/, "Field must not be blank");
+  });
+
   // validate form values to be an integer
   Behaviour.specify("INPUT.number", "input-number", ++p, function (e) {
     e.addEventListener("keypress", preventInputEe);
