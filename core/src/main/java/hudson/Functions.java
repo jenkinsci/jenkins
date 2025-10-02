@@ -2470,7 +2470,6 @@ public class Functions {
      * Advertises the minimum set of HTTP headers that assist programmatic
      * discovery of Jenkins.
      */
-    @SuppressFBWarnings(value = "UC_USELESS_VOID_METHOD", justification = "TODO needs triage")
     public static void advertiseHeaders(HttpServletResponse rsp) {
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) {
