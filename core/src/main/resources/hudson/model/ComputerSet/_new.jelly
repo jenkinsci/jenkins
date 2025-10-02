@@ -32,7 +32,7 @@ THE SOFTWARE.
     <l:main-panel>
       <f:form method="post" action="doCreateItem" name="config" class="jenkins-form">
         <f:entry title="${%Name}" help="${requestScope.descriptor.getHelpFile('name')}">
-          <f:textbox name="name" value="${request2.getParameter('name')}" clazz="not-blank" checkMessage="${%Name is mandatory}"/>
+          <f:textbox name="name" value="${request2.getParameter('name')}" clazz="required" checkMessage="${%Name is mandatory}"/>
         </f:entry>
 
         <!-- main body of the configuration -->

@@ -55,7 +55,7 @@ THE SOFTWARE.
     <!-- Tomcat doesn't like us using the attribute called 'class' -->
     <st:attribute name="clazz">
       Additional CSS class(es) to add (such as client-side validation clazz="required",
-      "not-blank", "number" or "positive-number"; these may be combined, as clazz="required number").
+      "number" or "positive-number"; these may be combined, as clazz="required number").
     </st:attribute>
     <st:attribute name="placeholder">
       Placeholder text for the text box
