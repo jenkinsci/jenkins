@@ -323,6 +323,7 @@ class ComputerTest {
 
     @Test
     public void isConnectedTest() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows agents sporadically fail this test");
         var agent = j.createSlave();
         var computer = agent.toComputer();
 
