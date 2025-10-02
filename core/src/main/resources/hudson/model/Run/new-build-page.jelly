@@ -24,18 +24,23 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:dd="/lib/layout/dropdowns">
   <l:layout title="${it.fullDisplayName}">
-    <st:include page="sidepanel.jelly" />
 
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
-      <script src="${resURL}/jsbundles/pages/job.js" type="text/javascript" defer="true" />
-
       <j:set var="controls">
         <l:hasPermission permission="${it.UPDATE}">
           <st:include page="logKeep.jelly" />
         </l:hasPermission>
+        <l:overflowButton>
+          <dd:custom>
+            <div class="app-build-overflow">
+              <j:set var="mode" value="side-panel" />
+              <st:include page="sidepanel.jelly" />
+            </div>
+          </dd:custom>
+        </l:overflowButton>
       </j:set>
 
       <t:buildCaption controls="${controls}">${it.displayName}</t:buildCaption>
