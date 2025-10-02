@@ -2726,7 +2726,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     TransientActionFactory f = c.getInstance();
                     return f.type().isAssignableFrom(getClass());
                 })
-                .sorted(Comparator.comparingDouble(e -> ((ExtensionComponent)e).ordinal()).reversed()) // higher ordinal first
+                .sorted(Comparator.comparingDouble(e -> ((ExtensionComponent<?>) e).ordinal()).reversed()) // higher ordinal first
                 .forEach(c -> {
                     TransientActionFactory f = c.getInstance();
                     Collection<? extends Action> created = f.createFor(this);

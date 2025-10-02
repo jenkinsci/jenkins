@@ -23,16 +23,17 @@ public class ChangesTabFactory extends TransientActionFactory<Run> {
     public Collection<? extends Tab> createFor(@NonNull Run target) {
         boolean isExperimentalUiEnabled = new NewBuildPageUserExperimentalFlag().getFlagValue();
 
-        if (!(target instanceof RunWithSCM) || !isExperimentalUiEnabled) {
+        if (!isExperimentalUiEnabled) {
             return Collections.emptySet();
         }
 
-        var noChangeSet = ((RunWithSCM)target).getChangeSets().isEmpty();
-
-        if (noChangeSet) {
-            return Collections.emptySet();
+        if (target instanceof RunWithSCM<?, ?> targetWithSCM) {
+            var hasChangeSet = !targetWithSCM.getChangeSets().isEmpty();
+            if (hasChangeSet) {
+                return Collections.singleton(new ChangesTab(target));
+            }
         }
 
-        return Collections.singleton(new ChangesTab(target));
+        return Collections.emptySet();
     }
 }
