@@ -11,7 +11,7 @@
 
 ---
 
-# 📌 Table of Contents
+# Table of Contents
 
 - [About](#about)
 - [What to Use Jenkins for and When to Use It](#what-to-use-jenkins-for-and-when-to-use-it)
@@ -72,9 +72,9 @@ Our latest and greatest source of Jenkins can be found on [GitHub](https://githu
 
 New to open source or Jenkins? Here’s how to get started:
 
+- Read the [Contribution Guidelines](CONTRIBUTING.md)
 - Check our [friendly issues](https://issues.jenkins.io/issues/?jql=labels%20%3D%20newbie-friendly%20AND%20resolution%20is%20empty%20AND%20component%20%3D%20core)
 - Join our [Gitter chat](https://app.gitter.im/#/room/#jenkinsci_newcomer-contributors:gitter.im) for questions and help
-- Read the [Contribution Guidelines](CONTRIBUTING.md)
 
 For more information about participating in the community and contributing to the Jenkins project,
 see [this page](https://www.jenkins.io/participate/).
@@ -96,6 +96,7 @@ Follow Jenkins on social media to stay connected with the community:
 
 - [Twitter / X](https://x.com/jenkinsci)
 - [YouTube](https://www.youtube.com/@jenkinscicd)
+- [LinkedIn](https://www.linkedin.com/company/jenkins-project/)
 
 # Governance
 
@@ -106,7 +107,7 @@ To learn more about the governance structure, project leadership, and how decisi
 
 Jenkins is trusted by **millions of users** and adopted by **thousands of companies** around the world — from startups to enterprises — to automate their software delivery pipelines.
 
-Explore the [Adopters Page](https://www.jenkins.io/project/adopters/) to see:
+Explore the [Adopters Page](https://www.jenkins.io/project/adopters/) and https://stories.jenkins.io to see:
 
 - Companies and organizations using Jenkins
 - Success stories and case studies
