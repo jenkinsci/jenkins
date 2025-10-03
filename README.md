@@ -63,8 +63,7 @@ Latest releases:
 
 # Getting Started (Development)
 
-For more information on setting up your development environment, contributing, and working with Jenkins internals, check the official Jenkins Developer Documentation:
-➡️ [https://www.jenkins.io/doc/developer/](https://www.jenkins.io/doc/developer/)
+For more information on setting up your development environment, contributing, and working with Jenkins internals, check the [contributing guide](CONTRIBUTING.md) and the [Jenkins Developer Documentation](https://www.jenkins.io/doc/developer/).
 
 
 # Source
@@ -75,8 +74,8 @@ Our latest and greatest source of Jenkins can be found on [GitHub](https://githu
 
 New to open source or Jenkins? Here’s how to get started:
 
-- Check our [Good First Issues](https://github.com/jenkinsci/jenkins/contribute)
-- Join our Gitter chat for questions and help
+- Check our [friendly issues](https://issues.jenkins.io/issues/?jql=labels%20%3D%20newbie-friendly%20AND%20resolution%20is%20empty%20AND%20component%20%3D%20core)
+- Join our [Gitter chat](https://app.gitter.im/#/room/#jenkinsci_newcomer-contributors:gitter.im) for questions and help
 - Read the [Contribution Guidelines](CONTRIBUTING.md)
 
 For more information about participating in the community and contributing to the Jenkins project,
@@ -100,24 +99,11 @@ Follow Jenkins on social media to stay connected with the community:
 
 - [Twitter / X](https://x.com/jenkinsci)
 - [YouTube](https://www.youtube.com/@jenkinscicd)
-- [GitHub](https://github.com/jenkinsci/jenkins)
 
 # Governance
 
-The Jenkins project is governed as an open source community, led by a [governance board](https://www.jenkins.io/project/governance/) and supported by a large network of maintainers and contributors.
-
-Our governance is based on the following principles:
-
-- Open and transparent decision-making
-- Community-driven leadership
-- Empowering contributors and plugin maintainers
-
-We encourage all participants to read and follow our:
-
-- [Governance Document](https://www.jenkins.io/project/governance/)
-- [Code of Conduct](https://www.jenkins.io/project/conduct/)
-- [Security Policy](https://www.jenkins.io/security/)
-- [Project Roadmap](https://www.jenkins.io/project/roadmap/)
+The Jenkins project is governed by an open source community.
+To learn more about the governance structure, project leadership, and how decisions are made, visit the [Governance Page](https://www.jenkins.io/project/governance/).
 
 
 # Adopters
