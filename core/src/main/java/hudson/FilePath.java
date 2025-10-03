@@ -1301,6 +1301,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Takes a {@link FilePath}+{@link FileCallable} pair and returns the equivalent {@link Callable}.
+     * When executing the resulting {@link Callable}, it executes {@link FilePath#act(FileCallable)}
+     * on this {@link FilePath}.
      *
      * @since 1.522
      */
