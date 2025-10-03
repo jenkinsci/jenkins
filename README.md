@@ -32,7 +32,6 @@ In a nutshell, Jenkins is the leading open-source automation server.
 Built with Java, it provides over 2,000 [plugins](https://plugins.jenkins.io/) to support automating virtually anything,
 so that humans can spend their time doing things machines cannot.
 
-
 # What to Use Jenkins for and When to Use It
 
 Use Jenkins to automate your development workflow, so you can focus on work that matters most. Jenkins is commonly used for:
@@ -65,7 +64,6 @@ Latest releases:
 
 For more information on setting up your development environment, contributing, and working with Jenkins internals, check the [contributing guide](CONTRIBUTING.md) and the [Jenkins Developer Documentation](https://www.jenkins.io/doc/developer/).
 
-
 # Source
 
 Our latest and greatest source of Jenkins can be found on [GitHub](https://github.com/jenkinsci/jenkins). Fork us!
@@ -93,7 +91,6 @@ Stay up-to-date with the latest Jenkins news, tutorials, and release notes:
 - [Documentation](https://www.jenkins.io/doc/)
 - [Plugins Index](https://plugins.jenkins.io/)
 - [Events](https://www.jenkins.io/events/)
-- [Newsletter](https://www.jenkins.io/newsletter/)
 
 Follow Jenkins on social media to stay connected with the community:
 
@@ -105,7 +102,6 @@ Follow Jenkins on social media to stay connected with the community:
 The Jenkins project is governed by an open source community.
 To learn more about the governance structure, project leadership, and how decisions are made, visit the [Governance Page](https://www.jenkins.io/project/governance/).
 
-
 # Adopters
 
 Jenkins is trusted by **millions of users** and adopted by **thousands of companies** around the world — from startups to enterprises — to automate their software delivery pipelines.
@@ -116,12 +112,8 @@ Explore the [Adopters Page](https://www.jenkins.io/project/adopters/) to see:
 - Success stories and case studies
 - How Jenkins is used in different industries
 
->  If your company uses Jenkins and you'd like to be featured, feel free to [submit your story](https://www.jenkins.io/project/adopters/contributing/#share-your-story)!
-
+> If your company uses Jenkins and you'd like to be featured, feel free to [submit your story](https://www.jenkins.io/project/adopters/contributing/#share-your-story)!
 
 # License
 
 Jenkins is **licensed** under the **[MIT License](LICENSE.txt)**.
-
-
-
