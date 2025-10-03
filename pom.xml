@@ -101,6 +101,9 @@ THE SOFTWARE.
     <!-- TODO get release with https://github.com/jenkinsci/winstone/tree/598591f0fc0ede6098a019dab9c644cab248b473 -->
     <winstone.version>8.14-rc1007.32dfcd0a_134f</winstone.version>
     <node.version>24.9.0</node.version>
+
+    <!-- TODO https://github.com/apache/maven-javadoc-plugin/issues/1241 -->
+    <detectOfflineLinks>true</detectOfflineLinks>
   </properties>
 
   <!--
