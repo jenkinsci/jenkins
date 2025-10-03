@@ -23,7 +23,6 @@
 - [Governance](#governance)
 - [Adopters](#adopters)
 - [License](#license)
-- [Screenshots](#screenshots)
 
 ---
 
@@ -64,63 +63,6 @@ Latest releases:
 
 # Getting Started (Development)
 
-To build and run Jenkins locally from source, follow these steps:
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/jenkinsci/jenkins.git
-cd jenkins
-```
-### 2. Build the Project
-Use Maven to compile and package Jenkins:
-```bash
-mvn clean install -DskipTests
-```
-To run tests during the build, omit the ```-DskipTests``` flag.
-> The build may take several minutes, depending on your system and internet speed.
-
-### 3. Run Jenkins
-Once built, you can launch Jenkins using:
-```bash
-java -jar war/target/jenkins.war
-```
-Jenkins will start on http://localhost:8080 by default.
-> ⚠️ Make sure Java 11 or higher and Apache Maven are installed and available in your PATH.
-
-### 4. Developer Tips
-- Use ```mvn hpi:run``` to start Jenkins in development mode with hot-reload support for plugins.
-- Logs will be shown in the console to help with debugging.
-- You can access the initial admin password in:
-```bash
-~/.jenkins/secrets/initialAdminPassword
-```
-If port 8080 is in use, run Jenkins on another port:
-```bash
-java -jar war/target/jenkins.war --httpPort=9090
-```
-
-### 5. Troubleshooting
-OutOfMemoryError: Try increasing memory limits:
-```bash
-MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512m"
-```
-- Permission issues on Unix/macOS: use sudo or ensure correct ownership of files.
-- Build fails on tests: Try a clean rebuild:
-```bash
-mvn clean install -DskipTests
-```
-### 6. Useful Commands
-
-| Task                | Command                         |
-| ------------------- | ------------------------------- |
-| Clean build         | `mvn clean install -DskipTests` |
-| Run with tests      | `mvn clean install`             |
-| Start in dev mode   | `mvn hpi:run`                   |
-| Run unit tests only | `mvn test`                      |
-| Build WAR only      | `mvn package -DskipTests`       |
-
-
 For more information on setting up your development environment, contributing, and working with Jenkins internals, check the official Jenkins Developer Documentation:
 ➡️ [https://www.jenkins.io/doc/developer/](https://www.jenkins.io/doc/developer/)
 
@@ -156,8 +98,8 @@ Stay up-to-date with the latest Jenkins news, tutorials, and release notes:
 
 Follow Jenkins on social media to stay connected with the community:
 
-- [Twitter / X](https://twitter.com/jenkinsci)
-- [YouTube](https://www.youtube.com/c/jenkinsci)
+- [Twitter / X](https://x.com/jenkinsci)
+- [YouTube](https://www.youtube.com/@jenkinscicd)
 - [GitHub](https://github.com/jenkinsci/jenkins)
 
 # Governance
@@ -188,18 +130,12 @@ Explore the [Adopters Page](https://www.jenkins.io/project/adopters/) to see:
 - Success stories and case studies
 - How Jenkins is used in different industries
 
->  If your company uses Jenkins and you'd like to be featured, feel free to [submit your story](https://www.jenkins.io/project/adopters/#submit-your-story)!
+>  If your company uses Jenkins and you'd like to be featured, feel free to [submit your story](https://www.jenkins.io/project/adopters/contributing/#share-your-story)!
 
 
 # License
 
 Jenkins is **licensed** under the **[MIT License](LICENSE.txt)**.
 
-# Screenshots
 
-### WebSite
-<img width="1920" height="927" alt="image" src="https://github.com/user-attachments/assets/a810730e-85c4-40f9-ae1d-f69e94b36d16" />
-
-### Documentation 
-<img width="1920" height="927" alt="image" src="https://github.com/user-attachments/assets/b3548cc4-ff1b-4a92-94b2-10c7696153ef" />
 
