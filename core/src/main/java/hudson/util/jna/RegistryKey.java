@@ -17,7 +17,6 @@ Lesser General Public License for more details.
 package hudson.util.jna;
 
 import com.sun.jna.ptr.IntByReference;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.TreeMap;
@@ -90,7 +89,6 @@ public class RegistryKey implements AutoCloseable {
         return convertBufferToInt(getValue(valueName));
     }
 
-    @SuppressFBWarnings(value = "SF_SWITCH_FALLTHROUGH", justification = "TODO needs triage")
     private byte[] getValue(String valueName) {
         IntByReference pType, lpcbData;
         byte[] lpData = new byte[1];
@@ -151,7 +149,6 @@ public class RegistryKey implements AutoCloseable {
     /**
      * Does a specified value exist?
      */
-    @SuppressFBWarnings(value = "SF_SWITCH_FALLTHROUGH", justification = "TODO needs triage")
     public boolean valueExists(String name) {
         IntByReference pType, lpcbData;
         byte[] lpData = new byte[1];
@@ -226,7 +223,6 @@ public class RegistryKey implements AutoCloseable {
      *
      * @return TreeMap with name and value pairs
      */
-    @SuppressFBWarnings(value = "SF_SWITCH_FALLTHROUGH", justification = "TODO needs triage")
     public TreeMap<String, Object> getValues() {
         int dwIndex, result;
         char[] lpValueName;
