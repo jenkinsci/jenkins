@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import hudson.Extension;
 import hudson.MarkupText;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
@@ -27,7 +28,7 @@ class ChangeLogSetTest {
     @Issue("JENKINS-17084")
     void catchingExceptionDuringAnnotation() {
         FakeChangeLogSCM.EntryImpl change = new FakeChangeLogSCM.EntryImpl();
-        change.setParent(ChangeLogSet.createEmpty(null)); // otherwise test would actually test only NPE thrown when accessing parent.build
+        change.setParent(ChangeLogSet.createEmpty((Run<?, ?>) null)); // otherwise test would actually test only NPE thrown when accessing parent.build
         assertDoesNotThrow(() -> {
             change.getMsgAnnotated();
         });
