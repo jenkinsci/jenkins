@@ -65,7 +65,7 @@ THE SOFTWARE.
        ]]>
     </st:attribute>
     <st:attribute name="step">
-      The step size of the @value. The default is 1.
+      The step size of the @value. The default is 1. This becomes the @step of the <input> tag.
       This will work only if @clazz is 'number', 'number-required', 'non-negative-number-required',
       'positive-number', 'positive-number-required'.
       If this value contains non-digit characters, it will not work.
