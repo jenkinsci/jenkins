@@ -94,6 +94,11 @@ public class AnnotatedLargeText<T> extends LargeText {
         this.context = context;
     }
 
+    public AnnotatedLargeText(LargeText.Source source, Charset charset, boolean completed, T context) {
+        super(source, charset, completed);
+        this.context = context;
+    }
+
     /**
      * @since 2.475
      */
