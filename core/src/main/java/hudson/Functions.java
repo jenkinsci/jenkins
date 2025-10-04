@@ -170,6 +170,7 @@ import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
 import jenkins.util.SystemProperties;
+import net.sf.json.JSONArray;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -2355,7 +2356,29 @@ public class Functions {
      */
     @Restricted(NoExternalUse.class)
     public static StaplerRequest2.RenderOnDemandParameters createRenderOnDemandProxyParameters(JellyContext context, String attributesToCapture) {
-        return Stapler.getCurrentRequest2().createJavaScriptProxyParameters(new RenderOnDemandClosure(context, attributesToCapture));
+
+        final StaplerRequest2 request = Stapler.getCurrentRequest2();
+        final StaplerRequest2.RenderOnDemandParameters parameters = request.createJavaScriptProxyParameters(new RenderOnDemandClosure(context, attributesToCapture));
+
+        Object attribute = request.getAttribute("renderOnDemandProxies");
+        if (attribute instanceof List list) {
+            list.add(parameters.releaseUrl);
+        } else {
+            attribute = new ArrayList<>(List.of(parameters.releaseUrl));
+        }
+        request.setAttribute("renderOnDemandProxies", attribute);
+        return parameters;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static JSONArray getRenderOnDemandProxyReleaseURLs() {
+        final StaplerRequest2 request = Stapler.getCurrentRequest2();
+        Object attribute = request.getAttribute("renderOnDemandProxies");
+        JSONArray urls = new JSONArray();
+        if (attribute instanceof List list) {
+            urls.addAll(list);
+        }
+        return urls;
     }
 
     public static String getCurrentDescriptorByNameUrl() {

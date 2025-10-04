@@ -41,6 +41,7 @@ THE SOFTWARE.
     <x:attribute name="class">render-on-demand ${attrs.clazz}</x:attribute>
     <x:attribute name="data-proxy-method">${parameters.proxyMethod}</x:attribute>
     <x:attribute name="data-proxy-url">${parameters.url}</x:attribute>
+    <x:attribute name="data-release-url">${parameters.releaseUrl}</x:attribute>
     <x:attribute name="data-proxy-crumb">${parameters.crumb}</x:attribute>
     <x:attribute name="data-proxy-url-names">${parameters.urlNames}</x:attribute>
   </x:element>
