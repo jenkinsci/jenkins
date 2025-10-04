@@ -29,6 +29,8 @@ import static jakarta.servlet.http.HttpServletResponse.SC_CONFLICT;
 import static jakarta.servlet.http.HttpServletResponse.SC_CREATED;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -60,6 +62,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.ParameterizedDetail;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
@@ -561,6 +566,25 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             return !isDisabled() && !((Job) this).isHoldOffBuildUntilSave();
         }
 
+        @Extension
+        final class ParameterizedDetailFactory extends DetailFactory<Run> {
+
+            @Override
+            public Class<Run> type() {
+                return Run.class;
+            }
+
+            @NonNull
+            @Override public List<? extends Detail> createFor(@NonNull Run target) {
+                var action = target.getAction(ParametersAction.class);
+
+                if (action == null || action.getParameters().isEmpty()) {
+                    return List.of();
+                }
+
+                return List.of(new ParameterizedDetail(target));
+            }
+        }
     }
 
 }

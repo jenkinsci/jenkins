@@ -224,16 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Example for Maven project
         // <div class="icon"><img src="/jenkins/plugin/maven-plugin/images/48x48/mavenmoduleset.png"></div>
       } else {
-        var colors = [
-          "c-49728B",
-          "c-335061",
-          "c-D33833",
-          "c-6D6B6D",
-          "c-6699CC",
-        ];
-        var desc = elem.description || "";
         var name = elem.displayName;
-        var colorClass = colors[desc.length % 4];
         var aName = name.split(" ");
         var a = name.substring(0, 1);
         var b =
@@ -247,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
         spanFakeImgB.className = "b";
         spanFakeImgB.innerText = b;
         iconDiv.appendChild(spanFakeImgB);
-        iconDiv.className = colorClass + " default-icon";
+        iconDiv.className = "default-icon";
 
         // Example for MockFolder
         // <div class="default-icon c-49728B"><span class="a">M</span><span class="b">o</span></div>
