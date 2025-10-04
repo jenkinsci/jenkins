@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:x="jelly:xml" xmlns:d="jelly:define">
   <st:documentation>
     A wrappable bar of details about the given object.
 
@@ -51,5 +51,6 @@ THE SOFTWARE.
         </st:include>
       </j:forEach>
     </j:forEach>
+    <d:invokeBody />
   </div>
 </j:jelly>

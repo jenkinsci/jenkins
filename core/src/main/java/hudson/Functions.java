@@ -2621,7 +2621,7 @@ public class Functions {
 
         for (Map.Entry<DetailGroup, List<Detail>> entry : result.entrySet()) {
             List<Detail> detailList = entry.getValue();
-            detailList.sort(Comparator.comparingInt(Detail::getOrder));
+            detailList.sort(Comparator.comparingInt(Detail::getOrder).reversed());
         }
 
         return result;
