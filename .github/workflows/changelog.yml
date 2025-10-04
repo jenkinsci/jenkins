@@ -24,7 +24,7 @@ jobs:
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - name: Generate GitHub Release Draft
         id: release-drafter
-        uses: release-drafter/release-drafter@v6
+        uses: release-drafter/release-drafter@b1476f6e6eb133afa41ed8589daba6dc69b4d3f5 # v6.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'jenkinsci'
     steps:
-      - uses: tibdex/github-app-token@v2
+      - uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
         id: generate-token
         with:
           app_id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
