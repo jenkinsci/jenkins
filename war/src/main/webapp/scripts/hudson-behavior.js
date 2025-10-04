@@ -1283,7 +1283,7 @@ function rowvgStartEachRow(recursive, f) {
 
   // validate required form values
   Behaviour.specify("INPUT.required", "input-required", ++p, function (e) {
-    registerRegexpValidator(e, /./, "Field is required");
+    registerRegexpValidator(e, /\S/, "Field is required");
   });
 
   // validate form values to be an integer
