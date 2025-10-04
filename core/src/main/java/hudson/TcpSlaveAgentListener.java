@@ -50,6 +50,7 @@ import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.AgentProtocol;
+import jenkins.health.HealthCheck;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.security.stapler.StaplerAccessibleType;
@@ -445,4 +446,14 @@ public final class TcpSlaveAgentListener extends Thread {
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     @Restricted(NoExternalUse.class)
     public static Integer CLI_PORT = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName() + ".port");
+
+    @Extension
+    public static final class EnforcedPortHealthCheck implements HealthCheck {
+        @Override
+        public boolean check() {
+            var j = Jenkins.get();
+            return !j.isSlaveAgentPortEnforced() || j.getSlaveAgentPort() <= 0 || j.getTcpSlaveAgentListener() != null;
+        }
+    }
+
 }
