@@ -314,7 +314,7 @@ public class ListNodesCommand extends CLICommand {
             case ONLINE:
                 return computer.isOnline();
             case OFFLINE:
-                return !computer.isOnline();
+                return computer.isOffline();
             case ALL:
             default:
                 return true;
