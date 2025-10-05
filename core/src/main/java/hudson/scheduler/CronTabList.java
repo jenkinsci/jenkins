@@ -102,7 +102,7 @@ public final class CronTabList {
     /**
      * @param format the crontab entry to be parsed
      * @throws IllegalArgumentException if the crontab entry cannot be parsed
-     * @deprecated ANTLRException - Some plugins might not catch the replacement : IllegalArgumentException & break
+     * @deprecated Throws IllegalArgumentException instead of ANTLRException. Some plugins may not catch the new exception type and could break.
      */
     public static CronTabList create(@NonNull String format, Hash hash) {
         Vector<CronTab> r = new Vector<>();
