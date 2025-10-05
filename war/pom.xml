@@ -422,7 +422,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>709.v6c27075a_b_1c7</version>
+                  <version>711.va_e7ca_4d96f53</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -513,7 +513,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api, checks-api, commons-text-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-lang3-api</artifactId>
-                  <version>3.18.0-98.v3a_674c06072d</version>
+                  <version>3.19.0-104.v12125f33a_255</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
