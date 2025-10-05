@@ -44,15 +44,13 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'jenkinsci'
     steps:
-      - uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
+      - uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         id: generate-token
         with:
-          app_id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
-          installation_retrieval_mode: repository
-          installation_retrieval_payload: jenkins-infra/jenkins.io
-          private_key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
-          repositories: >-
-            ["jenkins.io"]
+          app-id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
+          private-key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
+          owner: jenkins-infra
+          repositories: jenkins.io
       - name: Check out
         uses: actions/checkout@v5
         with:
