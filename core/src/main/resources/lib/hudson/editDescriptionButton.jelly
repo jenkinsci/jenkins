@@ -13,20 +13,36 @@
         <st:attribute name="submissionUrl">
             Optional submission URL. If not specified, will use 'submitDescription'.
         </st:attribute>
+        <st:attribute name="compact">
+            If set, the button becomes compact and the button label hides.
+        </st:attribute>
     </st:documentation>
-    <j:set var="actualDescription" value="${description}" defaultValue="${it.description}"/>
+
+    <j:set var="actualDescription" value="${description}" defaultValue="${it.description}" />
+
+    <j:set var="label">
+        <j:choose>
+            <j:when test="${empty(actualDescription)}">
+                ${%add description}
+            </j:when>
+            <j:otherwise>
+                ${%edit description}
+            </j:otherwise>
+        </j:choose>
+    </j:set>
+
     <l:hasPermission permission="${permission}">
-        <st:adjunct includes="lib.hudson.editable-description"/>
-        <a class="jenkins-button jenkins-hidden" id="description-link" href="editDescription" data-description="${actualDescription}" data-url="${submissionUrl}">
-            <l:icon src="symbol-edit" />
-            <j:choose>
-                <j:when test="${empty(actualDescription)}">
-                    ${%add description}
-                </j:when>
-                <j:otherwise>
-                    ${%edit description}
-                </j:otherwise>
-            </j:choose>
+        <st:adjunct includes="lib.hudson.editable-description" />
+        <a class="jenkins-button jenkins-hidden ${attrs.compact ? 'jenkins-details__button' : ''}"
+             id="description-link"
+             href="editDescription"
+             data-description="${actualDescription}"
+             data-url="${submissionUrl}"
+             tooltip="${attrs.compact ? label : null}">
+            <l:icon src="symbol-description" />
+            <j:if test="${!attrs.compact}">
+                ${label}
+            </j:if>
         </a>
     </l:hasPermission>
 </j:jelly>

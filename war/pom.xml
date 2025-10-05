@@ -318,7 +318,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1355.v45e2ea_65863c</version>
+                  <version>1361.vfed194a_de34a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -332,14 +332,14 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, echarts-api, font-awesome-api, and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>plugin-util-api</artifactId>
-                  <version>6.1167.v022176c7e0ca_</version>
+                  <version>6.1192.v30fe6e2837ff</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of echarts-api and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.8-876.vb_c62a_27d9a_77</version>
+                  <version>5.3.8-895.v4d0d8e47fea_d</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -354,7 +354,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>976.vb_d9493c2eb_09</version>
+                  <version>991.v66c18437d509</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -399,7 +399,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jquery3-api</artifactId>
-                  <version>3.7.1-594.vb_3864f326cf0</version>
+                  <version>3.7.1-619.vdb_10e002501a_</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -407,7 +407,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api and echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>font-awesome-api</artifactId>
-                  <version>7.0.1-859.v128d3a_efb_6e5</version>
+                  <version>7.0.1-872.vb_679b_2c95492</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -415,14 +415,14 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, plugin-util-api, workflow-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>706.v518c5dcb_24c0</version>
+                  <version>710.v3e456cc85233</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>707.v749f968369d4</version>
+                  <version>711.va_e7ca_4d96f53</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -436,7 +436,7 @@ THE SOFTWARE.
                   <!-- detached after 2.16 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>bouncycastle-api</artifactId>
-                  <version>2.30.1.81-264.v95c79c0e772c</version>
+                  <version>2.30.1.82-277.v70ca_0b_877184</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -513,7 +513,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api, checks-api, commons-text-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-lang3-api</artifactId>
-                  <version>3.18.0-98.v3a_674c06072d</version>
+                  <version>3.19.0-104.v12125f33a_255</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -592,7 +592,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.lib</groupId>
                   <artifactId>support-log-formatter</artifactId>
-                  <version>1.3.1</version>
+                  <version>118.v18c3eb_f88f07</version>
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}</outputDirectory>

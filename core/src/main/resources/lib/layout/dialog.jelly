@@ -1,0 +1,48 @@
+<!--
+The MIT License
+
+Copyright (c) 2025 Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+  <st:documentation>
+    <st:attribute name="title" use="required">
+      The title for the dialog.
+    </st:attribute>
+    <st:attribute name="hash">
+      An optional hash for the dialog. When provided, the dialog can be opened and navigated
+      directly using its unique URL hash.
+    </st:attribute>
+
+    A lazy-loaded dialog. Set 'data-type="dialog-opener"' and 'data-dialog-id="${dialogId}"'
+    on your button to open the dialog.
+  </st:documentation>
+
+  <j:set var="dialogId" value="${h.generateId()}" scope="parent" />
+
+  <l:renderOnDemand clazz="dialog-${dialogId}-template dialog-${attrs.hash}-hash" tag="template" capture="it,dialogId">
+    <l:ajax>
+      <template id="dialog-${dialogId}-template" data-title="${attrs.title}" data-dialog-hash="${attrs.hash}">
+        <d:invokeBody />
+      </template>
+    </l:ajax>
+  </l:renderOnDemand>
+</j:jelly>
