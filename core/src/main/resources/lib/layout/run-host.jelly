@@ -41,16 +41,16 @@ THE SOFTWARE.
               <j:if test="${it.object.previousBuild != null}">
                 <a href="${buildUrl.previousBuildUrl}"
                    class="jenkins-button jenkins-button--tertiary"
-                   aria-label="Previous build">
-                  <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" />
+                   aria-label="${%Previous build}">
+                  <l:icon class="symbol-chevron-back" />
                 </a>
               </j:if>
               <h1>${it.object.displayName}</h1>
               <j:if test="${it.object.nextBuild != null}">
                 <a href="${buildUrl.nextBuildUrl}"
                    class="jenkins-button jenkins-button--tertiary"
-                   aria-label="Next build">
-                  <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" />
+                   aria-label="${%Next build}">
+                  <l:icon class="symbol-chevron-forward" />
                 </a>
               </j:if>
             </div>
@@ -62,15 +62,6 @@ THE SOFTWARE.
             </div>
 
             <div class="jenkins-app-bar__controls">
-              <j:if test="${it.object.building}">
-                  <j:if test="${it.object.parent.hasAbortPermission()}">
-                    <button class="jenkins-button jenkins-!-error-color">
-                      <l:icon src="symbol-stop-circle-outline plugin-ionicons-api"/>
-                      ${%Cancel}
-                    </button>
-                  </j:if>
-              </j:if>
-
               <l:overflowButton>
                 <dd:custom>
                   <div class="app-build-overflow">

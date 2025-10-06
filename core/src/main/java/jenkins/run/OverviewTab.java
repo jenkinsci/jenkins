@@ -35,7 +35,7 @@ public class OverviewTab extends Tab {
 
     @Override
     public String getIconFileName() {
-        return "symbol-grid-outline plugin-ionicons-api";
+        return "symbol-overview";
     }
 
     @Override
