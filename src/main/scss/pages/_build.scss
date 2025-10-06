@@ -1,4 +1,5 @@
 @use "../base/breakpoints";
+@use "../components/dialogs";
 
 .build-caption-progress-container {
   display: flex;
@@ -93,6 +94,20 @@
   }
 }
 
+.app-build-overflow {
+  #side-panel {
+    width: 250px !important;
+
+    #tasks {
+      margin: 0;
+
+      .task {
+        margin-left: unset !important;
+      }
+    }
+  }
+}
+
 .app-console-output-widget {
   overflow-y: auto;
   margin: 0 -1rem -1rem;
@@ -105,5 +120,15 @@
     padding: 0;
     line-height: 1.75;
     font-size: var(--font-size-sm);
+  }
+}
+
+.app-parameters-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: dialogs.$jenkins-dialog-padding;
+
+  & > * {
+    margin-bottom: 0;
   }
 }

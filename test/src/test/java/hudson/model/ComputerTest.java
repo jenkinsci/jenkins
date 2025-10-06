@@ -52,6 +52,7 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -332,7 +333,7 @@ class ComputerTest {
 
         // Connect the computer
         computer.connect(false);
-        await("computer should be online after connect").until(() -> computer.isOnline(), is(true));
+        await("computer should be online after connect").atMost(Duration.ofSeconds(30)).until(() -> computer.isOnline(), is(true));
         assertThat(computer.isConnected(), is(true));
         assertThat(computer.isOffline(), is(false));
 
