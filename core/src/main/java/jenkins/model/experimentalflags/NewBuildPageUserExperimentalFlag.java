@@ -26,8 +26,11 @@ package jenkins.model.experimentalflags;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Extension
+@Restricted(NoExternalUse.class)
 public class NewBuildPageUserExperimentalFlag extends BooleanUserExperimentalFlag {
     public NewBuildPageUserExperimentalFlag() {
         super("new-build-page.flag");

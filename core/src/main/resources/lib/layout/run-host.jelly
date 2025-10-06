@@ -57,7 +57,7 @@ THE SOFTWARE.
 
             <j:set var="url" value="${h.getNearestAncestorUrl(request2, it.object)}"/>
 
-            <div>
+            <div class="new-tabss">
               <l:tabs items="${it.object.runTabs}" />
             </div>
 

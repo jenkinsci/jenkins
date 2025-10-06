@@ -26,9 +26,11 @@ body:has(.build-bar) {
 
 .build-bar {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
   min-height: 2.875rem;
   margin-top: -5px;
   padding-bottom: 0.75rem;
@@ -44,21 +46,29 @@ body:has(.build-bar) {
   }
 
   .idkyet {
-    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    justify-content: start;
+    flex: 1;
   }
 
-  & > div {
+  .new-tabss {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex: 0;
   }
 
   .jenkins-app-bar__controls {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    justify-self: end;
+    justify-content: end;
+    flex: 1;
     gap: 0.75rem;
+
+    @media (width <= 600px) {
+      justify-content: stretch;
+    }
   }
 }
 
