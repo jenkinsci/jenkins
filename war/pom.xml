@@ -318,7 +318,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1359.v71188fea_0df5</version>
+                  <version>1361.vfed194a_de34a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -354,7 +354,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>989.va_20a_1a_57710a_</version>
+                  <version>991.v66c18437d509</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -362,14 +362,14 @@ THE SOFTWARE.
                   <!-- dependency of junit and echarts-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jackson2-api</artifactId>
-                  <version>2.18.3-402.v74c4eb_f122b_2</version>
+                  <version>2.19.2-408.v18248a_324cfe</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>6.0.0-1146.v5c8f3b_8f0573</version>
+                  <version>6.0.0-1165.vd1283a_3e37d4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -422,7 +422,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>709.v6c27075a_b_1c7</version>
+                  <version>711.va_e7ca_4d96f53</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -513,7 +513,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api, checks-api, commons-text-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-lang3-api</artifactId>
-                  <version>3.18.0-98.v3a_674c06072d</version>
+                  <version>3.19.0-104.v12125f33a_255</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
