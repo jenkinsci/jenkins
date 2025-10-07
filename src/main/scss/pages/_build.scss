@@ -132,16 +132,19 @@
   }
 }
 
-body:has(.build-bar) {
-  // make this a linear gradient, so overflow is the right colour
-  background-color: color-mix(
+body:has(.app-build-bar) {
+  --top: color-mix(in sRGB, var(--text-color-secondary) 4%, var(--background));
+  --bottom: color-mix(
     in sRGB,
-    var(--text-color-secondary) 3%,
+    var(--text-color-secondary) 2%,
     var(--background)
   );
+
+  background: linear-gradient(var(--top), var(--bottom));
+  background-attachment: fixed;
 }
 
-.build-bar {
+.app-build-bar {
   position: relative;
   display: flex;
   justify-content: space-between;
@@ -162,21 +165,21 @@ body:has(.build-bar) {
     z-index: -1;
   }
 
-  .idkyet {
+  .app-build-bar__content {
     display: inline-flex;
     align-items: center;
     justify-content: start;
     flex: 1;
   }
 
-  .new-tabss {
+  .app-build-bar__tabs {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0;
   }
 
-  .jenkins-app-bar__controls {
+  .app-build-bar__controls {
     display: inline-flex;
     align-items: center;
     justify-content: end;
@@ -189,13 +192,13 @@ body:has(.build-bar) {
   }
 }
 
-.idkyet {
+.app-build-bar__content {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1rem;
 
-  .buildicon {
+  .app-build-bar__content__headline {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -239,7 +242,7 @@ body:has(.build-bar) {
   }
 }
 
-.plugin-content {
+.app-build-content {
   display: flex;
   flex-direction: column;
   padding: 0 var(--section-padding);
@@ -247,11 +250,5 @@ body:has(.build-bar) {
 
   .jenkins-app-bar {
     margin-block: 1.0625rem;
-  }
-
-  // TODO - Make all pres look like this
-  & > pre {
-    background: var(--card-background);
-    border: var(--card-border-width) solid var(--card-border-color);
   }
 }

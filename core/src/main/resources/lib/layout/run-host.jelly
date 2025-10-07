@@ -32,9 +32,9 @@ THE SOFTWARE.
         <l:main-panel>
           <j:set var="buildUrl" value="${h.decompose(request2)}" />
 
-          <div class="build-bar">
-            <div class="idkyet">
-              <a class="buildicon" href="${rootURL}/${it.object.url}" tabindex="-1">
+          <div class="app-build-bar">
+            <div class="app-build-bar__content">
+              <a class="app-build-bar__content__headline" href="${rootURL}/${it.object.url}" tabindex="-1">
                 <l:icon alt="${it.iconColor.description}"
                         src="symbol-status-${it.object.iconColor.iconName}" />
               </a>
@@ -57,11 +57,11 @@ THE SOFTWARE.
 
             <j:set var="url" value="${h.getNearestAncestorUrl(request2, it.object)}"/>
 
-            <div class="new-tabss">
+            <div class="app-build-bar__tabs">
               <l:tabs items="${it.object.runTabs}" />
             </div>
 
-            <div class="jenkins-app-bar__controls">
+            <div class="app-build-bar__controls">
               <l:overflowButton>
                 <dd:custom>
                   <div class="app-build-overflow">
@@ -75,7 +75,7 @@ THE SOFTWARE.
             <st:adjunct includes="lib.hudson.build-caption" />
           </div>
 
-          <div class="plugin-content">
+          <div class="app-build-content">
             <d:invokeBody />
           </div>
         </l:main-panel>
