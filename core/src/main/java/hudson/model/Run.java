@@ -41,7 +41,6 @@ import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.ExtensionComponent;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
@@ -122,7 +121,6 @@ import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.Tab;
-import jenkins.model.TransientActionFactory;
 import jenkins.model.details.CauseDetail;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
@@ -2719,26 +2717,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Restricted(NoExternalUse.class)
     public List<Tab> getRunTabs() {
-        List<Tab> result = new ArrayList<>();
-
-        ExtensionList<TransientActionFactory> factories = ExtensionList.lookup(TransientActionFactory.class);
-        factories.getComponents().stream()
-                .filter(c -> {
-                    TransientActionFactory f = c.getInstance();
-                    return f.type().isAssignableFrom(getClass());
-                })
-                .sorted(Comparator.comparingDouble(e -> ((ExtensionComponent<?>) e).ordinal()).reversed()) // higher ordinal first
-                .forEach(c -> {
-                    TransientActionFactory f = c.getInstance();
-                    Collection<? extends Action> created = f.createFor(this);
-                    for (Action a : created) {
-                        if (Tab.class.isInstance(a)) {
-                            result.add(Tab.class.cast(a));
-                        }
-                    }
-                });
-        result.addAll(Util.filter(getActions(), Tab.class));
-
-        return Collections.unmodifiableList(result);
+        return Collections.unmodifiableList(Util.filter(getAllActions(), Tab.class));
     }
 }
