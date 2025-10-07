@@ -1041,6 +1041,15 @@ function renderOnDemand(e, callback, noBehaviour) {
   });
 }
 
+window.addEventListener("pagehide", function () {
+  let element = document.querySelector("#render-on-demand-proxies-release");
+  let jsonString = element.dataset.proxies;
+  let json = JSON.parse(jsonString);
+  json.forEach(function (url) {
+    navigator.sendBeacon(url);
+  });
+});
+
 /**
  * Finds all the script tags
  */
