@@ -2714,12 +2714,13 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
-    // TODO - refine/remove? actions arent ordered correctly without this
-    private <T extends Action> List<T> getActionsByOrdinal(Class<T> type) {
-        // start with persisted actions only
-        List<T> result = new ArrayList<>();
+    /**
+     * Retrieves the tabs for a given run
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Tab> getRunTabs() {
+        List<Tab> result = new ArrayList<>();
 
-        // sort factories by ordinal descending and collect their actions
         ExtensionList<TransientActionFactory> factories = ExtensionList.lookup(TransientActionFactory.class);
         factories.getComponents().stream()
                 .filter(c -> {
@@ -2731,22 +2732,13 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     TransientActionFactory f = c.getInstance();
                     Collection<? extends Action> created = f.createFor(this);
                     for (Action a : created) {
-                        if (type.isInstance(a)) {
-                            result.add(type.cast(a));
+                        if (Tab.class.isInstance(a)) {
+                            result.add(Tab.class.cast(a));
                         }
                     }
                 });
-
-        result.addAll(Util.filter(getActions(), type));
+        result.addAll(Util.filter(getActions(), Tab.class));
 
         return Collections.unmodifiableList(result);
-    }
-
-    /**
-     * TODO
-     */
-    @Restricted(NoExternalUse.class)
-    public List<Tab> getRunTabs() {
-        return getActionsByOrdinal(Tab.class);
     }
 }
