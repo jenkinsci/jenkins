@@ -29,7 +29,8 @@ stage('Record build') {
         /*
          * TODO Add the commits of the transitive closure of the Jenkins WAR under test to this build.
          */
-        def launchableName = env.BUILD_TAG // .replaceAll('%[0-9A-F]{2}', '-') // Launchable rejects '%2F' in build name
+        // Replace URL encoded characters with '-' because Launchable rejects '%2F' in build name
+        def launchableName = env.BUILD_TAG.replaceAll('(%[0-9A-Fa-f]{2})+', '-')
         sh "launchable verify && launchable record build --name ${launchableName} --source jenkinsci/jenkins=."
         axes.values().combinations {
           def (platform, jdk) = it
