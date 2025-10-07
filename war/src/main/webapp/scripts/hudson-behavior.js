@@ -821,16 +821,16 @@ function registerMinMaxValidator(e) {
     }
 
     if (isInteger(this.value)) {
+      const valueInt = parseInt(this.value);
+
       // Ensure the value is an integer
       if (min !== null && isInteger(min) && max !== null && isInteger(max)) {
         // Both min and max attributes are available
-
-        if (min <= max) {
+        const minInt = parseInt(min);
+        const maxInt = parseInt(max);
+        if (minInt <= maxInt) {
           // Add the validator if min <= max
-          if (
-            parseInt(min) > parseInt(this.value) ||
-            parseInt(this.value) > parseInt(max)
-          ) {
+          if (minInt > valueInt || valueInt > maxInt) {
             // The value is out of range
             updateValidationArea(
               this.targetElement,
@@ -850,7 +850,8 @@ function registerMinMaxValidator(e) {
       ) {
         // There is only 'min' available
 
-        if (parseInt(min) > parseInt(this.value)) {
+        const minInt = parseInt(min);
+        if (minInt > valueInt) {
           updateValidationArea(
             this.targetElement,
             `<div class="error">This value should be larger than ${min}</div>`,
@@ -868,7 +869,8 @@ function registerMinMaxValidator(e) {
       ) {
         // There is only 'max' available
 
-        if (parseInt(max) < parseInt(this.value)) {
+        const maxInt = parseInt(max);
+        if (maxInt < valueInt) {
           updateValidationArea(
             this.targetElement,
             `<div class="error">This value should be less than ${max}</div>`,

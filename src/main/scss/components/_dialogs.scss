@@ -1,5 +1,4 @@
-$jenkins-dialog-padding: 1.5rem;
-$jenkins-dialog-font-size: 0.9375rem;
+$jenkins-dialog-padding: 1.25rem;
 
 .jenkins-dialog {
   border-radius: 1rem;
@@ -25,12 +24,13 @@ $jenkins-dialog-font-size: 0.9375rem;
   }
 
   &__title {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: var(--font-bold-weight);
     padding: 0 $jenkins-dialog-padding;
     color: var(--text-color);
     overflow-wrap: anywhere;
     text-box: cap alphabetic;
+    margin-top: 0.5625rem;
   }
 
   &__contents {
@@ -38,7 +38,6 @@ $jenkins-dialog-font-size: 0.9375rem;
     overflow-wrap: break-word;
     padding: 0 $jenkins-dialog-padding;
     max-height: 75vh;
-    font-size: $jenkins-dialog-font-size;
     color: var(--text-color-secondary);
 
     &--modal {
@@ -72,7 +71,7 @@ $jenkins-dialog-font-size: 0.9375rem;
   }
 
   &__subtitle {
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
     font-weight: var(--font-bold-weight);
     color: var(--text-color-secondary);
     padding: 0;
@@ -81,10 +80,11 @@ $jenkins-dialog-font-size: 0.9375rem;
 
   &__close-button {
     position: absolute;
-    top: $jenkins-dialog-padding - 0.5rem;
-    right: $jenkins-dialog-padding - 0.5rem;
-    aspect-ratio: 1;
+    top: $jenkins-dialog-padding;
+    right: $jenkins-dialog-padding;
     padding: 0;
+    width: 2rem;
+    min-height: 2rem;
     border-radius: 100%;
   }
 

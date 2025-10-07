@@ -9,11 +9,11 @@ permissions:
 
 jobs:
   main:
-    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && github.repository_owner == 'jenkinsci' }}
     runs-on: ubuntu-latest
     steps:
       - name: Label conflicting PRs
-        uses: eps1lon/actions-label-merge-conflict@v3.0.3
+        uses: eps1lon/actions-label-merge-conflict@1df065ebe6e3310545d4f4c4e862e43bdca146f0 # v3.0.3
         with:
           dirtyLabel: "unresolved-merge-conflict"
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
