@@ -37,6 +37,7 @@ public abstract class CauseOfBlockage {
 
     /**
      * @return {@code true} if the blockage is fatal and the item should be removed from the queue.
+     * @since TODO
      */
     public boolean isFatal() {
         return false;
