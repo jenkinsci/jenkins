@@ -36,6 +36,13 @@ public abstract class CauseOfBlockage {
     public abstract String getShortDescription();
 
     /**
+     * @return {@code true} if the blockage is fatal and the item should be removed from the queue.
+     */
+    public boolean isFatal() {
+        return false;
+    }
+
+    /**
      * Report a line to the listener about this cause.
      */
     public void print(TaskListener listener) {
