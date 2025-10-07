@@ -33,7 +33,7 @@ THE SOFTWARE.
     <j:arg value="${it}"/>
   </j:new>
 
-  <l:run-host>
+  <l:run-subpage>
     <l:app-bar title="${%Console}">
       <a class="jenkins-button" href="consoleText" download="${it.object.displayName}.txt">
         <l:icon src="symbol-download" />
@@ -47,5 +47,5 @@ THE SOFTWARE.
 
     <j:set var="it" value="${it.object}" />
     <st:include page="console-log.jelly" />
-  </l:run-host>
+  </l:run-subpage>
 </j:jelly>

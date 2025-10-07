@@ -23,7 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:dd="/lib/layout/dropdowns" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:dd="/lib/layout/dropdowns"
+         xmlns:st="jelly:stapler">
+  <st:documentation>
+    A reusable container for subpages relating to Runs in Jenkins.
+    Renders a tabbed layout for runs, including build status and actions.
+  </st:documentation>
+
   <l:layout title="${it.displayName} - ${it.object.displayName}">
     <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
 

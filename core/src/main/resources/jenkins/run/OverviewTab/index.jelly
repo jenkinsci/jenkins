@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:run-host>
+  <l:run-subpage>
     <l:app-bar title="${it.displayName}" headingLevel="h2">
       <l:details-bar it="${it.object}">
         <t:editDescriptionButton permission="${it.object.UPDATE}"
@@ -53,5 +53,5 @@ THE SOFTWARE.
         <st:include page="main.jelly" optional="true" />
       </l:card>
     </div>
-  </l:run-host>
+  </l:run-subpage>
 </j:jelly>
