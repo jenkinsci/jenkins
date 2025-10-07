@@ -29,14 +29,15 @@ stage('Record build') {
         /*
          * TODO Add the commits of the transitive closure of the Jenkins WAR under test to this build.
          */
-        sh 'launchable verify && launchable record build --name ${BUILD_TAG} --source jenkinsci/jenkins=.'
+        def launchableName = env.BUILD_TAG // .replaceAll('%[0-9A-F]{2}', '-') // Launchable rejects '%2F' in build name
+        sh "launchable verify && launchable record build --name ${launchableName} --source jenkinsci/jenkins=."
         axes.values().combinations {
           def (platform, jdk) = it
           if (platform == 'windows' && jdk != 17) {
             return // unnecessary use of hardware
           }
           def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
-          sh "launchable record session --build ${env.BUILD_TAG} --flavor platform=${platform} --flavor jdk=${jdk} >${sessionFile}"
+          sh "launchable record session --build ${launchableName} --flavor platform=${platform} --flavor jdk=${jdk} >${sessionFile}"
           stash name: sessionFile, includes: sessionFile
         }
       }
