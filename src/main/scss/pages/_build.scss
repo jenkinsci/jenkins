@@ -135,9 +135,9 @@
 body:has(.build-bar) {
   // make this a linear gradient, so overflow is the right colour
   background-color: color-mix(
-                  in sRGB,
-                  var(--text-color-secondary) 3%,
-                  var(--background)
+    in sRGB,
+    var(--text-color-secondary) 3%,
+    var(--background)
   );
 }
 
@@ -221,9 +221,9 @@ body:has(.build-bar) {
 
     &:not(:hover) {
       color: color-mix(
-                      in sRGB,
-                      var(--text-color-secondary) 75%,
-                      transparent
+        in sRGB,
+        var(--text-color-secondary) 75%,
+        transparent
       ) !important;
     }
 
