@@ -176,7 +176,7 @@ public class ConsoleAnnotatorTest {
             if (streaming) {
                 var ct = p.getWebResponse().getResponseHeaderValue("Content-Type");
                 assertTrue(ct.matches("^multipart/form-data;boundary=[a-f0-9-]{36};charset=utf-8$"));
-                var boundary = ct.substring(29, 29+36).getBytes();
+                var boundary = ct.substring(29, 29 + 36).getBytes();
                 var mp = new MultipartInput.Builder()
                         .setBoundary(boundary)
                         .setInputStream(p.getWebResponse().getContentAsStream())
