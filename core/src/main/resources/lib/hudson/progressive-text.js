@@ -23,7 +23,7 @@ Behaviour.specify(
     function fetchNext(e, href, onFinishEvent) {
       var headers = crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
-        "Accept": "multipart/form-data, */*",
+        Accept: "multipart/form-data, */*",
       });
       if (e.consoleAnnotator !== undefined) {
         headers["X-ConsoleAnnotator"] = e.consoleAnnotator;
