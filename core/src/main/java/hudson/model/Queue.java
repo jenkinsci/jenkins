@@ -2672,15 +2672,7 @@ public class Queue extends ResourceController implements Saveable {
      * {@link Item} in the {@link Queue#blockedProjects} stage.
      */
     public final class BlockedItem extends NotWaitingItem {
-        private transient CauseOfBlockage causeOfBlockage = null;
-
-        public BlockedItem(WaitingItem wi) {
-            this(wi, null);
-        }
-
-        public BlockedItem(NotWaitingItem ni) {
-            this(ni, null);
-        }
+        private final transient CauseOfBlockage causeOfBlockage;
 
         BlockedItem(WaitingItem wi, CauseOfBlockage causeOfBlockage) {
             super(wi);
@@ -2689,10 +2681,6 @@ public class Queue extends ResourceController implements Saveable {
 
         BlockedItem(NotWaitingItem ni, CauseOfBlockage causeOfBlockage) {
             super(ni);
-            this.causeOfBlockage = causeOfBlockage;
-        }
-
-        void setCauseOfBlockage(CauseOfBlockage causeOfBlockage) {
             this.causeOfBlockage = causeOfBlockage;
         }
 
