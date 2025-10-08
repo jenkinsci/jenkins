@@ -69,6 +69,6 @@ THE SOFTWARE.
     </ul>
     This streaming mode uses larger disk reads (64kiB instead of 1KiB) and does not normalize line endings to CRLF (previously needed for for Internet Explorer).
     <br />
-    The optional parameter <code>?searchNewLineUntil=previousStart</code> can be used when fetching from bytes from the start of the log to search for the first new line in the prior content. Example: Request last 150KiB from a 3MiB file, it might return 3MiB-142KiB ~ 3000000 due to new line detection when tailing. Then request one more MiB with <code>?start=2000000</code> and <code>?searchNewLineUntil=3000000</code>. This will guarantee that the new line detection stops at the start of the last response and does not return from the same "first" new line it can find.
+    The optional parameter <code>?searchNewLineUntil=previousStart</code> can be used when fetching more bytes from the start of the log to search for the first new line in the prior content. Example: Request last 150KiB from a 3MiB file, it might return 3MiB-142KiB ~ 3000000 due to new line detection when tailing. Then request one more MiB with <code>?start=2000000</code> and <code>?searchNewLineUntil=3000000</code>. This will guarantee that the new line detection stops at the start of the last response and does not return from the same "first" new line it can find.
   </p>
 </j:jelly>

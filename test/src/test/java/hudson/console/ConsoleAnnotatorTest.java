@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -164,7 +165,7 @@ public class ConsoleAnnotatorTest {
         String next() throws IOException {
             WebRequest req = new WebRequest(new URL(r.getURL() + run.getUrl() + "/logText/progressiveHtml" + (start != null ? "?start=" + start : "")));
             req.setEncodingType(null);
-            HashMap<String, String> headers = new HashMap<>();
+            Map<String, String> headers = new HashMap<>();
             if (consoleAnnotator != null)
                 headers.put("X-ConsoleAnnotator", consoleAnnotator);
             if (streaming) headers.put("Accept", "multipart/form-data");
@@ -299,7 +300,7 @@ public class ConsoleAnnotatorTest {
     /**
      * Place {@link ConsoleNote}s and make sure it works.
      */
-    void consoleAnnotationWith(boolean streaming, String crlf) throws Exception {
+    void consoleAnnotationWith(boolean streaming, String lineEndings) throws Exception {
         final SequenceLock lock = new SequenceLock();
         JenkinsRule.WebClient wc = r.createWebClient();
         FreeStyleProject p = r.createFreeStyleProject();
@@ -334,10 +335,10 @@ public class ConsoleAnnotatorTest {
         plc.next();
 
         lock.phase(3);
-        assertEquals("abc$$$def" + crlf, plc.next());
+        assertEquals("abc$$$def" + lineEndings, plc.next());
 
         lock.phase(5);
-        assertEquals("123$$$456$$$789" + crlf, plc.next());
+        assertEquals("123$$$456$$$789" + lineEndings, plc.next());
 
         lock.done();
 

@@ -60,14 +60,14 @@ Behaviour.specify(
           }
           return;
         }
-        var parse;
+        let parse;
         if (
           rsp.headers.get("Content-Type")?.startsWith("multipart/form-data")
         ) {
           parse = rsp.formData().then((data) => {
-            var text = data.get("text");
-            var meta = JSON.parse(data.get("meta"));
-            return Object.assign({ text }, meta);
+            const text = data.get("text");
+            const meta = JSON.parse(data.get("meta"));
+            return { text, ...meta };
           });
         } else {
           parse = rsp.text().then((text) => {
