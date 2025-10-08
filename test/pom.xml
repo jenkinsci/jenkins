@@ -52,9 +52,6 @@ THE SOFTWARE.
 
     <!-- Filled in by maven-hpi-plugin with "-javaagent:/path/to/mockito-core-<version>.jar" -->
     <jenkins.javaAgent />
-
-    <!-- Faster incremental build https://github.com/jenkinsci/jenkins/pull/11071#issuecomment-3368149474 -->
-    <test>hudson.AboutJenkinsTest</test>
   </properties>
 
   <dependencyManagement>
