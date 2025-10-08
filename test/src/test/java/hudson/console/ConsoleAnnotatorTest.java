@@ -216,7 +216,7 @@ public class ConsoleAnnotatorTest {
 
     @Test
     void progressiveOutputStreaming() throws Exception {
-        progressiveOutputWith(true, "\n");
+        progressiveOutputWith(true, System.lineSeparator());
     }
 
     void progressiveOutputWith(boolean streaming, String linefeed) throws Exception {
@@ -294,7 +294,7 @@ public class ConsoleAnnotatorTest {
 
     @Test
     void consoleAnnotationStreaming() throws Exception {
-        consoleAnnotationWith(true, "\n");
+        consoleAnnotationWith(true, System.lineSeparator());
     }
 
     /**
