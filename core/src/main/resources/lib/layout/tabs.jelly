@@ -1,9 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
-
-Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
+Copyright (c) 2025, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +22,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Displays the console output
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <j:new className="jenkins.run.ConsoleTab" var="it">
-    <j:arg value="${it}"/>
-  </j:new>
+  <st:documentation>
+    An experimental, internal tab bar. Not to be used outside of core.
 
-  <l:run-subpage>
-    <l:app-bar title="${%Console}">
-      <a class="jenkins-button" href="consoleText" download="${it.object.displayName}.txt">
-        <l:icon src="symbol-download" />
-        ${%Download}
-      </a>
-      <l:copyButton ref="out" label="${%Copy}" />
-      <a class="jenkins-button" href="consoleText">
-        ${%View as plain text}
-      </a>
-    </l:app-bar>
+    <st:attribute name="items" use="required">
+      The object to display details for.
+    </st:attribute>
+  </st:documentation>
 
-    <j:set var="it" value="${it.object}" />
-    <st:include page="console-log.jelly" />
-  </l:run-subpage>
+  <div class="app-build-tabs">
+    <j:forEach var="tab" items="${items}">
+      <a href="${url}/${tab.urlName}"
+         class="jenkins-button ${h.hyperlinkMatchesCurrentPage(tab.urlName ?: url) ? '' : 'jenkins-button--tertiary'}">
+        <j:if test="${tab.iconFileName != null}">
+          <l:icon src="${tab.iconFileName}" />
+        </j:if>
+        ${tab.displayName}
+        <j:if test="${tab.badge != null}">
+          <div class="pill jenkins-!-${tab.badge.severity}-color" aria-label="${tab.badge.tooltip}">
+            ${tab.badge.text}
+          </div>
+        </j:if>
+      </a>
+    </j:forEach>
+  </div>
 </j:jelly>

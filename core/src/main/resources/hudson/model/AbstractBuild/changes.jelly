@@ -26,23 +26,26 @@ THE SOFTWARE.
   Displays the console output
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.fullDisplayName} ${%Changes}">
-    <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Changes}" />
-    <l:main-panel>
-      <t:buildCaption>${%Changes}</t:buildCaption>
-      <j:choose>
-        <j:when test="${it.hasChangeSetComputed()}">
-          <st:include page="index.jelly" it="${it.changeSet}" />
-        </j:when>
-        <j:when test="${it.building}">
-          ${%Not yet determined}
-        </j:when>
-        <j:otherwise>
-          ${%Failed to determine} (<a href="${h.getConsoleUrl(it)}">${%log}</a>)
-        </j:otherwise>
-      </j:choose>
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <j:new className="jenkins.run.ChangesTab" var="it">
+    <j:arg value="${it}"/>
+  </j:new>
+
+  <l:run-subpage>
+    <l:app-bar title="${it.displayName}" headingLevel="h2" />
+
+    <j:set var="it" value="${it.object}" />
+
+    <j:choose>
+      <j:when test="${it.hasChangeSetComputed()}">
+        <st:include page="index.jelly" it="${it.changeSet}" />
+      </j:when>
+      <j:when test="${it.building}">
+        ${%Not yet determined}
+      </j:when>
+      <j:otherwise>
+        ${%Failed to determine} (<a href="${h.getConsoleUrl(it)}">${%log}</a>)
+      </j:otherwise>
+    </j:choose>
+  </l:run-subpage>
 </j:jelly>

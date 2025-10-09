@@ -1,9 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
-
-Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
+Copyright (c) 2025, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +22,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Displays the console output
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <j:new className="jenkins.run.ConsoleTab" var="it">
-    <j:arg value="${it}"/>
-  </j:new>
-
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:run-subpage>
-    <l:app-bar title="${%Console}">
-      <a class="jenkins-button" href="consoleText" download="${it.object.displayName}.txt">
-        <l:icon src="symbol-download" />
-        ${%Download}
-      </a>
-      <l:copyButton ref="out" label="${%Copy}" />
-      <a class="jenkins-button" href="consoleText">
-        ${%View as plain text}
-      </a>
+    <l:app-bar title="${it.displayName}" headingLevel="h2">
+      <l:details-bar it="${it.object}">
+        <t:editDescriptionButton permission="${it.object.UPDATE}"
+                                 compact="true" />
+      </l:details-bar>
     </l:app-bar>
 
     <j:set var="it" value="${it.object}" />
-    <st:include page="console-log.jelly" />
+
+    <t:editableDescription permission="${it.UPDATE}" hideButton="true" />
+
+    <div class="app-build__grid">
+      <j:forEach var="a" items="${it.runTabs}">
+        <st:include page="widget.jelly" from="${a}" optional="true" it="${a}" />
+      </j:forEach>
+
+      <l:card title="Legacy">
+        <table>
+          <j:forEach var="a" items="${it.allActions}">
+            <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+          </j:forEach>
+
+          <st:include page="summary.jelly" optional="true" />
+        </table>
+
+        <st:include page="main.jelly" optional="true" />
+      </l:card>
+    </div>
   </l:run-subpage>
 </j:jelly>
