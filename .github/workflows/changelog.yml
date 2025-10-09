@@ -31,7 +31,7 @@ jobs:
       # used by Oleg N in open graph generator experiment for now
       - name: Generate YAML changelog draft
         id: jenkins-core-changelog-generator
-        uses: jenkinsci/jenkins-core-changelog-generator@master
+        uses: jenkinsci/core-changelog-generator@feb124ed2262f8586ac4561348436afb965812e1 # v2.2.2
         env:
           GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}
       - name: Upload Changelog YAML
@@ -52,7 +52,7 @@ jobs:
           owner: jenkins-infra
           repositories: jenkins.io
       - name: Check out
-        uses: actions/checkout@v5
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0
       - name: Publish jenkins.io changelog draft

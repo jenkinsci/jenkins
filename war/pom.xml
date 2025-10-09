@@ -304,7 +304,7 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>858.vb_b_eb_9a_7ea_99e</version>
+                  <version>867.vc7ec936160ee</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -422,7 +422,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>711.va_e7ca_4d96f53</version>
+                  <version>712.v8846fdd68c88</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -506,7 +506,7 @@ THE SOFTWARE.
                   <!-- dependency of scm-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>asm-api</artifactId>
-                  <version>9.8-163.vb_2a_96d3f9c3c</version>
+                  <version>9.9-185.va_6c6b_3348b_c3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
