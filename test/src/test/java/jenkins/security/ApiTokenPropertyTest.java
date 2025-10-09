@@ -473,7 +473,7 @@ class ApiTokenPropertyTest {
 
         Collection<ApiTokenStore.HashedToken> beforeTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
 
-        String tokenPlainTextValue = "110123456789abcdef0123456789abcdef";
+        String tokenPlainTextValue = "jenkins_apitoken_110123456789abcdef0123456789abcdef";
         apiTokenProperty.addFixedNewToken("fixed-token", tokenPlainTextValue);
 
         Collection<ApiTokenStore.HashedToken> afterTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
@@ -492,10 +492,12 @@ class ApiTokenPropertyTest {
 
         Collection<ApiTokenStore.HashedToken> beforeTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
 
-        checkInvalidTokenValue(apiTokenProperty, "invalid-token: too-long", "110123456789abcdef0123456789abcdefg");
-        checkInvalidTokenValue(apiTokenProperty, "invalid-token: too-short", "110123456789abcdef0123456789abcde");
-        checkInvalidTokenValue(apiTokenProperty, "invalid-token: non-hex", "110123456789abcdef0123456789abcdeg");
-        checkInvalidTokenValue(apiTokenProperty, "invalid-token: invalid-version", "120123456789abcdef0123456789abcdef");
+        checkInvalidTokenValue(apiTokenProperty, "invalid-token: no prefix", "120123456789abcdef0123456789abcdef");
+        checkInvalidTokenValue(apiTokenProperty, "invalid-token: wrong prefix", "jenkins_120123456789abcdef0123456789abcdef");
+        checkInvalidTokenValue(apiTokenProperty, "invalid-token: too-long", "jenkins_apitoken_110123456789abcdef0123456789abcdefg");
+        checkInvalidTokenValue(apiTokenProperty, "invalid-token: too-short", "jenkins_apitoken_110123456789abcdef0123456789abcde");
+        checkInvalidTokenValue(apiTokenProperty, "invalid-token: non-hex", "jenkins_apitoken_110123456789abcdef0123456789abcdeg");
+        checkInvalidTokenValue(apiTokenProperty, "invalid-token: invalid-version", "jenkins_apitoken_120123456789abcdef0123456789abcdef");
 
         Collection<ApiTokenStore.HashedToken> afterTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
         // ensure there is no new tokens
@@ -549,7 +551,7 @@ class ApiTokenPropertyTest {
         tokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
         assertThat(tokenList, empty());
 
-        String tokenPlainTextValue = "110123456789abcdef0123456789abcdef";
+        String tokenPlainTextValue = "jenkins_apitoken_110123456789abcdef0123456789abcdef";
         apiTokenProperty.addFixedNewToken("fixed-token", tokenPlainTextValue);
         checkTokenIsWorking(user.getId(), tokenPlainTextValue);
         apiTokenProperty.revokeAllTokens();
@@ -585,7 +587,7 @@ class ApiTokenPropertyTest {
         assertThat(tokenList, hasSize(1));
         assertEquals(token1.tokenUuid, tokenList.iterator().next().getUuid());
 
-        String tokenPlainTextValue = "110123456789abcdef0123456789abcdef";
+        String tokenPlainTextValue = "jenkins_apitoken_110123456789abcdef0123456789abcdef";
         apiTokenProperty.addFixedNewToken("fixed-token", tokenPlainTextValue);
         TokenUuidAndPlainValue token4 = apiTokenProperty.generateNewToken("token4");
         apiTokenProperty.revokeAllTokensExceptOne(token4.tokenUuid);
