@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2018 CloudBees, Inc.
+ * Copyright (c) 2025, Jan Faracik
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,29 @@
  * THE SOFTWARE.
  */
 
-package jenkins.util.java;
+package jenkins.run;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import hudson.model.Actionable;
+import jenkins.model.Tab;
 
-import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.test.For;
+public class OverviewTab extends Tab {
 
-@For(JavaUtils.class)
-class JavaUtilsTest {
-
-    @Test
-    void verifyJava8() {
-        assumeTrue(System.getProperty("java.version").startsWith("1."), "Test is for Java 8 only");
-        assertFalse(JavaUtils.isRunningWithPostJava8(), "isRunningWithPostJava8() should return false on Java 8 and below");
+    public OverviewTab(Actionable object) {
+        super(object);
     }
 
-    @Test
-    void verifyPostJava8() {
-        assumeFalse(System.getProperty("java.version").startsWith("1."), "Test is for Java 9+ only");
-        assertTrue(JavaUtils.isRunningWithPostJava8(), "isRunningWithPostJava8() should return true on Java 9 and above");
+    @Override
+    public String getIconFileName() {
+        return "symbol-overview";
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Overview";
+    }
+
+    @Override
+    public String getUrlName() {
+        return null;
     }
 }

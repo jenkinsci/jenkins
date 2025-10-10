@@ -84,7 +84,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>7.0.1-872.vb_679b_2c95492</version>
+        <version>7.1.0-882.v1dfb_771e3278</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -121,7 +121,7 @@ THE SOFTWARE.
         <!-- Required by workflow-support -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>scm-api</artifactId>
-        <version>711.va_e7ca_4d96f53</version>
+        <version>712.v8846fdd68c88</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
@@ -192,7 +192,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2505.v4a_e1e6f69d4e</version>
+      <version>2508.v45936ef31cd7</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -232,7 +232,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.1053.vd62fb_b_f7367b_</version>
+      <version>6.1062.v2877b_d6b_b_eeb_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -262,7 +262,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>858.vb_b_eb_9a_7ea_99e</version>
+      <version>870.v9db_fcfc2f45b_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
