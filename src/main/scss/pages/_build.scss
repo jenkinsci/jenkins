@@ -11,7 +11,7 @@
 
 .app-build__grid {
   gap: calc(var(--section-padding) / 2);
-  margin-bottom: var(--section-padding);
+  margin-bottom: calc(var(--section-padding) * -0.5);
 
   .jenkins-card {
     margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
@@ -31,14 +31,13 @@
     display: grid;
     justify-content: stretch;
     grid-template-columns: 1fr 1fr;
-    margin-top: calc(var(--section-padding) * -0.25);
 
-    .jenkins-card {
+    & > div {
       overflow: clip;
       margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
 
       &:first-of-type {
-        grid-column: span 2;
+        grid-column: span 1;
       }
 
       &:last-of-type {
@@ -54,9 +53,9 @@
   @media (width >= 1300px) {
     grid-template-columns: 1fr 1fr 1fr;
 
-    .jenkins-card {
+    & > div {
       &:first-of-type {
-        grid-column: span 3;
+        grid-column: span 2;
       }
 
       &:last-of-type {
@@ -68,9 +67,9 @@
   @media (width >= 1600px) {
     grid-template-columns: 1fr 1fr 1fr 1fr;
 
-    .jenkins-card {
+    & > div {
       &:first-of-type {
-        grid-column: span 4;
+        grid-column: span 3;
       }
 
       &:last-of-type {
@@ -82,9 +81,9 @@
   @media (width >= 1900px) {
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 
-    .jenkins-card {
+    & > div {
       &:first-of-type {
-        grid-column: span 5;
+        grid-column: span 4;
       }
 
       &:last-of-type {
@@ -130,5 +129,126 @@
 
   & > * {
     margin-bottom: 0;
+  }
+}
+
+body:has(.app-build-bar) {
+  --top: color-mix(in sRGB, var(--text-color-secondary) 4%, var(--background));
+  --bottom: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 2%,
+    var(--background)
+  );
+
+  background: linear-gradient(var(--top), var(--bottom));
+  background-attachment: fixed;
+}
+
+.app-build-bar {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  min-height: 2.875rem;
+  margin-top: -5px;
+  padding-bottom: 0.75rem;
+  z-index: 2;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1000px calc(var(--section-padding) * -1) 0;
+    background-color: var(--background);
+    border-bottom: var(--jenkins-border-width) solid var(--card-border-color);
+    z-index: -1;
+  }
+
+  .app-build-bar__content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: start;
+    flex: 1;
+  }
+
+  .app-build-bar__tabs {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0;
+  }
+
+  .app-build-bar__controls {
+    display: inline-flex;
+    align-items: center;
+    justify-content: end;
+    flex: 1;
+    gap: 0.75rem;
+
+    @media (width <= 600px) {
+      justify-content: stretch;
+    }
+  }
+}
+
+.app-build-bar__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+
+  .app-build-bar__content__headline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-left: -0.25rem;
+
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  h1 {
+    margin-bottom: 0;
+    font-size: 1.25rem;
+  }
+
+  .jenkins-button {
+    border-radius: 100px;
+    aspect-ratio: 1;
+    padding: 0;
+    margin-inline: -1rem;
+
+    &:not(:hover) {
+      color: color-mix(
+        in sRGB,
+        var(--text-color-secondary) 75%,
+        transparent
+      ) !important;
+    }
+
+    &::before,
+    &::after {
+      inset: 7px;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+}
+
+.app-build-content {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--section-padding);
+  margin-inline: calc(var(--section-padding) * -1);
+
+  .jenkins-app-bar {
+    margin-block: 1.0625rem;
   }
 }
