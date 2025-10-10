@@ -722,10 +722,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                                     target.chmod(mode);
                                     break;
                                 } catch (NoSuchFileException ex) { // https://issues.jenkins.io/browse/JENKINS-76192
-                                    if (attempt == 3) {
+                                    if (attempt == 5) {
                                         throw ex;
                                     }
-                                    Thread.sleep(420);
+                                    Thread.sleep(1000);
                                 }
                             }
                         }
