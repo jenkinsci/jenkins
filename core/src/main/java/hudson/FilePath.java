@@ -721,7 +721,11 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     } catch (InterruptedException | NoSuchFileException ex) {
                         LOGGER.log(Level.WARNING, "unable to set permissions", ex);
                     }
-                    Files.setLastModifiedTime(Util.fileToPath(f), e.getLastModifiedTime());
+                    try {
+                        Files.setLastModifiedTime(Util.fileToPath(f), e.getLastModifiedTime());
+                    } catch (NoSuchFileException ex) {
+                        LOGGER.log(Level.WARNING, "unable to set last modified time", ex);
+                    }
                 }
             }
         }
