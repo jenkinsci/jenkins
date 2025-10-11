@@ -120,19 +120,7 @@ THE SOFTWARE.
 
       <div class="app-build-content" style="padding-top: var(--section-padding)">
         <j:set var="items" value="${it.items}"/>
-        <div style="display: grid; grid-template-columns: 300px 1fr; gap: 1rem">
-          <div style="display: flex; flex-direction: column;" class="lightyears">
-            <j:if test="${h.hasPermission(app.READ)}">
-              <j:forEach var="w" items="${it.widgets}">
-                <j:set var="view" value="${it}" /><!-- expose the view that's rendering this sidepanel to the widget -->
-                <st:include it="${w}" page="index.jelly" />
-              </j:forEach>
-            </j:if>
-          </div>
-          <div>
-            <st:include page="main.jelly" />
-          </div>
-        </div>
+        <st:include page="main.jelly" />
       </div>
     </l:main-panel>
   </l:layout>
