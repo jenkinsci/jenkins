@@ -285,9 +285,12 @@ pre.console {
 
 /* ====================== help ===================================== */
 
+.help-area {
+  display: none; /* hidden until loaded */
+}
+
 .help {
   position: relative;
-  display: none; /* hidden until loaded */
   padding: 1rem;
   margin: 1rem 0;
   overflow-wrap: anywhere;
