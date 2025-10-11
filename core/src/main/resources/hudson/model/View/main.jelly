@@ -1,0 +1,54 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson" xmlns:l="/lib/layout">
+  <l:userExperimentalFlag var="newDashboardPage" flagClassName="jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag" />
+
+  <j:choose>
+    <j:when test="${items == null}">
+      <p>${%broken}</p>
+    </j:when>
+
+    <j:when test="${items.isEmpty()}">
+      <j:if test="${!app.items.isEmpty()}">
+        <j:set var="views" value="${it.owner.views}" />
+        <j:set var="currentView" value="${it}" />
+
+        <j:if test="${!newDashboardPage}">
+          <j:choose>
+            <j:when test="${it.owner.class == hudson.model.MyViewsProperty.class}">
+              <st:include it="${it.owner.viewsTabBar}" page="viewTabs" />
+            </j:when>
+            <j:otherwise>
+              <st:include it="${it.owner.userViewsTabBar}" page="viewTabs" />
+            </j:otherwise>
+          </j:choose>
+        </j:if>
+      </j:if>
+      <st:include it="${it}" page="noJob.jelly" />
+    </j:when>
+
+    <j:otherwise>
+      <t:projectView
+          jobs="${items}"
+          showViewTabs="true"
+          columnExtensions="${it.columns}"
+          indenter="${it.indenter}"
+          itemGroup="${it.owner.itemGroup}">
+
+        <j:set var="views" value="${it.owner.views}" />
+        <j:set var="currentView" value="${it}" />
+
+        <j:if test="${!newDashboardPage}">
+          <j:choose>
+            <j:when test="${it.owner.class == hudson.model.MyViewsProperty.class}">
+              <st:include it="${it.owner.viewsTabBar}" page="viewTabs" />
+            </j:when>
+            <j:otherwise>
+              <st:include it="${it.owner.userViewsTabBar}" page="viewTabs" />
+            </j:otherwise>
+          </j:choose>
+        </j:if>
+      </t:projectView>
+    </j:otherwise>
+  </j:choose>
+
+</j:jelly>
