@@ -1,0 +1,77 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts, id:cactusman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:dd="/lib/layout/dropdowns">
+  <l:layout title="${it.displayName}${not empty it.parent.fullDisplayName?' ['+it.parent.fullDisplayName+']':''}">
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
+    <l:main-panel>
+      <div class="app-build-bar">
+        <div class="app-build-bar__content">
+          <j:set var="lastBuild" value="${it.lastBuild}" />
+          <j:if test="${lastBuild != null}">
+            <a href="${rootURL + '/' + lastBuild.url}" class="jenkins-!-display-contents" tabindex="-1">
+              <l:icon src="symbol-status-${lastBuild.iconColor.iconName}" tooltip="${lastBuild.iconColor.description}" class="icon-md" />
+            </a>
+          </j:if>
+          <h1 class="job-index-headline page-headline">
+            <l:breakable value="${it.displayName}"/>
+          </h1>
+        </div>
+        <div class="app-build-bar__controls">
+          <l:overflowButton>
+            <dd:custom>
+              <div class="app-build-overflow">
+                <j:set var="mode" value="side-panel" />
+                <st:include page="sidepanel.jelly" it="${it.object}" />
+              </div>
+            </dd:custom>
+          </l:overflowButton>
+        </div>
+      </div>
+
+      <div class="app-build-content">
+        <l:app-bar title="Overview">
+          <l:details-bar it="${it}">
+            <t:editDescriptionButton permission="${it.CONFIGURE}" compact="true" />
+          </l:details-bar>
+        </l:app-bar>
+
+        <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
+
+        <j:forEach var="w" items="${it.widgets}">
+          <st:include it="${w}" page="index.jelly" />
+        </j:forEach>
+
+        <l:card title="Legacy">
+          <st:include page="jobpropertysummaries.jelly" />
+
+          <st:include page="main.jelly" />
+
+          <st:include page="permalinks.jelly" />
+        </l:card>
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
