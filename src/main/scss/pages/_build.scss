@@ -13,8 +13,8 @@
   gap: calc(var(--section-padding) / 2);
   margin-bottom: calc(var(--section-padding) * -0.5);
 
-  .jenkins-card {
-    margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
+  & > * {
+    height: 350px;
   }
 
   @media (width < 1000px) {

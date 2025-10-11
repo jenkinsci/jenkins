@@ -1,3 +1,5 @@
+@use "../abstracts/mixins";
+
 $card-padding: 1rem;
 
 .jenkins-card {
@@ -13,12 +15,12 @@ $card-padding: 1rem;
     align-items: center;
     justify-content: space-between;
     padding: 0 $card-padding;
-    height: 50px;
+    height: 2.875rem;
     flex-shrink: 0;
     font-size: var(--font-size-sm) !important;
     font-weight: var(--font-bold-weight);
     width: 100%;
-    z-index: 1;
+    z-index: 2;
   }
 
   &__controls {
@@ -27,26 +29,6 @@ $card-padding: 1rem;
     justify-content: center;
     gap: 0.4rem;
     margin-right: -0.2rem;
-  }
-
-  &:not(:hover) {
-    .jenkins-card__unveil,
-    .jenkins-card__reveal {
-      color: var(--text-color-secondary);
-    }
-  }
-
-  @media (prefers-contrast: more) {
-    .jenkins-card__unveil,
-    .jenkins-card__reveal {
-      color: var(--text-color) !important;
-    }
-  }
-
-  &:hover {
-    .jenkins-card__reveal {
-      color: var(--text-color);
-    }
   }
 
   &__content {
@@ -71,23 +53,25 @@ $card-padding: 1rem;
   }
 
   .jenkins-card__reveal {
+    @include mixins.item($border: false);
+
     display: flex;
     align-items: center;
     justify-content: center;
     margin-block: -0.5rem;
     min-height: 0;
     padding: 0;
-    width: 26px;
-    height: 26px;
-    border-radius: 0.33rem;
-    transition:
-      scale var(--standard-transition),
-      opacity var(--standard-transition);
+    width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 0.3125rem;
+    transition: opacity var(--standard-transition);
+    color: var(--color);
 
     svg {
       width: 1rem;
       height: 1rem;
       transition: color var(--standard-transition);
+      color: var(--text-color-secondary);
     }
 
     &::before,
@@ -96,12 +80,57 @@ $card-padding: 1rem;
     }
 
     &:hover {
-      opacity: 0.75;
+      svg {
+        color: var(--text-color);
+      }
+    }
+  }
+
+  &__title-link {
+    gap: 0.375rem;
+    width: unset !important;
+    height: unset !important;
+    margin-block: unset !important;
+
+    &::before,
+    &::after {
+      inset: -0.25rem -0.5rem !important;
     }
 
-    &:active {
-      scale: 95%;
-      opacity: 0.5;
+    svg {
+      width: 0.875rem !important;
+      height: 0.875rem !important;
+    }
+  }
+
+  &__teaser {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+    padding: 1rem;
+
+    svg {
+      width: 3rem;
+      height: 3rem;
+      margin-bottom: 0.5rem;
+
+      * {
+        stroke-width: 40px;
+      }
+    }
+
+    div {
+      font-weight: var(--font-bold-weight);
+      color: var(--text-color-secondary);
+
+      &:first-of-type {
+        color: var(--text-color);
+      }
     }
   }
 
