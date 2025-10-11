@@ -716,20 +716,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     try {
                         FilePath target = new FilePath(f);
                         int mode = e.getUnixMode();
-                        if (mode != 0) { // Ant returns 0 if the archive doesn't record the access mode
-                            for (int attempt = 1; ; attempt++) {
-                                try {
-                                    target.chmod(mode);
-                                    break;
-                                } catch (NoSuchFileException ex) { // https://issues.jenkins.io/browse/JENKINS-76192
-                                    if (attempt == 5) {
-                                        throw ex;
-                                    }
-                                    Thread.sleep(1000);
-                                }
-                            }
-                        }
-                    } catch (InterruptedException ex) {
+                        if (mode != 0) // Ant returns 0 if the archive doesn't record the access mode
+                            target.chmod(mode);
+                    } catch (InterruptedException | NoSuchFileException ex) {
                         LOGGER.log(Level.WARNING, "unable to set permissions", ex);
                     }
                     Files.setLastModifiedTime(Util.fileToPath(f), e.getLastModifiedTime());
