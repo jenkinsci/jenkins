@@ -716,7 +716,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     try {
                         FilePath target = new FilePath(f);
                         int mode = e.getUnixMode();
-                        if (mode != 0)   // Ant returns 0 if the archive doesn't record the access mode
+                        if (mode != 0)    // Ant returns 0 if the archive doesn't record the access mode
                             target.chmod(mode);
                     } catch (InterruptedException | NoSuchFileException ex) {
                         LOGGER.log(Level.WARNING, "unable to set permissions", ex);
