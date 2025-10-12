@@ -50,7 +50,7 @@ THE SOFTWARE.
               </j:when>
             </j:choose>
 
-            <h1>${(it.class.name=='hudson.model.AllView' and it.ownerItemGroup == app) ? '%Dashboard' : it.owner == app ? it.displayName : it.owner.displayName}</h1>
+            <h1>${it.ownerItemGroup == app ? '%Dashboard' : it.owner == app ? it.displayName : it.owner.displayName}</h1>
           </div>
         </div>
 
