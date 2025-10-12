@@ -99,6 +99,7 @@ import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.PeepholePermalink;
 import jenkins.model.ProjectNamingStrategy;
+import jenkins.model.Tab;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DownstreamProjectsDetail;
@@ -1707,5 +1708,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         @NonNull @Override public List<? extends Detail> createFor(@NonNull Job target) {
             return Stream.of(new UpstreamProjectsDetail(target), new DownstreamProjectsDetail(target), new ProjectNameDetail(target)).filter(e -> e.getIconClassName() != null).toList();
         }
+    }
+
+    /**
+     * Retrieves the tabs for a given job
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Tab> getJobTabs() {
+        return getActions(Tab.class);
     }
 }

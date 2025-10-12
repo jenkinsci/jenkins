@@ -23,35 +23,28 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:run-subpage>
-    <l:app-bar title="${it.displayName}" headingLevel="h2">
-      <l:details-bar it="${it.object}">
-        <t:editDescriptionButton permission="${it.object.UPDATE}"
-                                 compact="true" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:dd="/lib/layout/dropdowns">
+  <l:job-subpage>
+    <j:set var="it" value="${it.object}" />
+
+    <l:app-bar title="Overview">
+      <l:details-bar it="${it}">
+        <t:editDescriptionButton permission="${it.CONFIGURE}" compact="true" />
       </l:details-bar>
     </l:app-bar>
 
-    <j:set var="it" value="${it.object}" />
+    <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
 
-    <t:editableDescription permission="${it.UPDATE}" hideButton="true" />
+    <j:forEach var="w" items="${it.widgets}">
+      <st:include it="${w}" page="index.jelly" />
+    </j:forEach>
 
-    <div class="app-build__grid">
-      <j:forEach var="a" items="${it.runTabs}">
-        <st:include page="widget.jelly" from="${a}" optional="true" it="${a}" />
-      </j:forEach>
+    <l:card title="Legacy">
+      <st:include page="jobpropertysummaries.jelly" />
 
-      <l:card title="Legacy">
-        <table>
-          <j:forEach var="a" items="${it.allActions}">
-            <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
-          </j:forEach>
+      <st:include page="main.jelly" />
 
-          <st:include page="summary.jelly" optional="true" />
-        </table>
-
-        <st:include page="main.jelly" optional="true" />
-      </l:card>
-    </div>
-  </l:run-subpage>
+      <st:include page="permalinks.jelly" />
+    </l:card>
+  </l:job-subpage>
 </j:jelly>
