@@ -39,7 +39,7 @@ THE SOFTWARE.
       <st:include it="${w}" page="index.jelly" />
     </j:forEach>
 
-    <l:card title="Legacy">
+    <l:card title="${%Legacy}">
       <st:include page="jobpropertysummaries.jelly" />
 
       <st:include page="main.jelly" />
