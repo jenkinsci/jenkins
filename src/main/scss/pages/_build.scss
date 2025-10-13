@@ -262,12 +262,16 @@ body:has(.app-build-bar) {
   padding: 0;
   margin: 0;
 
-  li {
+  &__item {
+    --dot-size: 0.625rem;
+    --dot-offset: 7px;
+
+    position: relative;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 0.25rem 0.625rem;
+    gap: 0.25rem var(--dot-size);
 
-    & > div {
+    &__details {
       grid-column: 2 / 2;
       color: var(--text-color-secondary);
       font-size: var(--font-size-xs);
@@ -276,22 +280,34 @@ body:has(.app-build-bar) {
     &::before {
       content: "";
       display: inline-block;
-      width: 0.625rem;
-      height: 0.625rem;
-      translate: 0 7px;
+      width: var(--dot-size);
+      height: var(--dot-size);
+      translate: 0 var(--dot-offset);
+      border-radius: 100px;
       background-color: var(--card-background);
       border: var(--jenkins-border-width) solid var(--text-color-secondary);
+      z-index: 1;
     }
-  }
 
-  &::before {
-    content: "";
-    position: absolute;
-    top: 5px;
-    left: 4px;
-    bottom: 5px;
-    width: var(--jenkins-border-width);
-    border-radius: 100%;
-    background-color: var(--jenkins-border-color);
+    &::after {
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: calc((var(--dot-size) / 2) - (var(--jenkins-border-width) / 2));
+      bottom: -1rem;
+      width: var(--jenkins-border-width);
+      background-color: var(--jenkins-border-color);
+    }
+
+    &:last-of-type {
+      &::after {
+        display: none;
+      }
+    }
+
+    &--large {
+      --dot-size: 1rem;
+      --dot-offset: 4px;
+    }
   }
 }
