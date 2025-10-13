@@ -279,7 +279,6 @@ body:has(.app-build-bar) {
       width: 0.625rem;
       height: 0.625rem;
       translate: 0 7px;
-      border-radius: 100%;
       background-color: var(--card-background);
       border: var(--jenkins-border-width) solid var(--text-color-secondary);
     }
