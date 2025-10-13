@@ -1614,7 +1614,13 @@ public class Queue extends ResourceController implements Saveable {
                             updateSnapshot();
                         }
                     } else {
-                        p.setCauseOfBlockage(causeOfBlockage);
+                        if (causeOfBlockage.isFatal()) {
+                            cancel(p);
+                        } else {
+                            p.leave(this);
+                            new BlockedItem(p, causeOfBlockage).enter(this);
+                            updateSnapshot();
+                        }
                     }
                 }
             }
@@ -1627,10 +1633,9 @@ public class Queue extends ResourceController implements Saveable {
                     LOGGER.log(Level.FINEST, "Finished moving all ready items from queue.");
                     break; // finished moving all ready items from queue
                 }
-
-                top.leave(this);
                 CauseOfBlockage causeOfBlockage = getCauseOfBlockageForItem(top);
                 if (causeOfBlockage == null) {
+                    top.leave(this);
                     // ready to be executed immediately
                     Runnable r = makeBuildable(new BuildableItem(top));
                     String topTaskDisplayName = LOGGER.isLoggable(Level.FINEST) ? top.task.getFullDisplayName() : null;
@@ -1642,9 +1647,14 @@ public class Queue extends ResourceController implements Saveable {
                         new BlockedItem(top, CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown())).enter(this);
                     }
                 } else {
-                    // this can't be built now because another build is in progress
-                    // set this project aside.
-                    new BlockedItem(top, causeOfBlockage).enter(this);
+                    if (causeOfBlockage.isFatal()) {
+                        cancel(top);
+                    } else {
+                        top.leave(this);
+                        // this can't be built now because another build is in progress
+                        // set this project aside.
+                        new BlockedItem(top, causeOfBlockage).enter(this);
+                    }
                 }
             }
 
@@ -1667,12 +1677,16 @@ public class Queue extends ResourceController implements Saveable {
                 // one last check to make sure this build is not blocked.
                 CauseOfBlockage causeOfBlockage = getCauseOfBlockageForItem(p);
                 if (causeOfBlockage != null) {
-                    p.leave(this);
-                    new BlockedItem(p, causeOfBlockage).enter(this);
-                    LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
-                    // JENKINS-28926 we have moved an unblocked task into the blocked state, update snapshot
-                    // so that other buildables which might have been blocked by this can see the state change
-                    updateSnapshot();
+                    if (causeOfBlockage.isFatal()) {
+                        cancel(p);
+                    } else {
+                        p.leave(this);
+                        new BlockedItem(p, causeOfBlockage).enter(this);
+                        LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
+                        // JENKINS-28926 we have moved an unblocked task into the blocked state, update snapshot
+                        // so that other buildables which might have been blocked by this can see the state change
+                        updateSnapshot();
+                    }
                     continue;
                 }
 
@@ -2658,15 +2672,7 @@ public class Queue extends ResourceController implements Saveable {
      * {@link Item} in the {@link Queue#blockedProjects} stage.
      */
     public final class BlockedItem extends NotWaitingItem {
-        private transient CauseOfBlockage causeOfBlockage = null;
-
-        public BlockedItem(WaitingItem wi) {
-            this(wi, null);
-        }
-
-        public BlockedItem(NotWaitingItem ni) {
-            this(ni, null);
-        }
+        private final transient CauseOfBlockage causeOfBlockage;
 
         BlockedItem(WaitingItem wi, CauseOfBlockage causeOfBlockage) {
             super(wi);
@@ -2675,10 +2681,6 @@ public class Queue extends ResourceController implements Saveable {
 
         BlockedItem(NotWaitingItem ni, CauseOfBlockage causeOfBlockage) {
             super(ni);
-            this.causeOfBlockage = causeOfBlockage;
-        }
-
-        void setCauseOfBlockage(CauseOfBlockage causeOfBlockage) {
             this.causeOfBlockage = causeOfBlockage;
         }
 

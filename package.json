@@ -48,7 +48,7 @@
     "stylelint": "16.25.0",
     "stylelint-checkstyle-reporter": "1.1.1",
     "stylelint-config-standard-scss": "16.0.0",
-    "webpack": "5.102.0",
+    "webpack": "5.102.1",
     "webpack-cli": "6.0.1",
     "webpack-remove-empty-scripts": "1.1.1"
   },
