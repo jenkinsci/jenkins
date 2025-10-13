@@ -50,7 +50,7 @@ THE SOFTWARE.
           <st:include page="summary.jelly" optional="true" />
         </table>
 
-        <st:include page="main.jelly" optional="true" />
+<!--        <st:include page="main.jelly" optional="true" />-->
       </l:card>
     </div>
   </l:run-subpage>

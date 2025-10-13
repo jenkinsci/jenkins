@@ -36,16 +36,8 @@ THE SOFTWARE.
 
     <j:set var="it" value="${it.object}" />
 
-    <j:choose>
-      <j:when test="${it.hasChangeSetComputed()}">
-        <st:include page="index.jelly" it="${it.changeSet}" />
-      </j:when>
-      <j:when test="${it.building}">
-        ${%Not yet determined}
-      </j:when>
-      <j:otherwise>
-        ${%Failed to determine} (<a href="${h.getConsoleUrl(it)}">${%log}</a>)
-      </j:otherwise>
-    </j:choose>
+    <j:forEach var="changeSet" items="${it.changeSets}">
+      <st:include page="index.jelly" it="${changeSet}"/>
+    </j:forEach>
   </l:run-subpage>
 </j:jelly>
