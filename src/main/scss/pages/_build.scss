@@ -252,3 +252,47 @@ body:has(.app-build-bar) {
     margin-block: 1.0625rem;
   }
 }
+
+.app-build-changes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.25rem 0.625rem;
+
+    & > div {
+      grid-column: 2 / 2;
+      color: var(--text-color-secondary);
+      font-size: var(--font-size-xs);
+    }
+
+    &::before {
+      content: "";
+      display: inline-block;
+      width: 0.625rem;
+      height: 0.625rem;
+      translate: 0 7px;
+      border-radius: 100%;
+      background-color: var(--card-background);
+      border: var(--jenkins-border-width) solid var(--text-color-secondary);
+    }
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 4px;
+    bottom: 5px;
+    width: var(--jenkins-border-width);
+    border-radius: 100%;
+    background-color: var(--jenkins-border-color);
+  }
+}
