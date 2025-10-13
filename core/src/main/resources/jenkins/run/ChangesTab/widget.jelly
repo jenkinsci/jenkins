@@ -26,18 +26,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
   <l:card title="${%Changes}" expandable="changes">
     <j:set var="changeSets" value="${it.object.changeSets}"/>
-    <j:choose>
-      <j:when test="${!changeSets.isEmpty()}">
-        <j:forEach var="changeSet" items="${changeSets}">
-          <st:include it="${changeSet}" page="digest.jelly"/>
-        </j:forEach>
-      </j:when>
-      <j:otherwise>
-        <div class="jenkins-card__teaser">
-          <l:icon src="symbol-changes" />
-          <div>No changes</div>
-        </div>
-      </j:otherwise>
-    </j:choose>
+    <j:forEach var="changeSet" items="${changeSets}">
+      <st:include it="${changeSet}" page="digest.jelly"/>
+    </j:forEach>
   </l:card>
 </j:jelly>
