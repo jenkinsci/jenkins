@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
-         xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+         xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:t="/lib/hudson">
   <l:layout title="${(it.class.name=='hudson.model.AllView' and it.ownerItemGroup == app) ? '%Dashboard' : it.displayName}${not empty it.ownerItemGroup.fullDisplayName ? ' - ' + it.ownerItemGroup.fullDisplayName : ''}">
     <l:header>
       <!-- for screen resolution detection -->
@@ -145,6 +145,8 @@ THE SOFTWARE.
       </div>
 
       <div class="app-build-content" style="padding-top: var(--section-padding)">
+        <t:editableDescription permission="${it.CONFIGURE}" hideButton="true" />
+
         <j:set var="items" value="${it.items}"/>
         <st:include page="main.jelly" />
       </div>
