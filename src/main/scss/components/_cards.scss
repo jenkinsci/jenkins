@@ -42,6 +42,12 @@ $card-padding: 1rem;
     }
   }
 
+  &:not(:has(.jenkins-card__title)) {
+    .jenkins-card__content {
+      padding-top: $card-padding;
+    }
+  }
+
   &::after {
     content: "";
     position: absolute;

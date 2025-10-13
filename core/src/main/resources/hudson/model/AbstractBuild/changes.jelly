@@ -29,12 +29,18 @@ THE SOFTWARE.
   </j:new>
 
   <l:run-subpage>
-    <l:app-bar title="${it.displayName}" headingLevel="h2" />
+    <l:app-bar title="${it.displayName}" headingLevel="h2">
+      <l:details-bar it="${it.object}" />
+    </l:app-bar>
 
     <j:set var="it" value="${it.object}" />
 
-    <j:forEach var="changeSet" items="${it.changeSets}">
-      <st:include page="index.jelly" it="${changeSet}"/>
-    </j:forEach>
+    <div class="jenkins-card">
+      <div class="jenkins-card__content">
+        <j:forEach var="changeSet" items="${it.changeSets}">
+          <st:include page="index.jelly" it="${changeSet}"/>
+        </j:forEach>
+      </div>
+    </div>
   </l:run-subpage>
 </j:jelly>
