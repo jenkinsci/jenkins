@@ -56,6 +56,45 @@ THE SOFTWARE.
             </div>
 
             <div class="app-build-bar__controls">
+              <j:if test="${it.object.buildable and h.hasPermission(it.object, it.object.BUILD)}">
+                <j:choose>
+                  <j:when test="${!it.object.parameterized}">
+                    <a class="jenkins-button jenkins-!-build-color task-link-no-confirm"
+                            data-callback="lib_hudson_project_configurable_build_now_callback"
+                            data-build-failure="${%Build failed}"
+                            data-build-success="${%Build scheduled}"
+                            data-parameterized="false"
+                            data-task-post="true"
+                            href="${url}/build?delay=0sec">
+                      <l:icon src="symbol-play" />
+                      ${it.object.buildNowText}
+                    </a>
+                  </j:when>
+                  <j:otherwise>
+                    <a class="jenkins-button jenkins-!-build-color" href="${url}/build?delay=0sec">
+                      <l:icon src="symbol-play" />
+                      ${it.object.buildNowText}
+                    </a>
+                  </j:otherwise>
+                </j:choose>
+
+                <st:adjunct includes="lib.hudson.project.configurable.configurable"/>
+                <st:adjunct includes="lib.layout.task.task" />
+              </j:if>
+
+              <j:choose>
+                <j:when test="${h.hasPermission(it.object, it.object.CONFIGURE)}">
+                  <a href="${url}/configure" class="jenkins-button">
+                    ${%Configure}
+                  </a>
+                </j:when>
+                <j:when test="${h.hasPermission(it.object, it.object.EXTENDED_READ)}">
+                  <a href="${url}/configure" class="jenkins-button">
+                    ${%View Configuration}
+                  </a>
+                </j:when>
+              </j:choose>
+
               <l:overflowButton>
                 <dd:custom>
                   <div class="app-build-overflow">
