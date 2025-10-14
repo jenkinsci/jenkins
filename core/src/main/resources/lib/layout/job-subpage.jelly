@@ -71,10 +71,18 @@ THE SOFTWARE.
                     </a>
                   </j:when>
                   <j:otherwise>
-                    <a class="jenkins-button jenkins-!-build-color" href="${url}/build?delay=0sec">
+                    <l:dialog title="${it.object.buildNowText}" hash="build-with-parameters">
+                      <div>
+                        <st:include page="contents.jelly" it="${it.object.parametersDefinitionProperty}" />
+                      </div>
+                    </l:dialog>
+
+                    <button class="jenkins-button jenkins-!-build-color"
+                            data-type="dialog-opener"
+                            data-dialog-id="${dialogId}">
                       <l:icon src="symbol-play" />
                       ${it.object.buildNowText}
-                    </a>
+                    </button>
                   </j:otherwise>
                 </j:choose>
 

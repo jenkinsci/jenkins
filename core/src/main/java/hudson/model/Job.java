@@ -1717,4 +1717,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public List<Tab> getJobTabs() {
         return getActions(Tab.class);
     }
+
+    @Restricted(NoExternalUse.class)
+    public final ParametersDefinitionProperty getParametersDefinitionProperty() {
+        return getProperty(ParametersDefinitionProperty.class);
+    }
 }
