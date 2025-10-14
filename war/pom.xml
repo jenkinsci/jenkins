@@ -386,6 +386,13 @@ THE SOFTWARE.
                   <version>2.3-125.v4d77857a_b_402</version>
                   <type>hpi</type>
                 </artifactItem>
+                <artifactItem>
+                  <!-- dependency of jackson2-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jakarta-xml-bind-api</artifactId>
+                  <version>4.0.5-3.v3d5b_a_73965b_9</version>
+                  <type>hpi</type>
+                </artifactItem>
 
                 <artifactItem>
                   <!-- dependency of script-security and workflow-support -->
