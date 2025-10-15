@@ -3,15 +3,3 @@
 @use "components";
 @use "form";
 @use "pages";
-
-.jenkins-dropdown__item2 {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  row-gap: 0.25rem;
-  text-align: left;
-}
-
-.pgv-dropdown-item__description {
-  color: var(--text-color-secondary);
-  grid-area: 2 / 2;
-}
