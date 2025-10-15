@@ -70,37 +70,11 @@ THE SOFTWARE.
 
         <div class="app-build-bar__controls">
           <j:if test="${it.hasPermission(it.CREATE)}">
-            <div class="jenkins-split-button">
-              <a class="jenkins-button"
-                 href="${rootURL}/${it.viewUrl}newJob">
-                <l:icon src="symbol-add" />
-                New Item
-              </a>
-              <l:overflowButton id="button-install-after-restart"
-                                icon="symbol-chevron-down"
-                                tooltip="${null}">
-                <dd:custom>
-                  <button type="button" class="jenkins-dropdown__item jenkins-dropdown__item2">
-                    <div class="jenkins-dropdown__item__icon">
-                      <l:icon src="symbol-folder" />
-                    </div>
-                    ${%New folder}
-                    <div class="pgv-dropdown-item__description">
-                      ${%Folders organize jobs}
-                    </div>
-                  </button>
-                  <button type="button" class="jenkins-dropdown__item jenkins-dropdown__item2">
-                    <div class="jenkins-dropdown__item__icon">
-                      <l:icon src="symbol-jobs" />
-                    </div>
-                    ${%New view}
-                    <div class="pgv-dropdown-item__description">
-                      ${%Views group and filter jobs}
-                    </div>
-                  </button>
-                </dd:custom>
-              </l:overflowButton>
-            </div>
+            <a class="jenkins-button"
+               href="${rootURL}/${it.viewUrl}newJob">
+              <l:icon src="symbol-add" />
+              New Item
+            </a>
           </j:if>
 
           <j:if test="${it.isEditable() and it.hasPermission(it.CONFIGURE)}">
