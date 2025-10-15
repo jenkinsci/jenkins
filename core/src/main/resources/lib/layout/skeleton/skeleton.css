@@ -1,4 +1,5 @@
 .jenkins-side-panel-skeleton,
+.jenkins-button-skeleton,
 .jenkins-form-skeleton {
   position: relative;
   display: flex;
@@ -63,6 +64,23 @@
     height: 2.375rem;
     margin-bottom: 1rem;
   }
+}
+
+.jenkins-button-skeleton {
+    display: contents;
+
+    & > div {
+        width: 120px;
+        height: 38px !important;
+        border-radius: var(--form-input-border-radius);
+        margin-bottom: 0;
+    }
+}
+
+.jenkins-small-button-skeleton {
+    & > div {
+        width: 52px;
+    }
 }
 
 .jenkins-side-panel-skeleton {

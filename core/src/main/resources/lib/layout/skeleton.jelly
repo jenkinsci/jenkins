@@ -43,6 +43,16 @@ THE SOFTWARE.
         <div />
       </div>
     </j:case>
+    <j:case value="button">
+      <div class="jenkins-button-skeleton">
+        <div />
+      </div>
+    </j:case>
+    <j:case value="small-button">
+      <div class="jenkins-button-skeleton jenkins-small-button-skeleton">
+        <div />
+      </div>
+    </j:case>
     <j:default>
       <div class="jenkins-form-skeleton">
         <span />
