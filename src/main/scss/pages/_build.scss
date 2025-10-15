@@ -1,4 +1,5 @@
 @use "../base/breakpoints";
+@use "../components/cards";
 @use "../components/dialogs";
 
 .build-caption-progress-container {
@@ -15,6 +16,12 @@
 
   & > * {
     height: 350px;
+  }
+
+  // Legacy card shouldn't have a fixed height
+  .jenkins-card:last-of-type {
+    height: unset;
+    min-height: 350px;
   }
 
   @media (width < 1000px) {
@@ -109,8 +116,8 @@
 
 .app-console-output-widget {
   overflow-y: auto;
-  margin: 0 -1rem -1rem;
-  padding: 0 1rem 1rem;
+  margin: 0 -#{cards.$card-padding} -#{cards.$card-padding};
+  padding: 0 cards.$card-padding cards.$card-padding;
 
   pre {
     background: transparent;
