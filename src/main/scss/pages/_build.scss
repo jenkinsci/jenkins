@@ -154,7 +154,7 @@ body:has(.app-build-bar) {
   min-height: 2.875rem;
   margin-top: -5px;
   padding-bottom: 0.75rem;
-  z-index: 2;
+  z-index: 102;
 
   &::before {
     content: "";
