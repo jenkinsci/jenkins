@@ -58,7 +58,7 @@
   <j:choose>
     <j:when test="${newDashboardPage}">
       <div class="jenkins-inline-page">
-        <div style="display: flex; flex-direction: column;">
+        <div class="jenkins-inline-page__side-panel">
           <j:if test="${h.hasPermission(app.READ)}">
             <j:forEach var="w" items="${it.widgets}">
               <j:set var="view" value="${it}" />
