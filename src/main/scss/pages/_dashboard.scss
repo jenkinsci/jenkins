@@ -200,9 +200,9 @@ div.listview-jobs {
   grid-template-columns: 300px 1fr;
   gap: 1rem;
 
-  @media (width <= 600px) {
+  @media (width <= 800px) {
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
   }
 
   &__side-panel {
