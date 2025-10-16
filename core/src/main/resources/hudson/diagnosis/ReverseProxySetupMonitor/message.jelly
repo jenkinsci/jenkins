@@ -25,10 +25,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
   <div id="redirect-error" class="jenkins-alert jenkins-alert-danger reverse-proxy__hidden"
        data-url="${rootURL}/${it.url}/test" data-context="${rootURL}">
-    <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="yes" value="${%More Info}"/>
+    <form method="post" name="${it.id}">
+      <f:submit value="${%More Info}" method="get" action="https://www.jenkins.io/redirect/troubleshooting/broken-reverse-proxy"/>
       <l:isAdmin>
-        <f:submit name="no" value="${%Dismiss}"/>
+        <f:submit value="${%Dismiss}" action="${rootURL}/${it.url}/disable"/>
       </l:isAdmin>
     </form>
     <div>${%blurb}</div>
