@@ -90,7 +90,7 @@ function optionalVal(key, val) {
     return "";
   }
 
-  return `${key}="${val}"`;
+  return `${key}="${xmlEscape(val)}"`;
 }
 
 function optionalVals(keyVals) {
@@ -187,17 +187,15 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
 
   const tag =
     itemOptions.event && itemOptions.event.type === "GET" ? "a" : "button";
-  const url = tag === "a" ? context + xmlEscape(itemOptions.event.url) : "";
+  const url = tag === "a" ? context + xmlEscape(itemOptions.event.url) : null;
 
   const item = createElementFromHtml(`
       <${tag}
         ${optionalVals({
           class: clazz,
           href: url,
-          id: itemOptions.id ? xmlEscape(itemOptions.id) : null,
-          "data-html-tooltip": itemOptions.tooltip
-            ? xmlEscape(itemOptions.tooltip)
-            : null,
+          id: itemOptions.id,
+          "data-html-tooltip": itemOptions.tooltip,
         })}>
           ${icon(itemOptions)}
           ${label}
