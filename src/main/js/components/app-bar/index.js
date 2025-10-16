@@ -12,7 +12,7 @@ function init() {
       template.items.filter((e) => e.group.order > 2),
     );
 
-    // Append top level items to the app bar
+    // Append top-level items to the app bar
     appBarItems.forEach((item, index) => {
       // Only the first button in an app bar should have an icon
       if (index > 0) {

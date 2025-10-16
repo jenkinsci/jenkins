@@ -1,6 +1,7 @@
 import { createElementFromHtml } from "@/util/dom";
 import { xmlEscape } from "@/util/security";
 import behaviorShim from "@/util/behavior-shim";
+import Utils from "./utils";
 
 const hideOnPopperBlur = {
   name: "hideOnPopperBlur",
@@ -126,23 +127,25 @@ function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
 
   function optionalVal(key, val) {
     if (val) {
-      return `${key}="${val}"`
+      return `${key}="${val}"`;
     }
 
     return "";
   }
 
   function optionalVals(keyVals) {
-    return Object.keys(keyVals).map(key => optionalVal(key, keyVals[key])).join(' ');
+    return Object.keys(keyVals)
+      .map((key) => optionalVal(key, keyVals[key]))
+      .join(" ");
   }
 
   const item = createElementFromHtml(`
       <${tag}
         ${optionalVals({
-          "class": type + " " + clazz,
-          "href": url,
-          "id": xmlEscape(itemOptions.id),
-    "data-html-tooltip": xmlEscape(itemOptions.tooltip)
+          class: type + " " + clazz,
+          href: url,
+          id: xmlEscape(itemOptions.id),
+          "data-html-tooltip": xmlEscape(itemOptions.tooltip),
         })}>
           ${
             itemOptions.icon
@@ -160,7 +163,9 @@ function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
                         : ``
                     }
           ${
-            itemOptions.event && itemOptions.event.actions
+            itemOptions.event &&
+            itemOptions.event.actions &&
+            type === "jenkins-dropdown__item"
               ? `<span class="jenkins-dropdown__item__chevron"></span>`
               : ``
           }
@@ -177,12 +182,29 @@ function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
     loadScriptIfNotLoaded(menuItem.event.javascriptUrl, item);
   }
 
+  // If dropdown
+  if (menuItem.event && menuItem.event.actions && type === "jenkins-button") {
+    Utils.generateDropdown(
+      item,
+      (instance) => {
+        instance.setContent(
+          Utils.generateDropdownItems(menuItem.event.actions),
+        );
+        instance.loaded = true;
+      },
+      false,
+      {
+        appendTo: "parent",
+      },
+    );
+  }
+
   // If generic onClick event
   if (menuItem.onClick) {
     item.addEventListener("click", menuItem.onClick);
   }
 
-  // If its a link
+  // If it's a link
   if (menuItem.event && menuItem.event.url && menuItem.event.type === "POST") {
     item.addEventListener("click", () => {
       const form = document.createElement("form");
@@ -194,7 +216,7 @@ function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
     });
   }
 
-  // If its a confirmation dialog
+  // If it's a confirmation dialog
   if (menuItem.event && menuItem.event.postTo) {
     item.addEventListener("click", () => {
       dialog
@@ -218,9 +240,11 @@ function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
         );
     });
   }
+
   // if (options.onKeyPress) {
   //   item.onkeypress = options.onKeyPress;
   // }
+
   return item;
 }
 

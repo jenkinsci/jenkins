@@ -335,5 +335,5 @@ export default {
   getMaxSuggestionCount,
   debounce,
   mapChildrenItemsToDropdownItems,
-  convertHtmlToItems
+  convertHtmlToItems,
 };
