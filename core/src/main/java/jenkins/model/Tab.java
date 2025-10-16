@@ -39,7 +39,7 @@ import hudson.model.Actionable;
  * with the tab’s action
  * </p>
  *
- * @since TODO
+ * @since 2.532
  */
 public abstract class Tab implements Action, Badgeable {
 
