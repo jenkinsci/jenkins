@@ -387,7 +387,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @SuppressWarnings("deprecation")
     protected void onLoad() {
-        for (Action a : getAllActions()) {
+        for (Action a : getActions()) {
             if (a instanceof RunAction2) {
                 try {
                     ((RunAction2) a).onLoad(this);
