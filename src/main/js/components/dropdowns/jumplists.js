@@ -184,7 +184,7 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
         instance.setContent(container);
       })
       .catch((error) => {
-        console.log(`Dropdown fetch failed: ${error}`);
+        console.log(`Dropdown fetch failed`, error);
       })
       .finally(() => {
         instance.loaded = true;
@@ -213,7 +213,7 @@ function mapChildrenItemsToDropdownItems(items) {
     return {
       icon: item.icon,
       iconXml: item.iconXml,
-      label: item.displayName,
+      displayName: item.displayName,
       url: item.url,
       type: item.post || item.requiresConfirmation ? "button" : "link",
       badge: item.badge,
