@@ -28,7 +28,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.security.Permission;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
@@ -43,11 +42,6 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 @Extension
 @Restricted(NoExternalUse.class)
@@ -125,21 +119,6 @@ public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor
     @Override
     public Permission getRequiredPermission() {
         return Jenkins.SYSTEM_READ;
-    }
-
-    /**
-     * Depending on whether the user said "yes" or "no", send him to the right place.
-     */
-    @Restricted(DoNotUse.class) // WebOnly
-    @RequirePOST
-    public HttpResponse doAct(@QueryParameter String no) throws IOException {
-        if (no != null) { // dismiss
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-            disable(true);
-            return HttpResponses.forwardToPreviousPage();
-        } else {
-            return new HttpRedirect("https://jenkins.io/redirect/java-support/");
-        }
     }
 
     @NonNull
