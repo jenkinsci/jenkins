@@ -68,7 +68,7 @@ class TooManyJobsButNoViewTest {
         assertNotNull(f);
 
         // this should take us to the new view page
-        URL url = r.submit(f, "yes").getUrl();
+        URL url = r.getButtonByCaption(f, "Create a view now").click().getUrl();
         assertTrue(url.toExternalForm().endsWith("/newView"), url.toExternalForm());
 
         // since we didn't create a view, if we go back, we should see the warning again

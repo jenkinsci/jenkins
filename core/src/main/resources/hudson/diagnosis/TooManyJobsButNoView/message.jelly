@@ -26,9 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div id="tooManyJobsButNoView" class="jenkins-alert jenkins-alert-warning">
     <l:isAdmin>
-      <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-        <f:submit name="yes" value="${%Create a view now}"/>
-        <f:submit name="no" value="${%Dismiss}"/>
+      <form method="post" name="${it.id}">
+        <f:submit value="${%Create a view now}" method="get" action="${rootURL}/newView"/>
+        <f:submit value="${%Dismiss}" action="${rootURL}/${it.url}/disable"/>
       </form>
     </l:isAdmin>
     ${%blurb}
