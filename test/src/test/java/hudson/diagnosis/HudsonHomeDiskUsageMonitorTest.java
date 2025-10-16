@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import hudson.ExtensionList;
 import hudson.model.User;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.util.List;
 import jenkins.model.Jenkins;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.HttpMethod;
@@ -18,7 +18,6 @@ import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.util.NameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -46,12 +45,11 @@ class HudsonHomeDiskUsageMonitorTest {
         mon.activated = true;
 
         // clicking yes should take us to somewhere
-        j.submit(getForm(mon), "yes");
+        j.getButtonByCaption(getForm(mon), "Tell me more").click();
         assertTrue(mon.isEnabled());
 
         // now dismiss
-        // submit(getForm(mon),"no"); TODO: figure out why this test is fragile
-        mon.doAct("no");
+        j.getButtonByCaption(getForm(mon), "Dismiss").click();
         assertFalse(mon.isEnabled());
 
         // and make sure it's gone
@@ -76,11 +74,8 @@ class HudsonHomeDiskUsageMonitorTest {
 
         User bob = User.getById("bob", true);
         User administrator = User.getById("administrator", true);
-
-        WebRequest request = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act").toURL(), HttpMethod.POST);
-        NameValuePair param = new NameValuePair("no", "true");
-        request.setRequestParameters(List.of(param));
-
+        var monitorUrl = wc.getContextPath() + ExtensionList.lookupSingleton(HudsonHomeDiskUsageMonitor.class).getUrl();
+        WebRequest request = new WebRequest(new URI(monitorUrl + "/disable").toURL(), HttpMethod.POST);
         HudsonHomeDiskUsageMonitor mon = HudsonHomeDiskUsageMonitor.get();
 
         wc.withBasicApiToken(bob);
@@ -89,13 +84,12 @@ class HudsonHomeDiskUsageMonitorTest {
 
         assertTrue(mon.isEnabled());
 
-        WebRequest requestReadOnly = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull").toURL(), HttpMethod.GET);
+        WebRequest requestReadOnly = new WebRequest(new URI(monitorUrl).toURL(), HttpMethod.GET);
         p = wc.getPage(requestReadOnly);
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, p.getWebResponse().getStatusCode());
 
         wc.withBasicApiToken(administrator);
-        request = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act").toURL(), HttpMethod.POST);
-        request.setRequestParameters(List.of(param));
+        request = new WebRequest(new URI(monitorUrl + "/disable").toURL(), HttpMethod.POST);
         p = wc.getPage(request);
         assertEquals(HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
         assertFalse(mon.isEnabled());
