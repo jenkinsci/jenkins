@@ -133,13 +133,13 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
     );
 
     const button = createElementFromHtml(
-      `<button class="${type + " " + clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><title>Chevron Down</title><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
+      `<button class="${type + " " + clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
     );
     Utils.generateDropdown(
       button,
       (instance) => {
         instance.setContent(
-          Utils.generateDropdownItems(dropdownItem.event.actions),
+          Utils.generateDropdownItems(dropdownItem.subMenu.items),
         );
         instance.loaded = true;
       },
@@ -217,16 +217,12 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
   }
 
   // If dropdown
-  if (
-    dropdownItem.event &&
-    dropdownItem.event.actions &&
-    type === "jenkins-button"
-  ) {
+  if (dropdownItem.event && dropdownItem.subMenu && type === "jenkins-button") {
     Utils.generateDropdown(
       item,
       (instance) => {
         instance.setContent(
-          Utils.generateDropdownItems(dropdownItem.event.actions),
+          Utils.generateDropdownItems(dropdownItem.subMenu.items),
         );
         instance.loaded = true;
       },

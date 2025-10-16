@@ -21,7 +21,7 @@ public class DeleteRunAction extends TransientActionFactory<Run> {
 
     @Override
     public Collection<? extends Action> createFor(Run target) {
-        if (!target.hasPermission(Run.DELETE)) {
+        if (!target.hasPermission(Run.DELETE) || target.isKeepLog()) {
             return Set.of();
         }
 

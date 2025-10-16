@@ -21,6 +21,7 @@ import java.util.List;
 import jenkins.management.Badge;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
+import jenkins.model.menu.event.DropdownEvent;
 import jenkins.model.menu.event.Event;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import org.apache.commons.jelly.JellyContext;
@@ -155,6 +156,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 //            if (action.getEvent().getClass() == LinkEvent.class) {
 //                menuItem.url = ((LinkEvent)action.getEvent()).getUrl();
 //            }
+
+            if (action.getEvent() instanceof DropdownEvent dropdownEvent) {
+                menuItem.subMenu = new ContextMenu();
+                menuItem.subMenu.addAll(dropdownEvent.getActions());
+            }
 
             String icon = action.getIconFileName();
             if (action instanceof IconSpec) {
