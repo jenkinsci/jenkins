@@ -27,12 +27,10 @@ package jenkins.security.apitoken;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.HttpResponses;
-import java.io.IOException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -58,12 +56,8 @@ public class ApiTokenPropertyDisabledDefaultAdministrativeMonitor extends Admini
     }
 
     @RequirePOST
-    public HttpResponse doAct(@QueryParameter String no) throws IOException {
-        if (no == null) {
-            ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(false);
-        } else {
-            disable(true);
-        }
+    public HttpResponse doDisableLegacyTokens() {
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(false);
         return HttpResponses.redirectViaContextPath("manage");
     }
 }
