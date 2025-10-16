@@ -85,6 +85,12 @@ THE SOFTWARE.
             </a>
           </j:if>
 
+          <l:dialog title="${%Legend}" hash="legend">
+            <div>
+              <st:include page="_legend.jelly" it="${app}" />
+            </div>
+          </l:dialog>
+
           <l:overflowButton>
             <dd:custom>
               <div class="app-build-overflow">
@@ -98,7 +104,16 @@ THE SOFTWARE.
               <dd:item icon="symbol-rss" text="${%Failures}" href="rssFailed" />
               <dd:item icon="symbol-rss" text="${%LatestBuilds}" href="rssLatest" />
             </dd:submenu>
-            <dd:item icon="symbol-information-circle" id="button-icon-legend" text="${%Legend}" />
+            <dd:custom>
+              <button class="jenkins-dropdown__item"
+                      data-type="dialog-opener"
+                      data-dialog-id="${dialogId}">
+                <div class="jenkins-dropdown__item__icon">
+                  <l:icon src="symbol-information-circle" />
+                </div>
+                ${%Legend}
+              </button>
+            </dd:custom>
             <j:if test="${it.owner.canDelete(it) and it.hasPermission(it.DELETE)}">
               <dd:separator />
               <dd:custom>
