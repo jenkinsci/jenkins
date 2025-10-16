@@ -256,21 +256,21 @@ $jenkins-split-button-border-radius: 0.2rem;
 
 .jenkins-split-button {
   display: flex;
-  gap: 1px;
+  gap: 1.5px;
 
   & > :first-child {
     border-top-right-radius: $jenkins-split-button-border-radius;
     border-bottom-right-radius: $jenkins-split-button-border-radius;
   }
 
-  & > .jenkins-button:last-of-type {
+  & > * + * {
     padding: 0 5px;
     border-top-left-radius: $jenkins-split-button-border-radius;
     border-bottom-left-radius: $jenkins-split-button-border-radius;
 
     svg {
-      width: 0.8rem;
-      height: 0.8rem;
+      width: 0.75rem;
+      height: 0.75rem;
     }
   }
 }
