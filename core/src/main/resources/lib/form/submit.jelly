@@ -50,11 +50,18 @@ THE SOFTWARE.
     <s:attribute name="icon">
       @since 2.411
     </s:attribute>
+    <s:attribute name="action">
+      Overrides the action attribute of the button's form owner. Does nothing if there is no form owner.
+    </s:attribute>
+    <s:attribute name="method">
+      Overrides the method attribute of the button's form owner. Does nothing if there is no form owner.
+    </s:attribute>
     <s:attribute name="clazz" />
   </s:documentation>
 
   <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" value="${attrs.value ?: '%Submit'}" formNoValidate="formNoValidate"
-          class="jenkins-button jenkins-submit-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
+          class="jenkins-button jenkins-submit-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}"
+          formaction="${attrs.action}" formmethod="${attrs.method}">
     <j:if test="${attrs.icon != null}">
       <l:icon src="${attrs.icon}" />
     </j:if>
