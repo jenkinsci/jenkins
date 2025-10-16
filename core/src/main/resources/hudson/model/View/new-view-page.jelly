@@ -86,11 +86,12 @@ THE SOFTWARE.
           </j:if>
 
           <l:overflowButton>
-            <dd:item href="${rootURL}/${it.viewUrl}builds" icon="symbol-build-history" text="${%Build History}"/>
-            <j:if test="${app.fingerprintMap.ready}">
-              <dd:item href="${rootURL}/projectRelationship" icon="symbol-project-relationship" text="${%Project Relationship}"/>
-              <dd:item href="${rootURL}/fingerprintCheck" icon="icon-fingerprint icon-md" text="${%Check File Fingerprint}"/>
-            </j:if>
+            <dd:custom>
+              <div class="app-build-overflow">
+                <j:set var="mode" value="side-panel" />
+                <st:include page="sidepanel.jelly" it="${it.object}" />
+              </div>
+            </dd:custom>
             <dd:separator />
             <dd:submenu icon="symbol-rss" text="${%Atom feed}">
               <dd:item icon="symbol-rss" text="${%All}" href="rssAll" />
