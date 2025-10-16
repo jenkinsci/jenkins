@@ -30,7 +30,6 @@ import hudson.PluginWrapper;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.UpdateSite;
 import hudson.security.Permission;
-import hudson.util.HttpResponses;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,9 +40,6 @@ import java.util.Set;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Administrative monitor showing plugin/core warnings published by the configured update site to the user.
@@ -138,23 +134,6 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
         }
 
         return Collections.unmodifiableSet(activeWarnings);
-    }
-
-    /**
-     * Redirects the user to the plugin manager or security configuration
-     */
-    @RequirePOST
-    public HttpResponse doForward(@QueryParameter String fix, @QueryParameter String configure) {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        if (fix != null) {
-            return HttpResponses.redirectViaContextPath("pluginManager");
-        }
-        if (configure != null) {
-            return HttpResponses.redirectViaContextPath("configureSecurity");
-        }
-
-        // shouldn't happen
-        return HttpResponses.redirectViaContextPath("/");
     }
 
     /**
