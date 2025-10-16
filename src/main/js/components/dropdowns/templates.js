@@ -87,12 +87,12 @@ function loadScriptIfNotLoaded(url, item) {
 
 /**
  * Generates the contents for the dropdown
- * @param {DropdownItem}  menuItem
+ * @param {DropdownItem}  dropdownItem
  * @param {'jenkins-dropdown__item' | 'jenkins-button'}  type
  * @param {string}  context
  * @return {Element} TODO
  */
-function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
+function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
   /**
    * @type {DropdownItem}
    */
@@ -100,7 +100,7 @@ function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
     {
       type: "link",
     },
-    menuItem,
+    dropdownItem,
   );
 
   const label = xmlEscape(itemOptions.displayName);
@@ -113,14 +113,46 @@ function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
     badgeSeverity = xmlEscape(itemOptions.badge.severity);
   }
 
-  // TODO - improve this
   let clazz =
     itemOptions.clazz +
     (itemOptions.semantic
       ? " jenkins-!-" + itemOptions.semantic.toLowerCase() + "-color"
       : "");
 
-  // TODO - make this better
+  // If submenu
+  if (itemOptions.event && itemOptions.event.event) {
+    const wrapper = createElementFromHtml(
+      `<div class="jenkins-split-button"></div>`,
+    );
+    wrapper.appendChild(
+      menuItem(
+        Object.assign({}, dropdownItem, { event: dropdownItem.event.event }),
+        "jenkins-button",
+        context,
+      ),
+    );
+
+    const button = createElementFromHtml(
+      `<button class="${type + " " + clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><title>Chevron Down</title><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
+    );
+    Utils.generateDropdown(
+      button,
+      (instance) => {
+        instance.setContent(
+          Utils.generateDropdownItems(dropdownItem.event.actions),
+        );
+        instance.loaded = true;
+      },
+      false,
+      {
+        appendTo: "parent",
+      },
+    );
+    wrapper.appendChild(button);
+
+    return wrapper;
+  }
+
   const tag =
     itemOptions.event && itemOptions.event.type === "GET" ? "a" : "button";
   const url = tag === "a" ? context + xmlEscape(itemOptions.event.url) : "";
@@ -144,8 +176,10 @@ function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
         ${optionalVals({
           class: type + " " + clazz,
           href: url,
-          id: xmlEscape(itemOptions.id),
-          "data-html-tooltip": xmlEscape(itemOptions.tooltip),
+          id: itemOptions.id ? xmlEscape(itemOptions.id) : null,
+          "data-html-tooltip": itemOptions.tooltip
+            ? xmlEscape(itemOptions.tooltip)
+            : null,
         })}>
           ${
             itemOptions.icon
@@ -173,22 +207,26 @@ function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
     `);
 
   // Load script if needed
-  if (menuItem.event && menuItem.event.attributes) {
-    for (const key in menuItem.event.attributes) {
+  if (dropdownItem.event && dropdownItem.event.attributes) {
+    for (const key in dropdownItem.event.attributes) {
       item.dataset[kebabToCamelCase(key)] =
-        menuItem.event.attributes[key].toString();
+        dropdownItem.event.attributes[key].toString();
     }
 
-    loadScriptIfNotLoaded(menuItem.event.javascriptUrl, item);
+    loadScriptIfNotLoaded(dropdownItem.event.javascriptUrl, item);
   }
 
   // If dropdown
-  if (menuItem.event && menuItem.event.actions && type === "jenkins-button") {
+  if (
+    dropdownItem.event &&
+    dropdownItem.event.actions &&
+    type === "jenkins-button"
+  ) {
     Utils.generateDropdown(
       item,
       (instance) => {
         instance.setContent(
-          Utils.generateDropdownItems(menuItem.event.actions),
+          Utils.generateDropdownItems(dropdownItem.event.actions),
         );
         instance.loaded = true;
       },
@@ -200,12 +238,16 @@ function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
   }
 
   // If generic onClick event
-  if (menuItem.onClick) {
-    item.addEventListener("click", menuItem.onClick);
+  if (dropdownItem.onClick) {
+    item.addEventListener("click", dropdownItem.onClick);
   }
 
   // If it's a link
-  if (menuItem.event && menuItem.event.url && menuItem.event.type === "POST") {
+  if (
+    dropdownItem.event &&
+    dropdownItem.event.url &&
+    dropdownItem.event.type === "POST"
+  ) {
     item.addEventListener("click", () => {
       const form = document.createElement("form");
       form.setAttribute("method", "POST");
@@ -217,12 +259,12 @@ function menuItem(menuItem, type = "jenkins-dropdown__item", context = "") {
   }
 
   // If it's a confirmation dialog
-  if (menuItem.event && menuItem.event.postTo) {
+  if (dropdownItem.event && dropdownItem.event.postTo) {
     item.addEventListener("click", () => {
       dialog
-        .confirm(menuItem.event.title, {
-          message: menuItem.event.description,
-          type: menuItem.semantic.toLowerCase() ?? "default",
+        .confirm(dropdownItem.event.title, {
+          message: dropdownItem.event.description,
+          type: dropdownItem.semantic.toLowerCase() ?? "default",
         })
         .then(
           () => {
