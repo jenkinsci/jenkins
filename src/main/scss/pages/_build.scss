@@ -227,6 +227,7 @@ body:has(.app-build-bar) {
     aspect-ratio: 1;
     padding: 0;
     margin-inline: -1rem;
+    transition: translate var(--standard-transition);
 
     &:not(:hover) {
       color: color-mix(
@@ -244,7 +245,19 @@ body:has(.app-build-bar) {
     svg {
       width: 1rem;
       height: 1rem;
+
+      * {
+        stroke-width: 45px;
+      }
     }
+  }
+
+  .app-build__navigation-previous:hover {
+    translate: -0.0625rem 0;
+  }
+
+  .app-build__navigation-next:hover {
+    translate: 0.0625rem 0;
   }
 }
 

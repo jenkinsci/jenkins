@@ -102,7 +102,9 @@ $card-padding: 1rem;
       transition: var(--standard-transition);
     }
 
-    &:hover, &:active, &:focus-visible {
+    &:hover,
+    &:active,
+    &:focus-visible {
       --inset: 0 -0.5rem;
 
       svg {
