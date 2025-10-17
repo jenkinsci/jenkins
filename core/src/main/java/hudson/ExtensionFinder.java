@@ -193,6 +193,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             super(Extension.class);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         protected boolean isOptional(Extension annotation) {
             return annotation.optional();
@@ -779,6 +780,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
         }
 
+        @SuppressWarnings("deprecation")
         private Level logLevel(IndexItem<Extension, Object> item) {
             return item.annotation().optional() ? Level.FINE : Level.WARNING;
         }

@@ -22,34 +22,34 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model;
+package jenkins.job;
 
-import hudson.model.Action;
-import hudson.model.Actionable;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.model.Job;
+import java.util.Collection;
+import java.util.Collections;
+import jenkins.model.Tab;
+import jenkins.model.TransientActionFactory;
+import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 
-/**
- * Represents a tab element shown on {@link Actionable} views.
- * <p>
- * A {@code Tab} is an {@link Action} that can be attached to an {@link Actionable} object
- * (such as a job or build) and displayed as a separate tab in the UI.
- * </p>
- *
- * <p>
- * Tabs may also implement {@link Badgeable} to display a visual badge associated
- * with the tab’s action
- * </p>
- *
- * @since 2.532
- */
-public abstract class Tab implements Action, Badgeable {
+@Extension(ordinal = Integer.MAX_VALUE)
+public class OverviewTabFactory extends TransientActionFactory<Job> {
 
-    protected Actionable object;
-
-    public Tab(Actionable object) {
-        this.object = object;
+    @Override
+    public Class<Job> type() {
+        return Job.class;
     }
 
-    public Actionable getObject() {
-        return object;
+    @NonNull
+    @Override
+    public Collection<? extends Tab> createFor(@NonNull Job target) {
+        boolean isExperimentalUiEnabled = new NewJobPageUserExperimentalFlag().getFlagValue();
+
+        if (!isExperimentalUiEnabled) {
+            return Collections.emptySet();
+        }
+
+        return Collections.singleton(new OverviewTab(target));
     }
 }

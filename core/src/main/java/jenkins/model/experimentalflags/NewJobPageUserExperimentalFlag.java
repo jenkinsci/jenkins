@@ -22,34 +22,28 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model;
+package jenkins.model.experimentalflags;
 
-import hudson.model.Action;
-import hudson.model.Actionable;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Extension;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-/**
- * Represents a tab element shown on {@link Actionable} views.
- * <p>
- * A {@code Tab} is an {@link Action} that can be attached to an {@link Actionable} object
- * (such as a job or build) and displayed as a separate tab in the UI.
- * </p>
- *
- * <p>
- * Tabs may also implement {@link Badgeable} to display a visual badge associated
- * with the tab’s action
- * </p>
- *
- * @since 2.532
- */
-public abstract class Tab implements Action, Badgeable {
-
-    protected Actionable object;
-
-    public Tab(Actionable object) {
-        this.object = object;
+@Extension
+@Restricted(NoExternalUse.class)
+public class NewJobPageUserExperimentalFlag extends BooleanUserExperimentalFlag {
+    public NewJobPageUserExperimentalFlag() {
+        super("new-job-page.flag");
     }
 
-    public Actionable getObject() {
-        return object;
+    @Override
+    public String getDisplayName() {
+        return "New job page";
+    }
+
+    @Nullable
+    @Override
+    public String getShortDescription() {
+        return "Enables a revamped job page. This feature is still a work in progress, so some things might not work perfectly yet.";
     }
 }
