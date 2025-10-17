@@ -35,9 +35,11 @@ THE SOFTWARE.
 
     <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
 
-    <j:forEach var="w" items="${it.widgets}">
-      <st:include it="${w}" page="index.jelly" />
-    </j:forEach>
+    <div class="jenkins-!-margin-bottom-2">
+      <j:forEach var="w" items="${it.widgets}">
+        <st:include it="${w}" page="index.jelly" />
+      </j:forEach>
+    </div>
 
     <l:card title="${%Legacy}">
       <div>

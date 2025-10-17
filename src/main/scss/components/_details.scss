@@ -12,10 +12,16 @@ $icon-size: 1.125rem;
   a.jenkins-details__item {
     @include mixins.item($border: false);
 
+    transition: color var(--standard-transition);
+
     &::before,
     &::after {
       inset: 0 -0.5rem;
       pointer-events: all;
+    }
+
+    &:hover {
+      color: var(--text-color) !important;
     }
   }
 
