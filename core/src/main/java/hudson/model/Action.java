@@ -26,6 +26,10 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Functions;
+import jenkins.model.menu.Group;
+import jenkins.model.menu.Semantic;
+import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.LinkEvent;
 
 /**
  * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}
@@ -138,5 +142,23 @@ public interface Action extends ModelObject {
      *      (when you do that, be sure to also return null from {@link #getIconFileName()}.
      * @see Functions#getActionUrl(String, Action)
      */
-    @CheckForNull String getUrlName();
+    @CheckForNull default String getUrlName() {
+        return null;
+    }
+
+    default Group getGroup() {
+        return Group.IN_MENU;
+    }
+
+    default Event getEvent() {
+        return LinkEvent.of(getUrlName());
+    }
+
+    default Semantic getSemantic() {
+        return null;
+    }
+
+    default boolean isVisibleInContextMenu() {
+        return true;
+    }
 }

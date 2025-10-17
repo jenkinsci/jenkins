@@ -30,14 +30,20 @@ import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.model.Tab;
 import jenkins.model.TransientActionFactory;
 import jenkins.security.stapler.StaplerNotDispatchable;
+import org.apache.commons.lang.StringUtils;
+import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
@@ -111,6 +117,29 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             }
         }
         return Collections.unmodifiableList(_actions);
+    }
+
+    /**
+     * TODO
+     * @since TODO
+     */
+    public List<Action> getAppBarActions() {
+        return getAllActions().stream()
+                .filter(e -> !(e instanceof Tab))
+                .filter(e -> {
+                    String icon = e.getIconFileName();
+
+                    if (e instanceof IconSpec) {
+                        if (((IconSpec) e).getIconClassName() != null) {
+                            icon = ((IconSpec) e).getIconClassName();
+                        }
+                    }
+
+                    return !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(icon);
+                })
+                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
+                        .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {

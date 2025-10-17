@@ -14,7 +14,7 @@ function init() {
       ),
     ).map((section) => {
       section.id = toId(section.textContent);
-      return { label: section.textContent, url: "#" + section.id };
+      return { displayName: section.textContent, url: "#" + section.id };
     });
   }
 }
