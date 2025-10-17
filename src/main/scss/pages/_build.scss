@@ -41,7 +41,6 @@
 
     & > div {
       overflow: clip;
-      margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
 
       &:first-of-type {
         grid-column: span 1;
