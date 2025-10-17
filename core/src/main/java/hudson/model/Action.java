@@ -141,9 +141,6 @@ public interface Action extends ModelObject {
      *      null if this action object doesn't need to be bound to web
      *      (when you do that, be sure to also return null from {@link #getIconFileName()}.
      * @see Functions#getActionUrl(String, Action)
-     *
-     * @deprecated
-     *      Override {@link #getEvent()} instead
      */
     @CheckForNull default String getUrlName() {
         return null;

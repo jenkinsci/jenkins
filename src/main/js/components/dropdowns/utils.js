@@ -271,7 +271,7 @@ function mapChildrenItemsToDropdownItems(items) {
  * @return {DropdownItem[]}
  */
 function convertHtmlToItems(children) {
-  return [...children].map((child) => {
+  return Array.from(children).map((child) => {
     const attributes = child.dataset;
 
     /** @type {DropdownItemType} */
