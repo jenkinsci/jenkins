@@ -26,12 +26,13 @@ THE SOFTWARE.
   Config page
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%System}" type="one-column">
-  <st:include page="sidepanel.jelly" />
-  <f:breadcrumb-config-outline title="${%System}" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <j:new className="jenkins.management.ConfigureLink" var="it" />
 
-  <l:main-panel>
+  <f:breadcrumb-config-outline title="${it.displayName}" />
+
+  <l:settings-subpage>
+    <j:set var="it" value="${app}" />
     <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
     <l:app-bar title="${%System}" />
 
@@ -63,6 +64,5 @@ THE SOFTWARE.
       <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
       <f:saveApplyBar/>
     </f:form>
-  </l:main-panel>
-</l:layout>
+  </l:settings-subpage>
 </j:jelly>
