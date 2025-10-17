@@ -29,14 +29,12 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <j:new className="jenkins.management.ConfigureLink" var="it" />
 
-  <f:breadcrumb-config-outline title="${it.displayName}" />
-
   <l:settings-subpage>
     <j:set var="it" value="${app}" />
     <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
+
     <l:app-bar title="${%System}" />
 
-    <l:skeleton />
     <f:form method="post" name="config" action="configSubmit" class="jenkins-form">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />

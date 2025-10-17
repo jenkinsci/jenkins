@@ -27,9 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Log Recorders}" type="one-column">
-  <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-  <l:main-panel xmlns:local="local">
+  <l:settings-subpage xmlns:local="local">
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:app-bar title="${%Log Recorders}">
       <l:isAdmin>
         <a href="new" class="jenkins-button jenkins-button--primary">
@@ -76,6 +75,5 @@ THE SOFTWARE.
         </j:forEach>
       </tbody>
     </table>
-  </l:main-panel>
-</l:layout>
+  </l:settings-subpage>
 </j:jelly>

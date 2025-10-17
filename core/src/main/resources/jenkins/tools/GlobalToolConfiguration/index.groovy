@@ -7,9 +7,9 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(permission:app.SYSTEM_READ, title:my.displayName, type:"one-column") {
+l.'settings-subpage'() {
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
-    l.main_panel {
+//    l.main_panel {
         l.app_bar(title: my.displayName)
 
         l.skeleton()
@@ -34,5 +34,5 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, type:"one-column") {
         l.isAdmin() {
             st.adjunct(includes: "lib.form.confirm")
         }
-    }
+//    }
 }

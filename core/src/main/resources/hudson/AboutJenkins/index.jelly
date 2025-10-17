@@ -25,12 +25,13 @@ THE SOFTWARE.
 <!-- About Jenkins page -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:layout type="one-column" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%about(app.VERSION)}">
-    <l:header>
-      <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
-    </l:header>
-    
-    <l:main-panel>
+  <l:header>
+    <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
+  </l:header>
+
+  <l:settings-subpage>
+
+<!--    <l:main-panel>-->
       <div class="app-about-branding">
         <div class="app-about-branding__aurora"></div>
         <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}" />
@@ -137,6 +138,6 @@ THE SOFTWARE.
           </tbody>
         </table>
       </div>
-    </l:main-panel>
-  </l:layout>
+<!--    </l:main-panel>-->
+  </l:settings-subpage>
 </j:jelly>

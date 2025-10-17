@@ -27,9 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-<l:layout title="${%Nodes}" type="one-column">
-  <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-  <l:main-panel>
+  <l:settings-subpage>
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:app-bar title="${%Nodes}">
       <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
       <j:if test="${h.hasPermission(createPermission)}">
@@ -133,6 +132,5 @@ THE SOFTWARE.
       <st:include page="_legend.jelly"/>
     </template>
     <script src="${resURL}/jsbundles/pages/computer-set.js" type="text/javascript" defer="true" />
-  </l:main-panel>
-</l:layout>
+  </l:settings-subpage>
 </j:jelly>

@@ -34,10 +34,46 @@ THE SOFTWARE.
     <j:choose>
       <j:when test="${newManageJenkins}">
         <l:side-panel>
-          Experimental!
+          <l:app-bar title="${%Manage Jenkins}" />
+
+          <l:tasks>
+            <l:search-bar placeholder="${%Search}" id="settings-search-bar" />
+
+            <script src="${resURL}/jsbundles/pages/manage-jenkins.js" type="text/javascript" />
+
+            <j:invokeStatic var="j" className="jenkins.model.Jenkins" method="get" />
+            <j:forEach var="category" items="${j.categorizedManagementLinks.entrySet()}">
+              <details class="jenkins-side-nav__group"
+                       data-side-nav-key="manage"
+                       data-side-nav-value="${category.key}"
+                       open="true">
+                <summary class="jenkins-side-nav__group-heading">
+                  ${category.key.label}
+                </summary>
+                <div class="jenkins-side-nav__group-children">
+                  <j:forEach var="item" items="${category.value}">
+                    <l:task title="${item.displayName}"
+                            href="${rootURL}/manage/${item.urlName}"
+                            icon="${item.iconFileName}"
+                            badge="${item.badge}"
+                            requiresConfirmation="${item.requiresConfirmation}"
+                            post="${item.requiresPOST}"
+                            confirmationMessage="${%sure}" />
+                  </j:forEach>
+                </div>
+              </details>
+            </j:forEach>
+          </l:tasks>
         </l:side-panel>
         <l:main-panel>
-          <d:invokeBody />
+          <l:defer>
+            <l:defer.placeholder>
+              Loading!
+            </l:defer.placeholder>
+            <l:defer.children>
+              <d:invokeBody />
+            </l:defer.children>
+          </l:defer>
         </l:main-panel>
       </j:when>
       <j:otherwise>

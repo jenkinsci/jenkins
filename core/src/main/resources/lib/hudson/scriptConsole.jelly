@@ -36,13 +36,13 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:set var="layout" value="${attrs.layout != null ? attrs.layout : 'two-column'}" />
-  <l:layout permission="${app.ADMINISTER}" title="${%scriptConsole}" type="${layout}">
+  <l:settings-subpage permission="${app.ADMINISTER}" title="${%scriptConsole}" type="${layout}">
     <j:if test="${layout == 'two-column'}">
       <st:include page="sidepanel.jelly" />
     </j:if>
 
     <l:breadcrumb title="${%scriptConsole}"/>
-    <l:main-panel>
+<!--    <l:main-panel>-->
       <h1>${%scriptConsole}</h1>
 
       <j:choose>
@@ -76,6 +76,6 @@ THE SOFTWARE.
           ${%impossibleOffline}
         </j:otherwise>
       </j:choose>
-    </l:main-panel>
-  </l:layout>
+<!--    </l:main-panel>-->
+  </l:settings-subpage>
 </j:jelly>
