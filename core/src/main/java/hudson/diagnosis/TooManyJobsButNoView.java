@@ -27,12 +27,8 @@ package hudson.diagnosis;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.security.Permission;
-import java.io.IOException;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse2;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * If Hudson is run with a lot of jobs but no views, suggest the user that they can create views.
@@ -58,20 +54,6 @@ public class TooManyJobsButNoView extends AdministrativeMonitor {
         }
         // SystemRead
         return j.getViews().size() == 1 && j.getItems().size() > THRESHOLD;
-    }
-
-    /**
-     * Depending on whether the user said "yes" or "no", send him to the right place.
-     */
-    @RequirePOST
-    public void doAct(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        if (req.hasParameter("no")) {
-            disable(true);
-            rsp.sendRedirect(req.getContextPath() + "/manage");
-        } else {
-            rsp.sendRedirect(req.getContextPath() + "/newView");
-        }
     }
 
     @Override
