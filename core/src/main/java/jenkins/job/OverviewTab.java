@@ -22,34 +22,29 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model;
+package jenkins.job;
 
-import hudson.model.Action;
 import hudson.model.Actionable;
+import jenkins.model.Tab;
 
-/**
- * Represents a tab element shown on {@link Actionable} views.
- * <p>
- * A {@code Tab} is an {@link Action} that can be attached to an {@link Actionable} object
- * (such as a job or build) and displayed as a separate tab in the UI.
- * </p>
- *
- * <p>
- * Tabs may also implement {@link Badgeable} to display a visual badge associated
- * with the tab’s action
- * </p>
- *
- * @since 2.532
- */
-public abstract class Tab implements Action, Badgeable {
+public class OverviewTab extends Tab {
 
-    protected Actionable object;
-
-    public Tab(Actionable object) {
-        this.object = object;
+    public OverviewTab(Actionable object) {
+        super(object);
     }
 
-    public Actionable getObject() {
-        return object;
+    @Override
+    public String getIconFileName() {
+        return "symbol-overview";
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Overview";
+    }
+
+    @Override
+    public String getUrlName() {
+        return null;
     }
 }

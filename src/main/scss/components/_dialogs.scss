@@ -1,6 +1,8 @@
 $jenkins-dialog-padding: 1.25rem;
 
 .jenkins-dialog {
+  --background: var(--dialog-background);
+
   border-radius: 1rem;
   border: none;
   background-color: var(--dialog-background);

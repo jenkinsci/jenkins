@@ -32,20 +32,22 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <div class="app-build-tabs">
-    <j:forEach var="tab" items="${items}">
-      <a href="${url}/${tab.urlName}"
-         class="jenkins-button ${h.hyperlinkMatchesCurrentPage(tab.urlName ?: url) ? '' : 'jenkins-button--tertiary'}">
-        <j:if test="${tab.iconFileName != null}">
-          <l:icon src="${tab.iconFileName}" />
-        </j:if>
-        ${tab.displayName}
-        <j:if test="${tab.badge != null}">
-          <div class="pill jenkins-!-${tab.badge.severity}-color" aria-label="${tab.badge.tooltip}">
-            ${tab.badge.text}
-          </div>
-        </j:if>
-      </a>
-    </j:forEach>
-  </div>
+  <j:if test="${items.size() gt 1}">
+    <div class="app-build-tabs">
+      <j:forEach var="tab" items="${items}">
+        <a href="${url}/${tab.urlName}"
+           class="jenkins-button ${h.hyperlinkMatchesCurrentPage(tab.urlName ?: url) ? '' : 'jenkins-button--tertiary'}">
+          <j:if test="${tab.iconFileName != null}">
+            <l:icon src="${tab.iconFileName}" />
+          </j:if>
+          ${tab.displayName}
+          <j:if test="${tab.badge != null}">
+            <div class="pill jenkins-!-${tab.badge.severity}-color" aria-label="${tab.badge.tooltip}">
+              ${tab.badge.text}
+            </div>
+          </j:if>
+        </a>
+      </j:forEach>
+    </div>
+  </j:if>
 </j:jelly>
