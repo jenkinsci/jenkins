@@ -9,30 +9,28 @@ def st=namespace("jelly:stapler")
 
 l.'settings-subpage'() {
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
-//    l.main_panel {
-        l.app_bar(title: my.displayName)
+    l.app_bar(title: my.displayName)
 
-        l.skeleton()
+    l.skeleton()
 
-        f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
-            Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
-                set("descriptor",descriptor)
-                set("instance",descriptor)
-                f.rowSet(name:descriptor.jsonSafeClassName) {
-                    st.include(from:descriptor, page:descriptor.globalConfigPage)
-                }
-            }
-
-            l.isAdmin() {
-                f.bottomButtonBar {
-                    f.submit(value: _("Save"))
-                    f.apply(value: _("Apply"))
-                }
+    f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
+        Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
+            set("descriptor",descriptor)
+            set("instance",descriptor)
+            f.rowSet(name:descriptor.jsonSafeClassName) {
+                st.include(from:descriptor, page:descriptor.globalConfigPage)
             }
         }
 
         l.isAdmin() {
-            st.adjunct(includes: "lib.form.confirm")
+            f.bottomButtonBar {
+                f.submit(value: _("Save"))
+                f.apply(value: _("Apply"))
+            }
         }
-//    }
+    }
+
+    l.isAdmin() {
+        st.adjunct(includes: "lib.form.confirm")
+    }
 }
