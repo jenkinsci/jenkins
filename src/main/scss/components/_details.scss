@@ -12,10 +12,16 @@ $icon-size: 1.125rem;
   a.jenkins-details__item {
     @include mixins.item($border: false);
 
+    transition: color var(--standard-transition);
+
     &::before,
     &::after {
       inset: 0 -0.5rem;
       pointer-events: all;
+    }
+
+    &:hover {
+      color: var(--text-color) !important;
     }
   }
 
@@ -58,7 +64,7 @@ $icon-size: 1.125rem;
   &__button {
     --button-background: transparent !important;
 
-    min-width: 51px;
+    min-width: 3.25rem;
     min-height: 2rem;
     padding-block: 0;
     color: var(--text-color-secondary) !important;
