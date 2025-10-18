@@ -221,13 +221,14 @@ public class AnnotatedLargeText<T> extends LargeText {
         return isHtml(req);
     }
 
+    /**
+     * Strips annotations using a {@link PlainTextConsoleOutputStream}.
+     * {@inheritDoc}
+     */
     @CheckReturnValue
     @Override
     public long writeLogTo(long start, OutputStream out) throws IOException {
-        if (isHtml())
-            return writeHtmlTo(start, new OutputStreamWriter(out, StandardCharsets.UTF_8));
-        else
-            return super.writeLogTo(start, new PlainTextConsoleOutputStream(out));
+        return super.writeLogTo(start, new PlainTextConsoleOutputStream(out));
     }
 
     /**
