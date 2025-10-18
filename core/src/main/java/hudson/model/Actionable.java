@@ -129,10 +129,8 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 .filter(e -> {
                     String icon = e.getIconFileName();
 
-                    if (e instanceof IconSpec) {
-                        if (((IconSpec) e).getIconClassName() != null) {
-                            icon = ((IconSpec) e).getIconClassName();
-                        }
+                    if (e instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null) {
+                        icon = iconSpec.getIconClassName();
                     }
 
                     return !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(icon);

@@ -135,41 +135,24 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             menuItem.semantic = action.getSemantic();
             menuItem.group = action.getGroup();
             menuItem.event = action.getEvent();
+
             if (!Functions.isContextMenuVisible(action)) {
                 return this;
             }
-            StaplerRequest2 req = Stapler.getCurrentRequest2();
-            String text = action.getDisplayName();
-            String base = Functions.getIconFilePath(action);
-            if (base == null)     return this;
-            String url =  Functions.getActionUrl(req.findAncestor(ModelObject.class).getUrl(), action);
-
-            if (base.startsWith("symbol-")) {
-                Icon icon = Functions.tryGetIcon(base);
-//                return add(url, icon.getClassSpec(), text);
-            } else {
-                String icon = Stapler.getCurrentRequest2().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
-//                return add(url, icon, text);
-            }
-//        }
-
-//            if (action.getEvent().getClass() == LinkEvent.class) {
-//                menuItem.url = ((LinkEvent)action.getEvent()).getUrl();
-//            }
 
             if (action.getEvent() instanceof DropdownEvent dropdownEvent) {
                 menuItem.subMenu = new ContextMenu();
                 menuItem.subMenu.addAll(dropdownEvent.getActions());
             }
 
+            // Set icon
             String icon = action.getIconFileName();
-            if (action instanceof IconSpec) {
-                if (((IconSpec) action).getIconClassName() != null) {
-                    icon = ((IconSpec) action).getIconClassName();
-                }
+            if (action instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null) {
+                icon = iconSpec.getIconClassName();
             }
             menuItem.icon = icon;
 
+            // If Symbol, set iconXml
             if (icon != null && icon.startsWith("symbol-")) {
                 menuItem.iconXml = Symbol.get(new SymbolRequest.Builder()
                         .withName(icon.split(" ")[0].substring(7))
