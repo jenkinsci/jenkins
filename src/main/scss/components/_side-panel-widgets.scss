@@ -1,7 +1,7 @@
 @use "../abstracts/mixins";
 
 .pane-frame {
-  border-radius: 1rem;
+  border-radius: var(--form-input-border-radius);
   background: var(--card-background);
   border: var(--card-border-width) solid var(--card-border-color);
   margin-bottom: calc(var(--section-padding) / 2);
