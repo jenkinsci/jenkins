@@ -68,8 +68,17 @@ THE SOFTWARE.
             </div>
 
             <div class="app-build-bar__controls">
-              <l:app-bar-controls actions="${it.object.appBarActions}" />
+              <l:overflowButton>
+                <dd:custom>
+                  <div class="app-build-overflow">
+                    <j:set var="mode" value="side-panel" />
+                    <st:include page="sidepanel.jelly" it="${it.object}" />
+                  </div>
+                </dd:custom>
+              </l:overflowButton>
             </div>
+
+            <st:adjunct includes="lib.hudson.build-caption" />
           </div>
 
           <div class="app-build-content">

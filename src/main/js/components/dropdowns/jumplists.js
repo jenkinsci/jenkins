@@ -100,13 +100,11 @@ function generateDropdowns() {
           .then((json) =>
             instance.setContent(
               Utils.generateDropdownItems(
-                Utils.mapChildrenItemsToDropdownItems(json.items),
-                false,
-                href,
+                mapChildrenItemsToDropdownItems(json.items),
               ),
             ),
           )
-          .catch((error) => console.error(`Jumplist request failed:`, error))
+          .catch((error) => console.log(`Jumplist request failed: ${error}`))
           .finally(() => (instance.loaded = true));
       }),
   );

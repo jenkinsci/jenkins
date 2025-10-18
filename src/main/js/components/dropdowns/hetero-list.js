@@ -191,7 +191,7 @@ function generateButtons() {
           let disabled = oneEach && has(n.descriptorId);
           let type = disabled ? "DISABLED" : "button";
           let item = {
-            displayName: n.title,
+            label: n.title,
             onClick: (event) => {
               event.preventDefault();
               event.stopPropagation();
