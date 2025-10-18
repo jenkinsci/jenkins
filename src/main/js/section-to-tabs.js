@@ -47,4 +47,4 @@ tabPanes.forEach((tabPane, index) => {
   tabBar.append(tab);
 });
 
-content.insertBefore(tabBar, tabPanes[0]);
+tabPanes[0].parentElement.insertBefore(tabBar, tabPanes[0]);
