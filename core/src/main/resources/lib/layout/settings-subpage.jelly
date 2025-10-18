@@ -26,15 +26,21 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
   <st:documentation>
     A reusable container for subpages relating under Manage Jenkins.
+    <st:attribute name="permissions">
+      If given, this page is made available to users who have one or more of the specified permissions.
+      (The permissions will be checked against the "it" object.)
+    </st:attribute>
   </st:documentation>
 
-  <l:layout title="${it.displayName} - Manage Jenkins">
+  <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
+
+  <l:layout title="${it.displayName} - ${manageJenkinsAction.displayName}">
     <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
 
     <j:choose>
       <j:when test="${newManageJenkins}">
         <l:side-panel>
-          <l:app-bar title="${%Manage Jenkins}" />
+          <l:app-bar title="${manageJenkinsAction.displayName}" />
 
           <l:tasks>
             <l:search-bar placeholder="${%Search}" id="settings-search-bar" />
@@ -43,39 +49,34 @@ THE SOFTWARE.
 
             <j:invokeStatic var="j" className="jenkins.model.Jenkins" method="get" />
             <j:forEach var="category" items="${j.categorizedManagementLinks.entrySet()}">
-              <details class="jenkins-side-nav__group"
-                       data-side-nav-key="manage"
-                       data-side-nav-value="${category.key}"
-                       open="true">
-                <summary class="jenkins-side-nav__group-heading">
-                  ${category.key.label}
-                </summary>
-                <div class="jenkins-side-nav__group-children">
-                  <j:forEach var="item" items="${category.value}">
-                    <l:task title="${item.displayName}"
-                            href="${rootURL}/manage/${item.urlName}"
-                            icon="${item.iconFileName}"
-                            badge="${item.badge}"
-                            requiresConfirmation="${item.requiresConfirmation}"
-                            post="${item.requiresPOST}"
-                            confirmationMessage="${%sure}" />
-                  </j:forEach>
-                </div>
-              </details>
+              <summary class="jenkins-side-nav__heading">
+                ${category.key.label}
+              </summary>
+              <j:forEach var="item" items="${category.value}">
+                <l:task title="${item.displayName}"
+                        href="${rootURL}/manage/${item.urlName}"
+                        icon="${item.iconFileName}"
+                        badge="${item.badge}"
+                        requiresConfirmation="${item.requiresConfirmation}"
+                        post="${item.requiresPOST}"
+                        confirmationMessage="${%sure}" />
+              </j:forEach>
             </j:forEach>
           </l:tasks>
         </l:side-panel>
         <l:main-panel>
-          <l:defer>
-            <l:defer.placeholder>
-              <l:app-bar title="${it.displayName}" />
-<!--              todo change this-->
-              <l:skeleton type="button" />
-            </l:defer.placeholder>
-            <l:defer.children>
-              <d:invokeBody />
-            </l:defer.children>
-          </l:defer>
+          <div style="max-width: 1000px; margin: auto; overflow-x: hidden">
+            <l:defer>
+              <l:defer.placeholder>
+                <l:app-bar title="${it.displayName}" />
+                <!--              todo change this-->
+                <l:skeleton type="button" />
+              </l:defer.placeholder>
+              <l:defer.children>
+                <d:invokeBody />
+              </l:defer.children>
+            </l:defer>
+          </div>
         </l:main-panel>
       </j:when>
       <j:otherwise>
