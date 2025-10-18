@@ -33,10 +33,9 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
+  <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
 
-  <l:layout title="${it.displayName} - ${manageJenkinsAction.displayName}">
-    <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
-
+  <l:layout title="${it.displayName} - ${manageJenkinsAction.displayName}" type="${newManageJenkins ? 'two-column' : 'one-column'}">
     <j:choose>
       <j:when test="${newManageJenkins}">
         <l:side-panel>
@@ -69,8 +68,7 @@ THE SOFTWARE.
             <l:defer>
               <l:defer.placeholder>
                 <l:app-bar title="${it.displayName}" />
-                <!--              todo change this-->
-                <l:skeleton type="button" />
+                <l:spinner text="Loading" />
               </l:defer.placeholder>
               <l:defer.children>
                 <d:invokeBody />
@@ -80,8 +78,6 @@ THE SOFTWARE.
         </l:main-panel>
       </j:when>
       <j:otherwise>
-        <st:include page="sidepanel.jelly" it="${app}" />
-
         <l:main-panel>
           <d:invokeBody />
         </l:main-panel>
