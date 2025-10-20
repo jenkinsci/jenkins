@@ -9,20 +9,20 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.function.Function;
 import java.util.function.IntConsumer;
-import java.util.function.Supplier;
 
 /**
  * Take {@code SortedMap<Integer,BuildReference<R>>} and make it look like {@code SortedMap<Integer,R>}.
  *
  * <p>
- * When {@link BuildReference} lost the build object, we'll use {@link #buildRefResolver} to obtain one.
+ * When {@link BuildReference} lost the build object, we'll use {@link Resolver} to obtain one.
  * </p>
  *
  * <p>
@@ -44,24 +44,16 @@ import java.util.function.Supplier;
  * @author Kohsuke Kawaguchi
  */
 class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements SortedMap<Integer, R> {
-    private final Function<BuildReference<R>, R> buildRefResolver;
-    private final Function<R, Integer> buildNumberProvider;
-    private final Supplier<Class<R>> buildClassProvider;
-
-    private final SortedMap<Integer, BuildReference<R>> core;
+    private final NavigableMap<Integer, BuildReference<R>> core;
+    private final Resolver<R> resolver;
 
     private final Set<Integer> keySet = new KeySetAdapter();
     private final Collection<R> values = new ValuesAdapter();
     private final Set<Map.Entry<Integer, R>> entrySet = new EntrySetAdapter();
 
-    BuildReferenceMapAdapter(SortedMap<Integer, BuildReference<R>> core,
-                             Function<BuildReference<R>, R> buildRefResolver,
-                             Function<R, Integer> buildNumberProvider,
-                             Supplier<Class<R>> buildClassProvider) {
-        this.buildRefResolver = buildRefResolver;
-        this.buildNumberProvider = buildNumberProvider;
+    BuildReferenceMapAdapter(NavigableMap<Integer, BuildReference<R>> core, Resolver<R> resolver) {
         this.core = core;
-        this.buildClassProvider = buildClassProvider;
+        this.resolver = resolver;
     }
 
     @Override
@@ -71,30 +63,27 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
 
     @Override
     public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
-        return new BuildReferenceMapAdapter<>(core.subMap(fromKey, toKey),
-                buildRefResolver, buildNumberProvider, buildClassProvider);
+        return new BuildReferenceMapAdapter<>(core.subMap(fromKey, true, toKey, false), resolver);
     }
 
     @Override
     public SortedMap<Integer, R> headMap(Integer toKey) {
-        return new BuildReferenceMapAdapter<>(core.headMap(toKey),
-                buildRefResolver, buildNumberProvider, buildClassProvider);
+        return new BuildReferenceMapAdapter<>(core.headMap(toKey, false), resolver);
     }
 
     @Override
     public SortedMap<Integer, R> tailMap(Integer fromKey) {
-        return new BuildReferenceMapAdapter<>(core.tailMap(fromKey),
-                buildRefResolver, buildNumberProvider, buildClassProvider);
+        return new BuildReferenceMapAdapter<>(core.tailMap(fromKey, true), resolver);
     }
 
     @Override
     public Integer firstKey() {
-        return core.firstKey();
+        return keySet.stream().findFirst().orElseThrow(NoSuchElementException::new);
     }
 
     @Override
     public Integer lastKey() {
-        return core.lastKey();
+        return new BuildReferenceMapAdapter<>(core.descendingMap(), resolver).firstKey();
     }
 
     @Override
@@ -108,7 +97,7 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
     }
 
     @Override
-    public Set<Entry<Integer, R>> entrySet() {
+    public Set<Map.Entry<Integer, R>> entrySet() {
         return entrySet;
     }
 
@@ -125,23 +114,23 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         }
         // if found, check if value is loadable
         if (!ref.isSet()) {
-            buildRefResolver.apply(ref);
+            resolver.resolveBuildRef(ref);
         }
         return !ref.isUnloadable();
     }
 
     @Override
     public boolean containsValue(Object value) {
-        if (!buildClassProvider.get().isInstance(value)) {
+        if (!resolver.getBuildClass().isInstance(value)) {
             return false;
         }
-        R val = buildClassProvider.get().cast(value);
-        return val.equals(get(buildNumberProvider.apply(val)));
+        R val = resolver.getBuildClass().cast(value);
+        return val.equals(get(resolver.getNumberOf(val)));
     }
 
     @Override
     public R get(Object key) {
-        return key instanceof Integer ? buildRefResolver.apply(core.get(key)) : null;
+        return key instanceof Integer ? resolver.resolveBuildRef(core.get(key)) : null;
     }
 
     @Override
@@ -182,7 +171,7 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         public Iterator<Integer> iterator() {
             return new AdaptedIterator<>(BuildReferenceMapAdapter.this.entrySet().iterator()) {
                 @Override
-                protected Integer adapt(Entry<Integer, R> e) {
+                protected Integer adapt(Map.Entry<Integer, R> e) {
                     return e.getKey();
                 }
             };
@@ -230,15 +219,15 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
 
         @Override
         public boolean remove(Object o) {
-            return buildClassProvider.get().isInstance(o) &&
-                    BuildReferenceMapAdapter.this.removeValue(buildClassProvider.get().cast(o));
+            return resolver.getBuildClass().isInstance(o) &&
+                    BuildReferenceMapAdapter.this.removeValue(resolver.getBuildClass().cast(o));
         }
 
         @Override
         public Iterator<R> iterator() {
             return new AdaptedIterator<>(BuildReferenceMapAdapter.this.entrySet().iterator()) {
                 @Override
-                protected R adapt(Entry<Integer, R> e) {
+                protected R adapt(Map.Entry<Integer, R> e) {
                     return e.getValue();
                 }
             };
@@ -250,7 +239,7 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         }
     }
 
-    private class EntrySetAdapter extends AbstractSet<Entry<Integer, R>> {
+    private class EntrySetAdapter extends AbstractSet<Map.Entry<Integer, R>> {
         @Override
         public int size() {
             return BuildReferenceMapAdapter.this.core.size();
@@ -272,20 +261,31 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         @Override
         public boolean remove(Object o) {
             if (o instanceof Map.Entry<?, ?> e) {
-                return buildClassProvider.get().isInstance(e.getValue()) &&
-                        BuildReferenceMapAdapter.this.removeValue(buildClassProvider.get().cast(e.getValue()));
+                return resolver.getBuildClass().isInstance(e.getValue()) &&
+                        BuildReferenceMapAdapter.this.removeValue(resolver.getBuildClass().cast(e.getValue()));
             }
             return false;
         }
 
         @Override
-        public Iterator<Entry<Integer, R>> iterator() {
+        public Iterator<Map.Entry<Integer, R>> iterator() {
             return new Iterator<>() {
-                private Entry<Integer, R> current;
-                private final Iterator<Entry<Integer, R>> it = Iterators.removeNull(Iterators.map(
+                private Map.Entry<Integer, R> current;
+                private final Iterator<Map.Entry<Integer, R>> it = Iterators.removeNull(Iterators.map(
                         BuildReferenceMapAdapter.this.core.entrySet().iterator(), coreEntry -> {
-                            R v = BuildReferenceMapAdapter.this.buildRefResolver.apply(coreEntry.getValue());
-                            return v == null ? null : new AbstractMap.SimpleEntry<>(coreEntry.getKey(), v);
+                            BuildReference<R> ref = coreEntry.getValue();
+                            if (!ref.isSet()) {
+                                R r = resolver.resolveBuildRef(ref);
+                                // load not loaded or unloadable build
+                                if (r == null) {
+                                    return null;
+                                }
+                                return new EntryAdapter(coreEntry, r);
+                            }
+                            if (ref.isUnloadable()) {
+                                return null;
+                            }
+                            return new EntryAdapter(coreEntry);
                         }));
 
                 @Override
@@ -294,7 +294,7 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
                 }
 
                 @Override
-                public Entry<Integer, R> next() {
+                public Map.Entry<Integer, R> next() {
                     return current = it.next();
                 }
 
@@ -312,5 +312,89 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         public Spliterator<Map.Entry<Integer, R>> spliterator() {
             return Spliterators.spliteratorUnknownSize(iterator(), Spliterator.DISTINCT | Spliterator.ORDERED);
         }
+    }
+
+    private class EntryAdapter implements Entry<Integer, R> {
+        private final Map.Entry<Integer, BuildReference<R>> coreEntry;
+        private volatile R resolvedValue;
+
+        EntryAdapter(Map.Entry<Integer, BuildReference<R>> coreEntry) {
+            this(coreEntry, null);
+        }
+
+        EntryAdapter(Map.Entry<Integer, BuildReference<R>> coreEntry, R resolvedValue) {
+            this.coreEntry = coreEntry;
+            this.resolvedValue = resolvedValue;
+        }
+
+        private Map.Entry<Integer, R> getResolvedEntry() {
+            return new AbstractMap.SimpleEntry<>(getKey(), getValue());
+        }
+
+        @Override
+        public Integer getKey() {
+            return coreEntry.getKey();
+        }
+
+        @Override
+        public R getValue() {
+            R value = resolvedValue;
+            if (value != null) {
+                return value;
+            }
+            return resolvedValue = resolver.resolveBuildRef(coreEntry.getValue());
+        }
+
+        @Override
+        public R setValue(R value) {
+            // BuildReferenceAdapter is read only
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String toString() {
+            return getResolvedEntry().toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return (o instanceof Map.Entry<?, ?>) && getResolvedEntry().equals(o);
+        }
+
+        @Override
+        public int hashCode() {
+            return getResolvedEntry().hashCode();
+        }
+    }
+
+    /**
+     * An interface for resolving build references into actual build instances
+     * and extracting basic metadata from them.
+     **/
+    public interface Resolver<R> {
+
+        /**
+         * Resolves the given build reference into an actual build instance.
+         *
+         * @param buildRef the reference to a build to resolve, can be {@code null}
+         * @return the resolved build instance, or {@code null} if the reference is {@code null}
+         *      or could not be resolved
+         */
+        R resolveBuildRef(BuildReference<R> buildRef);
+
+        /**
+         * Returns the build number associated with the given build instance.
+         *
+         * @param build the build instance, cannot be null
+         * @return the build number
+         */
+        Integer getNumberOf(R build);
+
+        /**
+         * Returns the class of the build type handled by this resolver.
+         *
+         * @return the {@link Class} of the build type {@code R}
+         */
+        Class<R> getBuildClass();
     }
 }

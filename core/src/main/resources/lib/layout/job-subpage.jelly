@@ -1,0 +1,131 @@
+<!--
+The MIT License
+
+Copyright (c) 2025, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:dd="/lib/layout/dropdowns"
+         xmlns:st="jelly:stapler">
+  <st:documentation>
+    A reusable container for subpages relating to Jobs in Jenkins.
+    Renders a tabbed layout for jobs, including build status and actions.
+  </st:documentation>
+
+  <l:layout title="${it.displayName} - ${it.object.displayName}">
+    <l:userExperimentalFlag var="newJobPage" flagClassName="jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag" />
+
+    <j:choose>
+      <j:when test="${newJobPage}">
+        <l:main-panel>
+          <div class="app-build-bar">
+            <div class="app-build-bar__content">
+              <j:set var="lastBuild" value="${it.object.lastBuild}" />
+              <j:if test="${lastBuild != null}">
+                <a href="${rootURL + '/' + lastBuild.url}" class="jenkins-!-display-contents" tabindex="-1">
+                  <l:icon src="symbol-status-${lastBuild.iconColor.iconName}" tooltip="${lastBuild.iconColor.description}" class="icon-md" />
+                </a>
+              </j:if>
+              <h1 class="job-index-headline page-headline">
+                <l:breakable value="${it.object.displayName}"/>
+              </h1>
+            </div>
+
+            <j:set var="url" value="${h.getNearestAncestorUrl(request2, it.object)}"/>
+
+            <div class="app-build-bar__tabs">
+              <l:tabs items="${it.object.jobTabs}" />
+            </div>
+
+            <div class="app-build-bar__controls">
+              <j:if test="${it.object.buildable and h.hasPermission(it.object, it.object.BUILD)}">
+                <j:choose>
+                  <j:when test="${!it.object.parameterized}">
+                    <a class="jenkins-button jenkins-!-build-color task-link-no-confirm"
+                            data-callback="lib_hudson_project_configurable_build_now_callback"
+                            data-build-failure="${%Build failed}"
+                            data-build-success="${%Build scheduled}"
+                            data-parameterized="false"
+                            data-task-post="true"
+                            href="${url}/build?delay=0sec">
+                      <l:icon src="symbol-play" />
+                      ${it.object.buildNowText}
+                    </a>
+                  </j:when>
+                  <j:otherwise>
+                    <l:dialog title="${it.object.buildNowText}" hash="build-with-parameters">
+                      <div>
+                        <st:include page="contents.jelly" it="${it.object.parametersDefinitionProperty}" />
+                      </div>
+                    </l:dialog>
+
+                    <button class="jenkins-button jenkins-!-build-color"
+                            data-type="dialog-opener"
+                            data-dialog-id="${dialogId}">
+                      <l:icon src="symbol-play" />
+                      ${it.object.buildNowText}
+                    </button>
+                  </j:otherwise>
+                </j:choose>
+
+                <st:adjunct includes="lib.hudson.project.configurable.configurable"/>
+                <st:adjunct includes="lib.layout.task.task" />
+              </j:if>
+
+              <j:choose>
+                <j:when test="${h.hasPermission(it.object, it.object.CONFIGURE)}">
+                  <a href="${url}/configure" class="jenkins-button">
+                    ${%Configure}
+                  </a>
+                </j:when>
+                <j:when test="${h.hasPermission(it.object, it.object.EXTENDED_READ)}">
+                  <a href="${url}/configure" class="jenkins-button">
+                    ${%View Configuration}
+                  </a>
+                </j:when>
+              </j:choose>
+
+              <l:overflowButton>
+                <dd:custom>
+                  <div class="app-build-overflow">
+                    <j:set var="mode" value="side-panel" />
+                    <st:include page="sidepanel.jelly" it="${it.object}" />
+                  </div>
+                </dd:custom>
+              </l:overflowButton>
+            </div>
+          </div>
+
+          <div class="app-build-content">
+            <d:invokeBody />
+          </div>
+        </l:main-panel>
+      </j:when>
+      <j:otherwise>
+        <st:include page="sidepanel.jelly" it="${it.object}" />
+
+        <l:main-panel>
+          <d:invokeBody />
+        </l:main-panel>
+      </j:otherwise>
+    </j:choose>
+  </l:layout>
+</j:jelly>

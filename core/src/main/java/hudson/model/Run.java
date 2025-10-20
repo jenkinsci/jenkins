@@ -120,6 +120,8 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
+import jenkins.model.Tab;
+import jenkins.model.details.CauseDetail;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DurationDetail;
@@ -385,7 +387,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @SuppressWarnings("deprecation")
     protected void onLoad() {
-        for (Action a : getAllActions()) {
+        for (Action a : getActions()) {
             if (a instanceof RunAction2) {
                 try {
                     ((RunAction2) a).onLoad(this);
@@ -2706,7 +2708,15 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         @NonNull @Override public List<? extends Detail> createFor(@NonNull Run target) {
-            return List.of(new TimestampDetail(target), new DurationDetail(target));
+            return List.of(new CauseDetail(target), new TimestampDetail(target), new DurationDetail(target));
         }
+    }
+
+    /**
+     * Retrieves the tabs for a given run
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Tab> getRunTabs() {
+        return getActions(Tab.class);
     }
 }

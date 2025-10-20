@@ -71,18 +71,19 @@ public class PluginManagerUtil {
                 ).evaluate();
             }
 
-            private static final class CustomJenkinsRule extends JenkinsRule {
-                CustomJenkinsRule(File home, int port) {
-                    setPluginManager(null);
-                    with(() -> home);
-                    localPort = port;
-                }
-
-                int getPort() {
-                    return localPort;
-                }
-            }
         };
+    }
+
+    private static final class CustomJenkinsRule extends JenkinsRule {
+        CustomJenkinsRule(File home, int port) {
+            setPluginManager(null);
+            with(() -> home);
+            localPort = port;
+        }
+
+        int getPort() {
+            return localPort;
+        }
     }
 
     public static void dynamicLoad(String plugin, Jenkins jenkins) throws IOException, InterruptedException, RestartRequiredException {
