@@ -1,8 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts,
-Romain Seguy
+Copyright (c) 2025, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +22,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  This view is rendered as /hudson/job/XYZ/build
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
-	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-  <!--
-    send back 4xx code so that machine agents don't confuse this form with successful build triggering
-    405 is "Method Not Allowed" and this fits here because we need POST.
-  -->
-  <st:statusCode value="405" />
-  <l:layout title="${it.displayName}">
-    <st:include page="sidepanel.jelly" it="${it.job}"/>
-    <l:main-panel>
-      <h1>${it.job.pronoun} ${it.job.displayName}</h1>
-      <p class="jenkins-description">${%description}</p>
-      <st:include page="contents.jelly" />
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:dd="/lib/layout/dropdowns">
+  <l:job-subpage>
+    <j:set var="it" value="${it.object}" />
+
+    <l:app-bar title="Overview">
+      <l:details-bar it="${it}">
+        <t:editDescriptionButton permission="${it.CONFIGURE}" compact="true" />
+      </l:details-bar>
+    </l:app-bar>
+
+    <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
+
+    <div class="jenkins-!-margin-bottom-2">
+      <j:forEach var="w" items="${it.widgets}">
+        <st:include it="${w}" page="index.jelly" />
+      </j:forEach>
+    </div>
+
+    <l:card title="${%Legacy}">
+      <div>
+        <st:include page="jobpropertysummaries.jelly" />
+
+        <st:include page="main.jelly" />
+
+        <st:include page="permalinks.jelly" />
+      </div>
+    </l:card>
+  </l:job-subpage>
 </j:jelly>

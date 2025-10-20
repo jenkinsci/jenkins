@@ -35,7 +35,7 @@ import jenkins.management.Badge;
  * If no badge is provided, {@code null} may be returned.
  * </p>
  *
- * @since TODO
+ * @since 2.532
  */
 public interface Badgeable {
 
@@ -43,7 +43,7 @@ public interface Badgeable {
      * A {@link Badge} shown on the action.
      *
      * @return badge or {@code null} if no badge should be shown.
-     * @since TODO
+     * @since 2.532
      */
     default @CheckForNull Badge getBadge() {
         return null;

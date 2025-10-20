@@ -1,4 +1,5 @@
 @use "../base/breakpoints";
+@use "../components/cards";
 @use "../components/dialogs";
 
 .build-caption-progress-container {
@@ -13,8 +14,14 @@
   gap: calc(var(--section-padding) / 2);
   margin-bottom: calc(var(--section-padding) * -0.5);
 
-  .jenkins-card {
-    margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
+  & > * {
+    height: 350px;
+  }
+
+  // Legacy card shouldn't have a fixed height
+  .jenkins-card:last-of-type {
+    height: unset;
+    min-height: 350px;
   }
 
   @media (width < 1000px) {
@@ -34,7 +41,6 @@
 
     & > div {
       overflow: clip;
-      margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
 
       &:first-of-type {
         grid-column: span 1;
@@ -109,8 +115,8 @@
 
 .app-console-output-widget {
   overflow-y: auto;
-  margin: 0 -1rem -1rem;
-  padding: 0 1rem 1rem;
+  margin: 0 -#{cards.$card-padding} -#{cards.$card-padding};
+  padding: 0 cards.$card-padding cards.$card-padding;
 
   pre {
     background: transparent;
@@ -154,7 +160,7 @@ body:has(.app-build-bar) {
   min-height: 2.875rem;
   margin-top: -5px;
   padding-bottom: 0.75rem;
-  z-index: 2;
+  z-index: 102;
 
   &::before {
     content: "";
@@ -221,6 +227,7 @@ body:has(.app-build-bar) {
     aspect-ratio: 1;
     padding: 0;
     margin-inline: -1rem;
+    transition: translate var(--standard-transition);
 
     &:not(:hover) {
       color: color-mix(
@@ -238,7 +245,19 @@ body:has(.app-build-bar) {
     svg {
       width: 1rem;
       height: 1rem;
+
+      * {
+        stroke-width: 45px;
+      }
     }
+  }
+
+  .app-build__navigation-previous:hover {
+    translate: -0.0625rem 0;
+  }
+
+  .app-build__navigation-next:hover {
+    translate: 0.0625rem 0;
   }
 }
 
