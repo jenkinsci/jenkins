@@ -26,7 +26,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:settings-subpage>
   <!-- no need for additional breadcrumb here as we're on an "index" page already including breadcrumb -->
-    <h1>${%Manage Old Data}</h1>
+  <l:app-bar title="${it.displayName}" />
+
     <p>${%blurb.1}</p>
     <p>${%blurb.2}</p>
     
