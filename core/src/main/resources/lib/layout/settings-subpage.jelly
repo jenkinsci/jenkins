@@ -76,7 +76,7 @@ THE SOFTWARE.
                   </j:when>
                   <j:otherwise>
                     <l:app-bar title="${it.displayName}" />
-                    <l:spinner text="Loading" />
+                    <l:skeleton type="form" />
                   </j:otherwise>
                 </j:choose>
               </l:defer.placeholder>
