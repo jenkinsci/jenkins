@@ -30,10 +30,15 @@ THE SOFTWARE.
   <j:new className="jenkins.management.ConfigureLink" var="it" />
 
   <l:settings-subpage>
+    <j:set var="managementLink" value="${it}" />
     <j:set var="it" value="${app}" />
     <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
 
     <l:app-bar title="${%System}" />
+
+    <div class="jenkins-page-description">
+      ${managementLink.description}
+    </div>
 
     <section class="manage-messages">
       <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
@@ -46,16 +51,18 @@ THE SOFTWARE.
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
 
-      <f:entry title="${%Home directory}" description="${%By default, Jenkins stores all of its data in this directory on the file system}" help="/help/system-config/homeDirectory.html">
-        <div class="jenkins-quote jenkins-quote--monospace">
-          ${it.rootDir}
-          <l:copyButton tooltip="${%Copy home directory}" text="${it.rootDir}" iconOnly="true" />
-        </div>
-      </f:entry>
-      <f:entry title="${%System Message}" description="${%This message will be displayed at the top of the Jenkins main page. This can be useful for posting notifications to your users}">
-        <f:textarea name="system_message" value="${it.systemMessage}" disabled="${readOnlyMode?'true':null}" readonly="${readOnlyMode?'true':null}"
-                    codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-      </f:entry>
+      <f:section title="General">
+        <f:entry title="${%Home directory}" description="${%By default, Jenkins stores all of its data in this directory on the file system}" help="/help/system-config/homeDirectory.html">
+          <div class="jenkins-quote jenkins-quote--monospace">
+            ${it.rootDir}
+            <l:copyButton tooltip="${%Copy home directory}" text="${it.rootDir}" iconOnly="true" />
+          </div>
+        </f:entry>
+        <f:entry title="${%System Message}" description="${%This message will be displayed at the top of the Jenkins main page. This can be useful for posting notifications to your users}">
+          <f:textarea name="system_message" value="${it.systemMessage}" disabled="${readOnlyMode?'true':null}" readonly="${readOnlyMode?'true':null}"
+                      codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+        </f:entry>
+      </f:section>
 
       <!-- global configuration from everyone -->
       <j:set var="editable" value="${h.getSortedDescriptorsForGlobalConfigUnclassified()}"/>

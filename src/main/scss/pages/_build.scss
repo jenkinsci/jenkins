@@ -151,6 +151,17 @@ body:has(.app-settings-container) {
   background-attachment: fixed;
 }
 
+.app-settings-container {
+  --top: color-mix(in sRGB, var(--text-color-secondary) 2%, var(--card-background));
+
+  background-color: var(--card-background);
+  background-image: linear-gradient(var(--top), var(--card-background));
+  background-size: 100% 100vh;
+  background-repeat: no-repeat;
+  border: var(--jenkins-border);
+  border-radius: 10px;
+}
+
 .app-build-bar {
   position: relative;
   display: flex;

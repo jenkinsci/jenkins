@@ -67,7 +67,7 @@ THE SOFTWARE.
           </l:tasks>
         </l:side-panel>
         <l:main-panel>
-          <div class="app-settings-container jenkins-card" style="margin-left: -1rem; display: block">
+          <div class="app-settings-container">
             <div style="max-width: 900px; margin: auto; overflow-x: hidden; padding: 2rem;">
               <l:defer>
                 <l:defer.placeholder>
@@ -77,6 +77,9 @@ THE SOFTWARE.
                     </j:when>
                     <j:otherwise>
                       <l:app-bar title="${it.displayName}" />
+                      <div class="jenkins-page-description">
+                        ${it.description}
+                      </div>
                       <l:skeleton type="form" />
                     </j:otherwise>
                   </j:choose>
