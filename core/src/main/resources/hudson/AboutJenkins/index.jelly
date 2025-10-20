@@ -48,7 +48,7 @@ THE SOFTWARE.
       <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}" />
     </div>
 
-    <p class="app-about-paragraph">${%blurb}</p>
+    <p class="jenkins-page-description jenkins-!-text-color">${%blurb}</p>
 
     <div class="jenkins-tab-pane">
       <h2 class="jenkins-tab-pane__title">${%maven.dependencies}</h2>
