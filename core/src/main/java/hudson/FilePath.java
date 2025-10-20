@@ -2612,7 +2612,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         if (!renamed && attempts > 0) {
                             Thread.sleep(300);
                         }
-                    } while (!renamed && attempts-- > 0);
+                    } while (!renamed && attempts > 0);
                 } catch (InterruptedException e) {
                     // Ignore
                 }
