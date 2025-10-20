@@ -154,12 +154,14 @@ body:has(.app-settings-container) {
 .app-settings-container {
   --top: color-mix(in sRGB, var(--text-color-secondary) 2%, var(--card-background));
 
+  position: relative;
   background-color: var(--card-background);
   background-image: linear-gradient(var(--top), var(--card-background));
   background-size: 100% 100vh;
   background-repeat: no-repeat;
   border: var(--jenkins-border);
   border-radius: 10px;
+  z-index: 0;
 }
 
 .app-build-bar {
