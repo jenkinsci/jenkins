@@ -138,7 +138,8 @@
   }
 }
 
-body:has(.app-build-bar) {
+body:has(.app-build-bar),
+body:has(.app-settings-container) {
   --top: color-mix(in sRGB, var(--text-color-secondary) 4%, var(--background));
   --bottom: color-mix(
     in sRGB,

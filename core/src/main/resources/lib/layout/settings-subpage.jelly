@@ -67,23 +67,25 @@ THE SOFTWARE.
           </l:tasks>
         </l:side-panel>
         <l:main-panel>
-          <div style="max-width: 950px; margin: auto; overflow-x: hidden">
-            <l:defer>
-              <l:defer.placeholder>
-                <j:choose>
-                  <j:when test="${attrs.containsKey('placeholder')}">
-                    <j:out value="${attrs.placeholder}" />
-                  </j:when>
-                  <j:otherwise>
-                    <l:app-bar title="${it.displayName}" />
-                    <l:skeleton type="form" />
-                  </j:otherwise>
-                </j:choose>
-              </l:defer.placeholder>
-              <l:defer.children>
-                <d:invokeBody />
-              </l:defer.children>
-            </l:defer>
+          <div class="app-settings-container jenkins-card" style="margin-left: -1rem; display: block">
+            <div style="max-width: 900px; margin: auto; overflow-x: hidden; padding: 2rem;">
+              <l:defer>
+                <l:defer.placeholder>
+                  <j:choose>
+                    <j:when test="${attrs.containsKey('placeholder')}">
+                      <j:out value="${attrs.placeholder}" />
+                    </j:when>
+                    <j:otherwise>
+                      <l:app-bar title="${it.displayName}" />
+                      <l:skeleton type="form" />
+                    </j:otherwise>
+                  </j:choose>
+                </l:defer.placeholder>
+                <l:defer.children>
+                  <d:invokeBody />
+                </l:defer.children>
+              </l:defer>
+            </div>
           </div>
         </l:main-panel>
       </j:when>
