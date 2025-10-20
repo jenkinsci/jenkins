@@ -24,10 +24,10 @@
 
 package hudson.slaves;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -40,20 +40,26 @@ import hudson.model.queue.CauseOfBlockage;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class NodeCanTakeTaskTest {
+@WithJenkins
+class NodeCanTakeTaskTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue({"JENKINS-6598", "JENKINS-38514"})
     @Test
-    public void takeBlockedByProperty() throws Exception {
+    void takeBlockedByProperty() throws Exception {
         // Set built-in node executor count to zero to force all jobs to agents
         r.jenkins.setNumExecutors(0);
         Slave slave = r.createSlave();
@@ -92,7 +98,7 @@ public class NodeCanTakeTaskTest {
     }
 
     @Test
-    public void becauseNodeIsBusy() throws Exception {
+    void becauseNodeIsBusy() throws Exception {
         Slave slave = r.createSlave();
         FreeStyleProject project = r.createFreeStyleProject();
         project.setAssignedNode(slave);

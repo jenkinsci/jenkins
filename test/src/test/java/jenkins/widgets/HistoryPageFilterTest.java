@@ -19,17 +19,23 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
+@WithJenkins
+class HistoryPageFilterTest {
 
-public class HistoryPageFilterTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void doNotFindSensitiveBuildParams() throws Exception {
+    void doNotFindSensitiveBuildParams() throws Exception {
         final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
         final PasswordParameterDefinition passwordParameterDefinition = new PasswordParameterDefinition("password", Secret.fromString("t0ps3cr3t"), "description");
         final StringParameterDefinition stringParameterDefinition = new StringParameterDefinition("key", "value", "desc");
@@ -72,7 +78,7 @@ public class HistoryPageFilterTest {
     }
 
     @Test
-    public void doNotFindSensitiveBuildWrapperVars() throws Exception {
+    void doNotFindSensitiveBuildWrapperVars() throws Exception {
         final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
         freeStyleProject.getBuildWrappersList().add(new BuildWrapperWithSomeSensitiveVars(Map.of("key1", "value123", "key2", "value234", "key3", "s3cr3t"), Set.of("key3")));
         final FreeStyleBuild build = j.buildAndAssertSuccess(freeStyleProject);

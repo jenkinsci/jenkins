@@ -32,7 +32,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.XmlFile;
 import hudson.model.FreeStyleBuild;
@@ -48,19 +48,18 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author pjanouse
  */
-public class QuietDownCommandTest {
+@WithJenkins
+class QuietDownCommandTest {
 
     private CLICommandInvoker command;
     private static final QueueTest.TestFlyweightTask task
@@ -70,17 +69,13 @@ public class QuietDownCommandTest {
     private static final String VIEWER = "viewer";
     private static final String ADMIN = "admin";
 
-    @ClassRule
-    public static final BuildWatcher buildWatcher = new BuildWatcher();
+    private final LogRecorder logging = new LogRecorder();
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Rule
-    public final LoggerRule logging = new LoggerRule();
-
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, "quiet-down");
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
@@ -89,7 +84,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldFailWithoutAdministerPermission() {
+    void quietDownShouldFailWithoutAdministerPermission() {
         final CLICommandInvoker.Result result = command
                 .asUser(VIEWER)
                 .invoke();
@@ -99,7 +94,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccess() {
+    void quietDownShouldSuccess() {
         final CLICommandInvoker.Result result = command
                 .asUser(ADMIN)
                 .invoke();
@@ -108,7 +103,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithBlock() {
+    void quietDownShouldSuccessWithBlock() {
         final CLICommandInvoker.Result result = command
                 .asUser(ADMIN)
                 .invokeWithArgs("-block");
@@ -117,7 +112,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithTimeout() {
+    void quietDownShouldSuccessWithTimeout() {
         final CLICommandInvoker.Result result = command
                 .asUser(ADMIN)
                 .invokeWithArgs("-timeout", "0");
@@ -126,7 +121,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithReason() {
+    void quietDownShouldSuccessWithReason() {
         final CLICommandInvoker.Result result = command
                 .asUser(ADMIN)
                 .invokeWithArgs("-reason", TEST_REASON);
@@ -136,7 +131,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithBlockAndTimeout() {
+    void quietDownShouldSuccessWithBlockAndTimeout() {
         final CLICommandInvoker.Result result = command
                 .asUser(ADMIN)
                 .invokeWithArgs("-block", "-timeout", "0");
@@ -145,7 +140,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithBlockAndTimeoutAndReason() {
+    void quietDownShouldSuccessWithBlockAndTimeoutAndReason() {
         final CLICommandInvoker.Result result = command
                 .asUser(ADMIN)
                 .invokeWithArgs("-block", "-timeout", "0", "-reason", TEST_REASON);
@@ -155,7 +150,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldFailWithEmptyTimeout() {
+    void quietDownShouldFailWithEmptyTimeout() {
         final CLICommandInvoker.Result result = command
                 .asUser(ADMIN)
                 .invokeWithArgs("-timeout");
@@ -165,7 +160,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessOnAlreadyQuietDownedJenkins() {
+    void quietDownShouldSuccessOnAlreadyQuietDownedJenkins() {
         j.jenkins.doQuietDown();
         assertJenkinsInQuietMode();
         final CLICommandInvoker.Result result = command
@@ -176,7 +171,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithBlockOnAlreadyQuietDownedJenkins() throws Exception {
+    void quietDownShouldSuccessWithBlockOnAlreadyQuietDownedJenkins() throws Exception {
         j.jenkins.doQuietDown(true, 0, null, false);
         assertJenkinsInQuietMode();
         final CLICommandInvoker.Result result = command
@@ -187,7 +182,7 @@ public class QuietDownCommandTest {
     }
 
     @Test
-    public void quietDownShouldSuccessWithBlockAndTimeoutOnAlreadyQuietDownedJenkins() throws Exception {
+    void quietDownShouldSuccessWithBlockAndTimeoutOnAlreadyQuietDownedJenkins() throws Exception {
         j.jenkins.doQuietDown(true, 0, null, false);
         assertJenkinsInQuietMode();
         final long time_before = System.currentTimeMillis();
@@ -204,7 +199,7 @@ public class QuietDownCommandTest {
     // Result - CLI call result is available immediately, execution won't be affected
     //
     @Test
-    public void quietDownShouldSuccessAndRunningExecutor() throws Exception {
+    void quietDownShouldSuccessAndRunningExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
         final OneShotEvent finish = new OneShotEvent();
         final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
@@ -226,7 +221,7 @@ public class QuietDownCommandTest {
     // Expected result - CLI call is blocked indefinitely, execution won't be affected
     //
     @Test
-    public void quietDownShouldSuccessWithBlockAndRunningExecutor() throws Exception {
+    void quietDownShouldSuccessWithBlockAndRunningExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
@@ -267,7 +262,7 @@ public class QuietDownCommandTest {
     // Expected result - CLI call is blocked indefinitely, execution won't be affected
     //
     @Test
-    public void quietDownShouldSuccessWithBlockAndZeroTimeoutAndRunningExecutor() throws Exception {
+    void quietDownShouldSuccessWithBlockAndZeroTimeoutAndRunningExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
@@ -308,7 +303,7 @@ public class QuietDownCommandTest {
     // Expected result - CLI call return after TIMEOUT seconds, execution won't be affected
     //
     @Test
-    public void quietDownShouldSuccessWithBlockPlusExpiredTimeoutAndRunningExecutor() throws Exception {
+    void quietDownShouldSuccessWithBlockPlusExpiredTimeoutAndRunningExecutor() throws Exception {
         final int TIMEOUT = 5000;
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
@@ -349,7 +344,7 @@ public class QuietDownCommandTest {
     // Expected result - CLI call shouldn't return (killed by other thread), execution won't be affected
     //
     @Test
-    public void quietDownShouldSuccessWithBlockPlusNonExpiredTimeoutAndRunningExecutor() throws Exception {
+    void quietDownShouldSuccessWithBlockPlusNonExpiredTimeoutAndRunningExecutor() throws Exception {
         final int TIMEOUT = 5000;
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
@@ -391,7 +386,7 @@ public class QuietDownCommandTest {
     // Expected result - CLI call finish and the execution too
     //
     @Test
-    public void quietDownShouldSuccessWithBlockAndFinishingExecutor() throws Exception {
+    void quietDownShouldSuccessWithBlockAndFinishingExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
@@ -432,7 +427,7 @@ public class QuietDownCommandTest {
     // Expected result - CLI call finish and the execution too
     //
     @Test
-    public void quietDownShouldSuccessWithBlockAndNonExpiredTimeoutAndFinishingExecutor() throws Exception {
+    void quietDownShouldSuccessWithBlockAndNonExpiredTimeoutAndFinishingExecutor() throws Exception {
         final int TIMEOUT = 5000;
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();

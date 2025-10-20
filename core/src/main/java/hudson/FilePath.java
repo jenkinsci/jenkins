@@ -77,7 +77,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -1143,8 +1142,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         if (channel == null) {
             try {
                 file.write(Paths.get(remote));
-            } catch (UncheckedIOException e) {
-                throw e.getCause();
             } catch (IOException e) {
                 throw e;
             } catch (Exception e) {
@@ -1304,7 +1301,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Takes a {@link FilePath}+{@link FileCallable} pair and returns the equivalent {@link Callable}.
-     * When executing the resulting {@link Callable}, it executes {@link FileCallable#act(FileCallable)}
+     * When executing the resulting {@link Callable}, it executes {@link FilePath#act(FileCallable)}
      * on this {@link FilePath}.
      *
      * @since 1.522

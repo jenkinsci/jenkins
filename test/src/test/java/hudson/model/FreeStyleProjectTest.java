@@ -28,11 +28,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.ExtensionList;
 import hudson.diagnosis.OldDataMonitor;
@@ -40,6 +40,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -49,30 +50,35 @@ import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 import org.kohsuke.stapler.jelly.JellyFacet;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-@Category(SmokeTest.class)
-public class FreeStyleProjectTest {
+@Tag("SmokeTest")
+@WithJenkins
+class FreeStyleProjectTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    @TempDir
+    private File tempFolder;
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Tests a trivial configuration round-trip.
@@ -80,7 +86,7 @@ public class FreeStyleProjectTest {
      * The goal is to catch a P1-level issue that prevents all the form submissions to fail.
      */
     @Test
-    public void configSubmission() throws Exception {
+    void configSubmission() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         Shell shell = new Shell("echo hello");
         project.getBuildersList().add(shell);
@@ -104,9 +110,9 @@ public class FreeStyleProjectTest {
      */
     @Test
     @Issue("JENKINS-4206")
-    public void customWorkspaceAllocation() throws Exception {
+    void customWorkspaceAllocation() throws Exception {
         FreeStyleProject f = j.createFreeStyleProject();
-        f.setCustomWorkspace(tempFolder.newFolder().getPath());
+        f.setCustomWorkspace(newFolder(tempFolder, "junit").getPath());
         j.buildAndAssertSuccess(f);
     }
 
@@ -115,9 +121,9 @@ public class FreeStyleProjectTest {
      */
     @Test
     @Issue("JENKINS-3997")
-    public void customWorkspaceVariableExpansion() throws Exception {
+    void customWorkspaceVariableExpansion() throws Exception {
         FreeStyleProject f = j.createFreeStyleProject();
-        File d = new File(tempFolder.newFolder(), "${JOB_NAME}");
+        File d = new File(newFolder(tempFolder, "junit"), "${JOB_NAME}");
         f.setCustomWorkspace(d.getPath());
         FreeStyleBuild b = j.buildAndAssertSuccess(f);
 
@@ -129,7 +135,7 @@ public class FreeStyleProjectTest {
 
     @Test
     @Issue("JENKINS-15817")
-    public void minimalConfigXml() throws Exception {
+    void minimalConfigXml() throws Exception {
         // Make sure it can be created without exceptions:
         FreeStyleProject project = (FreeStyleProject) j.jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
         System.out.println(project.getConfigFile().asString());
@@ -151,7 +157,7 @@ public class FreeStyleProjectTest {
     @Test
     @Issue("JENKINS-36629")
     @WithTimeout(300)
-    public void buildStabilityReports() throws Exception {
+    void buildStabilityReports() throws Exception {
         for (int i = 0; i <= 32; i++) {
             FreeStyleProject p = j.createFreeStyleProject(String.format("Pattern-%s", Integer.toBinaryString(i)));
             int expectedFails = 0;
@@ -175,7 +181,7 @@ public class FreeStyleProjectTest {
 
     @Issue("SECURITY-1923")
     @Test
-    public void configDotXmlWithValidXmlAndBadField() throws Exception {
+    void configDotXmlWithValidXmlAndBadField() throws Exception {
         final String CONFIGURATOR = "configure_user";
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -208,19 +214,21 @@ public class FreeStyleProjectTest {
         boolean createUser = false;
         User badUser = User.getById("foo", createUser);
 
-        assertNull("Should not have created user.", badUser);
+        assertNull(badUser, "Should not have created user.");
     }
 
     private static final String VALID_XML_BAD_FIELD_USER_XML =
-            "<hudson.model.User>\n" +
-                    "  <id>foo</id>\n" +
-                    "  <fullName>Foo User</fullName>\n" +
-                    "  <badField/>\n" +
-                    "</hudson.model.User>\n";
+            """
+                    <hudson.model.User>
+                      <id>foo</id>
+                      <fullName>Foo User</fullName>
+                      <badField/>
+                    </hudson.model.User>
+                    """;
 
     @Test
     @Issue("JENKINS-65288")
-    public void submitPossibleWithoutJellyTrace() throws Exception {
+    void submitPossibleWithoutJellyTrace() throws Exception {
         FreeStyleProject freeStyleProject = j.createFreeStyleProject();
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -234,7 +242,7 @@ public class FreeStyleProjectTest {
      */
     @Test
     @Issue("JENKINS-65288")
-    public void submitPossibleWithJellyTrace() throws Exception {
+    void submitPossibleWithJellyTrace() throws Exception {
         boolean currentValue = JellyFacet.TRACE;
         try {
             JellyFacet.TRACE = true;
@@ -252,32 +260,33 @@ public class FreeStyleProjectTest {
 
     @Test
     @Issue("SECURITY-2424")
-    public void cannotCreateJobWithTrailingDot_withoutOtherJob() throws Exception {
+    void cannotCreateJobWithTrailingDot_withoutOtherJob() {
         assertThat(j.jenkins.getItems(), hasSize(0));
         Failure e = assertThrows(
-                "Adding the job should have thrown an exception during checkGoodName",
                 Failure.class,
-                () -> j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))));
+                () -> j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))),
+                "Adding the job should have thrown an exception during checkGoodName");
         assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
         assertThat(j.jenkins.getItems(), hasSize(0));
     }
 
     @Test
     @Issue("SECURITY-2424")
-    public void cannotCreateJobWithTrailingDot_withExistingJob() throws Exception {
+    void cannotCreateJobWithTrailingDot_withExistingJob() throws Exception {
         assertThat(j.jenkins.getItems(), hasSize(0));
         j.createFreeStyleProject("jobA");
         assertThat(j.jenkins.getItems(), hasSize(1));
         Failure e = assertThrows(
-                "Adding the job should have thrown an exception during checkGoodName",
                 Failure.class,
-                () -> j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))));
+                () -> j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))),
+                "Adding the job should have thrown an exception during checkGoodName");
         assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
         assertThat(j.jenkins.getItems(), hasSize(1));
     }
 
     @Issue("SECURITY-2424")
-    @Test public void cannotCreateJobWithTrailingDot_exceptIfEscapeHatchIsSet() throws Exception {
+    @Test
+    void cannotCreateJobWithTrailingDot_exceptIfEscapeHatchIsSet() throws Exception {
         String propName = Jenkins.NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP;
         String initialValue = System.getProperty(propName);
         System.setProperty(propName, "false");
@@ -293,5 +302,14 @@ public class FreeStyleProjectTest {
             }
         }
         assertThat(j.jenkins.getItems(), hasSize(1));
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            throw new IOException("Couldn't create folders " + root);
+        }
+        return result;
     }
 }

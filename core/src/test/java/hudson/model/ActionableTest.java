@@ -26,27 +26,27 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
-public class ActionableTest {
+class ActionableTest {
 
     private final Actionable thing = new ActionableImpl();
 
     @SuppressWarnings("deprecation")
     @Test
-    public void replaceAction() {
+    void replaceAction() {
         CauseAction a1 = new CauseAction();
         ParametersAction a2 = new ParametersAction();
         thing.addAction(a1);
@@ -79,37 +79,37 @@ public class ActionableTest {
 
     @Issue("JENKINS-39555")
     @Test
-    public void testExtensionOverrides() {
+    void testExtensionOverrides() {
         ActionableOverride myOverridden = new ActionableOverride();
         InvisibleAction invis = new InvisibleAction() {
         };
         myOverridden.addAction(invis);
-        Assert.assertArrayEquals(new Object[]{invis}, myOverridden.specialActions.toArray());
-        Assert.assertArrayEquals(new Object[]{invis}, myOverridden.getActions().toArray());
+        assertArrayEquals(new Object[]{invis}, myOverridden.specialActions.toArray());
+        assertArrayEquals(new Object[]{invis}, myOverridden.getActions().toArray());
 
         myOverridden.getActions().remove(invis);
-        Assert.assertArrayEquals(new Object[]{}, myOverridden.specialActions.toArray());
-        Assert.assertArrayEquals(new Object[]{}, myOverridden.getActions().toArray());
+        assertArrayEquals(new Object[]{}, myOverridden.specialActions.toArray());
+        assertArrayEquals(new Object[]{}, myOverridden.getActions().toArray());
 
         myOverridden.addAction(invis);
         myOverridden.removeAction(invis);
-        Assert.assertArrayEquals(new Object[]{}, myOverridden.specialActions.toArray());
-        Assert.assertArrayEquals(new Object[]{}, myOverridden.getActions().toArray());
+        assertArrayEquals(new Object[]{}, myOverridden.specialActions.toArray());
+        assertArrayEquals(new Object[]{}, myOverridden.getActions().toArray());
 
         InvisibleAction invis2 = new InvisibleAction() {};
         myOverridden.addOrReplaceAction(invis2);
-        Assert.assertArrayEquals(new Object[]{invis2}, myOverridden.specialActions.toArray());
-        Assert.assertArrayEquals(new Object[]{invis2}, myOverridden.getActions().toArray());
+        assertArrayEquals(new Object[]{invis2}, myOverridden.specialActions.toArray());
+        assertArrayEquals(new Object[]{invis2}, myOverridden.getActions().toArray());
 
         myOverridden.addOrReplaceAction(invis);
         myOverridden.addOrReplaceAction(invis);
-        Assert.assertArrayEquals(new Object[]{invis2, invis}, myOverridden.specialActions.toArray());
-        Assert.assertArrayEquals(new Object[]{invis2, invis}, myOverridden.getActions().toArray());
+        assertArrayEquals(new Object[]{invis2, invis}, myOverridden.specialActions.toArray());
+        assertArrayEquals(new Object[]{invis2, invis}, myOverridden.getActions().toArray());
     }
 
     @SuppressWarnings("deprecation")
     @Test
-    public void addOrReplaceAction() {
+    void addOrReplaceAction() {
         CauseAction a1 = new CauseAction();
         ParametersAction a2 = new ParametersAction();
         thing.addAction(a1);
@@ -127,7 +127,7 @@ public class ActionableTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void replaceActions() {
+    void replaceActions() {
         CauseAction a1 = new CauseAction();
         ParametersAction a2 = new ParametersAction();
         thing.addAction(a1);
@@ -141,7 +141,7 @@ public class ActionableTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void removeAction() {
+    void removeAction() {
         CauseAction a1 = new CauseAction();
         ParametersAction a2 = new ParametersAction();
         thing.addAction(a1);
@@ -157,7 +157,7 @@ public class ActionableTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void removeActions() {
+    void removeActions() {
         CauseAction a1 = new CauseAction();
         ParametersAction a2 = new ParametersAction();
         thing.addAction(a1);
@@ -171,7 +171,7 @@ public class ActionableTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void addAction() {
+    void addAction() {
         CauseAction a1 = new CauseAction();
         ParametersAction a2 = new ParametersAction();
         assertEquals(Collections.<Action>emptyList(), thing.getActions());
@@ -182,37 +182,37 @@ public class ActionableTest {
     }
 
     @Test
-    public void addAction_null() {
+    void addAction_null() {
         assertThrows(IllegalArgumentException.class, () -> thing.addAction(null));
     }
 
     @Test
-    public void replaceAction_null() {
+    void replaceAction_null() {
         assertThrows(IllegalArgumentException.class, () -> thing.replaceAction(null));
     }
 
     @Test
-    public void replaceActions_null() {
+    void replaceActions_null() {
         assertThrows(IllegalArgumentException.class, () -> thing.replaceActions(CauseAction.class, null));
     }
 
     @Test
-    public void replaceActions_null_null() {
+    void replaceActions_null_null() {
         assertThrows(IllegalArgumentException.class, () -> thing.replaceActions(null, null));
     }
 
     @Test
-    public void addOrReplaceAction_null() {
+    void addOrReplaceAction_null() {
         assertThrows(IllegalArgumentException.class, () -> thing.addOrReplaceAction(null));
     }
 
     @Test
-    public void removeAction_null() {
+    void removeAction_null() {
         assertFalse(thing.removeAction(null));
     }
 
     @Test
-    public void removeActions_null() {
+    void removeActions_null() {
         assertThrows(IllegalArgumentException.class, () -> thing.removeActions(null));
     }
 

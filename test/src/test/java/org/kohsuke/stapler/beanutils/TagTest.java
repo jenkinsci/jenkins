@@ -8,10 +8,11 @@ import static org.hamcrest.Matchers.not;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.jelly.StaplerTagLibrary;
 
 /**
@@ -22,13 +23,19 @@ import org.kohsuke.stapler.jelly.StaplerTagLibrary;
  * assert that the workaround implemented in Stapler works (and that the problem
  * is fairly narrow to begin with).
  */
-public class TagTest {
+@WithJenkins
+class TagTest {
     private static final String ROOT_ACTION_URL = "tagtest";
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testVariousDefaultTagLibs() throws Exception {
+    void testVariousDefaultTagLibs() throws Exception {
         final JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         {
             final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/jellyDefineTagLib");
@@ -55,7 +62,7 @@ public class TagTest {
     }
 
     @Test
-    public void testUserDefinedTagLibrary() throws Exception {
+    void testUserDefinedTagLibrary() throws Exception {
         final JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         {
             // This Jelly page, standalone, does cannot resolve the 'my' tag library
@@ -84,7 +91,7 @@ public class TagTest {
 
 
     @Test
-    public void testIncludeTag() throws Exception {
+    void testIncludeTag() throws Exception {
         final JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         { // Jelly views with basic include variants
             {

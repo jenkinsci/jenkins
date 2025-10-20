@@ -15,25 +15,26 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import javax.crypto.SecretKeyFactory;
-import org.junit.Assert;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 
-public class HudsonPrivateSecurityRealmTest {
+class HudsonPrivateSecurityRealmTest {
 
     // MySecurePassword
     private static final String PBKDF2_HMAC_SHA512_ENCODED_PASSWORD =
             "$HMACSHA512:210000:30f9e0a5470a8bc67f128ca1aae25dd4$88abaca4f442caeff0096ec0f75df2d77cc31a956c564133232f4d2532a72c8d4380a718d5b2a3dccab9e752027eeadd8f9f2c0c624505531bf3a57ec7d08aad";
 
     /*
-     * This exists so that we can easily  check the complexity of how long this takes (ie is the number of iterations we
+     * This exists so that we can easily check the complexity of how long this takes (ie is the number of iterations we
      * use correct for the state of CPUs).
-     * We do not want to assert that the range < x and  > y  as that would make the test flaky on overloaded
-     * or slow hardware, so this is commented out but left for ease of running locally when desired.
+     * We do not want to assert that the range < x and > y as that would make the test flaky on overloaded
+     * or slow hardware, so this is disabled but left for ease of running locally when desired.
      */
-    //@Test
-    public void timingPBKDF2() {
+    @Test
+    @Disabled
+    void timingPBKDF2() {
         // ignore the salt generation - check just matching....
         PBKDF2PasswordEncoder encoder = new PBKDF2PasswordEncoder();
         String encoded = encoder.encode("thisIsMyPassword1");
@@ -53,13 +54,14 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     /*
-     * This exists so that we can easily  check the complexity of how long this takes (ie is the number of iterations we
+     * This exists so that we can easily check the complexity of how long this takes (ie is the number of iterations we
      * use correct for the state of CPUs).
-     * We do not want to assert that the range < x and  > y  as that would make the test flaky on overloaded
-     * or slow hardware, so this is commented out but left for ease of running locally when desired.
+     * We do not want to assert that the range < x and > y as that would make the test flaky on overloaded
+     * or slow hardware, so this is disabled but left for ease of running locally when desired.
      */
-    //@Test
-    public void timingJBCrypt() {
+    @Test
+    @Disabled
+    void timingJBCrypt() {
         // ignore the salt generation - check just matching....
         JBCryptEncoder encoder = new JBCryptEncoder();
         String encoded = encoder.encode("thisIsMyPassword1");
@@ -79,7 +81,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void testPBKDF2RegExp() {
+    void testPBKDF2RegExp() {
         PBKDF2PasswordEncoder encoder = new PBKDF2PasswordEncoder();
         String encoded = encoder.encode("thisIsMyPassword");
         assertTrue(encoder.isHashValid(encoded));
@@ -111,11 +113,10 @@ public class HudsonPrivateSecurityRealmTest {
         assertFalse(encoder.isHashValid(
                 "::$sfdfssdf"),
                 "wrong format");
-
     }
 
     @Test
-    public void testPBKDF2PasswordMatching() {
+    void testPBKDF2PasswordMatching() {
         PBKDF2PasswordEncoder encoder = new PBKDF2PasswordEncoder();
         String encoded = encoder.encode("thisIsMyPassword");
         assertTrue(encoder.matches("thisIsMyPassword", encoded));
@@ -123,7 +124,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void passwordPBKDF2WithMissingAgorithm() throws Exception {
+    void passwordPBKDF2WithMissingAlgorithm() throws Exception {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
         try (var ignored = mockStatic(SecretKeyFactory.class)) {
             when(SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512")).thenThrow(NoSuchAlgorithmException.class);
@@ -135,7 +136,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void passwordPBKDF2HashWithInvalidKeySpec() throws Exception {
+    void passwordPBKDF2HashWithInvalidKeySpec() throws Exception {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
         try (var ignored = mockStatic(SecretKeyFactory.class)) {
             SecretKeyFactory skf = mock(SecretKeyFactory.class);
@@ -149,7 +150,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void testJBCryptPasswordMatching() {
+    void testJBCryptPasswordMatching() {
         JBCryptEncoder encoder = new JBCryptEncoder();
         String encoded = encoder.encode("thisIsMyPassword");
         assertTrue(encoder.matches("thisIsMyPassword", encoded));
@@ -157,14 +158,17 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Issue("JENKINS-75533")
-    public void ensureExpectedMessageAscii() {
-        final IllegalArgumentException ex = Assert.assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode("1234567890123456789012345678901234567890123456789012345678901234567890123"));
+    @Test
+    void ensureExpectedMessageAscii() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode(
+                "1234567890123456789012345678901234567890123456789012345678901234567890123"));
         assertThat(ex.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong_ASCII()));
     }
 
     @Issue("JENKINS-75533")
-    public void ensureExpectedMessageEmoji() {
-        final IllegalArgumentException ex = Assert.assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode(
+    @Test
+    void ensureExpectedMessageEmoji() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode(
                 "\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20" +
                         "\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20")); // 🤠
         assertThat(ex.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong()));

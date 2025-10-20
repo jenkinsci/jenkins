@@ -1,12 +1,13 @@
 package hudson.cli;
 
-import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class CLIConnectionFactoryTest {
 
-    CLIConnectionFactory cliFactory;
+    private CLIConnectionFactory cliFactory;
 
     @BeforeEach
     void setUp() {
@@ -15,11 +16,11 @@ class CLIConnectionFactoryTest {
 
     @Test
     void testBearerFromToken() {
-        Assertions.assertEquals("Bearer some-token", cliFactory.bearerAuth("some-token").authorization);
+        assertEquals("Bearer some-token", cliFactory.bearerAuth("some-token").authorization);
     }
 
     @Test
     void testBasicFromUserAndPass() {
-        Assertions.assertEquals("Basic c29tZTpwYXNz", cliFactory.basicAuth("some:pass").authorization);
+        assertEquals("Basic c29tZTpwYXNz", cliFactory.basicAuth("some:pass").authorization);
     }
 }

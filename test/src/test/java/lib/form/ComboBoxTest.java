@@ -24,8 +24,8 @@
 
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
@@ -42,20 +42,27 @@ import jenkins.model.OptionalJobProperty;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
  * @author John McNally
  */
-public class ComboBoxTest {
+@WithJenkins
+class ComboBoxTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Used in testCompoundFieldDependentCombobox for Issue("JENKINS-16719")
@@ -64,6 +71,7 @@ public class ComboBoxTest {
         private CompoundField compoundField;
         private String foo;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public CompoundFieldComboBoxBuilder(CompoundField compoundField, String foo) {
             this.compoundField = compoundField;
@@ -105,6 +113,7 @@ public class ComboBoxTest {
         private final String abc;
         private final String xyz;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public CompoundField(String abc, String xyz) {
             this.abc = abc;
@@ -128,7 +137,7 @@ public class ComboBoxTest {
      */
     @Issue("JENKINS-16719")
     @Test
-    public void testCompoundFieldDependentComboBox() throws Exception {
+    void testCompoundFieldDependentComboBox() throws Exception {
         Descriptor d1 = new CompoundFieldComboBoxBuilder.DescriptorImpl();
         Publisher.all().add(d1);
         Descriptor d2 = new CompoundField.DescriptorImpl();
@@ -168,7 +177,7 @@ public class ComboBoxTest {
 
     @Issue("SECURITY-1525")
     @Test
-    public void testEnsureXssNotPossible() throws Exception {
+    void testEnsureXssNotPossible() throws Exception {
         XssProperty xssProperty = new XssProperty();
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(xssProperty);

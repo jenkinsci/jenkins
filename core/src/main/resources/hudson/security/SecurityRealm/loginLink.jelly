@@ -27,6 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core">
   <a class="jenkins-button"
      data-type="header-action"
+     data-testid="login"
      href="${rootURL}/${app.securityRealm.loginUrl}?from=${app.securityRealm.from}"
      style="aspect-ratio: unset; padding: 0.5rem 1rem"
      tooltip="${%signInTooltip}">

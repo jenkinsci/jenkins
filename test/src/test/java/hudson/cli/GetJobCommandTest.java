@@ -30,26 +30,29 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import hudson.model.FreeStyleProject;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class GetJobCommandTest {
+@WithJenkins
+class GetJobCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, new GetJobCommand());
     }
 
     @Issue("JENKINS-20236")
-    @Test public void withFolders() throws Exception {
+    @Test
+    void withFolders() throws Exception {
         MockFolder d = j.createFolder("d");
         FreeStyleProject p = d.createProject(FreeStyleProject.class, "p");
         CLICommandInvoker.Result result = command.invokeWithArgs("d/p");

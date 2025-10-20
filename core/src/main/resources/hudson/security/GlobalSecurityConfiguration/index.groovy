@@ -16,10 +16,7 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request2.get
 
         set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
-        p()
-        div(class:"behavior-loading") {
-            l.spinner(text: _("LOADING"))
-        }
+        l.skeleton()
         f.form(method:"post", name:"config", action:"configure", class: "jenkins-form") {
             set("instance", my)
             set("descriptor", my.descriptor)

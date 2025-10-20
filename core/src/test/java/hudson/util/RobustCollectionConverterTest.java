@@ -26,10 +26,10 @@ package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thoughtworks.xstream.security.InputManipulationException;
 import hudson.model.Saveable;
@@ -43,27 +43,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import jenkins.util.xstream.CriticalXStreamException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.jvnet.hudson.test.Issue;
 
-public class RobustCollectionConverterTest {
+class RobustCollectionConverterTest {
     private final boolean originalRecordFailures = RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS;
 
-    @Before
-    public void before() {
+    @BeforeEach
+    void before() {
         RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
     }
 
-    @After
-    public void after() {
+    @AfterEach
+    void after() {
         RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = originalRecordFailures;
     }
 
     @Test
-    public void workingByDefaultWithSimplePayload() {
+    void workingByDefaultWithSimplePayload() {
         XStream2 xstream2 = new XStream2();
 
         Map<String, String> map = new HashMap<>();
@@ -91,9 +93,10 @@ public class RobustCollectionConverterTest {
      * We had to patch it in order to not be impacted by CVE-2021-43859
      */
     // force timeout to prevent DoS due to test in the case the DoS prevention is broken
-    @Test(timeout = 30 * 1000)
+    @Test
+    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
     @Issue("SECURITY-2602")
-    public void dosIsPrevented_customProgrammaticallyTimeout() {
+    void dosIsPrevented_customProgrammaticallyTimeout() {
         XStream2 xstream2 = new XStream2();
 
         Set<Object> set = preparePayload();
@@ -105,12 +108,13 @@ public class RobustCollectionConverterTest {
         assertNotNull(cause);
         assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
-        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 3 seconds"));
+        assertTrue(ime.getMessage().contains("exceeds 3 seconds"), "Limit expected in message");
     }
 
-    @Test(timeout = 30 * 1000)
+    @Test
+    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
     @Issue("SECURITY-2602")
-    public void dosIsPrevented_customPropertyTimeout() {
+    void dosIsPrevented_customPropertyTimeout() {
         String currentValue = System.getProperty(XStream2.COLLECTION_UPDATE_LIMIT_PROPERTY_NAME);
         try {
             System.setProperty(XStream2.COLLECTION_UPDATE_LIMIT_PROPERTY_NAME, "4");
@@ -125,7 +129,7 @@ public class RobustCollectionConverterTest {
             assertNotNull(cause);
             assertThat(cause, instanceOf(InputManipulationException.class));
             InputManipulationException ime = (InputManipulationException) cause;
-            assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 4 seconds"));
+            assertTrue(ime.getMessage().contains("exceeds 4 seconds"), "Limit expected in message");
         } finally {
             if (currentValue == null) {
                 System.clearProperty(XStream2.COLLECTION_UPDATE_LIMIT_PROPERTY_NAME);
@@ -136,9 +140,10 @@ public class RobustCollectionConverterTest {
     }
 
     // force timeout to prevent DoS due to test in the case the DoS prevention is broken
-    @Test(timeout = 30 * 1000)
+    @Test
+    @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
     @Issue("SECURITY-2602")
-    public void dosIsPrevented_defaultTimeout() {
+    void dosIsPrevented_defaultTimeout() {
         XStream2 xstream2 = new XStream2();
 
         Set<Object> set = preparePayload();
@@ -149,7 +154,7 @@ public class RobustCollectionConverterTest {
         assertNotNull(cause);
         assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
-        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
+        assertTrue(ime.getMessage().contains("exceeds 5 seconds"), "Limit expected in message");
     }
 
     // Inspired by https://github.com/x-stream/xstream/commit/e8e88621ba1c85ac3b8620337dd672e0c0c3a846#diff-9fde4ecf1bb4dc9850c031cb161960d2e61e069b386fa0b3db0d57e0e9f5baa
@@ -192,7 +197,7 @@ public class RobustCollectionConverterTest {
 
     @Issue("JENKINS-63343")
     @Test
-    public void checkElementTypes() {
+    void checkElementTypes() {
         var xmlContent =
                 """
                 <hudson.util.RobustCollectionConverterTest_-Data>
@@ -210,7 +215,7 @@ public class RobustCollectionConverterTest {
     }
 
     @Test
-    public void rawtypes() {
+    void rawtypes() {
         var xmlContent =
                 """
                 <hudson.util.RobustCollectionConverterTest_-DataRaw>

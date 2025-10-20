@@ -3,8 +3,10 @@ package jenkins.views;
 import hudson.ExtensionComponent;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.RootAction;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +66,8 @@ public abstract class Header implements ExtensionPoint {
     }
 
     /**
-     * @return a list of {@link Action} to show in the header, defaults to {@link hudson.model.RootAction} extensions
+     * @return a list of {@link Action} to show in the header.
+     * The default implementation returns an {@link Jenkins#getActions()} that should be displayed (ie have an icon).
      */
     @Restricted(NoExternalUse.class)
     public List<Action> getActions() {
@@ -81,10 +84,24 @@ public abstract class Header implements ExtensionPoint {
         return Jenkins.get()
                 .getActions()
                 .stream()
-                .filter(e -> e.getIconFileName() != null || (e instanceof IconSpec is && is.getIconClassName() != null))
+                .filter(e -> e.getIconFileName() != null || (e instanceof IconSpec is && is.getIconClassName() != null) || hasLegacyView(e))
                 .sorted(Comparator.comparingDouble(
                         a -> rootActionsOrdinal.getOrDefault(a.getClass().getName(), Double.MAX_VALUE)
                 ).reversed())
                 .toList();
+    }
+
+    /**
+     * Jenkins will show actions with a custom action.jelly even if its getIconFileName returned {@code null}.
+     * @param action the action to check if it has a custom view.
+     * @return {@code true} iff the action has an {@code action.jelly}
+     */
+    private static boolean hasLegacyView(Action action) {
+        try {
+            return Functions.hasView(action, "action");
+        } catch (IOException ignored) {
+            // can not load the view so ignore for the header
+            return false;
+        }
     }
 }

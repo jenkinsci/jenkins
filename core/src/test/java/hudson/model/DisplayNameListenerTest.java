@@ -24,15 +24,15 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DisplayNameListenerTest {
+class DisplayNameListenerTest {
 
     @Test
-    public void testOnCopied() throws Exception {
+    void testOnCopied() throws Exception {
         DisplayNameListener listener = new DisplayNameListener();
         StubJob src = new StubJob();
         src.doSetName("src");
@@ -49,7 +49,7 @@ public class DisplayNameListenerTest {
     }
 
     @Test
-    public void testOnRenamedOldNameEqualsDisplayName() throws Exception {
+    void testOnRenamedOldNameEqualsDisplayName() throws Exception {
         DisplayNameListener listener = new DisplayNameListener();
         final String oldName = "old job name";
         final String newName = "new job name";
@@ -63,7 +63,7 @@ public class DisplayNameListenerTest {
     }
 
     @Test
-    public void testOnRenamedOldNameNotEqualDisplayName() throws Exception {
+    void testOnRenamedOldNameNotEqualDisplayName() throws Exception {
         DisplayNameListener listener = new DisplayNameListener();
         final String oldName = "old job name";
         final String newName = "new job name";

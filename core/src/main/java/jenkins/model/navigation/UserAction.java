@@ -80,6 +80,11 @@ public class UserAction implements RootAction {
         return User.current();
     }
 
+    @Override
+    public boolean isPrimaryAction() {
+        return true;
+    }
+
     @Restricted(NoExternalUse.class)
     public List<Action> getActions() {
         User current = User.current();

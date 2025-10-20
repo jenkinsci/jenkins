@@ -57,80 +57,86 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SimpleCommandLauncher;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
 /**
  * Tests for old Remoting agent versions
  */
-public class OldRemotingAgentTest {
+class OldRemotingAgentTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRuleWithOldAgent();
+    @RegisterExtension
+    private final JenkinsSessionExtension session = new JenkinsExtensionWithOldAgent();
 
-    @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
+    @TempDir
+    private File tmpDir;
 
-    private File agentJar;
+    private static File agentJar;
 
-    @Before
-    public void extractAgent() throws Exception {
-        agentJar = new File(tmpDir.getRoot(), "old-agent.jar");
+    @BeforeEach
+    void extractAgent() throws Exception {
+        agentJar = new File(tmpDir, "old-agent.jar");
         FileUtils.copyURLToFile(OldRemotingAgentTest.class.getResource("/old-remoting/remoting-minimum-supported.jar"), agentJar);
     }
 
     @Test
     @Issue("JENKINS-48761")
-    public void shouldBeAbleToConnectAgentWithMinimumSupportedVersion() throws Exception {
-        Label agentLabel = new LabelAtom("old-agent");
-        Slave agent = j.createOnlineSlave(agentLabel);
-        boolean isUnix = agent.getComputer().isUnix();
-        assertThat("Received wrong agent version. A minimum supported version is expected",
-                agent.getComputer().getSlaveVersion(),
-                equalTo(RemotingVersionInfo.getMinimumSupportedVersion().toString()));
+    void shouldBeAbleToConnectAgentWithMinimumSupportedVersion() throws Throwable {
+        session.then(j -> {
+            Label agentLabel = new LabelAtom("old-agent");
+            Slave agent = j.createOnlineSlave(agentLabel);
+            boolean isUnix = agent.getComputer().isUnix();
+            assertThat("Received wrong agent version. A minimum supported version is expected",
+                    agent.getComputer().getSlaveVersion(),
+                    equalTo(RemotingVersionInfo.getMinimumSupportedVersion().toString()));
 
-        // Just ensure we are able to run something on the agent
-        FreeStyleProject project = j.createFreeStyleProject("foo");
-        project.setAssignedLabel(agentLabel);
-        project.getBuildersList().add(isUnix ? new Shell("echo Hello") : new BatchFile("echo 'hello'"));
-        j.buildAndAssertSuccess(project);
+            // Just ensure we are able to run something on the agent
+            FreeStyleProject project = j.createFreeStyleProject("foo");
+            project.setAssignedLabel(agentLabel);
+            project.getBuildersList().add(isUnix ? new Shell("echo Hello") : new BatchFile("echo 'hello'"));
+            j.buildAndAssertSuccess(project);
 
-        // Run agent monitors
-        NodeMonitorAssert.assertMonitors(NodeMonitor.getAll(), agent.getComputer());
+            // Run agent monitors
+            NodeMonitorAssert.assertMonitors(NodeMonitor.getAll(), agent.getComputer());
+        });
     }
 
     @Issue("JENKINS-55257")
     @Test
-    public void remoteConsoleNote() throws Exception {
-        Slave agent = j.createOnlineSlave();
-        FreeStyleProject project = j.createFreeStyleProject();
-        project.setAssignedLabel(agent.getSelfLabel());
-        project.getBuildersList().add(new TestBuilder() {
-            @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                build.getWorkspace().act(new RemoteConsoleNotePrinter(listener));
-                return true;
+    void remoteConsoleNote() throws Throwable {
+        session.then(j -> {
+            Slave agent = j.createOnlineSlave();
+            FreeStyleProject project = j.createFreeStyleProject();
+            project.setAssignedLabel(agent.getSelfLabel());
+            project.getBuildersList().add(new TestBuilder() {
+                @Override
+                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                    build.getWorkspace().act(new RemoteConsoleNotePrinter(listener));
+                    return true;
+                }
+            });
+            FreeStyleBuild b = j.buildAndAssertSuccess(project);
+            StringWriter sw = new StringWriter();
+            // The note will not actually work by default; we just want to ensure that the attempt is ignored without breaking the build.
+            // But for purposes of testing, check that the note really made it into the log.
+            boolean insecureOriginal = ConsoleNote.INSECURE;
+            ConsoleNote.INSECURE = true;
+            try {
+                b.getLogText().writeHtmlTo(0, sw);
+            } finally {
+                ConsoleNote.INSECURE = insecureOriginal;
             }
+            assertThat(sw.toString(), containsString("@@@ANNOTATED@@@"));
         });
-        FreeStyleBuild b = j.buildAndAssertSuccess(project);
-        StringWriter sw = new StringWriter();
-        // The note will not actually work by default; we just want to ensure that the attempt is ignored without breaking the build.
-        // But for purposes of testing, check that the note really made it into the log.
-        boolean insecureOriginal = ConsoleNote.INSECURE;
-        ConsoleNote.INSECURE = true;
-        try {
-            b.getLogText().writeHtmlTo(0, sw);
-        } finally {
-            ConsoleNote.INSECURE = insecureOriginal;
-        }
-        assertThat(sw.toString(), containsString("@@@ANNOTATED@@@"));
     }
 
     private static final class RemoteConsoleNotePrinter extends MasterToSlaveCallable<Void, IOException> {
@@ -160,17 +166,56 @@ public class OldRemotingAgentTest {
     }
 
     //TODO: move the logic to JTH
-    private class JenkinsRuleWithOldAgent extends JenkinsRule {
+    private static final class JenkinsExtensionWithOldAgent extends JenkinsSessionExtension {
+
+        private int port;
+        private org.junit.runner.Description description;
 
         @Override
-        public ComputerLauncher createComputerLauncher(EnvVars env) throws URISyntaxException, IOException {
+        public void beforeEach(ExtensionContext context) {
+            super.beforeEach(context);
+            description = org.junit.runner.Description.createTestDescription(
+                    context.getTestClass().map(Class::getName).orElse(null),
+                    context.getTestMethod().map(Method::getName).orElse(null),
+                    context.getTestMethod().map(Method::getAnnotations).orElse(null));
+        }
 
-            // EnvVars are ignored, simple Command Launcher does not offer this API in public
-            int sz = this.jenkins.getNodes().size();
-            return new SimpleCommandLauncher(String.format("\"%s/bin/java\" %s -jar \"%s\"",
-                    System.getProperty("java.home"),
-                    SLAVE_DEBUG_PORT > 0 ? " -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=" + (SLAVE_DEBUG_PORT + sz) : "",
-                    agentJar.getAbsolutePath()));
+        @Override
+        public void then(Step s) throws Throwable {
+            CustomJenkinsRule r = new CustomJenkinsRule(getHome(), port);
+            r.apply(
+                    new org.junit.runners.model.Statement() {
+                        @Override
+                        public void evaluate() throws Throwable {
+                            port = r.getPort();
+                            s.run(r);
+                        }
+                    },
+                    description
+            ).evaluate();
+        }
+
+        private static final class CustomJenkinsRule extends JenkinsRule {
+
+            CustomJenkinsRule(File home, int port) {
+                with(() -> home);
+                localPort = port;
+            }
+
+            int getPort() {
+                return localPort;
+            }
+
+            @Override
+            public ComputerLauncher createComputerLauncher(EnvVars env) throws URISyntaxException, IOException {
+
+                // EnvVars are ignored, simple Command Launcher does not offer this API in public
+                int sz = this.jenkins.getNodes().size();
+                return new SimpleCommandLauncher(String.format("\"%s/bin/java\" %s -jar \"%s\"",
+                        System.getProperty("java.home"),
+                        SLAVE_DEBUG_PORT > 0 ? " -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=" + (SLAVE_DEBUG_PORT + sz) : "",
+                        agentJar.getAbsolutePath()));
+            }
         }
     }
 

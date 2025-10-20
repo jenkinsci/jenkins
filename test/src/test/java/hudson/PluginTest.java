@@ -29,18 +29,26 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PluginTest {
+@WithJenkins
+class PluginTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue({"SECURITY-131", "SECURITY-155", "SECURITY-705"})
-    @Test public void doDynamic() throws Exception {
+    @Test
+    void doDynamic() throws Exception {
         r.createWebClient().goTo("plugin/cloudbees-folder/images/svgs/folder.svg", "image/svg+xml");
         r.createWebClient().goTo("plugin/cloudbees-folder/images/../images/svgs/folder.svg", "image/svg+xml"); // collapsed somewhere before it winds up in restOfPath
         /* TODO https://github.com/apache/httpcomponents-client/commit/8c04c6ae5e5ba1432e40684428338ce68431766b#r32873542
@@ -62,10 +70,10 @@ public class PluginTest {
         r.createWebClient().assertFails("plugin/matrix-auth/meta-inf/manifest.mf", HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    @Ignore("TODO observed to fail in CI with 404 due to external UC issues")
+    @Disabled("TODO observed to fail in CI with 404 due to external UC issues")
     @Test
     @Issue("SECURITY-925")
-    public void preventTimestamp2_toBeServed() throws Exception {
+    void preventTimestamp2_toBeServed() throws Exception {
         // impossible to use installDetachedPlugin("credentials") since we want to have it exploded like with WAR
         Jenkins.get().getUpdateCenter().getSites().get(0).updateDirectlyNow(false);
         List<Future<UpdateCenter.UpdateCenterJob>> pluginInstalled = r.jenkins.pluginManager.install(List.of("credentials"), true);

@@ -24,20 +24,27 @@
 
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PluginManagerWhichTest {
+@WithJenkins
+class PluginManagerWhichTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void whichPlugin() throws Exception {
+    void whichPlugin() {
         PluginWrapper expected = r.getPluginManager().getPlugin("cloudbees-folder");
         assertNotNull(expected);
         assertEquals(expected, r.getPluginManager().whichPlugin(Folder.class));

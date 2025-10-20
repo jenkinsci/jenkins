@@ -188,7 +188,25 @@ Dialog.prototype.show = function () {
       "cancel",
       (e) => {
         e.preventDefault();
-        this.dialog.remove();
+
+        // Clear any hash
+        history.pushState(
+          "",
+          document.title,
+          window.location.pathname + window.location.search,
+        );
+
+        this.dialog.setAttribute("closing", "");
+
+        this.dialog.addEventListener(
+          "animationend",
+          () => {
+            this.dialog.removeAttribute("closing");
+            this.dialog.remove();
+          },
+          { once: true },
+        );
+
         cancel();
       },
       { once: true },
@@ -213,14 +231,42 @@ Dialog.prototype.show = function () {
           if (this.dialogType === "form") {
             value = new FormData(this.form);
           }
-          this.dialog.remove();
           resolve(value);
+          this.dialog.dispatchEvent(new Event("cancel"));
         },
         { once: true },
       );
     }
   });
 };
+
+function renderOnDemandDialog(dialogId) {
+  const templateId = "dialog-" + dialogId + "-template";
+
+  function render() {
+    const template = document.querySelector("#" + templateId);
+    const title = template.dataset.title;
+    const hash = template.dataset.dialogHash;
+    const content = template.content.firstElementChild.cloneNode(true);
+
+    if (hash) {
+      window.location.hash = hash;
+    }
+
+    behaviorShim.applySubtree(content, false);
+    dialog.modal(content, {
+      maxWidth: "550px",
+      title: title,
+    });
+  }
+
+  if (document.querySelector("#" + templateId)) {
+    render();
+    return;
+  }
+
+  renderOnDemand(document.querySelector("." + templateId), render);
+}
 
 function init() {
   window.dialog = {
@@ -281,6 +327,29 @@ function init() {
       return dialog.show();
     },
   };
+
+  behaviorShim.specify(
+    "[data-type='dialog-opener']",
+    "-dialog-",
+    1000,
+    (element) => {
+      element.addEventListener("click", () => {
+        renderOnDemandDialog(element.dataset.dialogId);
+      });
+    },
+  );
+
+  // Open the relevant dialog if the hash is set
+  if (window.location.hash) {
+    const element = document.querySelector(
+      ".dialog-" + window.location.hash.substring(1) + "-hash",
+    );
+    if (element) {
+      renderOnDemandDialog(
+        element.className.match(/dialog-(id\d+)-template/)[1],
+      );
+    }
+  }
 }
 
 export default { init };

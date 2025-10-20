@@ -28,9 +28,17 @@
   }
 }
 
+// Custom class for secondary text colors as the
+// generator above doesn't support it
+.jenkins-\!-text-color-secondary {
+  --color: var(--text-color-secondary);
+
+  color: var(--text-color-secondary) !important;
+}
+
 // Deprecated - don't use the below classes
 .greyed {
-  color: #999;
+  color: var(--text-color-secondary);
 }
 
 .redbold {

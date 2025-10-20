@@ -73,7 +73,7 @@ THE SOFTWARE.
               </table>
               <t:iconSize/>
             </div>
-            <img class="build-time-graph" src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[${%Build time graph}]" />
+            <img class="build-time-graph jenkins-graph-card" src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[${%Build time graph}]" />
           </div>
     </l:main-panel>
   </l:layout>

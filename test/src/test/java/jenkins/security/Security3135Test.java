@@ -1,7 +1,7 @@
 package jenkins.security;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
@@ -9,22 +9,29 @@ import hudson.model.UnprotectedRootAction;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 
-public class Security3135Test {
-    public static final String ACTION_URL = "security3135";
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class Security3135Test {
+    private static final String ACTION_URL = "security3135";
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("SECURITY-3135")
-    public void contextMenuShouldNotBypassCSRFProtection() throws Exception {
+    void contextMenuShouldNotBypassCSRFProtection() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         FreeStyleProject project = j.createFreeStyleProject("FreestyleProject");
         ViewHolder viewHolder = j.jenkins.getExtensionList(ViewHolder.class).get(ViewHolder.class);
@@ -44,10 +51,10 @@ public class Security3135Test {
 
         j.waitUntilNoActivityUpTo(2000); // Give the job 2 seconds to be submitted
 
-        assertTrue("Request was not made", viewHolder.isRequestMade());
-        assertTrue("Expected 405 Method Not Allowed", exceptionThrown);
-        assertNull("Build should not be scheduled", j.jenkins.getQueue().getItem(project));
-        assertNull("Build should not be scheduled", project.getBuildByNumber(1));
+        assertTrue(viewHolder.isRequestMade(), "Request was not made");
+        assertTrue(exceptionThrown, "Expected 405 Method Not Allowed");
+        assertNull(j.jenkins.getQueue().getItem(project), "Build should not be scheduled");
+        assertNull(project.getBuildByNumber(1), "Build should not be scheduled");
     }
 
     @TestExtension

@@ -2,11 +2,11 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.ExtensionList;
 import hudson.XmlFile;
@@ -27,25 +27,31 @@ import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.springframework.security.core.Authentication;
 
-public class AbstractItemTest {
+@WithJenkins
+class AbstractItemTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Tests the reload functionality
      */
     @Test
-    public void reload() throws Exception {
+    void reload() throws Exception {
         Jenkins jenkins = j.jenkins;
         jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
@@ -72,7 +78,7 @@ public class AbstractItemTest {
         // reload away
         p.doReload();
 
-        assertFalse(SaveableListener.class.getSimpleName() + " should not have been called", testSaveableListener.isChangeCalled());
+        assertFalse(testSaveableListener.isChangeCalled(), SaveableListener.class.getSimpleName() + " should not have been called");
         assertEquals("Good Evening", p.getDescription());
 
         FreeStyleBuild b2 = p.getBuildByNumber(1);
@@ -83,18 +89,18 @@ public class AbstractItemTest {
         try (var ignored = ACL.as(alice)) {
             p.setDescription("This is Alice's project");
         }
-        assertTrue(SaveableListener.class.getSimpleName() + " should have been called", testSaveableListener.isChangeCalled());
+        assertTrue(testSaveableListener.isChangeCalled(), SaveableListener.class.getSimpleName() + " should have been called");
         assertThat(testSaveableListener.getChangeUser(), equalTo(alice.impersonate2()));
 
         try (var ignored = ACL.as(alice)) {
             p.delete();
         }
-        assertTrue(SaveableListener.class.getSimpleName() + " should have been called", testSaveableListener.isDeleteCalled());
+        assertTrue(testSaveableListener.isDeleteCalled(), SaveableListener.class.getSimpleName() + " should have been called");
         assertThat(testSaveableListener.getDeleteUser(), equalTo(alice.impersonate2()));
     }
 
     @Test
-    public void checkRenameValidity() throws Exception {
+    void checkRenameValidity() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         p.getBuildersList().add(new SleepBuilder(10));
         j.createFreeStyleProject("foo-exists");
@@ -114,7 +120,7 @@ public class AbstractItemTest {
     }
 
     @Test
-    public void checkRenamePermissions() throws Exception {
+    void checkRenamePermissions() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
         mas.grant(Item.CONFIGURE).everywhere().to("alice", "bob");
@@ -136,7 +142,7 @@ public class AbstractItemTest {
     }
 
     @Test
-    public void renameViaRestApi() throws Exception {
+    void renameViaRestApi() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
         mas.grant(Item.READ, Jenkins.READ).everywhere().to("alice", "bob");

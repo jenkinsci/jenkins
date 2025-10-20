@@ -114,7 +114,7 @@ public class TimeZoneProperty extends UserProperty {
 
         @Override
         public @NonNull UserPropertyCategory getUserPropertyCategory() {
-            return UserPropertyCategory.get(UserPropertyCategory.Account.class);
+            return UserPropertyCategory.get(UserPropertyCategory.Preferences.class);
         }
     }
 

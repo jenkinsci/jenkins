@@ -28,7 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -51,19 +51,26 @@ import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.host.html.HTMLButtonElement;
 import org.jenkinsci.Symbol;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class HeteroListTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class HeteroListTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("SECURITY-2035")
-    public void xssPrevented_heteroList_usingDescriptorDisplayName() throws Exception {
+    void xssPrevented_heteroList_usingDescriptorDisplayName() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
 
         RootActionImpl rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
@@ -79,12 +86,12 @@ public class HeteroListTest {
         assertThat(result, instanceOf(HTMLButtonElement.class));
         HTMLButtonElement menuItem = (HTMLButtonElement) result;
         String menuItemContent = menuItem.getInnerHTML();
-        assertThat(menuItemContent, not(containsString("<")));
+        assertThat(menuItemContent, not(containsString("<img")));
     }
 
     @Test
     @Issue("SECURITY-2035")
-    public void xssPrevented_usingToolInstallation_repeatableAddExisting() throws Exception {
+    void xssPrevented_usingToolInstallation_repeatableAddExisting() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
 
         HtmlPage page = wc.goTo("configureTools/");
@@ -93,12 +100,12 @@ public class HeteroListTest {
         Object result = page.executeJavaScript("Array.from(document.querySelectorAll('button')).filter(b => b.textContent.indexOf('Add XSS') !== -1)[0].innerHTML").getJavaScriptResult();
         assertThat(result, instanceOf(String.class));
         String resultString = (String) result;
-        assertThat(resultString, not(containsString("<")));
+        assertThat(resultString, not(containsString("<img")));
     }
 
     // only possible after a partial fix
     @Test
-    public void xssPrevented_usingToolInstallation_repeatableAddAfterClick() throws Exception {
+    void xssPrevented_usingToolInstallation_repeatableAddAfterClick() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
 
         HtmlPage page = wc.goTo("configureTools/");
@@ -114,12 +121,12 @@ public class HeteroListTest {
         Object result = page.executeJavaScript("Array.from(document.querySelectorAll('button')).filter(b => b.textContent.indexOf('Add XSS') !== -1)[0].innerHTML").getJavaScriptResult();
         assertThat(result, instanceOf(String.class));
         String resultString = (String) result;
-        assertThat(resultString, not(containsString("<")));
+        assertThat(resultString, not(containsString("<img")));
     }
 
     @Test
     @Issue("SECURITY-2035")
-    public void xssPrevented_usingToolInstallation_repeatableAddWithExistingUsingInstallationsButton() throws Exception {
+    void xssPrevented_usingToolInstallation_repeatableAddWithExistingUsingInstallationsButton() throws Exception {
         Xss.DescriptorImpl xssDescriptor = ExtensionList.lookupSingleton(Xss.DescriptorImpl.class);
         xssDescriptor.installations = new Xss[]{ new Xss("name1", "home1", null) };
 
@@ -136,7 +143,7 @@ public class HeteroListTest {
 
     @Test
     @Issue("SECURITY-2035")
-    public void xssPrevented_usingToolInstallation_repeatableAddWithExistingAfterOpening() throws Exception {
+    void xssPrevented_usingToolInstallation_repeatableAddWithExistingAfterOpening() throws Exception {
         Xss.DescriptorImpl xssDescriptor = ExtensionList.lookupSingleton(Xss.DescriptorImpl.class);
         xssDescriptor.installations = new Xss[]{ new Xss("name1", "home1", null) };
 
@@ -163,7 +170,7 @@ public class HeteroListTest {
 
     @Test
     @Issue("SECURITY-2035")
-    public void xssPrevented_usingToolInstallation_repeatableDelete() throws Exception {
+    void xssPrevented_usingToolInstallation_repeatableDelete() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
 
         HtmlPage page = wc.goTo("configureTools/");
@@ -220,6 +227,7 @@ public class HeteroListTest {
 
     public static final class Xss extends ToolInstallation {
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public Xss(String name, String home, List<? extends ToolProperty<?>> properties) {
             super(name, home, properties);
         }

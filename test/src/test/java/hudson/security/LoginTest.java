@@ -3,9 +3,9 @@ package hudson.security;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.User;
 import java.io.IOException;
@@ -14,30 +14,34 @@ import jenkins.model.Jenkins;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.recipes.PresetData;
-import org.jvnet.hudson.test.recipes.PresetData.DataSet;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class LoginTest {
+@WithJenkins
+class LoginTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Requesting a loginError page directly should result in a redirect,
      * on a non-secured Hudson.
      */
     @Test
-    public void loginErrorRedirect1() throws Exception {
+    void loginErrorRedirect1() throws Exception {
         verifyNotError(j.createWebClient());
     }
 
@@ -52,8 +56,13 @@ public class LoginTest {
      * Same as {@link #loginErrorRedirect1()} if the user has already successfully authenticated.
      */
     @Test
-    @PresetData(DataSet.ANONYMOUS_READONLY)
-    public void loginErrorRedirect2() throws Exception {
+    void loginErrorRedirect2() throws Exception {
+        JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
+        j.jenkins.setSecurityRealm(realm);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+                .grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
+
         // in a secured Hudson, the error page should render.
         WebClient wc = j.createWebClient();
         wc.assertFails("loginError", SC_UNAUTHORIZED);
@@ -62,7 +71,7 @@ public class LoginTest {
     }
 
     @Test
-    public void loginError() throws Exception {
+    void loginError() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
         WebClient wc = j.createWebClient();
@@ -97,8 +106,13 @@ public class LoginTest {
      * Test 'remember me' cookie
      */
     @Test
-    @PresetData(DataSet.SECURED_ACEGI)
-    public void loginRememberMe() throws Exception {
+    void loginRememberMe() throws Exception {
+        JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
+        j.jenkins.setSecurityRealm(realm);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+                .grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
+
         WebClient wc = j.createWebClient();
 
         HtmlFormUtil.submit(prepareLoginFormWithRememberMeChecked(wc), null);
@@ -111,8 +125,13 @@ public class LoginTest {
      * This models the case when the feature is disabled between another user loading and submitting the login page.
      */
     @Test
-    @PresetData(DataSet.SECURED_ACEGI)
-    public void loginDisabledRememberMe() throws Exception {
+    void loginDisabledRememberMe() throws Exception {
+        JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
+        j.jenkins.setSecurityRealm(realm);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+                .grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
+
         WebClient wc = j.createWebClient();
 
         HtmlForm form = prepareLoginFormWithRememberMeChecked(wc);

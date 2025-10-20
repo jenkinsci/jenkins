@@ -26,10 +26,10 @@ package hudson.logging;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,15 +38,16 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.Jenkins;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-public class LogRecorderTest {
+class LogRecorderTest {
 
     @Issue("JENKINS-17983")
-    @Test public void targetIncludes() {
+    @Test
+    void targetIncludes() {
         assertTrue(includes("hudson", "hudson"));
         assertFalse(includes("hudson", "hudsone"));
         assertFalse(includes("hudson", "hudso"));
@@ -55,7 +56,8 @@ public class LogRecorderTest {
         assertTrue(includes("", "hudson.model.Hudson"));
     }
 
-    @Test public void targetMatches() {
+    @Test
+    void targetMatches() {
         assertTrue(matches("hudson", "hudson"));
         assertFalse(matches("hudson", "hudson", Level.FINE));
         assertNull(matches("hudson", "hudsone"));
@@ -67,7 +69,8 @@ public class LogRecorderTest {
         assertFalse(matches("", "hudson.model.Hudson", Level.FINE));
     }
 
-    @Test public void testClearing() throws IOException {
+    @Test
+    void testClearing() throws IOException {
         LogRecorder lr = new LogRecorder("foo");
         LogRecorder.Target t = new LogRecorder.Target("", Level.FINE);
         lr.getLoggers().add(t);
@@ -87,7 +90,8 @@ public class LogRecorderTest {
         }
     }
 
-    @Test public void testSpecificExclusion() {
+    @Test
+    void testSpecificExclusion() {
         LogRecorder lr = new LogRecorder("foo");
 
         LogRecorder.Target targetLevel0 = new LogRecorder.Target("", Level.FINE);
@@ -140,7 +144,7 @@ public class LogRecorderTest {
     }
 
     @Test
-    public void autocompletionTest() {
+    void autocompletionTest() {
         List<String> loggers = Arrays.asList(
                 "com.company.whatever.Foo", "com.foo.Bar", "com.foo.Baz",
                 "org.example.app.Main", "org.example.app.impl.xml.Parser", "org.example.app.impl.xml.Validator");
@@ -161,15 +165,15 @@ public class LogRecorderTest {
         isNotCandidate(candidates, "org");
         isNotCandidate(candidates, "org.example");
 
-        assertEquals("expected number of items", 10, candidates.size());
+        assertEquals(10, candidates.size(), "expected number of items");
     }
 
     private static void isCandidate(Set<String> candidates, String candidate) {
-        assertTrue(candidate, candidates.contains(candidate));
+        assertTrue(candidates.contains(candidate), candidate);
     }
 
     private static void isNotCandidate(Set<String> candidates, String candidate) {
-        assertFalse(candidate, candidates.contains(candidate));
+        assertFalse(candidates.contains(candidate), candidate);
     }
 
 }

@@ -24,27 +24,33 @@
 
 package jenkins.security.apitoken;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.User;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.Messages;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ApiTokenPropertyConfigurationTest {
+@WithJenkins
+class ApiTokenPropertyConfigurationTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-32776")
-    public void newUserTokenConfiguration() {
+    void newUserTokenConfiguration() {
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
 
         config.setTokenGenerationOnCreationEnabled(true);
@@ -55,7 +61,7 @@ public class ApiTokenPropertyConfigurationTest {
             assertEquals(1, withToken.getTokenList().size());
 
             String tokenValue = withToken.getApiToken();
-            Assert.assertNotEquals(Messages.ApiTokenProperty_NoLegacyToken(), tokenValue);
+            assertNotEquals(Messages.ApiTokenProperty_NoLegacyToken(), tokenValue);
         }
 
         config.setTokenGenerationOnCreationEnabled(false);
@@ -66,7 +72,7 @@ public class ApiTokenPropertyConfigurationTest {
             assertEquals(0, withoutToken.getTokenList().size());
 
             String tokenValue = withoutToken.getApiToken();
-            Assert.assertEquals(Messages.ApiTokenProperty_NoLegacyToken(), tokenValue);
+            assertEquals(Messages.ApiTokenProperty_NoLegacyToken(), tokenValue);
         }
     }
 }

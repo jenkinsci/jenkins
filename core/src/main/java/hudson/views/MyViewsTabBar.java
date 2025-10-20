@@ -58,7 +58,9 @@ import org.kohsuke.stapler.StaplerRequest2;
  * @author Winston Prakash
  * @since 1.378
  * @see MyViewsTabBarDescriptor
+ * @deprecated Implement {@link ViewsTabBar}
  */
+@Deprecated
 public abstract class MyViewsTabBar implements Describable<MyViewsTabBar>, ExtensionPoint {
     /**
      * Returns all the registered {@link ListViewColumn} descriptors.

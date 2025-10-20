@@ -2,24 +2,30 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import hudson.ExtensionPoint;
 import java.util.Arrays;
 import java.util.Comparator;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ExtensionTypeHierarchyTest {
+@WithJenkins
+class ExtensionTypeHierarchyTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     public interface Animal extends ExtensionPoint {}
 
@@ -35,7 +41,7 @@ public class ExtensionTypeHierarchyTest {
      * Swan is both white and animal, so a single swan instance gets listed to both.
      */
     @Test
-    public void sameExtensionCanImplementMultipleExtensionPoints() {
+    void sameExtensionCanImplementMultipleExtensionPoints() {
         Animal[] animals = sort(j.jenkins.getExtensionList(Animal.class).toArray(new Animal[2]));
         assertThat(animals[0], instanceOf(Crow.class));
         assertThat(animals[1], instanceOf(Swan.class));

@@ -32,12 +32,12 @@ function onload(selector, callback, contextEl) {
 }
 
 function winScrollTop() {
-  var win = $(getWindow());
-  return win.scrollTop();
+  const win = getWindow();
+  return win.scrollY || win.pageYOffset || 0;
 }
 
 function onWinScroll(callback) {
-  $(getWindow()).on("scroll", callback);
+  getWindow().addEventListener("scroll", callback);
 }
 
 function pageHeaderHeight() {

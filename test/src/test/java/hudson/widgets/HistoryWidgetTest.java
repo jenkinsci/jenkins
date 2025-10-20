@@ -1,24 +1,30 @@
 package hudson.widgets;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.FreeStyleProject;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class HistoryWidgetTest {
+@WithJenkins
+class HistoryWidgetTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-15499")
-    public void moreLink() throws Exception {
+    void moreLink() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         for (int x = 0; x < 3; x++) {
             j.buildAndAssertSuccess(p);
@@ -30,7 +36,7 @@ public class HistoryWidgetTest {
     }
 
     @Test
-    public void displayFilterInput() throws Exception {
+    void displayFilterInput() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         JenkinsRule.WebClient wc = j.createWebClient();
 

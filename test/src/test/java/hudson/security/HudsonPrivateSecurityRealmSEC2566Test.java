@@ -1,5 +1,7 @@
 package hudson.security;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import hudson.ExtensionList;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -8,28 +10,25 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import jenkins.security.SecurityListener;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class HudsonPrivateSecurityRealmSEC2566Test {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class HudsonPrivateSecurityRealmSEC2566Test {
 
     private HudsonPrivateSecurityRealmTest.SpySecurityListenerImpl spySecurityListener;
 
-    @Before
-    public void linkExtension() {
-        spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(HudsonPrivateSecurityRealmTest.SpySecurityListenerImpl.class);
-    }
+    private JenkinsRule j;
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
+        spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(HudsonPrivateSecurityRealmTest.SpySecurityListenerImpl.class);
+
         Field field = HudsonPrivateSecurityRealm.class.getDeclaredField("ID_REGEX");
         field.setAccessible(true);
         field.set(null, null);
@@ -37,8 +36,8 @@ public class HudsonPrivateSecurityRealmSEC2566Test {
 
     @Test
     @Issue("SECURITY-2566")
-    @Ignore("too fragile to run")
-    public void noTimingDifferenceForInternalSecurityRealm() throws Exception {
+    @Disabled("too fragile to run")
+    void noTimingDifferenceForInternalSecurityRealm() throws Exception {
         final HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(realm);
         realm.createAccount("admin", "admin");
@@ -85,6 +84,6 @@ public class HudsonPrivateSecurityRealmSEC2566Test {
         double incorrectAvg = Arrays.stream(incorrectUserTimings).sorted().skip(2).limit(16).average().orElse(0.0);
         double correctAvg = Arrays.stream(correctUserTimings).sorted().skip(2).limit(16).average().orElse(0.0);
         // expect roughly the same average times
-        Assert.assertEquals(correctAvg, incorrectAvg, correctAvg * 0.1);
+        assertEquals(correctAvg, incorrectAvg, correctAvg * 0.1);
     }
 }

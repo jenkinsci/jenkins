@@ -22,8 +22,6 @@ function generateDropdown(element, callback, immediate, options = {}) {
       {},
       Templates.dropdown(),
       {
-        hideOnClick:
-          element.dataset["hideOnClick"] !== "false" ? "toggle" : false,
         onCreate(instance) {
           const onload = () => {
             if (instance.loaded) {
@@ -31,13 +29,14 @@ function generateDropdown(element, callback, immediate, options = {}) {
             }
 
             document.addEventListener("click", (event) => {
-              const isClickInAnyDropdown =
-                !!event.target.closest("[data-tippy-root]");
               const isClickOnReference = instance.reference.contains(
                 event.target,
               );
+              // Don't close the dropdown if the user is interacting with a SELECT menu inside of it
+              const isSelect = event.target.tagName === "SELECT";
 
-              if (!isClickInAnyDropdown && !isClickOnReference) {
+              if (!isClickOnReference && !isSelect) {
+                instance.clickToHide = true;
                 instance.hide();
               }
             });
@@ -51,6 +50,24 @@ function generateDropdown(element, callback, immediate, options = {}) {
               instance.reference.addEventListener(event, onload);
             });
           }
+        },
+        onHide(instance) {
+          const referenceParent = instance.reference.parentNode;
+          referenceParent.classList.remove("model-link--open");
+          if (
+            instance.props.trigger === "mouseenter" &&
+            !instance.clickToHide
+          ) {
+            const dropdowns = document.querySelectorAll("[data-tippy-root]");
+            const isMouseOverAnyDropdown = Array.from(dropdowns).some(
+              (dropdown) => dropdown.matches(":hover"),
+            );
+
+            return !isMouseOverAnyDropdown;
+          }
+
+          instance.clickToHide = false;
+          return true;
         },
       },
       options,
@@ -194,6 +211,13 @@ function convertHtmlToItems(children) {
           item.type = "link";
         } else {
           item.type = "button";
+        }
+        if (attributes.dropdownBadgeSeverity) {
+          item.badge = {
+            text: attributes.dropdownBadgeText,
+            tooltip: attributes.dropdownBadgeTooltip,
+            severity: attributes.dropdownBadgeSeverity,
+          };
         }
 
         items.push(item);

@@ -29,11 +29,12 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -64,25 +65,32 @@ import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
-import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-@Category(SmokeTest.class)
-public class RunTest  {
+@Tag("SmokeTest")
+@WithJenkins
+class RunTest  {
 
     private static final Logger LOGGER = Logger.getLogger(RunTest.class.getName());
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-17935")
-    @Test public void getDynamicInvisibleTransientAction() throws Exception {
+    @Test
+    void getDynamicInvisibleTransientAction() throws Exception {
         TransientBuildActionFactory.all().add(0, new TransientBuildActionFactory() {
             @Override public Collection<? extends Action> createFor(Run target) {
                 return Collections.singleton(new Action() {
@@ -105,7 +113,8 @@ public class RunTest  {
     }
 
     @Issue("JENKINS-40281")
-    @Test public void getBadgeActions() throws Exception {
+    @Test
+    void getBadgeActions() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         assertEquals(0, b.getBadgeActions().size());
@@ -117,7 +126,8 @@ public class RunTest  {
     }
 
     @Issue("JENKINS-51819")
-    @Test public void deleteArtifactsCustom() throws Exception {
+    @Test
+    void deleteArtifactsCustom() throws Exception {
         ArtifactManagerConfiguration.get().getArtifactManagerFactories().add(new Mgr.Factory());
         FreeStyleProject p = j.createFreeStyleProject();
         j.jenkins.getWorkspaceFor(p).child("f").write("", null);
@@ -139,11 +149,12 @@ public class RunTest  {
     }
 
     @Issue("JENKINS-73835")
-    @Test public void buildsMayNotBeDeletedWhileRunning() throws Exception {
+    @Test
+    void buildsMayNotBeDeletedWhileRunning() throws Exception {
         var p = j.createFreeStyleProject();
         p.getBuildersList().add(new SleepBuilder(999999));
         var b = p.scheduleBuild2(0).waitForStart();
-        var ex = assertThrows(IOException.class, () -> b.delete());
+        var ex = assertThrows(IOException.class, b::delete);
         assertThat(ex.getMessage(), containsString("Unable to delete " + b + " because it is still running"));
         b.getExecutor().interrupt();
         j.waitForCompletion(b);
@@ -151,7 +162,8 @@ public class RunTest  {
     }
 
     @Issue("SECURITY-1902")
-    @Test public void preventXssInBadgeTooltip() throws Exception {
+    @Test
+    void preventXssInBadgeTooltip() throws Exception {
         j.jenkins.setQuietPeriod(0);
         /*
          * The scenario to trigger is to have a build protected from deletion because of an upstream protected build.
@@ -174,7 +186,7 @@ public class RunTest  {
         FreeStyleBuild upBuild = j.buildAndAssertSuccess(up);
         j.waitUntilNoActivity();
         CustomBuild downBuild = down.getBuilds().getLastBuild();
-        assertNotNull("The down build must exist, otherwise the up's one is not protected.", downBuild);
+        assertNotNull(downBuild, "The down build must exist, otherwise the up's one is not protected.");
 
         // updating the name before the build is problematic under Windows
         // so we are updating internal stuff manually
@@ -185,6 +197,9 @@ public class RunTest  {
 
         // keeping the minimum to validate it's working and it's not exploitable as there are some modifications
         // like adding double quotes
+        // Some test flakes due to JavaScript objects not yet available
+        // Wait 2 seconds before checking the assertion
+        Thread.sleep(2003);
         ensureXssIsPrevented(up, "Down", "<img");
     }
 
@@ -213,6 +228,7 @@ public class RunTest  {
     }
 
     public static class CustomBuild extends Build<FullNameChangingProject, CustomBuild> {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public CustomBuild(FullNameChangingProject job) throws IOException {
             super(job);
         }
@@ -229,6 +245,7 @@ public class RunTest  {
             this.virtualName = virtualName;
         }
 
+        @NonNull
         @Override
         public String getName() {
             if (virtualName != null) {
@@ -274,7 +291,7 @@ public class RunTest  {
         }
 
         public static final class Factory extends ArtifactManagerFactory {
-            @DataBoundConstructor public Factory() {}
+            @SuppressWarnings("checkstyle:redundantmodifier") @DataBoundConstructor public Factory() {}
 
             @Override public ArtifactManager managerFor(Run<?, ?> build) {
                 return new Mgr();
@@ -284,7 +301,8 @@ public class RunTest  {
         }
     }
 
-    @Test public void slowArtifactManager() throws Exception {
+    @Test
+    void slowArtifactManager() throws Exception {
         ArtifactManagerConfiguration.get().getArtifactManagerFactories().add(new SlowMgr.Factory());
         var p = j.createFreeStyleProject();
         j.jenkins.getWorkspaceFor(p).child("f").write("", null);
@@ -373,7 +391,7 @@ public class RunTest  {
         }
 
         public static final class Factory extends ArtifactManagerFactory {
-            @DataBoundConstructor public Factory() {}
+            @SuppressWarnings("checkstyle:redundantmodifier") @DataBoundConstructor public Factory() {}
 
             @Override public ArtifactManager managerFor(Run<?, ?> build) {
                 LOGGER.info(() -> "Picking manager for " + build);

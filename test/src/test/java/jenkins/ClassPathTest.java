@@ -33,16 +33,15 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ErrorCollector;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.WarExploder;
+import org.opentest4j.MultipleFailuresError;
 
-public class ClassPathTest {
+class ClassPathTest {
 
-    @Rule
-    public ErrorCollector errors = new ErrorCollector();
+    private final List<Throwable> errors = new ArrayList<>();
 
     private static final Set<String> KNOWN_VIOLATIONS = Set.of(
             // TODO duplicated in [jline-2.14.6.jar, jansi-1.11.jar]
@@ -75,9 +74,16 @@ public class ClassPathTest {
             "org/fusesource/jansi/internal/WindowsSupport.class",
             "org/fusesource/jansi/WindowsAnsiOutputStream.class");
 
+    @AfterEach
+    void tearDown() {
+        if (!errors.isEmpty()) {
+            throw new MultipleFailuresError(null, errors);
+        }
+    }
+
     @Issue("JENKINS-46754")
     @Test
-    public void uniqueness() throws Exception {
+    void uniqueness() throws Exception {
         Map<String, List<String>> entries = new TreeMap<>();
         for (File jar : new File(WarExploder.getExplodedDir(), "WEB-INF/lib").listFiles((dir, name) -> name.endsWith(".jar"))) {
             String jarname = jar.getName();
@@ -93,7 +99,7 @@ public class ClassPathTest {
         }
         entries.forEach((name, jarnames) -> {
             if (jarnames.size() > 1 && !KNOWN_VIOLATIONS.contains(name)) { // Matchers.hasSize unfortunately does not display the collection
-                errors.addError(new AssertionError(name + " duplicated in " + jarnames));
+                errors.add(new AssertionError(name + " duplicated in " + jarnames));
             }
         });
     }

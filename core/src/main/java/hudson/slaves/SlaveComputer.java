@@ -66,6 +66,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.security.Security;
 import java.util.ArrayList;
@@ -641,9 +642,11 @@ public class SlaveComputer extends Computer {
                 // Orderly shutdown will have null exception
                 if (cause != null) {
                     offlineCause = new ChannelTermination(cause);
-                    Functions.printStackTrace(cause, taskListener.error("Connection terminated"));
-                } else {
+                }
+                if (cause == null || cause instanceof ClosedChannelException) {
                     taskListener.getLogger().println("Connection terminated");
+                } else {
+                    Functions.printStackTrace(cause, taskListener.error("Connection terminated"));
                 }
                 closeChannel();
                 try {
@@ -913,16 +916,20 @@ public class SlaveComputer extends Computer {
     protected void kill() {
         super.kill();
         closeChannel();
-        try {
-            log.close();
-        } catch (IOException x) {
-            LOGGER.log(Level.WARNING, "Failed to close agent log", x);
-        }
-
+        closeLog();
         try {
             Util.deleteRecursive(getLogDir());
         } catch (IOException ex) {
             logger.log(Level.WARNING, "Unable to delete agent logs", ex);
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void closeLog() {
+        try {
+            log.close();
+        } catch (IOException x) {
+            LOGGER.log(Level.WARNING, "Failed to close agent log", x);
         }
     }
 

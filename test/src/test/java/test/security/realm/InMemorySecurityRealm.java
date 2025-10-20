@@ -36,8 +36,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
- * Accept any password
- * Allow creation and removal of users
+ *  This class provides an in-memory implementation of Jenkins's {@link hudson.security.SecurityRealm} for
+ *  testing.
+ *  <p>
+ *  It allows the creation and removal of users, and accepts any password for authentication.
+ *  It maintains an in-memory storage of user accounts.
+ *  <p>
+ *  The user also gets authenticated with any password as the only thing validated is presence
+ *  of username entry in the hashmap.
+ *  The {@link #createAccount(String)} is used to populate the in-memory storage.
+ *  It implements the {@link #loadUserByUsername2(String)} method which simply returns the user from the
+ *  in memory storage based on username passed.
+ *  <p>
+ *  A dummy implementation for {@link InMemorySecurityRealm} is provided in class {@link InMemorySecurityRealm}
+ *  which contains no roles and only username is returned.
+ *
  */
 public class InMemorySecurityRealm extends AbstractPasswordBasedSecurityRealm {
     private Map<String, UserDetails> userStorage = new HashMap<>();

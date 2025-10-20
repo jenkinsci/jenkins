@@ -24,7 +24,7 @@
 
 package hudson.model;
 
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.Functions;
 import hudson.model.MultiStageTimeSeries.TimeScale;
@@ -37,16 +37,16 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import javax.imageio.ImageIO;
 import org.jfree.chart.JFreeChart;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class LoadStatisticsTest {
+class LoadStatisticsTest {
 
     @Test
-    public void graph() throws IOException {
-        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
+    void graph() throws IOException {
+        assumeFalse(Functions.isWindows(), "TODO: Implement this test on Windows");
         LoadStatistics ls = new LoadStatistics(0, 0) {
             @Override
             protected Iterable<Node> getNodes() {

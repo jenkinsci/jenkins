@@ -47,4 +47,9 @@ public class SearchAction implements RootAction {
     public String getUrlName() {
         return null;
     }
+
+    @Override
+    public boolean isPrimaryAction() {
+        return true;
+    }
 }

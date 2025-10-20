@@ -1,9 +1,9 @@
 package hudson.diagnosis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.User;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -19,22 +19,28 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class HudsonHomeDiskUsageMonitorTest {
+@WithJenkins
+class HudsonHomeDiskUsageMonitorTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void flow() throws Exception {
+    void flow() throws Exception {
         // manually activate this
         HudsonHomeDiskUsageMonitor mon = HudsonHomeDiskUsageMonitor.get();
         mon.activated = true;
@@ -54,7 +60,7 @@ public class HudsonHomeDiskUsageMonitorTest {
 
     @Issue("SECURITY-371")
     @Test
-    public void noAccessForNonAdmin() throws Exception {
+    void noAccessForNonAdmin() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 
