@@ -46,17 +46,17 @@ THE SOFTWARE.
               </a>
               <j:if test="${it.object.previousBuild != null}">
                 <a href="${buildUrl.previousBuildUrl}"
-                   class="jenkins-button jenkins-button--tertiary"
+                   class="jenkins-button jenkins-button--tertiary app-build__navigation-previous"
                    aria-label="${%Previous build}">
-                  <l:icon class="symbol-chevron-back" />
+                  <l:icon class="symbol-arrow-left" />
                 </a>
               </j:if>
               <h1>${it.object.displayName}</h1>
               <j:if test="${it.object.nextBuild != null}">
                 <a href="${buildUrl.nextBuildUrl}"
-                   class="jenkins-button jenkins-button--tertiary"
+                   class="jenkins-button jenkins-button--tertiary app-build__navigation-next"
                    aria-label="${%Next build}">
-                  <l:icon class="symbol-chevron-forward" />
+                  <l:icon class="symbol-arrow-right" />
                 </a>
               </j:if>
             </div>
