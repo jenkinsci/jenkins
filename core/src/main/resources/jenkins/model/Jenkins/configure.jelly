@@ -35,6 +35,13 @@ THE SOFTWARE.
 
     <l:app-bar title="${%System}" />
 
+    <section class="manage-messages">
+      <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
+        <st:include page="message.jelly" it="${am}" />
+      </j:forEach>
+      <st:include page="downgrade.jelly" it="${app}" />
+    </section>
+
     <f:form method="post" name="config" action="configSubmit" class="jenkins-form">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
