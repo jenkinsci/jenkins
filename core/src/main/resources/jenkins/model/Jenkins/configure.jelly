@@ -34,12 +34,6 @@ THE SOFTWARE.
     <j:set var="it" value="${app}" />
     <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
 
-    <l:app-bar title="${%System}" />
-
-    <div class="jenkins-page-description">
-      ${managementLink.description}
-    </div>
-
     <section class="manage-messages">
       <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
         <st:include page="message.jelly" it="${am}" />

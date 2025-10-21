@@ -6,7 +6,9 @@ function init() {
     const placeholder = element.previousElementSibling;
 
     renderOnDemand(element, () => {
-      placeholder.remove();
+      document.startViewTransition(() => {
+        placeholder.remove();
+      })
 
       // Emit DOMContentLoaded in case it's tracked in a script
       const evt = new Event('DOMContentLoaded', { bubbles: true });

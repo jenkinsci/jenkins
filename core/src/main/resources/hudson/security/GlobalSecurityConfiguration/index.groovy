@@ -11,8 +11,6 @@ def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
 l.'settings-subpage'(permission: app.SYSTEM_READ) {
-    l.app_bar(title: my.displayName)
-
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
     l.skeleton()

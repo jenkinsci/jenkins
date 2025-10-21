@@ -32,9 +32,6 @@ THE SOFTWARE.
   <l:settings-subpage permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
     <script src="${resURL}/jsbundles/pages/manage-jenkins/system-information.js" type="text/javascript" defer="true" />
-    
-    <l:breadcrumb title="${it.displayName}"/>
-    <l:app-bar title="${it.displayName}" />
 
     <l:hasPermission permission="${app.SYSTEM_READ}">
       <l:tabPane title="${%System Properties}">

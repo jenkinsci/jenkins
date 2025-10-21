@@ -37,6 +37,9 @@ THE SOFTWARE.
     <st:attribute name="placeholder">
       Optional placeholder for loading this page, falls back to a generic skeleton if not set.
     </st:attribute>
+    <st:attribute name="header">
+      Optional header for the page, falls back to a default header if not set.
+    </st:attribute>
   </st:documentation>
 
   <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
@@ -75,7 +78,16 @@ THE SOFTWARE.
         </l:side-panel>
         <l:main-panel>
           <div class="app-settings-container">
-            <div style="max-width: 900px; margin: auto; overflow-x: hidden; padding: 2rem;">
+            <div style="max-width: 900px; margin: auto; overflow-x: hidden; padding: 2rem; display: flex; flex-direction: column">
+              <j:if test="${!attrs.containsKey('header')}">
+                <l:app-bar title="${it.displayName}" />
+                <div class="jenkins-page-description">
+                  ${it.description}
+                </div>
+              </j:if>
+
+              <j:out value="${attrs.header}" />
+
               <l:defer>
                 <l:defer.placeholder>
                   <j:choose>
@@ -83,10 +95,6 @@ THE SOFTWARE.
                       <j:out value="${attrs.placeholder}" />
                     </j:when>
                     <j:otherwise>
-                      <l:app-bar title="${it.displayName}" />
-                      <div class="jenkins-page-description">
-                        ${it.description}
-                      </div>
                       <l:skeleton type="form" />
                     </j:otherwise>
                   </j:choose>

@@ -25,7 +25,9 @@ THE SOFTWARE.
 <!-- About Jenkins page -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:settings-subpage placeholder="${null}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
+  <l:settings-subpage header="${null}"
+                      placeholder="${null}"
+                      permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
 
     <div class="jenkins-app-bar jenkins-!-margin-top-2">
