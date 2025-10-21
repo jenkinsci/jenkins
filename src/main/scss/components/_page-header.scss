@@ -91,10 +91,10 @@
     // For customizable-header-plugin
     color: inherit !important;
 
-    svg {
-      width: 1.25rem;
-      height: 1.25rem;
-    }
+    //svg {
+    //  width: 1.25rem;
+    //  height: 1.25rem;
+    //}
 
     img {
       width: 1.625rem;
@@ -128,7 +128,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
     padding-right: var(--section-padding);
   }
 
