@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.model.Descriptor;
 import hudson.model.Node.Mode;
 import java.io.IOException;
 import net.sf.json.JSONObject;
@@ -46,13 +47,13 @@ public class MasterBuildConfiguration {
         return Jenkins.get().getLabelString();
     }
 
-    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws Descriptor.FormException {
         Jenkins j = Jenkins.get();
         try {
             // for compatibility reasons, this value is stored in Jenkins
             String num = json.getString("numExecutors");
             if (!num.matches("\\d+")) {
-                throw new FormException(Messages.Hudson_Computer_IncorrectNumberOfExecutors(), "numExecutors");
+                throw new Descriptor.FormException(Messages.Hudson_Computer_IncorrectNumberOfExecutors(), "numExecutors");
             }
 
             j.setNumExecutors(json.getInt("numExecutors"));
@@ -65,7 +66,7 @@ public class MasterBuildConfiguration {
 
             return true;
         } catch (IOException e) {
-            throw new FormException(e, "numExecutors");
+            throw new Descriptor.FormException(e, "numExecutors");
         }
     }
 }
