@@ -1234,16 +1234,23 @@ function rowvgStartEachRow(recursive, f) {
     document.head.appendChild(link);
   });
 
-  Behaviour.specify(".app-section-jumper", "app-section-jumper", -9999, function (group) {
-    document.querySelectorAll(".jenkins-section__title").forEach((element) => {
-      const link = document.createElement("a");
-      const span = document.createElement("span");
-      span.textContent = element.textContent;
-      link.appendChild(span);
-      link.href = "#" + element.id;
-      group.appendChild(link);
-    })
-  });
+  Behaviour.specify(
+    ".app-section-jumper",
+    "app-section-jumper",
+    -9999,
+    function (group) {
+      document
+        .querySelectorAll(".jenkins-section__title")
+        .forEach((element) => {
+          const link = document.createElement("a");
+          const span = document.createElement("span");
+          span.textContent = element.textContent;
+          link.appendChild(span);
+          link.href = "#" + element.id;
+          group.appendChild(link);
+        });
+    },
+  );
 
   var p = 20;
   Behaviour.specify("TABLE.sortable", "table-sortable", ++p, function (e) {
