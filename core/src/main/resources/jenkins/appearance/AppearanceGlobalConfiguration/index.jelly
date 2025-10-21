@@ -27,7 +27,11 @@ THE SOFTWARE.
   <j:set var="pluginsUrl" value="${rootURL}/manage/pluginManager/available?filter=UI Themes" />
   <j:set var="hasPlugins" value="${it.hasPlugins()}" />
 
-  <j:set var="header">
+  <l:settings-subpage header="${null}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
+    <j:set var="pluginsUrl" value="${rootURL}/manage/pluginManager/available?filter=UI Themes" />
+    <j:set var="hasPlugins" value="${it.hasPlugins()}" />
+
     <l:app-bar title="${it.displayName}">
       <j:if test="${hasPlugins}">
         <a href="${pluginsUrl}" class="jenkins-button">
@@ -40,12 +44,6 @@ THE SOFTWARE.
     <div class="jenkins-page-description">
       ${it.description}
     </div>
-  </j:set>
-
-  <l:settings-subpage header="${header}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
-    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
-    <j:set var="pluginsUrl" value="${rootURL}/manage/pluginManager/available?filter=UI Themes" />
-    <j:set var="hasPlugins" value="${it.hasPlugins()}" />
 
     <j:choose>
       <j:when test="${!hasPlugins}">
