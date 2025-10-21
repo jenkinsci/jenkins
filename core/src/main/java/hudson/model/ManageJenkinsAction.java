@@ -84,7 +84,7 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
             var newUiEnabled = new NewManageJenkinsUserExperimentalFlag().getFlagValue();
 
             if (newUiEnabled) {
-                return new HttpRedirect("manage/configure");
+                return new HttpRedirect("configure");
             }
 
             req.getView(this, "index.jelly").forward(req, rsp);
