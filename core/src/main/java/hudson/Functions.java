@@ -288,7 +288,32 @@ public class Functions {
     public static void initPageVariables(JellyContext context) {
         StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
         currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse2());
-        String rootURL = currentRequest.getContextPath();
+
+        // Try to get the configured root URL first (respects proxy configuration)
+        String rootURL;
+        try {
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
+            if (jenkins != null) {
+                String configuredRootUrl = jenkins.getRootUrl();
+                if (configuredRootUrl != null) {
+                    // Remove trailing slash(es) and use configured URL
+                    rootURL = configuredRootUrl.replaceAll("/+$", "");
+                    LOGGER.fine("Using configured Jenkins root URL for rootURL variable: " + rootURL);
+                } else {
+                    // Fallback to context path for backward compatibility
+                    rootURL = currentRequest.getContextPath();
+                    LOGGER.fine("No Jenkins root URL configured, falling back to context path: " + rootURL);
+                }
+            } else {
+                // Fallback when Jenkins instance is not available
+                rootURL = currentRequest.getContextPath();
+                LOGGER.fine("Jenkins instance not available, falling back to context path: " + rootURL);
+            }
+        } catch (Exception e) {
+            // Fallback to original behavior on any error
+            rootURL = currentRequest.getContextPath();
+            LOGGER.log(Level.WARNING, "Error getting Jenkins root URL, falling back to context path: " + rootURL, e);
+        }
 
         Functions h = new Functions();
         context.setVariable("h", h);

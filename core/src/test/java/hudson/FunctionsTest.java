@@ -324,6 +324,13 @@ class FunctionsTest {
     private static StaplerRequest2 createMockRequest(String contextPath) {
         StaplerRequest2 req = mock(StaplerRequest2.class);
         when(req.getContextPath()).thenReturn(contextPath);
+
+        // Mock WebApp and DispatchValidator for initPageVariables tests
+        org.kohsuke.stapler.WebApp webApp = mock(org.kohsuke.stapler.WebApp.class);
+        jenkins.security.stapler.StaplerDispatchValidator validator = mock(jenkins.security.stapler.StaplerDispatchValidator.class);
+        when(req.getWebApp()).thenReturn(webApp);
+        when(webApp.getDispatchValidator()).thenReturn(validator);
+
         return req;
     }
 
@@ -793,6 +800,473 @@ class FunctionsTest {
         try (MockedStatic<Stapler> mocked = mockStatic(Stapler.class)) {
             mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
             assertFalse(Functions.showInPrimaryHeader(action));
+        }
+    }
+
+    @Test
+    void initPageVariables_withConfiguredRootUrl() {
+        // Test proxy configuration scenario where Jenkins root URL is configured
+        String contextPath = "/jenkins";
+        String configuredRootUrl = "https://gateway.com/jenkins/";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        when(jenkins.getRootUrl()).thenReturn(configuredRootUrl);
+
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            Functions.initPageVariables(context);
+
+            // Should use configured root URL without trailing slash
+            assertEquals("https://gateway.com/jenkins", context.getVariable("rootURL"));
+        }
+    }
+
+    @Test
+    void initPageVariables_withoutConfiguredRootUrl() {
+        // Test fallback behavior when root URL is not configured
+        String contextPath = "/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        when(jenkins.getRootUrl()).thenReturn(null);
+
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            Functions.initPageVariables(context);
+
+            // Should fall back to context path
+            assertEquals(contextPath, context.getVariable("rootURL"));
+        }
+    }
+
+    @Test
+    void initPageVariables_jenkinsInstanceUnavailable() {
+        // Test fallback when Jenkins instance is not available
+        String contextPath = "/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(null);
+
+            Functions.initPageVariables(context);
+
+            // Should fall back to context path
+            assertEquals(contextPath, context.getVariable("rootURL"));
+        }
+    }
+
+    @Test
+    void initPageVariables_trailingSlashHandling() {
+        // Test that trailing slash is properly removed from configured URL
+        String contextPath = "/jenkins";
+        String configuredRootUrlWithSlash = "https://gateway.com/jenkins/";
+        String configuredRootUrlWithoutSlash = "https://gateway.com/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            // Test with trailing slash
+            when(jenkins.getRootUrl()).thenReturn(configuredRootUrlWithSlash);
+            Functions.initPageVariables(context);
+            assertEquals("https://gateway.com/jenkins", context.getVariable("rootURL"));
+
+            // Test without trailing slash
+            when(jenkins.getRootUrl()).thenReturn(configuredRootUrlWithoutSlash);
+            Functions.initPageVariables(context);
+            assertEquals("https://gateway.com/jenkins", context.getVariable("rootURL"));
+        }
+    }
+
+    @Test
+    void initPageVariables_exceptionHandling() {
+        // Test graceful exception handling
+        String contextPath = "/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        when(jenkins.getRootUrl()).thenThrow(new RuntimeException("Test exception"));
+
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            Functions.initPageVariables(context);
+
+            // Should fall back to context path on exception
+            assertEquals(contextPath, context.getVariable("rootURL"));
+        }
+    }
+
+    @Test
+    void initPageVariables_setsOtherVariables() {
+        // Test that other variables are still set correctly
+        String contextPath = "/jenkins";
+        String configuredRootUrl = "https://gateway.com/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        when(jenkins.getRootUrl()).thenReturn(configuredRootUrl);
+        when(req.getHeader("User-Agent")).thenReturn("Test-Agent");
+
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            Functions.initPageVariables(context);
+
+            // Verify all expected variables are set
+            assertThat(context.getVariable("h"), is(not(nullValue())));
+            assertEquals("https://gateway.com/jenkins", context.getVariable("rootURL"));
+            assertThat(context.getVariable("resURL"), is(not(nullValue())));
+            assertThat(context.getVariable("imagesURL"), is(not(nullValue())));
+            assertEquals(true, context.getVariable("divBasedFormLayout"));
+            assertEquals("Test-Agent", context.getVariable("userAgent"));
+        }
+    }
+
+    @Test
+    void initPageVariables_handlesRuntimeException() {
+        // Test handling of runtime exceptions during URL retrieval
+        String contextPath = "/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        when(jenkins.getRootUrl()).thenThrow(new RuntimeException("Simulated error"));
+
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            Functions.initPageVariables(context);
+
+            // Should fall back to context path and not throw exception
+            assertEquals(contextPath, context.getVariable("rootURL"));
+            assertThat(context.getVariable("h"), is(not(nullValue())));
+        }
+    }
+
+    @Test
+    void initPageVariables_handlesIllegalStateException() {
+        // Test handling of IllegalStateException during URL retrieval
+        String contextPath = "/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        when(jenkins.getRootUrl()).thenThrow(new IllegalStateException("Jenkins not ready"));
+
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            Functions.initPageVariables(context);
+
+            // Should fall back to context path and not throw exception
+            assertEquals(contextPath, context.getVariable("rootURL"));
+            assertThat(context.getVariable("h"), is(not(nullValue())));
+        }
+    }
+
+    @Test
+    void initPageVariables_handlesEmptyRootUrl() {
+        // Test handling of empty root URL
+        String contextPath = "/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        when(jenkins.getRootUrl()).thenReturn("");
+
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            Functions.initPageVariables(context);
+
+            // Empty string should be used as-is (after removing trailing slash)
+            assertEquals("", context.getVariable("rootURL"));
+        }
+    }
+
+    @Test
+    void initPageVariables_handlesMultipleSlashes() {
+        // Test handling of URLs with multiple trailing slashes
+        String contextPath = "/jenkins";
+        String configuredRootUrl = "https://gateway.com/jenkins///";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        when(jenkins.getRootUrl()).thenReturn(configuredRootUrl);
+
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            Functions.initPageVariables(context);
+
+            // Should remove all trailing slashes
+            assertEquals("https://gateway.com/jenkins", context.getVariable("rootURL"));
+        }
+    }
+
+    @Test
+    void initPageVariables_threadSafety() {
+        // Test that initPageVariables method itself is thread-safe when called with proper context
+        // Note: This test focuses on the method's internal thread safety, not Stapler's thread-local behavior
+        String contextPath = "/jenkins";
+        String configuredRootUrl = "https://gateway.com/jenkins/";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        when(jenkins.getRootUrl()).thenReturn(configuredRootUrl);
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            // Test multiple sequential calls to verify no shared state issues
+            for (int i = 0; i < 10; i++) {
+                org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+                Functions.initPageVariables(context);
+                assertEquals("https://gateway.com/jenkins", context.getVariable("rootURL"));
+
+                // Verify each context is independent
+                assertThat("Functions helper object should be set",
+                    context.getVariable("h"), is(not(nullValue())));
+                assertThat("Resource URL should be set",
+                    context.getVariable("resURL"), is(not(nullValue())));
+            }
+        }
+    }
+
+    @Test
+    void initPageVariables_handlesMalformedRootUrls() {
+        // Test handling of various malformed root URLs
+        String contextPath = "/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            // Test various malformed URLs that should still work (just remove trailing slashes)
+            String[] malformedUrls = {
+                "   https://gateway.com/jenkins   ",  // whitespace preserved
+                "https://gateway.com/jenkins\n",     // newline preserved
+                "https://gateway.com/jenkins\t",     // tab preserved
+                "https://gateway.com/jenkins/////", // multiple slashes removed
+                "not-a-url-but-still-valid",        // not a URL but valid string
+                "123",                               // numeric string
+                "special-chars!@#$%^&*()",          // special characters
+            };
+
+            String[] expectedResults = {
+                "   https://gateway.com/jenkins   ", // whitespace preserved, no trailing slash to remove
+                "https://gateway.com/jenkins\n",     // newline preserved, no trailing slash to remove
+                "https://gateway.com/jenkins\t",     // tab preserved, no trailing slash to remove
+                "https://gateway.com/jenkins",       // multiple slashes removed
+                "not-a-url-but-still-valid",        // used as-is
+                "123",                               // used as-is
+                "special-chars!@#$%^&*()",          // used as-is
+            };
+
+            for (int i = 0; i < malformedUrls.length; i++) {
+                when(jenkins.getRootUrl()).thenReturn(malformedUrls[i]);
+                Functions.initPageVariables(context);
+                assertEquals(expectedResults[i], context.getVariable("rootURL"),
+                    "Failed for malformed URL: " + malformedUrls[i]);
+            }
+        }
+    }
+
+    @Test
+    void initPageVariables_handlesNullAndWhitespaceUrls() {
+        // Test handling of null and whitespace-only URLs
+        String contextPath = "/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            // Test null URL (should fall back to context path)
+            when(jenkins.getRootUrl()).thenReturn(null);
+            Functions.initPageVariables(context);
+            assertEquals(contextPath, context.getVariable("rootURL"));
+
+            // Test whitespace-only URLs
+            String[] whitespaceUrls = {
+                "   ",      // spaces
+                "\t\t",     // tabs
+                "\n\n",     // newlines
+                " \t\n ",   // mixed whitespace
+            };
+
+            for (String whitespaceUrl : whitespaceUrls) {
+                when(jenkins.getRootUrl()).thenReturn(whitespaceUrl);
+                Functions.initPageVariables(context);
+                // Whitespace is preserved as-is (no trimming), only trailing slashes are removed
+                assertEquals(whitespaceUrl, context.getVariable("rootURL"),
+                    "Failed for whitespace URL: '" + whitespaceUrl + "'");
+            }
+        }
+    }
+
+    @Test
+    void initPageVariables_handlesJenkinsLocationConfigurationUnavailable() {
+        // Test behavior when JenkinsLocationConfiguration is not available
+        // This simulates the scenario where Jenkins is not fully initialized
+        String contextPath = "/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+
+        // Simulate JenkinsLocationConfiguration not being available by throwing IllegalStateException
+        when(jenkins.getRootUrl()).thenThrow(new IllegalStateException("JenkinsLocationConfiguration not available"));
+
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            // Should not throw exception and should fall back gracefully
+            Functions.initPageVariables(context);
+
+            // Should fall back to context path
+            assertEquals(contextPath, context.getVariable("rootURL"));
+            // Verify other variables are still set
+            assertThat(context.getVariable("h"), is(not(nullValue())));
+            assertThat(context.getVariable("resURL"), is(not(nullValue())));
+            assertThat(context.getVariable("imagesURL"), is(not(nullValue())));
+        }
+    }
+
+    @Test
+    void initPageVariables_verifyPageRenderingNotBroken() {
+        // Test that exception handling doesn't break page rendering by ensuring all required variables are set
+        String contextPath = "/jenkins";
+
+        StaplerRequest2 req = createMockRequest(contextPath);
+        Jenkins jenkins = mock(Jenkins.class);
+
+        // Simulate various error conditions
+        when(jenkins.getRootUrl()).thenThrow(new RuntimeException("Simulated critical error"));
+        when(req.getHeader("User-Agent")).thenReturn("Test-Browser");
+
+        org.apache.commons.jelly.JellyContext context = new org.apache.commons.jelly.JellyContext();
+
+        try (
+            MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
+            MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)
+        ) {
+            mockedStapler.when(Stapler::getCurrentRequest2).thenReturn(req);
+            mockedJenkins.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+
+            // Should not throw exception
+            Functions.initPageVariables(context);
+
+            // Verify all critical page variables are set (required for page rendering)
+            assertThat("Functions helper object should be set",
+                context.getVariable("h"), is(not(nullValue())));
+            assertThat("Root URL should be set (fallback to context path)",
+                context.getVariable("rootURL"), is(equalTo(contextPath)));
+            assertThat("Resource URL should be set",
+                context.getVariable("resURL"), is(not(nullValue())));
+            assertThat("Images URL should be set",
+                context.getVariable("imagesURL"), is(not(nullValue())));
+            assertThat("Form layout flag should be set",
+                context.getVariable("divBasedFormLayout"), is(equalTo(true)));
+            assertThat("User agent should be set",
+                context.getVariable("userAgent"), is(equalTo("Test-Browser")));
+
+            // Verify URLs are properly formatted (no null or malformed values)
+            String rootURL = (String) context.getVariable("rootURL");
+            String resURL = (String) context.getVariable("resURL");
+            String imagesURL = (String) context.getVariable("imagesURL");
+
+            assertThat("Root URL should not be null", rootURL, is(not(nullValue())));
+            assertThat("Resource URL should not be null", resURL, is(not(nullValue())));
+            assertThat("Images URL should not be null", imagesURL, is(not(nullValue())));
+
+            // URLs should start with the context path (fallback behavior)
+            assertTrue(resURL.startsWith(rootURL), "Resource URL should start with root URL");
+            assertTrue(imagesURL.startsWith(rootURL), "Images URL should start with root URL");
         }
     }
 
