@@ -70,5 +70,7 @@ THE SOFTWARE.
       <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
       <f:saveApplyBar/>
     </f:form>
+
+    <div class="app-section-jumper" />
   </l:settings-subpage>
 </j:jelly>
