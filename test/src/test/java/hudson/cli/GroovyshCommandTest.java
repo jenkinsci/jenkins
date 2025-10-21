@@ -32,17 +32,25 @@ import static org.hamcrest.Matchers.containsString;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class GroovyshCommandTest {
+@WithJenkins
+class GroovyshCommandTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-17929")
-    @Test public void authentication() {
+    @Test
+    void authentication() {
         CLICommandInvoker.Result result = new CLICommandInvoker(r, new GroovyshCommand())
             .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
             .withStdin(new ByteArrayInputStream("println(jenkins.model.Jenkins.instance.getClass().name)\n:quit\n".getBytes(Charset.defaultCharset())))

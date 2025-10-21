@@ -62,7 +62,7 @@ public class SuggestedItem {
             buf.append(item.getSearchName());
         else {
             parent.getPath(buf);
-            buf.append(' ').append(item.getSearchName());
+            buf.append(" » ").append(item.getSearchName());
         }
     }
 

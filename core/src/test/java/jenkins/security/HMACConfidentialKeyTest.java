@@ -2,37 +2,39 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 import java.util.TreeSet;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class HMACConfidentialKeyTest {
-
-    @Rule
-    public ConfidentialStoreRule store = new ConfidentialStoreRule();
+class HMACConfidentialKeyTest {
 
     private HMACConfidentialKey key = new HMACConfidentialKey("test", 16);
 
+    @BeforeEach
+    void setUp() {
+        ConfidentialStore.Mock.INSTANCE.clear();
+    }
+
     @Test
-    public void basics() {
+    void basics() {
         Set<String> unique = new TreeSet<>();
         for (String str : new String[] {"Hello world", "", "\u0000"}) {
             String mac = key.mac(str);
             unique.add(mac);
-            assertTrue(mac, mac.matches("[0-9A-Fa-f]{32}"));
+            assertTrue(mac.matches("[0-9A-Fa-f]{32}"), mac);
             assertTrue(key.checkMac(str, mac));
             assertFalse(key.checkMac("garbage", mac));
         }
-        assertEquals("all 3 MAC are different", 3, unique.size());
+        assertEquals(3, unique.size(), "all 3 MAC are different");
     }
 
     @Test
-    public void loadingExistingKey() {
+    void loadingExistingKey() {
         // this second key of the same ID will cause it to load the key from the disk
         HMACConfidentialKey key2 = new HMACConfidentialKey("test", 16);
         for (String str : new String[] {"Hello world", "", "\u0000"}) {
@@ -41,7 +43,7 @@ public class HMACConfidentialKeyTest {
     }
 
     @Test
-    public void testTruncatedMacOnNonFips() {
+    void testTruncatedMacOnNonFips() {
         HMACConfidentialKey key1 = new HMACConfidentialKey("test", 16);
         String str = key1.mac("Hello World");
         String pattern = "[0-9A-Fa-f]{32}";

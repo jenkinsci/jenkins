@@ -1,0 +1,30 @@
+.jenkins-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 15rem;
+  background: var(--button-background);
+  border: var(--jenkins-border--subtle);
+  border-radius: var(--form-input-border-radius);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--section-padding);
+  font-weight: var(--font-bold-weight);
+  padding: calc(var(--section-padding) * 2);
+  text-align: center;
+
+  svg {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  &__description {
+    color: var(--text-color-secondary);
+    margin-top: -0.375rem;
+
+    &:empty {
+      display: none;
+    }
+  }
+}

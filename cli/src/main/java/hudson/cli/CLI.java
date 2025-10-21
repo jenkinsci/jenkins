@@ -318,7 +318,7 @@ public class CLI {
         throw new AssertionError();
     }
 
-    @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "User provided value for running the program.")
     private static String readAuthFromFile(String auth) throws IOException {
         Path path;
         try {
@@ -329,7 +329,7 @@ public class CLI {
         return Files.readString(path, Charset.defaultCharset());
     }
 
-    @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "User provided value for running the program.")
     private static File getFileFromArguments(List<String> args) {
         return new File(args.get(1));
     }
@@ -343,17 +343,20 @@ public class CLI {
 
         class Authenticator extends ClientEndpointConfig.Configurator {
             HandshakeResponse hr;
+
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
                 if (factory.authorization != null) {
                     headers.put("Authorization", List.of(factory.authorization));
                 }
             }
+
             @Override
             public void afterResponse(HandshakeResponse hr) {
                 this.hr = hr;
             }
         }
+
         var authenticator = new Authenticator();
 
         ClientManager client = ClientManager.createClient(JdkClientContainer.class.getName()); // ~ ContainerProvider.getWebSocketContainer()

@@ -27,6 +27,7 @@ package hudson.model.queue;
 import static java.lang.Math.max;
 
 import com.google.common.collect.Iterables;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Label;
@@ -48,6 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import jenkins.model.Named;
 
 /**
  * Defines a mapping problem for answering "where do we execute this task?"
@@ -114,7 +116,7 @@ public class MappingWorksheet {
         }
     }
 
-    public final class ExecutorChunk extends ReadOnlyList<ExecutorSlot> {
+    public final class ExecutorChunk extends ReadOnlyList<ExecutorSlot> implements Named {
         public final int index;
         public final Computer computer;
         public final Node node;
@@ -150,6 +152,8 @@ public class MappingWorksheet {
         /**
          * Node name.
          */
+        @NonNull
+        @Override
         public String getName() {
             return node.getNodeName();
         }

@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.not;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
-public class IconSetJenkins68805Test {
+class IconSetJenkins68805Test {
 
     /**
      * Culprit: https://github.com/jenkinsci/jenkins/blob/ab0bb8495819bd807a9211ac0df3f08e420226f1/core/src/main/java/org/jenkins/ui/icon/IconSet.java#L97=

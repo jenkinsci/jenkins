@@ -38,7 +38,7 @@ THE SOFTWARE.
                         placeholder="${%Search available plugins}"
                         id="filter-box"
                         autofocus="true"
-                        value="${request.getParameter('filter')}" />
+                        value="${request2.getParameter('filter')}" />
         </div>
         <div class="jenkins-app-bar__controls">
           <l:isAdmin>
@@ -72,7 +72,8 @@ THE SOFTWARE.
 
       <form id="form" method="post" action="install">
         <table id="plugins" class="jenkins-table sortable"
-               data-hasAdmin="${h.hasPermission(app.ADMINISTER)}">
+               data-hasAdmin="${h.hasPermission(app.ADMINISTER)}"
+               data-health="${app.updateCenter.healthScoresAvailable}">
           <thead>
             <tr>
               <l:isAdmin>
@@ -82,6 +83,14 @@ THE SOFTWARE.
               </l:isAdmin>
               <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
+              <j:if test="${app.updateCenter.healthScoresAvailable}">
+                <th>
+                  <j:set var="healthTooltip">${%healthTooltip}</j:set>
+                  <span data-html-tooltip="${healthTooltip}" data-tooltip-interactive="true">
+                    ${%Health}
+                  </span>
+                </th>
+              </j:if>
             </tr>
           </thead>
           <tbody/>

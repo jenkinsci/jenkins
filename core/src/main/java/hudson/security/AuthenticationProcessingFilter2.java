@@ -39,10 +39,11 @@ import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
  * Login filter with a change for Jenkins so that
@@ -56,13 +57,12 @@ public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthe
 
     @SuppressFBWarnings(value = "HARD_CODE_PASSWORD", justification = "This is a password parameter, not a password")
     public AuthenticationProcessingFilter2(String authenticationGatewayUrl) {
-        setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/" + authenticationGatewayUrl, "POST"));
+        setRequiresAuthenticationRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/" + authenticationGatewayUrl));
         // Jenkins/login.jelly & SetupWizard/authenticate-security-token.jelly
         setUsernameParameter("j_username");
         setPasswordParameter("j_password");
     }
 
-    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "request.getSession(true) does in fact have a side effect")
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         if (SystemProperties.getInteger(SecurityRealm.class.getName() + ".sessionFixationProtectionMode", 1) == 2) {

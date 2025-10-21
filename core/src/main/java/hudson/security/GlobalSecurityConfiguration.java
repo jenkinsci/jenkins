@@ -37,15 +37,12 @@ import hudson.model.ManagementLink;
 import hudson.util.FormApply;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.util.ServerTcpPort;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
@@ -90,11 +87,6 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     @Restricted(NoExternalUse.class)
     public boolean isSlaveAgentPortEnforced() {
         return Jenkins.get().isSlaveAgentPortEnforced();
-    }
-
-    @NonNull
-    public Set<String> getAgentProtocols() {
-        return Jenkins.get().getAgentProtocols();
     }
 
     public boolean isDisableRememberMe() {
@@ -149,18 +141,6 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
                 throw new FormException(e, "slaveAgentPortType");
             }
         }
-        Set<String> agentProtocols = new TreeSet<>();
-        if (json.has("agentProtocol")) {
-            Object protocols = json.get("agentProtocol");
-            if (protocols instanceof JSONArray) {
-                for (int i = 0; i < ((JSONArray) protocols).size(); i++) {
-                    agentProtocols.add(((JSONArray) protocols).getString(i));
-                }
-            } else {
-                agentProtocols.add(protocols.toString());
-            }
-        }
-        j.setAgentProtocols(agentProtocols);
 
         // persist all the additional security configs
         boolean result = true;

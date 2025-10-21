@@ -26,6 +26,7 @@ package hudson;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
@@ -274,6 +275,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     /**
      * Exposed just for the test harness. Clear legacy instances.
      */
+    @SuppressFBWarnings(value = "HSM_HIDING_METHOD", justification = "TODO needs triage")
     public static void clearLegacyInstances() {
         legacyDescriptors.clear();
     }

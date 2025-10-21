@@ -33,6 +33,7 @@ import hudson.PluginWrapper.Dependency;
 import hudson.model.Hudson;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.DelegatingClassLoader;
 import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
 import java.io.File;
@@ -279,7 +280,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * @deprecated since 2.459 use {@link #createClassLoader(String, List, ClassLoader, Attributes)}
      */
-    @Deprecated(since="2.459")
+    @Deprecated(since = "2.459")
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
         // generate a legacy id so at least we can track to something
         return createClassLoader("unidentified-" + UUID.randomUUID(), paths, parent, atts);
@@ -559,7 +560,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * Used to load classes from dependency plugins.
      */
-    static final class DependencyClassLoader extends ClassLoader {
+    static final class DependencyClassLoader extends DelegatingClassLoader {
         /**
          * This classloader is created for this plugin. Useful during debugging.
          */
@@ -573,10 +574,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
          * Topologically sorted list of transitive dependencies. Lazily initialized via double-checked locking.
          */
         private volatile List<PluginWrapper> transitiveDependencies;
-
-        static {
-            registerAsParallelCapable();
-        }
 
         DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies, PluginManager pluginManager) {
             super("dependency ClassLoader for " + archive.getPath(), parent);

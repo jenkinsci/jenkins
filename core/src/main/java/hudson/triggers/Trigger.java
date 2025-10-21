@@ -252,6 +252,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
     private static Future previousSynchronousPolling;
 
+    @SuppressFBWarnings(value = "LI_LAZY_INIT_STATIC", justification = "TODO needs triage")
     public static void checkTriggers(final Calendar cal) {
         Jenkins inst = Jenkins.get();
 

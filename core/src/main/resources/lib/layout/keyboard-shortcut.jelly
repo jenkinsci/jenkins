@@ -1,0 +1,70 @@
+<!--
+The MIT License
+
+Copyright (c) 2023, Jenkins Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation>
+    <st:attribute name="shortcut" use="required">
+      The shortcut to display
+
+      CMD will automatically be translated to the user's operating system's appropriate variant
+
+      This attribute also supports Jenkins Symbols, values prefixed with 'symbol-' will be displayed as expected
+    </st:attribute>
+    <st:attribute name="message">
+      Optional tooltip message for the shortcut. Use the placeholder {0} escaped (wrapped in '). A minimal message consisting of
+      only the shortcut would be '{0}'
+    </st:attribute>
+    Displays a keyboard shortcut chip
+  </st:documentation>
+
+  <j:set var="tooltip">
+    <div class="jenkins-keyboard-shortcut__tooltip">
+      <j:set var="body">
+        <div class="jenkins-keyboard-shortcut jenkins-keyboard-shortcut--tooltip">
+          <j:choose>
+            <j:when test="${attrs.shortcut.startsWith('symbol-')}">
+              <l:icon src="${attrs.shortcut}" />
+            </j:when>
+            <j:otherwise>
+              ${attrs.shortcut}
+            </j:otherwise>
+          </j:choose>
+        </div>
+      </j:set>
+      <j:out value="${h.formatMessage(message, h.translateModifierKeysForUsersPlatform(body))}"/>
+    </div>
+  </j:set>
+
+  <div class="jenkins-keyboard-shortcut" data-html-tooltip="${attrs.message != null ? tooltip : null}">
+    <j:choose>
+      <j:when test="${attrs.shortcut.startsWith('symbol-')}">
+        <l:icon src="${attrs.shortcut}" />
+      </j:when>
+      <j:otherwise>
+        ${h.translateModifierKeysForUsersPlatform(attrs.shortcut)}
+      </j:otherwise>
+    </j:choose>
+  </div>
+</j:jelly>

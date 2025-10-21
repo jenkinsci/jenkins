@@ -1,0 +1,192 @@
+.CodeMirror {
+  display: block;
+  background: var(--input-color);
+  border: var(--jenkins-border-width) solid var(--input-border);
+  border-radius: var(--form-input-border-radius);
+  width: 100%;
+  max-width: var(--form-item-max-width);
+  box-shadow: var(--form-input-glow);
+  transition:
+    var(--standard-transition),
+    height 0s;
+  cursor: text;
+  margin-bottom: var(--section-padding);
+
+  // Override the defaults of codemirror.css
+  pre {
+    font-family: var(--font-family-mono) !important;
+    line-height: 1.66 !important;
+  }
+
+  &:hover {
+    border-color: var(--input-border-hover);
+  }
+
+  &:active,
+  &:focus-within {
+    outline: none;
+    border-color: var(--focus-input-border);
+    box-shadow: var(--form-input-glow--focus);
+  }
+
+  textarea {
+    background: transparent;
+    border: none;
+    outline: none;
+  }
+
+  .CodeMirror-selected {
+    background-color: var(--selection-color) !important;
+  }
+
+  .CodeMirror-lines {
+    padding: var(--form-input-padding);
+  }
+
+  .CodeMirror-gutter-text {
+    padding: 0.5rem calc(0.625rem * 0.5) 0.625rem 0.5rem;
+    color: var(--text-color-secondary);
+  }
+
+  .CodeMirror-gutter {
+    background: transparent;
+    border-right: none;
+  }
+
+  .CodeMirror-cursor {
+    border-left-color: var(--text-color) !important;
+  }
+
+  .cm-property {
+    color: var(--text-color) !important;
+  }
+
+  .CodeMirror-matchingbracket {
+    color: var(--green) !important;
+  }
+
+  .cm-keyword {
+    color: var(--purple) !important;
+  }
+
+  .cm-atom {
+    color: var(--blue) !important;
+  }
+
+  .cm-number {
+    color: var(--green) !important;
+  }
+
+  .cm-def {
+    color: var(--blue) !important;
+  }
+
+  .cm-variable {
+    color: var(--text-color) !important;
+  }
+
+  .cm-variable-2 {
+    color: var(--blue) !important;
+  }
+
+  .cm-variable-3 {
+    color: var(--green) !important;
+  }
+
+  .cm-operator {
+    color: var(--text-color) !important;
+  }
+
+  .cm-comment {
+    color: var(--text-color-secondary) !important;
+  }
+
+  .cm-string {
+    color: var(--green) !important;
+  }
+
+  .cm-string-2 {
+    color: var(--orange) !important;
+  }
+
+  .cm-meta {
+    color: var(--text-color-secondary) !important;
+  }
+
+  .cm-error {
+    color: var(--error-color) !important;
+  }
+
+  .cm-qualifier {
+    color: var(--text-color-secondary) !important;
+  }
+
+  .cm-builtin {
+    color: var(--blue) !important;
+  }
+
+  .cm-bracket {
+    color: var(--text-color-secondary) !important;
+  }
+
+  .cm-tag {
+    color: var(--green) !important;
+  }
+
+  .cm-attribute {
+    color: var(--blue) !important;
+  }
+
+  .cm-header {
+    color: var(--blue) !important;
+  }
+
+  .cm-quote {
+    color: var(--green) !important;
+  }
+
+  .cm-hr {
+    color: var(--text-color-secondary) !important;
+  }
+
+  .cm-link {
+    color: var(--link-color) !important;
+  }
+
+  .cm-negative {
+    color: var(--red) !important;
+  }
+
+  .cm-positive {
+    color: var(--green) !important;
+  }
+
+  .cm-invalidchar {
+    color: var(--red) !important;
+  }
+
+  .CodeMirror-nonmatchingbracket {
+    color: var(--red) !important;
+  }
+}
+
+.jenkins-codemirror-resizer {
+  --code-mirror-resizer-margin-right: 1rem;
+
+  @media screen and (width <= 1200px) {
+    --code-mirror-resizer-margin-right: 3px;
+  }
+
+  position: relative;
+  width: 10px;
+  height: 10px;
+  margin: calc(-2rem - 11px) var(--code-mirror-resizer-margin-right) 2rem auto;
+  z-index: 10;
+  cursor: ns-resize;
+  background: currentColor;
+  mask-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg width='20px' height='20px' viewBox='0 0 20 20' version='1.1' xmlns='http://www.w3.org/2000/svg'%3E%3Cg id='Page-1' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cline x1='19' y1='12' x2='12' y2='19' id='Path' stroke='%23979797' stroke-width='2'%3E%3C/line%3E%3Cline x1='1' y1='18' x2='17.9705627' y2='1.02943725' id='Path-2' stroke='%23979797' stroke-width='2'%3E%3C/line%3E%3C/g%3E%3C/svg%3E");
+  mask-size: 7px 7px;
+  mask-position: 3px 3px;
+  mask-repeat: no-repeat;
+  opacity: 0.75;
+}

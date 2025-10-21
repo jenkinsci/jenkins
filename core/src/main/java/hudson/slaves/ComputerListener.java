@@ -212,6 +212,13 @@ public abstract class ComputerListener implements ExtensionPoint {
     public void onConfigurationChange() {}
 
     /**
+     * Indicates that the computer has become idle.
+     *
+     * @since 2.476
+     */
+    public void onIdle(Computer c) {}
+
+    /**
      * Registers this {@link ComputerListener} so that it will start receiving events.
      *
      * @deprecated as of 1.286

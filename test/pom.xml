@@ -49,6 +49,9 @@ THE SOFTWARE.
     <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</jenkins.addOpens>
     <!-- Filled in by maven-hpi-plugin with the path to org-netbeans-insane-hook.jar extracted from jenkins-test-harness -->
     <jenkins.insaneHook />
+
+    <!-- Filled in by maven-hpi-plugin with "-javaagent:/path/to/mockito-core-<version>.jar" -->
+    <jenkins.javaAgent />
   </properties>
 
   <dependencyManagement>
@@ -61,80 +64,86 @@ THE SOFTWARE.
         <scope>import</scope>
       </dependency>
       <dependency>
+        <!-- Required by workflow-support -->
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>caffeine-api</artifactId>
+        <version>3.2.2-178.v353b_8428ed56</version>
+      </dependency>
+      <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-lang3-api</artifactId>
-        <version>3.17.0-84.vb_b_938040b_078</version>
+        <version>3.19.0-104.v12125f33a_255</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-text-api</artifactId>
-        <version>1.12.0-129.v99a_50df237f7</version>
+        <version>1.14.0-194.v804a_dc3a_1b_d8</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.6.0-1</version>
+        <version>7.1.0-882.v1dfb_771e3278</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>ionicons-api</artifactId>
-        <version>74.v93d5eb_813d5f</version>
+        <version>94.vcc3065403257</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>javax-activation-api</artifactId>
-        <version>1.2.0-7</version>
+        <version>1.2.0-8</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>plugin-util-api</artifactId>
-        <version>4.1.0</version>
+        <version>6.1192.v30fe6e2837ff</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>511.v0a_a_1a_334f41b_</version>
+        <version>518.v8d8dc7945eca_</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>bouncycastle-api</artifactId>
-        <version>2.30.1.78.1-248.ve27176eb_46cb_</version>
+        <version>2.30.1.82-277.v70ca_0b_877184</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
-        <version>2.204.vf6fddd8a_8b_e9</version>
+        <version>2.217.va_6b_de84cc74b_</version>
       </dependency>
       <dependency>
         <!-- Required by workflow-support -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>scm-api</artifactId>
-        <version>696.v778d637b_a_762</version>
+        <version>712.v8846fdd68c88</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1358.vb_26663c13537</version>
+        <version>1378.vf25626395f49</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1336.vee415d95c521</version>
+        <version>1384.vdc05a_48f535f</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-step-api</artifactId>
-        <version>678.v3ee58b_469476</version>
+        <version>710.v3e456cc85233</version>
       </dependency>
       <dependency>
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>920.v59f71ce16f04</version>
+        <version>1004.veee3a_d67cdb_9</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -147,6 +156,11 @@ THE SOFTWARE.
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-war</artifactId>
       <version>${project.version}</version>
@@ -156,13 +170,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-10</version>
+      <version>1.6.2-11</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>4.2.2</version>
+      <version>4.3.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -178,7 +192,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2265.v3da_49c8134d6</version>
+      <version>2508.v45936ef31cd7</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -206,55 +220,61 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>185.v303dc7c645f9</version>
+      <version>203.v15e81a_1b_7a_38</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
-      <version>162.v0e6ec0fcfcf6</version>
+      <version>173.v680e3a_b_69ff3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.942.vb_43318a_156b_2</version>
+      <version>6.1062.v2877b_d6b_b_eeb_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1371.vfee6b_095f0a_3</version>
+      <version>1447.v4cb_b_539b_5321</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1296.vb_f538b_c88630</version>
+      <version>1361.vfed194a_de34a_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>472.vf7c289a_4b_420</version>
+      <version>522.va_995fa_cfb_8b_d</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.2.2</version>
+      <version>3.2.8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>832.va_66e270d2946</version>
+      <version>870.v9db_fcfc2f45b_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>338.v848422169819</version>
+      <version>353.v261ea_40a_80fb_</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>variant</artifactId>
+      <version>70.va_d9f17f859e0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -263,19 +283,8 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hamcrest</groupId>
-          <artifactId>hamcrest-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
+      <artifactId>mockito-junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -344,7 +353,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>307.vecc0205ca_707</version>
+                  <version>403.v0787db_1c972b_</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
@@ -352,7 +361,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.29.0-17</version>
+                  <version>1.30.0-630.va_e19d17f83b_0</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>prism-api.jpi</destFileName>
@@ -360,7 +369,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.3-1</version>
+                  <version>5.3.8-895.v4d0d8e47fea_d</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>bootstrap5-api.jpi</destFileName>
@@ -375,7 +384,7 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>@{jacocoSurefireArgs} -Xmx1g @{jenkins.addOpens} @{jenkins.insaneHook}</argLine>
+          <argLine>@{jacocoSurefireArgs} -Xmx1g @{jenkins.addOpens} @{jenkins.insaneHook} @{jenkins.javaAgent}</argLine>
           <systemPropertyVariables>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>
@@ -408,14 +417,6 @@ THE SOFTWARE.
           <skip>true</skip>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <!-- Version specified in grandparent POM -->
-        <configuration>
-          <fork>true</fork>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
 
@@ -436,7 +437,7 @@ THE SOFTWARE.
             <artifactId>maven-surefire-plugin</artifactId>
             <!-- Version specified in grandparent POM -->
             <configuration>
-              <groups>org.jvnet.hudson.test.SmokeTest</groups>
+              <groups>SmokeTest</groups>
             </configuration>
           </plugin>
         </plugins>

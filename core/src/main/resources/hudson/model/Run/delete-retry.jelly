@@ -20,7 +20,7 @@
         <tr><td>
           <div id="delete-error" style="display: none">
             <pre>
-              ${request.getAttribute('stackTraces')}
+              ${request2.getAttribute('stackTraces')}
             </pre>
           </div>
         </td></tr>

@@ -77,7 +77,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -124,7 +123,7 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import jenkins.MasterToSlaveFileCallable;
-import jenkins.SlaveToMasterFileCallable;
+import jenkins.agents.ControllerToAgentFileCallable;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.ContextResettingExecutorService;
@@ -520,21 +519,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new Archive(factory, out, scanner, verificationRoot, openOptions));
     }
 
-    private static class Archive extends MasterToSlaveFileCallable<Integer> {
-        private final ArchiverFactory factory;
-        private final OutputStream out;
-        private final DirScanner scanner;
-        private final String verificationRoot;
-        private OpenOption[] openOptions;
-
-        Archive(ArchiverFactory factory, OutputStream out, DirScanner scanner, String verificationRoot, OpenOption... openOptions) {
-            this.factory = factory;
-            this.out = out;
-            this.scanner = scanner;
-            this.verificationRoot = verificationRoot;
-            this.openOptions = openOptions;
-        }
-
+    private record Archive(ArchiverFactory factory, OutputStream out, DirScanner scanner, String verificationRoot, OpenOption... openOptions) implements ControllerToAgentFileCallable<Integer> {
         @Override
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
                 try (Archiver a = factory.create(out)) {
@@ -542,8 +527,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     return a.countEntries();
                 }
             }
-
-            private static final long serialVersionUID = 1L;
     }
 
     public int archive(final ArchiverFactory factory, OutputStream os, final FileFilter filter) throws IOException, InterruptedException {
@@ -1159,8 +1142,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         if (channel == null) {
             try {
                 file.write(Paths.get(remote));
-            } catch (UncheckedIOException e) {
-                throw e.getCause();
             } catch (IOException e) {
                 throw e;
             } catch (Exception e) {
@@ -1185,12 +1166,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Code that gets executed on the machine where the {@link FilePath} is local.
      * Used to act on {@link FilePath}.
-     * <strong>Warning:</strong> implementations must be serializable, so prefer a static nested class to an inner class.
-     *
-     * <p>
-     * Subtypes would likely want to extend from either {@link MasterToSlaveCallable}
-     * or {@link SlaveToMasterFileCallable}.
-     *
+     * A typical implementation would be a {@code record} implementing {@link ControllerToAgentFileCallable}.
      * @see FilePath#act(FileCallable)
      */
     public interface FileCallable<T> extends Serializable, RoleSensitive {
@@ -1325,7 +1301,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Takes a {@link FilePath}+{@link FileCallable} pair and returns the equivalent {@link Callable}.
-     * When executing the resulting {@link Callable}, it executes {@link FileCallable#act(FileCallable)}
+     * When executing the resulting {@link Callable}, it executes {@link FilePath#act(FileCallable)}
      * on this {@link FilePath}.
      *
      * @since 1.522

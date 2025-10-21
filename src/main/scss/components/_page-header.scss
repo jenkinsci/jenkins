@@ -1,0 +1,146 @@
+@use "../abstracts/mixins";
+
+.jenkins-header {
+  --background-opacity: 0%;
+  --background-blur: 0;
+  --border-opacity: 0%;
+
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: var(--section-padding);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  min-height: var(--header-height);
+  color: var(--header-color);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(var(--background-blur));
+    background: color-mix(
+      in sRGB,
+      var(--header-background) var(--background-opacity),
+      transparent
+    );
+    border-bottom: var(--jenkins-border-width) solid
+      color-mix(
+        in sRGB,
+        var(--header-border) var(--border-opacity),
+        transparent
+      );
+    background-clip: padding-box;
+    z-index: -1;
+  }
+
+  .app-jenkins-logo {
+    @include mixins.item($border: false);
+
+    --item-background: transparent;
+    --item-background--hover: transparent;
+    --item-background--active: transparent;
+    --item-box-shadow--focus: transparent;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    gap: 0.875rem;
+    color: var(--header-color);
+    transition: opacity var(--standard-transition);
+
+    &::before,
+    &::after {
+      inset: -2px -6px;
+      border: none;
+    }
+
+    &:hover {
+      opacity: 0.7;
+    }
+
+    &:active {
+      opacity: 0.4;
+    }
+
+    // Increase the hit-box for the logo for Fitts’s Law
+    &::before {
+      inset: -30px -1rem -1rem -100px !important;
+      pointer-events: all;
+    }
+
+    span {
+      font-family: Georgia, serif;
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+
+    #jenkins-head-icon {
+      width: 1.625rem;
+    }
+  }
+
+  .jenkins-button {
+    min-width: 2.375rem;
+    min-height: 2.375rem;
+    padding: 0;
+
+    // For customizable-header-plugin
+    color: inherit !important;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    img {
+      width: 1.625rem;
+      height: 1.625rem;
+    }
+
+    .jenkins-badge {
+      position: absolute;
+      top: calc(16%);
+      right: calc(16%);
+      min-width: 5px;
+      min-height: 5px;
+      padding: 0;
+    }
+  }
+
+  &__main {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding-left: var(--section-padding);
+    width: 100%;
+  }
+
+  &__navigation {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: stretch;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding-right: var(--section-padding);
+  }
+
+  &--has-sticky-app-bar {
+    &::before {
+      mask-image: linear-gradient(black 50%, transparent);
+    }
+  }
+
+  &--no-breadcrumbs {
+    .app-jenkins-logo span {
+      display: block !important;
+    }
+  }
+}

@@ -24,14 +24,16 @@
 
 package jenkins.security.stapler;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @Issue("SECURITY-400")
 @For({StaplerDispatchable.class, StaplerNotDispatchable.class, TypedFilter.class})
-public class StaplerRoutableGetterTest extends StaplerAbstractTest {
+@WithJenkins
+class StaplerRoutableGetterTest extends StaplerAbstractTest {
     @TestExtension
     public static class TestRootAction extends AbstractUnprotectedRootAction {
         @Override
@@ -65,7 +67,7 @@ public class StaplerRoutableGetterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testForceGetterMethod() throws Exception {
+    void testForceGetterMethod() throws Exception {
         assertNotReachable("test/falseWithoutAnnotation/");
         assertNotReachable("test/falseWithoutAnnotation/valid/");
 
@@ -76,7 +78,7 @@ public class StaplerRoutableGetterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testForceNotGetterMethod() throws Exception {
+    void testForceNotGetterMethod() throws Exception {
         assertReachable("test/trueWithoutAnnotation/");
         assertReachable("test/trueWithoutAnnotation/valid/");
         assertNotReachable("test/trueWithAnnotation/");
@@ -84,7 +86,7 @@ public class StaplerRoutableGetterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testPriorityIsNegative() throws Exception {
+    void testPriorityIsNegative() {
         assertNotReachable("test/priorityToNegative/");
     }
 
@@ -161,7 +163,7 @@ public class StaplerRoutableGetterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testInheritanceOfAnnotation_childHasLastWord() throws Exception {
+    void testInheritanceOfAnnotation_childHasLastWord() throws Exception {
         assertNotReachable("test-child/parentKoButChildOk/");
         assertNotReachable("test-child/parentKoButChildNone/");
 

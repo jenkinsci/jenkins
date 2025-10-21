@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.function.IntPredicate;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
 import jenkins.util.Listeners;
 import org.jvnet.tiger_types.Types;
@@ -185,6 +186,16 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     @Restricted(Beta.class)
     public boolean allowLoad(@NonNull Job<?, ?> job, int buildNumber) {
         return true;
+    }
+
+    /**
+     * Allows listeners to veto build loading during startup.
+     * Same behavior as {@link #allowLoad} but permits an implementation to more
+     * efficiently respond to numerous queries about historical build numbers.
+     */
+    @Restricted(Beta.class)
+    public IntPredicate createLoadAllower(@NonNull Job<?, ?> job) {
+        return buildNumber -> allowLoad(job, buildNumber);
     }
 
     /**

@@ -36,11 +36,11 @@ import hudson.console.ConsoleAnnotatorFactory;
 import hudson.init.InitMilestone;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
-import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
@@ -54,7 +54,7 @@ import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.PasswordParameterDefinition;
-import hudson.model.Queue;
+import hudson.model.RootAction;
 import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.model.TimeZoneProperty;
@@ -63,6 +63,7 @@ import hudson.model.User;
 import hudson.model.View;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import hudson.search.SearchFactory;
 import hudson.search.SearchableModelObject;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -95,11 +96,9 @@ import hudson.util.jna.GNUCLibrary;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import io.jenkins.servlet.http.CookieWrapper;
 import io.jenkins.servlet.http.HttpServletRequestWrapper;
 import io.jenkins.servlet.http.HttpServletResponseWrapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -125,6 +124,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -142,6 +142,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
@@ -157,12 +158,17 @@ import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import jenkins.console.ConsoleUrlProvider;
+import jenkins.console.DefaultConsoleUrlProvider;
+import jenkins.console.WithConsoleUrl;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.SimplePageDecorator;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.DetailGroup;
 import jenkins.util.SystemProperties;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -181,8 +187,6 @@ import org.kohsuke.stapler.RawHtmlArgument;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -379,7 +383,7 @@ public class Functions {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static RunUrl decompose(StaplerRequest2 req) {
         List<Ancestor> ancestors = req.getAncestors();
@@ -610,7 +614,7 @@ public class Functions {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static Cookie getCookie(HttpServletRequest req, String name) {
         Cookie[] cookies = req.getCookies();
@@ -633,7 +637,7 @@ public class Functions {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static String getCookie(HttpServletRequest req, String name, String defaultValue) {
         Cookie c = getCookie(req, name);
@@ -660,17 +664,14 @@ public class Functions {
     }
 
     /**
-     * Gets the suffix to use for YUI JavaScript.
-     */
-    public static String getYuiSuffix() {
-        return DEBUG_YUI ? "debug" : "min";
-    }
-
-    /**
-     * Set to true if you need to use the debug version of YUI.
+     * No longer used, to be removed after enough plugins have adopted a version of the test harness with
+     * <a href="https://github.com/jenkinsci/jenkins-test-harness/pull/874">jenkins-test-harness/pull/874</a> in it.
+     *
+     * @deprecated removed without replacement
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
-    public static boolean DEBUG_YUI = SystemProperties.getBoolean("debug.YUI");
+    @Deprecated(forRemoval = true, since = "TODO")
+    public static boolean DEBUG_YUI;
 
     /**
      * Creates a sub map by using the given range (both ends inclusive).
@@ -753,7 +754,7 @@ public class Functions {
      * This is used to determine the "current" URL assigned to the given object,
      * so that one can compute relative URLs from it.
      *
-     * @since TODO
+     * @since 2.475
      */
     public static String getNearestAncestorUrl(StaplerRequest2 req, Object it) {
         List list = req.getAncestors();
@@ -915,11 +916,11 @@ public class Functions {
         return buf.toString();
     }
 
-    public static void checkPermission(Permission permission) throws IOException, ServletException {
+    public static void checkPermission(Permission permission) {
         checkPermission(Jenkins.get(), permission);
     }
 
-    public static void checkPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
+    public static void checkPermission(AccessControlled object, Permission permission) {
         if (permission != null) {
             object.checkPermission(permission);
         }
@@ -930,7 +931,7 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
-    public static void checkPermission(Object object, Permission permission) throws IOException, ServletException {
+    public static void checkPermission(Object object, Permission permission) {
         if (permission == null)
             return;
 
@@ -955,7 +956,7 @@ public class Functions {
      * @param permission
      *      If null, returns true. This defaulting is convenient in making the use of this method terse.
      */
-    public static boolean hasPermission(Permission permission) throws IOException, ServletException {
+    public static boolean hasPermission(Permission permission) {
         return hasPermission(Jenkins.get(), permission);
     }
 
@@ -963,7 +964,7 @@ public class Functions {
      * This version is so that the 'hasPermission' can degrade gracefully
      * if "it" is not an {@link AccessControlled} object.
      */
-    public static boolean hasPermission(Object object, Permission permission) throws IOException, ServletException {
+    public static boolean hasPermission(Object object, Permission permission) {
         if (permission == null)
             return true;
         if (object instanceof AccessControlled)
@@ -981,39 +982,9 @@ public class Functions {
     }
 
     /**
-     * @since TODO
-     */
-    public static void adminCheck(StaplerRequest2 req, StaplerResponse2 rsp, Object required, Permission permission) throws IOException, ServletException {
-        // this is legacy --- all views should be eventually converted to
-        // the permission based model.
-        if (required != null && !Hudson.adminCheck(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp))) {
-            // check failed. commit the FORBIDDEN response, then abort.
-            rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            rsp.getOutputStream().close();
-            throw new ServletException("Unauthorized access");
-        }
-
-        // make sure the user owns the necessary permission to access this page.
-        if (permission != null)
-            checkPermission(permission);
-    }
-
-   /**
-     * @deprecated use {@link #adminCheck(StaplerRequest2, StaplerResponse2, Object, Permission)}
-     */
-    @Deprecated
-    public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, javax.servlet.ServletException {
-        try {
-            adminCheck(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), required, permission);
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
-        }
-    }
-
-    /**
      * Infers the hudson installation URL from the given request.
      *
-     * @since TODO
+     * @since 2.475
      */
     public static String inferHudsonURL(StaplerRequest2 req) {
         String rootUrl = Jenkins.get().getRootUrl();
@@ -1292,7 +1263,7 @@ public class Functions {
      *
      * @since 2.238
      */
-    public static boolean hasAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+    public static boolean hasAnyPermission(Object object, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
             return true;
         }
@@ -1330,7 +1301,7 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
-    public static void checkAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+    public static void checkAnyPermission(Object object, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
             return;
         }
@@ -1805,6 +1776,7 @@ public class Functions {
         return s.toString();
     }
 
+    @SuppressFBWarnings(value = "INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE", justification = "Jenkins handles this issue differently or doesn't care about it")
     private static void doPrintStackTrace(@NonNull StringBuilder s, @NonNull Throwable t, @CheckForNull Throwable higher, @NonNull String prefix, @NonNull Set<Throwable> encountered) {
         if (!encountered.add(t)) {
             s.append("<cycle to ").append(t).append(">\n");
@@ -1858,6 +1830,7 @@ public class Functions {
      * @param pw the log
      * @since 2.43
      */
+    @SuppressFBWarnings(value = "XSS_SERVLET", justification = "TODO needs triage")
     public static void printStackTrace(@CheckForNull Throwable t, @NonNull PrintWriter pw) {
         pw.println(printThrowable(t).trim());
     }
@@ -1981,20 +1954,22 @@ public class Functions {
     }
 
     /**
-     * Computes the link to the console for the run for the specified executable, taking {@link ConsoleUrlProvider} into account.
-     * @param executable the executable (normally a {@link Run})
-     * @return the absolute URL for accessing the build console for the executable, or null if there is no build associated with the executable
+     * Computes the link to the console for the run for the specified object, taking {@link ConsoleUrlProvider} into account.
+     * @param withConsoleUrl the object to compute a console url for (can be {@link Run}, a {@code PlaceholderExecutable}...)
+     * @return the absolute URL for accessing the build console for the given object, or null if there is no console URL defined for the object.
      * @since 2.433
      */
-    public static @CheckForNull String getConsoleUrl(Queue.Executable executable) {
-        if (executable == null) {
-            return null;
-        } else if (executable instanceof Run) {
-            return ConsoleUrlProvider.getRedirectUrl((Run<?, ?>) executable);
-        } else {
-            // Handles cases such as PlaceholderExecutable for Pipeline node steps.
-            return getConsoleUrl(executable.getParentExecutable());
-        }
+    public static @CheckForNull String getConsoleUrl(WithConsoleUrl withConsoleUrl) {
+        String consoleUrl = withConsoleUrl.getConsoleUrl();
+        return consoleUrl != null ? Stapler.getCurrentRequest2().getContextPath() + '/' + consoleUrl : null;
+    }
+
+    /**
+     * @param run the run
+     * @return the Console Provider for the given run, if null, the default Console Provider
+     */
+    public static ConsoleUrlProvider getConsoleProviderFor(Run<?, ?> run) {
+        return Optional.ofNullable(ConsoleUrlProvider.getProvider(run)).orElse(new DefaultConsoleUrlProvider());
     }
 
     /**
@@ -2089,6 +2064,46 @@ public class Functions {
     }
 
     /**
+     * If the given {@code Action} is a {@link RootAction#isPrimaryAction() primary} {@code RootAction}, or a parent of the current page, return {@code true}.
+     * Used in {@code actions.jelly} to decide if the action should shown in the main header or the hamburger.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean showInPrimaryHeader(Action action) {
+        // regular Actions can be injected into Jenkins via a factory.
+        if (action instanceof RootAction ra) {
+            if (ra.isPrimaryAction()) {
+                return true;
+            }
+        }
+        String path = Stapler.getCurrentRequest2().getPathInfo();
+        if (path == null || path.equals("/")) {
+            // we are in the root page so there is nothing current
+            return false;
+        }
+
+        String actionPath = action.getUrlName();
+        if (actionPath == null) {
+            // we are not a primary action and can not ever be current when we have no URL
+            return false;
+        }
+
+        // RootActions are not expected to start with a `/` but some do and some do, and not all Actions will be RootActions
+        // but path will always start with a "/"
+        if (!actionPath.startsWith("/")) {
+            actionPath = '/' + actionPath;
+        }
+
+        // the action /foo should not match /foobar but should match /foo/bar
+        if (!actionPath.endsWith("/")) {
+            actionPath = actionPath + '/';
+        }
+        if (!path.endsWith("/")) {
+            path = path + '/';
+        }
+        return path.startsWith(actionPath);
+    }
+
+    /**
      * @deprecated From JEXL expressions ({@code ${…}}) in {@code *.jelly} files
      *             you can use {@code [obj]} syntax to construct an {@code Object[]}
      *             (which may be usable where a {@link List} is expected)
@@ -2138,7 +2153,7 @@ public class Functions {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static String getCrumb(StaplerRequest2 req) {
         Jenkins h = Jenkins.getInstanceOrNull();
@@ -2177,12 +2192,14 @@ public class Functions {
     /**
      * Generate a series of {@code <script>} tags to include {@code script.js}
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
+     *
+     * @see hudson.console.ConsoleAnnotatorFactory.RootAction
      */
     public static String generateConsoleAnnotationScriptAndStylesheet() {
         String cp = Stapler.getCurrentRequest2().getContextPath() + Jenkins.RESOURCE_PATH;
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
-            String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
+            String path = cp + "/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
                 buf.append("<script src='").append(path).append("/script.js'></script>");
             if (f.hasStylesheet())
@@ -2334,7 +2351,7 @@ public class Functions {
     /**
      * Called from renderOnDemand.jelly to generate the parameters for the proxy object generation.
      *
-     * @since TODO
+     * @since 2.475
      */
     @Restricted(NoExternalUse.class)
     public static StaplerRequest2.RenderOnDemandParameters createRenderOnDemandProxyParameters(JellyContext context, String attributesToCapture) {
@@ -2453,7 +2470,6 @@ public class Functions {
      * Advertises the minimum set of HTTP headers that assist programmatic
      * discovery of Jenkins.
      */
-    @SuppressFBWarnings(value = "UC_USELESS_VOID_METHOD", justification = "TODO needs triage")
     public static void advertiseHeaders(HttpServletResponse rsp) {
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) {
@@ -2581,5 +2597,64 @@ public class Functions {
     @Restricted(NoExternalUse.class)
     public static String generateItemId() {
         return String.valueOf(Math.floor(Math.random() * 3000));
+    }
+
+    /**
+     * Returns a grouped list of Detail objects for the given Actionable object
+     */
+    @Restricted(NoExternalUse.class)
+    public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object) {
+        ExtensionList<DetailGroup> groupsExtensionList = ExtensionList.lookup(DetailGroup.class);
+        List<ExtensionComponent<DetailGroup>> components = groupsExtensionList.getComponents();
+        Map<String, Double> detailGroupOrdinal = components.stream()
+                .collect(Collectors.toMap(
+                        (k) -> k.getInstance().getClass().getName(),
+                        ExtensionComponent::ordinal
+                ));
+
+        Map<DetailGroup, List<Detail>> result = new TreeMap<>(Comparator.comparingDouble(d -> detailGroupOrdinal.get(d.getClass().getName())));
+        for (DetailFactory taf : DetailFactory.factoriesFor(object.getClass())) {
+            List<Detail> details = taf.createFor(object);
+            details.forEach(e -> result.computeIfAbsent(e.getGroup(), k -> new ArrayList<>()).add(e));
+        }
+
+        for (Map.Entry<DetailGroup, List<Detail>> entry : result.entrySet()) {
+            List<Detail> detailList = entry.getValue();
+            detailList.sort(Comparator.comparingInt(Detail::getOrder).reversed());
+        }
+
+        return result;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static ExtensionList<SearchFactory> getSearchFactories() {
+        return SearchFactory.all();
+    }
+
+    /**
+     * @param keyboardShortcut the shortcut to be translated
+     * @return the translated shortcut, e.g. CMD+K to ⌘+K for macOS, CTRL+K for Windows
+     */
+    @Restricted(NoExternalUse.class)
+    public static String translateModifierKeysForUsersPlatform(String keyboardShortcut) {
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse2());
+        String userAgent = currentRequest.getHeader("User-Agent");
+        if (userAgent != null) {
+          List<String> platformsThatUseCommand = List.of("MAC", "IPHONE", "IPAD");
+          boolean useCmdKey = platformsThatUseCommand.stream().anyMatch(e -> userAgent.toUpperCase().contains(e));
+          return keyboardShortcut.replace("CMD", useCmdKey ? "⌘" : "CTRL");
+        } else {
+          return keyboardShortcut;
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String formatMessage(String format, Object args) {
+        if (format == null) {
+            return args.toString();
+        }
+
+        return MessageFormat.format(format, args);
     }
 }

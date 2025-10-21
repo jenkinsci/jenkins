@@ -485,6 +485,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
          *  the result, even if it doesn't exist
          * @since 1.430
          */
+        @SuppressFBWarnings(value = "EC_UNRELATED_TYPES_USING_POINTER_EQUALITY", justification = "TODO needs triage")
         public Map<AbstractProject, Integer> getDependencies(boolean includeMissing) {
             Map<AbstractProject, Integer> r = new HashMap<>();
 

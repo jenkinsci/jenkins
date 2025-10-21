@@ -27,6 +27,7 @@ package hudson.util;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import jakarta.servlet.ServletOutputStream;
 import java.awt.Color;
@@ -72,6 +73,7 @@ public abstract class Graph {
     private final long timestamp;
     private final int defaultWidth;
     private final int defaultHeight;
+    @SuppressFBWarnings(value = "SS_SHOULD_BE_STATIC", justification = "Reserved for future use")
     private final int defaultScale = 1;
     private volatile JFreeChart graph;
 
@@ -152,7 +154,7 @@ public abstract class Graph {
     /**
      * Renders a graph.
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doPng(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (Util.isOverridden(Graph.class, getClass(), "doPng", StaplerRequest.class, StaplerResponse.class)) {
@@ -225,7 +227,7 @@ public abstract class Graph {
     /**
      * Renders a clickable map.
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doMap(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (Util.isOverridden(Graph.class, getClass(), "doMap", StaplerRequest.class, StaplerResponse.class)) {

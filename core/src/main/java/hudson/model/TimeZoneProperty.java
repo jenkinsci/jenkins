@@ -63,6 +63,11 @@ public class TimeZoneProperty extends UserProperty {
         }
 
         @Override
+        public String getDescription() {
+            return Messages.TimeZoneProperty_Description();
+        }
+
+        @Override
         public UserProperty newInstance(User user) {
             return new TimeZoneProperty();
         }
@@ -109,7 +114,7 @@ public class TimeZoneProperty extends UserProperty {
 
         @Override
         public @NonNull UserPropertyCategory getUserPropertyCategory() {
-            return UserPropertyCategory.get(UserPropertyCategory.Account.class);
+            return UserPropertyCategory.get(UserPropertyCategory.Preferences.class);
         }
     }
 

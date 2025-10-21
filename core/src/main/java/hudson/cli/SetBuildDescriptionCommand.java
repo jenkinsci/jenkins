@@ -25,6 +25,7 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
     public int number;
 
     @Argument(metaVar = "DESCRIPTION", required = true, usage = "Description to be set. '=' to read from stdin.", index = 2)
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public String description;
 
     @Override

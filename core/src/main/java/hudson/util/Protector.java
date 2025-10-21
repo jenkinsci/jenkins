@@ -43,7 +43,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * the duration of the server instance.
  *
  * @author Kohsuke Kawaguchi
- * @see Scrambler
  * @since 1.162 and restricted since 2.236
  */
 @Restricted(NoExternalUse.class)

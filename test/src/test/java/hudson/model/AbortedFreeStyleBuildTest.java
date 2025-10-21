@@ -1,23 +1,29 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.Launcher;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.TestBuildWrapper;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AbortedFreeStyleBuildTest {
+@WithJenkins
+class AbortedFreeStyleBuildTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-8054")
-    public void buildWrapperSeesAbortedStatus() throws Exception {
+    void buildWrapperSeesAbortedStatus() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         TestBuildWrapper wrapper = new TestBuildWrapper();
         project.getBuildWrappersList().add(wrapper);
@@ -28,7 +34,7 @@ public class AbortedFreeStyleBuildTest {
 
     @Test
     @Issue("JENKINS-9203")
-    public void interruptAsFailure() throws Exception {
+    void interruptAsFailure() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         TestBuildWrapper wrapper = new TestBuildWrapper();
         project.getBuildWrappersList().add(wrapper);

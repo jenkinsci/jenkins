@@ -1,0 +1,33 @@
+.jenkins-healthScore {
+  &--badge {
+    --healthscore-badge-border-width: 4px;
+    --healthscore-badge-size: 32px;
+
+    width: var(--healthscore-badge-size);
+    height: var(--healthscore-badge-size);
+    border-radius: 50%;
+    border-width: var(--badge-border-width);
+    border-style: solid;
+    border-color: var(--accent-color);
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    background-color: var(--background);
+
+    &:hover {
+      background-color: var(--light-grey);
+    }
+  }
+
+  &--top {
+    border-color: var(--success-color);
+  }
+
+  &--middle {
+    border-color: var(--warning-color);
+  }
+
+  &--bottom {
+    border-color: var(--destructive-color);
+  }
+}

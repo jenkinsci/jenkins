@@ -143,11 +143,11 @@ var repeatableSupport = {
   // called when 'add' button is clicked
   onAdd: function (n) {
     var addOnTop = false;
+    if (n.classList.contains("repeatable-add-top")) {
+      addOnTop = true;
+    }
     while (n.tag == null) {
       n = n.parentNode;
-      if (n.classList.contains("repeatable-add-top")) {
-        addOnTop = true;
-      }
     }
     n.tag.expand(addOnTop);
     // Hack to hide tool home when a new tool has some installers.
@@ -163,7 +163,7 @@ var repeatableSupport = {
 };
 
 // do the ones that extract innerHTML so that they can get their original HTML before
-// other behavior rules change them (like YUI buttons.)
+// other behavior rules change them.
 Behaviour.specify("DIV.repeated-container", "repeatable", -100, function (e) {
   if (isInsideRemovable(e)) {
     return;

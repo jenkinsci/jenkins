@@ -30,11 +30,11 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Extension;
 import hudson.Functions;
@@ -65,35 +65,35 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import net.sf.json.JSONObject;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * {@link BuildCommand} test.
  */
-public class BuildCommandTest {
+@WithJenkins
+class BuildCommandTest {
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
+    private JenkinsRule j;
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Just schedules a build and return.
      */
     @Test
-    public void async() throws Exception {
+    void async() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         OneShotEvent started = new OneShotEvent();
         OneShotEvent completed = new OneShotEvent();
@@ -117,8 +117,8 @@ public class BuildCommandTest {
      * Tests synchronous execution.
      */
     @Test
-    @Category(SmokeTest.class)
-    public void sync() throws Exception {
+    @Tag("SmokeTest")
+    void sync() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping 127.0.0.1") : new Shell("sleep 3"));
 
@@ -130,7 +130,7 @@ public class BuildCommandTest {
      * Tests synchronous execution with retried verbose output
      */
     @Test
-    public void syncWOutputStreaming() throws Exception {
+    void syncWOutputStreaming() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping 127.0.0.1") : new Shell("sleep 3"));
 
@@ -139,7 +139,7 @@ public class BuildCommandTest {
     }
 
     @Test
-    public void parameters() throws Exception {
+    void parameters() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("key", null)));
 
@@ -149,7 +149,7 @@ public class BuildCommandTest {
     }
 
     @Test
-    public void defaultParameters() throws Exception {
+    void defaultParameters() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("key", "default"), new StringParameterDefinition("key2", "default2")));
 
@@ -161,7 +161,7 @@ public class BuildCommandTest {
 
     // TODO randomly fails: Started test0 #1
     @Test
-    public void consoleOutput() throws Exception {
+    void consoleOutput() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         CLICommandInvoker.Result r = new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", "-v", p.getName());
         assertThat(r, CLICommandInvoker.Matcher.succeeded());
@@ -171,7 +171,7 @@ public class BuildCommandTest {
 
     // TODO randomly fails: Started test0 #1
     @Test
-    public void consoleOutputWhenBuildSchedulingRefused() throws Exception {
+    void consoleOutputWhenBuildSchedulingRefused() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         CLICommandInvoker.Result r = new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", "-v", p.getName());
         assertThat(r, CLICommandInvoker.Matcher.failedWith(4));
@@ -188,7 +188,7 @@ public class BuildCommandTest {
     }
 
     @Test
-    public void refuseToBuildDisabledProject() throws Exception {
+    void refuseToBuildDisabledProject() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("the-project");
         project.disable();
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
@@ -196,11 +196,11 @@ public class BuildCommandTest {
 
         assertThat(result, failedWith(4));
         assertThat(result.stderr(), containsString("ERROR: Cannot build the-project because it is disabled."));
-        assertNull("Project should not be built", project.getBuildByNumber(1));
+        assertNull(project.getBuildByNumber(1), "Project should not be built");
     }
 
     @Test
-    public void refuseToBuildNewlyCopiedProject() throws Exception {
+    void refuseToBuildNewlyCopiedProject() throws Exception {
         FreeStyleProject original = j.createFreeStyleProject("original");
         FreeStyleProject newOne = (FreeStyleProject) j.jenkins.<TopLevelItem>copy(original, "new-one");
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
@@ -208,11 +208,11 @@ public class BuildCommandTest {
 
         assertThat(result, failedWith(4));
         assertThat(result.stderr(), containsString("ERROR: Cannot build new-one because its configuration has not been saved."));
-        assertNull("Project should not be built", newOne.getBuildByNumber(1));
+        assertNull(newOne.getBuildByNumber(1), "Project should not be built");
     }
 
     @Test
-    public void correctlyParseMapValuesContainingEqualsSign() throws Exception {
+    void correctlyParseMapValuesContainingEqualsSign() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("the-project");
         project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("expr", null)));
 
@@ -225,7 +225,7 @@ public class BuildCommandTest {
 
     @Issue("JENKINS-15094")
     @Test
-    public void executorsAliveOnParameterWithNullDefaultValue() throws Exception {
+    void executorsAliveOnParameterWithNullDefaultValue() throws Exception {
         DumbSlave slave = j.createSlave();
         FreeStyleProject project = j.createFreeStyleProject("foo");
         project.setAssignedNode(slave);
@@ -244,7 +244,7 @@ public class BuildCommandTest {
 
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
+                .until(() -> slave.toComputer().getExecutors().stream().allMatch(Executor::isActive));
 
         // Create CLI & run command
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
@@ -253,13 +253,13 @@ public class BuildCommandTest {
         assertThat(result.stderr(), containsString("ERROR: No default value for the parameter 'FOO'."));
 
         Thread.sleep(5000); // Give the job 5 seconds to be submitted
-        assertNull("Build should not be scheduled", j.jenkins.getQueue().getItem(project));
-        assertNull("Build should not be scheduled", project.getBuildByNumber(2));
+        assertNull(j.jenkins.getQueue().getItem(project), "Build should not be scheduled");
+        assertNull(project.getBuildByNumber(2), "Build should not be scheduled");
 
         // Check executors health after a timeout
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
+                .until(() -> slave.toComputer().getExecutors().stream().allMatch(Executor::isActive));
     }
 
     public static final class NullDefaultValueParameterDefinition extends SimpleParameterDefinition {
@@ -290,7 +290,7 @@ public class BuildCommandTest {
 
     @Issue("JENKINS-41745")
     @Test
-    public void fileParameter() throws Exception {
+    void fileParameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("myjob");
         p.addProperty(new ParametersDefinitionProperty(new FileParameterDefinition("file", null)));
         p.getBuildersList().add(new TestBuilder() {

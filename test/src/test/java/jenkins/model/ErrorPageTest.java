@@ -3,46 +3,49 @@ package jenkins.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.ExtensionList;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 import jenkins.security.ResourceDomainConfiguration;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Dispatcher;
 
-@RunWith(Parameterized.class)
-public class ErrorPageTest {
+@ParameterizedClass
+@ValueSource(strings = { "/jenkins", "" })
+@WithJenkins
+class ErrorPageTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    @Parameter
+    private String contextPath;
 
-    @Parameterized.Parameters
-    public static List<String> contexts() {
-        return Arrays.asList("/jenkins", "");
-    }
+    private JenkinsRule j;
 
-    public ErrorPageTest(String context) {
-        j.contextPath = context;
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Throwable {
+        j = rule;
+
+        j.contextPath = contextPath;
+        j.restart();
     }
 
     @Test
     @Issue("JENKINS-71087")
-    public void nice404ErrorPage() throws Exception {
+    void nice404ErrorPage() throws Exception {
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             Dispatcher.TRACE = false;
 
@@ -151,11 +154,11 @@ public class ErrorPageTest {
 
     @Test
     @Issue("JENKINS-71087")
-    public void kindaNice404ErrorPageOnResourceDomain() throws Exception {
+    void kindaNice404ErrorPageOnResourceDomain() throws Exception {
         final String resourceRoot;
         { // Setup stolen from ResourceDomainTest
             URL root = j.getURL(); // which always will use "localhost", see JenkinsRule#getURL()
-            Assert.assertTrue(root.toString().contains("localhost")); // to be safe
+            assertTrue(root.toString().contains("localhost")); // to be safe
 
             resourceRoot = root.toString().replace("localhost", "127.0.0.1");
             ResourceDomainConfiguration configuration = ExtensionList.lookupSingleton(ResourceDomainConfiguration.class);

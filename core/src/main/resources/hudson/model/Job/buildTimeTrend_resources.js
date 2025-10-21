@@ -50,7 +50,7 @@ window.buildTimeTrend_displayBuilds = function (data) {
       let buildInfoStr = escapeHTML(e.builtOnStr || "");
       if (e.builtOn) {
         buildInfo = document.createElement("a");
-        buildInfo.href = rootURL + "/computer/" + e.builtOn;
+        buildInfo.href = rootURL + "/computer/" + e.builtOn + "/";
         buildInfo.classList.add("model-link", "inside");
         buildInfo.innerText = buildInfoStr;
       } else {

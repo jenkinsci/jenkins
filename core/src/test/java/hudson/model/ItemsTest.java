@@ -1,24 +1,24 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-public class ItemsTest {
+class ItemsTest {
 
     private static ItemGroup<?> root;
     private static ItemGroup<?> foo;
     private static ItemGroup<?> foo_bar;
 
-    @BeforeClass
-    public static void itemGroups() {
+    @BeforeAll
+    static void itemGroups() {
         root = mock(ItemGroup.class);
         when(root.getFullName()).thenReturn("");
 
@@ -30,7 +30,7 @@ public class ItemsTest {
     }
 
     @Test
-    public void getCanonicalName() {
+    void getCanonicalName() {
         assertEquals("foo", Items.getCanonicalName(root, "foo"));
         assertEquals("foo", Items.getCanonicalName(root, "/foo"));
         assertEquals("foo/bar", Items.getCanonicalName(root, "foo/bar"));
@@ -52,7 +52,7 @@ public class ItemsTest {
     }
 
     @Test
-    public void computeRelativeNamesAfterRenaming() {
+    void computeRelativeNamesAfterRenaming() {
         assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", root));
         assertEquals("ga,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", foo_bar));
         assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/ga", "foo/meu", "ga,bu,zo", foo));
@@ -79,7 +79,8 @@ public class ItemsTest {
         assertEquals("/foo/sister", Items.computeRelativeNamesAfterRenaming("fooq", "foo", "/fooq/sister", foo));
     }
 
-    @Test public void getRelativeNameFrom() {
+    @Test
+    void getRelativeNameFrom() {
         assertEquals("foo", Items.getRelativeNameFrom("foo", ""));
         assertEquals("foo/bar", Items.getRelativeNameFrom("foo/bar", ""));
         assertEquals("../bar", Items.getRelativeNameFrom("bar", "foo"));

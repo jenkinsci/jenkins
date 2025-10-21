@@ -29,6 +29,8 @@ import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.ExtensionComponent;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.util.EditDistance;
 import io.jenkins.servlet.ServletExceptionWrapper;
@@ -37,15 +39,21 @@ import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
+import jenkins.search.SearchGroup;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
+import org.jenkins.ui.symbol.Symbol;
+import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
@@ -56,6 +64,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.DataWriter;
+import org.kohsuke.stapler.export.ExportConfig;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
@@ -157,10 +166,38 @@ public class Search implements StaplerProxy {
      */
     public void doSuggest(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String query) throws IOException, ServletException {
         Result r = new Result();
-        for (SuggestedItem item : getSuggestions(req, query))
-            r.suggestions.add(new Item(item.getPath()));
+        for (SuggestedItem curItem : getSuggestions(req, query)) {
+            String iconName = curItem.item.getSearchIcon();
 
-        rsp.serveExposedBean(req, r, Flavor.JSON);
+            if (iconName == null ||
+                    (!iconName.startsWith("symbol-") && !iconName.startsWith("http"))
+            ) {
+                iconName = "symbol-search";
+            }
+
+            if (iconName.startsWith("symbol")) {
+                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(),
+                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build()), "symbol", curItem.item.getSearchGroup().getDisplayName()));
+            } else {
+                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image", curItem.item.getSearchGroup().getDisplayName()));
+            }
+        }
+
+        // Sort results by group
+        ExtensionList<SearchGroup> groupsExtensionList = ExtensionList.lookup(SearchGroup.class);
+        List<ExtensionComponent<SearchGroup>> components = groupsExtensionList.getComponents();
+        Map<String, Double> searchGroupOrdinal = components.stream()
+                .collect(Collectors.toMap(
+                        (k) -> k.getInstance().getDisplayName(),
+                        ExtensionComponent::ordinal
+                ));
+        r.suggestions.sort(
+                Comparator.comparingDouble((Item item) -> searchGroupOrdinal.getOrDefault(item.getGroup(), Double.MAX_VALUE))
+                        .reversed()
+                        .thenComparing(item -> item.name)
+        );
+
+        rsp.serveExposedBean(req, r, new ExportConfig());
     }
 
     /**
@@ -234,6 +271,7 @@ public class Search implements StaplerProxy {
         return builder.make();
     }
 
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     private static class SearchResultImpl extends ArrayList<SuggestedItem> implements SearchResult {
 
         private boolean hasMoreResults = false;
@@ -252,12 +290,49 @@ public class Search implements StaplerProxy {
 
     @ExportedBean(defaultVisibility = 999)
     public static class Item {
+
         @Exported
-        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String name;
 
+        private final String url;
+
+        private final String type;
+
+        private final String icon;
+
+        private final String group;
+
         public Item(String name) {
+            this(name, null, null, "symbol", null);
+        }
+
+        public Item(String name, String url, String icon, String type, String group) {
             this.name = name;
+            this.url = url;
+            this.icon = icon;
+            this.name = name;
+            this.type = type;
+            this.group = group;
+        }
+
+        @Exported
+        public String getUrl() {
+            return url;
+        }
+
+        @Exported
+        public String getIcon() {
+            return icon;
+        }
+
+        @Exported
+        public String getType() {
+            return type;
+        }
+
+        @Exported
+        public String getGroup() {
+            return group;
         }
     }
 

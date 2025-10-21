@@ -11,6 +11,13 @@
     </dd>
 
     <dt>
+      <l:icon src="symbol-computer-paused" />
+    </dt>
+    <dd>
+      ${%paused}
+    </dd>
+
+    <dt>
       <l:icon src="symbol-computer-disconnected" />
     </dt>
     <dd>

@@ -23,4 +23,9 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<st:include it="${it.primaryView}" page="sidepanel.jelly" xmlns:st="jelly:stapler" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <j:set var="primaryView" value="${it.primaryView}"/>
+    <j:if test="${primaryView != null}">
+        <st:include it="${primaryView}" page="sidepanel.jelly"/>
+    </j:if>
+</j:jelly>

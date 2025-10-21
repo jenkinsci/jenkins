@@ -254,8 +254,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * Adds a computer
          *
          * @since 1.513
+         * @deprecated use {@link #add(IComputer)} instead.
          */
+        @Deprecated(since = "2.480")
         public ContextMenu add(Computer c) {
+            return add((IComputer) c);
+        }
+
+        /**
+         * Adds a {@link IComputer} instance.
+         * @param c the computer to add to the menu
+         * @return this
+         * @since 2.480
+         */
+        public ContextMenu add(IComputer c) {
             return add(new MenuItem()
                 .withDisplayName(c.getDisplayName())
                 .withIconClass(c.getIconClassName())
@@ -297,6 +309,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          */
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest2 request, StaplerResponse2 response) throws JellyException, IOException {
             return from(self, request, response, "sidepanel");
+        }
+
+        public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response) throws JellyException, IOException {
+            return from(self, StaplerRequest.toStaplerRequest2(request), StaplerResponse.toStaplerResponse2(response), "sidepanel");
         }
 
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest2 request, StaplerResponse2 response, String view) throws JellyException, IOException {

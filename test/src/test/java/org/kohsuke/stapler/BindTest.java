@@ -5,42 +5,46 @@ import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.ExtensionList;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
-import java.util.Arrays;
-import java.util.List;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.htmlunit.Page;
 import org.htmlunit.ScriptException;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.bind.WithWellKnownURL;
 
-@RunWith(Parameterized.class)
-public class BindTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@ParameterizedClass
+@ValueSource(strings = { "/jenkins", "" })
+@WithJenkins
+class BindTest {
 
-    @Parameterized.Parameters
-    public static List<String> contexts() {
-        return Arrays.asList("/jenkins", "");
-    }
+    @Parameter
+    private String contextPath;
 
-    public BindTest(String contextPath) {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Throwable {
+        j = rule;
+
         j.contextPath = contextPath;
+        j.restart();
     }
 
     @Test
-    public void bindNormal() throws Exception {
+    void bindNormal() throws Exception {
         final RootActionImpl root = ExtensionList.lookupSingleton(RootActionImpl.class);
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             final HtmlPage htmlPage = wc.goTo(root.getUrlName());
@@ -52,7 +56,7 @@ public class BindTest {
                     .orElseThrow()
                     .getAttribute("src");
 
-            final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
+            final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
             final String content = script.getWebResponse().getContentAsString();
             assertThat(content, startsWith("varname = makeStaplerProxy('" + j.contextPath + "/$stapler/bound/"));
             assertThat(content, endsWith("','test',['annotatedJsMethod1','byName1']);"));
@@ -61,7 +65,7 @@ public class BindTest {
     }
 
     @Test
-    public void bindWithWellKnownURL() throws Exception {
+    void bindWithWellKnownURL() throws Exception {
         final RootActionWithWellKnownURL root = ExtensionList.lookupSingleton(RootActionWithWellKnownURL.class);
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             final HtmlPage htmlPage = wc.goTo(root.getUrlName());
@@ -73,14 +77,33 @@ public class BindTest {
                     .orElseThrow()
                     .getAttribute("src");
 
-            final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
+            final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
             assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/theWellKnownRoot','test',['annotatedJsMethod2','byName2']);"));
         }
         assertThat(root.invocations, is(1));
     }
 
     @Test
-    public void bindNull() throws Exception {
+    void bindWithWellKnownURLWithQuotes() throws Exception {
+        final RootActionWithWellKnownURLWithQuotes root = ExtensionList.lookupSingleton(RootActionWithWellKnownURLWithQuotes.class);
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            final HtmlPage htmlPage = wc.goTo(root.getUrlName());
+            final String scriptUrl = htmlPage
+                    .getElementsByTagName("script")
+                    .stream()
+                    .filter(it -> it.getAttribute("src").startsWith(j.contextPath + "/$stapler/bound/script" + j.contextPath + "/the'Well'Known\\'Root'With'Quotes?"))
+                    .findFirst()
+                    .orElseThrow()
+                    .getAttribute("src");
+
+            final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
+            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/the\\'Well\\'Known\\\\\\'Root\\'With\\'Quotes','test',['annotatedJsMethod2','byName2']);"));
+        }
+        assertThat(root.invocations, is(1));
+    }
+
+    @Test
+    void bindNull() throws Exception {
         final RootActionImpl root = ExtensionList.lookupSingleton(RootActionImpl.class);
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             final ScriptException exception = assertThrows(ScriptException.class, () -> wc.goTo(root.getUrlName() + "/null"));
@@ -91,7 +114,7 @@ public class BindTest {
             final HtmlPage htmlPage = exception.getPage();
             final String scriptUrl = htmlPage.getElementsByTagName("script").stream().filter(it -> it.getAttribute("src").equals(j.contextPath + "/$stapler/bound/script/null?var=varname")).findFirst().orElseThrow().getAttribute("src");
 
-            final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
+            final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
             final String content = script.getWebResponse().getContentAsString();
             assertThat(content, is("varname = null;"));
         }
@@ -99,7 +122,7 @@ public class BindTest {
     }
 
     @Test
-    public void bindUnsafe() throws Exception {
+    void bindUnsafe() throws Exception {
         final RootActionImpl root = ExtensionList.lookupSingleton(RootActionImpl.class);
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             final HtmlPage htmlPage = wc.goTo(root.getUrlName() + "/unsafe-var");
@@ -118,7 +141,7 @@ public class BindTest {
     }
 
     @Test
-    public void bindInlineNull() throws Exception {
+    void bindInlineNull() throws Exception {
         final RootActionImpl root = ExtensionList.lookupSingleton(RootActionImpl.class);
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             final HtmlPage htmlPage = wc.goTo(root.getUrlName() + "/inline-null");
@@ -159,6 +182,28 @@ public class BindTest {
         @Override
         public String getUrlName() {
             return "theWellKnownRoot";
+        }
+
+        @Override
+        public String getWellKnownUrl() {
+            return "/" + getUrlName();
+        }
+
+        @JavaScriptMethod
+        public void annotatedJsMethod2(String foo) {}
+
+        public void jsByName2() {
+            invocations++;
+        }
+    }
+
+    @TestExtension
+    public static class RootActionWithWellKnownURLWithQuotes extends InvisibleAction implements RootAction, WithWellKnownURL {
+        private int invocations;
+
+        @Override
+        public String getUrlName() {
+            return "the'Well'Known\\'Root'With'Quotes";
         }
 
         @Override

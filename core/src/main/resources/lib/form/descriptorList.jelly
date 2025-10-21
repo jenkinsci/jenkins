@@ -34,6 +34,9 @@ THE SOFTWARE.
       Sets the icon on the sidebar item for the section anchor link
       The icon isn't visible in the section itself
     </st:attribute>
+    <st:attribute name="description" since="TODO">
+      Optional attribute to set a description for the section
+    </st:attribute>
     <st:attribute name="descriptors" use="required">
       hudson.model.Descriptor collection whose configuration page is rendered.
     </st:attribute>
@@ -72,7 +75,7 @@ THE SOFTWARE.
   <j:set var="instances" value="${attrs.instances ?: instance[field] ?: descriptor['default'+h.capitalize(field)]}"/>
 
   <j:if test="${!empty(descriptors) or context['org.apache.commons.jelly.body']!=null}">
-    <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}" icon="${attrs.icon}">
+    <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}" icon="${attrs.icon}" description="${attrs.description}">
       <j:if test="${attrs.field!=null}">
         <div class="stapler-class-bag tr">
           <div>

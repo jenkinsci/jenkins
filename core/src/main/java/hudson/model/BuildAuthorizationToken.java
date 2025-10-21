@@ -54,7 +54,7 @@ public final class BuildAuthorizationToken {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static BuildAuthorizationToken create(StaplerRequest2 req) {
         if (req.getParameter("pseudoRemoteTrigger") != null) {
@@ -79,7 +79,7 @@ public final class BuildAuthorizationToken {
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static void checkPermission(Job<?, ?> project, BuildAuthorizationToken token, StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (token != null && token.token != null) {

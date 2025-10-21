@@ -55,7 +55,25 @@ jenkins_*.changes
 *.pkg
 *.zip
 push-build.sh
-war/node_modules/
-war/yarn-error.log
+node_modules/
+yarn-error.log
 .java-version
 .checkstyle
+
+/rebel.xml
+junit.xml
+
+# Yarn
+# https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+
+# Node
+node/
+node_modules/
+
+# Generated JavaScript Bundles
+war/src/main/webapp/jsbundles/

@@ -66,12 +66,8 @@ THE SOFTWARE.
           </div>
         </f:repeatable>
       </f:entry>
-
-      <f:bottomButtonBar>
-        <f:submit value="${%Save}" />
-      </f:bottomButtonBar>
+      <f:saveApplyBar/>
     </f:form>
-    <st:adjunct includes="lib.form.confirm" />
   </l:main-panel>
 </l:layout>
 </j:jelly>

@@ -1,10 +1,9 @@
 package hudson.cli.handlers;
 
+import hudson.cli.declarative.OptionHandlerExtension;
 import hudson.model.TopLevelItem;
-import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Setter;
 
 /**
@@ -12,7 +11,7 @@ import org.kohsuke.args4j.spi.Setter;
  *
  * @author Kohsuke Kawaguchi
  */
-@MetaInfServices(OptionHandler.class)
+@OptionHandlerExtension
 public class TopLevelItemOptionHandler extends GenericItemOptionHandler<TopLevelItem> {
     public TopLevelItemOptionHandler(CmdLineParser parser, OptionDef option, Setter<TopLevelItem> setter) {
         super(parser, option, setter);

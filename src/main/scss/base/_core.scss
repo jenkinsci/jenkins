@@ -1,0 +1,25 @@
+html {
+  height: 100%;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--text-color);
+  scroll-padding-top: calc(var(--header-height) + var(--section-padding));
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+::selection {
+  background: var(--selection-color);
+}

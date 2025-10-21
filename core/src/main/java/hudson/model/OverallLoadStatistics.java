@@ -57,21 +57,6 @@ public class OverallLoadStatistics extends LoadStatistics {
     }
 
     @Override
-    public int computeIdleExecutors() {
-        return new ComputerSet().getIdleExecutors();
-    }
-
-    @Override
-    public int computeTotalExecutors() {
-        return new ComputerSet().getTotalExecutors();
-    }
-
-    @Override
-    public int computeQueueLength() {
-        return Jenkins.get().getQueue().countBuildableItems();
-    }
-
-    @Override
     protected Iterable<Node> getNodes() {
         return Jenkins.get().getNodes();
     }

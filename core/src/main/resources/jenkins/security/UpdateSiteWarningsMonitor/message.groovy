@@ -42,7 +42,7 @@ def listWarnings(warnings, boolean core) {
             }
         }
     }
-    if (fixables == warnings.size) {
+    if (fixables == warnings.size()) {
         dd {
             if (fixables == 1) {
                 raw(_(core ? "allFixable1Core" : "allFixable1", rootURL))

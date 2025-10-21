@@ -1,0 +1,187 @@
+.jenkins-app-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+  min-height: 2.875rem;
+  gap: var(--section-padding);
+  flex-wrap: wrap;
+
+  @media (width <= 800px) {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .jenkins-app-bar__content {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    min-height: 2.25rem;
+    flex-grow: 1;
+    max-width: 1200px;
+    text-overflow: ellipsis;
+
+    // Jobs have their SVGs nested inside of a link
+    & > a > svg,
+    & > svg {
+      width: 2rem !important;
+      height: 2rem !important;
+      margin-left: -0.1875rem;
+    }
+
+    & > img {
+      width: 2.375rem;
+      height: 2.375rem;
+      margin-left: -0.375rem;
+    }
+  }
+
+  .jenkins-app-bar__controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+
+    .jenkins-search {
+      min-width: 260px;
+    }
+
+    @media (width <= 800px) {
+      justify-content: stretch;
+      flex-wrap: wrap;
+
+      & > * {
+        flex-grow: 1;
+        flex-basis: 0;
+      }
+
+      .jenkins-button:first-child {
+        width: 100%;
+        flex-basis: auto !important;
+      }
+    }
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  &--sticky {
+    position: sticky;
+    top: var(--header-height);
+    z-index: 2;
+
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      inset: calc(var(--header-height) * -1)
+        calc(var(--section-padding) * -1) -0.875rem;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    &::before {
+      background: var(--background);
+      mask-image: linear-gradient(black 70%, transparent);
+      opacity: 0.55;
+    }
+
+    &::after {
+      backdrop-filter: blur(10px);
+      mask-image: linear-gradient(black 50%, transparent);
+    }
+  }
+
+  // This would ideally use :has instead but HTMLUnit doesn't support it
+  &--with-icon {
+    .jenkins-app-bar__content {
+      align-items: center;
+      justify-content: start;
+      flex-direction: row;
+      gap: 0.875rem;
+    }
+  }
+
+  h1,
+  h2 {
+    margin: 0;
+    font-size: 1.3125rem;
+  }
+
+  &__subtitle {
+    color: var(--text-color-secondary);
+    margin-left: 0.5ch;
+  }
+}
+
+.jenkins-build-caption {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: start !important;
+  gap: 0.875rem;
+  max-width: 1200px;
+  text-overflow: ellipsis;
+}
+
+$bottom-app-bar-padding: 0.875rem;
+
+.jenkins-bottom-app-bar__shadow {
+  --semi-translucent: color-mix(in sRGB, var(--background) 75%, transparent);
+
+  position: sticky;
+  height: calc(
+    2.375rem + ($bottom-app-bar-padding * 2) + 1px + var(--jenkins-border-width)
+  );
+  bottom: -1px;
+  margin-bottom: calc((2.375rem + $bottom-app-bar-padding) * -1);
+  backdrop-filter: blur(20px);
+  background: linear-gradient(
+    to right,
+    var(--background),
+    var(--semi-translucent) 3rem,
+    var(--semi-translucent) calc(100% - 3rem),
+    var(--background)
+  );
+  border-top: var(--jenkins-border-width) solid var(--jenkins-border-color);
+  z-index: 997;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    transition: opacity var(--standard-transition);
+    top: calc((2rem + var(--jenkins-border-width)) * -1);
+    height: 2rem;
+    pointer-events: none;
+    background: linear-gradient(transparent, var(--bottom-app-bar-shadow));
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      white var(--section-padding),
+      white calc(100% - var(--section-padding)),
+      transparent
+    );
+    opacity: 0;
+  }
+
+  &--stuck {
+    &::after {
+      opacity: 1 !important;
+    }
+  }
+}
+
+.bottom-sticker,
+#bottom-sticker {
+  position: sticky;
+  bottom: 0;
+  z-index: 998;
+}
+
+.bottom-sticker-inner {
+  position: relative;
+  padding: $bottom-app-bar-padding 0;
+}

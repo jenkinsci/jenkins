@@ -46,10 +46,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
 @SuppressWarnings("deprecation")
-public class AuthenticationTest {
+class AuthenticationTest {
 
     @Test
-    public void system() {
+    void system() {
         assertEquality(ACL.SYSTEM, ACL.SYSTEM2);
         assertSame(ACL.SYSTEM, org.acegisecurity.Authentication.fromSpring(ACL.SYSTEM2), "old code often compares a == SYSTEM");
         assertSame(ACL.SYSTEM2, ACL.SYSTEM.toSpring());
@@ -57,7 +57,7 @@ public class AuthenticationTest {
     }
 
     @Test
-    public void anonymous() {
+    void anonymous() {
         assertEquality(Jenkins.ANONYMOUS, Jenkins.ANONYMOUS2);
         assertTrue(ACL.isAnonymous(Jenkins.ANONYMOUS));
         assertTrue(ACL.isAnonymous(Authentication.fromSpring(Jenkins.ANONYMOUS2)));
@@ -68,7 +68,7 @@ public class AuthenticationTest {
     }
 
     @Test
-    public void user() {
+    void user() {
         assertEquality(new org.acegisecurity.providers.UsernamePasswordAuthenticationToken("user", "pass", new GrantedAuthority[] {SecurityRealm.AUTHENTICATED_AUTHORITY}),
             new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("user", "pass", Set.of(SecurityRealm.AUTHENTICATED_AUTHORITY2)));
     }
@@ -99,7 +99,7 @@ public class AuthenticationTest {
     }
 
     @Test
-    public void principal() {
+    void principal() {
         User user = new User("bob", "s3cr3t", true, new GrantedAuthority[0]);
         assertPrincipal(new UsernamePasswordAuthenticationToken(user, "s3cr3t"));
         assertPrincipal(new AnonymousAuthenticationToken("anonymous", user, new GrantedAuthority[] {new GrantedAuthorityImpl("anonymous")}));
@@ -114,7 +114,7 @@ public class AuthenticationTest {
     }
 
     @Test
-    public void custom() {
+    void custom() {
         class CustomAuth extends AbstractAuthenticationToken {
             final int x;
 

@@ -10,36 +10,32 @@ import java.util.List;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.jvnet.hudson.test.FlagRule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-@RunWith(Parameterized.class)
-public class Security3315Test {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class Security3315Test {
 
-    @Rule
-    public FlagRule<Boolean> escapeHatch;
+    private JenkinsRule j;
 
-    private final Boolean allowWs;
-
-    @Parameterized.Parameters
-    public static List<String> escapeHatchValues() {
-        return Arrays.asList(null, "true", "false");
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
     }
 
-    public Security3315Test(String allowWs) {
-        this.allowWs = allowWs == null ? null : Boolean.valueOf(allowWs);
-        this.escapeHatch = new FlagRule<>(() -> CLIAction.ALLOW_WEBSOCKET, v -> CLIAction.ALLOW_WEBSOCKET = v, this.allowWs);
+    static List<Boolean> escapeHatchValues() {
+        return Arrays.asList(null, true, false);
     }
 
-    @Test
-    public void test() throws IOException {
+    @ParameterizedTest
+    @MethodSource("escapeHatchValues")
+    void test(Boolean allowWs) throws IOException {
         try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
+            CLIAction.ALLOW_WEBSOCKET = allowWs;
+
             // HTTP 400 is WebSocket "success" (HTMLUnit doesn't support it)
             final URL jenkinsUrl = j.getURL();
             WebRequest request = new WebRequest(new URL(jenkinsUrl.toString() + "cli/ws"), HttpMethod.GET);

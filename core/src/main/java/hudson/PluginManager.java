@@ -58,8 +58,10 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
+import hudson.util.CachingClassLoader;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.ExistenceCheckingClassLoader;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import hudson.util.Retrier;
@@ -100,21 +102,19 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -217,6 +217,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Number of attempts to check the updates sites. It's kind of constant, but let it so for tests
      */
     /* private final */ static int CHECK_UPDATE_ATTEMPTS;
+
+    /**
+     * Class name prefixes to skip in the class loading
+     */
+    private static final String[] CLASS_PREFIXES_TO_SKIP = {
+            "SimpleTemplateScript",  // cf. groovy.text.SimpleTemplateEngine
+            "groovy.tmp.templates.GStringTemplateScript", // Leaks on classLoader in some cases, see JENKINS-75879
+    };
 
     static {
         try {
@@ -363,6 +371,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * This is used to report a message that Jenkins needs to be restarted
      * for new plugins to take effect.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public volatile boolean pluginUploaded = false;
 
     /**
@@ -379,7 +388,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private final PluginStrategy strategy;
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     protected PluginManager(ServletContext context, File rootDir) {
         this.context = context;
@@ -1556,6 +1565,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         releaseTimestamp.put("displayValue", Messages.PluginManager_ago(Functions.getTimeSpanString(plugin.releaseTimestamp)));
                         jsonObject.put("releaseTimestamp", releaseTimestamp);
                     }
+                    if (plugin.healthScore != null) {
+                        jsonObject.put("healthScore", plugin.healthScore);
+                        jsonObject.put("healthScoreClass", plugin.healthScoreClass);
+                    }
                     return jsonObject;
                 })
                 .collect(toList());
@@ -1865,11 +1878,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         @Override
         public void copy(File target) throws IOException {
-            try {
-                fileItem.write(Util.fileToPath(target));
-            } catch (UncheckedIOException e) {
-                throw e.getCause();
-            }
+            fileItem.write(Util.fileToPath(target));
         }
 
         @Override
@@ -2391,43 +2400,50 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * {@link ClassLoader} that can see all plugins.
      */
-    public static final class UberClassLoader extends ClassLoader {
+    public static final class UberClassLoader extends CachingClassLoader {
         private final List<PluginWrapper> activePlugins;
 
-        /** Cache of loaded, or known to be unloadable, classes. */
-        private final ConcurrentMap<String, Optional<Class<?>>> loaded = new ConcurrentHashMap<>();
-
-        static {
-            registerAsParallelCapable();
-        }
-
+        /**
+         * The servlet container's {@link ClassLoader} (the parent of Jenkins core) is
+         * parallel-capable and maintains its own growing {@link Map} of {@link
+         * ClassLoader#getClassLoadingLock} objects per class name for every load attempt (including
+         * misses), and we cannot override this behavior. Wrap the servlet container {@link
+         * ClassLoader} in {@link ExistenceCheckingClassLoader} to avoid calling {@link
+         * ClassLoader#getParent}'s {@link ClassLoader#loadClass(String, boolean)} at all for misses
+         * by first checking if the resource exists. If the resource does not exist, we immediately
+         * throw {@link ClassNotFoundException}. As a result, the servlet container's {@link
+         * ClassLoader} is never asked to try and fail, and it never creates/retains lock objects
+         * for those misses.
+         */
         public UberClassLoader(List<PluginWrapper> activePlugins) {
-            super("UberClassLoader", PluginManager.class.getClassLoader());
+            super("UberClassLoader", new ExistenceCheckingClassLoader(PluginManager.class.getClassLoader()));
             this.activePlugins = activePlugins;
         }
 
         @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
-            if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
-                throw new ClassNotFoundException("ignoring " + name);
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            for (String namePrefixToSkip : CLASS_PREFIXES_TO_SKIP) {
+                if (name.startsWith(namePrefixToSkip)) {
+                    throw new ClassNotFoundException("ignoring " + name);
+                }
             }
-            return loaded.computeIfAbsent(name, this::computeValue).orElseThrow(() -> new ClassNotFoundException(name));
+            return super.loadClass(name, resolve);
         }
 
-        private Optional<Class<?>> computeValue(String name) {
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
             for (PluginWrapper p : activePlugins) {
                 try {
                     if (FAST_LOOKUP) {
-                        return Optional.of(ClassLoaderReflectionToolkit.loadClass(p.classLoader, name));
+                        return ClassLoaderReflectionToolkit.loadClass(p.classLoader, name);
                     } else {
-                        return Optional.of(p.classLoader.loadClass(name));
+                        return p.classLoader.loadClass(name);
                     }
                 } catch (ClassNotFoundException e) {
                     // Not found. Try the next class loader.
                 }
             }
-            // Not found in any of the class loaders. Delegate.
-            return Optional.empty();
+            throw new ClassNotFoundException(name);
         }
 
         @Override
@@ -2457,10 +2473,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
             return Collections.enumeration(resources);
-        }
-
-        void clearCacheMisses() {
-            loaded.values().removeIf(Optional::isEmpty);
         }
 
         @Override
@@ -2661,7 +2673,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         public Map<PluginWrapper, String> getDeprecatedPlugins() {
             return Jenkins.get().getPluginManager().getPlugins().stream()
                     .filter(PluginWrapper::isDeprecated)
-                    .collect(Collectors.toMap(Function.identity(), it -> it.getDeprecations().get(0).url));
+                    .sorted(Comparator.comparing(PluginWrapper::getDisplayName)) // Sort by plugin name
+                    .collect(LinkedHashMap::new,
+                            (map, plugin) -> map.put(plugin, plugin.getDeprecations().get(0).url),
+                            Map::putAll);
         }
     }
 

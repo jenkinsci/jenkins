@@ -26,6 +26,7 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.security.Permission;
 import hudson.util.DescribableList;
 import java.io.IOException;
 import java.util.List;
@@ -62,6 +63,11 @@ public class GlobalBuildDiscarderConfiguration extends GlobalConfiguration {
 
     public DescribableList<GlobalBuildDiscarderStrategy, GlobalBuildDiscarderStrategyDescriptor> getConfiguredBuildDiscarders() {
         return configuredBuildDiscarders;
+    }
+
+    @Override
+    public Permission getRequiredGlobalConfigPagePermission() {
+        return Jenkins.MANAGE;
     }
 
     @Override

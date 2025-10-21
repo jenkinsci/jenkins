@@ -52,7 +52,7 @@ THE SOFTWARE.
             <tr>
               <td class="jenkins-table__cell--tight jenkins-table__icon">
                 <div class="jenkins-table__cell__button-wrapper">
-                  <l:icon src="${h.getUserAvatar(user,'32x32')}" />
+                  <l:icon src="${h.getUserAvatar(user, '64x64')}" class="jenkins-avatar" />
                 </div>
               </td>
               <td>

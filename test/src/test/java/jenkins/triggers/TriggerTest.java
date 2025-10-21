@@ -15,34 +15,34 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class TriggerTest {
+@WithJenkins
+class TriggerTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private final LogRecorder l = new LogRecorder();
 
-    @Rule
-    public LoggerRule l = new LoggerRule();
+    private JenkinsRule j;
 
-    @Before
-    public void quicker() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         Trigger.CRON_THRESHOLD = 3;
     }
 
-    @After
-    public void def() {
+    @AfterEach
+    void def() {
         Trigger.CRON_THRESHOLD = 30;
     }
 
     @Test
-    public void testTimerSpentTooMuchTime() throws Exception {
+    void testTimerSpentTooMuchTime() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("test");
 
         l.record(Logger.getLogger(Trigger.class.getName()), Level.WARNING);
@@ -135,7 +135,7 @@ public class TriggerTest {
     }
 
     @Test
-    public void testSlowTriggerAdminMonitorMaxExtries() throws Exception {
+    void testSlowTriggerAdminMonitorMaxExtries() throws Exception {
         final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
         SlowTriggerAdminMonitor stam = SlowTriggerAdminMonitor.getInstance();
         SlowTriggerAdminMonitor.MAX_ENTRIES = 5;

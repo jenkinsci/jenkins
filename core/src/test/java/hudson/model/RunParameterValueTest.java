@@ -24,16 +24,17 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RunParameterValueTest {
+class RunParameterValueTest {
 
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    @Test public void robustness() {
+    @Test
+    void robustness() {
         RunParameterValue rpv = new RunParameterValue("whatever", "folder/job#57");
         assertEquals("whatever", rpv.getName());
         assertEquals("folder/job", rpv.getJobName());

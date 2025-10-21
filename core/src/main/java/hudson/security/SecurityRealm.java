@@ -25,12 +25,13 @@
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.cli.CLICommand;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
@@ -147,7 +148,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
  * @since 1.160
  * @see PluginServletFilter
  */
-public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityRealm> implements ExtensionPoint {
+public abstract class SecurityRealm implements Describable<SecurityRealm>, ExtensionPoint {
     /**
      * Captcha Support to be used with this SecurityRealm for User Signup
      */
@@ -217,7 +218,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     @Override
     public Descriptor<SecurityRealm> getDescriptor() {
-        return super.getDescriptor();
+        return Describable.super.getDescriptor();
     }
 
     /**
@@ -278,7 +279,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *      This parameter allows you to redirect people to different pages depending on who they are.
      * @return
      *      never null.
-     * @since TODO
+     * @since 2.475
      * @see #doLogout(StaplerRequest2, StaplerResponse2)
      */
     protected String getPostLogOutUrl2(StaplerRequest2 req, Authentication auth) {
@@ -340,7 +341,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * The default implementation erases the session and do a few other clean up, then
      * redirect the user to the URL specified by {@link #getPostLogOutUrl2(StaplerRequest2, Authentication)}.
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doLogout(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         if (Util.isOverridden(SecurityRealm.class, getClass(), "doLogout", StaplerRequest.class, StaplerResponse.class)) {
@@ -382,6 +383,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         rsp.sendRedirect2(getPostLogOutUrl2(req, auth));
     }
 
+    @SuppressFBWarnings(value = "INSECURE_COOKIE", justification = "TODO needs triage")
     private void resetRememberMeCookie(StaplerRequest2 req, StaplerResponse2 rsp, String contextPath) {
         Cookie cookie = new Cookie(AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY, "");
         cookie.setMaxAge(0);
@@ -619,7 +621,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * For other plugins that want to contribute {@link Filter}, see
      * {@link PluginServletFilter}.
      *
-     * @since TODO
+     * @since 2.475
      */
     public Filter createFilter(FilterConfig filterConfig) {
         if (Util.isOverridden(SecurityRealm.class, getClass(), "createFilter", javax.servlet.FilterConfig.class)) {
@@ -678,7 +680,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         }
         filters.add(new RememberMeAuthenticationFilter(sc.manager2, sc.rememberMe2));
         filters.addAll(commonFilters());
-        return new ChainedServletFilter(filters);
+        return new ChainedServletFilter2(filters);
     }
 
     protected final List<Filter> commonFilters() {
@@ -781,7 +783,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
          */
         @Override
         public Filter createFilter(FilterConfig filterConfig) {
-            return new ChainedServletFilter();
+            return new ChainedServletFilter2();
         }
 
         /**

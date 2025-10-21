@@ -105,7 +105,7 @@ public final class PluginServletFilter implements CompatibleFilter, ExtensionPoi
      * May be paired with {@link #removeFilter}.
      * <p>For most purposes you can instead use {@link HttpServletFilter}.
      *
-     * @since TODO
+     * @since 2.475
      */
     public static void addFilter(Filter filter) throws ServletException {
         Jenkins j = Jenkins.getInstanceOrNull();
@@ -141,7 +141,7 @@ public final class PluginServletFilter implements CompatibleFilter, ExtensionPoi
      * Checks whether the given filter is already registered in the chain.
      * @param filter the filter to check.
      * @return true if the filter is already registered in the chain.
-     * @since TODO
+     * @since 2.475
      */
     public static boolean hasFilter(Filter filter) {
         Jenkins j = Jenkins.getInstanceOrNull();
@@ -166,7 +166,7 @@ public final class PluginServletFilter implements CompatibleFilter, ExtensionPoi
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static void removeFilter(Filter filter) throws ServletException {
         Jenkins j = Jenkins.getInstanceOrNull();

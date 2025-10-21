@@ -145,7 +145,7 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
             }
 
             LOGGER.log(Level.FINE, "Matched operating system {0}", name);
-            if (startDate.isBefore(LocalDate.now())) {
+            if (!startDate.isAfter(LocalDate.now())) {
                 this.operatingSystemName = name;
                 this.documentationUrl = buildDocumentationUrl(this.operatingSystemName);
                 this.endOfLifeDate = endOfLife.toString();

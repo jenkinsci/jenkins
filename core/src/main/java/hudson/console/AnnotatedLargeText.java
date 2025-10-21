@@ -94,8 +94,13 @@ public class AnnotatedLargeText<T> extends LargeText {
         this.context = context;
     }
 
+    public AnnotatedLargeText(LargeText.Source source, Charset charset, boolean completed, T context) {
+        super(source, charset, completed);
+        this.context = context;
+    }
+
     /**
-     * @since TODO
+     * @since 2.475
      */
     public void doProgressiveHtml(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (Util.isOverridden(AnnotatedLargeText.class, getClass(), "doProgressiveHtml", StaplerRequest.class, StaplerResponse.class)) {
@@ -122,7 +127,7 @@ public class AnnotatedLargeText<T> extends LargeText {
     /**
      * Aliasing what I think was a wrong name in {@link LargeText}
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doProgressiveText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         doProgressText(req, rsp);
@@ -141,12 +146,15 @@ public class AnnotatedLargeText<T> extends LargeText {
      * and use this request attribute to differentiate.
      */
     private boolean isHtml() {
-        StaplerRequest2 req = Stapler.getCurrentRequest2();
+        return isHtml(Stapler.getCurrentRequest2());
+    }
+
+    private boolean isHtml(StaplerRequest2 req) {
         return req != null && req.getAttribute("html") != null;
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     @Override
     protected void setContentType(StaplerResponse2 rsp) {
@@ -205,6 +213,11 @@ public class AnnotatedLargeText<T> extends LargeText {
             return writeHtmlTo(start, w);
         else
             return super.writeLogTo(start, w);
+    }
+
+    @Override
+    protected boolean delegateToWriteLogTo(StaplerRequest2 req, StaplerResponse2 rsp) {
+        return isHtml(req);
     }
 
     /**

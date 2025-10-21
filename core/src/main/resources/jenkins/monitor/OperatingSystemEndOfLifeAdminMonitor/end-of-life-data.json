@@ -84,6 +84,10 @@
     "endOfLife": "2025-05-13"
   },
   {
+    "pattern": "Fedora.* 41.*",
+    "endOfLife": "2025-11-19"
+  },
+  {
     "pattern": "Oracle Linux.* 7.*",
     "endOfLife": "2023-11-16"
   },

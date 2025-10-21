@@ -44,7 +44,7 @@ THE SOFTWARE.
         </l:main-panel>
         <l:header>
           <!-- for screen resolution detection -->
-          <script id="screenResolution-script" data-use-secure-cookie="${request.secure}"/>
+          <script id="screenResolution-script" data-use-secure-cookie="${request2.secure}"/>
           <st:adjunct includes="hudson.model.View.screen-resolution"/>
         </l:header>
     </l:layout>

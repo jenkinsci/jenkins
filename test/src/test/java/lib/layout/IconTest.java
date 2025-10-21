@@ -35,7 +35,6 @@ import hudson.model.StatusIcon;
 import hudson.model.StockStatusIcon;
 import java.io.StringWriter;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -46,26 +45,32 @@ import jenkins.util.NonLocalizable;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class IconTest  {
+@WithJenkins
+class IconTest  {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testIcons() throws Exception {
+    void testIcons() throws Exception {
         HtmlPage p = j.createWebClient().goTo("testIcons");
         DomElement iconsBlock = p.getElementById("iconsBlock");
         List<DomElement> icons = StreamSupport
             .stream(iconsBlock.getChildElements().spliterator(), false)
-            .collect(Collectors.toList());
+            .toList();
 
         assertIconToImageOkay(icons.get(0), "/images/16x16/empty.png", "icon-empty icon-sm");
         assertIconToImageOkay(icons.get(1), "/images/24x24/empty.png", "icon-empty icon-md");
@@ -89,15 +94,18 @@ public class IconTest  {
     }
 
     @Test
-    public void testBallColorTd() throws Exception {
+    void testBallColorTd() throws Exception {
         HtmlPage p = j.createWebClient().goTo("testBallColorTd");
 
         DomElement ballColorAborted = p.getElementById("ballColorAborted");
-        List<DomElement> ballIcons = StreamSupport.stream(ballColorAborted.getChildElements().spliterator(), false).collect(Collectors.toList());
-        assertIconToSvgIconOkay(ballIcons.get(0).getFirstElementChild(), "icon-aborted icon-md");
+        assertThat("Aborted", is(ballColorAborted.getTextContent()));
+        HtmlElement symbol = ballColorAborted.getElementsByTagName("svg").get(0);
+        assertThat("icon-md", is(symbol.getAttribute("class")));
+
+        assertIconToSymbolOkay(symbol);
 
         DomElement statusIcons = p.getElementById("statusIcons");
-        List<DomElement> statusIconsList = StreamSupport.stream(statusIcons.getChildElements().spliterator(), false).collect(Collectors.toList());
+        List<DomElement> statusIconsList = StreamSupport.stream(statusIcons.getChildElements().spliterator(), false).toList();
 
         assertIconToSvgOkay(statusIconsList.get(0).getFirstElementChild().getNextElementSibling(), "icon-user icon-xlg");
 
@@ -135,11 +143,11 @@ public class IconTest  {
     }
 
     @Test
-    public void testTasks() throws Exception {
+    void testTasks() throws Exception {
         HtmlPage p = j.createWebClient().goTo("testTasks");
 
         DomElement tasksDiv = p.getElementById("tasks");
-        List<DomElement> taskDivs = StreamSupport.stream(tasksDiv.getChildElements().spliterator(), false).collect(Collectors.toList());
+        List<DomElement> taskDivs = StreamSupport.stream(tasksDiv.getChildElements().spliterator(), false).toList();
 
         assertIconToSymbolOkay(taskDivs.get(0).getElementsByTagName("svg").get(0));
         // this is loading the png from cloudbees-folder plugin
@@ -177,13 +185,6 @@ public class IconTest  {
     private void assertIconToSvgOkay(DomElement icon, String classSpec) {
         assertThat(icon.getTagName(), is("svg"));
 
-        if (classSpec != null) {
-            assertThat(icon.getAttribute("class"), endsWith(classSpec));
-        }
-    }
-
-    private void assertIconToSvgIconOkay(DomElement icon, String classSpec) {
-        assertThat(icon.getTagName(), is("span"));
         if (classSpec != null) {
             assertThat(icon.getAttribute("class"), endsWith(classSpec));
         }

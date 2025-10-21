@@ -50,6 +50,7 @@ import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.AgentProtocol;
+import jenkins.health.HealthCheck;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.security.stapler.StaplerAccessibleType;
@@ -206,6 +207,7 @@ public final class TcpSlaveAgentListener extends Thread {
     /**
      * Initiates the shuts down of the listener.
      */
+    @SuppressFBWarnings(value = "UNENCRYPTED_SOCKET", justification = "TODO needs triage")
     public void shutdown() {
         shuttingDown = true;
         try {
@@ -271,14 +273,11 @@ public final class TcpSlaveAgentListener extends Thread {
                     String protocol = s.substring(9);
                     AgentProtocol p = AgentProtocol.of(protocol);
                     if (p != null) {
-                        if (Jenkins.get().getAgentProtocols().contains(protocol)) {
-                            LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, () -> "Accepted " + protocol + " connection " + connectionInfo);
-                            p.handle(this.s);
-                        } else {
-                            error("Disabled protocol:" + s, this.s);
-                        }
-                    } else
+                        LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, () -> "Accepted " + protocol + " connection " + connectionInfo);
+                        p.handle(this.s);
+                    } else {
                         error("Unknown protocol:", this.s);
+                    }
                 } else {
                     error("Unrecognized protocol: " + s, this.s);
                 }
@@ -365,18 +364,8 @@ public final class TcpSlaveAgentListener extends Thread {
         }
 
         @Override
-        public boolean isRequired() {
-            return true;
-        }
-
-        @Override
         public String getName() {
             return "Ping";
-        }
-
-        @Override
-        public String getDisplayName() {
-            return Messages.TcpSlaveAgentListener_PingAgentProtocol_displayName();
         }
 
         @Override
@@ -457,4 +446,14 @@ public final class TcpSlaveAgentListener extends Thread {
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     @Restricted(NoExternalUse.class)
     public static Integer CLI_PORT = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName() + ".port");
+
+    @Extension
+    public static final class EnforcedPortHealthCheck implements HealthCheck {
+        @Override
+        public boolean check() {
+            var j = Jenkins.get();
+            return !j.isSlaveAgentPortEnforced() || j.getSlaveAgentPort() <= 0 || j.getTcpSlaveAgentListener() != null;
+        }
+    }
+
 }

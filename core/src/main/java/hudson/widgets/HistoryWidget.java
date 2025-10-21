@@ -26,12 +26,12 @@ package hudson.widgets;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Queue;
-import hudson.model.Run;
 import hudson.util.AlternativeUiTextProvider;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import jenkins.model.HistoricalBuild;
 import jenkins.util.SystemProperties;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageFilter;
@@ -53,12 +54,12 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 
 /**
- * Displays the history of records (normally {@link Run}s) on the side panel.
+ * Displays the history of records on the side panel.
  *
  * @param <O>
- *      Owner of the widget.
+ *      Owner of the widget, typically {@link Job}
  * @param <T>
- *      Type individual record.
+ *      Type individual record, typically {@link HistoricalBuild}
  * @author Kohsuke Kawaguchi
  */
 public class HistoryWidget<O extends ModelObject, T> extends Widget {
@@ -71,6 +72,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     /**
      * The given data model of records. Newer ones first.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public Iterable<T> baseList;
 
     /**
@@ -142,7 +144,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
      * @return
      *      The history page filter that was passed in.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // TODO actually not type-safe
     protected HistoryPageFilter updateFirstTransientBuildKey(HistoryPageFilter historyPageFilter) {
         updateFirstTransientBuildKey(historyPageFilter.runs);
         return historyPageFilter;
@@ -195,7 +197,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     /**
      * Get a {@link jenkins.widgets.HistoryPageFilter} for rendering a page of queue items.
      */
-    public HistoryPageFilter getHistoryPageFilter() {
+    public HistoryPageFilter<T> getHistoryPageFilter() {
         HistoryPageFilter<T> historyPageFilter = newPageFilter();
 
         historyPageFilter.add(baseList);
@@ -205,6 +207,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
 
     protected HistoryPageFilter<T> newPageFilter() {
         HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<>(THRESHOLD);
+        historyPageFilter.widget = this;
 
         if (newerThan != null) {
             historyPageFilter.setNewerThan(newerThan);

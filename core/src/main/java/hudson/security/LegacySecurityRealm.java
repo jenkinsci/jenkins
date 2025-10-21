@@ -89,7 +89,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         // when using container-authentication we can't hit /login directly.
         // we first have to hit protected /loginEntry, then let the container
         // trap that into /login.
-        return new ChainedServletFilter(filters);
+        return new ChainedServletFilter2(filters);
     }
 
     /**

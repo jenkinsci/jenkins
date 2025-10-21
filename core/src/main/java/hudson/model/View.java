@@ -62,6 +62,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -94,6 +95,8 @@ import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
+import jenkins.search.SearchGroup;
+import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.xml.XMLUtils;
 import jenkins.widgets.HasWidgets;
@@ -560,20 +563,21 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return getUrl();
     }
 
+    @Override
+    public String getSearchIcon() {
+        return "symbol-jobs";
+    }
+
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.ViewSearchGroup.class);
+    }
+
     /**
      * Returns the transient {@link Action}s associated with the top page.
-     *
-     * <p>
-     * If views don't want to show top-level actions, this method
-     * can be overridden to return different objects.
-     *
-     * @see Jenkins#getActions()
      */
     public List<Action> getActions() {
-        List<Action> result = new ArrayList<>();
-        result.addAll(getOwner().getViewActions());
-        result.addAll(TransientViewActionFactory.createAllFor(this));
-        return result;
+        return TransientViewActionFactory.createAllFor(this);
     }
 
     /**
@@ -788,7 +792,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * @return
      *      null if fails.
-     * @since TODO
+     * @since 2.475
      */
     @RequirePOST
     public /* abstract */ Item doCreateItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
@@ -949,9 +953,28 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Accepts {@code config.xml} submission, as well as serve it.
+     *
+     * @since 2.475
      */
     @WebMethod(name = "config.xml")
     public HttpResponse doConfigDotXml(StaplerRequest2 req) throws IOException {
+        if (Util.isOverridden(View.class, getClass(), "doConfigDotXml", StaplerRequest.class)) {
+            return doConfigDotXml(StaplerRequest.fromStaplerRequest2(req));
+        } else {
+            return doConfigDotXmlImpl(req);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doConfigDotXml(StaplerRequest2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public HttpResponse doConfigDotXml(StaplerRequest req) throws IOException {
+        return doConfigDotXmlImpl(StaplerRequest.toStaplerRequest2(req));
+    }
+
+    private HttpResponse doConfigDotXmlImpl(StaplerRequest2 req) throws IOException {
         if (req.getMethod().equals("GET")) {
             // read
             checkPermission(READ);
@@ -959,7 +982,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 @Override
                 public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
                     rsp.setContentType("application/xml");
-                    View.this.writeXml(rsp.getOutputStream());
+                    if (hasPermission(CONFIGURE)) {
+                        View.this.writeXml(rsp.getOutputStream());
+                    } else {
+                        var baos = new ByteArrayOutputStream();
+                        View.this.writeXml(baos);
+                        String xml = baos.toString(StandardCharsets.UTF_8);
+
+                        xml = ExtendedReadRedaction.applyAll(xml);
+                        org.apache.commons.io.IOUtils.write(xml, rsp.getOutputStream(), StandardCharsets.UTF_8);
+                    }
                 }
             };
         }
@@ -1104,7 +1136,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * @since TODO
+     * @since 2.475
      */
     public static View create(StaplerRequest2 req, StaplerResponse2 rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {

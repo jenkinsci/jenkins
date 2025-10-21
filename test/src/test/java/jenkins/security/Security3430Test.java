@@ -7,10 +7,10 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.ExtensionList;
 import hudson.model.Computer;
@@ -38,45 +38,46 @@ import org.apache.commons.io.IOUtils;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.InboundAgentRule;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.stapler.Stapler;
 
-public class Security3430Test {
-    @Rule
-    public RealJenkinsRule jj = new RealJenkinsRule().withLogger(JarURLValidatorImpl.class, Level.FINEST);
+class Security3430Test {
 
-    @Rule
-    public InboundAgentRule agents = new InboundAgentRule();
+    @RegisterExtension
+    private final RealJenkinsExtension jj = new RealJenkinsExtension().withLogger(JarURLValidatorImpl.class, Level.FINEST);
+
+    @RegisterExtension
+    private final InboundAgentExtension agents = new InboundAgentExtension();
+
+    @TempDir
+    private File tmp;
 
     @Test
-    public void runWithOldestSupportedAgentJar() throws Throwable {
+    void runWithOldestSupportedAgentJar() throws Throwable {
         runWithRemoting(RemotingVersionInfo.getMinimumSupportedVersion().toString(), "/old-remoting/remoting-minimum-supported.jar", true);
     }
 
     @Test
-    public void runWithPreviousAgentJar() throws Throwable {
+    void runWithPreviousAgentJar() throws Throwable {
         runWithRemoting("3256.v88a_f6e922152", "/old-remoting/remoting-before-SECURITY-3430-fix.jar", true);
     }
 
     @Test
-    public void runWithCurrentAgentJar() throws Throwable {
-        runWithRemoting(null, null, false);
+    void runWithCurrentAgentJar() throws Throwable {
+        runWithRemoting(Launcher.VERSION, null, false);
     }
 
     private void runWithRemoting(String expectedRemotingVersion, String remotingResourcePath, boolean requestingJarFromAgent) throws Throwable {
-        if (expectedRemotingVersion != null) {
-            FileUtils.copyURLToFile(Security3430Test.class.getResource(remotingResourcePath), new File(jj.getHome(), "agent.jar"));
-        }
-
         jj.startJenkins();
         final String agentName = "agent1";
         try {
-            agents.createAgent(jj, InboundAgentRule.Options.newBuilder().name(agentName).build());
+            createAgent(agentName, remotingResourcePath);
             jj.runRemotely(Security3430Test::_run, agentName, expectedRemotingVersion, requestingJarFromAgent, true);
         } finally {
             agents.stop(jj, agentName);
@@ -84,11 +85,29 @@ public class Security3430Test {
         jj.runRemotely(Security3430Test::disableJarURLValidatorImpl);
         final String agentName2 = "agent2";
         try {
-            agents.createAgent(jj, InboundAgentRule.Options.newBuilder().name(agentName2).build());
+            createAgent(agentName2, remotingResourcePath);
             jj.runRemotely(Security3430Test::_run, agentName2, expectedRemotingVersion, requestingJarFromAgent, false);
         } finally {
             agents.stop(jj, agentName2);
         }
+    }
+
+    private void createAgent(String name, String remotingResourcePath) throws Throwable {
+        if (remotingResourcePath != null) {
+            var jar = newFile(tmp, name + ".jar");
+            FileUtils.copyURLToFile(Security3430Test.class.getResource(remotingResourcePath), jar);
+            // TODO awkward, especially as InboundAgentRule.getAgentArguments is private;
+            // would be helpful to have an option for a specific agent JAR:
+            var opts = InboundAgentExtension.Options.newBuilder().name(name).skipStart().build();
+            agents.createAgent(jj, opts);
+            agents.start(new InboundAgentExtension.AgentArguments(jar, jj.getUrl().toString(), name, jj.runRemotely(Security3430Test::getJnlpMac, name), 1, List.of()), opts);
+        } else {
+            agents.createAgent(jj, InboundAgentExtension.Options.newBuilder().name(name).build());
+        }
+    }
+
+    private static String getJnlpMac(JenkinsRule r, String name) {
+        return ((SlaveComputer) r.jenkins.getComputer(name)).getJnlpMac();
     }
 
     // This is quite artificial, but demonstrating that without JarURLValidatorImpl we do not allow any calls from the agent:
@@ -111,6 +130,7 @@ public class Security3430Test {
         final Computer computer = j.jenkins.getComputer(agentName);
         assertThat(computer, instanceOf(SlaveComputer.class));
         SlaveComputer agent = (SlaveComputer) computer;
+        j.waitOnline(agent.getNode());
         final Channel channel = agent.getChannel();
         if (expectedRemotingVersion != null) {
             final String result = channel.call(new AgentVersionCallable());
@@ -126,7 +146,7 @@ public class Security3430Test {
                 if (requestingJarFromAgent) {
                     assertThat(logRecords, hasItem(logMessageContainsString("Allowing URL: file:/")));
                 } else {
-                    assertThat(logRecords, is(empty()));
+                    assertThat(logRecords.stream().map(LogRecord::getMessage).toList(), is(empty()));
                 }
 
                 logHandler.clear();
@@ -137,10 +157,11 @@ public class Security3430Test {
                 // outdated remoting.jar will fail, but up to date one passes
                 if (requestingJarFromAgent) {
                     final IOException ex = assertThrows(IOException.class, () -> channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, Stapler.class));
-                    assertThat(ex.getMessage(), containsString("No hudson.remoting.JarURLValidator has been set for this channel, so all #fetchJar calls are rejected. This is likely a bug in Jenkins. As a workaround, try updating the agent.jar file."));
+                    assertThat(ex.getMessage(), containsString(
+                            "No hudson.remoting.JarURLValidator has been set for this channel, so all #fetchJar calls are rejected. This is likely a bug in Jenkins. As a workaround, try updating the agent.jar file."));
                 } else {
                     assertTrue(channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, Stapler.class));
-                    assertThat(logRecords, is(empty()));
+                    assertThat(logRecords.stream().map(LogRecord::getMessage).toList(), is(empty()));
                 }
             }
         }
@@ -208,7 +229,8 @@ public class Security3430Test {
                     assertThat(logRecords, not(hasItem(logMessageContainsString("Allowing URL"))));
                     assertThat(logRecords, hasItem(logMessageContainsString("Rejecting URL: ")));
                 } else {
-                    assertThat(itex.getCause().getMessage(), containsString("No hudson.remoting.JarURLValidator has been set for this channel, so all #fetchJar calls are rejected. This is likely a bug in Jenkins. As a workaround, try updating the agent.jar file."));
+                    assertThat(itex.getCause().getMessage(), containsString(
+                            "No hudson.remoting.JarURLValidator has been set for this channel, so all #fetchJar calls are rejected. This is likely a bug in Jenkins. As a workaround, try updating the agent.jar file."));
                 }
             }
 
@@ -245,10 +267,11 @@ public class Security3430Test {
         private final URL controllerFilePath;
         private final String expectedContent;
 
-        public Exploit(URL controllerFilePath, String expectedContent) {
+        Exploit(URL controllerFilePath, String expectedContent) {
             this.controllerFilePath = controllerFilePath;
             this.expectedContent = expectedContent;
         }
+
         @Override
         public Void call() throws Exception {
             final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
@@ -271,7 +294,7 @@ public class Security3430Test {
     private static final class LogMessageContainsString extends TypeSafeMatcher<LogRecord> {
         private final Matcher<String> stringMatcher;
 
-        public LogMessageContainsString(Matcher<String> stringMatcher) {
+        LogMessageContainsString(Matcher<String> stringMatcher) {
             this.stringMatcher = stringMatcher;
         }
 
@@ -291,5 +314,11 @@ public class Security3430Test {
             mismatchDescription.appendText("a LogRecord with the message: ");
             mismatchDescription.appendText(item.getMessage());
         }
+    }
+
+    private static File newFile(File parent, String child) throws IOException {
+        File result = new File(parent, child);
+        result.createNewFile();
+        return result;
     }
 }

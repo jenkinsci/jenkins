@@ -30,6 +30,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.Initializer;
@@ -47,18 +49,25 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.IComputer;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
+import jenkins.security.ExtendedReadRedaction;
 import jenkins.util.Timer;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -67,6 +76,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Serves as the top of {@link Computer}s in the URL hierarchy.
@@ -106,15 +116,36 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return monitors.toList();
     }
 
-    @Exported(name = "computer", inline = true)
+    /**
+     * @return All {@link Computer} instances managed by this set.
+     * @deprecated Use {@link #getComputers()} instead.
+     */
+    @Deprecated(since = "2.480")
     public Computer[] get_all() {
-        return Jenkins.get().getComputers();
+        return getComputers().stream().filter(Computer.class::isInstance).toArray(Computer[]::new);
+    }
+
+    /**
+     * @return All {@link IComputer} instances managed by this set, sorted by name.
+     */
+    @Exported(name = "computer", inline = true)
+    public Collection<? extends IComputer> getComputers() {
+        return ExtensionList.lookupFirst(ComputerSource.class).get().stream().sorted(Comparator.comparing(IComputer::getName)).toList();
+    }
+
+    /**
+     * Allows plugins to override the displayed list of computers.
+     *
+     */
+    @Restricted(Beta.class)
+    public interface ComputerSource extends ExtensionPoint {
+        Collection<? extends IComputer> get();
     }
 
     @Override
     public ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         ContextMenu m = new ContextMenu();
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             m.add(c);
         }
         return m;
@@ -170,7 +201,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     @Exported
     public int getTotalExecutors() {
         int r = 0;
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             if (c.isOnline())
                 r += c.countExecutors();
         }
@@ -183,7 +214,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     @Exported
     public int getBusyExecutors() {
         int r = 0;
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             if (c.isOnline())
                 r += c.countBusy();
         }
@@ -195,7 +226,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     public int getIdleExecutors() {
         int r = 0;
-        for (Computer c : get_all())
+        for (IComputer c : getComputers())
             if ((c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
                 r += c.countIdle();
         return r;
@@ -214,7 +245,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     public void do_launchAll(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
-        for (Computer c : get_all()) {
+        for (IComputer c : getComputers()) {
             if (c.isLaunchSupported())
                 c.connect(true);
         }
@@ -262,8 +293,23 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                 }
             }
 
+            src.checkPermission(Computer.EXTENDED_READ);
+
             // copy through XStream
             String xml = Jenkins.XSTREAM.toXML(src);
+            if (!src.hasPermission(Computer.CONFIGURE)) {
+                final String redactedConfigDotXml = ExtendedReadRedaction.applyAll(xml);
+                if (!xml.equals(redactedConfigDotXml)) {
+                    // AccessDeniedException2 does not permit a custom message, and anyway redirecting the user to the login screen is obviously pointless.
+                    throw new AccessDeniedException(
+                            Messages.ComputerSet_may_not_copy_as_it_contains_secrets_and_(
+                                    src.getNodeName(),
+                                    Jenkins.getAuthentication2().getName(),
+                                    Computer.PERMISSIONS.title,
+                                    Computer.EXTENDED_READ.name,
+                                    Computer.CONFIGURE.name));
+                }
+            }
             Node result = (Node) Jenkins.XSTREAM.fromXML(xml);
             result.setNodeName(name);
             result.holdOffLaunchUntilSave = true;
@@ -501,5 +547,14 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             LOGGER.log(Level.SEVERE, "Failed to instantiate " + d.clazz, e);
         }
         return null;
+    }
+
+    @Extension(ordinal = -1)
+    @Restricted(DoNotUse.class)
+    public static class ComputerSourceImpl implements ComputerSource {
+        @Override
+        public Collection<? extends IComputer> get() {
+            return Jenkins.get().getComputersCollection();
+        }
     }
 }

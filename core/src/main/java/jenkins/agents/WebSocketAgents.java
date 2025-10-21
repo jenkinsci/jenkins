@@ -53,6 +53,7 @@ import jenkins.slaves.RemotingVersionInfo;
 import jenkins.websocket.WebSocketSession;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
+import org.jenkinsci.remoting.protocol.impl.ConnectionRefusalException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -104,7 +105,12 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             cookie = JnlpAgentReceiver.generateCookie();
         }
         properties.put(JnlpConnectionState.COOKIE_KEY, cookie);
-        state.fireAfterProperties(Collections.unmodifiableMap(properties));
+        try {
+            state.fireAfterProperties(Collections.unmodifiableMap(properties));
+        } catch (ConnectionRefusalException e) {
+            LOGGER.log(Level.WARNING, e.getMessage());
+            throw HttpResponses.errorWithoutStack(400, e.getMessage());
+        }
         Capability remoteCapability = Capability.fromASCII(remoteCapabilityStr);
         LOGGER.fine(() -> "received " + remoteCapability);
         rsp.setHeader(Capability.KEY, new Capability().toASCII());
@@ -131,10 +137,10 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
         @Override
         protected void opened() {
+            transport = new Transport();
             Computer.threadPoolForRemoting.submit(() -> {
                 LOGGER.fine(() -> "setting up channel for " + agent);
                 state.fireBeforeChannel(new ChannelBuilder(agent, Computer.threadPoolForRemoting));
-                transport = new Transport();
                 try {
                     state.fireAfterChannel(state.getChannelBuilder().build(transport));
                     LOGGER.fine(() -> "set up channel for " + agent);

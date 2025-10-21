@@ -40,6 +40,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
@@ -71,7 +72,6 @@ import hudson.util.XStream2;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -109,14 +109,23 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
+import jenkins.console.ConsoleUrlProvider;
+import jenkins.console.WithConsoleUrl;
 import jenkins.model.ArtifactManager;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.BuildDiscarder;
+import jenkins.model.HistoricalBuild;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
+import jenkins.model.Tab;
+import jenkins.model.details.CauseDetail;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.DurationDetail;
+import jenkins.model.details.TimestampDetail;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.security.MasterToSlaveCallable;
@@ -128,6 +137,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -157,22 +167,13 @@ import org.springframework.security.core.Authentication;
  */
 @ExportedBean
 public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster, StaplerProxy {
+        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster, StaplerProxy, HistoricalBuild, WithConsoleUrl {
 
     /**
      * The original {@link Queue.Item#getId()} has not yet been mapped onto the {@link Run} instance.
      * @since 1.601
      */
     public static final long QUEUE_ID_UNKNOWN = -1;
-
-    /**
-     * Target size limit for truncated {@link #description}s in the Build History Widget.
-     * This is applied to the raw, unformatted description. Especially complex formatting
-     * like hyperlinks can result in much less text being shown than this might imply.
-     * Negative values will disable truncation, {@code 0} will enforce empty strings.
-     * @since 2.223
-     */
-    private static /* non-final for Groovy */ int TRUNCATED_DESCRIPTION_LIMIT = SystemProperties.getInteger("historyWidget.descriptionLimit", 100);
 
     protected final transient @NonNull JobT project;
 
@@ -386,7 +387,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @SuppressWarnings("deprecation")
     protected void onLoad() {
-        for (Action a : getAllActions()) {
+        for (Action a : getActions()) {
             if (a instanceof RunAction2) {
                 try {
                     ((RunAction2) a).onLoad(this);
@@ -461,12 +462,12 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Get the {@link Queue.Item#getId()} of the original queue item from where this Run instance
-     * originated.
-     * @return The queue item ID.
+     * {@inheritDoc}
+     *
      * @since 1.601
      */
     @Exported
+    @Override
     public long getQueueId() {
         return queueId;
     }
@@ -482,15 +483,8 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         this.queueId = queueId;
     }
 
-    /**
-     * Returns the build result.
-     *
-     * <p>
-     * When a build is {@link #isBuilding() in progress}, this method
-     * returns an intermediate result.
-     * @return The status of the build, if it has completed or some build step has set a status; may be null if the build is ongoing.
-     */
     @Exported
+    @Override
     public @CheckForNull Result getResult() {
         return result;
     }
@@ -518,6 +512,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Gets the subset of {@link #getActions()} that consists of {@link BuildBadgeAction}s.
      */
+    @Override
     public @NonNull List<BuildBadgeAction> getBadgeActions() {
         List<BuildBadgeAction> r = getActions(BuildBadgeAction.class);
         if (isKeepLog()) {
@@ -527,11 +522,8 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return r;
     }
 
-    /**
-     * Returns true if the build is not completed yet.
-     * This includes "not started yet" state.
-     */
     @Exported
+    @Override
     public boolean isBuilding() {
         return state.compareTo(State.POST_PRODUCTION) < 0;
     }
@@ -650,11 +642,11 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * When the build is scheduled.
-     *
+     * {@inheritDoc}
      * @see #getStartTimeInMillis()
      */
     @Exported
+    @Override
     public @NonNull Calendar getTimestamp() {
         GregorianCalendar c = new GregorianCalendar();
         c.setTimeInMillis(timestamp);
@@ -689,71 +681,10 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Exported
+    @Override
     @CheckForNull
     public String getDescription() {
         return description;
-    }
-
-
-    /**
-     * Returns the length-limited description.
-     * The method tries to take HTML tags within the description into account, but it is a best-effort attempt.
-     * Also, the method will likely not work properly if a non-HTML {@link hudson.markup.MarkupFormatter} is used.
-     * @return The length-limited description.
-     * @deprecated truncated description based on the {@link #TRUNCATED_DESCRIPTION_LIMIT} setting.
-     */
-    @Deprecated
-    public @CheckForNull String getTruncatedDescription() {
-        if (TRUNCATED_DESCRIPTION_LIMIT < 0) { // disabled
-            return description;
-        }
-        if (TRUNCATED_DESCRIPTION_LIMIT == 0) { // Someone wants to suppress descriptions, why not?
-            return "";
-        }
-
-        final int maxDescrLength = TRUNCATED_DESCRIPTION_LIMIT;
-        final String localDescription = description;
-        if (localDescription == null || localDescription.length() < maxDescrLength) {
-            return localDescription;
-        }
-
-        final String ending = "...";
-        final int sz = localDescription.length(), maxTruncLength = maxDescrLength - ending.length();
-
-        boolean inTag = false;
-        int displayChars = 0;
-        int lastTruncatablePoint = -1;
-
-        for (int i = 0; i < sz; i++) {
-            char ch = localDescription.charAt(i);
-            if (ch == '<') {
-                inTag = true;
-            } else if (ch == '>') {
-                inTag = false;
-                if (displayChars <= maxTruncLength) {
-                    lastTruncatablePoint = i + 1;
-                }
-            }
-            if (!inTag) {
-                displayChars++;
-                if (displayChars <= maxTruncLength && ch == ' ') {
-                    lastTruncatablePoint = i;
-                }
-            }
-        }
-
-        String truncDesc = localDescription;
-
-        // Could not find a preferred truncatable index, force a trunc at maxTruncLength
-        if (lastTruncatablePoint == -1)
-            lastTruncatablePoint = maxTruncLength;
-
-        if (displayChars >= maxDescrLength) {
-            truncDesc = truncDesc.substring(0, lastTruncatablePoint) + ending;
-        }
-
-        return truncDesc;
-
     }
 
     /**
@@ -774,9 +705,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return Util.XS_DATETIME_FORMATTER2.format(Instant.ofEpochMilli(timestamp));
     }
 
-    /**
-     * Gets the string that says how long the build took to run.
-     */
+    @Override
     public @NonNull String getDurationString() {
         if (hasntStartedYet()) {
             return Messages.Run_NotStartedYet();
@@ -795,9 +724,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return duration;
     }
 
-    /**
-     * Gets the icon color for display.
-     */
+    @Override
     public @NonNull BallColor getIconColor() {
         if (!isBuilding()) {
             // already built
@@ -832,6 +759,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Exported
+    @Override
     public String getFullDisplayName() {
         return project.getFullDisplayName() + ' ' + getDisplayName();
     }
@@ -857,6 +785,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Exported(visibility = 2)
+    @Override
     public int getNumber() {
         return number;
     }
@@ -1034,14 +963,8 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return nextBuild;
     }
 
-    /**
-     * Returns the URL of this {@link Run}, relative to the context root of Hudson.
-     *
-     * @return
-     *      String like "job/foo/32/" with trailing slash but no leading slash.
-     */
-    // I really messed this up. I'm hoping to fix this some time
-    // it shouldn't have trailing '/', and instead it should have leading '/'
+
+    @Override
     public @NonNull String getUrl() {
 
         // RUN may be accessed using permalinks, as "/lastSuccessful" or other, so try to retrieve this base URL
@@ -1057,6 +980,14 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         return project.getUrl() + getNumber() + '/';
+    }
+
+    /**
+     * @see ConsoleUrlProvider#consoleUrlOf
+     */
+    @Override
+    public String getConsoleUrl() {
+        return ConsoleUrlProvider.consoleUrlOf(this);
     }
 
     /**
@@ -1095,6 +1026,12 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public @NonNull File getRootDir() {
         return new File(project.getBuildDir(), Integer.toString(number));
+    }
+
+    @Override
+    public List<ParameterValue> getParameterValues() {
+        ParametersAction a = getAction(ParametersAction.class);
+        return a != null ? a.getParameters() : List.of();
     }
 
     /**
@@ -1137,6 +1074,11 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
             return new StandardArtifactManager(this);
         }
+    }
+
+    @Restricted(DoNotUse.class) // Jelly
+    public final boolean hasCustomArtifactManager() {
+        return artifactManager != null;
     }
 
     /**
@@ -1268,12 +1210,14 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /** {@link Run.ArtifactList} without the implicit link to {@link Run} */
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     private static final class SerializableArtifactList extends ArrayList<SerializableArtifact> {
         private static final long serialVersionUID = 1L;
         private LinkedHashMap<SerializableArtifact, String> tree = new LinkedHashMap<>();
         private int idSeq = 0;
     }
 
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     public final class ArtifactList extends ArrayList<Artifact> {
         private static final long serialVersionUID = 1L;
         /**
@@ -1529,19 +1473,34 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "method signature does not permit plumbing through the return value")
     public void writeLogTo(long offset, @NonNull XMLOutput out) throws IOException {
-        long start = offset;
+        AnnotatedLargeText<?> logText = getLogText();
         if (offset > 0) {
-            try (BufferedInputStream bufferedInputStream = new BufferedInputStream(getLogInputStream())) {
-                if (offset == bufferedInputStream.skip(offset)) {
-                    int r;
-                    do {
-                        r = bufferedInputStream.read();
-                        start = r == -1 ? 0 : start + 1;
-                    } while (r != -1 && r != '\n');
-                }
+            long _offset = offset;
+            try {
+                logText.writeRawLogTo(offset - 1, new OutputStream() {
+                    long pos = _offset;
+                    @Override
+                    public void write(int b) throws IOException {
+                        if (b == '\n') {
+                            throw new Halt(pos);
+                        } else {
+                            pos++;
+                        }
+                    }
+                });
+            } catch (Halt halt) {
+                offset = halt.offset;
             }
         }
-        getLogText().writeHtmlTo(start, out.asWriter());
+        logText.writeHtmlTo(offset, out.asWriter());
+    }
+
+    private static final class Halt extends IOException {
+        final long offset;
+
+        Halt(long offset) {
+            this.offset = offset;
+        }
     }
 
     /**
@@ -1621,6 +1580,9 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      if we fail to delete.
      */
     public void delete() throws IOException {
+        if (isLogUpdated()) {
+            throw new IOException("Unable to delete " + this + " because it is still running");
+        }
         synchronized (this) {
             // Avoid concurrent delete. See https://issues.jenkins.io/browse/JENKINS-61687
             if (isPendingDelete) {
@@ -1640,6 +1602,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             ));
             //Still firing the delete listeners; just no need to clean up rootDir
             RunListener.fireDeleted(this);
+            SaveableListener.fireOnDeleted(this, getDataFile());
             synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
                 removeRunFromParent();
             }
@@ -1648,6 +1611,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         //The root dir exists and is a directory that needs to be purged
         RunListener.fireDeleted(this);
+        SaveableListener.fireOnDeleted(this, getDataFile());
 
         if (artifactManager != null) {
             deleteArtifacts();
@@ -1953,12 +1917,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     LOGGER.log(Level.SEVERE, "Failed to save build record", e);
                 }
             }
-
-            try {
-                getParent().logRotate();
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Failed to rotate log", e);
-            }
         } finally {
             onEndBuilding();
             if (logger != null) {
@@ -2165,14 +2123,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         rsp.sendRedirect2(req.getContextPath() + "/images/48x48/" + getBuildStatusUrl());
     }
 
-    public @NonNull String getBuildStatusUrl() {
-        return getIconColor().getImage();
-    }
-
-    public String getBuildStatusIconClassName() {
-        return getIconColor().getIconClassName();
-    }
-
     public static class Summary {
         /**
          * Is this build worse or better, compared to the previous build?
@@ -2287,7 +2237,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Sends out the raw console output.
      *
-     * @since TODO
+     * @since 2.475
      */
     public void doConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (Util.isOverridden(Run.class, getClass(), "doConsoleText", StaplerRequest.class, StaplerResponse.class)) {
@@ -2365,7 +2315,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Deletes the build when the button is pressed.
      *
-     * @since TODO
+     * @since 2.475
      */
     @RequirePOST
     public void doDoDelete(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
@@ -2747,5 +2697,26 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             Util.printRedirect(req.getContextPath(), "..", "Not found", out);
             out.flush();
         }
+    }
+
+    @Extension
+    public static final class BasicRunDetailFactory extends DetailFactory<Run> {
+
+        @Override
+        public Class<Run> type() {
+            return Run.class;
+        }
+
+        @NonNull @Override public List<? extends Detail> createFor(@NonNull Run target) {
+            return List.of(new CauseDetail(target), new TimestampDetail(target), new DurationDetail(target));
+        }
+    }
+
+    /**
+     * Retrieves the tabs for a given run
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Tab> getRunTabs() {
+        return getActions(Tab.class);
     }
 }

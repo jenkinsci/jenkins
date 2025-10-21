@@ -1,0 +1,14 @@
+.jenkins-avatar {
+  &[src] {
+    border-radius: 100px;
+    outline: var(--jenkins-border-width) solid
+      color-mix(in sRGB, var(--text-color-secondary) 10%, transparent);
+    background: color-mix(in sRGB, var(--text-color-secondary) 5%, transparent);
+    outline-offset: calc(var(--jenkins-border-width) * -1);
+    object-fit: cover;
+
+    @media (prefers-contrast: more) {
+      outline-color: var(--text-color);
+    }
+  }
+}

@@ -9,11 +9,12 @@ package hudson.security.csrf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.User;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,24 +31,26 @@ import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlHiddenInput;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 
 /**
  * @author dty
  */
-public class DefaultCrumbIssuerTest {
+@WithJenkins
+class DefaultCrumbIssuerTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
 
-    @Before public void setIssuer() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
         r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
     }
 
@@ -60,7 +63,8 @@ public class DefaultCrumbIssuerTest {
     private static final String HEADER_NAME = "X-Forwarded-For";
 
     @Issue("JENKINS-3854")
-    @Test public void clientIPFromHeader() throws Exception {
+    @Test
+    void clientIPFromHeader() throws Exception {
         WebClient wc = r.createWebClient();
 
         wc.addRequestHeader(HEADER_NAME, testData[0]);
@@ -69,7 +73,8 @@ public class DefaultCrumbIssuerTest {
     }
 
     @Issue("JENKINS-3854")
-    @Test public void headerChange() throws Exception {
+    @Test
+    void headerChange() throws Exception {
         WebClient wc = r.createWebClient();
 
         wc.addRequestHeader(HEADER_NAME, testData[0]);
@@ -84,7 +89,8 @@ public class DefaultCrumbIssuerTest {
     }
 
     @Issue("JENKINS-3854")
-    @Test public void proxyIPChanged() throws Exception {
+    @Test
+    void proxyIPChanged() throws Exception {
         WebClient wc = r.createWebClient();
 
         wc.addRequestHeader(HEADER_NAME, testData[1]);
@@ -98,7 +104,8 @@ public class DefaultCrumbIssuerTest {
     }
 
     @Issue("JENKINS-3854")
-    @Test public void proxyIPChain() throws Exception {
+    @Test
+    void proxyIPChain() throws Exception {
         WebClient wc = r.createWebClient();
 
         wc.addRequestHeader(HEADER_NAME, testData[3]);
@@ -107,7 +114,8 @@ public class DefaultCrumbIssuerTest {
     }
 
     @Issue("JENKINS-7518")
-    @Test public void proxyCompatibilityMode() throws Exception {
+    @Test
+    void proxyCompatibilityMode() throws Exception {
         CrumbIssuer issuer = new DefaultCrumbIssuer(true);
         assertNotNull(issuer);
         r.jenkins.setCrumbIssuer(issuer);
@@ -121,7 +129,8 @@ public class DefaultCrumbIssuerTest {
         r.submit(p.getFormByName("config"));
    }
 
-    @Test public void apiXml() throws Exception {
+    @Test
+    void apiXml() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.READ).everywhere().toEveryone()
@@ -129,13 +138,13 @@ public class DefaultCrumbIssuerTest {
         WebClient wc = r.createWebClient();
         r.assertXPathValue(wc.goToXml("crumbIssuer/api/xml"), "//crumbRequestField", r.jenkins.getCrumbIssuer().getCrumbRequestField());
         String text = wc.goTo("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", "text/plain").getWebResponse().getContentAsString();
-        assertTrue(text, text.matches("\\Q" + r.jenkins.getCrumbIssuer().getCrumbRequestField() + "\\E=[0-9a-f]+"));
+        assertTrue(text.matches("\\Q" + r.jenkins.getCrumbIssuer().getCrumbRequestField() + "\\E=[0-9a-f]+"), text);
         text = wc.goTo("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)", "text/plain").getWebResponse().getContentAsString();
-        assertTrue(text, text.matches("\\Q" + r.jenkins.getCrumbIssuer().getCrumbRequestField() + "\\E:[0-9a-f]+"));
+        assertTrue(text.matches("\\Q" + r.jenkins.getCrumbIssuer().getCrumbRequestField() + "\\E:[0-9a-f]+"), text);
         text = wc.goTo("crumbIssuer/api/xml?xpath=/*/crumbRequestField/text()", "text/plain").getWebResponse().getContentAsString();
         assertEquals(r.jenkins.getCrumbIssuer().getCrumbRequestField(), text);
         text = wc.goTo("crumbIssuer/api/xml?xpath=/*/crumb/text()", "text/plain").getWebResponse().getContentAsString();
-        assertTrue(text, text.matches("[0-9a-f]+"));
+        assertTrue(text.matches("[0-9a-f]+"), text);
         wc.assertFails("crumbIssuer/api/xml?xpath=concat('hack=\"',//crumb,'\"')", HttpURLConnection.HTTP_FORBIDDEN);
         wc.assertFails("crumbIssuer/api/xml?xpath=concat(\"hack='\",//crumb,\"'\")", HttpURLConnection.HTTP_FORBIDDEN);
         wc.assertFails("crumbIssuer/api/xml?xpath=concat('{',//crumb,':1}')", HttpURLConnection.HTTP_FORBIDDEN); // 37.5% chance that crumb ~ /[a-f].+/
@@ -144,7 +153,8 @@ public class DefaultCrumbIssuerTest {
         wc.assertFails("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", HttpURLConnection.HTTP_FORBIDDEN); // perhaps interpretable as JS number
     }
 
-    @Test public void apiJson() throws Exception {
+    @Test
+    void apiJson() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.READ).everywhere().toEveryone()
@@ -158,26 +168,27 @@ public class DefaultCrumbIssuerTest {
     }
 
     @Issue("JENKINS-34254")
-    @Test public void testRequirePostErrorPageCrumb() throws Exception {
+    @Test
+    void testRequirePostErrorPageCrumb() throws Exception {
         r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
         WebClient wc = r.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 
         Page page = wc.goTo("quietDown");
-        assertEquals("expect HTTP 405 method not allowed",
-                HttpURLConnection.HTTP_BAD_METHOD,
-                page.getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_BAD_METHOD,
+                page.getWebResponse().getStatusCode(),
+                "expect HTTP 405 method not allowed");
 
         HtmlPage retry = (HtmlPage) wc.getCurrentWindow().getEnclosedPage();
         HtmlPage success = r.submit(retry.getFormByName("retry"));
         assertEquals(HttpURLConnection.HTTP_OK, success.getWebResponse().getStatusCode());
-        assertTrue("quieting down", r.jenkins.isQuietingDown());
+        assertTrue(r.jenkins.isQuietingDown(), "quieting down");
     }
 
     @Test
     @Issue("SECURITY-626")
     @WithTimeout(300)
-    public void crumbOnlyValidForOneSession() throws Exception {
+    void crumbOnlyValidForOneSession() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(false);
         r.jenkins.setCrumbIssuer(issuer);
@@ -229,7 +240,7 @@ public class DefaultCrumbIssuerTest {
 
     @Test
     @Issue("SECURITY-1491")
-    public void sessionIncludedEvenForAnonymousCall() throws Exception {
+    void sessionIncludedEvenForAnonymousCall() throws Exception {
         boolean previousValue = DefaultCrumbIssuer.EXCLUDE_SESSION_ID;
 
         try {
@@ -277,9 +288,9 @@ public class DefaultCrumbIssuerTest {
             assertNotNull(r.jenkins.getItem(jobName2));
         } else {
             e = assertThrows(
-                    "Should have failed due to invalid crumb",
                     FailingHttpStatusCodeException.class,
-                    () -> r.createWebClient().getPage(request2));
+                    () -> r.createWebClient().getPage(request2),
+                    "Should have failed due to invalid crumb");
             assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
             // cannot create new job due to invalid crumb
             assertNull(r.jenkins.getItem(jobName2));
@@ -288,7 +299,7 @@ public class DefaultCrumbIssuerTest {
 
     @Test
     @Issue("SECURITY-1491")
-    public void twoRequestsWithoutSessionGetDifferentCrumbs() throws Exception {
+    void twoRequestsWithoutSessionGetDifferentCrumbs() throws Exception {
         String responseForCrumb = r.createWebClient().goTo("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", "text/plain")
                 .getWebResponse().getContentAsString();
         // responseForCrumb = Jenkins-Crumb=xxxx
@@ -299,7 +310,7 @@ public class DefaultCrumbIssuerTest {
         // responseForCrumb = Jenkins-Crumb=xxxx
         String crumb2 = responseForCrumb.substring(CrumbIssuer.DEFAULT_CRUMB_NAME.length() + "=".length());
 
-        Assert.assertNotEquals("should be different crumbs", crumb1, crumb2);
+        assertNotEquals(crumb1, crumb2, "should be different crumbs");
     }
 
     private WebRequest createRequestForJobCreation(String jobName) throws Exception {
@@ -310,7 +321,7 @@ public class DefaultCrumbIssuerTest {
     }
 
     @Test
-    public void anonCanStillPostRequestUsingBrowsers() throws Exception {
+    void anonCanStillPostRequestUsingBrowsers() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
 
         MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
@@ -326,7 +337,7 @@ public class DefaultCrumbIssuerTest {
 
     @Test
     @Issue("SECURITY-1704")
-    public void custom_notExposedToIFrame() throws Exception {
+    void custom_notExposedToIFrame() throws Exception {
         ensureXmlIsNotExposedToIFrame("crumbIssuer/");
         ensureJsonIsNotExposedToIFrame("crumbIssuer/");
         ensurePythonIsNotExposedToIFrame("crumbIssuer/");

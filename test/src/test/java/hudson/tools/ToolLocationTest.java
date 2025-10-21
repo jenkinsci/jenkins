@@ -1,30 +1,36 @@
 package hudson.tools;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.JDK;
 import hudson.tasks.Ant;
 import hudson.tasks.Maven;
 import java.util.Arrays;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * @author huybrechts
  */
-public class ToolLocationTest {
+@WithJenkins
+class ToolLocationTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Test xml compatibility since 'extends ToolInstallation'
      */
     @Test
     @LocalData
-    public void toolCompatibility() {
+    void toolCompatibility() {
         Maven.MavenInstallation[] maven = j.jenkins.getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
         assertEquals(1, maven.length);
         assertEquals("bar", maven[0].getHome());

@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.122</version>
+    <version>1.141</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.476</revision>
+    <revision>2.533</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-09-04T12:22:06Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-10-14T12:27:14Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,17 +87,19 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3261.v9c670a_4748a_9</remoting.version>
+    <remoting.version>3345.v03dee9b_f88fc</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
-    <access-modifier.version>1.33</access-modifier.version>
+    <access-modifier.version>1.35</access-modifier.version>
     <antlr.version>4.13.2</antlr.version>
-    <bridge-method-injector.version>1.29</bridge-method-injector.version>
+    <bridge-method-injector.version>1.32</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
-    <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.0</winstone.version>
+    <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
+    <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
+    <winstone.version>8.13.1</winstone.version>
+    <node.version>24.9.0</node.version>
   </properties>
 
   <!--
@@ -139,7 +141,6 @@ THE SOFTWARE.
           <artifactId>maven-compiler-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
-            <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
             <compilerArgs>
               <!--
@@ -169,12 +170,11 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
-            <runOrder>alphabetical</runOrder>
           </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-jarsigner-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.1.0</version>
           <configuration>
             <!--
               during the development, debug profile will cause
@@ -223,7 +223,7 @@ THE SOFTWARE.
           <version>1.1</version>
         </plugin>
         <plugin>
-          <groupId>com.infradna.tool</groupId>
+          <groupId>io.jenkins.tools</groupId>
           <artifactId>bridge-method-injector</artifactId>
           <version>${bridge-method-injector.version}</version>
         </plugin>
@@ -281,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.18.1</version>
+              <version>12.1.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -297,7 +297,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.12</version>
+          <version>0.8.13</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -375,6 +375,11 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <!-- Version specified in parent POM -->
+      </plugin>
     </plugins>
   </build>
 
@@ -415,6 +420,159 @@ THE SOFTWARE.
       <properties>
         <changelog.url>https://www.jenkins.io/changelog-stable</changelog.url>
       </properties>
+    </profile>
+    <profile>
+      <id>yarn-execution</id>
+      <activation>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.4</version>
+            <executions>
+              <execution>
+                <id>install node and corepack</id>
+                <goals>
+                  <goal>install-node-and-corepack</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <nodeVersion>v${node.version}</nodeVersion>
+                  <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-dist/</nodeDownloadRoot>
+                </configuration>
+              </execution>
+              <execution>
+                <id>yarn install</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <arguments>yarn install</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>yarn build</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <arguments>yarn build</arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>.yarn</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>node</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>node_modules</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>war/src/main/webapp/jsbundles</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+              </filesets>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>yarn-ci-lint</id>
+      <activation>
+        <property>
+          <name>env.CI</name>
+        </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.4</version>
+            <executions>
+              <execution>
+                <id>yarn lint:ci</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>yarn lint:ci</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                </configuration>
+              </execution>
+              <execution>
+                <id>prettier</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>yarn exec prettier --check .</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                  <testFailureIgnore>false</testFailureIgnore>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>yarn-lint</id>
+      <activation>
+        <property>
+          <name>!env.CI</name>
+        </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.15.4</version>
+            <executions>
+              <execution>
+                <id>yarn lint</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>yarn lint</arguments>
+                  <skip>${yarn.lint.skip}</skip>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
