@@ -152,7 +152,11 @@ body:has(.app-settings-container) {
 }
 
 .app-settings-container {
-  --top: color-mix(in sRGB, var(--text-color-secondary) 2%, var(--card-background));
+  --top: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 2%,
+    var(--card-background)
+  );
 
   position: relative;
   background-color: var(--card-background);
