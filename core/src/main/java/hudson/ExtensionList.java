@@ -26,7 +26,6 @@ package hudson;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.init.InitMilestone;
 import hudson.model.Hudson;
 import hudson.util.AdaptedIterator;
@@ -39,11 +38,9 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -437,11 +434,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> ExtensionList<T> create(Jenkins jenkins, Class<T> type) {
-        if (type.getAnnotation(LegacyInstancesAreScopedToHudson.class) != null)
-            return new ExtensionList<>(jenkins, type);
-        else {
-            return new ExtensionList(jenkins, type, staticLegacyInstances.computeIfAbsent(type, key -> new CopyOnWriteArrayList()));
-        }
+        return new ExtensionList<>(jenkins, type);
     }
 
     /**
@@ -506,16 +499,10 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     }
 
     /**
-     * Places to store static-scope legacy instances.
+     * @deprecated No longer does anything.
      */
-    @SuppressWarnings("rawtypes")
-    private static final Map<Class, CopyOnWriteArrayList> staticLegacyInstances = new ConcurrentHashMap<>();
-
-    /**
-     * Exposed for the test harness to clear all legacy extension instances.
-     */
+    @Deprecated
     public static void clearLegacyInstances() {
-        staticLegacyInstances.clear();
     }
 
     private static final Logger LOGGER = Logger.getLogger(ExtensionList.class.getName());
