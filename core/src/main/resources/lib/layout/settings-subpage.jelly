@@ -78,7 +78,7 @@ THE SOFTWARE.
         </l:side-panel>
         <l:main-panel>
           <div class="app-settings-container">
-            <div style="max-width: 900px; margin: auto; overflow-x: hidden; padding: 2rem; display: flex; flex-direction: column">
+            <div style="max-width: 900px; margin: auto; overflow-x: hidden; padding: var(--section-padding); display: flex; flex-direction: column">
               <j:if test="${!attrs.containsKey('header')}">
                 <l:app-bar title="${it.displayName}" />
                 <div class="jenkins-page-description">
