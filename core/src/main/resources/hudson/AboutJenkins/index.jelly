@@ -25,12 +25,10 @@ THE SOFTWARE.
 <!-- About Jenkins page -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:settings-subpage placeholder="${null}">
+  <l:settings-subpage placeholder="${null}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
 
-    <div style="height: 0.75rem"></div>
-
-    <div class="jenkins-app-bar">
+    <div class="jenkins-app-bar jenkins-!-margin-top-2">
       <div class="jenkins-app-bar__content">
         <h1 class="app-about-heading">Jenkins</h1>
         <p class="app-about-version">

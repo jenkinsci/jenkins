@@ -29,7 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:new className="jenkins.management.SystemInfoLink" var="it" />
 
-  <l:settings-subpage permissions="${app.MANAGE_AND_SYSTEM_READ}" >
+  <l:settings-subpage permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
     <script src="${resURL}/jsbundles/pages/manage-jenkins/system-information.js" type="text/javascript" defer="true" />
     

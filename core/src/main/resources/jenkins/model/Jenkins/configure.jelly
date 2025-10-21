@@ -29,7 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <j:new className="jenkins.management.ConfigureLink" var="it" />
 
-  <l:settings-subpage>
+  <l:settings-subpage permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <j:set var="managementLink" value="${it}" />
     <j:set var="it" value="${app}" />
     <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>

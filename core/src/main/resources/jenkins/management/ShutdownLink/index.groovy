@@ -6,7 +6,7 @@ def f = namespace(lib.FormTagLib)
 def l = namespace(lib.LayoutTagLib)
 def st = namespace("jelly:stapler")
 
-l.'settings-subpage' {
+l.'settings-subpage'(permission: app.MANAGE) {
     h1 {
         text(Messages.ShutdownLink_DisplayName_prepare())
     }

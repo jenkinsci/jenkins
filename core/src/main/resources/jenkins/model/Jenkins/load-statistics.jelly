@@ -27,8 +27,6 @@ THE SOFTWARE.
   <j:new className="jenkins.management.StatisticsLink" var="it" />
 
   <l:settings-subpage>
-    <l:breadcrumb title="${%Load Statistics}"/>
-
     <j:set var="it" value="${app}" />
 
     <j:set var="prefix" value="overallLoad" />
