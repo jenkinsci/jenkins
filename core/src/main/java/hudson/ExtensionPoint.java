@@ -36,17 +36,14 @@ import jenkins.model.Jenkins;
  * in Jenkins that can be implemented by plugins.
  *
  * <p>
- * See respective interfaces/classes for more about how to register custom
- * implementations to Jenkins. See {@link Extension} for how to have
- * Jenkins auto-discover your implementations.
+ * Use {@link Extension} to register an implementation.
+ * Use {@link ExtensionList} to look for implementations.
  *
  * <p>
  * This interface is used for auto-generating
  * documentation.
  *
  * @author Kohsuke Kawaguchi
- * @see Plugin
- * @see Extension
  */
 public interface ExtensionPoint {
     /**
