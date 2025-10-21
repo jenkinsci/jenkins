@@ -46,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.Functions;
@@ -644,6 +645,45 @@ public class QueueTest {
             return super.canRun(item);
         }
 
+    }
+
+    @TestExtension("killAllQueueItems")
+    public static class KillAllItems extends QueueTaskDispatcher {
+        @CheckForNull
+        @Override
+        public CauseOfBlockage canRun(Queue.Item item) {
+            return new Cancelled();
+        }
+    }
+
+    @Test
+    void killAllQueueItems() throws IOException {
+        queueItemKiller();
+    }
+
+    @TestExtension("killBlockedItem")
+    public static class KillBlockedItems extends QueueTaskDispatcher {
+        @CheckForNull
+        @Override
+        public CauseOfBlockage canRun(Queue.Item item) {
+            return item instanceof BlockedItem ? new Cancelled() : new CauseOfBlockage() {
+                @Override
+                public String getShortDescription() {
+                    return "blocked by " + this.getClass().getSimpleName();
+                }
+            };
+        }
+    }
+
+    @Test
+    void killBlockedItem() throws IOException {
+        queueItemKiller();
+    }
+
+    private void queueItemKiller() throws IOException {
+        FreeStyleProject trigger = r.createFreeStyleProject();
+        var buildFuture = trigger.scheduleBuild2(0, new UserIdCause());
+        await().until(() -> buildFuture.getStartCondition().isCancelled());
     }
 
     private void waitUntilWaitingListIsEmpty(Queue q) throws InterruptedException {
@@ -1506,5 +1546,17 @@ public class QueueTest {
         r.waitOnline(onlineSlave);
         r.assertBuildStatusSuccess(f);
         assertTrue(r.jenkins.getQueue().isEmpty());
+    }
+
+    private static class Cancelled extends CauseOfBlockage {
+        @Override
+        public String getShortDescription() {
+            return "Killed by QueueItemKiller";
+        }
+
+        @Override
+        public boolean isFatal() {
+            return true;
+        }
     }
 }
