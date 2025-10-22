@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.ExtensionList;
 import hudson.model.AdministrativeMonitor;
+import hudson.model.ManageJenkinsAction;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.Permission;
@@ -40,6 +41,7 @@ import org.jenkinsci.Symbol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -47,6 +49,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
+@For(ManageJenkinsAction.class) // the name is historical
 class AdministrativeMonitorsDecoratorTest {
 
     private String managePermission;
@@ -68,8 +71,15 @@ class AdministrativeMonitorsDecoratorTest {
         }
     }
 
+    private void deleteOtherImpls(ExtensionList<AdministrativeMonitor> extensionList) {
+        extensionList.removeAll(extensionList.stream().filter(m -> m.getClass().getEnclosingClass() != AdministrativeMonitorsDecoratorTest.class).toList());
+    }
+
     @Test
     void ensureAdminMonitorsAreNotRunPerNonAdminPage() throws Exception {
+        ExtensionList<AdministrativeMonitor> extensionList = j.jenkins.getExtensionList(AdministrativeMonitor.class);
+        deleteOtherImpls(extensionList);
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         String nonAdminLogin = "nonAdmin";
         User.getById(nonAdminLogin, true);
@@ -81,7 +91,6 @@ class AdministrativeMonitorsDecoratorTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login(nonAdminLogin);
 
-        ExtensionList<AdministrativeMonitor> extensionList = j.jenkins.getExtensionList(AdministrativeMonitor.class);
         ExecutionCounterNonSecAdministrativeMonitor nonSecCounter = extensionList.get(ExecutionCounterNonSecAdministrativeMonitor.class);
         ExecutionCounterSecAdministrativeMonitor secCounter = extensionList.get(ExecutionCounterSecAdministrativeMonitor.class);
 
@@ -92,6 +101,9 @@ class AdministrativeMonitorsDecoratorTest {
     @Test
     @Issue("JENKINS-63977")
     void ensureAdminMonitorsAreRunOnlyOncePerAdminPage() throws Exception {
+        ExtensionList<AdministrativeMonitor> extensionList = j.jenkins.getExtensionList(AdministrativeMonitor.class);
+        deleteOtherImpls(extensionList);
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         String adminLogin = "admin";
         User.getById(adminLogin, true);
@@ -103,15 +115,40 @@ class AdministrativeMonitorsDecoratorTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login(adminLogin);
 
-        ExtensionList<AdministrativeMonitor> extensionList = j.jenkins.getExtensionList(AdministrativeMonitor.class);
         ExecutionCounterNonSecAdministrativeMonitor nonSecCounter = extensionList.get(ExecutionCounterNonSecAdministrativeMonitor.class);
         ExecutionCounterSecAdministrativeMonitor secCounter = extensionList.get(ExecutionCounterSecAdministrativeMonitor.class);
 
-        assertEquals(1, nonSecCounter.count);
+        assertEquals(0, nonSecCounter.count);
         assertEquals(1, secCounter.count);
     }
 
-    @TestExtension({"ensureAdminMonitorsAreNotRunPerNonAdminPage", "ensureAdminMonitorsAreRunOnlyOncePerAdminPage"})
+    @Test
+    void ensureOnlyOneAdminMonitorPerTypeIsRunPerAdminPage() throws Exception {
+        ExtensionList<AdministrativeMonitor> extensionList = j.jenkins.getExtensionList(AdministrativeMonitor.class);
+        deleteOtherImpls(extensionList);
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        String adminLogin = "admin";
+        User.getById(adminLogin, true);
+
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to(adminLogin)
+        );
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login(adminLogin);
+
+        ExecutionCounterNonSecAdministrativeMonitor nonSecCounter = extensionList.get(ExecutionCounterNonSecAdministrativeMonitor.class);
+        ExecutionCounterNonSecAdministrativeMonitor2 nonSecCounter2 = extensionList.get(ExecutionCounterNonSecAdministrativeMonitor2.class);
+        ExecutionCounterSecAdministrativeMonitor secCounter = extensionList.get(ExecutionCounterSecAdministrativeMonitor.class);
+
+        assertEquals(0, nonSecCounter.count);
+        assertEquals(0, nonSecCounter2.count);
+        assertEquals(1, secCounter.count);
+    }
+
+
+    @TestExtension({"ensureAdminMonitorsAreNotRunPerNonAdminPage", "ensureAdminMonitorsAreRunOnlyOncePerAdminPage", "ensureOnlyOneAdminMonitorPerTypeIsRunPerAdminPage"})
     @Symbol("non_sec_counting")
     public static class ExecutionCounterNonSecAdministrativeMonitor extends AdministrativeMonitor {
 
@@ -134,7 +171,30 @@ class AdministrativeMonitorsDecoratorTest {
         }
     }
 
-    @TestExtension({"ensureAdminMonitorsAreNotRunPerNonAdminPage", "ensureAdminMonitorsAreRunOnlyOncePerAdminPage"})
+    @TestExtension("ensureOnlyOneAdminMonitorPerTypeIsRunPerAdminPage")
+    @Symbol("non_sec_counting_2")
+    public static class ExecutionCounterNonSecAdministrativeMonitor2 extends AdministrativeMonitor {
+
+        public int count = 0;
+
+        @Override
+        public String getDisplayName() {
+            return "NonSecCounter2";
+        }
+
+        @Override
+        public boolean isActivated() {
+            count++;
+            return true;
+        }
+
+        @Override
+        public boolean isSecurity() {
+            return false;
+        }
+    }
+
+    @TestExtension({"ensureAdminMonitorsAreNotRunPerNonAdminPage", "ensureAdminMonitorsAreRunOnlyOncePerAdminPage", "ensureOnlyOneAdminMonitorPerTypeIsRunPerAdminPage"})
     @Symbol("sec_counting")
     public static class ExecutionCounterSecAdministrativeMonitor extends AdministrativeMonitor {
 

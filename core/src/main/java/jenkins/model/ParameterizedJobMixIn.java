@@ -24,10 +24,13 @@
 
 package jenkins.model;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_CONFLICT;
 import static jakarta.servlet.http.HttpServletResponse.SC_CREATED;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -59,6 +62,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.ParameterizedDetail;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
@@ -201,7 +207,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         }
 
         if (!asJob().isBuildable()) {
-            throw HttpResponses.error(SC_CONFLICT, new IOException(asJob().getFullName() + " is not buildable"));
+            throw HttpResponses.errorWithoutStack(SC_CONFLICT, asJob().getFullName() + " is not buildable");
         }
 
         // if a build is parameterized, let that take over
@@ -238,12 +244,12 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
 
         ParametersDefinitionProperty pp = asJob().getProperty(ParametersDefinitionProperty.class);
         if (!asJob().isBuildable()) {
-            throw HttpResponses.error(SC_CONFLICT, new IOException(asJob().getFullName() + " is not buildable!"));
+            throw HttpResponses.errorWithoutStack(SC_CONFLICT, asJob().getFullName() + " is not buildable");
         }
         if (pp != null) {
             pp.buildWithParameters(req, rsp, delay);
         } else {
-            throw new IllegalStateException("This build is not parameterized!");
+            throw HttpResponses.errorWithoutStack(SC_BAD_REQUEST, asJob().getFullName() + " is not parameterized");
         }
     }
 
@@ -560,6 +566,25 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             return !isDisabled() && !((Job) this).isHoldOffBuildUntilSave();
         }
 
+        @Extension
+        final class ParameterizedDetailFactory extends DetailFactory<Run> {
+
+            @Override
+            public Class<Run> type() {
+                return Run.class;
+            }
+
+            @NonNull
+            @Override public List<? extends Detail> createFor(@NonNull Run target) {
+                var action = target.getAction(ParametersAction.class);
+
+                if (action == null || action.getParameters().isEmpty()) {
+                    return List.of();
+                }
+
+                return List.of(new ParameterizedDetail(target));
+            }
+        }
     }
 
 }

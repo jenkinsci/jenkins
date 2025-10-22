@@ -15,7 +15,6 @@ import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.runner.Description;
 import org.jvnet.hudson.test.HudsonHomeLoader;
 import org.jvnet.hudson.test.JenkinsRecipe;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -95,7 +94,7 @@ class BuiltInNodeMigrationRestartTest {
 
             @Override
             public void setup(JenkinsRule jenkinsRule, LocalDataOnce recipe) throws Exception {
-                Description desc = jenkinsRule.getTestDescription();
+                org.junit.runner.Description desc = jenkinsRule.getTestDescription();
                 method = desc.getTestClass().getDeclaredMethod((desc.getMethodName()));
             }
 

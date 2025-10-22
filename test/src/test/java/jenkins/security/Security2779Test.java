@@ -29,18 +29,10 @@ class Security2779Test {
     }
 
     @Test
-    void noXssInHelpLinkPanel() throws Exception {
-        noCrossSiteScriptingInHelp("#link-panel a");
-    }
-
-    @Test
     void noXssInHelpIconPanel() throws Exception {
-        noCrossSiteScriptingInHelp("#icon-panel svg");
-    }
-
-    private void noCrossSiteScriptingInHelp(String selector) throws Exception {
-        final AtomicInteger alerts = new AtomicInteger();
-        final JenkinsRule.WebClient webClient = j.createWebClient();
+        var selector = "#icon-panel svg";
+        var alerts = new AtomicInteger();
+        var webClient = j.createWebClient();
         webClient.setAlertHandler((AlertHandler) (p, s) -> alerts.addAndGet(1));
         final HtmlPage page = webClient.goTo(URL_NAME);
         page.executeJavaScript("document.querySelector('" + selector + "')._tippy.show()");

@@ -21,8 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SimpleCommandLauncher;
@@ -80,12 +78,12 @@ class UnsupportedRemotingAgentEscapeHatchTest {
     private static class JenkinsExtensionWithUnsupportedAgent extends JenkinsSessionExtension {
 
         private int port;
-        private Description description;
+        private org.junit.runner.Description description;
 
         @Override
         public void beforeEach(ExtensionContext context) {
             super.beforeEach(context);
-            description = Description.createTestDescription(
+            description = org.junit.runner.Description.createTestDescription(
                     context.getTestClass().map(Class::getName).orElse(null),
                     context.getTestMethod().map(Method::getName).orElse(null),
                     context.getTestMethod().map(Method::getAnnotations).orElse(null));
@@ -95,7 +93,7 @@ class UnsupportedRemotingAgentEscapeHatchTest {
         public void then(Step s) throws Throwable {
             CustomJenkinsRule r = new CustomJenkinsRule(getHome(), port);
             r.apply(
-                    new Statement() {
+                    new org.junit.runners.model.Statement() {
                         @Override
                         public void evaluate() throws Throwable {
                             port = r.getPort();

@@ -81,9 +81,22 @@ class ParameterizedJobMixInTest {
 
         FailingHttpStatusCodeException fex = assertThrows(
                 FailingHttpStatusCodeException.class,
-                () -> webClient.getPage(webClient.addCrumb(new WebRequest(new URL(j.getURL(), project.getUrl() + "build?delay=0"), HttpMethod.POST))),
+                () -> webClient.getPage(webClient.addCrumb(new WebRequest(new URL(j.getURL(), project.getUrl() + "buildWithParameters?FOO=x"), HttpMethod.POST))),
                 "should fail when invoking disabled project");
-        assertThat("Should fail with conflict", fex.getStatusCode(), is(409));
+        assertThat("Should fail with conflict", fex.getStatusCode(), is(HttpServletResponse.SC_CONFLICT));
+    }
+
+    @Test
+    void doBuildWithParameters_shouldFailWhenInvokingNonParameterizedProject() throws Exception {
+        final FreeStyleProject project = j.createFreeStyleProject();
+
+        final JenkinsRule.WebClient webClient = j.createWebClient();
+
+        FailingHttpStatusCodeException fex = assertThrows(
+                FailingHttpStatusCodeException.class,
+                () -> webClient.getPage(webClient.addCrumb(new WebRequest(new URL(j.getURL(), project.getUrl() + "buildWithParameters?FOO=x"), HttpMethod.POST))),
+                "should fail when invoking non-parameterized project");
+        assertThat("Should fail with bad request", fex.getStatusCode(), is(HttpServletResponse.SC_BAD_REQUEST));
     }
 
     @Test
