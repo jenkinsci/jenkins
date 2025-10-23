@@ -71,7 +71,7 @@ public final class BuildReference<R> {
 
     /**
      * check if reference holder set.
-     * means there war a try to load build object and we have some result of that try
+     * means there was a try to load build object and we have some result of that try
      *
      * @return true if there was a try to
      */
