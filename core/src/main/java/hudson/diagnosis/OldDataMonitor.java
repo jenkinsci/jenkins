@@ -307,19 +307,6 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     /**
-     * Depending on whether the user said "yes" or "no", send him to the right place.
-     */
-    @RequirePOST
-    public HttpResponse doAct(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
-        if (req.hasParameter("no")) {
-            disable(true);
-            return HttpResponses.redirectViaContextPath("/manage");
-        } else {
-            return new HttpRedirect("manage");
-        }
-    }
-
-    /**
      * Save all or some of the files to persist data in the new forms.
      * Remove those items from the data map.
      */

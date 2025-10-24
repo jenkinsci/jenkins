@@ -1301,9 +1301,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         @RequirePOST
-        public void doAct(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        public HttpResponse doReset() throws IOException {
             j.forceSetSlaveAgentPort(getExpectedPort());
-            rsp.sendRedirect2(req.getContextPath() + "/manage");
+            return HttpResponses.redirectViaContextPath("/manage");
         }
 
         @Override

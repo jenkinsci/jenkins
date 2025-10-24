@@ -29,7 +29,6 @@ import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.security.Permission;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -42,7 +41,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Looks out for a broken reverse proxy setup that doesn't rewrite the location header correctly.
@@ -112,23 +110,6 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     @Override
     public Permission getRequiredPermission() {
         return Jenkins.SYSTEM_READ;
-    }
-
-    /**
-     * Depending on whether the user said "yes" or "no", send him to the right place.
-     */
-    @Restricted(DoNotUse.class) // WebOnly
-    @RestrictedSince("2.235")
-    @RequirePOST
-    public HttpResponse doAct(@QueryParameter String no) throws IOException {
-        if (no != null) { // dismiss
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-            disable(true);
-            // of course the irony is that this redirect won't work
-            return HttpResponses.redirectViaContextPath("/manage");
-        } else {
-            return new HttpRedirect("https://www.jenkins.io/redirect/troubleshooting/broken-reverse-proxy");
-        }
     }
 
     @Override
