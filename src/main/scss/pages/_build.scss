@@ -152,6 +152,7 @@ body:has(.app-settings-container) {
 }
 
 .app-settings-container {
+  --background: var(--card-background);
   --top: color-mix(
     in sRGB,
     var(--text-color-secondary) 2%,
@@ -161,11 +162,20 @@ body:has(.app-settings-container) {
   position: relative;
   background-color: var(--card-background);
   background-image: linear-gradient(var(--top), var(--card-background));
-  background-size: 100% 100vh;
+  background-size: 100% 90vh;
   background-repeat: no-repeat;
   border: var(--jenkins-border);
   border-radius: 10px;
   z-index: 0;
+
+  &__inner {
+    max-width: 900px;
+    margin: auto;
+    overflow-x: clip;
+    padding: var(--section-padding);
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .app-build-bar {
