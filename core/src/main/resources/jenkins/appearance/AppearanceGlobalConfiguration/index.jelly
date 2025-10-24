@@ -24,14 +24,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <j:new var="h" className="hudson.Functions" />
   <j:set var="pluginsUrl" value="${rootURL}/manage/pluginManager/available?filter=UI Themes" />
   <j:set var="hasPlugins" value="${it.hasPlugins()}" />
 
-  <l:settings-subpage header="${null}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
-    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
-    <j:set var="pluginsUrl" value="${rootURL}/manage/pluginManager/available?filter=UI Themes" />
-    <j:set var="hasPlugins" value="${it.hasPlugins()}" />
-
+  <j:set var="header">
     <l:app-bar title="${it.displayName}">
       <j:if test="${hasPlugins}">
         <a href="${pluginsUrl}" class="jenkins-button">
@@ -44,6 +41,12 @@ THE SOFTWARE.
     <div class="jenkins-page-description">
       ${it.description}
     </div>
+  </j:set>
+
+  <l:settings-subpage header="${header}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
+    <j:set var="pluginsUrl" value="${rootURL}/manage/pluginManager/available?filter=UI Themes" />
+    <j:set var="hasPlugins" value="${it.hasPlugins()}" />
 
     <j:choose>
       <j:when test="${!hasPlugins}">
