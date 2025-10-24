@@ -14,7 +14,7 @@ properties([
 
 def axes = [
   platforms: ['linux', 'windows'],
-  jdks: [17, 21],
+  jdks: [17, 21, 25],
 ]
 
 stage('Record build') {
@@ -34,7 +34,7 @@ stage('Record build') {
         sh "launchable verify && launchable record build --name ${launchableName} --source jenkinsci/jenkins=."
         axes.values().combinations {
           def (platform, jdk) = it
-          if (platform == 'windows' && jdk != 17) {
+          if (platform == 'windows' && jdk != axes.jdks.last()) {
             return // unnecessary use of hardware
           }
           def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
@@ -60,7 +60,7 @@ def builds = [:]
 
 axes.values().combinations {
   def (platform, jdk) = it
-  if (platform == 'windows' && jdk != 17) {
+  if (platform == 'windows' && jdk != axes.jdks.last()) {
     return // unnecessary use of hardware
   }
   builds["${platform}-jdk${jdk}"] = {
