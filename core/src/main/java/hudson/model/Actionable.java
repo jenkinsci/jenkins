@@ -138,10 +138,11 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @NonNull
     public <T extends Action> List<T> getActions(Class<T> type) {
-        List<T> _actions = Util.filter(getActions(), type);
+        List<T> _actions = new ArrayList<>();
         for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
             _actions.addAll(Util.filter(createFor(taf), type));
         }
+        _actions.addAll(Util.filter(getActions(), type));
         return Collections.unmodifiableList(_actions);
     }
 
