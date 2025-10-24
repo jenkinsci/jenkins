@@ -195,7 +195,6 @@ import hudson.util.FormValidation;
 import hudson.util.Futures;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
-import hudson.util.Iterators;
 import hudson.util.JenkinsReloadFailed;
 import hudson.util.LogTaskListener;
 import hudson.util.MultipartFormDataParser;
@@ -1505,8 +1504,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings("rawtypes") // too late to fix
     public Descriptor getDescriptor(String id) {
-        // legacy descriptors that are registered manually doesn't show up in getExtensionList, so check them explicitly.
-        Iterable<Descriptor> descriptors = Iterators.sequence(getExtensionList(Descriptor.class), DescriptorExtensionList.listLegacyInstances());
+        Iterable<Descriptor> descriptors = getExtensionList(Descriptor.class);
         for (Descriptor d : descriptors) {
             if (d.getId().equals(id)) {
                 return d;

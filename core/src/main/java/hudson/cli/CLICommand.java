@@ -31,7 +31,6 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.Functions;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.OptionHandlerExtension;
@@ -103,7 +102,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * @since 1.302
  * @see CLIMethod
  */
-@LegacyInstancesAreScopedToHudson
 public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**

@@ -27,7 +27,6 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.security.Permission;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
@@ -88,7 +87,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @since 1.273
  * @see Jenkins#administrativeMonitors
  */
-@LegacyInstancesAreScopedToHudson
 public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint, StaplerProxy {
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.
