@@ -24,18 +24,22 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <l:settings-subpage permission="${app.ADMINISTER}">
-    <l:app-bar title="${%Users}" subtitle="${it.allUsers.size()}">
-      <l:isAdmin>
-        <a href="addUser" class="jenkins-button jenkins-button--primary">
-          <l:icon src="symbol-add" />
-          ${%Create User}
-        </a>
-      </l:isAdmin>
-    </l:app-bar>
+  <j:set var="header">
+    <l:view>
+      <l:app-bar title="${%Users}" subtitle="${it.allUsers.size()}">
+        <l:isAdmin>
+          <a href="addUser" class="jenkins-button jenkins-button--primary">
+            <l:icon src="symbol-add" />
+            ${%Create User}
+          </a>
+        </l:isAdmin>
+      </l:app-bar>
 
-    <p class="jenkins-description">${%blurb}</p>
+      <p class="jenkins-page-description">${%blurb}</p>
+    </l:view>
+  </j:set>
 
+  <l:settings-subpage header="${header}" permission="${app.ADMINISTER}">
     <table class="jenkins-table sortable" id="people">
       <thead>
         <tr>

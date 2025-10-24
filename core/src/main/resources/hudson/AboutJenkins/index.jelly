@@ -25,25 +25,29 @@ THE SOFTWARE.
 <!-- About Jenkins page -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:settings-subpage header="${null}"
+  <j:set var="header">
+    <l:view>
+      <div class="jenkins-app-bar jenkins-!-margin-top-2 jenkins-!-margin-bottom-4">
+        <div class="jenkins-app-bar__content">
+          <h1 class="app-about-heading">Jenkins</h1>
+          <p class="app-about-version">
+            ${%Version} ${app.VERSION}
+          </p>
+        </div>
+        <div class="jenkins-app-bar__controls">
+          <a href="https://www.jenkins.io/participate/" class="jenkins-button" target="_blank">
+            <l:icon src="symbol-heart" />
+            ${%Get involved}
+          </a>
+        </div>
+      </div>
+    </l:view>
+  </j:set>
+
+  <l:settings-subpage header="${header}"
                       placeholder="${null}"
                       permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
-
-    <div class="jenkins-app-bar jenkins-!-margin-top-2">
-      <div class="jenkins-app-bar__content">
-        <h1 class="app-about-heading">Jenkins</h1>
-        <p class="app-about-version">
-          ${%Version} ${app.VERSION}
-        </p>
-      </div>
-      <div class="jenkins-app-bar__controls">
-        <a href="https://www.jenkins.io/participate/" class="jenkins-button" target="_blank">
-          <l:icon src="symbol-heart" />
-          ${%Get involved}
-        </a>
-      </div>
-    </div>
 
     <div class="app-about-branding">
       <div class="app-about-branding__aurora"></div>

@@ -40,6 +40,11 @@ THE SOFTWARE.
     <st:attribute name="header">
       Optional header for the page, falls back to a default header if not set.
     </st:attribute>
+    <st:attribute name="includeBreadcrumb">
+      <![CDATA[
+      Optional breadcrumb, will add a breadcrumb for the current <code>it</code>
+      ]]>
+    </st:attribute>
   </st:documentation>
 
   <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
@@ -49,6 +54,11 @@ THE SOFTWARE.
             permission="${attrs.permission}"
             permissions="${attrs.permissions}"
             type="${newManageJenkins ? 'two-column' : 'one-column'}">
+
+    <j:if test="${attrs.includeBreadcrumb}">
+      <l:breadcrumb title="${it.displayName}" />
+    </j:if>
+
     <j:choose>
       <j:when test="${newManageJenkins}">
         <l:side-panel>
@@ -109,6 +119,15 @@ THE SOFTWARE.
       </j:when>
       <j:otherwise>
         <l:main-panel>
+          <j:if test="${!attrs.containsKey('header')}">
+            <l:app-bar title="${it.displayName}" />
+            <div class="jenkins-page-description">
+              ${it.description}
+            </div>
+          </j:if>
+
+          <j:out value="${attrs.header}" />
+
           <d:invokeBody />
         </l:main-panel>
       </j:otherwise>

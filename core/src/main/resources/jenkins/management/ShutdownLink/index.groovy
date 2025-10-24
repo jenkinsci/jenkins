@@ -7,14 +7,6 @@ def l = namespace(lib.LayoutTagLib)
 def st = namespace("jelly:stapler")
 
 l.'settings-subpage'(permission: app.MANAGE) {
-    h1 {
-        text(Messages.ShutdownLink_DisplayName_prepare())
-    }
-
-    p {
-        text(my.description)
-    }
-
     f.form(method: "post", name: "prepareShutdown", action: "prepare") {
         f.entry(title: Messages.ShutdownLink_ShutDownReason_title()) {
             f.textbox(name: "parameter.shutdownReason", value: app.quietDownReason ?: null)

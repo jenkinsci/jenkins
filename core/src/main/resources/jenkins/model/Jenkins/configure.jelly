@@ -29,17 +29,20 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <j:new className="jenkins.management.ConfigureLink" var="it" />
 
-  <l:settings-subpage permissions="${app.MANAGE_AND_SYSTEM_READ}">
+  <l:settings-subpage permissions="${app.MANAGE_AND_SYSTEM_READ}" includeBreadcrumb="true">
     <j:set var="managementLink" value="${it}" />
     <j:set var="it" value="${app}" />
     <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
 
-    <section class="manage-messages">
-      <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
-        <st:include page="message.jelly" it="${am}" />
-      </j:forEach>
-      <st:include page="downgrade.jelly" it="${app}" />
-    </section>
+    <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
+    <j:if test="${newManageJenkins}">
+      <section class="manage-messages">
+        <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
+          <st:include page="message.jelly" it="${am}" />
+        </j:forEach>
+        <st:include page="downgrade.jelly" it="${app}" />
+      </section>
+    </j:if>
 
     <f:form method="post" name="config" action="configSubmit" class="jenkins-form">
       <j:set var="instance" value="${it}" />
