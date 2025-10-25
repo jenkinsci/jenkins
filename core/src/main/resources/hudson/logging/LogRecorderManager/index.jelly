@@ -45,7 +45,7 @@ THE SOFTWARE.
       </l:app-bar>
 
       <div class="jenkins-page-description">
-        ${it.description}
+        <j:out value="${it.description}" />
       </div>
     </l:view>
   </j:set>
