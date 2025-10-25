@@ -26,6 +26,7 @@ package jenkins.model.lazy;
 
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.EXACT;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Job;
@@ -39,8 +40,8 @@ import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -81,11 +82,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * from concurrent modifications, where another thread deletes a build while one thread iterates them.
  *
  * <p>
- * Some of the {@link SortedMap} operations are inefficiently implemented, by
- * loading all the build records eagerly. We hope to replace
- * these implementations by more efficient lazy-loading ones as we go.
- *
- * <p>
  * Object lock of {@code this} is used to make sure mutation occurs sequentially.
  * That is, ensure that only one thread is actually calling {@link #retrieve(File)} and
  * updating {@link jenkins.model.lazy.AbstractLazyLoadRunMap#core}.
@@ -96,8 +92,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> implements SortedMap<Integer, R> {
     private final CopyOnWriteMap.Tree<Integer, BuildReference<R>> core = new CopyOnWriteMap.Tree<>(
             Collections.reverseOrder());
-    private final BuildReferenceMapAdapter<R> adapter = new BuildReferenceMapAdapter<>(core,
-            this::resolveBuildRef, this::getNumberOf, this::getBuildClass) {
+    private final BuildReferenceMapAdapter.Resolver<R> buildResolver = new BuildReferenceMapAdapterResolver();
+    private final BuildReferenceMapAdapter<R> adapter = new BuildReferenceMapAdapter<>(core, buildResolver) {
         @Override
         protected boolean removeValue(R value) {
             return AbstractLazyLoadRunMap.this.removeValue(value);
@@ -115,7 +111,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     }
 
     @Override
-    public Set<Entry<Integer, R>> entrySet() {
+    public Set<Map.Entry<Integer, R>> entrySet() {
         assert baseDirInitialized();
         return adapter.entrySet();
     }
@@ -260,7 +256,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
                 res.put(entry.getKey(), buildRef);
             }
         }
-        return new BuildReferenceMapAdapter<>(res, this::resolveBuildRef, this::getNumberOf, this::getBuildClass);
+        return new BuildReferenceMapAdapter<>(res, buildResolver);
     }
 
     /**
@@ -286,16 +282,12 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
 
     @Override
     public Integer firstKey() {
-        R r = newestBuild();
-        if (r == null)    throw new NoSuchElementException();
-        return getNumberOf(r);
+        return adapter.firstKey();
     }
 
     @Override
     public Integer lastKey() {
-        R r = oldestBuild();
-        if (r == null)    throw new NoSuchElementException();
-        return getNumberOf(r);
+        return adapter.lastKey();
     }
 
     public R newestBuild() {
@@ -339,36 +331,15 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      *      If DESC, finds the closest #M that satisfies M ≤ N.
      */
     public @CheckForNull R search(final int n, final Direction d) {
-        switch (d) {
-        case EXACT:
-            return getByNumber(n);
-        case ASC:
-            for (int m : core.descendingMap().keySet()) {
-                if (m < n) {
-                    continue;
-                }
-                R r = getByNumber(m);
-                if (r != null) {
-                    return r;
-                }
-            }
-            return null;
-        case DESC:
-            Iterator<Integer> iterator = core.keySet().iterator();
-            while (iterator.hasNext()) {
-                int m = iterator.next();
-                if (m > n) {
-                    continue;
-                }
-                R r = getByNumber(m);
-                if (r != null) {
-                    return r;
-                }
-            }
-            return null;
-        default:
-            throw new AssertionError();
+        if (d == EXACT) {
+            return this.adapter.get(n);
         }
+        // prepare sub map, where we need to find first resolvable entry
+        NavigableMap<Integer, BuildReference<R>> subCore = (d == ASC)
+                ? core.headMap(n, true).descendingMap()
+                : core.tailMap(n, true);
+        // wrap with BuildReferenceMapAdapter to skip unresolvable entries
+        return new BuildReferenceMapAdapter<>(subCore, buildResolver).values().stream().findFirst().orElse(null);
     }
 
     public R getById(String id) {
@@ -376,11 +347,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     }
 
     /**
-     * Ensure load referent object if needed, cache it and return
-     * Save that object is unloadable in case of failure to avoid next load attempts
+     * Ensure loading referent object if needed, cache it and return
+     * Save that object as 'unloadable' in case of failure to avoid next load attempts
      *
      * @param ref reference object to be resolved
-     * @return R referent build object, or null if can't be resolved
+     * @return R referent build object, or null if it can't be resolved
      */
     private R resolveBuildRef(BuildReference<R> ref) {
         if (ref == null || ref.isUnloadable()) {
@@ -549,6 +520,23 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
 
     public enum Direction {
         ASC, DESC, EXACT
+    }
+
+    private class BuildReferenceMapAdapterResolver implements BuildReferenceMapAdapter.Resolver<R> {
+        @Override
+        public R resolveBuildRef(BuildReference<R> buildRef) {
+            return AbstractLazyLoadRunMap.this.resolveBuildRef(buildRef);
+        }
+
+        @Override
+        public Integer getNumberOf(R build) {
+            return AbstractLazyLoadRunMap.this.getNumberOf(build);
+        }
+
+        @Override
+        public Class<R> getBuildClass() {
+            return AbstractLazyLoadRunMap.this.getBuildClass();
+        }
     }
 
     static final Logger LOGGER = Logger.getLogger(AbstractLazyLoadRunMap.class.getName());

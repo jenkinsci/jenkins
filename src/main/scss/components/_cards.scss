@@ -1,10 +1,12 @@
+@use "../abstracts/mixins";
+
 $card-padding: 1rem;
-$icon-size: 1.375rem;
 
 .jenkins-card {
+  display: flex;
+  flex-direction: column;
   position: relative;
-  border-radius: 1rem;
-  margin-bottom: calc(var(--section-padding) / 2);
+  border-radius: var(--form-input-border-radius);
   background: var(--card-background);
 
   &__title {
@@ -12,45 +14,27 @@ $icon-size: 1.375rem;
     align-items: center;
     justify-content: space-between;
     padding: 0 $card-padding;
-    height: 50px;
+    height: 2.875rem;
+    flex-shrink: 0;
     font-size: var(--font-size-sm) !important;
     font-weight: var(--font-bold-weight);
     width: 100%;
-    z-index: 1;
+    z-index: 2;
   }
 
   &__controls {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
-    margin-right: -0.2rem;
-  }
-
-  &:not(:hover) {
-    .jenkins-card__unveil,
-    .jenkins-card__reveal {
-      color: var(--text-color-secondary);
-    }
-  }
-
-  @media (prefers-contrast: more) {
-    .jenkins-card__unveil,
-    .jenkins-card__reveal {
-      color: var(--text-color) !important;
-    }
-  }
-
-  &:hover {
-    .jenkins-card__reveal {
-      color: var(--text-color);
-    }
+    gap: 0.375rem;
+    margin-right: -0.4375rem;
   }
 
   &__content {
     display: flex;
     flex-direction: column;
     padding: 0 $card-padding $card-padding;
+    overflow-y: auto;
 
     &:empty {
       display: none;
@@ -68,37 +52,97 @@ $icon-size: 1.375rem;
   }
 
   .jenkins-card__reveal {
+    @include mixins.item($border: false);
+
+    --button-background: transparent;
+
     display: flex;
     align-items: center;
     justify-content: center;
     margin-block: -0.5rem;
     min-height: 0;
     padding: 0;
-    width: 26px;
-    height: 26px;
-    border-radius: 0.33rem;
-    transition:
-      scale var(--standard-transition),
-      opacity var(--standard-transition);
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--color);
 
     svg {
       width: 1rem;
       height: 1rem;
-      transition: color var(--standard-transition);
+      color: var(--text-color-secondary);
     }
+
+    &:hover,
+    &:active,
+    &:focus-visible,
+    &[aria-expanded="true"] {
+      svg {
+        color: var(--text-color);
+      }
+    }
+  }
+
+  &__title-link {
+    --inset: 0 -0.25rem 0 -0.5rem;
+
+    gap: 0.25rem;
+    width: unset !important;
+    height: unset !important;
+    margin-block: unset !important;
+    line-height: 1.75rem;
 
     &::before,
     &::after {
-      opacity: 0;
+      inset: var(--inset) !important;
     }
 
-    &:hover {
-      opacity: 0.75;
+    svg {
+      width: 0.875rem !important;
+      height: 0.875rem !important;
+      transition: var(--standard-transition);
     }
 
-    &:active {
-      scale: 95%;
-      opacity: 0.5;
+    &:hover,
+    &:active,
+    &:focus-visible {
+      --inset: 0 -0.5rem;
+
+      svg {
+        translate: 0.125rem 0;
+      }
+    }
+  }
+
+  &__teaser {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    text-decoration: none !important;
+
+    svg,
+    img {
+      width: 3rem;
+      height: 3rem;
+      margin-bottom: 0.5rem;
+
+      * {
+        stroke-width: 40px;
+      }
+    }
+
+    div {
+      font-weight: var(--font-bold-weight);
+      color: var(--text-color-secondary);
+
+      &:first-of-type {
+        color: var(--text-color);
+      }
     }
   }
 
@@ -108,35 +152,6 @@ $icon-size: 1.375rem;
     border-top: var(--card-border-width) solid var(--text-color-secondary);
     opacity: 0.1;
     margin: 0;
-  }
-}
-
-.jenkins-card__details {
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  gap: 0.75rem;
-}
-
-.jenkins-card__details__item {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.75rem;
-  font-weight: normal;
-
-  &__icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    align-self: start;
-    width: $icon-size;
-    height: 1lh;
-
-    svg {
-      width: $icon-size;
-      height: $icon-size;
-      color: var(--text-color);
-    }
   }
 }
 

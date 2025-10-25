@@ -5,21 +5,34 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import hudson.ExtensionList;
 import hudson.Functions;
+import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.QueueTaskDispatcher;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import java.io.File;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.FileUtils;
+import org.htmlunit.FormEncodingType;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.KeyDataPair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
 class FileParameterValuePersistenceTest {
@@ -78,4 +91,39 @@ class FileParameterValuePersistenceTest {
             assertThat(page.getWebResponse().getContentAsString(), containsString(FILENAME));
         }
     }
+
+    @Issue("JENKINS-73161")
+    @Test
+    void fileParameterValueIsRetained() throws Throwable {
+        sessions.then(r -> {
+            r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+            r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
+            FreeStyleProject p = r.createFreeStyleProject("p");
+            p.addProperty(new ParametersDefinitionProperty(new FileParameterDefinition("FILE")));
+            WebRequest req = new WebRequest(new URL(r.getURL() + "job/p/buildWithParameters"), HttpMethod.POST);
+            File f = File.createTempFile("junit", null, tmp);
+            FileUtils.write(f, "uploaded content here", "UTF-8");
+            req.setEncodingType(FormEncodingType.MULTIPART);
+            req.setRequestParameters(Collections.singletonList(new KeyDataPair("FILE", f, "myfile.txt", "text/plain", "UTF-8")));
+            r.createWebClient().withBasicApiToken("admin").getPage(req);
+        });
+        sessions.then(r -> {
+            ExtensionList.lookupSingleton(Block.class).ready = true;
+            FreeStyleProject p = r.jenkins.getItemByFullName("p", FreeStyleProject.class);
+            r.waitUntilNoActivity();
+            FreeStyleBuild b = p.getBuildByNumber(1);
+            r.assertBuildStatusSuccess(b);
+        });
+    }
+
+    @TestExtension("fileParameterValueIsRetained")
+    public static final class Block extends QueueTaskDispatcher {
+        private boolean ready;
+
+        @Override
+        public CauseOfBlockage canTake(Node node, Queue.BuildableItem item) {
+            return ready ? null : new CauseOfBlockage.BecauseNodeIsBusy(node);
+        }
+    }
+
 }

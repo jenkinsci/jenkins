@@ -152,8 +152,8 @@ pre {
   margin: 0 0 var(--section-padding);
   padding: 0.8rem 1rem;
   border-radius: var(--form-input-border-radius);
-  border: var(--jenkins-border--subtle);
-  background-color: var(--pre-background);
+  background: var(--card-background);
+  border: var(--card-border-width) solid var(--card-border-color);
   color: var(--pre-color);
   font-family: var(--font-family-mono);
   font-weight: 400;
