@@ -186,10 +186,6 @@ body:has(.app-build-bar) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    &:empty {
-      display: none;
-    }
   }
 
   .app-build-bar__controls {
