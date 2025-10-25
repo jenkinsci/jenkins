@@ -37,16 +37,20 @@ THE SOFTWARE.
     </l:header>
   </j:if>
   <l:side-panel>
+    <l:userExperimentalFlag var="newDashboardPage" flagClassName="jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag" />
+
     <!-- Display the user's name for their views -->
     <st:include page="app-bar.jelly" it="${it.owner.user}" optional="true" />
 
     <l:tasks>
       <st:include page="tasks-top.jelly" it="${it.owner}" optional="true" />
 
-      <st:include page="tasks-new.jelly" it="${it.owner}" optional="true">
-        <!-- made overridable for ViewGroup that doesn't allow modifications -->
-        <l:task href="${rootURL}/${it.viewUrl}newJob" icon="symbol-add" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
-      </st:include>
+      <j:if test="${!newDashboardPage}">
+        <st:include page="tasks-new.jelly" it="${it.owner}" optional="true">
+          <!-- made overridable for ViewGroup that doesn't allow modifications -->
+          <l:task href="${rootURL}/${it.viewUrl}newJob" icon="symbol-add" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
+        </st:include>
+      </j:if>
 
       <l:task href="${rootURL}/${it.viewUrl}builds" icon="symbol-build-history" title="${%Build History}" permission="${app.READ}" />
       <j:if test="${it.isEditable()}">
@@ -68,11 +72,13 @@ THE SOFTWARE.
       <t:actions />
     </l:tasks>
 
-    <j:if test="${h.hasPermission(app.READ)}">
-      <j:forEach var="w" items="${it.widgets}">
-        <j:set var="view" value="${it}" /><!-- expose the view that's rendering this sidepanel to the widget -->
-        <st:include it="${w}" page="index.jelly" />
-      </j:forEach>
+    <j:if test="${!newDashboardPage}">
+      <j:if test="${h.hasPermission(app.READ)}">
+        <j:forEach var="w" items="${it.widgets}">
+          <j:set var="view" value="${it}" /><!-- expose the view that's rendering this sidepanel to the widget -->
+          <st:include it="${w}" page="index.jelly" />
+        </j:forEach>
+      </j:if>
     </j:if>
   </l:side-panel>
 </j:jelly>

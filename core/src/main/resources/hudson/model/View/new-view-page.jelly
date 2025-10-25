@@ -1,0 +1,145 @@
+<!--
+The MIT License
+
+Copyright (c) 2025, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
+         xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:t="/lib/hudson">
+  <l:layout title="${(it.class.name=='hudson.model.AllView' and it.ownerItemGroup == app) ? '%Dashboard' : it.displayName}${not empty it.ownerItemGroup.fullDisplayName ? ' - ' + it.ownerItemGroup.fullDisplayName : ''}">
+    <l:header>
+      <!-- for screen resolution detection -->
+      <script id="screenResolution-script" data-use-secure-cookie="${request2.secure}"/>
+      <st:adjunct includes="hudson.model.View.screen-resolution"/>
+    </l:header>
+
+    <j:set var="view" value="${it}"/> <!-- expose view to the scripts we include from owner -->
+    <l:main-panel>
+      <div class="app-build-bar">
+        <div class="app-build-bar__content">
+          <div class="app-build-bar__content__headline">
+            <j:set var="iconClass" value="${it.owner.iconColor.getIconClassName()}"/>
+            <j:if test="${iconClass != null}">
+              <j:set var="iconClass" value="${iconClass} icon-lg"/>
+            </j:if>
+            <j:choose>
+              <j:when test="${iconClass != null}">
+                <l:icon class="${iconClass}" alt="${it.owner.iconColor.description}" tooltip="${it.owner.iconColor.description}" />
+              </j:when>
+              <j:when test="${it.owner.iconColor.getImageOf('32x32') != null}">
+                <l:icon src="${it.owner.iconColor.getImageOf('32x32')}" alt="${it.owner.iconColor.description}" tooltip="${it.owner.iconColor.description}" />
+              </j:when>
+            </j:choose>
+
+            <h1>${it.ownerItemGroup == app ? '%Dashboard' : it.owner == app ? it.displayName : it.owner.displayName}</h1>
+          </div>
+        </div>
+
+        <j:set var="currentView" value="${it}" />
+        <j:set var="views" value="${it.owner.views}" />
+
+        <div class="app-build-bar__tabs">
+          <j:choose>
+            <j:when test="${view.class.name eq 'hudson.model.MyViewsProperty'}">
+              <st:include page="viewTabs" it="${view.owner.userViewsTabBar}" />
+            </j:when>
+            <j:otherwise>
+              <st:include page="viewTabs" it="${view.owner.viewsTabBar}" />
+            </j:otherwise>
+          </j:choose>
+        </div>
+
+        <div class="app-build-bar__controls">
+          <j:if test="${it.hasPermission(it.CREATE)}">
+            <a class="jenkins-button"
+               href="${rootURL}/${it.viewUrl}newJob">
+              <l:icon src="symbol-add" />
+              New Item
+            </a>
+          </j:if>
+
+          <j:if test="${it.isEditable() and it.hasPermission(it.CONFIGURE)}">
+            <!-- /configure URL on Jenkins object is overloaded with Jenkins's system config, so always use the explicit name. -->
+            <a class="jenkins-button"
+               href="${rootURL}/${it.viewUrl}configure">
+              ${%Edit View}
+            </a>
+          </j:if>
+
+          <l:dialog title="${%Legend}" hash="legend">
+            <div>
+              <st:include page="_legend.jelly" it="${app}" />
+            </div>
+          </l:dialog>
+
+          <l:overflowButton>
+            <dd:custom>
+              <div class="app-build-overflow">
+                <j:set var="mode" value="side-panel" />
+                <st:include page="sidepanel.jelly" it="${it.object}" />
+              </div>
+            </dd:custom>
+            <dd:separator />
+            <dd:submenu icon="symbol-rss" text="${%Atom feed}">
+              <dd:item icon="symbol-rss" text="${%All}" href="rssAll" />
+              <dd:item icon="symbol-rss" text="${%Failures}" href="rssFailed" />
+              <dd:item icon="symbol-rss" text="${%LatestBuilds}" href="rssLatest" />
+            </dd:submenu>
+            <dd:custom>
+              <button class="jenkins-dropdown__item"
+                      data-type="dialog-opener"
+                      data-dialog-id="${dialogId}">
+                <div class="jenkins-dropdown__item__icon">
+                  <l:icon src="symbol-information-circle" />
+                </div>
+                ${%Legend}
+              </button>
+            </dd:custom>
+            <j:if test="${it.owner.canDelete(it) and it.hasPermission(it.DELETE)}">
+              <dd:separator />
+              <dd:custom>
+                <l:confirmationLink class="jenkins-dropdown__item jenkins-!-destructive-color"
+                                    href="doDelete"
+                                    title="todo"
+                                    message="${%delete.logrecorder(it.displayName)}"
+                                    destructive="true"
+                                    post="true">
+                  <div class="jenkins-dropdown__item__icon">
+                    <l:icon src="symbol-trash" />
+                  </div>
+                  ${%Delete View}
+                </l:confirmationLink>
+              </dd:custom>
+            </j:if>
+          </l:overflowButton>
+        </div>
+      </div>
+
+      <div class="app-build-content" style="padding-top: var(--section-padding)">
+        <t:editableDescription permission="${it.CONFIGURE}" hideButton="true" />
+
+        <j:set var="items" value="${it.items}"/>
+        <st:include page="main.jelly" />
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
