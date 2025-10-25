@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2025 Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:new className="jenkins.management.StatisticsLink" var="it" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+  <st:documentation>
+    A lazy-loaded element.
+  </st:documentation>
 
-  <l:settings-subpage includeBreadcrumb="true">
-    <j:set var="it" value="${app}" />
-
-    <j:set var="prefix" value="overallLoad" />
-    <st:include page="main.jelly" from="${it.overallLoad}" />
-  </l:settings-subpage>
+  <j:if test="${deferMode == 'children'}">
+    <d:invokeBody />
+  </j:if>
 </j:jelly>

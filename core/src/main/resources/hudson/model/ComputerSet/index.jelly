@@ -27,32 +27,40 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-<l:layout title="${%Nodes}" type="one-column">
-  <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-  <l:main-panel>
-    <l:app-bar title="${%Nodes}">
-      <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
-      <j:if test="${h.hasPermission(createPermission)}">
-        <a class="jenkins-button jenkins-button--primary" href="new">
-          <l:icon src="symbol-add" />
-          ${%New Node}
-        </a>
-      </j:if>
-      <j:set var="hasPermission" value="${h.hasAnyPermission(it, app.MANAGE_AND_SYSTEM_READ)}" />
-      <j:if test="${hasPermission}">
-        <a class="jenkins-button" href="configure" tooltip="${%Configure Node Monitors}">
-          ${%Configure Monitors}
-        </a>
-      </j:if>
-      <l:hasAdministerOrManage>
-        <form method="post" action="updateNow" class="jenkins-!-display-contents">
-          <button tooltip="${%Refresh status}" class="jenkins-button">
-            <l:icon src="symbol-refresh" />
-          </button>
-        </form>
-      </l:hasAdministerOrManage>
-    </l:app-bar>
+  <j:set var="header">
+    <l:view>
+      <j:new var="it" className="jenkins.management.NodesLink" />
 
+      <l:app-bar title="${it.displayName}">
+        <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
+        <j:if test="${h.hasPermission(createPermission)}">
+          <a class="jenkins-button jenkins-button--primary" href="new">
+            <l:icon src="symbol-add" />
+            ${%New Node}
+          </a>
+        </j:if>
+        <j:set var="hasPermission" value="${h.hasAnyPermission(it, app.MANAGE_AND_SYSTEM_READ)}" />
+        <j:if test="${hasPermission}">
+          <a class="jenkins-button" href="configure" tooltip="${%Configure Node Monitors}">
+            ${%Configure Monitors}
+          </a>
+        </j:if>
+        <l:hasAdministerOrManage>
+          <form method="post" action="updateNow" class="jenkins-!-display-contents">
+            <button tooltip="${%Refresh status}" class="jenkins-button">
+              <l:icon src="symbol-refresh" />
+            </button>
+          </form>
+        </l:hasAdministerOrManage>
+      </l:app-bar>
+
+      <div class="jenkins-page-description">
+        ${it.description}
+      </div>
+    </l:view>
+  </j:set>
+
+  <l:settings-subpage header="${header}">
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
     <t:setIconSize/>
@@ -133,6 +141,5 @@ THE SOFTWARE.
       <st:include page="_legend.jelly"/>
     </template>
     <script src="${resURL}/jsbundles/pages/computer-set.js" type="text/javascript" defer="true" />
-  </l:main-panel>
-</l:layout>
+  </l:settings-subpage>
 </j:jelly>

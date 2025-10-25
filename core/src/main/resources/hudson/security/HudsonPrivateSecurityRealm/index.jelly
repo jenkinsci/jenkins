@@ -23,9 +23,9 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <l:layout permission="${app.ADMINISTER}" title="${%Users}" type="one-column">
-    <l:main-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <j:set var="header">
+    <l:view>
       <l:app-bar title="${%Users}" subtitle="${it.allUsers.size()}">
         <l:isAdmin>
           <a href="addUser" class="jenkins-button jenkins-button--primary">
@@ -35,53 +35,55 @@ THE SOFTWARE.
         </l:isAdmin>
       </l:app-bar>
 
-      <p class="jenkins-description">${%blurb}</p>
+      <p class="jenkins-page-description">${%blurb}</p>
+    </l:view>
+  </j:set>
 
-      <table class="jenkins-table sortable" id="people">
-        <thead>
+  <l:settings-subpage header="${header}" permission="${app.ADMINISTER}">
+    <table class="jenkins-table sortable" id="people">
+      <thead>
+        <tr>
+          <th class="jenkins-table__cell--tight" data-sort-disable="true" />
+          <th initialSortDir="down">${%User ID}</th>
+          <th>${%Name}</th>
+          <th class="jenkins-table__cell--tight" data-sort-disable="true" />
+          <th class="jenkins-table__cell--tight" data-sort-disable="true" />
+        </tr>
+      </thead>
+      <tbody>
+        <j:forEach var="user" items="${it.allUsers}">
           <tr>
-            <th class="jenkins-table__cell--tight" data-sort-disable="true" />
-            <th initialSortDir="down">${%User ID}</th>
-            <th>${%Name}</th>
-            <th class="jenkins-table__cell--tight" data-sort-disable="true" />
-            <th class="jenkins-table__cell--tight" data-sort-disable="true" />
+            <td class="jenkins-table__cell--tight jenkins-table__icon">
+              <div class="jenkins-table__cell__button-wrapper">
+                <l:icon src="${h.getUserAvatar(user, '64x64')}" class="jenkins-avatar" />
+              </div>
+            </td>
+            <td>
+              <a href="${user.url}/" class="jenkins-table__link model-link inside">${user.id}</a>
+            </td>
+            <td>
+              ${user.fullName}
+            </td>
+            <td>
+              <div class="jenkins-table__cell__button-wrapper">
+                <a href="${user.url}/" class="jenkins-button jenkins-button--tertiary">
+                  <l:icon src="symbol-settings" />
+                </a>
+              </div>
+            </td>
+            <td>
+              <j:if test="${user.canDelete()}">
+                <div class="jenkins-table__cell__button-wrapper">
+                  <l:confirmationLink href="${user.url}/doDelete" class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
+                                      post="true" message="${%delete.user(user.displayName)}">
+                    <l:icon src="symbol-trash" />
+                  </l:confirmationLink>
+                </div>
+              </j:if>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          <j:forEach var="user" items="${it.allUsers}">
-            <tr>
-              <td class="jenkins-table__cell--tight jenkins-table__icon">
-                <div class="jenkins-table__cell__button-wrapper">
-                  <l:icon src="${h.getUserAvatar(user, '64x64')}" class="jenkins-avatar" />
-                </div>
-              </td>
-              <td>
-                <a href="${user.url}/" class="jenkins-table__link model-link inside">${user.id}</a>
-              </td>
-              <td>
-                ${user.fullName}
-              </td>
-              <td>
-                <div class="jenkins-table__cell__button-wrapper">
-                  <a href="${user.url}/" class="jenkins-button jenkins-button--tertiary">
-                    <l:icon src="symbol-settings" />
-                  </a>
-                </div>
-              </td>
-              <td>
-                <j:if test="${user.canDelete()}">
-                  <div class="jenkins-table__cell__button-wrapper">
-                    <l:confirmationLink href="${user.url}/doDelete" class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
-                                        post="true" message="${%delete.user(user.displayName)}">
-                      <l:icon src="symbol-trash" />
-                    </l:confirmationLink>
-                  </div>
-                </j:if>
-              </td>
-            </tr>
-          </j:forEach>
-        </tbody>
-      </table>
-    </l:main-panel>
-  </l:layout>
+        </j:forEach>
+      </tbody>
+    </table>
+  </l:settings-subpage>
 </j:jelly>
