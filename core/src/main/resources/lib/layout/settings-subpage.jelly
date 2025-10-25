@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <st:documentation>
     A reusable container for subpages relating under Manage Jenkins.
     <st:attribute name="permission">
@@ -56,7 +56,15 @@ THE SOFTWARE.
             type="${newManageJenkins ? 'two-column' : 'one-column'}">
 
     <j:if test="${attrs.includeBreadcrumb}">
-      <l:breadcrumb title="${it.displayName}" />
+      <!-- Hacky - this will be improved in subsequent PRs -->
+      <j:choose>
+        <j:when test="${it.class.name eq 'jenkins.management.ConfigureLink'}">
+          <f:breadcrumb-config-outline title="${it.displayName}" />
+        </j:when>
+        <j:otherwise>
+          <l:breadcrumb title="${it.displayName}" />
+        </j:otherwise>
+      </j:choose>
     </j:if>
 
     <j:choose>
