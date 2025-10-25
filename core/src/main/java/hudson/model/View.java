@@ -372,6 +372,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Returns the icon file name for this action.
      * <p>
+     * Only displays if {@link jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag} is enabled.
+     * <p>
      * This behaves similarly to {@link Action#getIconFileName()}, except that
      * returning {@code null} here does not hide the associated view; the view
      * will still be displayed even when this method returns {@code null}.
