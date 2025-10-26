@@ -567,7 +567,7 @@ class JobTest {
         assertEquals("", alertContent.get());
     }
 
-    @TestExtension({"getJobTabs"})
+    @TestExtension("getJobTabs")
     public static class TabFactory extends TransientActionFactory<Actionable> {
 
         @Override
