@@ -165,8 +165,9 @@ body:has(.app-settings-container) {
   background-size: 100% 90vh;
   background-repeat: no-repeat;
   border: var(--jenkins-border);
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   z-index: 0;
+  min-height: calc(100vh - var(--header-height) - var(--section-padding));
 
   &__inner {
     max-width: 900px;
