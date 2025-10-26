@@ -225,7 +225,7 @@ class ComputerSetTest {
                   <nodeProperties/>
                 </slave>
                 """;
-        try ( JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
+        try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
             wc.login(USER);
             String agentCreateUrl = "computer/createItem";
             if (name != null) {
