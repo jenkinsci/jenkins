@@ -3540,10 +3540,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-formatter-checkstyle@npm:8.40.0":
-  version: 8.40.0
-  resolution: "eslint-formatter-checkstyle@npm:8.40.0"
-  checksum: 10c0/a1bcc39115633c6c20df6217785ebd4dcb7a535fcdbdfeaacbcb24ecb31ac8cc3fafa874398fd8f50114404b1d88720f08843763f4f90362ba93f70b2a0dada4
+"eslint-formatter-checkstyle@npm:9.0.1":
+  version: 9.0.1
+  resolution: "eslint-formatter-checkstyle@npm:9.0.1"
+  checksum: 10c0/a09e124cae6660aa82e362ff778b5671e8bd5ea3bf3f71bea60d4c96664c7d89334fb0142a12631b431868b08f3923a034e48835c62a37a92846bce9ee08ee93
   languageName: node
   linkType: hard
 
@@ -4411,7 +4411,7 @@ __metadata:
     css-minimizer-webpack-plugin: "npm:7.0.2"
     eslint: "npm:9.38.0"
     eslint-config-prettier: "npm:10.1.8"
-    eslint-formatter-checkstyle: "npm:8.40.0"
+    eslint-formatter-checkstyle: "npm:9.0.1"
     globals: "npm:16.4.0"
     handlebars: "npm:4.7.8"
     handlebars-loader: "npm:1.7.3"
