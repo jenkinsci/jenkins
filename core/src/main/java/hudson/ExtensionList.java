@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.init.InitMilestone;
 import hudson.model.Hudson;
 import hudson.util.AdaptedIterator;
-import hudson.util.DescriptorList;
 import hudson.util.Iterators;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -40,7 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,22 +52,14 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Retains the known extension instances for the given type 'T'.
  *
  * <p>
- * Extensions are loaded lazily on demand and automatically by using {@link ExtensionFinder}, but this
- * class also provides a mechanism to provide compatibility with the older {@link DescriptorList}-based
- * manual registration,
- *
- * <p>
- * All {@link ExtensionList} instances should be owned by {@link jenkins.model.Jenkins}, even though
- * extension points can be defined by anyone on any type. Use {@link jenkins.model.Jenkins#getExtensionList(Class)}
- * and {@link jenkins.model.Jenkins#getDescriptorList(Class)} to obtain the instances.
+ * Use {@link Extension} to register extensions.
+ * Use {@link #lookup}, {@link #lookupSingleton}, or {@link #lookupFirst} to find them.
  *
  * @param <T>
  *      Type of the extension point. This class holds instances of the subtypes of 'T'.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.286
- * @see jenkins.model.Jenkins#getExtensionList(Class)
- * @see jenkins.model.Jenkins#getDescriptorList(Class)
  */
 public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     /**
@@ -90,7 +80,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     private final List<ExtensionListListener> listeners = new CopyOnWriteArrayList<>();
 
     /**
-     * Place to store manually registered instances with the per-Hudson scope.
+     * Place to store manually registered instances.
      * {@link CopyOnWriteArrayList} is used here to support concurrent iterations and mutation.
      */
     private final CopyOnWriteArrayList<ExtensionComponent<T>> legacyInstances;
