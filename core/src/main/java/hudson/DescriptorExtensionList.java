@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.ExtensionComponentSet;
@@ -101,7 +100,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     protected DescriptorExtensionList(Jenkins jenkins, Class<T> describableType) {
-        super(jenkins, (Class) Descriptor.class, new CopyOnWriteArrayList<>());
+        super(jenkins, (Class) Descriptor.class);
         this.describableType = describableType;
     }
 

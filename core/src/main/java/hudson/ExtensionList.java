@@ -110,7 +110,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
 
     /**
      * @deprecated as of 1.416
-     *      Use {@link #ExtensionList(Jenkins, Class, CopyOnWriteArrayList)}
+     *      Use {@link #ExtensionList(Jenkins, Class)}
      */
     @Deprecated
     protected ExtensionList(Hudson hudson, Class<T> extensionType, CopyOnWriteArrayList<ExtensionComponent<T>> legacyStore) {
@@ -118,12 +118,9 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     }
 
     /**
-     *
-     * @param legacyStore
-     *      Place to store manually registered instances. The version of the constructor that
-     *      omits this uses a new {@link Vector}, making the storage lifespan tied to the life of  {@link ExtensionList}.
-     *      If the manually registered instances are scoped to VM level, the caller should pass in a static list.
+     * @deprecated {@link #ExtensionList(Jenkins, Class)} should suffice
      */
+    @Deprecated
     protected ExtensionList(Jenkins jenkins, Class<T> extensionType, CopyOnWriteArrayList<ExtensionComponent<T>> legacyStore) {
         this.hudson = (Hudson) jenkins;
         this.jenkins = jenkins;
