@@ -5520,7 +5520,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             jenkins.updateComputers(jenkins);
 
-            FormApply.success(req.getContextPath() + '/' + jenkins.toComputer().getUrl()).generateResponse(req, rsp, null);
+            Computer computer = jenkins.toComputer();
+            if (computer == null) {
+                throw new IllegalStateException("Cannot find the computer object for the controller node");
+            }
+            FormApply.success(req.getContextPath() + '/' + computer.getUrl()).generateResponse(req, rsp, null);
         }
 
         @WebMethod(name = "config.xml")
