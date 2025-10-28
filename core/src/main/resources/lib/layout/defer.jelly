@@ -33,7 +33,7 @@ THE SOFTWARE.
   </div>
 
   <j:set var="deferMode" value="children" scope="parent" />
-  <l:renderOnDemand clazz="defer-element" tag="div" capture="it,deferMode">
+  <l:renderOnDemand clazz="defer-element" tag="div" capture="it,deferMode,previousIt">
     <l:ajax>
       <div>
         <d:invokeBody />
