@@ -79,7 +79,7 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
         return true;
     }
 
-    public HttpRedirect doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, javax.servlet.ServletException {
+    public HttpRedirect doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         try {
             var newUiEnabled = new NewManageJenkinsUserExperimentalFlag().getFlagValue();
 
