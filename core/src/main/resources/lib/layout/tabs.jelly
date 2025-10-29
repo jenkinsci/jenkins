@@ -42,7 +42,7 @@ THE SOFTWARE.
           </j:if>
           ${tab.displayName}
           <j:if test="${tab.badge != null}">
-            <div class="pill jenkins-!-${tab.badge.severity}-color" aria-label="${tab.badge.tooltip}">
+            <div class="jenkins-badge jenkins-!-${tab.badge.severity}-color" aria-label="${tab.badge.tooltip}">
               ${tab.badge.text}
             </div>
           </j:if>
