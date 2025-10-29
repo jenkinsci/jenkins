@@ -113,6 +113,7 @@
 
       &::before {
         border: var(--jenkins-border--subtle);
+        background-clip: unset;
       }
     }
   }
