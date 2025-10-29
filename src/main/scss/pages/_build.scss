@@ -152,15 +152,19 @@ body:has(.app-build-bar) {
 
 .app-build-bar {
   position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 0.5rem 1.5rem;
   min-height: 2.875rem;
   margin-top: -5px;
   padding-bottom: 0.75rem;
   z-index: 102;
+
+  @media (width <= 1200px) {
+    display: flex;
+    flex-direction: column;
+  }
 
   &::before {
     content: "";
@@ -175,14 +179,13 @@ body:has(.app-build-bar) {
     display: inline-flex;
     align-items: center;
     justify-content: start;
-    flex: 1;
+    min-height: 38px;
   }
 
   .app-build-bar__tabs {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex: 0;
   }
 
   .app-build-bar__controls {

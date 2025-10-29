@@ -963,6 +963,7 @@ public class SlaveComputer extends Computer {
 
     @Override
     @SuppressFBWarnings(value = "UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR", justification = "TODO needs triage")
+    @SuppressWarnings("unchecked")
     protected void setNode(final Node node) {
         super.setNode(node);
         launcher = grabLauncher(node);
@@ -971,13 +972,8 @@ public class SlaveComputer extends Computer {
         // "constructed==null" test is an ugly hack to avoid launching before the object is fully
         // constructed.
         if (constructed != null) {
-            if (node instanceof Slave) {
-                Queue.withLock(new Runnable() {
-                    @Override
-                    public void run() {
-                        ((Slave) node).getRetentionStrategy().check(SlaveComputer.this);
-                    }
-                });
+            if (node instanceof Slave slave) {
+                Queue.runWithLock(() -> slave.getRetentionStrategy().check(SlaveComputer.this));
             } else {
                 connect(false);
             }
