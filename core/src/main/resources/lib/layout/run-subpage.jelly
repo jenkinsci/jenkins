@@ -68,15 +68,6 @@ THE SOFTWARE.
             </div>
 
             <div class="app-build-bar__controls">
-              <l:overflowButton icon="symbol-weather-icon-health-80plus">
-                <dd:custom>
-                  <div class="app-build-overflow">
-                    <j:set var="mode" value="side-panel" />
-                    <st:include page="sidepanel.jelly" it="${it.object}" />
-                  </div>
-                </dd:custom>
-              </l:overflowButton>
-
               <l:app-bar-controls actions="${it.object.appBarActions}" />
             </div>
           </div>

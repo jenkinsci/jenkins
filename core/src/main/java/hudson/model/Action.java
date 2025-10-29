@@ -142,22 +142,42 @@ public interface Action extends ModelObject {
      *      (when you do that, be sure to also return null from {@link #getIconFileName()}.
      * @see Functions#getActionUrl(String, Action)
      */
-    @CheckForNull default String getUrlName() {
-        return null;
-    }
+    @CheckForNull String getUrlName();
 
+    /**
+     * Returns the group that this item belongs to.
+     * The default implementation places the item in the menu group.
+     *
+     * @return the group of this item
+     */
     default Group getGroup() {
         return Group.IN_MENU;
     }
 
+    /**
+     * Returns the event associated with this item.
+     * By default, this creates a link event pointing to the item's URL name.
+     *
+     * @return the event representing this item
+     */
     default Event getEvent() {
         return LinkEvent.of(getUrlName());
     }
 
+    /**
+     * Returns the semantic information for this item.
+     *
+     * @return the semantic associated with this item, or {@code null} if none
+     */
     default Semantic getSemantic() {
         return null;
     }
 
+    /**
+     * Indicates whether this item should be visible in a context menu for an {@link Actionable}.
+     *
+     * @return {@code true} if the item is shown in the context menu, {@code false} otherwise
+     */
     default boolean isVisibleInContextMenu() {
         return true;
     }
