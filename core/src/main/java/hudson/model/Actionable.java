@@ -120,7 +120,19 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     }
 
     /**
-     * TODO
+     * Collects and returns the list of actions to display in the application bar.
+     * <p>
+     * This method filters out actions that:
+     * <ul>
+     *   <li>are instances of {@link Tab}</li>
+     *   <li>lack a display name or an icon (either from {@link Action#getIconFileName()}
+     *       or, if available, {@link IconSpec#getIconClassName()})</li>
+     * </ul>
+     * <p>
+     * The resulting actions are sorted first by their {@link Group#getOrder()} value,
+     * then alphabetically by display name. The list is returned as an unmodifiable collection.
+     *
+     * @return an unmodifiable list of actions suitable for display in the app bar
      * @since TODO
      */
     public List<Action> getAppBarActions() {
@@ -133,7 +145,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                         icon = iconSpec.getIconClassName();
                     }
 
-                    return !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(icon);
+                    return !StringUtils.isBlank(e.getDisplayName()) || !StringUtils.isBlank(icon);
                 })
                 .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
                         .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
