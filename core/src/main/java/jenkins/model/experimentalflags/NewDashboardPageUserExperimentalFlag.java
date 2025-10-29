@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2025, Jan Faracik
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,36 +22,28 @@
  * THE SOFTWARE.
  */
 
-package hudson;
+package jenkins.model.experimentalflags;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Extension;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import jenkins.model.Jenkins;
+@Extension
+@Restricted(NoExternalUse.class)
+public class NewDashboardPageUserExperimentalFlag extends BooleanUserExperimentalFlag {
+    public NewDashboardPageUserExperimentalFlag() {
+        super("new-dashboard-page.flag");
+    }
 
-/**
- * Marker interface that designates extensible components
- * in Jenkins that can be implemented by plugins.
- *
- * <p>
- * Use {@link Extension} to register an implementation.
- * Use {@link ExtensionList} to look for implementations.
- *
- * <p>
- * This interface is used for auto-generating
- * documentation.
- *
- * @author Kohsuke Kawaguchi
- */
-public interface ExtensionPoint {
-    /**
-     * Used by designers of extension points (direct subtypes of {@link ExtensionPoint}) to indicate that
-     * the legacy instances are scoped to {@link Jenkins} instance. By default, legacy instances are
-     * static scope.
-     */
-    @Target(TYPE)
-    @Retention(RUNTIME)
-    @interface LegacyInstancesAreScopedToHudson {}
+    @Override
+    public String getDisplayName() {
+        return "New dashboard page";
+    }
+
+    @Nullable
+    @Override
+    public String getShortDescription() {
+        return "Enables a revamped dashboard page. This feature is still a work in progress, so some things might not work perfectly yet.";
+    }
 }
