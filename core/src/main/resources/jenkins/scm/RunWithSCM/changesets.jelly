@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson" xmlns:l="/lib/layout">
   <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
 
-  <j:if test="${newBuildPage}">
+  <j:if test="${!newBuildPage}">
     <j:set var="changeSets" value="${it.changeSets}"/>
     <table>
       <t:summary icon="symbol-changes">
