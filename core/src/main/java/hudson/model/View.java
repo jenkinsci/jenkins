@@ -108,6 +108,7 @@ import org.jenkins.ui.symbol.Symbol;
 import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -1248,6 +1249,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         } catch (StreamException | ConversionException | Error e) { // mostly reflection errors
             throw new IOException("Unable to read", e);
         }
+    }
+
+    // for Jelly
+    @Restricted(NoExternalUse.class)
+    public boolean isMyViewsProperty() {
+        return getOwner() instanceof MyViewsProperty;
     }
 
     public static class PropertyList extends DescribableList<ViewProperty, ViewPropertyDescriptor> {
