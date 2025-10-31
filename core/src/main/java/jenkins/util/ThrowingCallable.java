@@ -39,7 +39,7 @@ import org.jenkinsci.remoting.RoleSensitive;
  * Similar to {@link ThrowingRunnable} but returns a value.
  * @param <V> the return type
  * @param <T> the checked exception type, or might be {@link RuntimeException}
- * @since TODO
+ * @since 2.534
  */
 @FunctionalInterface
 public interface ThrowingCallable<V, T extends Throwable> {

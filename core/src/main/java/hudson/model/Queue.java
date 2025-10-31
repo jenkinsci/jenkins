@@ -1278,7 +1278,7 @@ public class Queue extends ResourceController implements Saveable {
      * than locking directly on Queue in order to allow for future refactoring.
      * @param runnable the operation to perform.
      * @throws T if the runnable throws an exception.
-     * @since TODO
+     * @since 2.534
      */
     public static <T extends Throwable> void runWithLock(ThrowingRunnable<T> runnable) throws T {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
@@ -1315,7 +1315,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param <T>      the type of exception.
      * @return the result of the callable.
      * @throws T the exception of the callable
-     * @since TODO
+     * @since 2.534
      */
     public static <V, T extends Throwable> V callWithLock(ThrowingCallable<V, T> callable) throws T {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
@@ -1454,7 +1454,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param runnable the operation to perform.
      * @param <T>      the type of exception.
      * @throws T the exception of the runnable
-     * @since TODO
+     * @since 2.534
      */
     @Override
     protected <T extends Throwable> void _runWithLock(ThrowingRunnable<T> runnable) throws T {
@@ -1531,7 +1531,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param <T>      the type of exception.
      * @return the result of the callable.
      * @throws T the exception of the callable
-     * @since TODO
+     * @since 2.534
      */
     @Override
     protected <V, T extends Throwable> V _callWithLock(ThrowingCallable<V, T> callable) throws T {
