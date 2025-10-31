@@ -16,17 +16,17 @@ button.jenkins-badge {
   --item-background--hover: color-mix(
     in sRGB,
     var(--color, var(--accent-color)) 12.5%,
-                  var(--background)
+    var(--background)
   );
   --item-background--active: color-mix(
     in sRGB,
     var(--color, var(--accent-color)) 17.5%,
-                  var(--background)
+    var(--background)
   );
   --item-box-shadow--focus: color-mix(
     in sRGB,
     var(--color, var(--accent-color)) 10%,
-                  var(--background)
+    var(--background)
   );
 
   position: relative;
@@ -44,7 +44,8 @@ button.jenkins-badge {
   text-box: cap alphabetic;
 
   &::before {
-    border: var(--jenkins-border-width) solid oklch(from currentColor l c h / 0.17);
+    border: var(--jenkins-border-width) solid
+      oklch(from currentColor l c h / 0.17);
     background-clip: padding-box;
   }
 
