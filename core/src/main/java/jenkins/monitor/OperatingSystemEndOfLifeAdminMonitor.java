@@ -54,8 +54,6 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 @Extension
@@ -254,16 +252,8 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
      */
     @Restricted(DoNotUse.class) // WebOnly
     @RequirePOST
-    public HttpResponse doAct(@QueryParameter String no) throws IOException {
-        if (no != null) { // dismiss
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-            disable(true);
-            LOGGER.log(Level.FINE, "Disabled operating system end of life monitor");
-            return HttpResponses.forwardToPreviousPage();
-        } else {
-            LOGGER.log(Level.FINE, "Enabled operating system end of life monitor");
-            return new HttpRedirect(documentationUrl);
-        }
+    public HttpResponse doMoreInfo() {
+        return new HttpRedirect(documentationUrl);
     }
 
     @Override

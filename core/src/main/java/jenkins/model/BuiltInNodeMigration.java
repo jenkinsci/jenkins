@@ -26,14 +26,12 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
-import jakarta.servlet.ServletException;
+import hudson.util.HttpResponses;
 import java.io.IOException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -51,13 +49,9 @@ public class BuiltInNodeMigration extends AdministrativeMonitor {
     }
 
     @RequirePOST
-    public void doAct(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String yes, @QueryParameter String no) throws IOException, ServletException {
-        if (yes != null) {
-            Jenkins.get().performRenameMigration();
-        } else if (no != null) {
-            disable(true);
-        }
-        rsp.forwardToPreviousPage(req);
+    public HttpResponse doMigrate() throws IOException {
+        Jenkins.get().performRenameMigration();
+        return HttpResponses.forwardToPreviousPage();
     }
 
     @Override

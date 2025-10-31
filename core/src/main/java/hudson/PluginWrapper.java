@@ -80,8 +80,6 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -1235,16 +1233,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         public PluginWrapper getPlugin(String shortName) {
             return plugins.get(shortName);
-        }
-
-        /**
-         * Depending on whether the user said "dismiss" or "correct", send him to the right place.
-         */
-        public void doAct(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
-            if (req.hasParameter("correct")) {
-                rsp.sendRedirect(req.getContextPath() + "/pluginManager");
-
-            }
         }
 
         public static PluginWrapperAdministrativeMonitor get() {

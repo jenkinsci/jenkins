@@ -67,11 +67,11 @@ def pluginWarnings = my.activePluginWarningsByPlugin
 div(class: "jenkins-alert jenkins-alert-danger", role: "alert") {
 
     l.isAdmin() {
-        form(method: "post", action: "${rootURL}/${my.url}/forward") {
+        form(method: "get") {
             if (!pluginWarnings.isEmpty()) {
-                f.submit(name: 'fix', value: _("pluginManager.link"))
+                f.submit(value: _("pluginManager.link"), action: "${rootURL}/pluginManager")
             }
-            f.submit(name: 'configure', value: _("configureSecurity.link"))
+            f.submit(value: _("configureSecurity.link"), action: "${rootURL}/configureSecurity")
         }
     }
 

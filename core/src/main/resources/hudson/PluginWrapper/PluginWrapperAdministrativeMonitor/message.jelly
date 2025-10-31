@@ -1,8 +1,8 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <div class="jenkins-alert jenkins-alert-danger" role="alert">
-    <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="correct" value="${%Correct}"/>
+    <form method="get" name="${it.id}">
+      <f:submit value="${%Correct}" action="${rootURL}/pluginManager"/>
     </form>
     <p>${%blurbOriginal}</p>
     <p><strong>${%DirectlyDependentPlugins.title}</strong></p>

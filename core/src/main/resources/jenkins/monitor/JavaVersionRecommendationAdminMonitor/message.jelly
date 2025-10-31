@@ -25,10 +25,10 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
     <div class="jenkins-alert jenkins-alert-${it.severityAsString}">
-        <form id="JavaVersionRecommendationAdminMonitor" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-            <f:submit name="yes" value="${%More Info}"/>
+        <form id="JavaVersionRecommendationAdminMonitor" method="post" name="${it.id}">
+            <f:submit value="${%More Info}" method="get" action="https://jenkins.io/redirect/java-support/"/>
             <l:isAdmin>
-                <f:submit value="${%Ignore}" name="no"/>
+                <f:submit value="${%Ignore}" action="${rootURL}/${it.url}/disable"/>
             </l:isAdmin>
         </form>
         <h2>${%Recommended_Java_Version_Heading(it.javaVersion)}</h2>

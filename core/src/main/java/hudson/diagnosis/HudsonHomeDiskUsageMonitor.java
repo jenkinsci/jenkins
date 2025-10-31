@@ -29,12 +29,10 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractModelObject;
 import hudson.model.AdministrativeMonitor;
-import java.io.IOException;
 import java.util.List;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -63,17 +61,9 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
         return Messages.HudsonHomeDiskUsageMonitor_DisplayName();
     }
 
-    /**
-     * Depending on whether the user said "yes" or "no", send him to the right place.
-     */
     @RequirePOST
-    public HttpResponse doAct(@QueryParameter String no) throws IOException {
-        if (no != null) {
-            disable(true);
-            return HttpResponses.redirectViaContextPath("/manage");
-        } else {
-            return HttpResponses.redirectToDot();
-        }
+    public HttpResponse doTellMeMore() {
+        return HttpResponses.redirectToDot();
     }
 
     public List<Solution> getSolutions() {
