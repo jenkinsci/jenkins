@@ -41,6 +41,7 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+import static jenkins.model.Messages.Hudson_Computer_IncorrectNumberOfExecutors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
@@ -4101,28 +4102,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Accepts submission from the node configuration page.
-     */
-    @POST
-    public synchronized void doConfigExecutorsSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
-        checkPermission(ADMINISTER);
-
-        try (BulkChange bc = new BulkChange(this)) {
-            JSONObject json = req.getSubmittedForm();
-
-            ExtensionList.lookupSingleton(MasterBuildConfiguration.class).configure(req, json);
-
-            getNodeProperties().rebuild(req, json.optJSONObject("nodeProperties"), NodeProperty.all());
-
-            bc.commit();
-        }
-
-        updateComputers(this);
-
-        FormApply.success(req.getContextPath() + '/' + toComputer().getUrl()).generateResponse(req, rsp, null);
-    }
-
-    /**
      * Accepts the new description.
      */
     @RequirePOST
@@ -5508,7 +5487,44 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         @Override
         @POST
         public void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
-            Jenkins.get().doConfigExecutorsSubmit(req, rsp);
+            checkPermission(ADMINISTER);
+
+            Jenkins jenkins = Jenkins.get();
+
+            try (BulkChange bc = new BulkChange(jenkins)) {
+                JSONObject json = req.getSubmittedForm();
+
+                try {
+                    // For compatibility reasons, this value is stored in Jenkins
+                    String num = json.getString("numExecutors");
+                    if (!num.matches("\\d+")) {
+                        throw new Descriptor.FormException(Hudson_Computer_IncorrectNumberOfExecutors(), "numExecutors");
+                    }
+
+                    jenkins.setNumExecutors(json.getInt("numExecutors"));
+                    if (req.hasParameter("builtin.mode")) {
+                        jenkins.setMode(Mode.valueOf(req.getParameter("builtin.mode")));
+                    } else {
+                        jenkins.setMode(Mode.NORMAL);
+                    }
+
+                    jenkins.setLabelString(json.optString("labelString", ""));
+                } catch (IOException e) {
+                    throw new Descriptor.FormException(e, "numExecutors");
+                }
+
+                jenkins.getNodeProperties().rebuild(req, json.optJSONObject("nodeProperties"), NodeProperty.all());
+
+                bc.commit();
+            }
+
+            jenkins.updateComputers(jenkins);
+
+            Computer computer = jenkins.toComputer();
+            if (computer == null) {
+                throw new IllegalStateException("Cannot find the computer object for the controller node");
+            }
+            FormApply.success(req.getContextPath() + '/' + computer.getUrl()).generateResponse(req, rsp, null);
         }
 
         @WebMethod(name = "config.xml")
