@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright 2025 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,36 +22,33 @@
  * THE SOFTWARE.
  */
 
-package hudson;
+package jenkins.util;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import jenkins.model.Jenkins;
+import java.io.Serializable;
+import jenkins.security.NotReallyRoleSensitiveCallable;
+import org.jenkinsci.remoting.RoleSensitive;
 
 /**
- * Marker interface that designates extensible components
- * in Jenkins that can be implemented by plugins.
- *
- * <p>
- * Use {@link Extension} to register an implementation.
- * Use {@link ExtensionList} to look for implementations.
- *
- * <p>
- * This interface is used for auto-generating
- * documentation.
- *
- * @author Kohsuke Kawaguchi
+ * A task that returns a result and may throw an exception.
+ * Similar to {@link java.util.concurrent.Callable} except that the exception type can be constrained.
+ * Similar to {@link hudson.remoting.Callable} or {@link NotReallyRoleSensitiveCallable} except
+ * <ul>
+ * <li>It is not {@link Serializable}, which would cause SpotBugs to complain about captured local variables.
+ * <li>It does not have the {@link RoleSensitive#checkRoles} so it can be a {@link FunctionalInterface}.
+ * </ul>
+ * Similar to {@link ThrowingRunnable} but returns a value.
+ * @param <V> the return type
+ * @param <T> the checked exception type, or might be {@link RuntimeException}
+ * @since TODO
  */
-public interface ExtensionPoint {
+@FunctionalInterface
+public interface ThrowingCallable<V, T extends Throwable> {
+
     /**
-     * Used by designers of extension points (direct subtypes of {@link ExtensionPoint}) to indicate that
-     * the legacy instances are scoped to {@link Jenkins} instance. By default, legacy instances are
-     * static scope.
+     * Computes a result, or throws an exception if unable to do so.
+     * @return computed result
+     * @throws T if unable to compute a result
      */
-    @Target(TYPE)
-    @Retention(RUNTIME)
-    @interface LegacyInstancesAreScopedToHudson {}
+    V call() throws T;
+
 }

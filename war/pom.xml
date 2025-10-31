@@ -325,7 +325,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1384.vdc05a_48f535f</version>
+                  <version>1398.v67030756d3fb_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -383,7 +383,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>snakeyaml-api</artifactId>
-                  <version>2.3-125.v4d77857a_b_402</version>
+                  <version>2.5-143.v93b_c004f89de</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

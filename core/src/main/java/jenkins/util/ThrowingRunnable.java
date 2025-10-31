@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright 2025 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,36 +22,21 @@
  * THE SOFTWARE.
  */
 
-package hudson;
-
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import jenkins.model.Jenkins;
+package jenkins.util;
 
 /**
- * Marker interface that designates extensible components
- * in Jenkins that can be implemented by plugins.
- *
- * <p>
- * Use {@link Extension} to register an implementation.
- * Use {@link ExtensionList} to look for implementations.
- *
- * <p>
- * This interface is used for auto-generating
- * documentation.
- *
- * @author Kohsuke Kawaguchi
+ * Represents an operation that does not return a result.
+ * Similar to {@link Runnable} but can throw a checked exception.
+ * Similar to {@link ThrowingCallable} but does not return a value.
+ * @param <T> the checked exception type, or might be {@link RuntimeException}
  */
-public interface ExtensionPoint {
+@FunctionalInterface
+public interface ThrowingRunnable<T extends Throwable> {
+
     /**
-     * Used by designers of extension points (direct subtypes of {@link ExtensionPoint}) to indicate that
-     * the legacy instances are scoped to {@link Jenkins} instance. By default, legacy instances are
-     * static scope.
+     * Runs this operation.
+     * @throws T if unable to run
      */
-    @Target(TYPE)
-    @Retention(RUNTIME)
-    @interface LegacyInstancesAreScopedToHudson {}
+    void run() throws T;
+
 }
