@@ -10,64 +10,60 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request2.getParameter('decorate'), type:"one-column") {
-    l.main_panel {
-        l.app_bar(title: my.displayName)
+l.'settings-subpage'(permission: app.SYSTEM_READ) {
+    set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
-        set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
+    l.skeleton()
+    f.form(method:"post", name:"config", action:"configure", class: "jenkins-form") {
+        set("instance", my)
+        set("descriptor", my.descriptor)
 
-        l.skeleton()
-        f.form(method:"post", name:"config", action:"configure", class: "jenkins-form") {
-            set("instance", my)
-            set("descriptor", my.descriptor)
-
-            f.section(title:_("Authentication")) {
-                f.entry(help: '/descriptor/hudson.security.GlobalSecurityConfiguration/help/disableRememberMe') {
-                    f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
-                }
-                f.dropdownDescriptorSelector(title: _("Security Realm"), field: 'securityRealm', descriptors: h.filterDescriptors(app, SecurityRealm.all()))
-                f.dropdownDescriptorSelector(title: _("Authorization"), field: 'authorizationStrategy', descriptors: h.filterDescriptors(app, AuthorizationStrategy.all()))
+        f.section(title:_("Authentication")) {
+            f.entry(help: '/descriptor/hudson.security.GlobalSecurityConfiguration/help/disableRememberMe') {
+                f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
             }
+            f.dropdownDescriptorSelector(title: _("Security Realm"), field: 'securityRealm', descriptors: h.filterDescriptors(app, SecurityRealm.all()))
+            f.dropdownDescriptorSelector(title: _("Authorization"), field: 'authorizationStrategy', descriptors: h.filterDescriptors(app, AuthorizationStrategy.all()))
+        }
 
-            f.section(title: _("Markup Formatter")) {
-                f.dropdownDescriptorSelector(title:_("Markup Formatter"), descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
-            }
+        f.section(title: _("Markup Formatter")) {
+            f.dropdownDescriptorSelector(title:_("Markup Formatter"), descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
+        }
 
-            f.section(title: _("Agents")) {
-                f.entry(title: _("TCP port for inbound agents"), field: "slaveAgentPort") {
-                    if (my.slaveAgentPortEnforced) {
-                        if (my.slaveAgentPort == -1) {
-                            text(_("slaveAgentPortEnforcedDisabled"))
-                        } else if (my.slaveAgentPort == 0) {
-                            text(_("slaveAgentPortEnforcedRandom"))
-                        } else {
-                            text(_("slaveAgentPortEnforced", my.slaveAgentPort))
-                        }
+        f.section(title: _("Agents")) {
+            f.entry(title: _("TCP port for inbound agents"), field: "slaveAgentPort") {
+                if (my.slaveAgentPortEnforced) {
+                    if (my.slaveAgentPort == -1) {
+                        text(_("slaveAgentPortEnforcedDisabled"))
+                    } else if (my.slaveAgentPort == 0) {
+                        text(_("slaveAgentPortEnforcedRandom"))
                     } else {
-                        f.serverTcpPort()
+                        text(_("slaveAgentPortEnforced", my.slaveAgentPort))
                     }
+                } else {
+                    f.serverTcpPort()
                 }
             }
+        }
 
-            Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
-                set("descriptor", descriptor)
-                set("instance", descriptor)
-                f.rowSet(name:descriptor.jsonSafeClassName) {
-                    st.include(from:descriptor, page:descriptor.globalConfigPage)
-                }
-            }
-
-            l.isAdmin() {
-                f.bottomButtonBar {
-                    f.submit(value: _("Save"))
-                    f.apply()
-                }
+        Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
+            set("descriptor", descriptor)
+            set("instance", descriptor)
+            f.rowSet(name:descriptor.jsonSafeClassName) {
+                st.include(from:descriptor, page:descriptor.globalConfigPage)
             }
         }
 
         l.isAdmin() {
-            st.adjunct(includes: "lib.form.confirm")
+            f.bottomButtonBar {
+                f.submit(value: _("Save"))
+                f.apply()
+            }
         }
+    }
+
+    l.isAdmin() {
+        st.adjunct(includes: "lib.form.confirm")
     }
 }
 

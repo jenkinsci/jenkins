@@ -25,18 +25,9 @@ THE SOFTWARE.
 <!-- About Jenkins page -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:layout type="one-column" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%about(app.VERSION)}">
-    <l:header>
-      <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
-    </l:header>
-    
-    <l:main-panel>
-      <div class="app-about-branding">
-        <div class="app-about-branding__aurora"></div>
-        <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}" />
-      </div>
-
-      <div class="jenkins-app-bar">
+  <j:set var="header">
+    <l:view>
+      <div class="jenkins-app-bar jenkins-!-margin-top-2 jenkins-!-margin-bottom-4">
         <div class="jenkins-app-bar__content">
           <h1 class="app-about-heading">Jenkins</h1>
           <p class="app-about-version">
@@ -50,93 +41,104 @@ THE SOFTWARE.
           </a>
         </div>
       </div>
+    </l:view>
+  </j:set>
 
-      <p class="app-about-paragraph">${%blurb}</p>
+  <l:settings-subpage header="${header}"
+                      placeholder="${null}"
+                      permissions="${app.MANAGE_AND_SYSTEM_READ}">
+    <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
 
-      <div class="jenkins-tab-pane">
-        <h2 class="jenkins-tab-pane__title">${%maven.dependencies}</h2>
-        <j:set var="uri" value="${it.licensesURL}"/>
-        <j:choose>
-          <j:when test="${uri != null}">
-            <t:thirdPartyLicenses>
-              <j:include uri="${uri}"/>
-            </t:thirdPartyLicenses>
-          </j:when>
-          <j:otherwise>
-            <p>${%No information recorded}</p>
-          </j:otherwise>
-        </j:choose>
-      </div>
+    <div class="app-about-branding">
+      <div class="app-about-branding__aurora"></div>
+      <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}" />
+    </div>
 
-      <div class="jenkins-tab-pane">
-        <h2 class="jenkins-tab-pane__title">${%static.dependencies}</h2>
-        <table class="jenkins-table sortable">
-          <thead>
-            <tr>
-              <th>${%Name}</th>
-              <th>${%Author}</th>
-              <th>${%Licence}</th>
-            </tr>
-          </thead>
-          <tbody>
+    <p class="jenkins-page-description jenkins-!-text-color">${%blurb}</p>
+
+    <div class="jenkins-tab-pane">
+      <h2 class="jenkins-tab-pane__title">${%maven.dependencies}</h2>
+      <j:set var="uri" value="${it.licensesURL}"/>
+      <j:choose>
+        <j:when test="${uri != null}">
+          <t:thirdPartyLicenses>
+            <j:include uri="${uri}"/>
+          </t:thirdPartyLicenses>
+        </j:when>
+        <j:otherwise>
+          <p>${%No information recorded}</p>
+        </j:otherwise>
+      </j:choose>
+    </div>
+
+    <div class="jenkins-tab-pane">
+      <h2 class="jenkins-tab-pane__title">${%static.dependencies}</h2>
+      <table class="jenkins-table sortable">
+        <thead>
+          <tr>
+            <th>${%Name}</th>
+            <th>${%Author}</th>
+            <th>${%Licence}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <a class="jenkins-table__link" href="https://github.com/jenkins-contrib-themes/jenkins-core-theme">
+                Jenkins Contrib Themes
+              </a>
+            </td>
+            <td>
+              <a class="jenkins-table__link" href="https://github.com/afonsof">Afonso Franca</a>
+            </td>
+            <td>
+              <a class="jenkins-table__link" href="https://opensource.org/licenses/MIT">MIT License</a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <a class="jenkins-table__link" href="https://ionic.io/ionicons">Ionicons</a>
+            </td>
+            <td>
+              <a class="jenkins-table__link" href="https://github.com/ionic-team">Ionic</a>
+            </td>
+            <td>
+              <a class="jenkins-table__link" href="https://github.com/ionic-team/ionicons/blob/master/LICENSE">MIT
+                License
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="jenkins-tab-pane">
+      <h2 class="jenkins-tab-pane__title">${%plugin.dependencies}</h2>
+      <table class="jenkins-table sortable">
+        <thead>
+          <tr>
+            <th>${%Name}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <j:forEach var="p" items="${app.pluginManager.plugins}">
             <tr>
               <td>
-                <a class="jenkins-table__link" href="https://github.com/jenkins-contrib-themes/jenkins-core-theme">
-                  Jenkins Contrib Themes
+                <a class="jenkins-table__link" href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
+                  <j:choose>
+                    <j:when test="${p.active}">
+                      ${p.displayName}
+                    </j:when>
+                    <j:otherwise>
+                      <strike>${p.displayName}</strike>
+                    </j:otherwise>
+                  </j:choose>
                 </a>
               </td>
-              <td>
-                <a class="jenkins-table__link" href="https://github.com/afonsof">Afonso Franca</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://opensource.org/licenses/MIT">MIT License</a>
-              </td>
             </tr>
-            <tr>
-              <td>
-                <a class="jenkins-table__link" href="https://ionic.io/ionicons">Ionicons</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://github.com/ionic-team">Ionic</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://github.com/ionic-team/ionicons/blob/master/LICENSE">MIT
-                  License
-                </a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="jenkins-tab-pane">
-        <h2 class="jenkins-tab-pane__title">${%plugin.dependencies}</h2>
-        <table class="jenkins-table sortable">
-          <thead>
-            <tr>
-              <th>${%Name}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <j:forEach var="p" items="${app.pluginManager.plugins}">
-              <tr>
-                <td>
-                  <a class="jenkins-table__link" href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
-                    <j:choose>
-                      <j:when test="${p.active}">
-                        ${p.displayName}
-                      </j:when>
-                      <j:otherwise>
-                        <strike>${p.displayName}</strike>
-                      </j:otherwise>
-                    </j:choose>
-                  </a>
-                </td>
-              </tr>
-            </j:forEach>
-          </tbody>
-        </table>
-      </div>
-    </l:main-panel>
-  </l:layout>
+          </j:forEach>
+        </tbody>
+      </table>
+    </div>
+  </l:settings-subpage>
 </j:jelly>

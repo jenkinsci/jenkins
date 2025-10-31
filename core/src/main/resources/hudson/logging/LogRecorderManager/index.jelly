@@ -27,22 +27,30 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Log Recorders}" type="one-column">
-  <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-  <l:main-panel xmlns:local="local">
-    <l:app-bar title="${%Log Recorders}">
-      <l:isAdmin>
-        <a href="new" class="jenkins-button jenkins-button--primary">
-          <l:icon src="symbol-add" />
-          ${%Add recorder}
-        </a>
-      </l:isAdmin>
-      <a href="levels" class="jenkins-button">
-        ${%Log levels}
-      </a>
-      <t:help tooltip="${%Additional information on log recorders}" href="https://www.jenkins.io/redirect/log-recorders" />
-    </l:app-bar>
+  <j:set var="header">
+    <j:new var="it" className="jenkins.management.SystemLogLink" />
 
+    <l:view>
+      <l:app-bar title="${it.displayName}">
+        <l:isAdmin>
+          <a href="new" class="jenkins-button jenkins-button--primary">
+            <l:icon src="symbol-add" />
+            ${%Add recorder}
+          </a>
+        </l:isAdmin>
+        <a href="levels" class="jenkins-button">
+          ${%Log levels}
+        </a>
+        <t:help tooltip="${%Additional information on log recorders}" href="https://www.jenkins.io/redirect/log-recorders" />
+      </l:app-bar>
+
+      <div class="jenkins-page-description">
+        <j:out value="${it.description}" />
+      </div>
+    </l:view>
+  </j:set>
+
+  <l:settings-subpage header="${header}" xmlns:local="local">
     <d:taglib uri="local">
       <d:tag name="row">
         <tr>
@@ -76,6 +84,5 @@ THE SOFTWARE.
         </j:forEach>
       </tbody>
     </table>
-  </l:main-panel>
-</l:layout>
+  </l:settings-subpage>
 </j:jelly>

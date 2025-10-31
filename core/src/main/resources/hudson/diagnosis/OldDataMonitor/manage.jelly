@@ -24,11 +24,13 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Manage Old Data}" type="one-column">
-  <!-- no need for additional breadcrumb here as we're on an "index" page already including breadcrumb -->
-  <l:main-panel>
-    <h1>${%Manage Old Data}</h1>
-    <p>${%blurb.1}</p>
+  <j:set var="previousIt" value="${it}" />
+  <j:new var="it" className="hudson.diagnosis.OldDataMonitor$ManagementLinkImpl" />
+
+  <l:settings-subpage>
+    <j:set var="it" value="${previousIt}" />
+
+    <p class="jenkins-!-margin-top-0">${%blurb.1}</p>
     <p>${%blurb.2}</p>
     
     <!-- First set a flag to check if we'll have any valid data -->
@@ -132,6 +134,5 @@ THE SOFTWARE.
         <f:submit value="${%Discard Unreadable Data}"/>
       </form>
     </j:if>
-  </l:main-panel>
-</l:layout>
+</l:settings-subpage>
 </j:jelly>
