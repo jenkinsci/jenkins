@@ -21,39 +21,29 @@
       a::before {
         content: "";
         position: absolute;
-        inset: -0.5rem -0.75rem !important;
+        inset: 0;
         pointer-events: all !important;
       }
 
-      .dropdown-indicator {
-        margin-right: 4px;
-        display: flex;
-      }
-
-      & > a,
-      .dropdown-indicator {
+      %breadcrumb-interactive-base {
         @include mixins.item($border: false);
 
         --item-background: transparent;
-        --item-background--hover: var(--button-background--hover);
-        --item-background--active: var(--button-background--active);
-        --item-box-shadow--focus: var(--button-box-shadow--focus);
 
-        transition: opacity var(--standard-transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 1.75rem;
+      }
 
-        &::before,
-        &::after {
-          inset: -2px -6px;
-          border: none;
-        }
+      & > a {
+        @extend %breadcrumb-interactive-base;
+      }
 
-        &:hover {
-          opacity: 0.7;
-        }
+      .dropdown-indicator {
+        @extend %breadcrumb-interactive-base;
 
-        &:active {
-          opacity: 0.4;
-        }
+        padding: 0 0.3125rem;
       }
 
       & > a,
@@ -62,12 +52,11 @@
         font-size: var(--font-size-sm);
         font-weight: var(--font-bold-weight);
         margin: 0;
-        padding: 4px 8px;
+        padding: 0.25rem 0.5rem;
         color: inherit;
         text-decoration: none;
         text-wrap: nowrap;
         flex-shrink: 0;
-        overflow: hidden;
         max-width: 25ch;
         text-overflow: ellipsis;
         white-space: nowrap;
