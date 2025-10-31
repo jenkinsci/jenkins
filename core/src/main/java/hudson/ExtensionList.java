@@ -26,11 +26,9 @@ package hudson;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.init.InitMilestone;
 import hudson.model.Hudson;
 import hudson.util.AdaptedIterator;
-import hudson.util.DescriptorList;
 import hudson.util.Iterators;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -39,11 +37,8 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,22 +52,14 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Retains the known extension instances for the given type 'T'.
  *
  * <p>
- * Extensions are loaded lazily on demand and automatically by using {@link ExtensionFinder}, but this
- * class also provides a mechanism to provide compatibility with the older {@link DescriptorList}-based
- * manual registration,
- *
- * <p>
- * All {@link ExtensionList} instances should be owned by {@link jenkins.model.Jenkins}, even though
- * extension points can be defined by anyone on any type. Use {@link jenkins.model.Jenkins#getExtensionList(Class)}
- * and {@link jenkins.model.Jenkins#getDescriptorList(Class)} to obtain the instances.
+ * Use {@link Extension} to register extensions.
+ * Use {@link #lookup}, {@link #lookupSingleton}, or {@link #lookupFirst} to find them.
  *
  * @param <T>
  *      Type of the extension point. This class holds instances of the subtypes of 'T'.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.286
- * @see jenkins.model.Jenkins#getExtensionList(Class)
- * @see jenkins.model.Jenkins#getDescriptorList(Class)
  */
 public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     /**
@@ -93,7 +80,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     private final List<ExtensionListListener> listeners = new CopyOnWriteArrayList<>();
 
     /**
-     * Place to store manually registered instances with the per-Hudson scope.
+     * Place to store manually registered instances.
      * {@link CopyOnWriteArrayList} is used here to support concurrent iterations and mutation.
      */
     private final CopyOnWriteArrayList<ExtensionComponent<T>> legacyInstances;
@@ -113,7 +100,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
 
     /**
      * @deprecated as of 1.416
-     *      Use {@link #ExtensionList(Jenkins, Class, CopyOnWriteArrayList)}
+     *      Use {@link #ExtensionList(Jenkins, Class)}
      */
     @Deprecated
     protected ExtensionList(Hudson hudson, Class<T> extensionType, CopyOnWriteArrayList<ExtensionComponent<T>> legacyStore) {
@@ -121,12 +108,9 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     }
 
     /**
-     *
-     * @param legacyStore
-     *      Place to store manually registered instances. The version of the constructor that
-     *      omits this uses a new {@link Vector}, making the storage lifespan tied to the life of  {@link ExtensionList}.
-     *      If the manually registered instances are scoped to VM level, the caller should pass in a static list.
+     * @deprecated {@link #ExtensionList(Jenkins, Class)} should suffice
      */
+    @Deprecated
     protected ExtensionList(Jenkins jenkins, Class<T> extensionType, CopyOnWriteArrayList<ExtensionComponent<T>> legacyStore) {
         this.hudson = (Hudson) jenkins;
         this.jenkins = jenkins;
@@ -437,11 +421,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> ExtensionList<T> create(Jenkins jenkins, Class<T> type) {
-        if (type.getAnnotation(LegacyInstancesAreScopedToHudson.class) != null)
-            return new ExtensionList<>(jenkins, type);
-        else {
-            return new ExtensionList(jenkins, type, staticLegacyInstances.computeIfAbsent(type, key -> new CopyOnWriteArrayList()));
-        }
+        return new ExtensionList<>(jenkins, type);
     }
 
     /**
@@ -506,16 +486,10 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     }
 
     /**
-     * Places to store static-scope legacy instances.
+     * @deprecated No longer does anything.
      */
-    @SuppressWarnings("rawtypes")
-    private static final Map<Class, CopyOnWriteArrayList> staticLegacyInstances = new ConcurrentHashMap<>();
-
-    /**
-     * Exposed for the test harness to clear all legacy extension instances.
-     */
+    @Deprecated
     public static void clearLegacyInstances() {
-        staticLegacyInstances.clear();
     }
 
     private static final Logger LOGGER = Logger.getLogger(ExtensionList.class.getName());
