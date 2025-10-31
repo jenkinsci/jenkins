@@ -27,6 +27,7 @@ package jenkins.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -43,11 +44,13 @@ import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
 import hudson.model.ProminentProjectAction;
 import hudson.model.queue.FoldableAction;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -202,7 +205,23 @@ class TransientActionFactoryTest {
         assertThat(Util.filter(build.getAllActions(), MyProminentProjectAction.class), hasSize(1));
     }
 
-    @TestExtension("transientActionsAreNotPersistedOnQueueItems")
+    /**
+     * Transient actions appear first, actions added to an Actionable appear last
+     */
+    @Test
+    void ordering() throws IOException, ExecutionException, InterruptedException {
+        var project = r.createFreeStyleProject();
+        var build = project.scheduleBuild2(0).get();
+        build.addAction(new InvisibleAction() {});
+
+        var actions = build.getActions(InvisibleAction.class);
+
+        assertThat(actions, hasSize(2));
+        assertThat(actions.get(0), instanceOf(MyProminentProjectAction.class));
+        assertThat(actions.get(1), instanceOf(InvisibleAction.class));
+    }
+
+    @TestExtension({"transientActionsAreNotPersistedOnQueueItems", "ordering"})
     public static class AllFactory extends TransientActionFactory<Actionable> {
 
         @Override
@@ -233,5 +252,4 @@ class TransientActionFactoryTest {
             return allocation;
         }
     }
-
 }
