@@ -139,16 +139,16 @@ class VirtualFileTest {
             System.err.println("testing " + vf.getClass().getName());
             assertEquals("[.hg/config.txt, sub/mid.txt, sub/subsub/lowest.txt, top.txt]", new TreeSet<>(vf.list("**/*.txt", null, false)).toString());
             assertEquals("[sub/mid.txt, sub/subsub/lowest.txt, top.txt]", new TreeSet<>(vf.list("**/*.txt", null, true)).toString());
-            assertEquals("[.hg/config.txt, sub/mid.txt, sub/subsub/lowest.txt, top.txt, very/deep/path/here]", new TreeSet<>(vf.list("**", null, false)).toString());
+            assertEquals("[.hg, .hg/config.txt, sub, sub/mid.txt, sub/subsub, sub/subsub/lowest.txt, top.txt, very, very/deep, very/deep/path, very/deep/path/here]", new TreeSet<>(vf.list("**", null, false)).toString());
             assertEquals("[]", new TreeSet<>(vf.list("", null, false)).toString());
-            assertEquals("[sub/mid.txt, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", null, false)).toString());
-            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/", false)).toString());
-            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/**", false)).toString());
-            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "**/subsub/", false)).toString());
+            assertEquals("[sub, sub/mid.txt, sub/subsub, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", null, false)).toString());
+            assertEquals("[sub, sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/", false)).toString());
+            assertEquals("[sub, sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/**", false)).toString());
+            assertEquals("[sub, sub/mid.txt]", new TreeSet<>(vf.list("sub/", "**/subsub/", false)).toString());
             assertEquals("[.hg/config.txt, sub/mid.txt]", new TreeSet<>(vf.list("**/mid*,**/conf*", null, false)).toString());
-            assertEquals("[sub/mid.txt, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", "**/notthere/", false)).toString());
+            assertEquals("[sub, sub/mid.txt, sub/subsub, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", "**/notthere/", false)).toString());
             assertEquals("[top.txt]", new TreeSet<>(vf.list("*.txt", null, false)).toString());
-            assertEquals("[sub/subsub/lowest.txt, top.txt, very/deep/path/here]", new TreeSet<>(vf.list("**", "**/mid*,**/conf*", false)).toString());
+            assertEquals("[.hg, sub, sub/subsub, sub/subsub/lowest.txt, top.txt, very, very/deep, very/deep/path, very/deep/path/here]", new TreeSet<>(vf.list("**", "**/mid*,**/conf*", false)).toString());
         }
     }
     /** Roughly analogous to {@code org.jenkinsci.plugins.compress_artifacts.ZipStorage}. */
@@ -245,6 +245,12 @@ class VirtualFileTest {
         VirtualFile virtualRoot = VirtualFile.forFile(root);
         Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
         assertThat(children, containsInAnyOrder(
+                "a",
+                "a/aa",
+                "a/ab",
+                "b",
+                "b/ba",
+                "a/aa/aaa",
                 "a/aa/aa.txt",
                 "a/ab/ab.txt",
                 "b/ba/ba.txt"
@@ -261,6 +267,11 @@ class VirtualFileTest {
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
         Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
         assertThat(children, containsInAnyOrder(
+                "a",
+                "a/aa",
+                "a/aa/aaa",
+                "a/ab",
+                "b/ba",
                 "a/aa/aa.txt",
                 "a/ab/ab.txt",
                 "b/ba/ba.txt"
@@ -288,7 +299,7 @@ class VirtualFileTest {
         assertTrue(unzipPath.isDirectory());
         assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child("a").child("aa").child("aaa").exists());
+        assertTrue(unzipPath.child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child("a").child("_b").exists());
         assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
         assertFalse(unzipPath.child("b").child("_a").exists());
@@ -318,7 +329,7 @@ class VirtualFileTest {
         assertTrue(unzipPath.child(prefix).isDirectory());
         assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child(prefix).child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
+        assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child(prefix).child("a").child("_b").exists());
         assertTrue(unzipPath.child(prefix).child("b").child("ba").child("ba.txt").exists());
         assertFalse(unzipPath.child(prefix).child("b").child("_a").exists());
@@ -346,7 +357,7 @@ class VirtualFileTest {
         assertTrue(unzipPath.isDirectory());
         assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child("a").child("aa").child("aaa").exists());
+        assertTrue(unzipPath.child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child("a").child("_b").exists());
         assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
         assertFalse(unzipPath.child("b").child("_a").exists());
@@ -376,7 +387,7 @@ class VirtualFileTest {
         assertTrue(unzipPath.child(prefix).isDirectory());
         assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aa.txt").exists());
         assertTrue(unzipPath.child(prefix).child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
+        assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
         assertFalse(unzipPath.child(prefix).child("a").child("_b").exists());
         assertTrue(unzipPath.child(prefix).child("b").child("ba").child("ba.txt").exists());
         assertFalse(unzipPath.child(prefix).child("b").child("_a").exists());
@@ -512,7 +523,7 @@ class VirtualFileTest {
         VirtualFile symlinkVirtualPath = VirtualFile.forFilePath(symlinkPath);
         VirtualFile symlinkChildVirtualPath = symlinkVirtualPath.child("aa");
         Collection<String> children = symlinkChildVirtualPath.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, contains("aa.txt"));
+        assertThat(children, containsInAnyOrder( "aaa", "aa.txt"));
     }
 
     @Test
@@ -527,7 +538,7 @@ class VirtualFileTest {
         VirtualFile symlinkVirtualFile = VirtualFile.forFile(symlinkFile);
         VirtualFile symlinkChildVirtualFile = symlinkVirtualFile.child("aa");
         Collection<String> children = symlinkChildVirtualFile.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
-        assertThat(children, contains("aa.txt"));
+        assertThat(children, containsInAnyOrder( "aaa", "aa.txt"));
     }
 
     @Test
