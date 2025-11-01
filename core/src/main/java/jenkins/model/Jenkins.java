@@ -34,6 +34,7 @@ import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
 import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 import static hudson.init.InitMilestone.JOB_LOADED;
 import static hudson.init.InitMilestone.PLUGINS_PREPARED;
+import static hudson.init.InitMilestone.SYSTEM_CONFIG_ADAPTED;
 import static hudson.init.InitMilestone.SYSTEM_CONFIG_LOADED;
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
@@ -3498,7 +3499,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         List<Handle> loadJobs = new ArrayList<>();
         for (final File subdir : subdirs) {
-            loadJobs.add(g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), new Executable() {
+            loadJobs.add(g.requires(loadJenkins).requires(SYSTEM_CONFIG_ADAPTED).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), new Executable() {
                 @Override
                 public void run(Reactor session) throws Exception {
                     if (!Items.getConfigFile(subdir).exists()) {

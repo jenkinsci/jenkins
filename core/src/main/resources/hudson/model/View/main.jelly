@@ -16,7 +16,7 @@
 
             <j:if test="${!newDashboardPage}">
               <j:choose>
-                <j:when test="${it.owner.class == hudson.model.MyViewsProperty.class}">
+                <j:when test="${it.isMyViewsProperty()}">
                   <st:include it="${it.owner.viewsTabBar}" page="viewTabs" />
                 </j:when>
                 <j:otherwise>
@@ -41,7 +41,7 @@
 
             <j:if test="${!newDashboardPage}">
               <j:choose>
-                <j:when test="${it.owner.class == hudson.model.MyViewsProperty.class}">
+                <j:when test="${it.isMyViewsProperty()}">
                   <st:include it="${it.owner.viewsTabBar}" page="viewTabs" />
                 </j:when>
                 <j:otherwise>
