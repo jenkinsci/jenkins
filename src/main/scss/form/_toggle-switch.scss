@@ -63,7 +63,7 @@
     & + label {
       &::after {
         left: 25px;
-        mask-image: url('../images/svgs/mask-toggle-switch__checked.svg');
+        mask-image: url("../images/svgs/mask-toggle-switch__checked.svg");
       }
 
       &:active,

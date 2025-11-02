@@ -134,7 +134,7 @@
     opacity: 0;
     transition: var(--standard-transition);
     background: var(--text-color);
-    mask-image: url('../images/svgs/mask-breadcrumbs__after.svg');
+    mask-image: url("../images/svgs/mask-breadcrumbs__after.svg");
     mask-position: center;
     mask-repeat: no-repeat;
   }

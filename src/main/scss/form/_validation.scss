@@ -54,7 +54,7 @@
   color: var(--red);
 
   &::before {
-    mask-image: url('../images/svgs/mask-validation__error.svg');
+    mask-image: url("../images/svgs/mask-validation__error.svg");
   }
 }
 
@@ -67,7 +67,7 @@
   color: var(--orange);
 
   &::before {
-    mask-image: url('../images/svgs/mask-validation__warning.svg');
+    mask-image: url("../images/svgs/mask-validation__warning.svg");
   }
 }
 
@@ -80,6 +80,6 @@
   color: var(--text-color);
 
   &::before {
-    mask-image: url('../images/svgs/mask-validation__info.svg');
+    mask-image: url("../images/svgs/mask-validation__info.svg");
   }
 }

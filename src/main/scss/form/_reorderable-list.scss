@@ -162,7 +162,7 @@ div.to-be-removed {
         position: absolute;
         inset: 0 4px;
         background-color: var(--text-color);
-        mask-image: url('../images/svgs/mask-reorderable-list__handle.svg');
+        mask-image: url("../images/svgs/mask-reorderable-list__handle.svg");
         mask-position: center;
         mask-repeat: no-repeat;
         mask-size: contain;

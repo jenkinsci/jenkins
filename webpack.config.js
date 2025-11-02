@@ -93,7 +93,10 @@ module.exports = (env, argv) => ({
               // from the war/src/main/webapp/images dir
               url: {
                 filter: (url, resourcePath) => {
-                  return !resourcePath.includes("styles.scss") && !url.includes("../images/svgs/");
+                  return (
+                    !resourcePath.includes("styles.scss") &&
+                    !url.includes("../images/svgs/")
+                  );
                 },
               },
             },
