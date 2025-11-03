@@ -1250,6 +1250,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
     }
 
+    // for Jelly
+    @Restricted(DoNotUse.class)
+    public boolean isMyViewsProperty() {
+        return getOwner() instanceof MyViewsProperty;
+    }
+
     public static class PropertyList extends DescribableList<ViewProperty, ViewPropertyDescriptor> {
         private PropertyList(View owner) {
             super(owner);
