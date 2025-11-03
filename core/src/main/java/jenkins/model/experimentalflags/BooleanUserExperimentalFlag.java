@@ -36,7 +36,7 @@ public abstract class BooleanUserExperimentalFlag extends UserExperimentalFlag<B
 
     @Override
     public @NonNull Boolean getDefaultValue() {
-        return false;
+        return Boolean.getBoolean(getClass().getName() + ".enabled");
     }
 
     @Override
