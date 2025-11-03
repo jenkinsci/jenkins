@@ -37,7 +37,7 @@ public abstract class BooleanUserExperimentalFlag extends UserExperimentalFlag<B
 
     @Override
     public @NonNull Boolean getDefaultValue() {
-        return SystemProperties.getBoolean(getClass().getName() + ".defaultValue");
+        return SystemProperties.getBoolean(getFlagKey() + ".defaultValue");
     }
 
     @Override
