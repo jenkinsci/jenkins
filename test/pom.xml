@@ -67,7 +67,7 @@ THE SOFTWARE.
         <!-- Required by workflow-support -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>caffeine-api</artifactId>
-        <version>3.2.2-178.v353b_8428ed56</version>
+        <version>3.2.3-194.v31a_b_f7a_b_5a_81</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
