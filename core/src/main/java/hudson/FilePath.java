@@ -718,10 +718,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         int mode = e.getUnixMode();
                         if (mode != 0)    // Ant returns 0 if the archive doesn't record the access mode
                             target.chmod(mode);
-                    } catch (InterruptedException ex) {
+                    } catch (InterruptedException | NoSuchFileException ex) {
                         LOGGER.log(Level.WARNING, "unable to set permissions", ex);
                     }
-                    Files.setLastModifiedTime(Util.fileToPath(f), e.getLastModifiedTime());
+                    try {
+                        Files.setLastModifiedTime(Util.fileToPath(f), e.getLastModifiedTime());
+                    } catch (NoSuchFileException ex) {
+                        LOGGER.log(Level.WARNING, "unable to set last modified time", ex);
+                    }
                 }
             }
         }
