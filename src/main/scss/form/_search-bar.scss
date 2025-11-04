@@ -105,11 +105,6 @@
     &::after {
       border-color: currentColor;
       clip-path: inset(0 0 50% 50%);
-      animation: loading-spinner 1s infinite linear;
-
-      @media (prefers-reduced-motion) {
-        animation-duration: 2s;
-      }
     }
   }
 
@@ -141,6 +136,11 @@
         opacity: 1;
         scale: 1;
         filter: blur(0);
+        animation: loading-spinner 1s infinite linear;
+
+        @media (prefers-reduced-motion) {
+          animation-duration: 2s;
+        }
       }
     }
   }
