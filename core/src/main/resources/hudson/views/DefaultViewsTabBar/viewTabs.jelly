@@ -36,11 +36,7 @@ THE SOFTWARE.
               <l:icon src="${tab.iconFileName}" />
             </j:if>
             ${tab.displayName}
-            <j:if test="${tab.badge != null}">
-              <div class="pill jenkins-!-${tab.badge.severity}-color" aria-label="${tab.badge.tooltip}">
-                ${tab.badge.text}
-              </div>
-            </j:if>
+            <l:badge badge="${tab.badge}" />
           </a>
         </j:forEach>
 
