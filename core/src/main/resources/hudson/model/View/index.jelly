@@ -24,17 +24,24 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-    <l:layout title="${(it.class.name=='hudson.model.AllView' and it.ownerItemGroup == app) ? '%Dashboard' : it.displayName}${not empty it.ownerItemGroup.fullDisplayName?' ['+it.ownerItemGroup.fullDisplayName+']':''}">
-      <j:set var="view" value="${it}"/> <!-- expose view to the scripts we include from owner -->
+  <l:userExperimentalFlag var="newDashboardPage" flagClassName="jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag" />
+
+  <j:choose>
+    <j:when test="${newDashboardPage}">
+      <st:include page="new-view-page.jelly" />
+    </j:when>
+    <j:otherwise>
+      <l:layout title="${(it.class.name=='hudson.model.AllView' and it.ownerItemGroup == app) ? '%Dashboard' : it.displayName}${not empty it.ownerItemGroup.fullDisplayName?' ['+it.ownerItemGroup.fullDisplayName+']':''}">
+        <j:set var="view" value="${it}"/> <!-- expose view to the scripts we include from owner -->
         <st:include page="sidepanel.jelly" />
         <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
         <l:main-panel>
           <st:include page="view-index-top.jelly" it="${it.owner}" optional="true">
             <!-- allow the owner to take over the top section, but we also need the default to be backward compatible -->
             <div id="view-message">
-                <div id="systemmessage">
-                  <j:out value="${app.systemMessage!=null ? app.markupFormatter.translate(app.systemMessage) : ''}" />
-                </div>
+              <div id="systemmessage">
+                <j:out value="${app.systemMessage!=null ? app.markupFormatter.translate(app.systemMessage) : ''}" />
+              </div>
               <t:editableDescription permission="${it.CONFIGURE}"/>
             </div>
           </st:include>
@@ -47,5 +54,7 @@ THE SOFTWARE.
           <script id="screenResolution-script" data-use-secure-cookie="${request2.secure}"/>
           <st:adjunct includes="hudson.model.View.screen-resolution"/>
         </l:header>
-    </l:layout>
+      </l:layout>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
