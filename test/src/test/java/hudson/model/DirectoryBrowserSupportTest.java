@@ -323,7 +323,7 @@ class DirectoryBrowserSupportTest {
         j.buildAndAssertSuccess(p);
 
         HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
-        assertEquals(DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), "Header set: Content-Security-Policy");
+        assertEquals(DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue("Content-Security-Policy"));
 
         String propName = DirectoryBrowserSupport.class.getName() + ".CSP";
         String initialValue = System.getProperty(propName);
