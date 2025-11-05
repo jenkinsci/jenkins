@@ -67,7 +67,7 @@ THE SOFTWARE.
         <!-- Required by workflow-support -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>caffeine-api</artifactId>
-        <version>3.2.2-178.v353b_8428ed56</version>
+        <version>3.2.3-194.v31a_b_f7a_b_5a_81</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -127,7 +127,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1378.vf25626395f49</version>
+        <version>1385.v7d2d9ec4d909</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
