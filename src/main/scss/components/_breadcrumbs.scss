@@ -134,7 +134,7 @@
     opacity: 0;
     transition: var(--standard-transition);
     background: var(--text-color);
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Down%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M112 184l144 144 144-144'/%3E%3C/svg%3E");
+    mask-image: url("../images/svgs/mask-breadcrumbs__after.svg");
     mask-position: center;
     mask-repeat: no-repeat;
   }
