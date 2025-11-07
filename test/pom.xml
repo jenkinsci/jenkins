@@ -173,6 +173,13 @@ THE SOFTWARE.
       <version>1.6.2-11</version>
       <scope>test</scope>
     </dependency>
+    <!-- Required by junit-plugin -->
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>prism-api</artifactId>
+      <version>1.30.0-630.va_e19d17f83b_0</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
