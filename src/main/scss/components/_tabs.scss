@@ -129,11 +129,6 @@ $border-radius: 19px;
     &:not(.jenkins-button--tertiary) {
       pointer-events: none;
       font-weight: var(--font-bold-weight);
-
-      .pill::before {
-        border: var(--jenkins-border-width) solid
-          color-mix(in sRGB, var(--color, currentColor) 20%, transparent);
-      }
     }
 
     &.jenkins-button--tertiary {
@@ -156,43 +151,10 @@ $border-radius: 19px;
       &::after {
         inset: 1.5px;
       }
-
-      .pill::before {
-        border: var(--jenkins-border-width) solid
-          color-mix(in sRGB, var(--color, currentColor) 20%, transparent);
-      }
     }
 
-    .pill {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 100px;
-      font-size: 12px;
-      min-width: 20px;
-      text-align: center;
-      padding-inline: 6px;
-      text-box: cap alphabetic;
-      height: 20px;
-      z-index: 0;
+    .jenkins-badge {
       margin-right: -0.25rem;
-      transition: border var(--standard-transition);
-
-      &::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        background: color-mix(
-          in sRGB,
-          var(--color, var(--background)) 5%,
-          var(--background)
-        );
-        border: var(--jenkins-border-width) solid
-          color-mix(in sRGB, var(--color, currentColor) 10%, transparent);
-        z-index: -1;
-      }
     }
   }
 }
