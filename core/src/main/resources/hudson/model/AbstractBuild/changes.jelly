@@ -29,18 +29,28 @@ THE SOFTWARE.
   </j:new>
 
   <l:run-subpage>
-    <l:app-bar title="${it.displayName}" headingLevel="h2">
+    <l:app-bar title="${it.displayName}">
       <l:details-bar it="${it.object}" />
     </l:app-bar>
 
     <j:set var="it" value="${it.object}" />
+    <j:set var="changeSets" value="${it.changeSets}" />
 
-    <div class="jenkins-card">
-      <div class="jenkins-card__content">
-        <j:forEach var="changeSet" items="${it.changeSets}">
-          <st:include page="index.jelly" it="${changeSet}"/>
-        </j:forEach>
-      </div>
-    </div>
+    <j:choose>
+      <j:when test="${!empty(changeSets)}">
+        <div class="jenkins-card">
+          <div class="jenkins-card__content">
+            <j:forEach var="changeSet" items="${changeSets}">
+              <st:include page="index.jelly" it="${changeSet}" />
+            </j:forEach>
+          </div>
+        </div>
+      </j:when>
+      <j:otherwise>
+        <l:notice icon="symbol-changes" title="${%Failed to determine}">
+          <a href="${h.getConsoleUrl(it)}">${%log}</a>
+        </l:notice>
+      </j:otherwise>
+    </j:choose>
   </l:run-subpage>
 </j:jelly>
