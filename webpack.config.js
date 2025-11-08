@@ -89,11 +89,14 @@ module.exports = (env, argv) => ({
             loader: "css-loader",
             options: {
               sourceMap: true,
-              // ignore the URLS on the base styles as they are picked
+              // ignore the URLS on the base styles and mask images as they are picked
               // from the war/src/main/webapp/images dir
               url: {
                 filter: (url, resourcePath) => {
-                  return !resourcePath.includes("styles.scss");
+                  return (
+                    !resourcePath.includes("styles.scss") &&
+                    !url.includes("../images/svgs/")
+                  );
                 },
               },
             },
