@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
-  <l:card title="${%Changes}" expandable="changes">
-    <j:set var="changeSets" value="${it.object.changeSets}"/>
+  <l:card title="${it.displayName}" expandable="${it.urlName}">
+    <j:set var="changeSets" value="${it.object.changeSets}" />
     <j:forEach var="changeSet" items="${changeSets}">
-      <st:include it="${changeSet}" page="digest.jelly"/>
+      <st:include it="${changeSet}" page="digest.jelly" />
     </j:forEach>
   </l:card>
 </j:jelly>
