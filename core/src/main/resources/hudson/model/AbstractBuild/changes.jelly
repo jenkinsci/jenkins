@@ -33,8 +33,7 @@ THE SOFTWARE.
       <l:details-bar it="${it.object}" />
     </l:app-bar>
 
-    <j:set var="it" value="${it.object}" />
-    <j:set var="changeSets" value="${it.changeSets}" />
+    <j:set var="changeSets" value="${it.object.changeSets}" />
 
     <j:choose>
       <j:when test="${!empty(changeSets)}">
@@ -47,8 +46,8 @@ THE SOFTWARE.
         </div>
       </j:when>
       <j:otherwise>
-        <l:notice icon="symbol-changes" title="${%Failed to determine}">
-          <a href="${h.getConsoleUrl(it)}">${%log}</a>
+        <l:notice icon="${it.iconFileName}" title="${%Failed to determine}">
+          <a href="${h.getConsoleUrl(it.object)}">${%log}</a>
         </l:notice>
       </j:otherwise>
     </j:choose>
