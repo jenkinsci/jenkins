@@ -271,6 +271,28 @@ body:has(.app-build-bar) {
   margin-inline: calc(var(--section-padding) * -1);
 
   .jenkins-app-bar {
-    margin-block: 1.0625rem;
+    margin-block: 0.875rem;
+
+    h1,
+    h2 {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+.app-build__artifact-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  padding: 0.25rem 0.5rem;
+  min-height: 0;
+  margin-inline: -0.5rem;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1lh;
+    margin-inline: -0.125rem;
   }
 }
