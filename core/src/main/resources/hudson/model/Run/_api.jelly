@@ -52,9 +52,23 @@ THE SOFTWARE.
     The response will contain a chunk of the console output, as well as the <code>X-Text-Size</code> header that represents
     the bytes offset (of the raw log file).
     This is the number you want to use as the <code>start</code> parameter for the next call.
+    The header <code>X-ConsoleAnnotator</code> needs to be copied to the next call in order to resume console annotations.
   </p><p>
     If the response also contains the <code>X-More-Data: true</code> header, the server is indicating that the build
     is in progress, and you need to repeat the request after some delay. The Jenkins UI waits 5 seconds before making
     the next call. When this header is not present, you know that you've retrieved all the data and the build is complete.
+  </p><p>
+    Streaming/unbuffered variant with <code>multipart/form-data</code> response: Add header <code>Accept: multipart/form-data</code> to enable this mode.
+    The response will have two parts: The first part will have <code>Content-Disposition: form-data;name=text</code> and ship the log bytes. The second part will have <code>Content-Disposition: form-data;name=meta</code> and describes the log bytes in a JSON object with the following fields:
+    <ul>
+      <li><code>completed</code> is the inverse of <code>X-More-Data</code></li>
+      <li><code>start</code> is the determined start when using <code>?start=-1000</code> for tailing the last n bytes</li>
+      <li><code>end</code> is equivalent to <code>X-Text-Size</code></li>
+      <li><code>consoleAnnotator</code> is equivalent to <code>X-ConsoleAnnotator</code></li>
+      <li><code>startFromNewLine</code> is set to <code>true</code> when the start was moved to the first new line (e.g. when tailing)</li>
+    </ul>
+    This streaming mode uses larger disk reads (64kiB instead of 1KiB) and does not normalize line endings to CRLF (previously needed for for Internet Explorer).
+    <br />
+    The optional parameter <code>?searchNewLineUntil=previousStart</code> can be used when fetching more bytes from the start of the log to search for the first new line in the prior content. Example: Request last 150KiB from a 3MiB file, it might return 3MiB-142KiB ~ 3000000 due to new line detection when tailing. Then request one more MiB with <code>?start=2000000</code> and <code>?searchNewLineUntil=3000000</code>. This will guarantee that the new line detection stops at the start of the last response and does not return from the same "first" new line it can find.
   </p>
 </j:jelly>

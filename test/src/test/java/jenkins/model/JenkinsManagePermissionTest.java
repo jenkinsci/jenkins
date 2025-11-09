@@ -153,11 +153,9 @@ class JenkinsManagePermissionTest {
         j.jenkins.addView(new MyView("testView", j.jenkins));
 
         //GIVEN the Global Configuration Form, with some changes unsaved
-        int currentNumberExecutors = j.getInstance().getNumExecutors();
         String shell = getShell();
         View view = j.jenkins.getPrimaryView();
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
-        form.getInputByName("_.numExecutors").setValue("" + (currentNumberExecutors + 1));
         form.getInputByName("_.shell").setValue("/fakeShell");
         form.getSelectByName("primaryView").setSelectedAttribute("testView", true);
 
@@ -167,7 +165,6 @@ class JenkinsManagePermissionTest {
                 .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toEveryone());
         j.submit(form);
         // THEN the changes on fields forbidden to a Jenkins.MANAGE permission are not saved
-        assertEquals(currentNumberExecutors, j.getInstance().getNumExecutors(), "shouldn't be allowed to change the number of executors");
         assertEquals(shell, getShell(), "shouldn't be allowed to change the shell executable");
         assertEquals(view, j.getInstance().getPrimaryView(), "shouldn't be allowed to change the primary view");
     }

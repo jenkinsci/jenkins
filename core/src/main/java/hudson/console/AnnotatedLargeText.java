@@ -94,6 +94,11 @@ public class AnnotatedLargeText<T> extends LargeText {
         this.context = context;
     }
 
+    public AnnotatedLargeText(LargeText.Source source, Charset charset, boolean completed, T context) {
+        super(source, charset, completed);
+        this.context = context;
+    }
+
     /**
      * @since 2.475
      */
@@ -236,8 +241,10 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     @CheckReturnValue
     public long writeHtmlTo(long start, Writer w) throws IOException {
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
+        StaplerResponse2 rsp = Stapler.getCurrentResponse2();
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
-                w, createAnnotator(Stapler.getCurrentRequest2()), context, charset);
+                w, createAnnotator(req), context, charset);
         long r = super.writeLogTo(start, caw);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -246,9 +253,12 @@ public class AnnotatedLargeText<T> extends LargeText {
         oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
         oos.writeObject(caw.getConsoleAnnotator());
         oos.close();
-        StaplerResponse2 rsp = Stapler.getCurrentResponse2();
-        if (rsp != null)
-            rsp.setHeader("X-ConsoleAnnotator", Base64.getEncoder().encodeToString(baos.toByteArray()));
+        String state = Base64.getEncoder().encodeToString(baos.toByteArray());
+        if (isStreamingRequest(req)) {
+            putStreamingMeta("consoleAnnotator", state);
+        } else if (rsp != null) {
+            rsp.setHeader("X-ConsoleAnnotator", state);
+        }
         return r;
     }
 

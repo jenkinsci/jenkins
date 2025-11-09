@@ -1,4 +1,5 @@
 @use "../base/breakpoints";
+@use "../components/cards";
 @use "../components/dialogs";
 
 .build-caption-progress-container {
@@ -11,10 +12,16 @@
 
 .app-build__grid {
   gap: calc(var(--section-padding) / 2);
-  margin-bottom: var(--section-padding);
+  margin-bottom: calc(var(--section-padding) * -0.5);
 
-  .jenkins-card {
-    margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
+  & > * {
+    height: 350px;
+  }
+
+  // Legacy card shouldn't have a fixed height
+  .jenkins-card:last-of-type {
+    height: unset;
+    min-height: 350px;
   }
 
   @media (width < 1000px) {
@@ -31,14 +38,12 @@
     display: grid;
     justify-content: stretch;
     grid-template-columns: 1fr 1fr;
-    margin-top: calc(var(--section-padding) * -0.25);
 
-    .jenkins-card {
+    & > div {
       overflow: clip;
-      margin-bottom: 0; // Remove when .jenkins-card no longer has a default margin
 
       &:first-of-type {
-        grid-column: span 2;
+        grid-column: span 1;
       }
 
       &:last-of-type {
@@ -54,9 +59,9 @@
   @media (width >= 1300px) {
     grid-template-columns: 1fr 1fr 1fr;
 
-    .jenkins-card {
+    & > div {
       &:first-of-type {
-        grid-column: span 3;
+        grid-column: span 2;
       }
 
       &:last-of-type {
@@ -68,9 +73,9 @@
   @media (width >= 1600px) {
     grid-template-columns: 1fr 1fr 1fr 1fr;
 
-    .jenkins-card {
+    & > div {
       &:first-of-type {
-        grid-column: span 4;
+        grid-column: span 3;
       }
 
       &:last-of-type {
@@ -82,9 +87,9 @@
   @media (width >= 1900px) {
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 
-    .jenkins-card {
+    & > div {
       &:first-of-type {
-        grid-column: span 5;
+        grid-column: span 4;
       }
 
       &:last-of-type {
@@ -110,8 +115,8 @@
 
 .app-console-output-widget {
   overflow-y: auto;
-  margin: 0 -1rem -1rem;
-  padding: 0 1rem 1rem;
+  margin: 0 -#{cards.$card-padding} -#{cards.$card-padding};
+  padding: 0 cards.$card-padding cards.$card-padding;
 
   pre {
     background: transparent;
@@ -130,5 +135,142 @@
 
   & > * {
     margin-bottom: 0;
+  }
+}
+
+body:has(.app-build-bar) {
+  --top: color-mix(in sRGB, var(--text-color-secondary) 4%, var(--background));
+  --bottom: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 2%,
+    var(--background)
+  );
+
+  background: linear-gradient(var(--top), var(--bottom));
+  background-attachment: fixed;
+}
+
+.app-build-bar {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 0.5rem 1.5rem;
+  min-height: 2.875rem;
+  margin-top: -5px;
+  padding-bottom: 0.75rem;
+  z-index: 102;
+
+  @media (width <= 1200px) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1000px calc(var(--section-padding) * -1) 0;
+    background-color: var(--background);
+    border-bottom: var(--jenkins-border-width) solid var(--card-border-color);
+    z-index: -1;
+  }
+
+  .app-build-bar__content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: start;
+    min-height: 38px;
+  }
+
+  .app-build-bar__tabs {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .app-build-bar__controls {
+    display: inline-flex;
+    align-items: center;
+    justify-content: end;
+    flex: 1;
+    gap: 0.75rem;
+
+    @media (width <= 600px) {
+      justify-content: stretch;
+    }
+  }
+}
+
+.app-build-bar__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+
+  .app-build-bar__content__headline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-left: -0.25rem;
+
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  h1 {
+    margin-bottom: 0;
+    font-size: 1.25rem;
+  }
+
+  .jenkins-button {
+    border-radius: 100px;
+    aspect-ratio: 1;
+    padding: 0;
+    margin-inline: -1rem;
+    transition: translate var(--standard-transition);
+
+    &:not(:hover) {
+      color: color-mix(
+        in sRGB,
+        var(--text-color-secondary) 75%,
+        transparent
+      ) !important;
+    }
+
+    &::before,
+    &::after {
+      inset: 7px;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+
+      * {
+        stroke-width: 45px;
+      }
+    }
+  }
+
+  .app-build__navigation-previous:hover {
+    translate: -0.0625rem 0;
+  }
+
+  .app-build__navigation-next:hover {
+    translate: 0.0625rem 0;
+  }
+}
+
+.app-build-content {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--section-padding);
+  margin-inline: calc(var(--section-padding) * -1);
+
+  .jenkins-app-bar {
+    margin-block: 1.0625rem;
   }
 }

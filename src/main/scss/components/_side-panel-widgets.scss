@@ -1,31 +1,34 @@
 @use "../abstracts/mixins";
 
-#side-panel .pane-frame {
-  border-radius: 1rem;
+.pane-frame {
+  border-radius: var(--form-input-border-radius);
   background: var(--card-background);
   border: var(--card-border-width) solid var(--card-border-color);
-  margin-left: 10px;
   margin-bottom: calc(var(--section-padding) / 2);
   overflow: hidden;
 }
 
-#side-panel .pane-header {
+#side-panel .pane-frame {
+  margin-left: 10px;
+}
+
+.pane-header {
   font-size: var(--font-size-sm);
   display: flex;
 }
 
-#side-panel .pane-footer {
+.pane-footer {
   font-size: var(--font-size-xs);
 }
 
-#side-panel .pane-header,
-#side-panel .pane-footer {
+.pane-header,
+.pane-footer {
   color: var(--link-dark-color);
   background: transparent;
   padding: 0.65rem 1rem;
 }
 
-#side-panel .pane-header-title {
+.pane-header-title {
   display: inline-block;
   flex: 1;
   font-weight: var(--font-bold-weight);
@@ -35,8 +38,8 @@
   }
 }
 
-#side-panel .pane-header .expand,
-#side-panel .pane-header .collapse {
+.pane-header .expand,
+.pane-header .collapse {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,16 +52,16 @@
   }
 }
 
-#side-panel .pane-header-details {
+.pane-header-details {
   font-weight: normal;
   font-size: var(--font-size-xs);
 }
 
-#side-panel .pane-content {
+.pane-content {
   font-size: var(--font-size-xs);
 }
 
-#side-panel .pane-content .pane {
+.pane-content .pane {
   font-size: var(--font-size-xs);
   padding: 0.5rem 0.25rem;
 
@@ -71,19 +74,19 @@
   }
 }
 
-#side-panel .pane-content > table {
+.pane-content > table {
   padding: 0 1.25rem;
 }
 
-#side-panel .pane-content tbody tr {
+.pane-content tbody tr {
   &:not(:first-child) {
     border-top: 1px solid var(--panel-border-color);
   }
 }
 
-#side-panel .pane-header a,
-#side-panel .pane-footer a,
-#side-panel .pane-content a {
+.pane-header a,
+.pane-footer a,
+.pane-content a {
   @include mixins.link-dark;
 
   text-decoration: underline;
