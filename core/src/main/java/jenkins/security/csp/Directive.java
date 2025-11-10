@@ -29,8 +29,15 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+/**
+ * Represents a defined Content Security Policy directive
+ * @param name {@code default-src}, {@code frame-ancestors}, etc.
+ * @param inheriting whether the directive is inheriting or not. Only applies to
+ *  directives based on {@link jenkins.security.csp.FetchDirective}.
+ * @param values {@code 'self'}, {@code data:}, {@code jenkins.io}, etc.
+ */
 @Restricted(Beta.class)
-public record Directive(String name, boolean inheriting, List<String> values) {
+public record Directive(String name, Boolean inheriting, List<String> values) {
 
     /* Fetch directives */
     public static final String DEFAULT_SRC = "default-src";

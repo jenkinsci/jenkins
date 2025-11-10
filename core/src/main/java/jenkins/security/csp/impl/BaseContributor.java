@@ -22,12 +22,16 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security.csp;
+package jenkins.security.csp.impl;
 
 import static jenkins.security.csp.Directive.REPORT_SAMPLE;
 import static jenkins.security.csp.Directive.SELF;
 
 import hudson.Extension;
+import jenkins.security.csp.Contributor;
+import jenkins.security.csp.CspBuilder;
+import jenkins.security.csp.Directive;
+import jenkins.security.csp.FetchDirective;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -41,8 +45,9 @@ public final class BaseContributor implements Contributor {
     public void apply(CspBuilder cspBuilder) {
         cspBuilder
                 .initialize(FetchDirective.DEFAULT_SRC, SELF)
-                .initialize(FetchDirective.STYLE_SRC, SELF, REPORT_SAMPLE)
-                .initialize(FetchDirective.IMG_SRC, SELF)
-                .initialize(FetchDirective.SCRIPT_SRC, SELF, REPORT_SAMPLE);
+                .add(Directive.STYLE_SRC, REPORT_SAMPLE)
+                .add(Directive.SCRIPT_SRC, REPORT_SAMPLE)
+                .add(Directive.FORM_ACTION, SELF)
+                .add(Directive.FRAME_ANCESTORS, SELF);
     }
 }

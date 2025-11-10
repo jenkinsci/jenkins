@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright 2025 CloudBees, Inc.
+Copyright (c) 2025 CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-    <st:setHeader name="${it.getContentSecurityPolicyHeaderName()}" value="${it.getContentSecurityPolicyHeaderValue(request2)}" />
-    <st:setHeader name="Reporting-Endpoints" value="${it.getReportingEndpointsHeaderValue(request2)}" />
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <div class="jenkins-alert jenkins-alert-info">
+        <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+            <f:submit name="more" value="${%Learn more}"/>
+            <f:submit name="dismiss" primary="false" value="${%Dismiss}"/>
+        </form>
+        ${%blurb}
+    </div>
 </j:jelly>

@@ -22,33 +22,41 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security.csp;
+package jenkins.security.csp.impl;
 
 import hudson.Extension;
-import hudson.ExtensionList;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import jenkins.security.ResourceDomainConfiguration;
-import jenkins.util.HttpServletFilter;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.security.csp.CspHeader;
+import jenkins.security.csp.CspHeaderDecider;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+/**
+ * Specify the {@link jenkins.security.csp.CspHeader} for {@link CspDecorator} via system property.
+ */
 @Restricted(NoExternalUse.class)
-@Extension
-public class Filter implements HttpServletFilter {
-    @Override
-    public boolean handle(HttpServletRequest req, HttpServletResponse rsp) throws IOException, ServletException {
-        final Decorator decorator = ExtensionList.lookupSingleton(Decorator.class);
-        final String header = decorator.getContentSecurityPolicyHeaderName();
-        if (rsp.getHeader(header) == null && !ResourceDomainConfiguration.isResourceRequest(req)) {
-            // The Filter/Decorator approach needs us to "set" headers rather than "add", so no additional endpoints are supported at the moment.
-            rsp.setHeader("Reporting-Endpoints", decorator.getReportingEndpointsHeaderValue(req));
+@Extension(ordinal = Double.MAX_VALUE) // Highest precedence
+public class SystemPropertyHeaderDecider implements CspHeaderDecider {
 
-            // This is the preliminary value outside Stapler request handling (and providing a context object)
-            rsp.setHeader(header, decorator.getContentSecurityPolicyHeaderValue(req));
+    private static final Logger LOGGER = Logger.getLogger(SystemPropertyHeaderDecider.class.getName());
+
+    @Override
+    public Optional<CspHeader> decide() {
+        final String systemProperty = SystemProperties.getString(CspHeader.class.getName() + ".headerName");
+        if (systemProperty != null) {
+            LOGGER.log(Level.FINEST, "Using system property: {0}", new Object[]{ systemProperty });
+            return Arrays.stream(CspHeader.values()).filter(h -> h.getHeaderName().equals(systemProperty)).findFirst();
         }
-        return false;
+        return Optional.empty();
+    }
+
+    // Jelly
+    public String getHeaderName() {
+        final Optional<CspHeader> decision = decide();
+        return decision.map(CspHeader::getHeaderName).orElse(null);
     }
 }

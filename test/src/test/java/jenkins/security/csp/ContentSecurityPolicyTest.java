@@ -14,6 +14,7 @@ import hudson.tasks.ArtifactArchiver;
 import java.net.URL;
 import java.util.logging.Level;
 import jenkins.security.ResourceDomainConfiguration;
+import jenkins.security.csp.impl.ReportingAction;
 import net.sf.json.JSONObject;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;

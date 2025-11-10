@@ -22,15 +22,20 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security.csp;
+package jenkins.security.csp.impl;
 
 import hudson.Extension;
 import hudson.model.PageDecorator;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
+import jenkins.security.csp.CspBuilder;
+import jenkins.security.csp.CspHeader;
+import jenkins.security.csp.CspHeaderDecider;
+import jenkins.security.csp.ReportingContext;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -40,9 +45,10 @@ import org.kohsuke.stapler.StaplerRequest2;
 
 @Restricted(NoExternalUse.class)
 @Extension
-public class Decorator extends PageDecorator {
+public class CspDecorator extends PageDecorator {
 
     private static final String REPORTING_ENDPOINT_NAME = "content-security-policy";
+    public static final Logger LOGGER = Logger.getLogger(CspDecorator.class.getName());
 
     public String getContentSecurityPolicyHeaderValue(HttpServletRequest req) {
         String cspDirectives = new CspBuilder().withDefaultContributions().build();
@@ -75,12 +81,18 @@ public class Decorator extends PageDecorator {
      * @return the name of the HTTP header to set.
      */
     public String getContentSecurityPolicyHeaderName() {
-        // Honor system property override
-        final String systemProperty = SystemProperties.getString(Decorator.class.getName() + ".headerName");
-        if (systemProperty != null && Arrays.stream(CspHeader.values()).anyMatch(header -> StringUtils.equals(systemProperty, header.getHeaderName()))) {
-            return systemProperty;
+        final Optional<CspHeaderDecider> decider = CspHeaderDecider.getCurrentDecider();
+        if (decider.isPresent()) {
+            final CspHeaderDecider presentDecider = decider.get();
+            LOGGER.log(Level.FINEST, "Choosing header from decider " + presentDecider.getClass().getName());
+            final Optional<CspHeader> decision = presentDecider.decide();
+            if (decision.isPresent()) {
+                return decision.get().getHeaderName();
+            }
+            LOGGER.log(Level.FINE, "Decider changed its mind after selection: " + decider.getClass().getName());
         }
 
-        return CspHeader.ContentSecurityPolicy.getHeaderName();
+        LOGGER.log(Level.WARNING, "Failed to find a CspHeaderDecider, falling back to default");
+        return CspHeader.ContentSecurityPolicyReportOnly.getHeaderName();
     }
 }

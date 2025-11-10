@@ -24,15 +24,13 @@
 
 package jenkins.security.csp;
 
-import hudson.Extension;
+import hudson.model.Descriptor;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.accmod.restrictions.Beta;
 
-// TODO FIXME Move to plugin before merge to core
-@Restricted(NoExternalUse.class)
-@Extension
-public class GitHubContributor extends SimpleContributor {
-    public GitHubContributor() {
-        allow(FetchDirective.IMG_SRC, "avatars.githubusercontent.com");
-    }
+/**
+ * Descriptor for {@link jenkins.security.csp.AdvancedConfiguration}.
+ */
+@Restricted(Beta.class)
+public abstract class AdvancedConfigurationDescriptor extends Descriptor<AdvancedConfiguration> {
 }

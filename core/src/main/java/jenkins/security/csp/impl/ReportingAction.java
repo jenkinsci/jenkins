@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security.csp;
+package jenkins.security.csp.impl;
 
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.security.csp.CspReceiver;
+import jenkins.security.csp.ReportingContext;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
@@ -62,7 +64,6 @@ public class ReportingAction extends InvisibleAction implements UnprotectedRootA
 
     // In limited testing, reports seem to be a few hundred bytes (mostly the actual policy), so this seems plenty.
     // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP#violation_reporting for an example.
-    // TODO @SuppressFBWarnings()?
     private static /* non-final for script console */ int MAX_REPORT_LENGTH = 20 * 1024;
 
     @Override
@@ -78,7 +79,6 @@ public class ReportingAction extends InvisibleAction implements UnprotectedRootA
         try {
             final ReportingContext.DecodedContext context = ReportingContext.decodeContext(restOfPath);
             final User user = context.userId() == null ? null : User.getById(context.userId(), false);
-            // TODO separate max length for reports from anon / users lacking permissions?
 
             CspReceiver.ViewContext viewContext =
                     new CspReceiver.ViewContext(context.contextClassName(), context.restOfPath());

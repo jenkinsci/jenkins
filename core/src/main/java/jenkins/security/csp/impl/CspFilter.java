@@ -22,32 +22,33 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security.csp;
-
-import static jenkins.security.csp.Directive.DATA;
-import static jenkins.security.csp.Directive.IMG_SRC;
-import static jenkins.security.csp.Directive.SCRIPT_SRC;
-import static jenkins.security.csp.Directive.STYLE_SRC;
-import static jenkins.security.csp.Directive.UNSAFE_INLINE;
+package jenkins.security.csp.impl;
 
 import hudson.Extension;
+import hudson.ExtensionList;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import jenkins.security.ResourceDomainConfiguration;
+import jenkins.util.HttpServletFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-/**
- * Add the CSP directives currently required for Jenkins to work properly.
- * The long-term goal is for these directives to become unnecessary.
- * Any for which we determine with high confidence they can never be fixed
- * should be moved into {@link jenkins.security.csp.BaseContributor} instead.
- */
-@Extension(ordinal = Integer.MAX_VALUE / 2.0)
 @Restricted(NoExternalUse.class)
-public final class CompatibleContributor implements Contributor {
+@Extension
+public class CspFilter implements HttpServletFilter {
     @Override
-    public void apply(CspBuilder cspBuilder) {
-        cspBuilder
-                .add(STYLE_SRC, UNSAFE_INLINE) // Infeasible for now given inline styles in SVGs
-                .add(IMG_SRC, DATA) // TODO https://github.com/jenkinsci/csp-plugin/issues/60
-                .add(SCRIPT_SRC, "usage.jenkins.io"); // TODO https://issues.jenkins.io/browse/JENKINS-76268
+    public boolean handle(HttpServletRequest req, HttpServletResponse rsp) throws IOException, ServletException {
+        final CspDecorator cspDecorator = ExtensionList.lookupSingleton(CspDecorator.class);
+        final String header = cspDecorator.getContentSecurityPolicyHeaderName();
+        if (rsp.getHeader(header) == null && !ResourceDomainConfiguration.isResourceRequest(req)) {
+            // The Filter/Decorator approach needs us to "set" headers rather than "add", so no additional endpoints are supported at the moment.
+            rsp.setHeader("Reporting-Endpoints", cspDecorator.getReportingEndpointsHeaderValue(req));
+
+            // This is the preliminary value outside Stapler request handling (and providing a context object)
+            rsp.setHeader(header, cspDecorator.getContentSecurityPolicyHeaderValue(req));
+        }
+        return false;
     }
 }

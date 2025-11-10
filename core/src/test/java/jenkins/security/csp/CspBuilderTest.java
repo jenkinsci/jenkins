@@ -139,7 +139,7 @@ public class CspBuilderTest {
         CspBuilder builder = new CspBuilder();
         builder.add(Directive.SANDBOX);
 
-        // TODO extra space?
+        // TODO should we strip the extra space?
         assertThat(builder.build(), is("sandbox ;"));
     }
 

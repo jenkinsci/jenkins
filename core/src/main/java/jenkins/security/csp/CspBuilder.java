@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.kohsuke.accmod.Restricted;
@@ -53,7 +54,13 @@ public class CspBuilder {
     static final Set<String> PROHIBITED_KEYS = Set.of(Directive.REPORT_URI, Directive.REPORT_TO);
 
     public CspBuilder withDefaultContributions() {
-        Contributor.all().forEach(c -> c.apply(this));
+        Contributor.all().forEach(c -> {
+            try {
+                c.apply(this);
+            } catch (RuntimeException ex) {
+                LOGGER.log(Level.WARNING, "Failed to apply CSP contributions from " + c, ex);
+            }
+        });
         return this;
     }
 
@@ -104,7 +111,6 @@ public class CspBuilder {
      * @return this builder
      */
     public CspBuilder remove(String directive, String... values) {
-        // TODO Do we even want to support removal?
         if (values.length == 0) {
             if (FetchDirective.isFetchDirective(directive)) {
                 initializedFDs.remove(FetchDirective.fromKey(directive));
@@ -178,7 +184,7 @@ public class CspBuilder {
             } else {
                 // Non-fetch directives don't inherit
                 effectiveValues.addAll(entry.getValue());
-                result.add(new Directive(name, false, List.copyOf(effectiveValues)));
+                result.add(new Directive(name, null, List.copyOf(effectiveValues)));
             }
         }
         return List.copyOf(result);

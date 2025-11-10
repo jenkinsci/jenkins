@@ -22,28 +22,24 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security.csp;
+package jenkins.security.csp.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import hudson.Extension;
+import java.util.Optional;
+import jenkins.security.csp.CspHeader;
+import jenkins.security.csp.CspHeaderDecider;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Convenient base class for CSP contributors only adding individual domains to a fetch directive.
- * Plugins may need to do this, likely for {@code img-src}, to allow loading avatars and similar resources.
+ * Fallback implementation: Choose {@link jenkins.security.csp.CspHeader#ContentSecurityPolicyReportOnly}.
+ * The UI for this lets the user enable {@link CspConfiguration} via {@link CspRecommendation}.
  */
-@Restricted(Beta.class)
-public abstract class SimpleContributor implements Contributor {
-    private final List<Directive> allowlist = new ArrayList<>();
-
-    protected void allow(FetchDirective directive, String... domain) {
-        // Inheritance is unused, so doesn't matter despite being a FetchDirective
-        this.allowlist.add(new Directive(directive.toKey(), null, List.of(domain)));
-    }
-
+@Restricted(NoExternalUse.class)
+@Extension(ordinal = -100000)
+public class FallbackDecider implements CspHeaderDecider {
     @Override
-    public final void apply(CspBuilder cspBuilder) {
-        allowlist.forEach(entry -> cspBuilder.add(entry.name(), entry.values().toArray(new String[0])));
+    public Optional<CspHeader> decide() {
+        return Optional.of(CspHeader.ContentSecurityPolicyReportOnly);
     }
 }

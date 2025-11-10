@@ -24,26 +24,37 @@
 
 package jenkins.security.csp;
 
-import java.util.ArrayList;
-import java.util.List;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
+import java.util.Optional;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 /**
- * Convenient base class for CSP contributors only adding individual domains to a fetch directive.
- * Plugins may need to do this, likely for {@code img-src}, to allow loading avatars and similar resources.
+ * Extension point to decide which {@link jenkins.security.csp.CspHeader} will be set.
+ * The highest priority implementation returning a value will be chosen both to
+ * show the configuration UI for {@link jenkins.security.csp.impl.CspConfiguration},
+ * if any, and to select the header during request processing.
+ * As a result, implementations must have fairly consistent behavior and not, e.g.,
+ * inspect the current HTTP request to decide between providing a value (any value)
+ * or not (inspecting the request and deciding which header to choose is fine,
+ * as long as an implementation always returns a header).
  */
 @Restricted(Beta.class)
-public abstract class SimpleContributor implements Contributor {
-    private final List<Directive> allowlist = new ArrayList<>();
+public interface CspHeaderDecider extends ExtensionPoint {
+    Optional<CspHeader> decide();
 
-    protected void allow(FetchDirective directive, String... domain) {
-        // Inheritance is unused, so doesn't matter despite being a FetchDirective
-        this.allowlist.add(new Directive(directive.toKey(), null, List.of(domain)));
+    static ExtensionList<CspHeaderDecider> all() {
+        return ExtensionList.lookup(CspHeaderDecider.class);
     }
 
-    @Override
-    public final void apply(CspBuilder cspBuilder) {
-        allowlist.forEach(entry -> cspBuilder.add(entry.name(), entry.values().toArray(new String[0])));
+    static Optional<CspHeaderDecider> getCurrentDecider() {
+        for (CspHeaderDecider decider : all()) {
+            final Optional<CspHeader> decision = decider.decide();
+            if (decision.isPresent()) {
+                return Optional.of(decider);
+            }
+        }
+        return Optional.empty();
     }
 }
