@@ -28,11 +28,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 
-import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
-import hudson.model.ItemGroup;
 import hudson.model.RootAction;
-import hudson.model.TopLevelItemDescriptor;
 import hudson.model.User;
 import java.io.IOException;
 import jenkins.model.Jenkins;
@@ -109,30 +106,6 @@ class StackTraceSuppressionTest {
     }
 
     @Test
-    void exception() throws Exception {
-        /* This test is based upon an incomplete / incorrect project implementation
-           throwing an uncaught exception.
-           If Jenkins is improved to better handle this error, this test may erroneously fail. */
-        FreeStyleProject projectError = createBrokenProject();
-
-        String relativePath = "job/" + projectError.getName() + "/configure";
-        String detailString = "JellyTagException";
-        checkSuppressedStack(relativePath, detailString);
-    }
-
-    @Test
-    void exceptionShowsTrace() throws Exception {
-        /* This test is based upon an incomplete / incorrect project implementation
-           throwing an uncaught exception.
-           If Jenkins is improved to better handle this error, this test may erroneously fail. */
-        FreeStyleProject projectError = createBrokenProject();
-
-        String relativePath = "job/" + projectError.getName() + "/configure";
-        String detailString = "JellyTagException";
-        checkDisplayedStackTrace(relativePath, detailString);
-    }
-
-    @Test
     void exceptionEndpoint() throws Exception {
         String relativePath = "exception";
         String detailString = "ExceptionAction.doException";
@@ -144,21 +117,6 @@ class StackTraceSuppressionTest {
         String relativePath = "exception";
         String detailString = "ExceptionAction.doException";
         checkDisplayedStackTrace(relativePath, detailString);
-    }
-
-    private FreeStyleProject createBrokenProject() throws IOException {
-        TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class) {
-            @Override
-            public FreeStyleProject newInstance(ItemGroup parent, String name) {
-                return new FreeStyleProject(parent, name) {
-                    @Override
-                    public void save() {
-                        //do not need save
-                    }
-                };
-            }
-        };
-        return (FreeStyleProject) j.jenkins.createProject(descriptor, "throw-error");
     }
 
     private void checBaseResponseContent(String content) {
