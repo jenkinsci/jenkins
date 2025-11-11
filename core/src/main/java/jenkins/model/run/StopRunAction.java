@@ -42,6 +42,11 @@ public class StopRunAction extends TransientActionFactory<Run> {
             }
 
             @Override
+            public String getUrlName() {
+                return null;
+            }
+
+            @Override
             public Event getEvent() {
                 return LinkEvent.of("stop", LinkEvent.LinkEventType.POST);
             }

@@ -42,6 +42,11 @@ public class DeleteRunAction extends TransientActionFactory<Run> {
             }
 
             @Override
+            public String getUrlName() {
+                return null;
+            }
+
+            @Override
             public Event getEvent() {
                 return ConfirmationEvent.of(Messages.DeleteRunFactory_DeleteDialog_Title(), Messages.DeleteRunFactory_DeleteDialog_Description(),  "doDelete");
             }

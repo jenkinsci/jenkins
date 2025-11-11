@@ -7,8 +7,6 @@ import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
-import jenkins.model.menu.event.Event;
-import jenkins.model.menu.event.LinkEvent;
 
 @Extension
 public class EditRunAction extends TransientActionFactory<Run> {
@@ -41,8 +39,8 @@ public class EditRunAction extends TransientActionFactory<Run> {
             }
 
             @Override
-            public Event getEvent() {
-                return LinkEvent.of("configure");
+            public String getUrlName() {
+                return "configure";
             }
         });
     }

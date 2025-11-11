@@ -43,6 +43,11 @@ public class KeepRunAction extends TransientActionFactory<Run> {
                 }
 
                 @Override
+                public String getUrlName() {
+                    return null;
+                }
+
+                @Override
                 public Event getEvent() {
                     return LinkEvent.of("toggleLogKeep", LinkEvent.LinkEventType.POST);
                 }
@@ -64,6 +69,11 @@ public class KeepRunAction extends TransientActionFactory<Run> {
                 @Override
                 public Group getGroup() {
                     return Group.FIRST_IN_MENU;
+                }
+
+                @Override
+                public String getUrlName() {
+                    return null;
                 }
 
                 @Override
