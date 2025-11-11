@@ -29,7 +29,7 @@ THE SOFTWARE.
     <j:choose>
       <j:when test="${lstBuild!=null}">
         ${lstBuild.timestampString}
-        <a href="${jobBaseUrl}${job.shortUrl}lastStableBuild/" class="jenkins-table__link jenkins-table__badge model-link inside">${lstBuild.displayName}</a>
+        <a href="${jobBaseUrl}${job.shortUrl}lastStableBuild/" class="jenkins-badge model-link">${lstBuild.displayName}</a>
       </j:when>
       <j:otherwise>
         ${%N/A}

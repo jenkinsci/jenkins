@@ -38,7 +38,8 @@ function registerTooltip(element) {
 
   const tooltip = element.getAttribute("tooltip");
   const htmlTooltip = element.getAttribute("data-html-tooltip");
-  const delay = element.getAttribute("data-tooltip-delay") || 0;
+  const defaultDelay = 250;
+  const delay = element.getAttribute("data-tooltip-delay") || defaultDelay;
   let appendTo = document.body;
   if (element.hasAttribute("data-tooltip-append-to-parent")) {
     appendTo = "parent";
