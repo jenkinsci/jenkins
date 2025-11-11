@@ -327,7 +327,7 @@ THE SOFTWARE.
         <!-- Version specified in parent POM -->
         <configuration>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
-          <preparationGoals>clean install</preparationGoals>
+          <preparationGoals>-Dspotless.check.skip clean install</preparationGoals>
           <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
