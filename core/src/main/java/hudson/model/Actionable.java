@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.Tab;
 import jenkins.model.TransientActionFactory;
+import jenkins.model.menu.Group;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.IconSpec;
