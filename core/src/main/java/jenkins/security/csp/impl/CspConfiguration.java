@@ -55,6 +55,7 @@ public class CspConfiguration extends GlobalConfiguration implements PersistentD
 
     /**
      * Package-private to allow setting by {@link CspRecommendation} without saving.
+     * Also exposes the "unconfigured" state as {@code null}, unlike the public getter used by Jelly.
      */
     protected Boolean enforce;
 
@@ -66,8 +67,8 @@ public class CspConfiguration extends GlobalConfiguration implements PersistentD
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
-    public Boolean isEnforce() {
-        return enforce;
+    public boolean isEnforce() {
+        return enforce != null && enforce;
     }
 
     @DataBoundSetter
@@ -100,6 +101,9 @@ public class CspConfiguration extends GlobalConfiguration implements PersistentD
             return FormValidation.warning(Messages.CspConfiguration_UndefinedToFalse());
         }
         if (enforce && !ResourceDomainConfiguration.isResourceDomainConfigured()) {
+            if (ExtensionList.lookupSingleton(CspConfiguration.class).isEnforce()) {
+                return FormValidation.okWithMarkup(Messages.CspConfiguration_TrueToTrueWithoutResourceDomain());
+            }
             return FormValidation.okWithMarkup(Messages.CspConfiguration_FalseToTrueWithoutResourceDomain());
         }
         return FormValidation.ok();
