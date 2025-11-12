@@ -124,7 +124,7 @@ public class Items {
      * @param <T> an error type (may be {@link Error})
      * @param runnable a block, typically running {@link #load} or {@link Item#onLoad}
      * @throws T anything {@code runnable} throws
-     * @since TODO
+     * @since 2.534
      */
     public static <T extends Throwable> void runWhileUpdatingByXml(ThrowingRunnable<T> runnable) throws T {
         updatingByXml.set(true);
@@ -143,7 +143,7 @@ public class Items {
      * @param callable a block, typically running {@link #load} or {@link Item#onLoad}
      * @return whatever {@code callable} returned
      * @throws T anything {@code callable} throws
-     * @since TODO
+     * @since 2.534
      */
     public static <V, T extends Throwable> V callWhileUpdatingByXml(ThrowingCallable<V, T> callable) throws T {
         updatingByXml.set(true);
