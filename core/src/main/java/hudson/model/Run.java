@@ -387,7 +387,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @SuppressWarnings("deprecation")
     protected void onLoad() {
-        for (Action a : getAllActions()) {
+        for (Action a : getActions()) {
             if (a instanceof RunAction2) {
                 try {
                     ((RunAction2) a).onLoad(this);
@@ -2717,6 +2717,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Restricted(NoExternalUse.class)
     public List<Tab> getRunTabs() {
-        return getActions(Tab.class);
+        return getActions(Tab.class).stream().filter(e -> e.getIconFileName() != null).toList();
     }
 }

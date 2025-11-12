@@ -53,6 +53,8 @@ import java.util.function.Predicate;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.util.MemoryReductionUtil;
+import jenkins.util.ThrowingCallable;
+import jenkins.util.ThrowingRunnable;
 import org.apache.commons.io.FileUtils;
 import org.springframework.security.core.Authentication;
 
@@ -119,11 +121,41 @@ public class Items {
     /**
      * Runs a block while making {@link #currentlyUpdatingByXml} be temporarily true.
      * Use this when you are creating or changing an item.
+     * @param <T> an error type (may be {@link Error})
+     * @param runnable a block, typically running {@link #load} or {@link Item#onLoad}
+     * @throws T anything {@code runnable} throws
+     * @since 2.534
+     */
+    public static <T extends Throwable> void runWhileUpdatingByXml(ThrowingRunnable<T> runnable) throws T {
+        updatingByXml.set(true);
+        try {
+            runnable.run();
+        } finally {
+            updatingByXml.set(false);
+        }
+    }
+
+    /**
+     * Runs a block while making {@link #currentlyUpdatingByXml} be temporarily true.
+     * Use this when you are creating or changing an item.
      * @param <V> a return value type (may be {@link Void})
      * @param <T> an error type (may be {@link Error})
      * @param callable a block, typically running {@link #load} or {@link Item#onLoad}
      * @return whatever {@code callable} returned
      * @throws T anything {@code callable} throws
+     * @since 2.534
+     */
+    public static <V, T extends Throwable> V callWhileUpdatingByXml(ThrowingCallable<V, T> callable) throws T {
+        updatingByXml.set(true);
+        try {
+            return callable.call();
+        } finally {
+            updatingByXml.set(false);
+        }
+    }
+
+    /**
+     * Prefer {@link #runWhileUpdatingByXml} or {@link #callWhileUpdatingByXml}.
      * @since 1.546
      */
     public static <V, T extends Throwable> V whileUpdatingByXml(Callable<V, T> callable) throws T {
@@ -138,7 +170,8 @@ public class Items {
     /**
      * Checks whether we are in the middle of creating or configuring an item via XML.
      * Used to determine the {@code newInstance} parameter for {@link Trigger#start}.
-     * @return true if {@link #whileUpdatingByXml} is currently being called, false for example when merely starting Jenkins or reloading from disk
+     * @return true if {@link #runWhileUpdatingByXml} or {@link #callWhileUpdatingByXml} is currently being called,
+     *         false for example when merely starting Jenkins or reloading from disk
      * @since 1.546
      */
     public static boolean currentlyUpdatingByXml() {

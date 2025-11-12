@@ -41,14 +41,19 @@ THE SOFTWARE.
 
   <div class="jenkins-card" id="${attrs.id}">
     <div class="jenkins-card__title">
-      ${attrs.title}
+      <j:choose>
+        <j:when test="${attrs.expandable == null}">
+          ${attrs.title}
+        </j:when>
+        <j:otherwise>
+          <a href="${attrs.expandable}" class="jenkins-card__title-link jenkins-card__reveal">
+            ${attrs.title}
+            <l:icon src="symbol-chevron-forward" />
+          </a>
+        </j:otherwise>
+      </j:choose>
       <div class="jenkins-card__controls">
         <j:out value="${attrs.controls}"/>
-        <j:if test="${attrs.expandable != null}">
-          <a href="${attrs.expandable}" class="jenkins-card__reveal" tooltip="${%Expand}">
-            <l:icon src="symbol-expand" />
-          </a>
-        </j:if>
       </div>
     </div>
     <div class="jenkins-card__content">
