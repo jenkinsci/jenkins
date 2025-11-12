@@ -24,17 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
-  <l:card title="${%Changes}" expandable="changes">
-    <j:choose>
-      <j:when test="${it.hasChangeSetComputed()}">
-        <st:include page="index.jelly" it="${it.changeSet}" />
-      </j:when>
-      <j:when test="${it.building}">
-        ${%Not yet determined}
-      </j:when>
-      <j:otherwise>
-        ${%Failed to determine} (<a href="${h.getConsoleUrl(it)}">${%log}</a>)
-      </j:otherwise>
-    </j:choose>
+  <l:card title="${it.displayName}" expandable="${it.urlName}">
+    <j:set var="changeSets" value="${it.object.changeSets}" />
+    <j:forEach var="changeSet" items="${changeSets}">
+      <st:include it="${changeSet}" page="digest.jelly" />
+    </j:forEach>
   </l:card>
 </j:jelly>
