@@ -4,6 +4,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.util.RingBufferLogHandler;
 import java.util.List;
@@ -37,19 +39,6 @@ public class CspBuilderTest {
     }
 
     @Test
-    void testBasics() {
-        final CspBuilder builder = new CspBuilder();
-        builder.initialize(FetchDirective.DEFAULT_SRC, Directive.SELF);
-        assertThat(builder.build(), is("default-src 'self';"));
-
-        builder.add(Directive.IMG_SRC, Directive.SELF);
-        assertThat(builder.build(), is("default-src 'self'; img-src 'self';"));
-
-        builder.add(Directive.DEFAULT_SRC, Directive.DATA);
-        assertThat(builder.build(), is("default-src 'self' data:; img-src 'self' data:;"));
-    }
-
-    @Test
     void nothingInitializedFallsBackToDefaultSrc() {
         final CspBuilder builder = new CspBuilder();
         builder.add(Directive.DEFAULT_SRC, Directive.SELF);
@@ -77,6 +66,8 @@ public class CspBuilderTest {
         final CspBuilder builder = new CspBuilder();
         builder.add(Directive.DEFAULT_SRC, Directive.SELF);
         builder.add(Directive.IMG_SRC);
+
+        // This seems a little weird, but it's harmless and allows #initialize to reuse #add
         assertThat(builder.build(), is("default-src 'self'; img-src 'self';"));
     }
 
@@ -89,15 +80,6 @@ public class CspBuilderTest {
         // script-src-elem should inherit from script-src (not default-src)
         assertThat(builder.build(), is("script-src 'self'; script-src-elem 'self' 'unsafe-inline';"));
     }
-
-    @Test
-    void emptyDirectiveGetsNone() {
-        CspBuilder builder = new CspBuilder();
-        builder.initialize(FetchDirective.IMG_SRC); // No values
-
-        assertThat(builder.build(), is("img-src 'none';"));
-    }
-
 
     @Test
     void fallbackToNone() {
@@ -122,6 +104,18 @@ public class CspBuilderTest {
         assertThat(builder.build(), is("default-src data:; img-src 'self' data:; script-src 'none';"));
     }
 
+    @Test
+    void emptyAddThenInit() {
+        CspBuilder builder = new CspBuilder();
+        builder.initialize(FetchDirective.DEFAULT_SRC, Directive.SELF);
+        assertThat(builder.build(), is("default-src 'self';"));
+
+        builder.add(Directive.IMG_SRC);
+        assertThat(builder.build(), is("default-src 'self'; img-src 'self'"));
+
+        builder.initialize(FetchDirective.IMG_SRC);
+        assertThat(builder.build(), is("default-src 'self'; img-src 'none'"));
+    }
 
     @Test
     void testRemoveDirective() {
@@ -139,8 +133,7 @@ public class CspBuilderTest {
         CspBuilder builder = new CspBuilder();
         builder.add(Directive.SANDBOX);
 
-        // TODO should we strip the extra space?
-        assertThat(builder.build(), is("sandbox ;"));
+        assertThat(builder.build(), is("sandbox;"));
     }
 
     @Test
@@ -198,6 +191,172 @@ public class CspBuilderTest {
         builder.add(Directive.DEFAULT_SRC, Directive.SELF);
         builder.add(Directive.SCRIPT_SRC, Directive.UNSAFE_INLINE);
         assertThat(logRecords.isEmpty(), is(true));
+    }
+
+    @Test
+    void testRemoveMultipleValuesFromDirective() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.DEFAULT_SRC, Directive.SELF, Directive.DATA, Directive.BLOB);
+        assertThat(builder.build(), is("default-src 'self' blob: data:;"));
+
+        // Remove specific values
+        builder.remove(Directive.DEFAULT_SRC, Directive.DATA);
+        assertThat(builder.build(), is("default-src 'self' blob:;"));
+
+        // Remove another value
+        builder.remove(Directive.DEFAULT_SRC, Directive.BLOB);
+        assertThat(builder.build(), is("default-src 'self';"));
+    }
+
+    @Test
+    void testRemoveMultipleValuesAtOnce() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.SCRIPT_SRC, Directive.SELF, Directive.UNSAFE_INLINE, Directive.UNSAFE_EVAL, Directive.DATA);
+        assertThat(builder.build(), is("script-src 'self' 'unsafe-eval' 'unsafe-inline' data:;"));
+
+        // Remove multiple values at once
+        builder.remove(Directive.SCRIPT_SRC, Directive.UNSAFE_INLINE, Directive.UNSAFE_EVAL);
+        assertThat(builder.build(), is("script-src 'self' data:;"));
+    }
+
+    @Test
+    void testRemoveNonExistentValue() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.DEFAULT_SRC, Directive.SELF);
+        assertThat(builder.build(), is("default-src 'self';"));
+
+        // Try to remove a value that doesn't exist - should be no-op
+        builder.remove(Directive.DEFAULT_SRC, Directive.DATA);
+        assertThat(builder.build(), is("default-src 'self';"));
+    }
+
+    @Test
+    void testRemoveValuesFromNonExistentDirective() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.DEFAULT_SRC, Directive.SELF);
+
+        // Try to remove values from a directive that was never added - should be no-op
+        builder.remove(Directive.IMG_SRC, Directive.DATA);
+        assertThat(builder.build(), is("default-src 'self';"));
+    }
+
+    @Test
+    void testRemoveValuesFromNonFetchDirective() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.FORM_ACTION, Directive.SELF, "https://example.com");
+        assertThat(builder.build(), containsString("form-action"));
+
+        // Remove specific value from non-fetch directive
+        builder.remove(Directive.FORM_ACTION, "https://example.com");
+        assertThat(builder.build(), is("form-action 'self';"));
+    }
+
+    @Test
+    void testRemoveEntireNonFetchDirective() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.FORM_ACTION, Directive.SELF);
+        builder.add(Directive.FRAME_ANCESTORS, Directive.SELF);
+        assertThat(builder.build(), containsString("form-action"));
+        assertThat(builder.build(), containsString("frame-ancestors"));
+
+        // Remove entire non-fetch directive
+        builder.remove(Directive.FORM_ACTION);
+        assertThat(builder.build(), is("frame-ancestors 'self';"));
+    }
+
+    @Test
+    void testGetMergedDirectivesReturnsInheritanceInfo() {
+        CspBuilder builder = new CspBuilder();
+        builder.initialize(FetchDirective.DEFAULT_SRC, Directive.SELF);
+        builder.add(Directive.IMG_SRC, Directive.DATA);
+        builder.initialize(FetchDirective.SCRIPT_SRC, Directive.UNSAFE_INLINE);
+
+        List<Directive> merged = builder.getMergedDirectives();
+
+        // Find each directive and check inheritance flag
+        Directive defaultSrc = merged.stream()
+                .filter(d -> d.name().equals(Directive.DEFAULT_SRC))
+                .findFirst()
+                .orElse(null);
+        assertThat(defaultSrc, is(notNullValue()));
+        assertThat(defaultSrc.inheriting(), is(false)); // initialized
+
+        Directive imgSrc = merged.stream()
+                .filter(d -> d.name().equals(Directive.IMG_SRC))
+                .findFirst()
+                .orElse(null);
+        assertThat(imgSrc, is(notNullValue()));
+        assertThat(imgSrc.inheriting(), is(true)); // not initialized, inherits from default-src
+
+        Directive scriptSrc = merged.stream()
+                .filter(d -> d.name().equals(Directive.SCRIPT_SRC))
+                .findFirst()
+                .orElse(null);
+        assertThat(scriptSrc, is(notNullValue()));
+        assertThat(scriptSrc.inheriting(), is(false)); // initialized
+    }
+
+    @Test
+    void testGetMergedDirectivesValuesAreImmutable() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.DEFAULT_SRC, Directive.SELF);
+
+        List<Directive> merged = builder.getMergedDirectives();
+        Directive directive = merged.get(0);
+
+        assertThrows(UnsupportedOperationException.class, () -> directive.values().add("should-fail"));
+    }
+
+    @Test
+    void testMultipleInitializeSameDirective() {
+        CspBuilder builder = new CspBuilder();
+        builder.initialize(FetchDirective.DEFAULT_SRC, Directive.SELF);
+        builder.initialize(FetchDirective.DEFAULT_SRC, Directive.DATA);
+
+        // Both values should be present
+        assertThat(builder.build(), is("default-src 'self' data:;"));
+    }
+
+    @Test
+    void testInitializeAfterAdd() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.IMG_SRC, Directive.SELF);
+        builder.add(Directive.DEFAULT_SRC, Directive.BLOB);
+
+        // At this point, img-src inherits from default-src
+        assertThat(builder.build(), is("default-src blob:; img-src 'self' blob:;"));
+
+        builder.initialize(FetchDirective.IMG_SRC, Directive.DATA);
+
+        // Now img-src is initialized and no longer inherits blob: from default-src
+        assertThat(builder.build(), is("default-src blob:; img-src 'self' data:;"));
+    }
+
+    @Test
+    void testRemoveDirectiveRemovesInitializationFlag() {
+        CspBuilder builder = new CspBuilder();
+        builder.initialize(FetchDirective.IMG_SRC, Directive.DATA);
+        assertThat(builder.build(), is("img-src data:;"));
+
+        // Remove the directive entirely
+        builder.remove(Directive.IMG_SRC);
+
+        // Add default-src
+        builder.add(Directive.DEFAULT_SRC, Directive.SELF);
+
+        // Add img-src again - should now inherit because initialization flag was cleared
+        builder.add(Directive.IMG_SRC, Directive.DATA);
+        assertThat(builder.build(), is("default-src 'self'; img-src 'self' data:;"));
+    }
+
+    @Test
+    void testFallbackToUninitializedDefaultSrc() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.DEFAULT_SRC, Directive.SELF);
+        builder.add(Directive.IMG_SRC, Directive.DATA);
+
+        // Both should be present, img-src should inherit from default-src
+        assertThat(builder.build(), is("default-src 'self'; img-src 'self' data:;"));
     }
 
     private static Matcher<LogRecord> logMessageContainsString(String needle) {

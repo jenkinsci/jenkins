@@ -133,7 +133,7 @@ public class CspConfiguration extends GlobalConfiguration implements PersistentD
         return AdvancedConfiguration.all();
     }
 
-    @Extension(ordinal = 42) // TODO Why do I need this for correct order?
+    @Extension
     public static class ConfigurationHeaderDecider implements CspHeaderDecider {
 
         @Override

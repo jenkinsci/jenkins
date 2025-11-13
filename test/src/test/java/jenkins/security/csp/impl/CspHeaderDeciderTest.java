@@ -133,7 +133,7 @@ public class CspHeaderDeciderTest {
 
     @Test
     public void testFallback(JenkinsRule j) throws IOException, SAXException {
-        // TODO This would be more convincing with a "real" Jenkins run, but it doesn't look like JTH allows for not setting these flags.
+        // This would be more convincing with a "real" Jenkins run, but it doesn't look like JTH allows for not setting these flags.
         Main.isDevelopmentMode = false;
         Main.isUnitTest = false;
         try (JenkinsRule.WebClient webClient = j.createWebClient()) {

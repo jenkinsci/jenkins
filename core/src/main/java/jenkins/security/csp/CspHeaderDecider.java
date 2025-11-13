@@ -39,6 +39,8 @@ import org.kohsuke.accmod.restrictions.Beta;
  * inspect the current HTTP request to decide between providing a value (any value)
  * or not (inspecting the request and deciding which header to choose is fine,
  * as long as an implementation always returns a header).
+ *
+ * @since TODO
  */
 @Restricted(Beta.class)
 public interface CspHeaderDecider extends ExtensionPoint {

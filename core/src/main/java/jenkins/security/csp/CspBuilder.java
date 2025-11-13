@@ -41,6 +41,12 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+/**
+ * Builder for a CSP rule set.
+ *
+ * @see jenkins.security.csp.Contributor
+ * @since TODO
+ */
 @Restricted(Beta.class)
 public class CspBuilder {
     public static final Logger LOGGER = Logger.getLogger(CspBuilder.class.getName());
@@ -75,7 +81,8 @@ public class CspBuilder {
      * <p>
      *     Similarly, the value {@link jenkins.security.csp.Directive#NONE} cannot be set and will be skipped.
      *     Instead, call {@link #remove(String, String...)} with a single argument to reset the directive, then
-     *     call {@link #initialize(FetchDirective, String...)} with a single argument to disable inheritance.
+     *     call {@link #initialize(FetchDirective, String...)} with just the {@link jenkins.security.csp.FetchDirective}
+     *     argument to disable inheritance.
      * </p>
      *
      * @param directive the directive to add
@@ -196,7 +203,12 @@ public class CspBuilder {
      * @return the CSP string
      */
     public String build() {
-        return buildDirectives().entrySet().stream().map(e -> e.getKey() + " " + e.getValue() + ";").collect(Collectors.joining(" "));
+        return buildDirectives().entrySet().stream().map(e -> {
+            if (e.getValue().isEmpty()) {
+                return e.getKey() + ";";
+            }
+            return e.getKey() + " " + e.getValue() + ";";
+        }).collect(Collectors.joining(" "));
     }
 
     /**

@@ -27,6 +27,11 @@ package jenkins.security.csp;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
+/**
+ * The possible CSP headers.
+ *
+ * @since TODO
+ */
 @Restricted(Beta.class)
 public enum CspHeader {
     ContentSecurityPolicy("Content-Security-Policy"),

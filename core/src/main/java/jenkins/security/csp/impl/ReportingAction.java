@@ -40,6 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.csp.CspReceiver;
 import jenkins.security.csp.ReportingContext;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
@@ -78,36 +79,42 @@ public class ReportingAction extends InvisibleAction implements UnprotectedRootA
 
         try {
             final ReportingContext.DecodedContext context = ReportingContext.decodeContext(restOfPath);
-            final User user = context.userId() == null ? null : User.getById(context.userId(), false);
 
             CspReceiver.ViewContext viewContext =
                     new CspReceiver.ViewContext(context.contextClassName(), context.restOfPath());
             final boolean[] maxReached = new boolean[1];
-            try (InputStream is = req.getInputStream(); BoundedInputStream bis = BoundedInputStream.builder().setBufferSizeMax(MAX_REPORT_LENGTH).setOnMaxCount((x, y) -> maxReached[0] = true).setInputStream(is).get()) {
+            try (InputStream is = req.getInputStream(); BoundedInputStream bis = BoundedInputStream.builder().setMaxCount(MAX_REPORT_LENGTH).setOnMaxCount((x, y) -> maxReached[0] = true).setInputStream(is).get()) {
                 String report = IOUtils.toString(bis, req.getCharacterEncoding());
                 if (maxReached[0]) {
                     LOGGER.log(Level.FINE, () -> "Report for " + viewContext + " exceeded max length of " + MAX_REPORT_LENGTH);
-                } else {
-                    LOGGER.log(Level.FINER, () -> "Report for " + viewContext + " length: " + report.length());
+                    return HttpResponses.ok();
                 }
-                LOGGER.log(Level.FINE, () -> viewContext + " " + report);
-                final JSONObject jsonObject = JSONObject.fromObject(report);
+                LOGGER.log(Level.FINEST, () -> "Report for " + viewContext + " length: " + report.length());
+                LOGGER.log(Level.FINER, () -> viewContext + " " + report);
+                JSONObject jsonObject;
+                try {
+                    jsonObject = JSONObject.fromObject(report);
+                } catch (JSONException ex) {
+                    LOGGER.log(Level.FINE, ex, () -> "Failed to parse JSON report for " + viewContext + ": " + report);
+                    return HttpResponses.ok();
+                }
+
+                User user = context.userId() != null ? User.getById(context.userId(), false) : null;
+
                 for (CspReceiver receiver :
                         ExtensionList.lookup(CspReceiver.class)) {
                     try {
-                        receiver.report(viewContext, user, jsonObject);
+                        receiver.report(viewContext, user == null ? null : context.userId(), jsonObject);
                     } catch (Exception ex) {
-                        LOGGER.log(Level.WARNING, ex, () -> "Error reporting CSP to " + receiver);
+                        LOGGER.log(Level.WARNING, ex, () -> "Error reporting CSP for " + viewContext + " to " + receiver);
                     }
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, e, () -> "Failed to read request body for /" + URL + "/" + restOfPath);
+                LOGGER.log(Level.FINE, e, () -> "Failed to read request body for " + viewContext);
             }
             return HttpResponses.ok();
         } catch (RuntimeException ex) {
-            LOGGER.log(
-                    Level.FINE,
-                    "Unexpected rest of path failed to decode: " + restOfPath + " with exception: " + ex.getMessage());
+            LOGGER.log(Level.FINE, ex, () -> "Unexpected rest of path failed to decode: " + restOfPath);
             return HttpResponses.ok();
         }
     }

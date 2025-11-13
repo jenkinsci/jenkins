@@ -43,7 +43,7 @@ class ContentSecurityPolicyTest {
             submitCspReport(j, wc);
         }
 
-        assertThat(String.join("\n", logger.getMessages()), containsString("Received anonymous report for context:"));
+        assertThat(String.join("\n", logger.getMessages()), containsString("Received anonymous report for context ViewContext[className=hudson.model.AllView, viewName=]: {\"csp-report\":{}}"));
     }
 
     @Test
@@ -55,7 +55,7 @@ class ContentSecurityPolicyTest {
         }
 
         String logMessages = String.join("\n", logger.getMessages());
-        assertThat(logMessages, not(containsString("Received anonymous report for context:")));
+        assertThat(logMessages, not(containsString("Received anonymous report for context ViewContext[className")));
     }
 
     private void submitCspReport(JenkinsRule j, JenkinsRule.WebClient wc) throws Exception {

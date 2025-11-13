@@ -28,7 +28,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.User;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
@@ -38,11 +37,13 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Extension point for receivers of Content Security Policy reports.
+ *
+ * @since TODO
  */
 @Restricted(Beta.class)
 public interface CspReceiver extends ExtensionPoint {
 
-    void report(@NonNull ViewContext viewContext, @CheckForNull User user, @NonNull JSONObject report);
+    void report(@NonNull ViewContext viewContext, @CheckForNull String userId, @NonNull JSONObject report);
 
     record ViewContext(String className, String viewName) {
     }
@@ -53,11 +54,12 @@ public interface CspReceiver extends ExtensionPoint {
         private static final Logger LOGGER = Logger.getLogger(LoggingReceiver.class.getName());
 
         @Override
-        public void report(@NonNull ViewContext viewContext, User user, @NonNull JSONObject report) {
-            if (user == null) {
-                LOGGER.log(Level.FINEST, "Received anonymous report for context: " + viewContext);
+        public void report(@NonNull ViewContext viewContext, String userId, @NonNull JSONObject report) {
+            if (userId == null) {
+                LOGGER.log(Level.FINEST, "Received anonymous report for context {0}: {1}", new Object[] { viewContext, report });
+            } else {
+                LOGGER.log(Level.FINER, "Received report from {0} for context {1}: {2}", new Object[] { userId, viewContext, report });
             }
-            LOGGER.log(Level.FINER, "Received report: {0}", report);
         }
     }
 }

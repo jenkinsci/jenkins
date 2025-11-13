@@ -32,6 +32,8 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * Convenient base class for CSP contributors only adding individual domains to a fetch directive.
  * Plugins may need to do this, likely for {@code img-src}, to allow loading avatars and similar resources.
+ *
+ * @since TODO
  */
 @Restricted(Beta.class)
 public abstract class SimpleContributor implements Contributor {

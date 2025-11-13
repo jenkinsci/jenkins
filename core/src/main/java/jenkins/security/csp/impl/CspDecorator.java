@@ -61,7 +61,7 @@ public class CspDecorator extends PageDecorator {
     }
 
     /* package */ static String getReportingEndpoint(HttpServletRequest req) {
-        String modelObjectClass = "";
+        Class<?> modelObjectClass = null;
         String restOfPath = StringUtils.removeStart(req.getRequestURI(), req.getContextPath());
         final StaplerRequest2 staplerRequest2 = Stapler.getCurrentRequest2();
         if (staplerRequest2 != null) {
@@ -69,9 +69,10 @@ public class CspDecorator extends PageDecorator {
             if (!ancestors.isEmpty()) {
                 final Ancestor nearest = ancestors.get(ancestors.size() - 1);
                 restOfPath = nearest.getRestOfUrl();
-                modelObjectClass = nearest.getObject().getClass().getName();
+                modelObjectClass = nearest.getObject().getClass();
             }
         }
+        // #getRootUrl is only @Nullable outside a request handling context
         return Jenkins.get().getRootUrl() + ReportingAction.URL + "/" + ReportingContext.encodeContext(modelObjectClass, Jenkins.getAuthentication2(), restOfPath);
     }
 
@@ -89,7 +90,7 @@ public class CspDecorator extends PageDecorator {
             if (decision.isPresent()) {
                 return decision.get().getHeaderName();
             }
-            LOGGER.log(Level.FINE, "Decider changed its mind after selection: " + decider.getClass().getName());
+            LOGGER.log(Level.FINE, "Decider changed its mind after selection: " + presentDecider.getClass().getName());
         }
 
         LOGGER.log(Level.WARNING, "Failed to find a CspHeaderDecider, falling back to default");

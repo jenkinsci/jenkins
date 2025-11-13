@@ -35,6 +35,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @param inheriting whether the directive is inheriting or not. Only applies to
  *  directives based on {@link jenkins.security.csp.FetchDirective}.
  * @param values {@code 'self'}, {@code data:}, {@code jenkins.io}, etc.
+ *
+ * @since TODO
  */
 @Restricted(Beta.class)
 public record Directive(String name, Boolean inheriting, List<String> values) {

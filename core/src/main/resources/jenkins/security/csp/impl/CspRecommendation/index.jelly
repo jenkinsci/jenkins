@@ -32,6 +32,9 @@ THE SOFTWARE.
             <p>
                 ${%paragraph2}
             </p>
+            <p>
+                ${%paragraph3}
+            </p>
             <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
                 <div>
                     <f:bottomButtonBar>

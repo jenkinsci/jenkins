@@ -34,6 +34,11 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.springframework.security.core.Authentication;
 
+/**
+ * The context (user and page) from which a CSP report is received.
+ *
+ * @since TODO
+ */
 @Restricted(Beta.class)
 public class ReportingContext {
     private static final HMACConfidentialKey KEY = new HMACConfidentialKey(ReportingContext.class, "key");
@@ -49,12 +54,12 @@ public class ReportingContext {
     }
 
     public static String encodeContext(
-            @NonNull final Object ancestorName,
+            @CheckForNull final Class<?> ancestorClass,
             @CheckForNull final Authentication authentication,
             @NonNull final String restOfPath) {
         final String userId = authentication == null ? "" : authentication.getName();
         final String encodedContext =
-                toBase64(userId) + ":" + toBase64(ancestorName.toString()) + ":" + toBase64(restOfPath);
+                toBase64(userId) + ":" + toBase64(ancestorClass == null ? "" : ancestorClass.getName()) + ":" + toBase64(restOfPath);
         final String mac =
                 Base64.getUrlEncoder().encodeToString(KEY.mac(encodedContext.getBytes(StandardCharsets.UTF_8)));
         return mac + ":" + encodedContext;

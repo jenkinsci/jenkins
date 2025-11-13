@@ -36,6 +36,8 @@ import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Add more advanced options to the {@link jenkins.security.csp.impl.CspConfiguration} UI.
+ *
+ * @since TODO
  */
 @Restricted(Beta.class)
 public abstract class AdvancedConfiguration implements Describable<AdvancedConfiguration>, ExtensionPoint {
@@ -52,7 +54,7 @@ public abstract class AdvancedConfiguration implements Describable<AdvancedConfi
      */
     public static <T extends AdvancedConfiguration> Optional<T> getCurrent(Class<T> clazz) {
         return ExtensionList.lookupSingleton(CspConfiguration.class).getAdvanced().stream()
-                        .filter(a -> a.getClass().isAssignableFrom(clazz))
+                        .filter(a -> a.getClass() == clazz)
                         .map(clazz::cast)
                         .findFirst();
     }
