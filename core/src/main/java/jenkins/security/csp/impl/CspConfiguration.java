@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.XmlFile;
 import hudson.model.PersistentDescriptor;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -75,6 +76,12 @@ public class CspConfiguration extends GlobalConfiguration implements PersistentD
     public void setEnforce(boolean enforce) {
         this.enforce = enforce;
         save();
+    }
+
+    // Make available to test in same package
+    @Override
+    protected XmlFile getConfigFile() {
+        return super.getConfigFile();
     }
 
     @Restricted(DoNotUse.class) // Jelly

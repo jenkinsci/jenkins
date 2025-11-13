@@ -43,10 +43,11 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class SystemPropertyHeaderDecider implements CspHeaderDecider {
 
     private static final Logger LOGGER = Logger.getLogger(SystemPropertyHeaderDecider.class.getName());
+    static final String SYSTEM_PROPERTY_NAME = CspHeader.class.getName() + ".headerName";
 
     @Override
     public Optional<CspHeader> decide() {
-        final String systemProperty = SystemProperties.getString(CspHeader.class.getName() + ".headerName");
+        final String systemProperty = SystemProperties.getString(SYSTEM_PROPERTY_NAME);
         if (systemProperty != null) {
             LOGGER.log(Level.FINEST, "Using system property: {0}", new Object[]{ systemProperty });
             return Arrays.stream(CspHeader.values()).filter(h -> h.getHeaderName().equals(systemProperty)).findFirst();

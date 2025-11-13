@@ -43,7 +43,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class DevelopmentHeaderDecider implements CspHeaderDecider {
     private static final Logger LOGGER = Logger.getLogger(DevelopmentHeaderDecider.class.getName());
 
-    private static /* non-final for script console */ boolean DISABLED = SystemProperties.getBoolean(DevelopmentHeaderDecider.class.getName() + ".DISABLED");
+    static /* non-final for script console */ boolean DISABLED = SystemProperties.getBoolean(DevelopmentHeaderDecider.class.getName() + ".DISABLED");
 
     @Override
     public Optional<CspHeader> decide() {
