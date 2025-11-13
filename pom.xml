@@ -68,8 +68,8 @@ THE SOFTWARE.
   </scm>
 
   <issueManagement>
-    <system>jira</system>
-    <url>https://issues.jenkins.io/issues/?jql=component=15593</url>
+    <system>GitHub</system>
+    <url>https://github.com/jenkinsci/jenkins/issues</url>
   </issueManagement>
 
   <properties>
