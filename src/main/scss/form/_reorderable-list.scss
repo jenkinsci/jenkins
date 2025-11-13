@@ -1,21 +1,237 @@
-/* ========================= repeatable elements ========================= */
+@use "../abstracts/mixins";
 
-.repeated-chunk {
+$inset: 0.9375rem;
+$exit-animation: 0.2s;
+
+div.repeated-chunk {
   position: relative;
-  border: 2px dashed var(--input-border);
-  padding: 1rem;
-  border-radius: var(--form-input-border-radius);
-  margin-bottom: 1rem;
-  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--card-background);
+  border-radius: calc(var(--form-input-border-radius) / 2);
   transition:
-    opacity 0.2s ease-in,
-    max-height 0.2s ease-in;
+    max-height #{$exit-animation} ease,
+    border-radius var(--standard-transition),
+    box-shadow var(--standard-transition);
+  height: unset !important;
+  margin: 0 0 calc(var(--card-border-width) * 2);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: var(--card-border-width) solid var(--card-border-color);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  &:first-of-type {
+    border-top-left-radius: var(--form-input-border-radius);
+    border-top-right-radius: var(--form-input-border-radius);
+  }
+
+  &:last-of-type {
+    border-bottom-left-radius: var(--form-input-border-radius);
+    border-bottom-right-radius: var(--form-input-border-radius);
+  }
+
+  &__header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-weight: var(--form-label-font-weight);
+    min-height: 46px;
+
+    .dd-handle {
+      position: relative;
+      width: 44px;
+      height: 46px;
+      cursor: move;
+      opacity: 0.75;
+      color: var(--text-color-secondary);
+      transition: var(--standard-transition);
+      margin-right: -2px;
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-color: currentColor;
+        mask-image: url("../images/svgs/mask-reorderable-list__handle.svg");
+        mask-position: center;
+        mask-repeat: no-repeat;
+      }
+
+      &:hover {
+        opacity: 1;
+        color: var(--text-color);
+      }
+    }
+
+    &--no-handle {
+      padding-left: $inset;
+    }
+  }
+
+  & > .help-area .help {
+    margin: 0 $inset $inset;
+  }
+
+  .repeatable-delete {
+    @include mixins.item;
+
+    --item-background: color-mix(in sRGB, currentColor 7.5%, transparent);
+    --item-background--hover: color-mix(in sRGB, currentColor 15%, transparent);
+    --item-background--active: color-mix(
+      in sRGB,
+      currentColor 25%,
+      transparent
+    );
+    --item-box-shadow--focus: color-mix(
+      in sRGB,
+      currentColor 7.5%,
+      transparent
+    );
+
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: grid;
+    place-items: center;
+    place-content: center;
+    width: 30px;
+    height: 30px;
+    margin-left: auto;
+    color: var(--red);
+    padding: 0;
+    transition: var(--standard-transition);
+    font-size: 0.65rem;
+
+    &::before,
+    &::after {
+      inset: 4px;
+      border-radius: 0.5rem;
+    }
+
+    &::before {
+      border: var(--jenkins-border--inherit-subtle);
+    }
+
+    // Center and overlap SVG and text content
+    * {
+      grid-area: container;
+    }
+
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+      transition: var(--standard-transition);
+
+      * {
+        stroke-width: 40px;
+      }
+    }
+
+    span {
+      opacity: 0;
+      transition: var(--standard-transition);
+      filter: blur(2px);
+      scale: 0.5;
+      text-wrap: nowrap;
+    }
+
+    &:hover,
+    &:active,
+    &:focus {
+      // This value is set in Jelly - see repeatableDeleteButton.jelly
+      width: calc(var(--width) + 20px);
+
+      &::before,
+      &::after {
+        border-radius: 1rem;
+      }
+
+      svg {
+        opacity: 0;
+        filter: blur(2px);
+        scale: 0.6;
+        rotate: -90deg;
+      }
+
+      span {
+        opacity: 1;
+        filter: none;
+        scale: 1;
+      }
+    }
+  }
 }
 
-.repeated-chunk.fade-in,
-.repeated-chunk.fade-out {
-  opacity: 0;
+@keyframes repeated-chunk-entrance-animation {
+  from {
+    scale: 0.99;
+    opacity: 0;
+    filter: blur(1px);
+  }
 }
+
+@keyframes repeated-chunk-exit-animation {
+  to {
+    scale: 0.98;
+    opacity: 0;
+    filter: blur(3px);
+    translate: 0 -10%;
+  }
+}
+
+.repeated-chunk.fade-in {
+  animation: repeated-chunk-entrance-animation 0.3s backwards;
+}
+
+.repeated-chunk.fade-out {
+  z-index: -10;
+  animation: repeated-chunk-exit-animation #{$exit-animation} both;
+}
+
+.repeated-chunk--sortable-chosen {
+  width: 100%;
+  height: 100px;
+  box-shadow: 0 15px 30px rgb(0 0 20 / 0.05);
+  opacity: 1 !important;
+  backdrop-filter: blur(20px);
+  border-radius: var(--form-input-border-radius) !important;
+  z-index: 10;
+}
+
+.repeated-chunk--sortable-ghost {
+  opacity: 0 !important;
+}
+
+.jenkins-repeated-chunk__content {
+  padding: 0 $inset $inset;
+
+  &:empty {
+    display: none;
+  }
+
+  & > *:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.repeatable-add-top {
+  margin-bottom: 1rem;
+}
+
+.repeated-chunk + .repeatable-insertion-point + span .hetero-list-add,
+.repeated-chunk + .repeatable-insertion-point + .repeatable-add {
+  margin-top: 1rem;
+  transition: none;
+}
+
+/* ========================= repeatable elements ========================= */
 
 .repeated-chunk .show-if-last {
   visibility: hidden;
@@ -98,144 +314,4 @@
 */
 div.to-be-removed {
   display: none;
-}
-
-/* ========================= D&D support in heterogenous/repeatable lists = */
-
-.hetero-list-container.with-drag-drop .repeated-chunk,
-.repeated-container.with-drag-drop .repeated-chunk {
-  margin-bottom: 1rem;
-}
-
-// SortableJS drag & drop classes
-.repeated-chunk--sortable-ghost {
-  height: 100px;
-  width: 100%;
-  overflow: hidden;
-}
-
-.repeated-chunk--sortable-chosen {
-  width: 100%;
-  height: 100px;
-  background-color: transparent;
-  border: 2px solid var(--accent-color);
-
-  & > * {
-    display: none;
-  }
-}
-
-.repeated-chunk {
-  & > div > *:last-of-type {
-    margin-bottom: 0;
-  }
-
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    font-weight: bold;
-    margin-top: -0.4rem;
-    margin-bottom: 0.75rem;
-
-    .dd-handle {
-      position: relative;
-      width: 30px;
-      height: 30px;
-      overflow: hidden;
-      margin-right: 0.75rem;
-      cursor: move;
-      margin-left: -6px;
-
-      &::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: var(--text-color);
-        border-radius: var(--form-input-border-radius);
-        opacity: 0;
-        transition: var(--standard-transition);
-      }
-
-      &::after {
-        content: "";
-        position: absolute;
-        inset: 0 4px;
-        background-color: var(--text-color);
-        mask-image: url("../images/svgs/mask-reorderable-list__handle.svg");
-        mask-position: center;
-        mask-repeat: no-repeat;
-        mask-size: contain;
-      }
-
-      &:hover {
-        &::before {
-          opacity: 0.1;
-        }
-      }
-    }
-  }
-
-  // TODO: Update/remove when .jenkins-button PR is merged
-  .repeatable-delete {
-    position: absolute;
-    top: 0.6rem;
-    right: 0.6rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border: none;
-    outline: none;
-    margin-left: auto;
-    color: var(--red);
-    z-index: 0;
-    background: transparent;
-    cursor: pointer;
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: currentColor;
-      border-radius: 100px;
-      z-index: -1;
-      opacity: 0.075;
-      transition: var(--standard-transition);
-    }
-
-    &::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      box-shadow: 0 0 0 10px transparent;
-      border-radius: 100px;
-      z-index: -1;
-      opacity: 0.075;
-      transition: var(--standard-transition);
-    }
-
-    svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    &:hover {
-      &::before {
-        opacity: 0.1;
-      }
-    }
-
-    &:active,
-    &:focus {
-      &::before {
-        opacity: 0.15;
-      }
-
-      &::after {
-        box-shadow: 0 0 0 5px var(--red);
-      }
-    }
-  }
 }

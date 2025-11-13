@@ -625,6 +625,7 @@ public class SlaveComputer extends Computer {
      * @param listener Channel event listener to be attached (if not {@code null})
      * @since 1.444
      */
+    @SuppressFBWarnings(value = "NN_NAKED_NOTIFY", justification = "False positive, the warning isn't for this scenario")
     public void setChannel(@NonNull Channel channel,
                            @CheckForNull OutputStream launchLog,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {

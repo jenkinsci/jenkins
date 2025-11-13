@@ -26,15 +26,15 @@
     "@babel/cli": "7.28.3",
     "@babel/core": "7.28.5",
     "@babel/preset-env": "7.28.5",
-    "@eslint/js": "9.39.0",
+    "@eslint/js": "9.39.1",
     "babel-loader": "10.0.0",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "7.1.2",
     "css-minimizer-webpack-plugin": "7.0.2",
-    "eslint": "9.39.0",
+    "eslint": "9.39.1",
     "eslint-config-prettier": "10.1.8",
     "eslint-formatter-checkstyle": "9.0.1",
-    "globals": "16.4.0",
+    "globals": "16.5.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.9.4",
     "postcss": "8.5.6",
@@ -68,5 +68,5 @@
   "engines": {
     "node": ">=24.0.0"
   },
-  "packageManager": "yarn@4.10.3"
+  "packageManager": "yarn@4.11.0"
 }
