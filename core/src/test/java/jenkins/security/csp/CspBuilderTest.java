@@ -111,10 +111,10 @@ public class CspBuilderTest {
         assertThat(builder.build(), is("default-src 'self';"));
 
         builder.add(Directive.IMG_SRC);
-        assertThat(builder.build(), is("default-src 'self'; img-src 'self'"));
+        assertThat(builder.build(), is("default-src 'self'; img-src 'self';"));
 
         builder.initialize(FetchDirective.IMG_SRC);
-        assertThat(builder.build(), is("default-src 'self'; img-src 'none'"));
+        assertThat(builder.build(), is("default-src 'self'; img-src 'none';"));
     }
 
     @Test
