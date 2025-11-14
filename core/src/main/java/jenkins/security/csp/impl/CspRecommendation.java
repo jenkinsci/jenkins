@@ -33,6 +33,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * This administrative monitor recommends that admins set up CSP.
@@ -64,6 +65,7 @@ public class CspRecommendation extends AdministrativeMonitor {
         return true;
     }
 
+    @POST
     public void doAct(@QueryParameter String setup, @QueryParameter String more, @QueryParameter String dismiss, @QueryParameter String defer) throws IOException {
         if (more != null) {
             throw HttpResponses.redirectViaContextPath("manage/administrativeMonitor/jenkins.security.csp.impl.CspRecommendation");

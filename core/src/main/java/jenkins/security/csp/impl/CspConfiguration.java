@@ -49,6 +49,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 
 @Extension
 @Symbol("contentSecurityPolicy")
@@ -96,7 +97,11 @@ public class CspConfiguration extends GlobalConfiguration implements PersistentD
         return CspHeaderDecider.getCurrentDecider().orElse(null);
     }
 
+    @POST
     public FormValidation doCheckEnforce(@QueryParameter boolean enforce) {
+        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+            return FormValidation.ok();
+        }
         if (!getConfigFile().exists()) {
             // The configuration has not been saved yet
             if (enforce) {
