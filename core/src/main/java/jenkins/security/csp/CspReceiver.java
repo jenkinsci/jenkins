@@ -26,14 +26,10 @@ package jenkins.security.csp;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Extension;
 import hudson.ExtensionPoint;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Extension point for receivers of Content Security Policy reports.
