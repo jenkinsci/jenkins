@@ -29,7 +29,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:p="/lib/hudson/project">
   <j:choose>
     <j:when test="${newBuildPage}">
-      <l:task href="${buildUrl.baseUrl}/changes" icon="symbol-changes" title="${%Changes}"/>
       <j:choose>
         <j:when test="${h.hasPermission(it,it.UPDATE)}">
           <l:task icon="symbol-edit-note" href="${buildUrl.baseUrl}/configure" title="${%Edit Build Information}"/>

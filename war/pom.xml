@@ -661,7 +661,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.1.3</version>
+        <version>12.1.4</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
