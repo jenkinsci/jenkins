@@ -14,6 +14,7 @@ import hudson.tasks.ArtifactArchiver;
 import java.net.URL;
 import java.util.logging.Level;
 import jenkins.security.ResourceDomainConfiguration;
+import jenkins.security.csp.impl.LoggingReceiver;
 import jenkins.security.csp.impl.ReportingAction;
 import net.sf.json.JSONObject;
 import org.htmlunit.HttpMethod;
@@ -35,7 +36,7 @@ class ContentSecurityPolicyTest {
     private static final String BASIC_HTML = "<html><body>test</body></html>";
     private static final String HTML_CONTENT_TYPE = "text/html";
 
-    private final LoggerRule logger = new LoggerRule().record(CspReceiver.LoggingReceiver.class, Level.FINEST).capture(100);
+    private final LoggerRule logger = new LoggerRule().record(LoggingReceiver.class, Level.FINEST).capture(100);
 
     @Test
     void anonymousUserCspReporting(JenkinsRule j) throws Exception {

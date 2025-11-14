@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2021-2025 Daniel Beck, CloudBees, Inc.
+ * Copyright (c) 2025 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +22,31 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security.csp;
+package jenkins.security.csp.impl;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.ExtensionPoint;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.security.csp.CspReceiver;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Extension point for receivers of Content Security Policy reports.
- *
- * @since TODO
+ * Basic {@link jenkins.security.csp.CspReceiver} that just logs received reports.
  */
-@Restricted(Beta.class)
-public interface CspReceiver extends ExtensionPoint {
+@Restricted(NoExternalUse.class)
+@Extension
+public class LoggingReceiver implements CspReceiver {
+    private static final Logger LOGGER = Logger.getLogger(jenkins.security.csp.impl.LoggingReceiver.class.getName());
 
-    void report(@NonNull ViewContext viewContext, @CheckForNull String userId, @NonNull JSONObject report);
-
-    record ViewContext(String className, String viewName) {
+    @Override
+    public void report(@NonNull ViewContext viewContext, String userId, @NonNull JSONObject report) {
+        if (userId == null) {
+            LOGGER.log(Level.FINEST, "Received anonymous report for context {0}: {1}", new Object[]{viewContext, report});
+        } else {
+            LOGGER.log(Level.FINE, "Received report from {0} for context {1}: {2}", new Object[]{userId, viewContext, report});
+        }
     }
 }

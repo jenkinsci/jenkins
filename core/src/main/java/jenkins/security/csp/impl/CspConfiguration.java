@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Optional;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
+import jenkins.model.Jenkins;
 import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.csp.AdvancedConfiguration;
 import jenkins.security.csp.AdvancedConfigurationDescriptor;
@@ -102,16 +103,16 @@ public class CspConfiguration extends GlobalConfiguration implements PersistentD
                 if (ResourceDomainConfiguration.isResourceDomainConfigured()) {
                     return FormValidation.ok(Messages.CspConfiguration_UndefinedToTrueWithResourceDomain());
                 }
-                return FormValidation.okWithMarkup(Messages.CspConfiguration_UndefinedToTrueWithoutResourceDomain());
+                return FormValidation.okWithMarkup(Messages.CspConfiguration_UndefinedToTrueWithoutResourceDomain(Jenkins.get().getRootUrlFromRequest()));
             }
             // Warning because we're here just after the admin confirmed they wanted to set it up.
             return FormValidation.warning(Messages.CspConfiguration_UndefinedToFalse());
         }
         if (enforce && !ResourceDomainConfiguration.isResourceDomainConfigured()) {
             if (ExtensionList.lookupSingleton(CspConfiguration.class).isEnforce()) {
-                return FormValidation.okWithMarkup(Messages.CspConfiguration_TrueToTrueWithoutResourceDomain());
+                return FormValidation.warningWithMarkup(Messages.CspConfiguration_TrueToTrueWithoutResourceDomain(Jenkins.get().getRootUrlFromRequest()));
             }
-            return FormValidation.okWithMarkup(Messages.CspConfiguration_FalseToTrueWithoutResourceDomain());
+            return FormValidation.okWithMarkup(Messages.CspConfiguration_FalseToTrueWithoutResourceDomain(Jenkins.get().getRootUrlFromRequest()));
         }
         return FormValidation.ok();
     }
