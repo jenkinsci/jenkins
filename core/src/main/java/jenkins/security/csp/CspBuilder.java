@@ -50,8 +50,13 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(Beta.class)
 public class CspBuilder {
     public static final Logger LOGGER = Logger.getLogger(CspBuilder.class.getName());
-    private Map<String, Set<String>> directives = new HashMap<>();
-    private EnumSet<FetchDirective> initializedFDs = EnumSet.noneOf(FetchDirective.class);
+
+    /**
+     * This list contains directives that accept 'none' as a value and are not fetch directives.
+     */
+    private static final List<String> NONE_DIRECTIVES = List.of(Directive.BASE_URI, Directive.FRAME_ANCESTORS, Directive.FORM_ACTION);
+    private final Map<String, Set<String>> directives = new HashMap<>();
+    private final EnumSet<FetchDirective> initializedFDs = EnumSet.noneOf(FetchDirective.class);
 
     /**
      * These keys cannot be set explicitly, as they're set by Jenkins.
@@ -220,7 +225,7 @@ public class CspBuilder {
         return getMergedDirectives().stream().sorted(Comparator.comparing(Directive::name)).map(directive -> {
             String name = directive.name();
             List<String> values = directive.values().stream().sorted(String::compareTo).toList();
-            if (values.isEmpty() && FetchDirective.isFetchDirective(name)) {
+            if (values.isEmpty() && (FetchDirective.isFetchDirective(name) || NONE_DIRECTIVES.contains(name))) {
                 values = List.of(Directive.NONE);
             }
             return Map.entry(name, String.join(" ", values));

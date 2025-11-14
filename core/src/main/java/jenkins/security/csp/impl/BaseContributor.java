@@ -48,6 +48,7 @@ public final class BaseContributor implements Contributor {
                 .add(Directive.STYLE_SRC, REPORT_SAMPLE)
                 .add(Directive.SCRIPT_SRC, REPORT_SAMPLE)
                 .add(Directive.FORM_ACTION, SELF)
+                .add(Directive.BASE_URI) // 'none'
                 .add(Directive.FRAME_ANCESTORS, SELF);
     }
 }
