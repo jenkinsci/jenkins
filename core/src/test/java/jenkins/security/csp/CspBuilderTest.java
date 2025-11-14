@@ -137,6 +137,22 @@ public class CspBuilderTest {
     }
 
     @Test
+    void nonFetchNonEmptyTestFrameAncestors() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.FRAME_ANCESTORS);
+
+        assertThat(builder.build(), is("frame-ancestors 'none';"));
+    }
+
+    @Test
+    void nonFetchNonEmptyTestFormAction() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.FORM_ACTION);
+
+        assertThat(builder.build(), is("form-action 'none';"));
+    }
+
+    @Test
     void testProhibitedDirective_reportUri() {
         CspBuilder builder = new CspBuilder();
         builder.add(Directive.REPORT_URI, "https://example.com/csp-report");
