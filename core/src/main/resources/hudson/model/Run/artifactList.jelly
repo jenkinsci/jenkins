@@ -25,47 +25,93 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-    <l:ajax>
+  <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
+
+  <j:choose>
+    <j:when test="${newBuildPage}">
+      <l:ajax>
         <j:if test="${!h.artifactsPermissionEnabled or h.artifactsPermissionEnabled and it.hasPermission(it.ARTIFACTS)}">
-            <j:set var="artifacts" value="${it.getArtifactsUpTo(it.LIST_CUTOFF+1)}" />
-            <j:if test="${!empty(artifacts)}">
-                <t:summary icon="symbol-cube" href="${rootURL}/${it.url}artifact/">
-                    <a href="${rootURL}/${it.url}artifact/">${caption != null ? caption : request2.getParameter('caption')}</a>
-                    <j:if test="${it.building}">
-                        <p>
-                            ${%building}
-                        </p>
-                    </j:if>
-                    <j:if test="${size(artifacts) le it.LIST_CUTOFF}">
-                        <!-- if not too many, just list them -->
-                        <table class="fileList">
-                            <j:forEach var="f" items="${artifacts}">
-                                <tr>
-                                    <td>
-                                        <l:icon class="icon-document icon-sm"/>
-                                    </td>
-                                    <td>
-                                        <a href="${rootURL}/${it.url}artifact/${f.href}">${f.displayPath}</a>
-                                    </td>
-                                    <td class="fileSize">
-                                        ${h.humanReadableByteSize(f.getFileSize())}
-                                    </td>
-                                    <td>
-                                        <j:if test="${app.fingerprintMap.ready}">
-                                            <a href="${rootURL}/${it.url}artifact/${f.href}/*fingerprint*/">
-                                                <l:icon class="icon-fingerprint icon-sm"/>
-                                            </a>
-                                            <st:nbsp/>
-                                        </j:if>
-                                        <a href="${rootURL}/${it.url}artifact/${f.href}/*view*/">${%view}</a>
-                                    </td>
-                                </tr>
-                            </j:forEach>
-                        </table>
-                    </j:if>
-                    <!-- otherwise just show link to directory browser -->
-                </t:summary>
+          <j:set var="artifacts" value="${it.getArtifactsUpTo(it.LIST_CUTOFF+1)}" />
+          <j:if test="${!empty(artifacts)}">
+            <j:if test="${it.building}">
+              <p>
+                ${%building}
+              </p>
             </j:if>
+            <j:choose>
+              <!-- if not too many, just list them -->
+              <j:when test="${size(artifacts) le it.LIST_CUTOFF}">
+                <j:forEach var="f" items="${artifacts}">
+                  <a href="${rootURL}/${it.url}artifact/${f.href}"
+                     class="jenkins-button jenkins-button--tertiary app-build__artifact-item">
+                    <div class="app-build__artifact-item__icon">
+                      <l:icon class="icon-document icon-sm" />
+                    </div>
+                    ${f.displayPath}
+                    <span class="jenkins-!-text-color-secondary">${h.humanReadableByteSize(f.getFileSize())}</span>
+                  </a>
+                </j:forEach>
+              </j:when>
+              <j:otherwise>
+                <div class="jenkins-card__teaser">
+                  <l:icon src="symbol-cube" />
+                  <div>
+                    There's too many artifacts to show
+                  </div>
+                  <a href="artifact">
+                    View artifacts
+                  </a>
+                </div>
+              </j:otherwise>
+            </j:choose>
+          </j:if>
         </j:if>
-    </l:ajax>
+      </l:ajax>
+    </j:when>
+    <j:otherwise>
+      <l:ajax>
+        <j:if test="${!h.artifactsPermissionEnabled or h.artifactsPermissionEnabled and it.hasPermission(it.ARTIFACTS)}">
+          <j:set var="artifacts" value="${it.getArtifactsUpTo(it.LIST_CUTOFF+1)}" />
+          <j:if test="${!empty(artifacts)}">
+            <t:summary icon="symbol-cube" href="${rootURL}/${it.url}artifact/">
+              <a href="${rootURL}/${it.url}artifact/">${caption != null ? caption : request2.getParameter('caption')}</a>
+              <j:if test="${it.building}">
+                <p>
+                  ${%building}
+                </p>
+              </j:if>
+              <j:if test="${size(artifacts) le it.LIST_CUTOFF}">
+                <!-- if not too many, just list them -->
+                <table class="fileList">
+                  <j:forEach var="f" items="${artifacts}">
+                    <tr>
+                      <td>
+                        <l:icon class="icon-document icon-sm"/>
+                      </td>
+                      <td>
+                        <a href="${rootURL}/${it.url}artifact/${f.href}">${f.displayPath}</a>
+                      </td>
+                      <td class="fileSize">
+                        ${h.humanReadableByteSize(f.getFileSize())}
+                      </td>
+                      <td>
+                        <j:if test="${app.fingerprintMap.ready}">
+                          <a href="${rootURL}/${it.url}artifact/${f.href}/*fingerprint*/">
+                            <l:icon class="icon-fingerprint icon-sm"/>
+                          </a>
+                          <st:nbsp/>
+                        </j:if>
+                        <a href="${rootURL}/${it.url}artifact/${f.href}/*view*/">${%view}</a>
+                      </td>
+                    </tr>
+                  </j:forEach>
+                </table>
+              </j:if>
+              <!-- otherwise just show link to directory browser -->
+            </t:summary>
+          </j:if>
+        </j:if>
+      </l:ajax>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
