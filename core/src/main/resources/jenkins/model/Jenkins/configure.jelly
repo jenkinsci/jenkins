@@ -26,30 +26,40 @@ THE SOFTWARE.
   Config page
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%System}" type="one-column">
-  <st:include page="sidepanel.jelly" />
-  <f:breadcrumb-config-outline title="${%System}" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <j:new className="jenkins.management.ConfigureLink" var="it" />
 
-  <l:main-panel>
+  <l:settings-subpage permissions="${app.MANAGE_AND_SYSTEM_READ}" includeBreadcrumb="true">
+    <j:set var="managementLink" value="${it}" />
+    <j:set var="it" value="${app}" />
     <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
-    <l:app-bar title="${%System}" />
 
-    <l:skeleton />
+    <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
+    <j:if test="${newManageJenkins}">
+      <section class="manage-messages">
+        <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
+          <st:include page="message.jelly" it="${am}" />
+        </j:forEach>
+        <st:include page="downgrade.jelly" it="${app}" />
+      </section>
+    </j:if>
+
     <f:form method="post" name="config" action="configSubmit" class="jenkins-form">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
 
-      <f:entry title="${%Home directory}" description="${%By default, Jenkins stores all of its data in this directory on the file system}" help="/help/system-config/homeDirectory.html">
-        <div class="jenkins-quote jenkins-quote--monospace">
-          ${it.rootDir}
-          <l:copyButton tooltip="${%Copy home directory}" text="${it.rootDir}" iconOnly="true" />
-        </div>
-      </f:entry>
-      <f:entry title="${%System Message}" description="${%This message will be displayed at the top of the Jenkins main page. This can be useful for posting notifications to your users}">
-        <f:textarea name="system_message" value="${it.systemMessage}" disabled="${readOnlyMode?'true':null}" readonly="${readOnlyMode?'true':null}"
-                    codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-      </f:entry>
+      <f:section title="General">
+        <f:entry title="${%Home directory}" description="${%By default, Jenkins stores all of its data in this directory on the file system}" help="/help/system-config/homeDirectory.html">
+          <div class="jenkins-quote jenkins-quote--monospace">
+            ${it.rootDir}
+            <l:copyButton tooltip="${%Copy home directory}" text="${it.rootDir}" iconOnly="true" />
+          </div>
+        </f:entry>
+        <f:entry title="${%System Message}" description="${%This message will be displayed at the top of the Jenkins main page. This can be useful for posting notifications to your users}">
+          <f:textarea name="system_message" value="${it.systemMessage}" disabled="${readOnlyMode?'true':null}" readonly="${readOnlyMode?'true':null}"
+                      codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+        </f:entry>
+      </f:section>
 
       <!-- TODO remove after January 2026 LTS line -->
       <div class="jenkins-alert jenkins-alert-info">
@@ -69,6 +79,5 @@ THE SOFTWARE.
       <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
       <f:saveApplyBar/>
     </f:form>
-  </l:main-panel>
-</l:layout>
+  </l:settings-subpage>
 </j:jelly>

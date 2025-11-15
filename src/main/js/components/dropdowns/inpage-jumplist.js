@@ -1,4 +1,5 @@
 import { toId } from "@/util/dom";
+import BehaviorShim from "@/util/behavior-shim";
 
 /*
  * Generates a jump list for the active breadcrumb to jump to
@@ -8,13 +9,15 @@ function init() {
   const inpageNavigationBreadcrumb = document.querySelector("#inpage-nav div");
 
   if (inpageNavigationBreadcrumb) {
-    inpageNavigationBreadcrumb.items = Array.from(
-      document.querySelectorAll(
-        "form > div > .jenkins-section > .jenkins-section__title",
-      ),
-    ).map((section) => {
-      section.id = toId(section.textContent);
-      return { label: section.textContent, url: "#" + section.id };
+    BehaviorShim.specify("form", "inpage-nav", 999, (element) => {
+      inpageNavigationBreadcrumb.items = Array.from(
+        element.querySelectorAll(
+          "& > div > .jenkins-section > .jenkins-section__title",
+        ),
+      ).map((section) => {
+        section.id = toId(section.textContent);
+        return { label: section.textContent, url: "#" + section.id };
+      });
     });
   }
 }

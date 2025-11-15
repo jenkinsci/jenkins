@@ -1,0 +1,144 @@
+<!--
+The MIT License
+
+Copyright (c) 2025, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation>
+    A reusable container for subpages relating under Manage Jenkins.
+    <st:attribute name="permission">
+      If given, this page is only made available to users who have the specified permission.
+      (The permission will be checked against the "it" object.)
+    </st:attribute>
+    <st:attribute name="permissions">
+      If given, this page is made available to users who have one or more of the specified permissions.
+      (The permissions will be checked against the "it" object.)
+    </st:attribute>
+    <st:attribute name="placeholder">
+      Optional placeholder for loading this page, falls back to a generic skeleton if not set.
+    </st:attribute>
+    <st:attribute name="header">
+      Optional header for the page, falls back to a default header if not set.
+    </st:attribute>
+    <st:attribute name="includeBreadcrumb">
+      <![CDATA[
+      Optional breadcrumb, will add a breadcrumb for the current <code>it</code>
+      ]]>
+    </st:attribute>
+  </st:documentation>
+
+  <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
+  <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
+
+  <l:layout title="${it.displayName} - ${manageJenkinsAction.displayName}"
+            permission="${attrs.permission}"
+            permissions="${attrs.permissions}"
+            type="${newManageJenkins ? 'two-column' : 'one-column'}">
+
+    <j:if test="${attrs.includeBreadcrumb}">
+      <!-- Hacky - this will be improved in subsequent PRs -->
+      <j:choose>
+        <j:when test="${it.class.name eq 'jenkins.management.ConfigureLink'}">
+          <f:breadcrumb-config-outline title="${it.displayName}" />
+        </j:when>
+        <j:otherwise>
+          <l:breadcrumb title="${it.displayName}" />
+        </j:otherwise>
+      </j:choose>
+    </j:if>
+
+    <j:choose>
+      <j:when test="${newManageJenkins}">
+        <l:side-panel>
+          <l:app-bar title="${manageJenkinsAction.displayName}" />
+
+          <l:tasks>
+            <l:search-bar placeholder="${%Search}" id="settings-search-bar" />
+
+            <script src="${resURL}/jsbundles/pages/manage-jenkins.js" type="text/javascript" />
+
+            <j:invokeStatic var="j" className="jenkins.model.Jenkins" method="get" />
+            <j:forEach var="category" items="${j.categorizedManagementLinks.entrySet()}">
+              <summary class="jenkins-side-nav__heading">
+                ${category.key.label}
+              </summary>
+              <j:forEach var="item" items="${category.value}">
+                <l:task title="${item.displayName}"
+                        href="${rootURL}/manage/${item.urlName}"
+                        icon="${item.iconFileName}"
+                        badge="${item.badge}"
+                        requiresConfirmation="${item.requiresConfirmation}"
+                        post="${item.requiresPOST}"
+                        confirmationMessage="${%sure}" />
+              </j:forEach>
+            </j:forEach>
+          </l:tasks>
+        </l:side-panel>
+        <l:main-panel>
+          <div class="app-settings-container">
+            <div class="app-settings-container__inner">
+              <j:if test="${!attrs.containsKey('header')}">
+                <l:app-bar title="${it.displayName}" />
+                <div class="jenkins-page-description">
+                  ${it.description}
+                </div>
+              </j:if>
+
+              <j:out value="${attrs.header}" />
+
+              <l:defer>
+                <l:defer.placeholder>
+                  <j:choose>
+                    <j:when test="${attrs.containsKey('placeholder')}">
+                      <j:out value="${attrs.placeholder}" />
+                    </j:when>
+                    <j:otherwise>
+                      <l:skeleton type="form" />
+                    </j:otherwise>
+                  </j:choose>
+                </l:defer.placeholder>
+                <l:defer.children>
+                  <d:invokeBody />
+                </l:defer.children>
+              </l:defer>
+            </div>
+          </div>
+        </l:main-panel>
+      </j:when>
+      <j:otherwise>
+        <l:main-panel>
+          <j:if test="${!attrs.containsKey('header')}">
+            <l:app-bar title="${it.displayName}" />
+            <div class="jenkins-page-description">
+              ${it.description}
+            </div>
+          </j:if>
+
+          <j:out value="${attrs.header}" />
+
+          <d:invokeBody />
+        </l:main-panel>
+      </j:otherwise>
+    </j:choose>
+  </l:layout>
+</j:jelly>

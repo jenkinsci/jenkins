@@ -43,6 +43,30 @@ THE SOFTWARE.
         <div />
       </div>
     </j:case>
+    <j:case value="form">
+      <div class="jenkins-form-skeleton-2">
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+        <span />
+        <div />
+      </div>
+    </j:case>
     <j:default>
       <div class="jenkins-form-skeleton">
         <span />
