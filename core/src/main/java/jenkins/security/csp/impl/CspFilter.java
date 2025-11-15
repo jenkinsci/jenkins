@@ -24,31 +24,81 @@
 
 package jenkins.security.csp.impl;
 
-import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.Functions;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.security.ResourceDomainConfiguration;
-import jenkins.util.HttpServletFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
-@Extension
-public class CspFilter implements HttpServletFilter {
-    @Override
-    public boolean handle(HttpServletRequest req, HttpServletResponse rsp) throws IOException, ServletException {
-        final CspDecorator cspDecorator = ExtensionList.lookupSingleton(CspDecorator.class);
-        final String header = cspDecorator.getContentSecurityPolicyHeaderName();
-        if (rsp.getHeader(header) == null && !ResourceDomainConfiguration.isResourceRequest(req)) {
-            // The Filter/Decorator approach needs us to "set" headers rather than "add", so no additional endpoints are supported at the moment.
-            rsp.setHeader("Reporting-Endpoints", cspDecorator.getReportingEndpointsHeaderValue(req));
+public class CspFilter implements Filter {
 
-            // This is the preliminary value outside Stapler request handling (and providing a context object)
-            rsp.setHeader(header, cspDecorator.getContentSecurityPolicyHeaderValue(req));
+    public static final Logger LOGGER = Logger.getLogger(CspFilter.class.getName());
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        if (!(request instanceof HttpServletRequest req) || !(response instanceof HttpServletResponse rsp)) {
+            chain.doFilter(request, response);
+            return;
         }
-        return false;
+
+        if (!Functions.isExtensionsAvailable()) {
+            // TODO Implement CSP protection while extensions are not available
+            LOGGER.log(Level.FINER, "Extensions are not available, so skipping CSP enforcement for: " + req.getRequestURI());
+            chain.doFilter(request, response);
+            return;
+        }
+
+        CspDecorator cspDecorator = ExtensionList.lookupSingleton(CspDecorator.class);
+        final String headerName = cspDecorator.getContentSecurityPolicyHeaderName();
+
+        // This is the preliminary value outside Stapler request handling (and providing a context object)
+        final String headerValue = cspDecorator.getContentSecurityPolicyHeaderValue(req);
+
+        final boolean isResourceRequest = ResourceDomainConfiguration.isResourceRequest(req);
+        if (!isResourceRequest) {
+            // The Filter/Decorator approach needs us to "set" headers rather than "add", so no additional endpoints are supported at the moment.
+            final String reportingEndpoints = cspDecorator.getReportingEndpointsHeaderValue(req);
+            if (reportingEndpoints != null) {
+                rsp.setHeader("Reporting-Endpoints", reportingEndpoints);
+            }
+
+            rsp.setHeader(headerName, headerValue);
+        }
+        try {
+            chain.doFilter(req, rsp);
+        } finally {
+            try {
+                final String actualHeader = rsp.getHeader(headerName);
+                if (!isResourceRequest && hasUnexpectedDifference(headerValue, actualHeader)) {
+                    LOGGER.log(Level.FINE, "CSP header has unexpected differences: Expected '" + headerValue + "' but got '" + actualHeader + "'");
+                }
+            } catch (RuntimeException e) {
+                // Be defensive just in case
+                LOGGER.log(Level.FINER, "Error checking CSP header after request processing", e);
+            }
+        }
+    }
+
+    private static boolean hasUnexpectedDifference(String headerByFilter, String actualHeader) {
+        if (actualHeader == null) {
+            return true;
+        }
+        String expectedPrefix = headerByFilter.substring(0, headerByFilter.indexOf(" report-uri ")); // cf. CspDecorator
+        if (!actualHeader.contains(" report-uri ")) {
+            return true;
+        }
+        String actualPrefix = actualHeader.substring(0, actualHeader.indexOf(" report-uri "));
+        return !expectedPrefix.equals(actualPrefix);
     }
 }

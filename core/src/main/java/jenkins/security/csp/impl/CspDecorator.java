@@ -24,6 +24,7 @@
 
 package jenkins.security.csp.impl;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.model.PageDecorator;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,14 +53,25 @@ public class CspDecorator extends PageDecorator {
 
     public String getContentSecurityPolicyHeaderValue(HttpServletRequest req) {
         String cspDirectives = new CspBuilder().withDefaultContributions().build();
-        cspDirectives += " report-to " + REPORTING_ENDPOINT_NAME + "; report-uri " + getReportingEndpoint(req);
+
+        final String reportingEndpoint = getReportingEndpoint(req);
+        if (reportingEndpoint != null) {
+            cspDirectives += " report-to " + REPORTING_ENDPOINT_NAME + "; report-uri " + reportingEndpoint;
+        }
         return cspDirectives;
     }
 
+    // Also used in httpHeaders.jelly
+    @CheckForNull
     public String getReportingEndpointsHeaderValue(HttpServletRequest req) {
-        return REPORTING_ENDPOINT_NAME + ": " + getReportingEndpoint(req);
+        final String reportingEndpoint = getReportingEndpoint(req);
+        if (reportingEndpoint == null) {
+            return null;
+        }
+        return REPORTING_ENDPOINT_NAME + ": " + reportingEndpoint;
     }
 
+    @CheckForNull
     /* package */ static String getReportingEndpoint(HttpServletRequest req) {
         Class<?> modelObjectClass = null;
         String restOfPath = StringUtils.removeStart(req.getRequestURI(), req.getContextPath());
@@ -72,8 +84,24 @@ public class CspDecorator extends PageDecorator {
                 modelObjectClass = nearest.getObject().getClass();
             }
         }
-        // #getRootUrl is only @Nullable outside a request handling context
-        return Jenkins.get().getRootUrl() + ReportingAction.URL + "/" + ReportingContext.encodeContext(modelObjectClass, Jenkins.getAuthentication2(), restOfPath);
+
+        String rootUrl;
+        try {
+            rootUrl = Jenkins.get().getRootUrlFromRequest();
+        } catch (IllegalStateException e) {
+            LOGGER.log(Level.FINEST, "Cannot get root URL from request", e);
+            // Outside a Stapler request, probably in the CspFilter, so get configured root URL
+            try {
+                rootUrl = Jenkins.get().getRootUrl();
+            } catch (IllegalStateException ise) {
+                LOGGER.log(Level.FINEST, "Cannot get root URL from configuration", ise);
+                return null;
+            }
+        }
+        if (rootUrl == null) {
+            return null;
+        }
+        return rootUrl + ReportingAction.URL + "/" + ReportingContext.encodeContext(modelObjectClass, Jenkins.getAuthentication2(), restOfPath);
     }
 
     /**
