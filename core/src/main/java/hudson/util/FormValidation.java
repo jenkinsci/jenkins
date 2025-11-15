@@ -612,9 +612,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
     protected void respond(StaplerResponse2 rsp, String html) throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");
         if (APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
-            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                rsp.setHeader(header, "sandbox; default-src 'none';");
-            }
+            rsp.setHeader("Content-Security-Policy", "sandbox; default-src 'none';");
         }
         rsp.getWriter().print(html);
     }

@@ -116,7 +116,5 @@ class MarkupFormatterTest {
         assertEquals(200, response.getStatusCode());
         assertThat(response.getContentAsString(), containsString("lolwut"));
         assertThat(response.getResponseHeaderValue("Content-Security-Policy"), containsString("default-src 'none';"));
-        assertThat(response.getResponseHeaderValue("X-Content-Security-Policy"), containsString("default-src 'none';"));
-        assertThat(response.getResponseHeaderValue("X-WebKit-CSP"), containsString("default-src 'none';"));
     }
 }
