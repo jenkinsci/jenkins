@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2025, Markus Winter
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,11 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:set var="showSidePanel" value="${it.showLoadstatsSidePanel}"/>
-  <l:layout title="${it.displayName} ${%Load Statistics}" type="${showSidePanel ? 'two-column' : 'one-column'}">
-    <j:set var="primaryView" value="${it.primaryView}"/>
-    <j:if test="${showSidePanel and primaryView != null}">
-      <l:side-panel>
-        <j:forEach var="w" items="${primaryView.widgets}">
-          <j:set var="view" value="${primaryView}" /><!-- expose the view that's rendering this sidepanel to the widget -->
-          <st:include it="${w}" page="index.jelly" />
-        </j:forEach>
-      </l:side-panel>
-    </j:if>
-    <l:breadcrumb title="${%Load Statistics}"/>
-    <l:main-panel>
-      <j:set var="prefix" value="overallLoad" />
-      <st:include page="main.jelly" from="${it.overallLoad}" />
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core"  xmlns:f="/lib/form">
+  <f:entry>
+    <f:checkbox name="showNodesSidePanel" checked="${instance.showNodesSidePanel}" title="${%Show side panel on nodes page}"/>
+  </f:entry>
+  <f:entry>
+    <f:checkbox name="showLoadstatsSidePanel" checked="${instance.showLoadstatsSidePanel}" title="${%Show side panel on global load statistics}"/>
+  </f:entry>
 </j:jelly>
