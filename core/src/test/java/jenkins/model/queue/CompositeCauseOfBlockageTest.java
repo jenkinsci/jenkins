@@ -64,21 +64,23 @@ class CompositeCauseOfBlockageTest {
     void getShortDescriptionTruncatesLongList() {
         List<CauseOfBlockage> reasons = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
-            reasons.add(createCause("Reason " + i));
+            // Use zero-padded numbers to ensure correct alphabetical sorting in TreeMap
+            reasons.add(createCause(String.format("Reason %02d", i)));
         }
 
         CompositeCauseOfBlockage composite = new CompositeCauseOfBlockage(reasons);
         String description = composite.getShortDescription();
 
         assertTrue(description.contains("... and 5 more"));
-        assertTrue(description.startsWith("Reason 1; Reason 2; Reason 3; Reason 4; Reason 5"));
+        assertTrue(description.startsWith("Reason 01; Reason 02; Reason 03; Reason 04; Reason 05"));
     }
 
     @Test
     void getShortDescriptionWithManyReasons() {
         List<CauseOfBlockage> reasons = new ArrayList<>();
         for (int i = 1; i <= 100; i++) {
-            reasons.add(createCause("Node " + i + " doesn't have label"));
+            // Use zero-padded numbers to ensure correct alphabetical sorting in TreeMap
+            reasons.add(createCause(String.format("Node %03d doesn't have label", i)));
         }
 
         CompositeCauseOfBlockage composite = new CompositeCauseOfBlockage(reasons);
