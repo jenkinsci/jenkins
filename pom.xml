@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.536</revision>
+    <revision>2.537</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-11-04T12:31:47Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-11-11T16:33:16Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -98,8 +98,8 @@ THE SOFTWARE.
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.17</winstone.version>
-    <node.version>24.11.0</node.version>
+    <winstone.version>8.1023.v8b_42b_1b_79b_f7</winstone.version>
+    <node.version>24.11.1</node.version>
   </properties>
 
   <!--
@@ -281,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>12.1.1</version>
+              <version>12.1.2</version>
             </dependency>
           </dependencies>
           <executions>
@@ -327,7 +327,7 @@ THE SOFTWARE.
         <!-- Version specified in parent POM -->
         <configuration>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
-          <preparationGoals>clean install</preparationGoals>
+          <preparationGoals>-Dspotless.check.skip clean install</preparationGoals>
           <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>

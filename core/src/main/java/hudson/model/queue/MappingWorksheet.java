@@ -40,6 +40,8 @@ import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAssignmentAction;
 import hudson.security.ACL;
+import hudson.slaves.DumbSlave;
+import java.time.Duration;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -330,15 +332,27 @@ public class MappingWorksheet {
         this.item = item;
 
         // group executors by their computers
+        boolean someNonCloud = false;
         Map<Computer, List<ExecutorSlot>> j = new HashMap<>();
         for (ExecutorSlot o : offers) {
             Computer c = o.getExecutor().getOwner();
+            if (!someNonCloud) {
+                Node n = c.getNode();
+                if (n == null || n instanceof DumbSlave) {
+                    someNonCloud = true;
+                }
+            }
             List<ExecutorSlot> l = j.computeIfAbsent(c, k -> new ArrayList<>());
             l.add(o);
         }
 
-        { // take load prediction into account and reduce the available executor pool size accordingly
+        if (j.isEmpty()) {
+            LOGGER.fine(() -> "nothing to consider for " + item);
+        } else if (!someNonCloud) {
+            LOGGER.fine(() -> "only cloud agents to consider for " + item + ": " + offers);
+        } else { // take load prediction into account and reduce the available executor pool size accordingly
             long duration = item.task.getEstimatedDuration();
+            LOGGER.fine(() -> "for " + item + " taking " + Duration.ofMillis(duration) + " considering " + offers);
             if (duration > 0) {
                 long now = System.currentTimeMillis();
                 for (Map.Entry<Computer, List<ExecutorSlot>> e : j.entrySet()) {
