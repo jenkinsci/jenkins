@@ -460,7 +460,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
         @Override
         public String getUrlName() {
-            return "administrativeMonitor/OldData/";
+            return "administrativeMonitor/OldData/manage";
         }
 
         @Override
