@@ -43,7 +43,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public class CspFilter implements Filter {
 
-    public static final Logger LOGGER = Logger.getLogger(CspFilter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CspFilter.class.getName());
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {

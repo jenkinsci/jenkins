@@ -49,7 +49,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 public class CspDecorator extends PageDecorator {
 
     private static final String REPORTING_ENDPOINT_NAME = "content-security-policy";
-    public static final Logger LOGGER = Logger.getLogger(CspDecorator.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CspDecorator.class.getName());
 
     public String getContentSecurityPolicyHeaderValue(HttpServletRequest req) {
         String cspDirectives = new CspBuilder().withDefaultContributions().build();

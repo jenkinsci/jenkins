@@ -47,7 +47,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Extension
 public class UserAvatarContributor implements Contributor {
 
-    public static final Logger LOGGER = Logger.getLogger(UserAvatarContributor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UserAvatarContributor.class.getName());
 
     @Override
     public void apply(CspBuilder cspBuilder) {

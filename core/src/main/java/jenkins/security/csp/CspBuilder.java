@@ -49,7 +49,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Restricted(Beta.class)
 public class CspBuilder {
-    public static final Logger LOGGER = Logger.getLogger(CspBuilder.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CspBuilder.class.getName());
 
     /**
      * This list contains directives that accept 'none' as a value and are not fetch directives.
