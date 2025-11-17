@@ -225,9 +225,9 @@ function generateButtons() {
           e.classList.contains("repeated-chunk"),
         ).length;
 
-        btn.disabled = oneEach && selectedCount === templateCount;
+        btn.disabled = oneEach && selectedCount >= templateCount;
         if (topButton) {
-          topButton.disabled = oneEach && selectedCount === templateCount;
+          topButton.disabled = oneEach && selectedCount >= templateCount;
         }
       }
       const observer = new MutationObserver(() => {

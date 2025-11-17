@@ -1,0 +1,98 @@
+<!--
+The MIT License
+
+Copyright (c) 2025, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:dd="/lib/layout/dropdowns"
+         xmlns:st="jelly:stapler">
+  <st:documentation>
+    A reusable container for subpages relating to Runs in Jenkins.
+    Renders a tabbed layout for runs, including build status and actions.
+  </st:documentation>
+
+  <l:layout title="${it.displayName} - ${it.object.displayName}">
+    <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
+
+    <j:choose>
+      <j:when test="${newBuildPage}">
+        <l:main-panel>
+          <j:set var="buildUrl" value="${h.decompose(request2)}" />
+
+          <div class="app-build-bar">
+            <div class="app-build-bar__content">
+              <a class="app-build-bar__content__headline" href="${rootURL}/${it.object.url}" tabindex="-1">
+                <l:icon alt="${it.iconColor.description}"
+                        src="symbol-status-${it.object.iconColor.iconName}" />
+              </a>
+              <j:if test="${it.object.previousBuild != null}">
+                <a href="${buildUrl.previousBuildUrl}"
+                   class="jenkins-button jenkins-button--tertiary app-build__navigation-previous"
+                   aria-label="${%Previous build}">
+                  <l:icon class="symbol-arrow-left" />
+                </a>
+              </j:if>
+              <h1>${it.object.displayName}</h1>
+              <j:if test="${it.object.nextBuild != null}">
+                <a href="${buildUrl.nextBuildUrl}"
+                   class="jenkins-button jenkins-button--tertiary app-build__navigation-next"
+                   aria-label="${%Next build}">
+                  <l:icon class="symbol-arrow-right" />
+                </a>
+              </j:if>
+            </div>
+
+            <j:set var="url" value="${h.getNearestAncestorUrl(request2, it.object)}"/>
+
+            <div class="app-build-bar__tabs">
+              <l:tabs items="${it.object.runTabs}" />
+            </div>
+
+            <div class="app-build-bar__controls">
+              <l:overflowButton>
+                <dd:custom>
+                  <div class="app-build-overflow">
+                    <j:set var="mode" value="side-panel" />
+                    <st:include page="sidepanel.jelly" it="${it.object}" />
+                  </div>
+                </dd:custom>
+              </l:overflowButton>
+            </div>
+
+            <st:adjunct includes="lib.hudson.build-caption" />
+          </div>
+
+          <div class="app-build-content">
+            <d:invokeBody />
+          </div>
+        </l:main-panel>
+      </j:when>
+      <j:otherwise>
+        <st:include page="sidepanel.jelly" it="${it.object}" />
+
+        <l:main-panel>
+          <d:invokeBody />
+        </l:main-panel>
+      </j:otherwise>
+    </j:choose>
+  </l:layout>
+</j:jelly>

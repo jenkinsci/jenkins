@@ -86,7 +86,11 @@ THE SOFTWARE.
             </j:forEach>
           </table>
         </div>
-        <t:iconSize><t:rssBar/></t:iconSize>
+
+        <l:userExperimentalFlag var="newDashboardPage" flagClassName="jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag" />
+        <j:if test="${!newDashboardPage}">
+          <t:iconSize><t:rssBar/></t:iconSize>
+        </j:if>
       </div>
 
       <div class="jenkins-jobs-list jenkins-mobile-show">

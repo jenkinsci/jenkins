@@ -26,7 +26,6 @@ package hudson.lifecycle;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.PluginManager;
 import hudson.Util;
@@ -62,7 +61,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  * @since 1.254
  */
-public abstract class Lifecycle implements ExtensionPoint {
+public abstract class Lifecycle {
     private static Lifecycle INSTANCE = null;
 
     /**

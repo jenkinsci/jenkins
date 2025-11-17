@@ -25,7 +25,7 @@
       aspect-ratio: 1;
       margin-right: 0.2rem;
       background: var(--text-color-secondary);
-      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 48C141.31 48 48 141.31 48 256s93.31 208 208 208 208-93.31 208-208S370.69 48 256 48zm75.31 260.69a16 16 0 11-22.62 22.62L256 278.63l-52.69 52.68a16 16 0 01-22.62-22.62L233.37 256l-52.68-52.69a16 16 0 0122.62-22.62L256 233.37l52.69-52.68a16 16 0 0122.62 22.62L278.63 256z'/%3E%3C/svg%3E");
+      mask-image: url("../images/svgs/mask-search-bar__webkit-search-cancel-button.svg");
       mask-size: contain;
       mask-repeat: no-repeat;
       opacity: 0;
@@ -105,11 +105,6 @@
     &::after {
       border-color: currentColor;
       clip-path: inset(0 0 50% 50%);
-      animation: loading-spinner 1s infinite linear;
-
-      @media (prefers-reduced-motion) {
-        animation-duration: 2s;
-      }
     }
   }
 
@@ -141,6 +136,11 @@
         opacity: 1;
         scale: 1;
         filter: blur(0);
+        animation: loading-spinner 1s infinite linear;
+
+        @media (prefers-reduced-motion) {
+          animation-duration: 2s;
+        }
       }
     }
   }

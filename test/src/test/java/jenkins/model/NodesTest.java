@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.XmlFile;
+import hudson.model.AsyncPeriodicWork;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.Node;
@@ -51,6 +52,7 @@ import hudson.model.Saveable;
 import hudson.model.Slave;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.ComputerLauncher;
+import hudson.slaves.ComputerRetentionWork;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
@@ -58,6 +60,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,6 +74,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
 
 @WithJenkins
 class NodesTest {
+    private static final Logger LOGGER = Logger.getLogger(NodesTest.class.getName());
 
     private JenkinsRule r;
 
@@ -183,6 +188,7 @@ class NodesTest {
     @Test
     @Issue("JENKINS-33704")
     void replacingSecondNodeIsLocal() throws Exception {
+        disableCronRetentionCheck();
         DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
         var retentionStrategyA = new MockRetentionStrategy();
         nodeA.setRetentionStrategy(retentionStrategyA);
@@ -201,6 +207,7 @@ class NodesTest {
     @Test
     @Issue("JENKINS-33704")
     void removingSecondNodeIsLocal() throws Exception {
+        disableCronRetentionCheck();
         DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
         var retentionStrategyA = new MockRetentionStrategy();
         nodeA.setRetentionStrategy(retentionStrategyA);
@@ -219,6 +226,7 @@ class NodesTest {
     @Test
     @Issue("JENKINS-33704")
     void changingBuiltInNodeDoesntChangeOtherNodes() throws Exception {
+        disableCronRetentionCheck();
         DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
         var retentionStrategyA = new MockRetentionStrategy();
         nodeA.setRetentionStrategy(retentionStrategyA);
@@ -226,6 +234,11 @@ class NodesTest {
         assertThat(retentionStrategyA.checkCount, equalTo(0));
         r.jenkins.setNumExecutors(1);
         assertThat(retentionStrategyA.checkCount, equalTo(0));
+    }
+
+    private static void disableCronRetentionCheck() {
+        // Disable cron-based retention checks to avoid messing with the counts
+        ExtensionList.lookup(AsyncPeriodicWork.class).remove(ExtensionList.lookupSingleton(ComputerRetentionWork.class));
     }
 
     @Test
@@ -259,6 +272,7 @@ class NodesTest {
 
         @Override
         public long check(SlaveComputer c) {
+            LOGGER.log(Level.INFO, new Throwable(), () -> "MockRetentionStrategy.check called on " + c.getName());
             checkCount++;
             return super.check(c);
         }

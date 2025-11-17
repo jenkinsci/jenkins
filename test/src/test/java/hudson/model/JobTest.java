@@ -27,6 +27,8 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -50,14 +52,18 @@ import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
+import jenkins.model.Tab;
+import jenkins.model.TransientActionFactory;
 import org.hamcrest.Matchers;
 import org.htmlunit.Page;
 import org.htmlunit.TextPage;
@@ -75,6 +81,7 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -558,6 +565,64 @@ class JobTest {
         wc.getPage(p, "buildTimeTrend");
 
         assertEquals("", alertContent.get());
+    }
+
+    @TestExtension("getJobTabs")
+    public static class TabFactory extends TransientActionFactory<Actionable> {
+
+        @Override
+        public Class<Actionable> type() {
+            return Actionable.class;
+        }
+
+        @NonNull
+        @Override
+        public Collection<? extends Action> createFor(@NonNull Actionable target) {
+            return Set.of(new Tab(target) {
+                @Override
+                public String getIconFileName() {
+                    return "test";
+                }
+
+                @Override
+                public String getDisplayName() {
+                    return "Test";
+                }
+
+                @Override
+                public String getUrlName() {
+                    return "test";
+                }
+            }, new Tab(target) {
+                @Override
+                public String getIconFileName() {
+                    return null;
+                }
+
+                @Override
+                public String getDisplayName() {
+                    return "I do not appear";
+                }
+
+                @Override
+                public String getUrlName() {
+                    return "doNotAppear";
+                }
+            });
+        }
+    }
+
+    /**
+     * Only tabs with icons should appear
+     */
+    @Test
+    void getJobTabs() throws Exception {
+        var project = j.createFreeStyleProject();
+
+        var response = project.getJobTabs();
+
+        assertThat(response, hasSize(1));
+        assertThat(response.get(0).getDisplayName(), equalTo("Test"));
     }
 
     /**
