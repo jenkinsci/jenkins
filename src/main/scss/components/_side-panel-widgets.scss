@@ -12,7 +12,8 @@
   margin-left: 10px;
 }
 
-.pane-header {
+#side-panel .pane-header,
+.app-build-content .pane-header {
   font-size: var(--font-size-sm);
   display: flex;
 }

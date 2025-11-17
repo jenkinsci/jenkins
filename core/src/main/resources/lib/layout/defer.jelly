@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2025 Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,35 +21,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <j:new className="jenkins.run.ChangesTab" var="it">
-    <j:arg value="${it}"/>
-  </j:new>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+  <st:documentation>
+    A lazy-loaded element.
+  </st:documentation>
 
-  <l:run-subpage>
-    <l:app-bar title="${it.displayName}">
-      <l:details-bar it="${it.object}" />
-    </l:app-bar>
+  <j:set var="deferMode" value="placeholder" scope="parent" />
+  <div class="jenkins-!-display-contents">
+    <d:invokeBody />
+  </div>
 
-    <j:set var="changeSets" value="${it.object.changeSets}" />
-
-    <j:choose>
-      <j:when test="${!empty(changeSets)}">
-        <div class="jenkins-card">
-          <div class="jenkins-card__content">
-            <j:forEach var="changeSet" items="${changeSets}">
-              <st:include page="index.jelly" it="${changeSet}" />
-            </j:forEach>
-          </div>
-        </div>
-      </j:when>
-      <j:otherwise>
-        <l:notice icon="${it.iconFileName}" title="${%Failed to determine}">
-          <a href="${h.getConsoleUrl(it.object)}">${%log}</a>
-        </l:notice>
-      </j:otherwise>
-    </j:choose>
-  </l:run-subpage>
+  <j:set var="deferMode" value="children" scope="parent" />
+  <l:renderOnDemand clazz="defer-element" tag="div" capture="it,deferMode,previousIt">
+    <l:ajax>
+      <div>
+        <d:invokeBody />
+      </div>
+    </l:ajax>
+  </l:renderOnDemand>
 </j:jelly>

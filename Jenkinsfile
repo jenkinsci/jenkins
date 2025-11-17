@@ -218,7 +218,7 @@ axes.values().combinations {
 
 def athAxes = [
   platforms: ['linux'],
-  jdks: [17],
+  jdks: [21],
   browsers: ['firefox'],
 ]
 athAxes.values().combinations {

@@ -151,7 +151,6 @@ function generateButtons() {
             }
             Behaviour.applySubtree(nc, true);
             ensureVisible(nc);
-            nc.classList.remove("fade-in");
             layoutUpdateCallback.call();
           },
           true,
@@ -176,7 +175,7 @@ function generateButtons() {
           e.classList.contains("repeated-chunk"),
         ).length;
 
-        btn.disabled = oneEach && selectedCount === templateCount;
+        btn.disabled = oneEach && selectedCount >= templateCount;
       }
       const observer = new MutationObserver(() => {
         toggleButtonState();
