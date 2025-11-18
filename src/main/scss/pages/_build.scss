@@ -138,7 +138,8 @@
   }
 }
 
-body:has(.app-build-bar) {
+body:has(.app-build-bar),
+body:has(.app-settings-container) {
   --top: color-mix(in sRGB, var(--text-color-secondary) 4%, var(--background));
   --bottom: color-mix(
     in sRGB,
@@ -148,6 +149,34 @@ body:has(.app-build-bar) {
 
   background: linear-gradient(var(--top), var(--bottom));
   background-attachment: fixed;
+}
+
+.app-settings-container {
+  --background: var(--card-background);
+  --top: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 2%,
+    var(--card-background)
+  );
+
+  position: relative;
+  background-color: var(--card-background);
+  background-image: linear-gradient(var(--top), var(--card-background));
+  background-size: 100% 90vh;
+  background-repeat: no-repeat;
+  border: var(--jenkins-border);
+  border-radius: var(--form-input-border-radius);
+  z-index: 0;
+  min-height: calc(100vh - var(--header-height) - var(--section-padding));
+
+  &__inner {
+    max-width: 900px;
+    margin: auto;
+    overflow-x: clip;
+    padding: var(--section-padding);
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .app-build-bar {
