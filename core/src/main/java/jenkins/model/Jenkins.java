@@ -3542,7 +3542,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 }
 
                 if (useSecurity != null && !useSecurity) {
-                    // forced reset to the unsecure mode.
+                    // forced reset to the insecure mode.
                     // this works as an escape hatch for people who locked themselves out.
                     authorizationStrategy = AuthorizationStrategy.UNSECURED;
                     setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
@@ -5725,10 +5725,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 // fall through
             }
 
-            // totally unparseable
+            // totally unparsable
             return null;
         } catch (IllegalArgumentException e) {
-            // totally unparseable
+            // totally unparsable
             return null;
         }
     }
