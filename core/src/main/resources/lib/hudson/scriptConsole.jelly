@@ -26,54 +26,68 @@ THE SOFTWARE.
   Called from doScript() to display the execution result and the form.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:local="local">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:f="/lib/form" xmlns:t="/lib/hudson" xmlns:local="local">
   <st:documentation>
     <st:attribute name="layout" use="optional">
-      Specify which layout to be use for the page.
+      Specify which layout to be used for the page.
       See the type in layout for more details.
+      Script console also supports `none`, which removes the traditional layout frame.
       By default, it is `two-column`.
     </st:attribute>
   </st:documentation>
 
   <d:taglib uri="local">
     <d:tag name="contents">
-      <j:choose>
-      <j:when test="${it.channel != null}">
-        <p>
-          ${%description}
-        </p>
-        <!-- this is where the example goes -->
-        <d:invokeBody />
-        <p>
-          ${%description2}
-        </p>
+      <l:app-bar title="${%scriptConsole}">
+        <t:help href="https://www.jenkins.io/doc/book/managing/script-console/" />
+      </l:app-bar>
 
-        <form action="script" method="post">
-          <textarea id="script" name="script" class="script">${request2.getParameter('script')}</textarea>
-          <div align="right">
-            <f:submit  value="${%Run}"/>
-          </div>
-        </form>
-        <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.groovy.groovy"/>
-        <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
-        <j:if test="${output!=null}">
-          <h2>
-            ${%Result}
-            <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${output}"/>
-          </h2>
-          <pre><st:out value="${output}"/></pre>
-        </j:if>
-      </j:when>
-      <j:otherwise>
-        ${%impossibleOffline}
-      </j:otherwise>
-    </j:choose>
+      <p class="jenkins-page-description">
+        ${%description}
+      </p>
+
+      <j:choose>
+        <j:when test="${it.channel != null}">
+          <f:section title="${%Getting started}">
+            <p class="jenkins-section__description">
+              Use the ‘println’ command to see the output (if you use System.out, it will go to the server’s stdout, which is harder to see). ${%description2}
+            </p>
+
+            <!-- this is where the example goes -->
+            <d:invokeBody />
+          </f:section>
+
+          <f:section title="${%Console}">
+            <form action="script" method="post">
+              <textarea id="script" name="script" class="script">${request2.getParameter('script')}</textarea>
+              <div align="right">
+                <f:submit  value="${%Run}"/>
+              </div>
+            </form>
+            <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.groovy.groovy"/>
+            <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
+            <j:if test="${output!=null}">
+              <h2>
+                ${%Result}
+                <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${output}"/>
+              </h2>
+              <pre><st:out value="${output}"/></pre>
+            </j:if>
+          </f:section>
+        </j:when>
+        <j:otherwise>
+          ${%impossibleOffline}
+        </j:otherwise>
+      </j:choose>
     </d:tag>
   </d:taglib>
 
   <j:choose>
     <j:when test="${attrs.layout == 'none'}">
-      <local:contents />
+      <local:contents>
+        <d:invokeBody />
+      </local:contents>
     </j:when>
     <j:otherwise>
       <j:set var="layout" value="${attrs.layout != null ? attrs.layout : 'two-column'}" />
@@ -84,39 +98,9 @@ THE SOFTWARE.
 
         <l:breadcrumb title="${%scriptConsole}"/>
         <l:main-panel>
-          <h1>${%scriptConsole}</h1>
-
-          <j:choose>
-            <j:when test="${it.channel != null}">
-              <p>
-                ${%description}
-              </p>
-              <!-- this is where the example goes -->
-              <d:invokeBody />
-              <p>
-                ${%description2}
-              </p>
-
-              <form action="script" method="post">
-                <textarea id="script" name="script" class="script">${request2.getParameter('script')}</textarea>
-                <div align="right">
-                  <f:submit  value="${%Run}"/>
-                </div>
-              </form>
-              <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.groovy.groovy"/>
-              <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
-              <j:if test="${output!=null}">
-                <h2>
-                  ${%Result}
-                  <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${output}"/>
-                </h2>
-                <pre><st:out value="${output}"/></pre>
-              </j:if>
-            </j:when>
-            <j:otherwise>
-              ${%impossibleOffline}
-            </j:otherwise>
-          </j:choose>
+          <local:contents>
+            <d:invokeBody />
+          </local:contents>
         </l:main-panel>
       </l:layout>
     </j:otherwise>
