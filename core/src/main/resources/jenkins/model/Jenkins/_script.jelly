@@ -35,7 +35,7 @@ THE SOFTWARE.
 
     <t:scriptConsole layout="none">
       <form action="script" method="post">
-        <div class="jenkins-quote jenkins-quote--monospace jenkins-!-margin-bottom-4">
+        <div class="jenkins-quote jenkins-quote--monospace jenkins-!-margin-bottom-5">
           println(Jenkins.instance.pluginManager.plugins)
           <input type="hidden"
                  name="script"
