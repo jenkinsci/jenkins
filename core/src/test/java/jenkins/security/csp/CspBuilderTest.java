@@ -375,6 +375,59 @@ public class CspBuilderTest {
         assertThat(builder.build(), is("default-src 'self'; img-src 'self' data:;"));
     }
 
+    @Test
+    void testNullValue() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.IMG_SRC, (String) null);
+        assertThat(builder.build(), is(""));
+    }
+
+    @Test
+    void testNullValueInheriting() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.DEFAULT_SRC, Directive.SELF);
+        builder.add(Directive.IMG_SRC, (String) null);
+        assertThat(builder.build(), is("default-src 'self';"));
+    }
+
+    @Test
+    void testNoValueInheriting() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.DEFAULT_SRC, Directive.SELF);
+        builder.add(Directive.IMG_SRC);
+        assertThat(builder.build(), is("default-src 'self'; img-src 'self';"));
+    }
+
+    @Test
+    void testNoValueNoninheriting() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.DEFAULT_SRC, Directive.SELF);
+        builder.initialize(FetchDirective.IMG_SRC);
+        assertThat(builder.build(), is("default-src 'self'; img-src 'none';"));
+
+        builder.add(Directive.IMG_SRC, "example.org");
+        assertThat(builder.build(), is("default-src 'self'; img-src example.org;"));
+    }
+
+    @Test
+    void testNullValueNoninheriting() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.DEFAULT_SRC, Directive.SELF);
+        builder.initialize(FetchDirective.IMG_SRC, (String) null);
+        assertThat(builder.build(), is("default-src 'self';"));
+        builder.add(Directive.IMG_SRC, "example.org");
+        // Initialization was ignored
+        assertThat(builder.build(), is("default-src 'self'; img-src 'self' example.org;"));
+    }
+
+    @Test
+    void testNullValueAddition() {
+        CspBuilder builder = new CspBuilder();
+        builder.add(Directive.IMG_SRC, "example.org");
+        builder.add(Directive.IMG_SRC, (String) null);
+        assertThat(builder.build(), is("img-src example.org;"));
+    }
+
     private static Matcher<LogRecord> logMessageContainsString(String needle) {
         return new LogMessageContainsString(containsString(needle));
     }

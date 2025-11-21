@@ -27,11 +27,10 @@ package jenkins.security.csp.impl;
 import hudson.Extension;
 import hudson.model.User;
 import hudson.tasks.UserAvatarResolver;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.navigation.UserAction;
+import jenkins.security.csp.AvatarContributor;
 import jenkins.security.csp.Contributor;
 import jenkins.security.csp.CspBuilder;
 import jenkins.security.csp.Directive;
@@ -60,27 +59,7 @@ public class UserAvatarContributor implements Contributor {
             LOGGER.log(Level.FINE, "No avatar image found for user " + user.getId());
             return;
         }
-        try {
-            final URI uri = new URI(url);
-            final String host = uri.getHost();
-            if (host == null) {
-                // If there's no host, assume a local path
-                LOGGER.log(Level.FINE, "Ignoring URI without host: " + url);
-                return;
-            }
-            String cspValue = host;
-            final String scheme = uri.getScheme();
-            if (scheme != null) {
-                cspValue = scheme + "://" + cspValue;
-            }
-            final int port = uri.getPort();
-            if (port != -1) {
-                cspValue = cspValue + ":" + port;
-            }
-            LOGGER.log(Level.FINER, "Allowing img-src '" + cspValue + "' from avatar uri: " + url);
-            cspBuilder.add(Directive.IMG_SRC, cspValue);
-        } catch (URISyntaxException e) {
-            LOGGER.log(Level.FINE, "Failed to parse avatar URI: " + url, e);
-        }
+
+        cspBuilder.add(Directive.IMG_SRC, AvatarContributor.extractDomainFromUrl(url));
     }
 }

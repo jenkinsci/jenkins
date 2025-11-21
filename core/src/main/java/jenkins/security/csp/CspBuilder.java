@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -91,6 +92,11 @@ public class CspBuilder {
      * </p>
      *
      * @param directive the directive to add
+     * @param values the values to add to the directive. {@code null} values are ignored. If only {@code null} values
+     *               are passed, the directive will not be added. This is different from calling this with only the
+     *               {@code directive} argument (i.e., an empty list of values), which will add the directive with no
+     *               additional values, potentially resulting in an effective {@link jenkins.security.csp.Directive#NONE}
+     *               value.
      * @return this builder
      */
     public CspBuilder add(String directive, String... values) {
@@ -98,17 +104,24 @@ public class CspBuilder {
             LOGGER.config("Directive " + directive + " cannot be set manually");
             return this;
         }
-        directives.compute(directive, (k, v) -> {
-            final List<String> list = new ArrayList<>(Arrays.stream(values).toList());
-            if (list.contains(Directive.NONE)) {
+        directives.compute(directive, (k, current) -> {
+            final List<String> additions = new ArrayList<>(Arrays.stream(values).toList());
+            if (additions.contains(Directive.NONE)) {
                 LOGGER.config("Cannot explicitly add 'none'. See " + Directive.class.getName() + "#NONE Javadoc.");
-                list.remove(Directive.NONE);
+                additions.remove(Directive.NONE);
             }
-            if (v == null) {
-                return new HashSet<>(list);
+
+            Set<String> nonNullAdditions = additions.stream().filter(Objects::nonNull).collect(Collectors.toSet());
+
+            if (nonNullAdditions.isEmpty() != additions.isEmpty()) {
+                return current;
+            }
+
+            if (current == null) {
+                return new HashSet<>(nonNullAdditions);
             } else {
-                v.addAll(list);
-                return v;
+                nonNullAdditions.addAll(current);
+                return nonNullAdditions;
             }
         });
         return this;
@@ -147,12 +160,18 @@ public class CspBuilder {
      * This can be invoked multiple times, and the merged set of values will be used.
      *
      * @param fetchDirective the directive
-     * @param values its initial values
+     * @param values Its initial values. If this is an empty list, will initialize as {@link jenkins.security.csp.Directive#NONE}.
+     *               {@code null} values in the list are ignored. If this is a non-empty list with only {@code null}
+     *               values, this invocation has no effect.
      * @return this builder
      */
     public CspBuilder initialize(FetchDirective fetchDirective, String... values) {
-        initializedFDs.add(fetchDirective);
         add(fetchDirective.toKey(), values);
+        if (directives.containsKey(fetchDirective.toKey())) {
+            // Handle the special case of values being a non-empty array with only null values
+            LOGGER.log(Level.FINER, "Ignoring initialization call with no-op null values list for " + fetchDirective.toKey());
+            initializedFDs.add(fetchDirective);
+        }
         return this;
     }
 
