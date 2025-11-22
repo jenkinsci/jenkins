@@ -323,9 +323,7 @@ class DirectoryBrowserSupportTest {
         j.buildAndAssertSuccess(p);
 
         HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
-        for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-            assertEquals(DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue(header), "Header set: " + header);
-        }
+        assertEquals(DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue("Content-Security-Policy"));
 
         String propName = DirectoryBrowserSupport.class.getName() + ".CSP";
         String initialValue = System.getProperty(propName);
@@ -333,9 +331,7 @@ class DirectoryBrowserSupportTest {
             System.setProperty(propName, "");
             page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
             List<String> headers = page.getWebResponse().getResponseHeaders().stream().map(NameValuePair::getName).collect(Collectors.toList());
-            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                assertThat(headers, not(hasItem(header)));
-            }
+            assertThat(headers, not(hasItem("Content-Security-Policy")));
         } finally {
             if (initialValue == null) {
                 System.clearProperty(DirectoryBrowserSupport.class.getName() + ".CSP");

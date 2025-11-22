@@ -74,6 +74,11 @@ THE SOFTWARE.
     <async-supported>true</async-supported>
   </filter>
   <filter>
+    <filter-name>csp-filter</filter-name>
+    <filter-class>jenkins.security.csp.impl.CspFilter</filter-class>
+    <async-supported>true</async-supported>
+  </filter>
+  <filter>
     <filter-name>csrf-filter</filter-name>
     <filter-class>hudson.security.csrf.CrumbFilter</filter-class>
     <async-supported>true</async-supported>
@@ -152,6 +157,10 @@ THE SOFTWARE.
   </filter-mapping>
   <filter-mapping>
     <filter-name>authentication-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>csp-filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
   <filter-mapping>

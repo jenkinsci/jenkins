@@ -67,6 +67,8 @@ import jenkins.model.Jenkins;
 import jenkins.security.FIPS140;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
@@ -103,8 +105,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      * Returns true if it's time for us to check for new version.
      */
     public boolean isDue() {
-        // user opted out (explicitly or FIPS is requested). no data collection
-        if (!Jenkins.get().isUsageStatisticsCollected() || DISABLED || FIPS140.useCompliantAlgorithms()) {
+        if (!isEnabled()) {
             return false;
         }
 
@@ -114,6 +115,19 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
             return true;
         }
         return false;
+    }
+
+    /**
+     * Returns whether between UI configuration, system property, and environment,
+     * usage statistics should be submitted.
+     *
+     * @return true if and only if usage stats should be submitted
+     * @since TODO
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean isEnabled() {
+        // user opted out (explicitly or FIPS is requested). no data collection
+        return Jenkins.get().isUsageStatisticsCollected() && !DISABLED && !FIPS140.useCompliantAlgorithms();
     }
 
     private RSAPublicKey getKey() {
