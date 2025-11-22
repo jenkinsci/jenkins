@@ -26,10 +26,40 @@
   max-width: 700px;
 }
 
+#api-tokens {
+  width: 100%;
+}
+
+#api-token-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.token-card {
+  flex-direction: row;
+  display: flex;
+  gap: 0.5rem;
+  border-radius: var(--form-input-border-radius);
+  background: var(--card-background);
+  position: relative;
+}
+
+.token-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: var(--card-border-width) solid var(--card-border-color);
+  z-index: 1;
+  pointer-events: none;
+}
+
 .token-card__title,
 .token-stats,
 .token-never-used,
-.token-list .jenkins-card,
+.token-list,
 .token-controls {
   display: flex;
   gap: 0.5rem;
