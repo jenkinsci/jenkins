@@ -1119,12 +1119,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * @return never null
      */
+    @SuppressWarnings("deprecation")
     public PermalinkList getPermalinks() {
         PeepholePermalink.initialized();
         // TODO: shall we cache this?
         PermalinkList permalinks = new PermalinkList(Permalink.BUILTIN);
-        for (PermalinkProjectAction ppa : getActions(PermalinkProjectAction.class)) {
-            permalinks.addAll(ppa.getPermalinks());
+        for (var action : getActions()) {
+            if (action instanceof PermalinkProjectAction ppa) {
+                permalinks.addAll(ppa.getPermalinks());
+            }
         }
         return permalinks;
     }
