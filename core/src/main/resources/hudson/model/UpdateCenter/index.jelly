@@ -28,7 +28,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-<l:settings-subpage header="${null}" permission="${app.SYSTEM_READ}" noDefer="true" includeSidepanel="true">
+<l:settings-subpage header="${null}" permission="${app.SYSTEM_READ}" includeSidepanel="true">
   <st:adjunct includes="hudson.model.UpdateCenter.update-center" />
   <st:adjunct includes="hudson.model.UpdateCenter._download-failure" />
   <l:app-bar title="${%Download progress}" />
