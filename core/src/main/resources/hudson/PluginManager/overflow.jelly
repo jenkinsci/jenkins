@@ -1,8 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
-Seiji Sogabe, Yahoo! Inc., Alan Harder
+Copyright (c) 2025, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +21,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  This page shows the status of the plugin installation
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-<l:settings-subpage header="${null}" permission="${app.SYSTEM_READ}">
-  <st:adjunct includes="hudson.model.UpdateCenter.update-center" />
-  <st:adjunct includes="hudson.model.UpdateCenter._download-failure" />
-  <l:app-bar title="${%Download progress}" />
-  <st:include page="body.jelly" />
-</l:settings-subpage>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+  <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
+
+  <j:if test="${newManageJenkins}">
+    <l:overflowButton>
+      <dd:item icon="symbol-settings"
+               text="${%Advanced settings}"
+               href="advanced" />
+    </l:overflowButton>
+  </j:if>
 </j:jelly>

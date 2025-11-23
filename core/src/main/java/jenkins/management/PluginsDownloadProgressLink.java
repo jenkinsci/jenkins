@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2012, CloudBees, Intl., Nicolas De loof
+ * Copyright (c) 2025, Jan Faracik
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,42 +27,38 @@ package jenkins.management;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
-import hudson.model.UpdateCenter;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag;
-import org.jenkinsci.Symbol;
 
-/**
- * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
- */
-@Extension(ordinal = Integer.MAX_VALUE - 400) @Symbol("plugins")
-public class PluginsLink extends ManagementLink {
+@Extension(ordinal = Integer.MAX_VALUE - 3)
+public class PluginsDownloadProgressLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
         var flagEnabled = new NewManageJenkinsUserExperimentalFlag().getFlagValue();
 
-        if (flagEnabled) {
+        if (!flagEnabled) {
             return null;
         }
 
-        return "plugin.svg";
+        // Hide the 'Download progress' link if there are
+        // no active downloads or restarts pending
+        if (Jenkins.get().getUpdateCenter().getJobs().isEmpty()) {
+            return null;
+        }
+
+        return "symbol-list";
     }
 
     @Override
     public String getDisplayName() {
-        return Messages.PluginsLink_DisplayName();
-    }
-
-    @Override
-    public String getDescription() {
-        return Messages.PluginsLink_Description();
+        return "Download progress";
     }
 
     @Override
     public String getUrlName() {
-        return "pluginManager";
+        return "pluginManager/updates/";
     }
 
     @NonNull
@@ -74,12 +70,6 @@ public class PluginsLink extends ManagementLink {
     @NonNull
     @Override
     public Category getCategory() {
-        return Category.CONFIGURATION;
-    }
-
-    @Override
-    public Badge getBadge() {
-        final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
-        return updateCenter.getBadge();
+        return Category.PLUGINS;
     }
 }

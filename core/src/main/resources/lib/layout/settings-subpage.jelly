@@ -45,6 +45,10 @@ THE SOFTWARE.
       Optional breadcrumb, will add a breadcrumb for the current <code>it</code>
       ]]>
     </st:attribute>
+    <st:attribute name="noDefer">
+    </st:attribute>
+    <st:attribute name="includeSidepanel">
+    </st:attribute>
   </st:documentation>
 
   <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
@@ -53,7 +57,7 @@ THE SOFTWARE.
   <l:layout title="${it.displayName} - ${manageJenkinsAction.displayName}"
             permission="${attrs.permission}"
             permissions="${attrs.permissions}"
-            type="${newManageJenkins ? 'two-column' : 'one-column'}">
+            type="${(newManageJenkins or attrs.includeSidepanel) ? 'two-column' : 'one-column'}">
 
     <j:if test="${attrs.includeBreadcrumb}">
       <!-- Hacky - this will be improved in subsequent PRs -->
@@ -106,26 +110,37 @@ THE SOFTWARE.
 
               <j:out value="${attrs.header}" />
 
-              <l:defer>
-                <l:defer.placeholder>
-                  <j:choose>
-                    <j:when test="${attrs.containsKey('placeholder')}">
-                      <j:out value="${attrs.placeholder}" />
-                    </j:when>
-                    <j:otherwise>
-                      <l:skeleton type="form" />
-                    </j:otherwise>
-                  </j:choose>
-                </l:defer.placeholder>
-                <l:defer.children>
+              <j:choose>
+                <j:when test="${!attrs.noDefer}">
+                  <l:defer>
+                    <l:defer.placeholder>
+                      <j:choose>
+                        <j:when test="${attrs.containsKey('placeholder')}">
+                          <j:out value="${attrs.placeholder}" />
+                        </j:when>
+                        <j:otherwise>
+                          <l:skeleton type="form" />
+                        </j:otherwise>
+                      </j:choose>
+                    </l:defer.placeholder>
+                    <l:defer.children>
+                      <d:invokeBody />
+                    </l:defer.children>
+                  </l:defer>
+                </j:when>
+                <j:otherwise>
                   <d:invokeBody />
-                </l:defer.children>
-              </l:defer>
+                </j:otherwise>
+              </j:choose>
             </div>
           </div>
         </l:main-panel>
       </j:when>
       <j:otherwise>
+        <j:if test="${attrs.includeSidepanel}">
+          <st:include page="sidepanel" />
+        </j:if>
+
         <l:main-panel>
           <j:if test="${!attrs.containsKey('header')}">
             <l:app-bar title="${it.displayName}" />

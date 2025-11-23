@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2012, CloudBees, Intl., Nicolas De loof
+ * Copyright (c) 2025, Jan Faracik
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,33 +31,24 @@ import hudson.model.UpdateCenter;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag;
-import org.jenkinsci.Symbol;
 
-/**
- * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
- */
-@Extension(ordinal = Integer.MAX_VALUE - 400) @Symbol("plugins")
-public class PluginsLink extends ManagementLink {
+@Extension(ordinal = Integer.MAX_VALUE)
+public class PluginsUpdatesLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
         var flagEnabled = new NewManageJenkinsUserExperimentalFlag().getFlagValue();
 
-        if (flagEnabled) {
+        if (!flagEnabled) {
             return null;
         }
 
-        return "plugin.svg";
+        return "symbol-download";
     }
 
     @Override
     public String getDisplayName() {
-        return Messages.PluginsLink_DisplayName();
-    }
-
-    @Override
-    public String getDescription() {
-        return Messages.PluginsLink_Description();
+        return "Updates";
     }
 
     @Override
@@ -74,7 +65,7 @@ public class PluginsLink extends ManagementLink {
     @NonNull
     @Override
     public Category getCategory() {
-        return Category.CONFIGURATION;
+        return Category.PLUGINS;
     }
 
     @Override
