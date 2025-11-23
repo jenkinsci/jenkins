@@ -64,7 +64,7 @@ THE SOFTWARE.
                   <input type="hidden"
                          name="script"
                          value="${script}" />
-                  <button class="jenkins-button jenkins-copy-button jenkins-button--tertiary jenkins-!-build-color"
+                  <button class="jenkins-button jenkins-button--tertiary jenkins-!-build-color"
                           tooltip="${%Run example}">
                     <l:icon src="symbol-play" />
                   </button>
