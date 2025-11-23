@@ -60,6 +60,9 @@
         max-width: 25ch;
         text-overflow: ellipsis;
         white-space: nowrap;
+        overflow: hidden;
+        justify-content: flex-start;
+        text-align: left;
       }
 
       // '/' separator between two items
