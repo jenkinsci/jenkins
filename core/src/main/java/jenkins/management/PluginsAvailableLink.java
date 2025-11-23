@@ -47,7 +47,7 @@ public class PluginsAvailableLink extends ManagementLink {
 
     @Override
     public String getDisplayName() {
-        return "Available plugins";
+        return Messages.PluginsAvailableLink_DisplayName();
     }
 
     @Override

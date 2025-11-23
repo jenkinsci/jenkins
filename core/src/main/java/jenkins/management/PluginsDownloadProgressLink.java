@@ -53,7 +53,7 @@ public class PluginsDownloadProgressLink extends ManagementLink {
 
     @Override
     public String getDisplayName() {
-        return "Download progress";
+        return Messages.PluginsDownloadProgressLink_DisplayName();
     }
 
     @Override

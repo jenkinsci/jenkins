@@ -48,7 +48,7 @@ public class PluginsUpdatesLink extends ManagementLink {
 
     @Override
     public String getDisplayName() {
-        return "Updates";
+        return Messages.PluginsUpdatesLink_DisplayName();
     }
 
     @Override
