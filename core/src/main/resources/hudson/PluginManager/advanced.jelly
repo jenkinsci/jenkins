@@ -38,7 +38,7 @@ THE SOFTWARE.
                   <section class="jenkins-section jenkins-!-margin-bottom-5">
                       <h2 class="jenkins-section__title">${%Deploy Plugin}</h2>
                       <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
-                          <div class="jenkins-description" style="margin-bottom: 1em;">
+                          <div class="jenkins-description">
                               ${%deploytext}
                           </div>
                           <f:entry title="${%File}" field="name">
