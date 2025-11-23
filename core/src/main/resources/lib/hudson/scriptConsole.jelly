@@ -35,6 +35,9 @@ THE SOFTWARE.
       Script console also supports `none`, which removes the traditional layout frame.
       By default, it is `two-column`.
     </st:attribute>
+    <st:attribute name="scripts" use="optional">
+      Displays executable example scripts.
+    </st:attribute>
   </st:documentation>
 
   <d:taglib uri="local">
@@ -53,6 +56,21 @@ THE SOFTWARE.
             <p class="jenkins-section__description">
               Use the ‘println’ command to see the output (if you use System.out, it will go to the server’s stdout, which is harder to see). ${%description2}
             </p>
+
+            <j:forEach var="script" items="${scripts}">
+              <form action="script" method="post">
+                <div class="jenkins-quote jenkins-quote--monospace jenkins-!-margin-bottom-5">
+                  ${script}
+                  <input type="hidden"
+                         name="script"
+                         value="${script}" />
+                  <button class="jenkins-button jenkins-copy-button jenkins-button--tertiary jenkins-!-build-color"
+                          tooltip="${%Run script}">
+                    <l:icon src="symbol-play" />
+                  </button>
+                </div>
+              </form>
+            </j:forEach>
 
             <!-- this is where the example goes -->
             <d:invokeBody />

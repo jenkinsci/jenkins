@@ -33,19 +33,7 @@ THE SOFTWARE.
   <l:settings-subpage includeBreadcrumb="true" permission="${app.ADMINISTER}" header="${null}" noDefer="true">
     <j:set var="it" value="${previousIt}" />
 
-    <t:scriptConsole layout="none">
-      <form action="script" method="post">
-        <div class="jenkins-quote jenkins-quote--monospace jenkins-!-margin-bottom-5">
-          println(Jenkins.instance.pluginManager.plugins)
-          <input type="hidden"
-                 name="script"
-                 value="println(Jenkins.instance.pluginManager.plugins)" />
-          <button class="jenkins-button jenkins-copy-button jenkins-button--tertiary jenkins-!-build-color"
-                  tooltip="${%Run script}">
-            <l:icon src="symbol-play" />
-          </button>
-        </div>
-      </form>
-    </t:scriptConsole>
+    <t:scriptConsole scripts="${['println(Jenkins.instance.pluginManager.plugins)']}"
+                     layout="none" />
   </l:settings-subpage>
 </j:jelly>
