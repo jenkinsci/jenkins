@@ -46,6 +46,9 @@ THE SOFTWARE.
       ]]>
     </st:attribute>
     <st:attribute name="noDefer">
+      Optional, disables the deferred loading for the page.
+      This can be useful if you need to access 'request2' or do advanced JavaScript.
+      Defaults to false if not set.
     </st:attribute>
   </st:documentation>
 
