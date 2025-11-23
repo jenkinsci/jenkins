@@ -65,7 +65,7 @@ THE SOFTWARE.
                          name="script"
                          value="${script}" />
                   <button class="jenkins-button jenkins-copy-button jenkins-button--tertiary jenkins-!-build-color"
-                          tooltip="${%Run script}">
+                          tooltip="${%Run example}">
                     <l:icon src="symbol-play" />
                   </button>
                 </div>
