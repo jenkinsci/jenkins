@@ -32,8 +32,9 @@ Behaviour.specify(
   },
 );
 
+// eslint-disable-next-line no-unused-vars
 function changeTokenCallback(newValue) {
-  document.getElementById('apiToken').value = newValue;
+  document.getElementById("apiToken").value = newValue;
 }
 
 function revokeToken(anchorRevoke) {
