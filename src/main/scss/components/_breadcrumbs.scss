@@ -61,7 +61,7 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;
-        justify-content: flex-start;
+        display: inline-block;
       }
 
       // '/' separator between two items
