@@ -168,9 +168,10 @@ public class CspBuilder {
     public CspBuilder initialize(FetchDirective fetchDirective, String... values) {
         add(fetchDirective.toKey(), values);
         if (directives.containsKey(fetchDirective.toKey())) {
-            // Handle the special case of values being a non-empty array with only null values
-            LOGGER.log(Level.FINER, "Ignoring initialization call with no-op null values list for " + fetchDirective.toKey());
             initializedFDs.add(fetchDirective);
+        } else {
+            // Handle the special case of values being a non-empty array with only null values
+            LOGGER.log(Level.CONFIG, "Ignoring initialization call with no-op null values list for " + fetchDirective.toKey());
         }
         return this;
     }

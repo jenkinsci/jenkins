@@ -418,6 +418,7 @@ public class CspBuilderTest {
         builder.add(Directive.IMG_SRC, "example.org");
         // Initialization was ignored
         assertThat(builder.build(), is("default-src 'self'; img-src 'self' example.org;"));
+        assertThat(logRecords, hasItem(logMessageContainsString("Ignoring initialization call with no-op null values list for img-src")));
     }
 
     @Test
