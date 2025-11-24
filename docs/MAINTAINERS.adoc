@@ -337,9 +337,9 @@ Jenkins core issues are scattered across multiple repositories: link:https://git
   and link:https://www.jenkins.io/changelog-stable/[LTS] releases.
   Such ratings allow users to reference issues they experienced with new Jenkins core releases,
   and it helps to discover regressions in the core causing instability or unexpected plugin failures.
-* link:https://github.com/jenkins-infra/helpdesk/issues?q=is%3Aissue%20is%3Aopen%20label%3Atriage[Jenkins core triage board] -
+* link:https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3Atriage[Jenkins core triage board] -
   Lists untriaged issues in the Jenkins core and bundled components.
-* link:https://github.com/jenkins-infra/helpdesk/issues?q=is%3Aissue%20is%3Aopen%20type%3ABug%20sort%3Aupdated-desc[Core maintainers board] -
+* link:https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20type%3ABug%20sort%3Aupdated-desc[Core maintainers board] -
   Lists unresolved recent bugs.
   This query can be used to discover issues that **might** be related to the recent changes in the Jenkins core.
 
@@ -558,7 +558,7 @@ Any Jenkins contributors are welcome to participate in backporting and release c
 
 == Tools
 
-* link:https://github.com/jenkins-infra/helpdesk/issues?q=is%3Aissue%20is%3Aopen%20type%3ABug%20sort%3Aupdated-desc[Core maintainers board] -
+* link:https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20type%3ABug%20sort%3Aupdated-desc[Core maintainers board] -
   Lists unresolved recent regressions, unresolved recent core bugs, and popular new issues.
 * link:https://github.com/jenkinsci/core-pr-tester[Core Pull Request Tester]
 * link:https://github.com/jenkinsci/core-changelog-generator[Core Changelog Generator]
