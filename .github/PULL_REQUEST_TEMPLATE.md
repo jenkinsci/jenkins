@@ -9,7 +9,7 @@ Fixes #<issue-number>
 If the issue is not fully described in the issue tracker, add more information here (justification, pull request links, etc.).
 
  * We do not require an issue for minor improvements.
- * Major new features should have an issue create.
+ * Major new features should have an issue created.
 -->
 
 ### Testing done
