@@ -2642,7 +2642,7 @@ function validateButton(checkUrl, paramList, button) {
         let callback = callInfo["callback"];
         let args = callInfo["arguments"];
         if (window[callback] && typeof window[callback] === "function") {
-          window[callback](...args);
+          window[callback].apply(window, args);
         }
       }
 
