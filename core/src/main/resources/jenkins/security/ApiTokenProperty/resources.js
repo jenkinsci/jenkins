@@ -32,6 +32,10 @@ Behaviour.specify(
   },
 );
 
+function changeTokenCallback(newValue) {
+  document.getElementById('apiToken').value = newValue;
+}
+
 function revokeToken(anchorRevoke) {
   const tokenRow = anchorRevoke.closest(".token-card");
   const confirmMessage = anchorRevoke.getAttribute("data-confirm");
