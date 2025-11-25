@@ -19,7 +19,7 @@ This page provides information about contributing code to the Jenkins core codeb
 If you want to contribute to Jenkins, or just learn about the project,
 you can start by fixing some easier issues.
 In the Jenkins issue tracker we mark such issues as `good first issue`.
-You can find them by using this query (check the link) for [newbie friendly issues](https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22).
+You can find them by using this query (check the link) for [good first issues](https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22).
 
 ## Building and Debugging
 
