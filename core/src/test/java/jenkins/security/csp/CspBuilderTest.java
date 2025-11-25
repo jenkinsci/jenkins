@@ -429,6 +429,17 @@ public class CspBuilderTest {
         assertThat(builder.build(), is("img-src example.org;"));
     }
 
+    @Test
+    void testLongChain() {
+        CspBuilder builder = new CspBuilder();
+        builder.initialize(FetchDirective.DEFAULT_SRC, Directive.SELF);
+        builder.add(Directive.SCRIPT_SRC, "example.org");
+        builder.add(Directive.SCRIPT_SRC_ELEM, "example.com");
+
+        assertThat(builder.build(), is("default-src 'self'; script-src 'self' example.org; script-src-elem 'self' example.com example.org;"));
+
+    }
+
     private static Matcher<LogRecord> logMessageContainsString(String needle) {
         return new LogMessageContainsString(containsString(needle));
     }
