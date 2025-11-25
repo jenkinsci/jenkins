@@ -199,8 +199,13 @@ class ViewTest {
 
         HtmlPage privateViewsPage = privateViewsLink.click();
 
-        Text viewLabel = privateViewsPage.getFirstByXPath("//div[@class='tabBar']//div[@class='tab active']/a/text()");
-        assertTrue(viewLabel.getTextContent().contains(Hudson_ViewName()), "'All' view should be selected");
+        // Support both classic tab bar and new dashboard buttons
+        HtmlAnchor activeTab = privateViewsPage.getFirstByXPath("//div[contains(@class,'tabBar')]//div[contains(@class,'tab') and contains(@class,'active')]/a");
+        if (activeTab == null) {
+            activeTab = privateViewsPage.getFirstByXPath("//div[contains(@class,'app-build-tabs')]//a[contains(@class,'jenkins-button') and not(contains(@class,'jenkins-button--tertiary'))]");
+        }
+        assertNotNull(activeTab, "Active view tab not found");
+        assertTrue(activeTab.getTextContent().contains(Hudson_ViewName()), "'All' view should be selected");
 
         View listView = listView("listView");
 
