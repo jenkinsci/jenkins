@@ -42,6 +42,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Extension(ordinal = -1)
 public class UserAction implements RootAction {
 
+    @Restricted(NoExternalUse.class)
+    public static final String AVATAR_SIZE = "96x96";
+
     @Override
     public String getIconFileName() {
         User current = User.current();
@@ -50,7 +53,7 @@ public class UserAction implements RootAction {
             return null;
         }
 
-        return getAvatar(current, "96x96");
+        return getAvatar(current, AVATAR_SIZE);
     }
 
     @Override

@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright 2019 CloudBees, Inc.
+Copyright (c) 2025 CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <a name="ResourceDomainConfiguration"/>
-    <f:section title="${%Serve resource files from another domain}">
-        <f:entry title="${%Resource Root URL}" field="url">
-            <f:textbox checkMethod="post"/>
-        </f:entry>
-    </f:section>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+    <l:layout title="${%Content Security Policy configuration}" type="one-column">
+        <l:main-panel>
+            <l:app-bar title="${%Enabling Content Security Policy configuration}"/>
+            <p>
+                ${%paragraph1}
+            </p>
+            <p>
+                ${%paragraph2}
+            </p>
+            <p>
+                ${%paragraph3}
+            </p>
+            <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+                <div>
+                    <f:bottomButtonBar>
+                        <f:submit name="setup" value="${%Set up now}"/>
+                        <f:submit primary="false" name="defer" value="${%Cancel}"/>
+                    </f:bottomButtonBar>
+                </div>
+            </form>
+        </l:main-panel>
+    </l:layout>
 </j:jelly>
