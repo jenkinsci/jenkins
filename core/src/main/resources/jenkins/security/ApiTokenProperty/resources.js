@@ -91,13 +91,18 @@ function appendTokenToTable(data) {
   const tokenShowButton = apiTokenRow.querySelector(
     ".api-token-property-token-show",
   );
-  const tokenExpirationSpan = apiTokenRow.querySelector(".api-token-new-expiration");
+  const tokenExpirationSpan = apiTokenRow.querySelector(
+    ".api-token-new-expiration",
+  );
   if (data.expirationDate === "never") {
     tokenExpirationSpan.innerText = tokenExpirationSpan.dataset.never;
     tokenExpirationSpan.classList.add("warning");
   } else {
-    tokenExpirationSpan.innerText = tokenExpirationSpan.dataset.expiresOn.replace("__DATA__", data.expirationDate);
-    const expirationDate = new Date(data.expirationDate);
+    tokenExpirationSpan.innerText =
+      tokenExpirationSpan.dataset.expiresOn.replace(
+        "__DATA__",
+        data.expirationDate,
+      );
   }
 
   apiTokenRow.id = data.tokenUuid;
@@ -111,11 +116,13 @@ function appendTokenToTable(data) {
 }
 
 function addFormChangesHandling(form) {
-  const expirationSelect = form.querySelector('select[name="expirationDuration"]');
+  const expirationSelect = form.querySelector(
+    'select[name="expirationDuration"]',
+  );
   const customDateInput = form.querySelector('input[name="tokenExpiration"]');
-  const warningDiv = form.querySelector('.token-warning');
+  const warningDiv = form.querySelector(".token-warning");
 
-  expirationSelect.addEventListener('change', () => {
+  expirationSelect.addEventListener("change", () => {
     if (expirationSelect.value === "custom") {
       customDateInput.classList.remove("jenkins-hidden");
       const submitButton = form.querySelector('button[data-id="ok"]');
@@ -136,7 +143,7 @@ function addFormChangesHandling(form) {
     }
   });
 
-  customDateInput.addEventListener('change', () => {
+  customDateInput.addEventListener("change", () => {
     const submitButton = form.querySelector('button[data-id="ok"]');
     if (customDateInput.value !== "") {
       submitButton.disabled = false;
@@ -149,8 +156,9 @@ function addFormChangesHandling(form) {
 function addToken(button) {
   const targetUrl = button.dataset.targetUrl;
   const promptMessage = button.dataset.promptMessage;
-  const promptName = button.dataset.messageName;
-  const formTemplate = document.getElementById("api-token-add-template").firstElementChild.cloneNode(true);
+  const formTemplate = document
+    .getElementById("api-token-add-template")
+    .firstElementChild.cloneNode(true);
   const form = document.createElement("form");
   const dateInput = formTemplate.querySelector('input[name="tokenExpiration"]');
   const now = new Date();
@@ -159,9 +167,9 @@ function addToken(button) {
   const presetDate = new Date();
   presetDate.setDate(now.getDate() + 30);
   nextYear.setDate(now.getDate() + 365);
-  dateInput.min = now.toISOString().split('T')[0]
-  dateInput.max = nextYear.toISOString().split('T')[0]
-  dateInput.value = presetDate.toISOString().split('T')[0]
+  dateInput.min = now.toISOString().split("T")[0];
+  dateInput.max = nextYear.toISOString().split("T")[0];
+  dateInput.value = presetDate.toISOString().split("T")[0];
   form.appendChild(formTemplate);
   addFormChangesHandling(form);
   dialog
@@ -176,13 +184,11 @@ function addToken(button) {
     .then(
       (formData) => {
         fetch(targetUrl, {
-          body: new URLSearchParams(
-            {
-              newTokenName: formData.get("tokenName"),
-              tokenExpiration: formData.get("tokenExpiration"),
-              expirationDuration: formData.get("expirationDuration"),
-            }
-          ),
+          body: new URLSearchParams({
+            newTokenName: formData.get("tokenName"),
+            tokenExpiration: formData.get("tokenExpiration"),
+            expirationDuration: formData.get("expirationDuration"),
+          }),
           method: "post",
           headers: crumb.wrap({
             "Content-Type": "application/x-www-form-urlencoded",
@@ -217,12 +223,15 @@ function showToken(tokenName, tokenValue, expirationDate, doneText) {
 
   const tokenValueSpan = apiTokenMessage.querySelector(".api-token-new-value");
   tokenValueSpan.innerText = tokenValue;
-  const tokenExpirationSpan = apiTokenMessage.querySelector(".api-token-new-expiration");
+  const tokenExpirationSpan = apiTokenMessage.querySelector(
+    ".api-token-new-expiration",
+  );
   if (expirationDate === "never") {
     tokenExpirationSpan.innerText = tokenExpirationSpan.dataset.never;
     tokenExpirationSpan.classList.add("warning");
   } else {
-    tokenExpirationSpan.innerText = tokenExpirationSpan.dataset.expiresOn.replace("__DATA__", expirationDate);
+    tokenExpirationSpan.innerText =
+      tokenExpirationSpan.dataset.expiresOn.replace("__DATA__", expirationDate);
   }
 
   if (isSecureContext) {
