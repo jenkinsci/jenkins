@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.537</revision>
+    <revision>2.539</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-11-11T16:33:16Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-11-19T06:10:29Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3345.v03dee9b_f88fc</remoting.version>
+    <remoting.version>3352.v17a_fb_4b_2773f</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
