@@ -112,7 +112,7 @@ public class SetupWizard extends PageDecorator {
      *      E.g. 110123456789abcdef0123456789abcdef.
      *      A fixed API Token will be created for the user with that plain value as the token.
      *      It is strongly recommended to use it to generate a new one (random) and then revoke it.
-     *      See {@link ApiTokenProperty#generateNewToken(String)} and {@link ApiTokenProperty#revokeAllTokensExceptOne(String)}
+     *      See {@link ApiTokenProperty#generateNewToken(String, java.util.Date)} and {@link ApiTokenProperty#revokeAllTokensExceptOne(String)}
      *      for scripting methods or using the web API calls:
      *      /user/[user-login]/descriptorByName/jenkins.security.ApiTokenProperty/generateNewToken and
      *      /user/[user-login]/descriptorByName/jenkins.security.ApiTokenProperty/revokeAllExcept
@@ -216,7 +216,7 @@ public class SetupWizard extends PageDecorator {
 
         String sysProp = ADMIN_INITIAL_API_TOKEN;
         if (sysProp.equals("true")) {
-            TokenUuidAndPlainValue tokenUuidAndPlainValue = apiTokenProperty.generateNewToken("random-generation-during-setup-wizard");
+            TokenUuidAndPlainValue tokenUuidAndPlainValue = apiTokenProperty.generateNewToken("random-generation-during-setup-wizard", null);
             FilePath fp = getInitialAdminApiTokenFile();
             // same comment as in the init method
 

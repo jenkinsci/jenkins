@@ -26,6 +26,7 @@ package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
@@ -255,6 +256,7 @@ public class ApiTokenProperty extends UserProperty {
         public final int useCounter;
         public final Date lastUseDate;
         public final long numDaysUse;
+        public final String expirationDate;
 
         public TokenInfoAndStats(@NonNull ApiTokenStore.HashedToken token, @NonNull ApiTokenStats.SingleTokenStats stats) {
             this.uuid = token.getUuid();
@@ -262,6 +264,12 @@ public class ApiTokenProperty extends UserProperty {
             this.creationDate = token.getCreationDate();
             this.numDaysCreation = token.getNumDaysCreation();
             this.isLegacy = token.isLegacy();
+            LocalDate expirationDate = token.getExpirationDate();
+            if (expirationDate == null) {
+                this.expirationDate = "never";
+            } else {
+                this.expirationDate = expirationDate.toString();
+            }
 
             this.useCounter = stats.getUseCounter();
             this.lastUseDate = stats.getLastUseDate();
@@ -424,7 +432,13 @@ public class ApiTokenProperty extends UserProperty {
     // essentially meant for scripting
     @Restricted(Beta.class)
     public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue) throws IOException {
-        String tokenUuid = this.tokenStore.addFixedNewToken(name, tokenPlainValue);
+        return addFixedNewToken(name, tokenPlainValue, null);
+    }
+
+    // essentially meant for scripting
+    @Restricted(Beta.class)
+    public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) throws IOException {
+        String tokenUuid = this.tokenStore.addFixedNewToken(name, tokenPlainValue, expirationDate);
         user.save();
         return tokenUuid;
     }
@@ -432,7 +446,13 @@ public class ApiTokenProperty extends UserProperty {
     // essentially meant for scripting
     @Restricted(Beta.class)
     public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) throws IOException {
-        TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name);
+        return generateNewToken(name, null);
+    }
+
+    // essentially meant for scripting
+    @Restricted(Beta.class)
+    public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) throws IOException {
+        TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name, expirationDate);
         user.save();
         return tokenUuidAndPlainValue;
     }
@@ -535,7 +555,7 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         /**
-         * @deprecated use {@link #doGenerateNewToken(User, String)} instead
+         * @deprecated use {@link #doGenerateNewToken(User, String, String, String)} instead
          */
         @Deprecated
         @RequirePOST
@@ -567,7 +587,8 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         @RequirePOST
-        public HttpResponse doGenerateNewToken(@AncestorInPath User u, @QueryParameter String newTokenName) throws IOException {
+        public HttpResponse doGenerateNewToken(@AncestorInPath User u, @QueryParameter String newTokenName,
+                                               @QueryParameter String tokenExpiration, @QueryParameter String expirationDuration) throws IOException {
             if (!hasCurrentUserRightToGenerateNewToken(u)) {
                 return HttpResponses.forbidden();
             }
@@ -579,21 +600,49 @@ public class ApiTokenProperty extends UserProperty {
                 tokenName = newTokenName;
             }
 
+            LocalDate expirationDate = getExpirationDate(tokenExpiration, expirationDuration);
+
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
                 p = forceNewInstance(u, false);
                 u.addProperty(p);
             }
 
-            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName);
+            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
+            String expirationDateString = "never";
+            if (expirationDate != null) {
+                expirationDateString = expirationDate.toString();
+            }
 
             Map<String, String> data = new HashMap<>();
             data.put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
             data.put("tokenName", tokenName);
             data.put("tokenValue", tokenUuidAndPlainValue.plainValue);
+            data.put("expirationDate", expirationDateString);
             return HttpResponses.okJSON(data);
         }
 
+        private LocalDate getExpirationDate(String tokenExpiration, String expirationDuration) {
+            if (expirationDuration == null) {
+                expirationDuration = "";
+            }
+            expirationDuration = expirationDuration.trim();
+
+            return  switch (expirationDuration) {
+                case "", "never" -> {
+                    yield null;
+                }
+                case "custom" -> {
+                    yield LocalDate.parse(tokenExpiration);
+                }
+                default -> {
+                    LocalDate now = LocalDate.now();
+                    int days = Integer.parseInt(expirationDuration);
+                    yield now.plusDays(days);
+                }
+            };
+
+        }
         /**
          * This method is dangerous and should not be used without caution.
          * The token passed here could have been tracked by different network system during its trip.
@@ -603,7 +652,9 @@ public class ApiTokenProperty extends UserProperty {
         @Restricted(NoExternalUse.class)
         public HttpResponse doAddFixedToken(@AncestorInPath User u,
                                             @QueryParameter String newTokenName,
-                                            @QueryParameter String newTokenPlainValue) throws IOException {
+                                            @QueryParameter String newTokenPlainValue,
+                                            @QueryParameter String tokenExpiration,
+                                            @QueryParameter String expirationDuration) throws IOException {
             if (!hasCurrentUserRightToGenerateNewToken(u)) {
                 return HttpResponses.forbidden();
             }
@@ -615,13 +666,15 @@ public class ApiTokenProperty extends UserProperty {
                 tokenName = newTokenName;
             }
 
+            LocalDate expirationDate = getExpirationDate(tokenExpiration, expirationDuration);
+
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
                 p = forceNewInstance(u, false);
                 u.addProperty(p);
             }
 
-            String tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue);
+            String tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue, expirationDate);
             u.save();
 
             Map<String, String> data = new HashMap<>();

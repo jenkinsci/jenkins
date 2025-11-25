@@ -66,6 +66,19 @@
   align-items: center;
 }
 
+.token-stats {
+  justify-content: space-between;
+  gap: unset;
+}
+
+.token-expiration {
+  margin-bottom: var(--section-padding);
+}
+
+.token-expiration .jenkins-select {
+  margin-bottom: var(--section-padding);
+}
+
 .token-name {
   overflow-wrap: anywhere;
 }
@@ -88,6 +101,10 @@
   width: 2.5rem;
 }
 
+.api-token-new-form-row {
+  margin-bottom: var(--section-padding);
+}
+
 .api-token-new-form-row.jenkins-quote {
   color: var(--text-color);
 }
@@ -101,6 +118,9 @@
 }
 
 .token-card-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
   width: 100%;
   padding: 0.5rem 1rem;
 }
@@ -114,7 +134,6 @@
 .token-last-used {
   font-size: var(--font-size-xs);
   color: var(--text-color-secondary);
-  margin-left: auto;
 }
 
 .legacy-token {

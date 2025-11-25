@@ -91,6 +91,15 @@ function appendTokenToTable(data) {
   const tokenShowButton = apiTokenRow.querySelector(
     ".api-token-property-token-show",
   );
+  const tokenExpirationSpan = apiTokenRow.querySelector(".api-token-new-expiration");
+  if (data.expirationDate === "never") {
+    tokenExpirationSpan.innerText = tokenExpirationSpan.dataset.never;
+    tokenExpirationSpan.classList.add("warning");
+  } else {
+    tokenExpirationSpan.innerText = tokenExpirationSpan.dataset.expiresOn.replace("__DATA__", data.expirationDate);
+    const expirationDate = new Date(data.expirationDate);
+  }
+
   apiTokenRow.id = data.tokenUuid;
   apiTokenRow.querySelector(".token-name").innerText = data.tokenName;
   tokenShowButton.dataset.tokenValue = data.tokenValue;
@@ -101,22 +110,79 @@ function appendTokenToTable(data) {
   Behaviour.applySubtree(apiTokenRow);
 }
 
+function addFormChangesHandling(form) {
+  const expirationSelect = form.querySelector('select[name="expirationDuration"]');
+  const customDateInput = form.querySelector('input[name="tokenExpiration"]');
+  const warningDiv = form.querySelector('.token-warning');
+
+  expirationSelect.addEventListener('change', () => {
+    if (expirationSelect.value === "custom") {
+      customDateInput.classList.remove("jenkins-hidden");
+      const submitButton = form.querySelector('button[data-id="ok"]');
+      if (customDateInput.value !== "") {
+        submitButton.disabled = false;
+      } else {
+        submitButton.disabled = true;
+      }
+    } else {
+      const submitButton = form.querySelector('button[data-id="ok"]');
+      submitButton.disabled = false;
+      customDateInput.classList.add("jenkins-hidden");
+    }
+    if (expirationSelect.value === "never") {
+      warningDiv.classList.remove("jenkins-hidden");
+    } else {
+      warningDiv.classList.add("jenkins-hidden");
+    }
+  });
+
+  customDateInput.addEventListener('change', () => {
+    const submitButton = form.querySelector('button[data-id="ok"]');
+    if (customDateInput.value !== "") {
+      submitButton.disabled = false;
+    } else {
+      submitButton.disabled = true;
+    }
+  });
+}
+
 function addToken(button) {
   const targetUrl = button.dataset.targetUrl;
   const promptMessage = button.dataset.promptMessage;
   const promptName = button.dataset.messageName;
+  const formTemplate = document.getElementById("api-token-add-template").firstElementChild.cloneNode(true);
+  const form = document.createElement("form");
+  const dateInput = formTemplate.querySelector('input[name="tokenExpiration"]');
+  const now = new Date();
+  now.setDate(now.getDate() + 1);
+  const nextYear = new Date();
+  const presetDate = new Date();
+  presetDate.setDate(now.getDate() + 30);
+  nextYear.setDate(now.getDate() + 365);
+  dateInput.min = now.toISOString().split('T')[0]
+  dateInput.max = nextYear.toISOString().split('T')[0]
+  dateInput.value = presetDate.toISOString().split('T')[0]
+  form.appendChild(formTemplate);
+  addFormChangesHandling(form);
   dialog
-    .prompt(promptMessage, {
-      message: promptName,
+    .form(form, {
+      title: promptMessage,
       okText: button.dataset.generate,
       cancelText: button.dataset.cancel,
-      maxWidth: "400px",
+      submitButton: false,
+      maxWidth: "600px",
       minWidth: "400px",
     })
     .then(
-      (tokenName) => {
+      (formData) => {
         fetch(targetUrl, {
-          body: new URLSearchParams({ newTokenName: tokenName }),
+          body: new URLSearchParams(
+            {
+              newTokenName: formData.get("tokenName"),
+              tokenExpiration: formData.get("tokenExpiration"),
+              expirationDuration: formData.get("expirationDuration"),
+            }
+          ),
           method: "post",
           headers: crumb.wrap({
             "Content-Type": "application/x-www-form-urlencoded",
@@ -133,6 +199,7 @@ function addToken(button) {
                 showToken(
                   json.data.tokenName,
                   json.data.tokenValue,
+                  json.data.expirationDate,
                   button.dataset.buttonDone,
                 );
               }
@@ -144,12 +211,19 @@ function addToken(button) {
     );
 }
 
-function showToken(tokenName, tokenValue, doneText) {
+function showToken(tokenName, tokenValue, expirationDate, doneText) {
   const tokenTemplate = document.getElementById("api-token-template");
   const apiTokenMessage = tokenTemplate.firstElementChild.cloneNode(true);
 
   const tokenValueSpan = apiTokenMessage.querySelector(".api-token-new-value");
   tokenValueSpan.innerText = tokenValue;
+  const tokenExpirationSpan = apiTokenMessage.querySelector(".api-token-new-expiration");
+  if (expirationDate === "never") {
+    tokenExpirationSpan.innerText = tokenExpirationSpan.dataset.never;
+    tokenExpirationSpan.classList.add("warning");
+  } else {
+    tokenExpirationSpan.innerText = tokenExpirationSpan.dataset.expiresOn.replace("__DATA__", expirationDate);
+  }
 
   if (isSecureContext) {
     const tokenCopyButton = apiTokenMessage.querySelector(
