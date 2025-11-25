@@ -1,17 +1,15 @@
 <!-- Comment:
 A great PR typically begins with the line below.
-Replace XXXXX with the numeric part of the issue ID you created in Jira.
-Note that if you want your changes backported into LTS, you need to create a Jira issue. See https://www.jenkins.io/download/lts/#backporting-process for more information.
+Replace <issue-number> with the issue number.
 -->
 
-See [JENKINS-XXXXX](https://issues.jenkins.io/browse/JENKINS-XXXXX).
+Fixes #<issue-number>
 
 <!-- Comment:
-If the issue is not fully described in Jira, add more information here (justification, pull request links, etc.).
+If the issue is not fully described in the issue tracker, add more information here (justification, pull request links, etc.).
 
- * We do not require Jira issues for minor improvements.
- * Bug fixes should have a Jira issue to facilitate the backporting process.
- * Major new features should have a Jira issue.
+ * We do not require an issue for minor improvements.
+ * Major new features should have an issue created.
 -->
 
 ### Testing done
@@ -34,8 +32,8 @@ For refactoring and code cleanup changes, exercise the code before and after the
 The changelog entry should be in the imperative mood; e.g., write "do this"/"return that" rather than "does this"/"returns that".
 For examples, see: https://www.jenkins.io/changelog/
 
-Do not include the Jira issue in the changelog entry.
-Include the Jira issue in the description of the pull request so that the changelog generator can find it and include it in the generated changelog.
+Do not include the issue in the changelog entry.
+Include the issue in the description of the pull request so that the changelog generator can find it and include it in the generated changelog.
 
 You may add multiple changelog entries if applicable by adding a new entry to the list, e.g.
 - First changelog entry
@@ -82,7 +80,7 @@ The changelog generator relies on the presence of the upgrade guidelines section
 
 ### Submitter checklist
 
-- [ ] The Jira issue, if it exists, is well-described.
+- [ ] The issue, if it exists, is well-described.
 - [ ] The changelog entries and upgrade guidelines are appropriate for the audience affected by the change (users or developers, depending on the change) and are in the imperative mood (see [examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)). Fill in the **Proposed upgrade guidelines** section only if there are breaking changes or changes that may require extra steps from users during upgrade.
 - [ ] There is automated testing or an explanation as to why this change has no tests.
 - [ ] New public classes, fields, and methods are annotated with `@Restricted` or have `@since TODO` Javadocs, as appropriate.
@@ -108,4 +106,4 @@ Before the changes are marked as `ready-for-merge`:
 - [ ] Changelog entries in the pull request title and/or **Proposed changelog entries** are accurate, human-readable, and in the imperative mood.
 - [ ] Proper changelog labels are set so that the changelog can be generated automatically.
 - [ ] If the change needs additional upgrade steps from users, the `upgrade-guide-needed` label is set and there is a **Proposed upgrade guidelines** section in the pull request title (see [example](https://github.com/jenkinsci/jenkins/pull/4387)).
-- [ ] If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labeled as `lts-candidate` to be considered (see [query](https://issues.jenkins.io/issues/?filter=12146)).
+- [ ] If it would make sense to backport the change to LTS, be a _Bug_ or _Improvement_, and either the issue or pull request must be labeled as `lts-candidate` to be considered.
