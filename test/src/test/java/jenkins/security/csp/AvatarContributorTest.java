@@ -139,4 +139,13 @@ public class AvatarContributorTest {
         assertThat(loggerRule, recorded(Level.FINER, is("Ignoring URI with unsupported scheme: ftp://files.example.com/avatar.png")));
         assertThat(loggerRule, recorded(Level.FINER, is("Ignoring URI without host: data:image/png;base64,iVBORw0KG...")));
     }
+
+    @Test
+    void testAllow_CaseInsensitivity(JenkinsRule j) {
+        LoggerRule loggerRule = new LoggerRule().record(AvatarContributor.class, Level.CONFIG).capture(100);
+        AvatarContributor.allow("hTTps://AVATARS.example.com/user/avatar.png");
+        String csp = new CspBuilder().withDefaultContributions().build();
+        assertThat(csp, is("base-uri 'none'; default-src 'self'; form-action 'self'; frame-ancestors 'self'; img-src 'self' data: https://avatars.example.com; script-src 'report-sample' 'self'; style-src 'report-sample' 'self' 'unsafe-inline';"));
+        assertThat(loggerRule, recorded(Level.CONFIG, is("Adding domain 'https://avatars.example.com' from avatar URL: hTTps://AVATARS.example.com/user/avatar.png")));
+    }
 }
