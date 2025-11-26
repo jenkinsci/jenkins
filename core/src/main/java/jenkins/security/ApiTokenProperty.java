@@ -257,6 +257,7 @@ public class ApiTokenProperty extends UserProperty {
         public final Date lastUseDate;
         public final long numDaysUse;
         public final String expirationDate;
+        public final boolean expired;
 
         public TokenInfoAndStats(@NonNull ApiTokenStore.HashedToken token, @NonNull ApiTokenStats.SingleTokenStats stats) {
             this.uuid = token.getUuid();
@@ -264,6 +265,8 @@ public class ApiTokenProperty extends UserProperty {
             this.creationDate = token.getCreationDate();
             this.numDaysCreation = token.getNumDaysCreation();
             this.isLegacy = token.isLegacy();
+            this.expired = token.isExpired();
+
             LocalDate expirationDate = token.getExpirationDate();
             if (expirationDate == null) {
                 this.expirationDate = "never";

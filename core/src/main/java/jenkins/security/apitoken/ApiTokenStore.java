@@ -433,6 +433,12 @@ public class ApiTokenStore {
             this.name = newName;
         }
 
+        public boolean isExpired() {
+            LocalDate now = LocalDate.now();
+            LocalDate expiration = Objects.requireNonNullElseGet(expirationDate, LocalDate::now);
+            return expiration.isBefore(now);
+        }
+
         public boolean match(byte[] hashedBytes) {
             byte[] hashFromHex;
             try {
@@ -442,9 +448,7 @@ public class ApiTokenStore {
                 return false;
             }
 
-            LocalDate now = LocalDate.now();
-            LocalDate expiration = Objects.requireNonNullElseGet(expirationDate, LocalDate::now);
-            boolean expired = expiration.isBefore(now);
+            boolean expired = isExpired();
             // String.equals() is not constant-time but this method is. No link between correctness and time spent
             return MessageDigest.isEqual(hashFromHex, hashedBytes) && !expired;
         }

@@ -164,6 +164,11 @@ THE SOFTWARE.
                                 </div>
                                 <div>
                                     <j:choose>
+                                        <j:when test="${token.expired}">
+                                            <span class="error">
+                                                ${%This token has expired}
+                                            </span>
+                                        </j:when>
                                         <j:when test="${token.expirationDate == 'never'}">
                                             <span class="warning">
                                                 ${%This token does not expire}
