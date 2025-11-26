@@ -199,7 +199,7 @@ class ViewTest {
 
         HtmlPage privateViewsPage = privateViewsLink.click();
 
-         Text viewLabel = privateViewsPage.getFirstByXPath("//div[@class='tabBar']//div[@class='tab active']/a/text()");
+        Text viewLabel = privateViewsPage.getFirstByXPath("//div[@class='tabBar']//div[@class='tab active']/a/text()");
         assertTrue(viewLabel.getTextContent().contains(Hudson_ViewName()), "'All' view should be selected");
 
         View listView = listView("listView");
