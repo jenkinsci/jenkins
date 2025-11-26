@@ -54,8 +54,8 @@ java.math.BigInteger
 java.net.URI
 java.net.URL
 java.security.KeyRep
-java.time.Ser
 java.time.LocalDate
+java.time.Ser
 java.util.ArrayDeque
 java.util.ArrayList
 java.util.Arrays$ArrayList
