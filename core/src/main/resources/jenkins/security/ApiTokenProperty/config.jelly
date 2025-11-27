@@ -62,7 +62,7 @@ THE SOFTWARE.
         </d:tag>
     </d:taglib>
     <div class="jenkins-hidden" id="api-token-row-template" xmlns:local="local">
-        <div class="token-card jenkins-card" id="${token.uuid}">
+        <div class="token-card" id="${token.uuid}">
             <div class="token-card-inner">
                 <div class="token-card__title">
                     <span class="token-name">${token.name}</span>
@@ -122,7 +122,7 @@ THE SOFTWARE.
                             <j:set var="legacyClazz" value="legacy-token" />
                             <j:set var="legacyToolTip" value="${%LegacyToken}" />
                         </j:if>
-                        <div class="token-card jenkins-card ${legacyClazz}" id="${token.uuid}">
+                        <div class="token-card ${legacyClazz}" id="${token.uuid}">
                             <div class="token-card-inner">
                                 <div class="token-card__title ${legacyClazz}" tooltip="${legacyToolTip}">
                                         <j:if test="${token.isLegacy}">
