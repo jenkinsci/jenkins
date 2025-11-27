@@ -32,7 +32,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * The fetch directives and their inheritance rules (in {@link #getFallback()}).
  *
  * @see <a href="https://developer.mozilla.org/en-US/docs/Glossary/Fetch_directive">MDN</a>
- * @since TODO
+ * @since 2.539
  */
 @Restricted(Beta.class)
 public enum FetchDirective {

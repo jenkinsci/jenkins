@@ -46,7 +46,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Builder for a CSP rule set.
  *
  * @see jenkins.security.csp.Contributor
- * @since TODO
+ * @since 2.539
  */
 @Restricted(Beta.class)
 public class CspBuilder {
