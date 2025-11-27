@@ -5862,15 +5862,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * are unsafe to make available to users with only this permission,
      * as they could be used to bypass permission enforcement and elevate permissions.</p>
      *
-     * <p>This permission is disabled by default and support for it considered experimental.
-     * Administrators can set the system property {@code jenkins.security.ManagePermission} to enable it.</p>
-     *
      * @since 2.222
      */
     public static final Permission MANAGE = new Permission(PERMISSIONS, "Manage",
             Messages._Jenkins_Manage_Description(),
             ADMINISTER,
-            SystemProperties.getBoolean("jenkins.security.ManagePermission"),
+            true,
             new PermissionScope[]{PermissionScope.JENKINS});
 
     /**
