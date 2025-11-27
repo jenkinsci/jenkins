@@ -13,8 +13,8 @@ properties([
 ])
 
 def axes = [
-  platforms: ['linux', 'windows'],
-  jdks: [21, 25],
+  platforms: ['windows'],
+  jdks: [17],
 ]
 
 stage('Record build') {
@@ -76,6 +76,8 @@ axes.values().combinations {
       }
       // Increment before allocating the node in case it fails
       retryCount++
+      // TODO: label override here for testing on newly available non-spot Windows Server Core 2025 JDK17 VM agent template
+      agentContainerLabel = 'win-2025'
       node(agentContainerLabel) {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
