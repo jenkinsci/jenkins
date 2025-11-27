@@ -142,10 +142,12 @@ public class AvatarContributorTest {
 
     @Test
     void testAllow_CaseInsensitivity(JenkinsRule j) {
-        LoggerRule loggerRule = new LoggerRule().record(AvatarContributor.class, Level.CONFIG).capture(100);
+        LoggerRule loggerRule = new LoggerRule().record(AvatarContributor.class, Level.FINEST).capture(100);
         AvatarContributor.allow("hTTps://AVATARS.example.com/user/avatar.png");
+        AvatarContributor.allow("HttPS://avatars.EXAMPLE.com/user/avatar.png");
         String csp = new CspBuilder().withDefaultContributions().build();
         assertThat(csp, is("base-uri 'none'; default-src 'self'; form-action 'self'; frame-ancestors 'self'; img-src 'self' data: https://avatars.example.com; script-src 'report-sample' 'self'; style-src 'report-sample' 'self' 'unsafe-inline';"));
         assertThat(loggerRule, recorded(Level.CONFIG, is("Adding domain 'https://avatars.example.com' from avatar URL: hTTps://AVATARS.example.com/user/avatar.png")));
+        assertThat(loggerRule, recorded(Level.FINEST, is("Skipped adding duplicate domain 'https://avatars.example.com' from avatar URL: HttPS://avatars.EXAMPLE.com/user/avatar.png")));
     }
 }
