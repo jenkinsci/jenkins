@@ -37,7 +37,7 @@ import org.springframework.security.core.Authentication;
 /**
  * The context (user and page) from which a CSP report is received.
  *
- * @since TODO
+ * @since 2.539
  */
 @Restricted(Beta.class)
 public class ReportingContext {

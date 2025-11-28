@@ -122,7 +122,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      * usage statistics should be submitted.
      *
      * @return true if and only if usage stats should be submitted
-     * @since TODO
+     * @since 2.539
      */
     @Restricted(NoExternalUse.class)
     public static boolean isEnabled() {
