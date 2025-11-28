@@ -64,6 +64,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.ResourceDomainRootAction;
+import jenkins.security.csp.CspHeader;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
@@ -398,13 +399,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 rsp.sendRedirect(302, ResourceDomainRootAction.get().getRedirectUrl(resourceToken, req.getRestOfPath()));
             } else {
                 if (!ResourceDomainConfiguration.isResourceRequest(req)) {
-                    // if we're serving this from the main domain, set CSP headers
+                    // If we're serving this from the main domain, set CSP headers. These override the default CSP headers.
                     String csp = SystemProperties.getString(CSP_PROPERTY_NAME, DEFAULT_CSP_VALUE);
                     if (!csp.trim().isEmpty()) {
                         // allow users to prevent sending this header by setting empty system property
-                        for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                            rsp.setHeader(header, csp);
-                        }
+                        rsp.setHeader(CspHeader.ContentSecurityPolicy.getHeaderName(), csp);
+                    } else {
+                        // Clear the header value if configured by the user.
+                        rsp.setHeader(CspHeader.ContentSecurityPolicy.getHeaderName(), null);
                     }
                 }
                 InputStream in;
