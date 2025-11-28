@@ -52,7 +52,5 @@ class FormValidationSecurity1893Test {
         assertEquals(200, response.getStatusCode());
         assertThat(response.getContentAsString(), containsString(Messages.AbstractProject_CustomWorkspaceEmpty()));
         assertThat(response.getResponseHeaderValue("Content-Security-Policy"), containsString("default-src 'none';"));
-        assertThat(response.getResponseHeaderValue("X-Content-Security-Policy"), containsString("default-src 'none';"));
-        assertThat(response.getResponseHeaderValue("X-WebKit-CSP"), containsString("default-src 'none';"));
     }
 }

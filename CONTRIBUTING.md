@@ -18,8 +18,8 @@ This page provides information about contributing code to the Jenkins core codeb
 
 If you want to contribute to Jenkins, or just learn about the project,
 you can start by fixing some easier issues.
-In the Jenkins issue tracker we mark such issues as `newbie-friendly`.
-You can find them by using this query (check the link) for [newbie friendly issues](<https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)>).
+In the Jenkins issue tracker we mark such issues as `good first issue`.
+You can find them by using this query (check the link) for [good first issues](https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22).
 
 ## Building and Debugging
 
@@ -261,4 +261,4 @@ just submit a pull request.
 - [Jenkins Contribution Landing Page](https://www.jenkins.io/participate/)
 - [Jenkins Chat Channels](https://www.jenkins.io/chat/)
 - [Beginners Guide To Contributing](https://www.jenkins.io/participate/)
-- [List of newbie-friendly issues in the core](<https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)>)
+- [List of good first issues in core](<https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22)
