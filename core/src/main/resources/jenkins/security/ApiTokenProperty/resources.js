@@ -109,6 +109,7 @@ function appendTokenToTable(data) {
   apiTokenRow.querySelector(".token-name").innerText = data.tokenName;
   tokenShowButton.dataset.tokenValue = data.tokenValue;
   tokenShowButton.dataset.title = data.tokenName;
+  tokenShowButton.dataset.expirationDate = data.expirationDate;
   tokenShowButton.classList.remove("jenkins-hidden");
   tokenList.appendChild(apiTokenRow);
   adjustTokenEmptyListMessage();
@@ -333,6 +334,7 @@ Behaviour.specify(
       showToken(
         button.dataset.title,
         button.dataset.tokenValue,
+        button.dataset.expirationDate,
         button.dataset.buttonDone,
       );
     };

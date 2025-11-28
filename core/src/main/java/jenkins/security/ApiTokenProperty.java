@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStats;
@@ -258,6 +259,7 @@ public class ApiTokenProperty extends UserProperty {
         public final long numDaysUse;
         public final String expirationDate;
         public final boolean expired;
+        public final boolean aboutToExpire;
 
         public TokenInfoAndStats(@NonNull ApiTokenStore.HashedToken token, @NonNull ApiTokenStats.SingleTokenStats stats) {
             this.uuid = token.getUuid();
@@ -266,6 +268,7 @@ public class ApiTokenProperty extends UserProperty {
             this.numDaysCreation = token.getNumDaysCreation();
             this.isLegacy = token.isLegacy();
             this.expired = token.isExpired();
+            this.aboutToExpire = token.isAboutToExpire();
 
             LocalDate expirationDate = token.getExpirationDate();
             if (expirationDate == null) {
@@ -795,4 +798,25 @@ public class ApiTokenProperty extends UserProperty {
     @Deprecated
     @Restricted(NoExternalUse.class)
     public static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class, "seed", 16);
+
+    @Restricted(NoExternalUse.class)
+    public Badge getBadge() {
+        long expiringTokenCount = getTokenList().stream().filter(t -> t.aboutToExpire && !t.expired).count();
+        long expiredTokenCount = getTokenList().stream().filter(t -> t.expired).count();
+        StringBuilder tooltip = new StringBuilder();
+        if (expiringTokenCount > 0) {
+            tooltip.append(jenkins.model.navigation.Messages.UserAction_aboutToExpireTokens(expiringTokenCount));
+        }
+        if (expiredTokenCount > 0) {
+            if (expiringTokenCount > 0) {
+                tooltip.append("\n");
+            }
+            tooltip.append(jenkins.model.navigation.Messages.UserAction_expiredTokens(expiredTokenCount));
+        }
+        if (expiredTokenCount + expiringTokenCount > 0) {
+            return new Badge(Long.toString(expiringTokenCount + expiredTokenCount), tooltip.toString(), Badge.Severity.WARNING);
+        } else {
+            return null;
+        }
+    }
 }

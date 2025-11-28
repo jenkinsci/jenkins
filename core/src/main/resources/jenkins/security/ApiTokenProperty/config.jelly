@@ -175,7 +175,7 @@ THE SOFTWARE.
                                             </span>
                                         </j:when>
                                         <j:otherwise>
-                                            <span>
+                                            <span class="${token.aboutToExpire ? 'warning' : ''}">
                                                 ${%tokenExpiresOn(token.expirationDate)}
                                             </span>
                                         </j:otherwise>

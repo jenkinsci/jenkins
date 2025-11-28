@@ -433,6 +433,14 @@ public class ApiTokenStore {
             this.name = newName;
         }
 
+        public boolean isAboutToExpire() {
+            if (expirationDate == null) {
+                return false;
+            }
+            LocalDate warnLimit = LocalDate.now().plusDays(7);
+            return expirationDate.isBefore(warnLimit);
+        }
+
         public boolean isExpired() {
             LocalDate now = LocalDate.now();
             LocalDate expiration = Objects.requireNonNullElseGet(expirationDate, LocalDate::now);
