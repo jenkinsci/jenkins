@@ -185,41 +185,35 @@ public class CspBuilder {
     public List<Directive> getMergedDirectives() {
         List<Directive> result = new ArrayList<>();
         for (Map.Entry<String, Set<String>> entry : directives.entrySet()) {
-            Set<String> effectiveValues = new HashSet<>();
             final String name = entry.getKey();
 
-            // Calculate inherited values from fallback chain
             if (FetchDirective.isFetchDirective(name)) {
+                // Calculate inherited values from fallback chain
                 FetchDirective current = FetchDirective.fromKey(name);
-
-                // Check if this directive was initialized
-                boolean wasInitialized = initializedFDs.contains(current);
-
-                // If NOT initialized, traverse fallback chain
-                if (!wasInitialized) {
-                    FetchDirective fallback = current.getFallback();
-                    while (fallback != null && !initializedFDs.contains(fallback)) {
-                        fallback = fallback.getFallback();
-                    }
-                    if (fallback == null) {
-                        // This could happen if nothing was initialized, in that case, fallback is default-src
-                        fallback = FetchDirective.DEFAULT_SRC;
-                    }
-                    // If we found an initialized fallback, inherit its values
-                    if (directives.containsKey(fallback.toKey())) {
-                        effectiveValues.addAll(directives.get(fallback.toKey()));
-                    }
-                }
-
-                effectiveValues.addAll(entry.getValue());
-                result.add(new Directive(name, !wasInitialized, List.copyOf(effectiveValues)));
+                result.add(new Directive(name, !initializedFDs.contains(current), List.copyOf(getEffectiveValues(current))));
             } else {
                 // Non-fetch directives don't inherit
-                effectiveValues.addAll(entry.getValue());
-                result.add(new Directive(name, null, List.copyOf(effectiveValues)));
+                result.add(new Directive(name, null, List.copyOf(entry.getValue())));
             }
         }
         return List.copyOf(result);
+    }
+
+    private Set<String> getEffectiveValues(FetchDirective fetchDirective) {
+        if (fetchDirective == null) {
+            return Set.of();
+        }
+
+        final Set<String> currentDirectiveValues = directives.getOrDefault(fetchDirective.toKey(), Set.of());
+
+        if (initializedFDs.contains(fetchDirective)) {
+            return new HashSet<>(currentDirectiveValues);
+        }
+
+        Set<String> effectiveValues = new HashSet<>();
+        effectiveValues.addAll(getEffectiveValues(fetchDirective.getFallback()));
+        effectiveValues.addAll(currentDirectiveValues);
+        return effectiveValues;
     }
 
     /**
