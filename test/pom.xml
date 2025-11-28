@@ -121,7 +121,7 @@ THE SOFTWARE.
         <!-- Required by workflow-support -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>scm-api</artifactId>
-        <version>712.v8846fdd68c88</version>
+        <version>724.v7d839074eb_5c</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
