@@ -43,7 +43,7 @@ THE SOFTWARE.
   <d:taglib uri="local">
     <d:tag name="contents">
       <l:app-bar title="${%scriptConsole}">
-        <t:help href="https://www.jenkins.io/doc/book/managing/script-console/" />
+        <t:help href="https://www.jenkins.io/redirect/script-console" />
       </l:app-bar>
 
       <p class="jenkins-page-description">
@@ -54,7 +54,7 @@ THE SOFTWARE.
         <j:when test="${it.channel != null}">
           <f:section title="${%Getting started}">
             <p class="jenkins-section__description">
-              Use the ‘println’ command to see the output (if you use System.out, it will go to the server’s stdout, which is harder to see). ${%description2}
+              ${%instructions}
             </p>
 
             <j:forEach var="script" items="${scripts}">
@@ -88,7 +88,7 @@ THE SOFTWARE.
             <j:if test="${output!=null}">
               <h2>
                 ${%Result}
-                <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${output}"/>
+                <l:copyButton text="${output}"/>
               </h2>
               <pre><st:out value="${output}"/></pre>
             </j:if>
