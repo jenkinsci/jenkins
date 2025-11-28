@@ -80,4 +80,9 @@ public class AvatarContributorTest {
     void testExtractDomainFromUrl_Ipv4WithPort() {
         assertThat(extractDomainFromUrl("https://192.168.1.1:8080/avatar.png"), is("https://192.168.1.1:8080"));
     }
+
+    @Test
+    void testExtractDomainFromUrl_CaseInsensitivity() {
+        assertThat(extractDomainFromUrl("hTTps://EXAMPLE.com/path/to/avatar.png"), is("https://example.com"));
+    }
 }
