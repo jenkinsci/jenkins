@@ -92,7 +92,7 @@ public class PluginSubtypeMarker extends AbstractProcessor {
             return false;
         } catch (RuntimeException | Error e) {
             // javac sucks at reporting errors in annotation processors
-            e.printStackTrace();
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, Functions.printThrowable(e));
             throw e;
         }
     }
