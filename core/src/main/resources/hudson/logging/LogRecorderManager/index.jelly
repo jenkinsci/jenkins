@@ -28,6 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set var="header">
+    <j:set var="previousIt" value="${it}" />
     <j:new var="it" className="jenkins.management.SystemLogLink" />
 
     <l:view>
@@ -51,6 +52,7 @@ THE SOFTWARE.
   </j:set>
 
   <l:settings-subpage header="${header}" xmlns:local="local">
+    <j:set var="it" value="${previousIt}" />
     <d:taglib uri="local">
       <d:tag name="row">
         <tr>
