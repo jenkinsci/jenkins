@@ -34,7 +34,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * Extension point for receivers of Content Security Policy reports.
  *
- * @since TODO
+ * @since 2.539
  */
 @Restricted(Beta.class)
 public interface CspReceiver extends ExtensionPoint {

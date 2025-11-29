@@ -40,7 +40,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * or not (inspecting the request and deciding which header to choose is fine,
  * as long as an implementation always returns a header).
  *
- * @since TODO
+ * @since 2.539
  */
 @Restricted(Beta.class)
 public interface CspHeaderDecider extends ExtensionPoint {

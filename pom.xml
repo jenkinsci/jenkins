@@ -68,14 +68,14 @@ THE SOFTWARE.
   </scm>
 
   <issueManagement>
-    <system>jira</system>
-    <url>https://issues.jenkins.io/issues/?jql=component=15593</url>
+    <system>GitHub</system>
+    <url>https://github.com/jenkinsci/jenkins/issues</url>
   </issueManagement>
 
   <properties>
-    <revision>2.539</revision>
+    <revision>2.540</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-11-19T06:10:29Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-11-25T15:01:04Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
