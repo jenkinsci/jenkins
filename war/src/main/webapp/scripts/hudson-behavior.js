@@ -2636,6 +2636,16 @@ function validateButton(checkUrl, paramList, button) {
       target.innerHTML = `<div class="validation-error-area" />`;
       updateValidationArea(target.children[0], responseText);
       layoutUpdateCallback.call();
+      let json = rsp.headers.get("X-Jenkins-ValidateButton-Callback");
+      if (json != null) {
+        let callInfo = JSON.parse(json);
+        let callback = callInfo["callback"];
+        let args = callInfo["arguments"];
+        if (window[callback] && typeof window[callback] === "function") {
+          window[callback].apply(window, args);
+        }
+      }
+
       var s = rsp.headers.get("script");
       try {
         geval(s);

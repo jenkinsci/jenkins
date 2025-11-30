@@ -22,9 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Displays the console output
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <j:new className="jenkins.run.ChangesTab" var="it">
@@ -32,19 +29,26 @@ THE SOFTWARE.
   </j:new>
 
   <l:run-subpage>
-    <l:app-bar title="${it.displayName}" headingLevel="h2" />
+    <l:app-bar title="${it.displayName}">
+      <l:details-bar it="${it.object}" />
+    </l:app-bar>
 
-    <j:set var="it" value="${it.object}" />
+    <j:set var="changeSets" value="${it.object.changeSets}" />
 
     <j:choose>
-      <j:when test="${it.hasChangeSetComputed()}">
-        <st:include page="index.jelly" it="${it.changeSet}" />
-      </j:when>
-      <j:when test="${it.building}">
-        ${%Not yet determined}
+      <j:when test="${!empty(changeSets)}">
+        <div class="jenkins-card">
+          <div class="jenkins-card__content">
+            <j:forEach var="changeSet" items="${changeSets}">
+              <st:include page="index.jelly" it="${changeSet}" />
+            </j:forEach>
+          </div>
+        </div>
       </j:when>
       <j:otherwise>
-        ${%Failed to determine} (<a href="${h.getConsoleUrl(it)}">${%log}</a>)
+        <l:notice icon="${it.iconFileName}" title="${%Failed to determine}">
+          <a href="${h.getConsoleUrl(it.object)}">${%log}</a>
+        </l:notice>
       </j:otherwise>
     </j:choose>
   </l:run-subpage>

@@ -560,7 +560,7 @@ public class ApiTokenProperty extends UserProperty {
                 p.changeApiToken();
             }
 
-            rsp.setHeader("script", "document.getElementById('apiToken').value='" + p.getApiToken() + "'");
+            rsp.setHeader("X-Jenkins-ValidateButton-Callback", "{\"callback\":\"changeTokenCallback\",\"arguments\":[\"" + p.getApiTokenInsecure() + "\"]}");
             return HttpResponses.html(p.hasPermissionToSeeToken()
                     ? Messages.ApiTokenProperty_ChangeToken_Success()
                     : Messages.ApiTokenProperty_ChangeToken_SuccessHidden());
