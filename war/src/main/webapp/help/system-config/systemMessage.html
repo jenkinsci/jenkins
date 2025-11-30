@@ -3,4 +3,263 @@
   <a href="." target="_blank">Jenkins main page</a>
   .
   <p>This can be useful for posting notifications to your users.</p>
-</div>
+</div><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>System Message Configurator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+      border: 2px solid #00834a;
+      border-radius: 10px;
+      background: #fff;
+      padding: 25px 25px 30px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #00834a;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin: 12px 0 4px;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .buttons {
+      margin-top: 18px;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .btn {
+      display: inline-block;
+      margin: 0 5px;
+      padding: 8px 18px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background-color: #00834a;
+    }
+
+    .btn-secondary {
+      background-color: #777;
+    }
+
+    .btn-download {
+      background-color: #007bff;
+    }
+
+    /* Preview box (dialog-style) */
+    .preview-container {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-top: 15px;
+      overflow: hidden;
+    }
+
+    .preview-header {
+      background-color: #007bff;
+      color: #fff;
+      padding: 8px 12px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .preview-body {
+      background-color: #fdfdfd;
+      padding: 16px 18px 12px;
+      min-height: 150px;
+      font-size: 14px;
+      position: relative;
+    }
+
+    .preview-body p {
+      margin: 3px 0;
+    }
+
+    .preview-body .heading {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .warning-block {
+      display: flex;
+      align-items: flex-start;
+      margin-top: 14px;
+    }
+
+    .warning-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 4px;
+      background: #ffeeba;
+      border: 1px solid #f0ad4e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-right: 10px;
+    }
+
+    .preview-footer {
+      text-align: right;
+      padding: 10px 18px 14px;
+      background-color: #f2f2f2;
+    }
+
+    .preview-ok-btn {
+      background-color: #007bff;
+      border: none;
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: default;
+    }
+
+    /* Center the whole page a bit more on large screens */
+    @media (min-width: 900px) {
+      body {
+        display: flex;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <h1>System Message Configurator</h1>
+
+    <div class="form-section">
+      <label for="headingInput">Heading</label>
+      <input id="headingInput" type="text"
+             placeholder="Enter heading text"
+             value="Important System Notification" />
+
+      <label for="uidInput">UID</label>
+      <input id="uidInput" type="text"
+             placeholder="Enter UID"
+             value="USR-004291" />
+
+      <label for="regInput">Registration Number</label>
+      <input id="regInput" type="text"
+             placeholder="Enter Registration Number"
+             value="REG-2025-1138" />
+
+      <label for="bodyInput">Body Content</label>
+      <textarea id="bodyInput"
+                placeholder="Enter main body content">Your account has triggered a security validation event. Please verify your details within 24 hours to avoid interruption of services.</textarea>
+    </div>
+
+    <div class="buttons">
+      <button class="btn btn-primary" id="previewBtn">Preview</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset</button>
+      <button class="btn btn-download" id="downloadBtn">Download as Image</button>
+    </div>
+
+    <!-- Preview box (captured as image) -->
+    <div id="previewBox" class="preview-container">
+      <div class="preview-header">System Message</div>
+      <div class="preview-body">
+        <p class="heading" id="prevHeading">Important System Notification</p>
+        <p id="prevUid"><strong>UID:</strong> USR-004291</p>
+        <p id="prevReg"><strong>Registration No:</strong> REG-2025-1138</p>
+
+        <div class="warning-block">
+          <div class="warning-icon">!</div>
+          <div>
+            <p id="prevBody">
+              Your account has triggered a security validation event. Please verify
+              your details within 24 hours to avoid interruption of services.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="preview-footer">
+        <button class="preview-ok-btn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- html2canvas for "Download as Image" -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    const headingInput = document.getElementById('headingInput');
+    const uidInput = document.getElementById('uidInput');
+    const regInput = document.getElementById('regInput');
+    const bodyInput = document.getElementById('bodyInput');
+
+    const prevHeading = document.getElementById('prevHeading');
+    const prevUid = document.getElementById('prevUid');
+    const prevReg = document.getElementById('prevReg');
+    const prevBody = document.getElementById('prevBody');
+
+    document.getElementById('previewBtn').addEventListener('click', () => {
+      prevHeading.textContent = headingInput.value || '–';
+      prevUid.innerHTML = '<strong>UID:</strong> ' + (uidInput.value || '–');
+      prevReg.innerHTML = '<strong>Registration No:</strong> ' + (regInput.value || '–');
+      prevBody.textContent = bodyInput.value || '–';
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      headingInput.value = 'Important System Notification';
+      uidInput.value = 'USR-004291';
+      regInput.value = 'REG-2025-1138';
+      bodyInput.value =
+        'Your account has triggered a security validation event. Please verify your details within 24 hours to avoid interruption of services.';
+
+      prevHeading.textContent = headingInput.value;
+      prevUid.innerHTML = '<strong>UID:</strong> ' + uidInput.value;
+      prevReg.innerHTML = '<strong>Registration No:</strong> ' + regInput.value;
+      prevBody.textContent = bodyInput.value;
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const box = document.getElementById('previewBox');
+      html2canvas(box, {scale: 2}).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'system-message.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    });
+  </script>
+</body>
+</html>
+
