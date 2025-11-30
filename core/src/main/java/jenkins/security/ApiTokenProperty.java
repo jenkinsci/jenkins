@@ -649,6 +649,7 @@ public class ApiTokenProperty extends UserProperty {
             };
 
         }
+
         /**
          * This method is dangerous and should not be used without caution.
          * The token passed here could have been tracked by different network system during its trip.
