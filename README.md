@@ -73,7 +73,7 @@ Our latest and greatest source of Jenkins can be found on [GitHub](https://githu
 New to open source or Jenkins? Here’s how to get started:
 
 - Read the [Contribution Guidelines](CONTRIBUTING.md)
-- Check our [friendly issues](https://issues.jenkins.io/issues/?jql=labels%20%3D%20newbie-friendly%20AND%20resolution%20is%20empty%20AND%20component%20%3D%20core)
+- Check our [good first issues](https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22)
 - Join our [Gitter chat](https://app.gitter.im/#/room/#jenkinsci_newcomer-contributors:gitter.im) for questions and help
 
 For more information about participating in the community and contributing to the Jenkins project,
