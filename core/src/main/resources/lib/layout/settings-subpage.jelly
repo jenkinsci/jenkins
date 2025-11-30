@@ -26,6 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <st:documentation>
     A reusable container for subpages relating under Manage Jenkins.
+    <st:attribute name="from" type="hudson.model.ManagementLink" use="optional">
+      By default it will reuse the current context.
+    </st:attribute>
     <st:attribute name="permission">
       If given, this page is only made available to users who have the specified permission.
       (The permission will be checked against the "it" object.)
@@ -49,6 +52,9 @@ THE SOFTWARE.
 
   <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
   <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
+
+  <j:set var="previousIt" value="${it}" />
+  <j:set var="it" value="${attrs.from ?: it}" />
 
   <l:layout title="${it.displayName} - ${manageJenkinsAction.displayName}"
             permission="${attrs.permission}"
@@ -104,6 +110,8 @@ THE SOFTWARE.
                 </div>
               </j:if>
 
+              <j:set var="it" value="${previousIt}" />
+
               <j:out value="${attrs.header}" />
 
               <l:defer>
@@ -133,6 +141,8 @@ THE SOFTWARE.
               ${it.description}
             </div>
           </j:if>
+
+          <j:set var="it" value="${previousIt}" />
 
           <j:out value="${attrs.header}" />
 
