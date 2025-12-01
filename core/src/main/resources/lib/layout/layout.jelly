@@ -217,43 +217,6 @@ THE SOFTWARE.
         </div>
       </footer>
     </j:if>
-    <j:if test="${app.systemMessage!=null}">
-        <st:adjunct includes="hudson.model.View.system-message"/>
-        
-        <j:set var="msgUpper" value="${app.systemMessage.toUpperCase()}"/>
-        <j:set var="indicatorColor" value="var(--warning-color)"/>
-        
-        <j:if test="${msgUpper.contains('[URGENT]')}"><j:set var="indicatorColor" value="var(--danger-color)"/></j:if>
-        <j:if test="${msgUpper.contains('[UPDATE]')}"><j:set var="indicatorColor" value="var(--blue)"/></j:if>
-
-        <div id="jenkins-global-toast" 
-            data-message="${app.systemMessage}"
-            style="position: fixed; bottom: 20px; right: 20px; z-index: 2000;
-                    background: var(--background); border: 1px solid var(--panel-border-color);
-                    border-left: 5px solid ${indicatorColor};
-                    padding: 15px; padding-right: 30px; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                    max-width: 300px; display: none; cursor: pointer; font-family: inherit;"
-            title="${%Click to read full message}">
-            
-            <span id="toast-close-btn" 
-                  style="position: absolute; top: 5px; right: 8px; font-weight: bold; 
-                          color: var(--text-color-secondary); font-size: 18px; line-height: 1;">
-                &#215;
-            </span>
-
-            <div style="font-weight: bold; margin-bottom: 5px; color: var(--text-color);">
-                <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; margin-right: 5px; fill: ${indicatorColor};">
-                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
-                </svg>
-                ${%System Message}
-            </div>
-            <div style="font-size: 0.9em; color: var(--text-color-secondary); overflow: hidden;">
-                <span id="jenkins-toast-content">
-                    ${%Click to view details...}
-                </span>
-            </div>
-        </div>
-    </j:if>
   </body>
 </html>
 </l:view>

@@ -472,6 +472,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private String systemMessage;
 
+    /**
+     * @since TODO
+     */
+    public enum SystemMessageSeverity {
+        WARNING,
+        INFO,
+        DANGER
+    }
+
+    private SystemMessageSeverity systemMessageSeverity = SystemMessageSeverity.WARNING;
+
     private MarkupFormatter markupFormatter;
 
     /**
@@ -1681,6 +1692,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public String getSystemMessage() {
         return systemMessage;
+    }
+
+    public SystemMessageSeverity getSystemMessageSeverity() {
+        return systemMessageSeverity != null ? systemMessageSeverity : SystemMessageSeverity.WARNING;
+    }
+
+    public void setSystemMessageSeverity(SystemMessageSeverity systemMessageSeverity) {
+        this.systemMessageSeverity = systemMessageSeverity;
     }
 
     /**
