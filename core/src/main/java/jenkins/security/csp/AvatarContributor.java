@@ -29,6 +29,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -106,9 +107,10 @@ public class AvatarContributor implements Contributor {
                 LOGGER.log(Level.FINER, "Ignoring URI without host: " + url);
                 return null;
             }
-            String domain = host;
-            final String scheme = uri.getScheme();
+            String domain = host.toLowerCase(Locale.ROOT);
+            String scheme = uri.getScheme();
             if (scheme != null) {
+                scheme = scheme.toLowerCase(Locale.ROOT);
                 if (scheme.equals("http") || scheme.equals("https")) {
                     domain = scheme + "://" + domain;
                 } else {
