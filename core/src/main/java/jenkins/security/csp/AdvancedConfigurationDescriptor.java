@@ -31,7 +31,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * Descriptor for {@link jenkins.security.csp.AdvancedConfiguration}.
  *
- * @since TODO
+ * @since 2.539
  */
 @Restricted(Beta.class)
 public abstract class AdvancedConfigurationDescriptor extends Descriptor<AdvancedConfiguration> {

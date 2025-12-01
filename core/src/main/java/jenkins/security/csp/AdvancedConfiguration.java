@@ -37,7 +37,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * Add more advanced options to the {@link jenkins.security.csp.impl.CspConfiguration} UI.
  *
- * @since TODO
+ * @since 2.539
  */
 @Restricted(Beta.class)
 public abstract class AdvancedConfiguration implements Describable<AdvancedConfiguration>, ExtensionPoint {

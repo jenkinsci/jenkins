@@ -261,4 +261,4 @@ just submit a pull request.
 - [Jenkins Contribution Landing Page](https://www.jenkins.io/participate/)
 - [Jenkins Chat Channels](https://www.jenkins.io/chat/)
 - [Beginners Guide To Contributing](https://www.jenkins.io/participate/)
-- [List of good first issues in core](<https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22)
+- [List of good first issues in core](https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22)
