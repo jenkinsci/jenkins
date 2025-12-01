@@ -10,7 +10,7 @@ window.addEventListener("load", function () {
 
   // Create the sidebar items
   sectionHeaders.forEach(function (header, i) {
-    const headerId = toId(header.textContent);
+    const headerId = "sidebar-item-" + i;
     header.id = headerId;
     const icon = header.querySelector("svg")
       ? header.querySelector("svg").outerHTML
