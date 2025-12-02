@@ -319,6 +319,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -346,6 +347,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.xml.sax.InputSource;
+
 
 /**
  * Root object of the system.
@@ -472,16 +474,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private String systemMessage;
 
-    /**
-     * @since TODO
-     */
-    public enum SystemMessageSeverity {
-        WARNING,
-        INFO,
-        DANGER
-    }
-
-    private SystemMessageSeverity systemMessageSeverity = SystemMessageSeverity.WARNING;
+    private String systemMessageSeverity = "warning";
 
     private MarkupFormatter markupFormatter;
 
@@ -1694,12 +1687,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return systemMessage;
     }
 
-    public SystemMessageSeverity getSystemMessageSeverity() {
-        return systemMessageSeverity != null ? systemMessageSeverity : SystemMessageSeverity.WARNING;
+    // Getter returns String
+    public String getSystemMessageSeverity() {
+        return systemMessageSeverity != null ? systemMessageSeverity : "warning";
     }
 
-    public void setSystemMessageSeverity(SystemMessageSeverity systemMessageSeverity) {
+    @DataBoundSetter
+    public void setSystemMessageSeverity(String systemMessageSeverity) throws java.io.IOException {
+        System.out.println(">>> DEBUG: Setter Called! New Value: " + systemMessageSeverity);
         this.systemMessageSeverity = systemMessageSeverity;
+        save();
     }
 
     /**
@@ -2351,6 +2348,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
         public Object getDynamic(String token) {
             return Jenkins.get().getDescriptor(token);
+        }
+
+        // Required to populate the dropdown list
+        public hudson.util.ListBoxModel doFillSystemMessageSeverityItems() {
+            hudson.util.ListBoxModel items = new hudson.util.ListBoxModel();
+            items.add("Warning (Yellow)", "WARNING");
+            items.add("Danger (Red)", "DANGER");
+            items.add("Info (Blue)", "INFO");
+            items.add("Success (Green)", "SUCCESS");
+            return items;
         }
     }
 

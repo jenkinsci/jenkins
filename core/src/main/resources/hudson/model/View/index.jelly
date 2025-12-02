@@ -42,28 +42,35 @@ THE SOFTWARE.
               <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
 
                 <j:if test="${app.systemMessage!=null}">
-                    <j:set var="severity" value="${app.systemMessageSeverity.toString().toLowerCase()}"/>
+                    <j:set var="severity" value="${app.systemMessageSeverity}"/>
                     
                     <div class="jenkins-alert jenkins-alert-${severity}" id="systemmessage">
-                        <j:if test="${severity == 'warning'}">
-                            <l:icon src="symbol-status-warning" class="jenkins-alert__icon"/>
-                        </j:if>
-                        <j:if test="${severity == 'danger'}">
-                            <l:icon src="symbol-status-error" class="jenkins-alert__icon"/>
-                        </j:if>
-                        <j:if test="${severity == 'info'}">
-                            <l:icon src="symbol-status-blue" class="jenkins-alert__icon"/>
-                        </j:if>
+                        <div class="jenkins-alert__icon">
+                            <j:choose>
+                                <j:when test="${severity == 'danger'}">
+                                    <l:icon src="symbol-warning-outline"/>
+                                </j:when>
+                                
+                                <j:when test="${severity == 'info'}">
+                                    <l:icon src="symbol-information-circle"/>
+                                </j:when>
+                                
+                                <j:when test="${severity == 'maintenance'}">
+                                    <l:icon src="symbol-construct-outline"/>
+                                </j:when>
+                                
+                                <j:otherwise>
+                                    <l:icon src="symbol-warning-outline"/>
+                                </j:otherwise>
+                            </j:choose>
+                        </div>
 
                         <div class="jenkins-alert__content">
-                            <h4 class="jenkins-alert__title">
-                                ${%System Message}
-                            </h4>
+                            <h4 class="jenkins-alert__title">${%System Message}</h4>
                             <j:out value="${app.markupFormatter.translate(app.systemMessage)}" />
                         </div>
                     </div>
                 </j:if>
-
               </j:jelly>
               <t:editableDescription permission="${it.CONFIGURE}"/>
             </div>

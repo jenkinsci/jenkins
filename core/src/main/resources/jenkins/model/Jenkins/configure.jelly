@@ -58,11 +58,13 @@ THE SOFTWARE.
         <f:entry title="${%System Message}" description="${%This message will be displayed at the top of the Jenkins main page. This can be useful for posting notifications to your users}">
           <f:textarea name="system_message" value="${it.systemMessage}" disabled="${readOnlyMode?'true':null}" readonly="${readOnlyMode?'true':null}"
                       codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-          <f:entry title="${%System Message Severity}" field="systemMessageSeverity">
-          <f:enum field="systemMessageSeverity">
-        ${it.name()}
-    </f:enum>
-  </f:entry>
+          <f:entry title="${%System Message}" field="systemMessage">
+            <f:textarea />
+          </f:entry>
+
+          <f:entry title="DEBUG: Severity" field="systemMessageSeverity">
+              <f:textbox />
+          </f:entry>
         </f:entry>
       </f:section>
 
