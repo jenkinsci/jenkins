@@ -30,7 +30,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * The possible CSP headers.
  *
- * @since TODO
+ * @since 2.539
  */
 @Restricted(Beta.class)
 public enum CspHeader {
