@@ -319,7 +319,6 @@ import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -474,7 +473,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private String systemMessage;
 
-    private String systemMessageSeverity = "warning";
+    private String systemMessageSeverity = "INFO";
 
     private MarkupFormatter markupFormatter;
 
@@ -1687,14 +1686,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return systemMessage;
     }
 
-    // Getter returns String
-    public String getSystemMessageSeverity() {
-        return systemMessageSeverity != null ? systemMessageSeverity : "warning";
+    public synchronized String getSystemMessageSeverity() {
+        return systemMessageSeverity != null ? systemMessageSeverity : "INFO";
     }
 
-    @DataBoundSetter
-    public void setSystemMessageSeverity(String systemMessageSeverity) throws java.io.IOException {
-        System.out.println(">>> DEBUG: Setter Called! New Value: " + systemMessageSeverity);
+    public synchronized void setSystemMessageSeverity(String systemMessageSeverity) throws java.io.IOException {
         this.systemMessageSeverity = systemMessageSeverity;
         save();
     }
@@ -2348,16 +2344,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
         public Object getDynamic(String token) {
             return Jenkins.get().getDescriptor(token);
-        }
-
-        // Required to populate the dropdown list
-        public hudson.util.ListBoxModel doFillSystemMessageSeverityItems() {
-            hudson.util.ListBoxModel items = new hudson.util.ListBoxModel();
-            items.add("Warning (Yellow)", "WARNING");
-            items.add("Danger (Red)", "DANGER");
-            items.add("Info (Blue)", "INFO");
-            items.add("Success (Green)", "SUCCESS");
-            return items;
         }
     }
 
@@ -4076,6 +4062,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             JSONObject json = req.getSubmittedForm();
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
+            systemMessageSeverity = Util.nullify(req.getParameter("systemMessageSeverity"));
 
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())

@@ -39,39 +39,38 @@ THE SOFTWARE.
           <st:include page="view-index-top.jelly" it="${it.owner}" optional="true">
             <!-- allow the owner to take over the top section, but we also need the default to be backward compatible -->
             <div id="view-message">
-              <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-
                 <j:if test="${app.systemMessage!=null}">
                     <j:set var="severity" value="${app.systemMessageSeverity}"/>
                     
-                    <div class="jenkins-alert jenkins-alert-${severity}" id="systemmessage">
-                        <div class="jenkins-alert__icon">
+                    <div class="system-message system-message--${severity.toLowerCase()}" id="systemmessage">
+                        <div class="system-message__icon">
                             <j:choose>
-                                <j:when test="${severity == 'danger'}">
-                                    <l:icon src="symbol-warning-outline"/>
-                                </j:when>
-                                
-                                <j:when test="${severity == 'info'}">
+                                <j:when test="${severity == 'INFO'}">
                                     <l:icon src="symbol-information-circle"/>
                                 </j:when>
-                                
-                                <j:when test="${severity == 'maintenance'}">
+                                <j:when test="${severity == 'WARNING'}">
+                                    <l:icon src="symbol-warning-outline"/>
+                                </j:when>
+                                <j:when test="${severity == 'DANGER'}">
+                                    <l:icon src="symbol-close-circle"/>
+                                </j:when>
+                                <j:when test="${severity == 'SUCCESS'}">
+                                    <l:icon src="symbol-check"/>
+                                </j:when>
+                                <j:when test="${severity == 'MAINTENANCE'}">
                                     <l:icon src="symbol-construct-outline"/>
                                 </j:when>
-                                
                                 <j:otherwise>
-                                    <l:icon src="symbol-warning-outline"/>
+                                    <l:icon src="symbol-information-circle"/>
                                 </j:otherwise>
                             </j:choose>
                         </div>
 
-                        <div class="jenkins-alert__content">
-                            <h4 class="jenkins-alert__title">${%System Message}</h4>
+                        <div class="system-message__content">
                             <j:out value="${app.markupFormatter.translate(app.systemMessage)}" />
                         </div>
                     </div>
                 </j:if>
-              </j:jelly>
               <t:editableDescription permission="${it.CONFIGURE}"/>
             </div>
           </st:include>
