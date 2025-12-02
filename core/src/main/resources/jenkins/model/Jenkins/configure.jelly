@@ -58,13 +58,16 @@ THE SOFTWARE.
         <f:entry title="${%System Message}" description="${%This message will be displayed at the top of the Jenkins main page. This can be useful for posting notifications to your users}">
           <f:textarea name="system_message" value="${it.systemMessage}" disabled="${readOnlyMode?'true':null}" readonly="${readOnlyMode?'true':null}"
                       codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-          <f:entry title="${%System Message}" field="systemMessage">
-            <f:textarea />
-          </f:entry>
-
-          <f:entry title="DEBUG: Severity" field="systemMessageSeverity">
-              <f:textbox />
-          </f:entry>
+        </f:entry>
+        
+        <f:entry title="${%Message Severity}" description="${%Choose the severity level for the system message display}">
+          <select name="systemMessageSeverity" class="jenkins-select__input dropdownList">
+            <option value="info" selected="${it.systemMessageSeverity=='info'?'selected':null}">Info (Blue)</option>
+            <option value="warning" selected="${it.systemMessageSeverity=='warning'?'selected':null}">Warning (Yellow)</option>
+            <option value="danger" selected="${it.systemMessageSeverity=='danger'?'selected':null}">Danger (Red)</option>
+            <option value="success" selected="${it.systemMessageSeverity=='success'?'selected':null}">Success (Green)</option>
+            <option value="maintenance" selected="${it.systemMessageSeverity=='maintenance'?'selected':null}">Maintenance (Orange)</option>
+          </select>
         </f:entry>
       </f:section>
 

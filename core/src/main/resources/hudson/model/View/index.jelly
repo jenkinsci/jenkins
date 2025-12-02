@@ -44,29 +44,31 @@ THE SOFTWARE.
                 <j:if test="${app.systemMessage!=null}">
                     <j:set var="severity" value="${app.systemMessageSeverity}"/>
                     
-                    <div class="jenkins-alert jenkins-alert-${severity}" id="systemmessage">
-                        <div class="jenkins-alert__icon">
+                    <div class="system-message system-message--${severity}" id="systemmessage">
+                        <div class="system-message__icon">
                             <j:choose>
-                                <j:when test="${severity == 'danger'}">
-                                    <l:icon src="symbol-warning-outline"/>
-                                </j:when>
-                                
                                 <j:when test="${severity == 'info'}">
                                     <l:icon src="symbol-information-circle"/>
                                 </j:when>
-                                
+                                <j:when test="${severity == 'warning'}">
+                                    <l:icon src="symbol-warning-outline"/>
+                                </j:when>
+                                <j:when test="${severity == 'danger'}">
+                                    <l:icon src="symbol-close-circle"/>
+                                </j:when>
+                                <j:when test="${severity == 'success'}">
+                                    <l:icon src="symbol-check"/>
+                                </j:when>
                                 <j:when test="${severity == 'maintenance'}">
                                     <l:icon src="symbol-construct-outline"/>
                                 </j:when>
-                                
                                 <j:otherwise>
-                                    <l:icon src="symbol-warning-outline"/>
+                                    <l:icon src="symbol-information-circle"/>
                                 </j:otherwise>
                             </j:choose>
                         </div>
 
-                        <div class="jenkins-alert__content">
-                            <h4 class="jenkins-alert__title">${%System Message}</h4>
+                        <div class="system-message__content">
                             <j:out value="${app.markupFormatter.translate(app.systemMessage)}" />
                         </div>
                     </div>
