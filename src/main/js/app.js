@@ -1,3 +1,4 @@
+import AppBar from "@/components/app-bar";
 import Dropdowns from "@/components/dropdowns";
 import CommandPalette from "@/components/command-palette";
 import Notifications from "@/components/notifications";
@@ -8,6 +9,7 @@ import ConfirmationLink from "@/components/confirmation-link";
 import Dialogs from "@/components/dialogs";
 import Defer from "@/components/defer";
 
+AppBar.init();
 Dropdowns.init();
 CommandPalette.init();
 Defer.init();
