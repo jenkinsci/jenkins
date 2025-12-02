@@ -27,13 +27,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:s="/lib/form">
-  <l:layout title="${%Installed plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
+  <l:settings-subpage permission="${app.SYSTEM_READ}" header="${null}" noDefer="true" includeSidepanel="true">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-    <st:include page="sidepanel.jelly"/>
-    <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
-
-    <l:main-panel>
       <j:set var="noPlugins"
              value="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}" />
 
@@ -43,8 +39,12 @@ THE SOFTWARE.
                         placeholder="${%Search installed plugins}"
                         id="filter-box"
                         autofocus="true"
+                        hasKeyboardShortcut="false"
                         value="${request2.getParameter('filter')}"
                         enabled="${!noPlugins}" />
+        </div>
+        <div class="jenkins-app-bar__controls">
+          <st:include page="overflow.jelly" />
         </div>
       </div>
 
@@ -310,6 +310,5 @@ THE SOFTWARE.
       </div>
 
       <st:adjunct includes="hudson.PluginManager._installed"/>
-    </l:main-panel>
-  </l:layout>
+  </l:settings-subpage>
 </j:jelly>
