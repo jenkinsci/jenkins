@@ -2501,8 +2501,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean FAST_LOOKUP = !SystemProperties.getBoolean(PluginManager.class.getName() + ".noFastLookup");
 
-    /** @deprecated in Jenkins 2.222 use {@link Jenkins#ADMINISTER} instead */
-    @Deprecated(forRemoval = true)
+    /** To be removed: use {@link Jenkins#ADMINISTER} instead */
     @Restricted(DoNotUse.class)
     public static final Permission UPLOAD_PLUGINS =
         new Permission(Jenkins.PERMISSIONS,
@@ -2513,8 +2512,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                        new PermissionScope[] { PermissionScope.JENKINS }
                        );
 
-    /** @deprecated in Jenkins 2.222 use {@link Jenkins#ADMINISTER} instead */
-    @Deprecated(forRemoval = true)
+    /** To be removed: use {@link Jenkins#ADMINISTER} instead */
     @Restricted(DoNotUse.class)
     public static final Permission CONFIGURE_UPDATECENTER =
         new Permission(Jenkins.PERMISSIONS,
