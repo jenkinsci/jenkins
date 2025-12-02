@@ -56,7 +56,7 @@ THE SOFTWARE.
                         <p>${%Or}</p>
                         <f:entry title="${%URL}">
                             <f:textbox name="pluginUrl"
-                                       class="jenkins-input validated" checkUrl="checkPluginUrl" checkDependsOn="" />
+                                       class="jenkins-input validated" checkUrl="checkPluginUrl"/>
                         </f:entry>
                         <f:submit value="${%Deploy}"/>
                     </f:form>
