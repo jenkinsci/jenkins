@@ -62,11 +62,11 @@ THE SOFTWARE.
         
         <f:entry title="${%Message Severity}" description="${%Choose the severity level for the system message display}">
           <select name="systemMessageSeverity" class="jenkins-select__input dropdownList">
-            <option value="info" selected="${it.systemMessageSeverity=='info'?'selected':null}">Info (Blue)</option>
-            <option value="warning" selected="${it.systemMessageSeverity=='warning'?'selected':null}">Warning (Yellow)</option>
-            <option value="danger" selected="${it.systemMessageSeverity=='danger'?'selected':null}">Danger (Red)</option>
-            <option value="success" selected="${it.systemMessageSeverity=='success'?'selected':null}">Success (Green)</option>
-            <option value="maintenance" selected="${it.systemMessageSeverity=='maintenance'?'selected':null}">Maintenance (Orange)</option>
+            <f:option value="info" selected="${it.systemMessageSeverity=='info'}">Info (Blue)</f:option>
+            <f:option value="warning" selected="${it.systemMessageSeverity=='warning'}">Warning (Yellow)</f:option>
+            <f:option value="danger" selected="${it.systemMessageSeverity=='danger'}">Danger (Red)</f:option>
+            <f:option value="success" selected="${it.systemMessageSeverity=='success'}">Success (Green)</f:option>
+            <f:option value="maintenance" selected="${it.systemMessageSeverity=='maintenance'}">Maintenance (Orange)</f:option>
           </select>
         </f:entry>
       </f:section>

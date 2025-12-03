@@ -4065,10 +4065,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             JSONObject json = req.getSubmittedForm();
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
-            String newSeverity = Util.nullify(req.getParameter("systemMessageSeverity"));
-            if (newSeverity != null) {
-                systemMessageSeverity = newSeverity;
-            } else if (systemMessageSeverity == null) {
+            systemMessageSeverity = Util.nullify(req.getParameter("systemMessageSeverity"));
+            if (systemMessageSeverity == null) {
                 systemMessageSeverity = "info"; // ensure default
             }
 
