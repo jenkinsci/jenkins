@@ -51,7 +51,6 @@ THE SOFTWARE.
   </j:set>
 
   <l:settings-subpage header="${header}" from="${managementLink}" xmlns:local="local">
-    <j:set var="it" value="${previousIt}" />
     <d:taglib uri="local">
       <d:tag name="row">
         <tr>
