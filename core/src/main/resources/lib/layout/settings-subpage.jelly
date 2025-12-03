@@ -53,10 +53,9 @@ THE SOFTWARE.
   <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
   <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
 
-  <j:set var="previousIt" value="${it}" />
-  <j:set var="it" value="${attrs.from ?: it}" />
+  <j:set var="managementLink" value="${attrs.from ?: it}" />
 
-  <l:layout title="${it.displayName} - ${manageJenkinsAction.displayName}"
+  <l:layout title="${managementLink.displayName} - ${manageJenkinsAction.displayName}"
             permission="${attrs.permission}"
             permissions="${attrs.permissions}"
             type="${newManageJenkins ? 'two-column' : 'one-column'}">
@@ -64,11 +63,11 @@ THE SOFTWARE.
     <j:if test="${attrs.includeBreadcrumb}">
       <!-- Hacky - this will be improved in subsequent PRs -->
       <j:choose>
-        <j:when test="${it.class.name eq 'jenkins.management.ConfigureLink'}">
-          <f:breadcrumb-config-outline title="${it.displayName}" />
+        <j:when test="${managementLink.class.name eq 'jenkins.management.ConfigureLink'}">
+          <f:breadcrumb-config-outline title="${managementLink.displayName}" />
         </j:when>
         <j:otherwise>
-          <l:breadcrumb title="${it.displayName}" />
+          <l:breadcrumb title="${managementLink.displayName}" />
         </j:otherwise>
       </j:choose>
     </j:if>
@@ -104,13 +103,11 @@ THE SOFTWARE.
           <div class="app-settings-container">
             <div class="app-settings-container__inner">
               <j:if test="${!attrs.containsKey('header')}">
-                <l:app-bar title="${it.displayName}" />
+                <l:app-bar title="${managementLink.displayName}" />
                 <div class="jenkins-page-description">
-                  ${it.description}
+                  ${managementLink.description}
                 </div>
               </j:if>
-
-              <j:set var="it" value="${previousIt}" />
 
               <j:out value="${attrs.header}" />
 
@@ -136,13 +133,11 @@ THE SOFTWARE.
       <j:otherwise>
         <l:main-panel>
           <j:if test="${!attrs.containsKey('header')}">
-            <l:app-bar title="${it.displayName}" />
+            <l:app-bar title="${managementLink.displayName}" />
             <div class="jenkins-page-description">
-              ${it.description}
+              ${managementLink.description}
             </div>
           </j:if>
-
-          <j:set var="it" value="${previousIt}" />
 
           <j:out value="${attrs.header}" />
 
