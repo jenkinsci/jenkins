@@ -29,7 +29,7 @@ THE SOFTWARE.
   <l:settings-subpage from="${managementLink}">
     <p class="jenkins-!-margin-top-0">${%blurb.1}</p>
     <p>${%blurb.2}</p>
-
+    
     <!-- First set a flag to check if we'll have any valid data -->
     <j:set var="hasValidData" value="false"/>
     <j:set var="hasExtra" value="false"/>
