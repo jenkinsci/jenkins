@@ -1,5 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-    <ellipse cx="256" cy="256" rx="210" ry="210" fill="none" stroke="var(--text-color-secondary)" stroke-linecap="round" stroke-miterlimit="10" stroke-width="36" />
-    <ellipse cx="256" cy="256" rx="100" ry="100" fill="none" stroke="var(--text-color-secondary)" stroke-linecap="round" stroke-miterlimit="10" stroke-width="36" />
-    <path fill="none" stroke="var(--text-color-secondary)" stroke-linecap="round" stroke-linejoin="round" stroke-width="36" d="M192 320l128-128" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" opacity="1" role="img" aria-label="disabled">
+  <g class="status-icon status-icon-disabled">
+    <circle cx="256" cy="256" r="212.72727272727272" fill="var(--card-background)"/>
+    <circle cx="256" cy="256" r="232.72727272727272" fill="var(--color)" opacity="var(--status-background-opacity)" style="transition: var(--standard-transition);"/>
+    <circle cx="256" cy="256" r="222.72727272727272" fill="none" stroke="var(--color)" stroke-width="20" stroke-opacity="var(--status-border-opacity)"/>
+    <ellipse cx="256" cy="256" rx="100" ry="100" fill="none" stroke="var(--text-color-secondary)" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32"/>
+    <path fill="none" stroke="var(--text-color-secondary)" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M192 320l128-128"/>
+  </g>
 </svg>

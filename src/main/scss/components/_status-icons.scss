@@ -1,0 +1,43 @@
+.status-icon {
+  --status-background-opacity: 0.125;
+  --status-border-opacity: 0.25;
+
+  * {
+    transition: var(--elastic-transition);
+    transform-origin: center;
+  }
+
+  &-success {
+    --color: var(--success-color);
+  }
+
+  &-failure {
+    --color: var(--error-color);
+  }
+
+  &-unstable {
+    --color: var(--warning-color);
+  }
+
+  &-nobuilt,
+  &-aborted,
+  &-disabled {
+    --color: var(--skipped-color);
+  }
+
+  &-anime {
+    --color: var(--accent-color);
+  }
+
+  &-running {
+    animation: pulseScale 2s both ease-in-out infinite;
+    opacity: 0.25;
+
+    @keyframes pulseScale {
+      50% {
+        scale: 2.25;
+        opacity: 1;
+      }
+    }
+  }
+}
