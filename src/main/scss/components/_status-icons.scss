@@ -30,10 +30,10 @@
   }
 
   &-running {
-    animation: pulseScale 2s both ease-in-out infinite;
+    animation: pulse-scale 2s both ease-in-out infinite;
     opacity: 0.25;
 
-    @keyframes pulseScale {
+    @keyframes pulse-scale {
       50% {
         scale: 2.25;
         opacity: 1;
