@@ -1,5 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-256 -256 512 512">
-    <ellipse opacity="0.4" cx="0" cy="0" rx="210" ry="210" fill="none" stroke="var(--success-color)" stroke-linecap="round" stroke-miterlimit="10" stroke-width="36" />
-    <path d="M0 -210C-115.98 -210 -210 -115.98 -210 0" fill="transparent" stroke="var(--success-color)" stroke-width="36" stroke-miterlimit="10" stroke-linecap="round" data-symbol-animation="spin"/>
-    <path d="M80 -67L-32 67L-80 13.4" fill="transparent" stroke="var(--success-color)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" opacity="1" role="img" aria-label="success">
+    <g class="status-icon status-icon-anime">
+        <circle cx="256" cy="256" r="212.72727272727272" fill="var(--card-background)"/>
+        <circle cx="256" cy="256" r="232.72727272727272" fill="var(--color)" opacity="var(--status-background-opacity)" style="transition: var(--standard-transition);"/>
+        <circle cx="256" cy="256" r="222.72727272727272" fill="none" stroke="var(--color)" stroke-width="20" stroke-opacity="var(--status-border-opacity)"/>
+        <circle cx="256" cy="256" r="40" fill="var(--color)" class="status-icon-running"/>
+    </g>
 </svg>
