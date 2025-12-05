@@ -18,7 +18,8 @@ function onload(selector, callback, contextEl) {
     setTimeout(scan, 50);
   }
   function scan() {
-    var elements = $(selector, contextEl).not(loadedClass);
+    // Exclude elements already processed by class marker
+    var elements = $(selector, contextEl).not("." + loadedClass);
     if (elements.length > 0) {
       elements.addClass(loadedClass);
       if (callback(elements) === true) {

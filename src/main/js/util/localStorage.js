@@ -23,8 +23,9 @@ function setItem(name, value) {
 
 function getItem(name, defaultVal) {
   var value = storage.getItem(name);
-  if (!value) {
-    value = defaultVal;
+  // Only use default when the key is not present in storage (returns null)
+  if (value === null) {
+    return defaultVal;
   }
   return value;
 }
