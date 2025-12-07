@@ -191,7 +191,7 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
 }
 
 /*
- * Generates the contents for the dropdown
+ * Generates the contents for the dropdown.
  */
 function mapChildrenItemsToDropdownItems(items) {
   // Handle undefined, null, or non-array items
