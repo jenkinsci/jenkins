@@ -254,11 +254,12 @@ function mapChildrenItemsToDropdownItems(items) {
           }
         }
       },
-      subMenu: item.subMenu && item.subMenu.items
-        ? () => {
-            return mapChildrenItemsToDropdownItems(item.subMenu.items);
-          }
-        : null,
+      subMenu:
+        item.subMenu && item.subMenu.items
+          ? () => {
+              return mapChildrenItemsToDropdownItems(item.subMenu.items);
+            }
+          : null,
     };
   });
 }
