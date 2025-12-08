@@ -28,11 +28,16 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.security.csp.AdvancedConfigurationDescriptor;
 import jenkins.security.csp.Contributor;
+import jenkins.security.csp.CspBuilder;
 import jenkins.security.csp.CspHeader;
 import jenkins.security.csp.CspHeaderDecider;
 import jenkins.security.csp.impl.CspConfiguration;
@@ -48,6 +53,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 @Extension
 public class ContentSecurityPolicy extends Telemetry {
+
+    private static final Logger LOGGER = Logger.getLogger(ContentSecurityPolicy.class.getName());
+
     @NonNull
     @Override
     public String getDisplayName() {
@@ -57,7 +65,7 @@ public class ContentSecurityPolicy extends Telemetry {
     @NonNull
     @Override
     public LocalDate getStart() {
-        return LocalDate.of(2025, 12, 15);
+        return LocalDate.of(2025, 12, 1);
     }
 
     @NonNull
@@ -81,6 +89,15 @@ public class ContentSecurityPolicy extends Telemetry {
         Set<String> configurations = new TreeSet<>();
         ExtensionList.lookup(AdvancedConfigurationDescriptor.class).stream().map(AdvancedConfigurationDescriptor::getClass).map(Class::getName).forEach(configurations::add);
         data.put("configurations", configurations);
+
+        try {
+            Map<String, Map<String, Integer>> directivesSize = new CspBuilder().withDefaultContributions().getMergedDirectives().stream()
+                    .map(d -> Map.entry(d.name(), Map.of("entries", d.values().size(), "chars", String.join(" ", d.values()).length())))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            data.put("directivesSize", directivesSize);
+        } catch (RuntimeException ex) {
+            LOGGER.log(Level.FINE, "Error during directive processing", ex);
+        }
 
         data.put("components", buildComponentInformation());
         return data;

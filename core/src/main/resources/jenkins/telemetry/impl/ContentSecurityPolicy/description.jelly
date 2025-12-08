@@ -7,6 +7,7 @@
         <li>The current Content Security Policy header (<code>Content-Security-Policy</code> or <code>Content-Security-Policy-Report-Only</code>)</li>
         <li>Which <code>Contributor</code>s are known, i.e., extensions that contribute to the CSP rules</li>
         <li>Which <code>AdvancedConfiguration</code>s are known, i.e., extensions that add CSP configuration options</li>
+        <li>Which directives (e.g., <code>img-src</code>) are set, and the length in bytes of their values</li>
     </ul>
 
     <p>
