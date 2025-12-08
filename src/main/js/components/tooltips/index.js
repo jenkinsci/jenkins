@@ -2,10 +2,11 @@ import tippy from "tippy.js";
 import behaviorShim from "@/util/behavior-shim";
 
 const rootStyles = getComputedStyle(document.documentElement);
-const sectionPaddingVar =rootStyles.getPropertyValue("--section-padding") || "1";
+const sectionPaddingVar =
+  rootStyles.getPropertyValue("--section-padding") || "1";
 let sectionPaddingRem = Number.parseFloat(sectionPaddingVar);
 if (Number.isNaN(sectionPaddingRem)) {
-  sectionPaddingRem = 1; 
+  sectionPaddingRem = 1;
 }
 
 const rootFontSize = Number.parseFloat(rootStyles.fontSize) || 16;
@@ -22,7 +23,7 @@ const TOOLTIP_BASE = {
         name: "preventOverflow",
         options: {
           boundary: "viewport",
-          padding: sectionPaddingPx, 
+          padding: sectionPaddingPx,
         },
       },
     ],
@@ -41,10 +42,10 @@ function registerTooltip(element) {
     element._tippy.destroy();
   }
 
- let reference = element;
- if (element.classList && element.classList.contains("jenkins-badge")) {
+  let reference = element;
+  if (element.classList && element.classList.contains("jenkins-badge")) {
     let clickableAncestor = element.closest(
-      ".task-link, .jenkins-section__item > a, .jenkins-section__item, a, button"
+      ".task-link, .jenkins-section__item > a, .jenkins-section__item, a, button",
     );
     if (clickableAncestor) {
       reference = clickableAncestor;
@@ -65,10 +66,10 @@ function registerTooltip(element) {
     (htmlTooltip === null || htmlTooltip.trim().length == 0)
   ) {
     tippy(
-      reference,                                      
+      reference,
       Object.assign(
         {
-          trigger: "mouseenter focus",                     
+          trigger: "mouseenter focus",
           delay: [delay, 0],
           content: () => tooltip.replace(/<br[ /]?\/?>|\\n/g, "\n"),
           onCreate(instance) {
@@ -80,7 +81,7 @@ function registerTooltip(element) {
           onHidden(instance) {
             instance.reference.setAttribute("title", instance.props.content);
           },
-          appendTo: appendTo
+          appendTo: appendTo,
         },
         TOOLTIP_BASE,
       ),
@@ -89,7 +90,7 @@ function registerTooltip(element) {
 
   if (htmlTooltip !== null && htmlTooltip.trim().length > 0) {
     tippy(
-      reference,                                         
+      reference,
       Object.assign(
         {
           trigger: "mouseenter focus",
@@ -101,7 +102,7 @@ function registerTooltip(element) {
               instance.reference.getAttribute("data-tooltip-interactive") ===
               "true";
           },
-          appendTo: appendTo
+          appendTo: appendTo,
         },
         TOOLTIP_BASE,
       ),
