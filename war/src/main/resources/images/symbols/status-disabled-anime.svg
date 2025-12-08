@@ -1,8 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" opacity="1" role="img" aria-label="failure">
-    <g class="status-icon status-icon-anime">
-        <circle cx="256" cy="256" r="212.72727272727272" fill="var(--card-background)"/>
-        <circle cx="256" cy="256" r="232.72727272727272" fill="var(--color)" opacity="var(--status-background-opacity)" style="transition: var(--standard-transition);"/>
-        <circle cx="256" cy="256" r="222.72727272727272" fill="none" stroke="var(--color)" stroke-width="20" stroke-opacity="var(--status-border-opacity)"/>
-        <circle cx="256" cy="256" r="40" fill="var(--color)" class="status-icon-running"/>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" opacity="1" role="img" aria-label="aborted">
+  <circle cx="256" cy="256" r="230" fill="var(--card-background)"/>
+  <circle cx="256" cy="256" r="250" fill="var(--accent-color)" opacity="var(--status-background-opacity)" style="transition: var(--standard-transition);"/>
+  <circle cx="256" cy="256" r="240" fill="none" stroke="var(--accent-color)" stroke-width="20" stroke-opacity="var(--status-border-opacity)"/>
+  <circle cx="256" cy="256" r="40" fill="var(--accent-color)" class="app-status-icon-running"/>
 </svg>

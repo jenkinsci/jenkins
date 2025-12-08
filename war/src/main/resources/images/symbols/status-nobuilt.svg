@@ -1,10 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" opacity="1" role="img" aria-label="nobuilt">
-  <g class="status-icon status-icon-nobuilt">
-    <circle cx="256" cy="256" r="212.72727272727272" fill="var(--card-background)"/>
-     <circle cx="256" cy="256" r="232.72727272727272" fill="var(--color)" opacity="var(--status-background-opacity)" style="transition: var(--standard-transition);"/>
-    <circle cx="256" cy="256" r="222.72727272727272" fill="none" stroke="var(--color)" stroke-width="20" stroke-opacity="var(--status-border-opacity)"/>
-    <circle cx="256" cy="256" r="30" fill="var(--color)"/>
-    <circle cx="352" cy="256" r="30" fill="var(--color)"/>
-    <circle cx="160" cy="256" r="30" fill="var(--color)"/>
-  </g>
+  <circle cx="256" cy="256" r="230" fill="var(--card-background)"/>
+  <circle cx="256" cy="256" r="250" fill="var(--skipped-color)" opacity="var(--status-background-opacity)" style="transition: var(--standard-transition);"/>
+  <circle cx="256" cy="256" r="240" fill="none" stroke="var(--skipped-color)" stroke-width="20" stroke-opacity="var(--status-border-opacity)"/>
+  <circle cx="256" cy="256" r="30" fill="var(--skipped-color)"/>
+  <circle cx="352" cy="256" r="30" fill="var(--skipped-color)"/>
+  <circle cx="160" cy="256" r="30" fill="var(--skipped-color)"/>
 </svg>
