@@ -98,8 +98,7 @@ THE SOFTWARE.
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <!-- TODO https://github.com/jenkinsci/winstone/pull/519 -->
-    <winstone.version>8.1026.va_a_8d171a_3851</winstone.version>
+    <winstone.version>8.1026.v31def012a_f48</winstone.version>
     <node.version>24.11.1</node.version>
   </properties>
 
