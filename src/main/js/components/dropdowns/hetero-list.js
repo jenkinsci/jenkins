@@ -51,9 +51,14 @@ function generateButtons() {
       convertInputsToButtons(e);
       let allButtons = Array.from(e.querySelectorAll("BUTTON.hetero-list-add"));
       let enableTopButton = e.getAttribute("enableTopButton") === "true";
-      let topBtn = allButtons.find(b => b.classList.contains("hetero-list-add-top")) || null;
-      let btn = allButtons.filter(b => !b.classList.contains("hetero-list-add-top")).pop() || allButtons.pop();
-      
+      let topBtn =
+        allButtons.find((b) => b.classList.contains("hetero-list-add-top")) ||
+        null;
+      let btn =
+        allButtons
+          .filter((b) => !b.classList.contains("hetero-list-add-top"))
+          .pop() || allButtons.pop();
+
       // Ensure server-rendered top button has chevron icon and set up dropdown
       if (topBtn && !topBtn.querySelector("svg")) {
         let chevron = createElementFromHtml(Symbols.CHEVRON_DOWN);
@@ -247,8 +252,10 @@ function generateButtons() {
         ).length;
 
         // Find existing top button (might be server-rendered)
-        let existingTopBtn = Array.from(e.querySelectorAll("BUTTON.hetero-list-add-top"))[0];
-        
+        let existingTopBtn = Array.from(
+          e.querySelectorAll("BUTTON.hetero-list-add-top"),
+        )[0];
+
         if (selectedCount === 0) {
           // Hide top button if no items
           if (topBtn && topBtn.parentNode) {
@@ -264,7 +271,7 @@ function generateButtons() {
             // Create top button if it doesn't exist
             topBtn = btn.cloneNode(true);
             topBtn.classList.add("hetero-list-add-top");
-            
+
             // Insert at the beginning of the container
             let firstChunk = Array.from(e.children).find((child) =>
               child.classList.contains("repeated-chunk"),
@@ -294,7 +301,7 @@ function generateButtons() {
       observer.observe(e, { childList: true });
       toggleButtonState();
       updateTopButtonVisibility();
-      
+
       if (topBtn && enableTopButton && !topBtn._tippy) {
         setupTopButtonDropdown(topBtn);
       }
