@@ -49,7 +49,16 @@ function generateButtons() {
       }
 
       convertInputsToButtons(e);
-      let btn = Array.from(e.querySelectorAll("BUTTON.hetero-list-add")).pop();
+      let allButtons = Array.from(e.querySelectorAll("BUTTON.hetero-list-add"));
+      let enableTopButton = e.getAttribute("enableTopButton") === "true";
+      let topBtn = allButtons.find(b => b.classList.contains("hetero-list-add-top")) || null;
+      let btn = allButtons.filter(b => !b.classList.contains("hetero-list-add-top")).pop() || allButtons.pop();
+      
+      // Ensure server-rendered top button has chevron icon and set up dropdown
+      if (topBtn && !topBtn.querySelector("svg")) {
+        let chevron = createElementFromHtml(Symbols.CHEVRON_DOWN);
+        topBtn.appendChild(chevron);
+      }
 
       let prototypes = e.lastElementChild;
       while (!prototypes.classList.contains("prototypes")) {
@@ -75,7 +84,7 @@ function generateButtons() {
       prototypes.remove();
       let withDragDrop = registerSortableDragDrop(e);
 
-      function insert(instance, template) {
+      function insert(instance, template, addOnTop) {
         let nc = document.createElement("div");
         nc.className = "repeated-chunk fade-in";
         nc.setAttribute("name", template.name);
@@ -140,9 +149,23 @@ function generateButtons() {
                 return insertionPoint;
               }
             }
-            let referenceNode = e.classList.contains("honor-order")
-              ? findInsertionPoint()
-              : insertionPoint;
+            let referenceNode;
+            if (addOnTop && enableTopButton) {
+              // Insert at the top
+              let children = Array.from(e.children).filter(function (child) {
+                return child.classList.contains("repeated-chunk");
+              });
+              if (children.length > 0) {
+                referenceNode = children[0];
+              } else {
+                referenceNode = insertionPoint;
+              }
+            } else {
+              // Insert at bottom (or honor-order position)
+              referenceNode = e.classList.contains("honor-order")
+                ? findInsertionPoint()
+                : insertionPoint;
+            }
             referenceNode.parentNode.insertBefore(nc, referenceNode);
 
             // Initialize drag & drop for this component
@@ -152,6 +175,7 @@ function generateButtons() {
             Behaviour.applySubtree(nc, true);
             ensureVisible(nc);
             layoutUpdateCallback.call();
+            updateTopButtonVisibility();
           },
           true,
         );
@@ -171,17 +195,109 @@ function generateButtons() {
        */
       function toggleButtonState() {
         const templateCount = templates.length;
-        const selectedCount = Array.from(e.children).filter((e) =>
-          e.classList.contains("repeated-chunk"),
+        const selectedCount = Array.from(e.children).filter((child) =>
+          child.classList.contains("repeated-chunk"),
         ).length;
 
         btn.disabled = oneEach && selectedCount >= templateCount;
+        if (topBtn) {
+          topBtn.disabled = oneEach && selectedCount >= templateCount;
+        }
       }
+
+      /**
+       * Set up dropdown for top button
+       */
+      function setupTopButtonDropdown(button) {
+        generateDropDown(button, (instance) => {
+          let menuItems = [];
+          for (let i = 0; i < templates.length; i++) {
+            let n = templates[i];
+            let disabled = oneEach && has(n.descriptorId);
+            let type = disabled ? "DISABLED" : "button";
+            let item = {
+              label: n.title,
+              onClick: (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                insert(instance, n, true); // Insert at top
+              },
+              type: type,
+            };
+            menuItems.push(item);
+          }
+          const menuContainer = document.createElement("div");
+          const menu = Utils.generateDropdownItems(menuItems, true);
+          menuContainer.appendChild(createFilter(menu));
+          menuContainer.appendChild(menu);
+          instance.setContent(menuContainer);
+        });
+      }
+
+      /**
+       * Show or hide the top button based on item count
+       */
+      function updateTopButtonVisibility() {
+        if (!enableTopButton) {
+          return;
+        }
+
+        const selectedCount = Array.from(e.children).filter((child) =>
+          child.classList.contains("repeated-chunk"),
+        ).length;
+
+        // Find existing top button (might be server-rendered)
+        let existingTopBtn = Array.from(e.querySelectorAll("BUTTON.hetero-list-add-top"))[0];
+        
+        if (selectedCount === 0) {
+          // Hide top button if no items
+          if (topBtn && topBtn.parentNode) {
+            topBtn.parentNode.remove();
+            topBtn = null;
+          }
+          if (existingTopBtn && existingTopBtn.parentNode) {
+            existingTopBtn.parentNode.remove();
+          }
+        } else {
+          // Show top button if items exist
+          if (!topBtn && !existingTopBtn) {
+            // Create top button if it doesn't exist
+            topBtn = btn.cloneNode(true);
+            topBtn.classList.add("hetero-list-add-top");
+            
+            // Insert at the beginning of the container
+            let firstChunk = Array.from(e.children).find((child) =>
+              child.classList.contains("repeated-chunk"),
+            );
+            let topButtonSpan = document.createElement("span");
+            topButtonSpan.appendChild(topBtn);
+            if (firstChunk) {
+              e.insertBefore(topButtonSpan, firstChunk);
+            } else {
+              e.insertBefore(topButtonSpan, e.firstChild);
+            }
+
+            // Set up dropdown for top button
+            setupTopButtonDropdown(topBtn);
+          } else if (existingTopBtn && !topBtn) {
+            // Use existing server-rendered top button
+            topBtn = existingTopBtn;
+            setupTopButtonDropdown(topBtn);
+          }
+        }
+      }
+
       const observer = new MutationObserver(() => {
         toggleButtonState();
+        updateTopButtonVisibility();
       });
       observer.observe(e, { childList: true });
       toggleButtonState();
+      updateTopButtonVisibility();
+      
+      if (topBtn && enableTopButton && !topBtn._tippy) {
+        setupTopButtonDropdown(topBtn);
+      }
 
       generateDropDown(btn, (instance) => {
         let menuItems = [];
@@ -194,7 +310,7 @@ function generateButtons() {
             onClick: (event) => {
               event.preventDefault();
               event.stopPropagation();
-              insert(instance, n);
+              insert(instance, n, false); // Insert at bottom
             },
             type: type,
           };

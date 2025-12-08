@@ -78,6 +78,12 @@ THE SOFTWARE.
       If true the drag and drop will not be activated. This just removes the drag and
       drop UI, it will not prevent users from manually submitting a different order.
     </st:attribute>
+    <st:attribute name="enableTopButton">
+      true if a new Add button, for adding new items to the heterogeneous list, should be displayed above the list.
+      Display of top button depends also on number of items. If there is no item, only one button is displayed. When at least one item is present, there are two
+      buttons displayed (only when enableTopButton is true). One above and one below.
+      Top button adds item on top of the list. Bottom button adds item at the bottom of the list.
+    </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
@@ -111,7 +117,12 @@ THE SOFTWARE.
   </d:taglib>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
+  <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}" enableTopButton="${attrs.enableTopButton}">
+    <j:if test="${!empty(attrs.items) and !readOnlyMode and attrs.enableTopButton}">
+      <span>
+        <button type="button" class="jenkins-button hetero-list-add hetero-list-add-top" menualign="${attrs.menuAlign}" suffix="${attrs.name}"><l:icon src="symbol-add"/>${attrs.addCaption?:'%Add'}</button>
+      </span>
+    </j:if>
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}"><!-- TODO consider customizedFields: how to distinguish default items from user-configured items? -->
       <j:set var="descriptor" value="${i.descriptor}" />
