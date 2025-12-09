@@ -38,6 +38,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -359,7 +360,7 @@ public class HistoryPageFilter<T> {
             return data.toString().equals(searchString);
         } else {
             if (UserSearchProperty.isCaseInsensitive()) {
-                return data.toString().toLowerCase().contains(searchString.toLowerCase());
+                return data.toString().toLowerCase(Locale.ROOT).contains(searchString.toLowerCase(Locale.ROOT));
             } else {
                 return data.toString().contains(searchString);
             }

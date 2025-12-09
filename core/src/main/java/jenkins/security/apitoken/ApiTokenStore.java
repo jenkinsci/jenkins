@@ -206,7 +206,7 @@ public class ApiTokenStore {
         }
 
         String tokenPlainHexValue = tokenPlainValue.substring(VERSION_LENGTH);
-        tokenPlainHexValue = tokenPlainHexValue.toLowerCase();
+        tokenPlainHexValue = tokenPlainHexValue.toLowerCase(Locale.ROOT);
         if (!CHECK_32_HEX_CHAR.matcher(tokenPlainHexValue).matches()) {
             throw new IllegalArgumentException("The secret part of the token must consist of 32 hex-characters");
         }

@@ -59,6 +59,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -446,7 +447,7 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
             Objects.requireNonNull(uri);
             String scheme = Objects.requireNonNull(uri.getScheme());
             String host = Objects.requireNonNull(uri.getHost());
-            boolean excluded = exclusions != null && isExcluded(host.toLowerCase(), exclusions);
+            boolean excluded = exclusions != null && isExcluded(host.toLowerCase(Locale.ROOT), exclusions);
             if (!excluded && (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"))) {
                 return List.of(proxy);
             } else {

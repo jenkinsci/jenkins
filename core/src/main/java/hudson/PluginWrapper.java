@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -253,7 +254,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     @Deprecated
     public void setOptionalDependants(@NonNull Set<String> optionalDependents) {
-        setOptionalDependents(dependents);
+        setOptionalDependents(optionalDependents);
     }
 
     /**
@@ -1335,7 +1336,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         @Override
         public String toString() {
-            return this.name().toLowerCase();
+            return this.name().toLowerCase(Locale.ROOT);
         }
     }
 
