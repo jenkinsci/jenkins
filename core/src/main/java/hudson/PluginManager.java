@@ -2174,33 +2174,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     private FormValidation checkUpdatesServer() throws Exception {
         for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
-            try {
-                FormValidation v = site.updateDirectlyNow();
-                if (v.kind != FormValidation.Kind.OK) {
-                    // Stop with an error
-                    return v;
-                }
-            } catch (IOException e) {
-                String url = site.getUrl();
-                LOGGER.log(Level.SEVERE, "Failed to check updates server:  " + url, e);
-                return FormValidation.error("Failed to check updates server: " + e.getMessage());
+            FormValidation v = site.updateDirectlyNow();
+            if (v.kind != FormValidation.Kind.OK) {
+                // Stop with an error
+                LOGGER.log(Level.SEVERE, "Failed to check updates server:  " + site.getUrl());
+                return v;
             }
         }
-
         for (DownloadService.Downloadable d : DownloadService.Downloadable.all()) {
-            try {
-                FormValidation v = d.updateNow();
-                if (v.kind != FormValidation.Kind.OK) {
-                    // Stop with an error
-                    return v;
-                }
-            } catch (IOException e) {
-                String url = d.getUrl();
-                LOGGER.log(Level.SEVERE, "Failed to update downloadable: " + url, e);
-                return  FormValidation.error(e, "Failed to update downloadable: " +  e.getMessage());
+            FormValidation v = d.updateNow();
+            if (v.kind != FormValidation.Kind.OK) {
+                // Stop with an error
+                LOGGER.log(Level.SEVERE, "Failed to update downloadable: " + d.getUrl());
+                return v;
             }
         }
-
         return FormValidation.ok();
     }
 
