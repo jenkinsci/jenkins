@@ -34,7 +34,14 @@ THE SOFTWARE.
       <!-- parent path -->
         <div class="parentPath">
           <form>
-            <a href="${topPath}">${it.owner.name}</a> /
+            <j:choose>
+              <j:when test="${request2.originalRequestURI.contains('/artifact/')}">
+                <a href="${it.owner.url}artifact/">${%Root}</a> /
+              </j:when>
+              <j:otherwise>
+                <a href="${topPath}">${it.owner.name}</a> /
+              </j:otherwise>
+            </j:choose>
             <j:forEach var="p" items="${parentPath}">
               <a href="${p.href}">${p.title}</a>
               /
