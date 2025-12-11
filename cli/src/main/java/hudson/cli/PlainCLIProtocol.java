@@ -153,15 +153,14 @@ class PlainCLIProtocol {
                 }
             } catch (ClosedChannelException x) {
                 LOGGER.log(Level.FINE, null, x);
-                side.handleClose();
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, null, flightRecorder.analyzeCrash(x, "broken stream"));
             } catch (ReadPendingException x) {
                 // in case trick in CLIAction does not work
                 LOGGER.log(Level.FINE, null, x);
-                side.handleClose();
             } catch (RuntimeException x) {
                 LOGGER.log(Level.WARNING, null, x);
+            } finally {
                 side.handleClose();
             }
         }

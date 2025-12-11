@@ -23,6 +23,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-    <st:setHeader name="${it.getContentSecurityPolicyHeaderName()}" value="${it.getContentSecurityPolicyHeaderValue(request2)}" />
-    <st:setHeader name="Reporting-Endpoints" value="${it.getReportingEndpointsHeaderValue(request2)}" />
+    <j:set var="cspHeaderName" value="${it.getContentSecurityPolicyHeaderName()}"/>
+    <j:if test="${cspHeaderName != null}">
+        <st:setHeader name="${cspHeaderName}" value="${it.getContentSecurityPolicyHeaderValue(request2)}" />
+        <st:setHeader name="Reporting-Endpoints" value="${it.getReportingEndpointsHeaderValue(request2)}" />
+    </j:if>
 </j:jelly>
