@@ -36,7 +36,7 @@ THE SOFTWARE.
           <form>
             <j:choose>
               <j:when test="${request2.originalRequestURI.contains('/artifact/')}">
-                <a href="${it.owner.url}artifact/">${%Root}</a> /
+                <a href="${rootURL}/${it.owner.url}artifact/">${%Root}</a> /
               </j:when>
               <j:otherwise>
                 <a href="${topPath}">${it.owner.name}</a> /
