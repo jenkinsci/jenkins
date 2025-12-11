@@ -43,7 +43,7 @@ THE SOFTWARE.
       </l:app-bar>
 
       <div class="jenkins-page-description">
-        <j:out value="${managementLink.description}" />
+        <j:out value="${it.managementLink.description}" />
       </div>
     </l:view>
   </j:set>
