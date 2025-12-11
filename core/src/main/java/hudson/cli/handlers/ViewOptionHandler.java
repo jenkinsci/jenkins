@@ -53,7 +53,7 @@ import org.springframework.security.access.AccessDeniedException;
  * Handler traverse the view names from left to right. First one is expected to
  * be a top level view and all but the last one are expected to be instances of
  * {@link ViewGroup}. Handler fails to resolve view provided a view with given
- * name does not exist or a user was not granted {@link View#READ} permission.
+ * name does not exist.
  *
  * @author ogondza
  * @since 1.538
@@ -101,13 +101,11 @@ public class ViewOptionHandler extends OptionHandler<View> {
 
             view = group.getView(viewName);
             if (view == null) {
-                group.checkPermission(View.READ);
                 throw new IllegalArgumentException(String.format(
                         "No view named %s inside view %s",
                         viewName, group.getDisplayName()
                 ));
             }
-            view.checkPermission(View.READ);
             if (view instanceof ViewGroup) {
                 group = (ViewGroup) view;
             } else if (tok.hasMoreTokens()) {

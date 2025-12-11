@@ -45,8 +45,8 @@ class Security1809Test {
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ, View.READ).everywhere().to("readUser")
-                .grant(Jenkins.READ, View.READ, View.CONFIGURE).everywhere().to("configureUser"));
+                .grant(Jenkins.READ).everywhere().to("readUser")
+                .grant(Jenkins.READ, View.CONFIGURE).everywhere().to("configureUser"));
 
         String url = view.getUrl() + "password";
 
@@ -67,7 +67,7 @@ class Security1809Test {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.READ).everywhere().to("readUser")
-                .grant(Jenkins.READ, View.READ, View.CONFIGURE).everywhere().to("configureUser"));
+                .grant(Jenkins.READ, View.CONFIGURE).everywhere().to("configureUser"));
 
         String url = "password";
 
@@ -129,8 +129,8 @@ class Security1809Test {
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ, Item.READ, View.READ, Item.CONFIGURE).everywhere().to("itemConfigureUser")
-                .grant(Jenkins.READ, Item.READ, View.READ, View.CONFIGURE).everywhere().to("viewConfigureUser"));
+                .grant(Jenkins.READ, Item.READ, Item.CONFIGURE).everywhere().to("itemConfigureUser")
+                .grant(Jenkins.READ, Item.READ, View.CONFIGURE).everywhere().to("viewConfigureUser"));
 
         String url = build.getUrl() + "myAction/view/password";
 
