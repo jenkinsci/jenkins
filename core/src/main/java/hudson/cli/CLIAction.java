@@ -40,11 +40,11 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -80,7 +80,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
      */
     /* package-private for testing */ static /* non-final for Script Console */ Boolean ALLOW_WEBSOCKET = SystemProperties.optBoolean(CLIAction.class.getName() + ".ALLOW_WEBSOCKET");
 
-    private final transient Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
+    private final transient Map<UUID, FullDuplexHttpService> duplexServices = new ConcurrentHashMap<>();
 
     @Override
     public String getIconFileName() {
@@ -315,8 +315,13 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
         void run() throws IOException, InterruptedException {
             synchronized (this) {
-                while (!ready) {
-                    wait();
+                long end = System.currentTimeMillis() + FullDuplexHttpService.CONNECTION_TIMEOUT;
+                while (!ready && System.currentTimeMillis() < end) {
+                    wait(1000);
+                }
+                if (!ready) {
+                    LOGGER.log(Level.FINE, "CLI timeout waiting for client");
+                    return;
                 }
             }
             PrintStream stdout = new PrintStream(streamStdout(), false, encoding);
