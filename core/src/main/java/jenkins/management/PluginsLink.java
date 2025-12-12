@@ -29,6 +29,8 @@ import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.model.UpdateCenter;
 import hudson.security.Permission;
+import java.util.Collection;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -74,5 +76,10 @@ public class PluginsLink extends ManagementLink {
     public Badge getBadge() {
         final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
         return updateCenter.getBadge();
+    }
+
+    @Override
+    public @NonNull String getSearchKeywords() {
+        return "proxy http proxy update site update center";
     }
 }

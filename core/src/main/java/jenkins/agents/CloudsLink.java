@@ -66,4 +66,9 @@ public class CloudsLink extends ManagementLink {
     public Permission getRequiredPermission() {
         return Jenkins.SYSTEM_READ;
     }
+
+    @Override
+    public @NonNull String getSearchKeywords() {
+        return "agents provisioning dynamic agents kubernetes docker";
+    }
 }

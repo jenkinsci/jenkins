@@ -35,8 +35,7 @@ function init() {
           results.forEach((item, index) => {
             container.appendChild(
               createElementFromHtml(
-                `<a class="jenkins-dropdown__item ${index === 0 ? SELECTED_CLASS : ""}" href="${
-                  item.url
+                `<a class="jenkins-dropdown__item ${index === 0 ? SELECTED_CLASS : ""}" href="${item.url
                 }"><div class="jenkins-dropdown__item__icon">${item.icon}</div>${xmlEscape(item.label)}</a>`,
               ),
             );
@@ -54,7 +53,7 @@ function init() {
         // Filter results
         const results = searchBar
           .suggestions()
-          .filter((item) => item.label.toLowerCase().includes(query))
+          .filter((item) => (item.searchText || item.label.toLowerCase()).includes(query))
           .slice(0, 5);
 
         searchResults.innerHTML = "";

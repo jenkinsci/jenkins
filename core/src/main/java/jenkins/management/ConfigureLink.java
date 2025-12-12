@@ -28,6 +28,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
+import java.util.Collection;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -67,5 +69,10 @@ public class ConfigureLink extends ManagementLink {
     @Override
     public Category getCategory() {
         return Category.CONFIGURATION;
+    }
+
+    @Override
+    public @NonNull String getSearchKeywords() {
+        return "usage statistics system message executors quiet period scm checkout retry resource root";
     }
 }

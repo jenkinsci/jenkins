@@ -68,4 +68,9 @@ public class SystemLogLink extends ManagementLink {
     public Category getCategory() {
         return Category.STATUS;
     }
+
+    @Override
+    public @NonNull String getSearchKeywords() {
+        return "logging loggers debug trace";
+    }
 }

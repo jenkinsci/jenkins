@@ -31,6 +31,8 @@ import hudson.ExtensionList;
 import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
 import hudson.security.Permission;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,6 +79,10 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * Optional.
      */
     public String getDescription() {
+        return "";
+    }
+
+    public @NonNull String getSearchKeywords() {
         return "";
     }
 
