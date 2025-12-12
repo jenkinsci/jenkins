@@ -175,6 +175,26 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
+     * Returns the severity level of this monitor.
+     * <p>
+     * This is used to determine the appropriate badge color in the Manage Jenkins page.
+     * By default, security-related monitors are considered {@link hudson.model.ModelObject.Badge.Severity#DANGER},
+     * while non-security monitors are {@link hudson.model.ModelObject.Badge.Severity#WARNING}.
+     * </p>
+     * <p>
+     * Subclasses can override this to provide more specific severity levels based on the nature
+     * of the issue being monitored. For example, critical infrastructure issues (like agent connectivity)
+     * might warrant DANGER even if not strictly security-related.
+     * </p>
+     *
+     * @return the severity level of this monitor
+     * @since TODO
+     */
+    public hudson.model.ModelObject.Badge.Severity getSeverity() {
+        return isSecurity() ? hudson.model.ModelObject.Badge.Severity.DANGER : hudson.model.ModelObject.Badge.Severity.WARNING;
+    }
+
+    /**
      * URL binding to disable this monitor.
      */
     @RequirePOST

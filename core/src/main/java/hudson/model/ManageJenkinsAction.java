@@ -131,15 +131,28 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
             return null;
         }
 
-        if (Jenkins.get().administrativeMonitors.stream().anyMatch(m -> m.isSecurity() && isActive(m))) {
-            return new Badge("1+", Messages.ManageJenkinsAction_notifications(),
-                    Badge.Severity.DANGER);
-        } else if (Jenkins.get().administrativeMonitors.stream().anyMatch(m -> !m.isSecurity() && isActive(m))) {
-            return new Badge("1+", Messages.ManageJenkinsAction_notifications(),
-                    Badge.Severity.WARNING);
-        } else {
-            return null;
+        Badge.Severity highestSeverity = null;
+        for (AdministrativeMonitor monitor : Jenkins.get().administrativeMonitors) {
+            if (!isActive(monitor)) {
+                continue;
+            }
+            Badge.Severity severity = monitor.getSeverity();
+            if (severity == Badge.Severity.DANGER) {
+                highestSeverity = severity;
+                break; // DANGER is the highest, no need to check further
+            }
+            if (severity == Badge.Severity.WARNING && highestSeverity != Badge.Severity.DANGER) {
+                highestSeverity = severity;
+            }
+            if (severity == Badge.Severity.INFO && highestSeverity == null) {
+                highestSeverity = severity;
+            }
         }
+
+        if (highestSeverity != null) {
+            return new Badge("1+", Messages.ManageJenkinsAction_notifications(), highestSeverity);
+        }
+        return null;
     }
 
     private static boolean isActive(AdministrativeMonitor m) {
