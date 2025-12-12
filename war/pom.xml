@@ -429,7 +429,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>712.v8846fdd68c88</version>
+                  <version>724.v7d839074eb_5c</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
