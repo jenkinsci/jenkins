@@ -105,6 +105,31 @@ public class CspHeaderDeciderTest {
     }
 
     @Test
+    public void testDefaultWithSystemPropertyNone(JenkinsRule j) throws IOException, SAXException {
+        System.setProperty(SystemPropertyHeaderDecider.SYSTEM_PROPERTY_NAME, "");
+        try (JenkinsRule.WebClient webClient = j.createWebClient()) {
+            final Optional<CspHeaderDecider> decider = CspHeaderDecider.getCurrentDecider();
+            assertTrue(decider.isPresent());
+            assertThat(decider.get(), instanceOf(SystemPropertyHeaderDecider.class));
+
+            assertFalse(ExtensionList.lookupSingleton(CspRecommendation.class).isActivated());
+
+            final HtmlPage htmlPage = webClient.goTo("configureSecurity");
+            assertThat(
+                    htmlPage.getWebResponse().getContentAsString(),
+                    hasMessage(jellyResource(SystemPropertyHeaderDecider.class, "message.properties"), "blurbUnset"));
+            assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), nullValue());
+            assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), nullValue());
+
+            // submit form and confirm this didn't create a config file
+            htmlPage.getFormByName("config").submit(htmlPage.getFormByName("config").getButtonByName("Submit"));
+            assertFalse(ExtensionList.lookupSingleton(CspConfiguration.class).getConfigFile().exists());
+        } finally {
+            System.clearProperty(SystemPropertyHeaderDecider.SYSTEM_PROPERTY_NAME);
+        }
+    }
+
+    @Test
     public void testDefaultWithSystemPropertyWrong(JenkinsRule j) throws IOException, SAXException {
         System.setProperty(SystemPropertyHeaderDecider.SYSTEM_PROPERTY_NAME, "Some-Other-Value");
         try (JenkinsRule.WebClient webClient = j.createWebClient()) {
@@ -219,7 +244,11 @@ public class CspHeaderDeciderTest {
     }
 
     private static Matcher<String> hasBlurb(Properties props) {
-        return containsString(props.getProperty("blurb"));
+        return hasMessage(props, "blurb");
+    }
+
+    private static Matcher<String> hasMessage(Properties props, String key) {
+        return containsString(props.getProperty(key));
     }
 
     private static Properties jellyResource(Class<?> clazz, String filename) throws IOException {
