@@ -29,8 +29,6 @@ import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.model.UpdateCenter;
 import hudson.security.Permission;
-import java.util.Collection;
-import java.util.List;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
