@@ -1546,6 +1546,9 @@ public class QueueTest {
         r.waitOnline(onlineSlave);
         r.assertBuildStatusSuccess(f);
         assertTrue(r.jenkins.getQueue().isEmpty());
+        // clean up
+        computer.disconnect(null).get();
+        r.jenkins.removeNode(onlineSlave);
     }
 
     private static class Cancelled extends CauseOfBlockage {
