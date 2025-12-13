@@ -3234,9 +3234,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-minimizer-webpack-plugin@npm:7.0.3":
-  version: 7.0.3
-  resolution: "css-minimizer-webpack-plugin@npm:7.0.3"
+"css-minimizer-webpack-plugin@npm:7.0.4":
+  version: 7.0.4
+  resolution: "css-minimizer-webpack-plugin@npm:7.0.4"
   dependencies:
     "@jridgewell/trace-mapping": "npm:^0.3.25"
     cssnano: "npm:^7.0.4"
@@ -3259,7 +3259,7 @@ __metadata:
       optional: true
     lightningcss:
       optional: true
-  checksum: 10c0/5b8a5cdcac0a47df80158d3890bdb4f9efdf4416d651298eae0d280fba500504d4acd2c605ed25c3fbe022486043c6f8429d200d85973631c411e8e111df5206
+  checksum: 10c0/02a5b706e7aa27ebcbb431c9800d2c126e73ae7b130776459b2e4bb4c1747969642b35f90d26d0d76522a1697683e9f1176054f324e5f7ca22640f2fcb9a3770
   languageName: node
   linkType: hard
 
@@ -4500,7 +4500,7 @@ __metadata:
     babel-loader: "npm:10.0.0"
     clean-webpack-plugin: "npm:4.0.0"
     css-loader: "npm:7.1.2"
-    css-minimizer-webpack-plugin: "npm:7.0.3"
+    css-minimizer-webpack-plugin: "npm:7.0.4"
     eslint: "npm:9.39.1"
     eslint-config-prettier: "npm:10.1.8"
     eslint-formatter-checkstyle: "npm:9.0.1"
