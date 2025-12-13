@@ -283,7 +283,7 @@ THE SOFTWARE.
                   <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>522.va_995fa_cfb_8b_d</version>
+                  <version>525.v2458b_d8a_1a_71</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -354,7 +354,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>1004.veee3a_d67cdb_9</version>
+                  <version>1010.vb_b_39488a_9841</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -429,7 +429,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>712.v8846fdd68c88</version>
+                  <version>724.v7d839074eb_5c</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -520,14 +520,14 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api, checks-api, commons-text-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-lang3-api</artifactId>
-                  <version>3.19.0-104.v12125f33a_255</version>
+                  <version>3.20.0-109.ve43756e2d2b_4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of bootstrap5-api, checks-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-text-api</artifactId>
-                  <version>1.14.0-194.v804a_dc3a_1b_d8</version>
+                  <version>1.15.0-210.v7480a_da_70b_9e</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -661,7 +661,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.1.4</version>
+        <version>12.1.5</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)

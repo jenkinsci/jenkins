@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3352.v17a_fb_4b_2773f</remoting.version>
+    <remoting.version>3355.v388858a_47b_33</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -98,8 +98,8 @@ THE SOFTWARE.
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.1026.v31def012a_f48</winstone.version>
-    <node.version>24.11.1</node.version>
+    <winstone.version>8.1027.v84c818db_a_b_b_b_</winstone.version>
+    <node.version>24.12.0</node.version>
   </properties>
 
   <!--
