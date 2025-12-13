@@ -527,7 +527,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api, checks-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-text-api</artifactId>
-                  <version>1.14.0-194.v804a_dc3a_1b_d8</version>
+                  <version>1.15.0-210.v7480a_da_70b_9e</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
