@@ -27,11 +27,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:set var="previousIt" value="${it}" />
-  <j:new var="it" className="jenkins.management.ConsoleLink" />
+  <j:new var="managementLink" className="jenkins.management.ConsoleLink" />
 
-  <l:settings-subpage includeBreadcrumb="true" permission="${app.ADMINISTER}" header="${null}" noDefer="true">
-    <j:set var="it" value="${previousIt}" />
+  <l:settings-subpage includeBreadcrumb="true" permission="${app.ADMINISTER}"
+                      header="${null}" noDefer="true" managementLink="${managementLink}">
 
     <t:scriptConsole scripts="${['println(Jenkins.instance.pluginManager.plugins)']}"
                      layout="none" />
