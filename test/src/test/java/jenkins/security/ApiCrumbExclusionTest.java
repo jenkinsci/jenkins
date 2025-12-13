@@ -85,7 +85,7 @@ class ApiCrumbExclusionTest {
         checkWeCanChangeMyDescription(200);
 
         wc = j.createWebClient();
-        j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
+        j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer());
 
         // even with crumbIssuer enabled, we are not required to send a CSRF token when using API token
         wc.withBasicApiToken(foo);
