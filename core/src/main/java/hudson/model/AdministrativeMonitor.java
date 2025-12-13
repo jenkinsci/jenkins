@@ -32,6 +32,7 @@ import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 import java.io.IOException;
 import java.util.Set;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -178,8 +179,8 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * Returns the severity level of this monitor.
      * <p>
      * This is used to determine the appropriate badge color in the Manage Jenkins page.
-     * By default, security-related monitors are considered {@link hudson.model.ModelObject.Badge.Severity#DANGER},
-     * while non-security monitors are {@link hudson.model.ModelObject.Badge.Severity#WARNING}.
+     * By default, security-related monitors are considered {@link Badge.Severity#DANGER},
+     * while non-security monitors are {@link Badge.Severity#WARNING}.
      * </p>
      * <p>
      * Subclasses can override this to provide more specific severity levels based on the nature
@@ -190,8 +191,8 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * @return the severity level of this monitor
      * @since TODO
      */
-    public hudson.model.ModelObject.Badge.Severity getSeverity() {
-        return isSecurity() ? hudson.model.ModelObject.Badge.Severity.DANGER : hudson.model.ModelObject.Badge.Severity.WARNING;
+    public Badge.Severity getSeverity() {
+        return isSecurity() ? Badge.Severity.DANGER : Badge.Severity.WARNING;
     }
 
     /**

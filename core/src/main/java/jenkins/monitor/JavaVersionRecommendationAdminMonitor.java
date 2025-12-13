@@ -105,7 +105,7 @@ public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor
             id.append('-');
             id.append(endOfLife);
             id.append('-');
-            id.append(getSeverity());
+            id.append(getAlertSeverity());
         }
         return id.toString();
     }
@@ -154,7 +154,7 @@ public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor
     }
 
     @NonNull
-    private static Severity getSeverity() {
+    private static Severity getAlertSeverity() {
         return getDeprecationPeriod().toTotalMonths() < 3 ? Severity.DANGER : Severity.WARNING;
     }
 
@@ -180,7 +180,7 @@ public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor
      */
     @Restricted(DoNotUse.class)
     public String getSeverityAsString() {
-        return getSeverity().toString().toLowerCase(Locale.US);
+        return getAlertSeverity().toString().toLowerCase(Locale.US);
     }
 
     private enum Severity {

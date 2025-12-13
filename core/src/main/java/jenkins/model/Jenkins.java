@@ -1292,9 +1292,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         @Override
-        public hudson.model.ModelObject.Badge.Severity getSeverity() {
+        public jenkins.management.Badge.Severity getSeverity() {
             // JNLP port is critical for agent connectivity
-            return hudson.model.ModelObject.Badge.Severity.DANGER;
+            return jenkins.management.Badge.Severity.DANGER;
         }
 
         public String getSystemPropertyName() {
