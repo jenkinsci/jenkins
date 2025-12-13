@@ -28,6 +28,7 @@ import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import static java.util.stream.Collectors.toMap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.ExtensionList;
 import hudson.FeedAdapter;
 import hudson.Functions;
 import hudson.RestrictedSince;
@@ -35,6 +36,7 @@ import hudson.Util;
 import hudson.init.Initializer;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
+import hudson.model.ManagementLink;
 import hudson.model.RSS;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.FormValidation;
@@ -54,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import jenkins.management.SystemLogLink;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
@@ -61,6 +64,7 @@ import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -293,6 +297,12 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         }
         return this;
+    }
+
+    @SuppressWarnings("unused")
+    @Restricted(DoNotUse.class) // used by jelly
+    public ManagementLink getManagementLink() {
+        return ExtensionList.lookupSingleton(SystemLogLink.class);
     }
 
     /**
