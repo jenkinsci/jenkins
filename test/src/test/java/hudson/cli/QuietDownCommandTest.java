@@ -90,7 +90,7 @@ class QuietDownCommandTest {
                 .invoke();
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: " + VIEWER + " is missing the Overall/Administer permission"));
+        assertThat(result.stderr(), containsString("ERROR: " + VIEWER + " is missing the Overall/Manage permission"));
     }
 
     @Test
