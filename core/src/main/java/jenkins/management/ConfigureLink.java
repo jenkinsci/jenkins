@@ -68,4 +68,9 @@ public class ConfigureLink extends ManagementLink {
     public Category getCategory() {
         return Category.CONFIGURATION;
     }
+
+    @Override
+    public @NonNull String getSearchKeywords() {
+        return "usage statistics system message executors quiet period scm checkout retry resource root";
+    }
 }
