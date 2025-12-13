@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.jvnet.hudson.test.LoggerRule.recorded;
 
 import hudson.Functions;
@@ -86,6 +87,8 @@ public class Security3630Test {
 
     @Test
     void testHashMap() throws InterruptedException, IOException {
+        // https://github.com/jenkins-infra/helpdesk/issues/4904
+        assumeFalse(Functions.isWindows());
         // If this test appears flaky, it's probably not: The race condition cannot be reliably triggered.
         // If the assertion fails, then there's probably a bug here.
         // TODO Do we want to keep a test like this?
