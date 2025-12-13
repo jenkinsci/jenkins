@@ -87,7 +87,7 @@ public class GroovyCommand extends CLICommand {
         if (script == null)
             throw new CmdLineException(null, "No script is specified");
         if (script.equals("="))
-            return IOUtils.toString(stdin);
+            return IOUtils.toString(stdin, getClientCharset());
 
         checkChannel();
         return null; // never called
