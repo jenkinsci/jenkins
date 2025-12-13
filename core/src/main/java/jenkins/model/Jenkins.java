@@ -1291,12 +1291,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return jenkins.model.Messages.EnforceSlaveAgentPortAdministrativeMonitor_displayName();
         }
 
-        @Override
-        public jenkins.management.Badge.Severity getSeverity() {
-            // JNLP port is critical for agent connectivity
-            return jenkins.management.Badge.Severity.DANGER;
-        }
-
         public String getSystemPropertyName() {
             return Jenkins.class.getName() + ".slaveAgentPort";
         }
