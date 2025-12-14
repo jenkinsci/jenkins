@@ -196,13 +196,13 @@ public class ReverseBuildTriggerTest {
 
         //job with trigger.job == null
         final FreeStyleProject downstreamJob1 = r.createFreeStyleProject("downstream1");
-        final ReverseBuildTrigger reverseBuildTrigger = new ReverseBuildTrigger("upstream", Result.SUCCESS);
+        final ReverseBuildTrigger reverseBuildTrigger = new ReverseBuildTrigger("upstream");
         downstreamJob1.addTrigger(reverseBuildTrigger);
         downstreamJob1.save();
 
         //job with trigger.job != null
         final FreeStyleProject downstreamJob2 = r.createFreeStyleProject("downstream2");
-        final ReverseBuildTrigger reverseBuildTrigger2 = new ReverseBuildTrigger("upstream", Result.SUCCESS);
+        final ReverseBuildTrigger reverseBuildTrigger2 = new ReverseBuildTrigger("upstream");
         downstreamJob2.addTrigger(reverseBuildTrigger2);
         downstreamJob2.save();
         r.configRoundtrip(downstreamJob2);
