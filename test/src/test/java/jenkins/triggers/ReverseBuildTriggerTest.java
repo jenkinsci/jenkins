@@ -189,7 +189,7 @@ public class ReverseBuildTriggerTest {
         assertEquals(3, downstream.getLastBuild().number);
     }
 
-    @Issue({"JENKINS-29876", "JENKINS-39044"})
+    @Issue({"JENKINS-29876", "JENKINS-39044", "https://github.com/jenkinsci/jenkins/issues/17611"})
     @Test
     void nullJobInTriggerNotCausesNPE() throws Exception {
         final FreeStyleProject upstreamJob = r.createFreeStyleProject("upstream");
