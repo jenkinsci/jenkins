@@ -27,12 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <j:set var="previousIt" value="${it}" />
-  <j:new var="it" className="jenkins.agents.CloudsLink" />
-
-  <l:settings-subpage header="${null}">
-    <j:set var="it" value="${previousIt}" />
-
+  <l:settings-subpage managementLink="${it.managementLink}" header="${null}">
     <l:isAdmin>
       <script src="${resURL}/jsbundles/pages/cloud-set.js" type="text/javascript" />
       <link rel="stylesheet" href="${resURL}/jsbundles/pages/cloud-set.css" type="text/css" />
