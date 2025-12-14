@@ -34,14 +34,12 @@ THE SOFTWARE.
       <!-- parent path -->
         <div class="parentPath">
           <form>
-            <j:choose>
-              <j:when test="${request2.originalRequestURI.contains('/artifact/')}">
-                <a href="${rootURL}/${it.owner.url}artifact/">${%Root}</a> /
-              </j:when>
-              <j:otherwise>
-                <a href="${topPath}">${it.owner.name}</a> /
-              </j:otherwise>
-            </j:choose>
+            <a href="${topPath}">
+              <j:choose>
+                <j:when test="${empty(it.owner.name)}">${%Root}</j:when>
+                <j:otherwise>${it.owner.displayName}</j:otherwise>
+              </j:choose>
+            </a> /
             <j:forEach var="p" items="${parentPath}">
               <a href="${p.href}">${p.title}</a>
               /
