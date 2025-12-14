@@ -73,7 +73,7 @@ public final class BuildAuthorizationToken {
     }
 
     /**
-     * @since TODO
+     * @since 2.541
      */
     public BuildAuthorizationToken(Secret token) {
         this.token = token;
@@ -143,7 +143,7 @@ public final class BuildAuthorizationToken {
     }
 
     /**
-     * @since TODO
+     * @since 2.541
      */
     public Secret getEncryptedToken() {
         return token;
