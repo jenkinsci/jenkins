@@ -189,7 +189,7 @@ public class ReverseBuildTriggerTest {
         assertEquals(3, downstream.getLastBuild().number);
     }
 
-    @Issue("JENKINS-29876")
+    @Issue({"JENKINS-29876", "JENKINS-39044"})
     @Test
     void nullJobInTriggerNotCausesNPE() throws Exception {
         final FreeStyleProject upstreamJob = r.createFreeStyleProject("upstream");
@@ -208,6 +208,11 @@ public class ReverseBuildTriggerTest {
         r.configRoundtrip(downstreamJob2);
 
         r.jenkins.rebuildDependencyGraph();
+
+        // JENKINS-39044 - NPE if trigger threshold is null
+        ReverseBuildTrigger trigger = downstreamJob2.getTrigger(ReverseBuildTrigger.class);
+        trigger.setThreshold(null);
+
         final FreeStyleBuild build = r.buildAndAssertSuccess(upstreamJob);
         r.waitUntilNoActivity();
 
