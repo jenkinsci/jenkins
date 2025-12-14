@@ -2177,7 +2177,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             FormValidation v = site.updateDirectlyNow();
             if (v.kind != FormValidation.Kind.OK) {
                 // Stop with an error
-                LOGGER.log(Level.SEVERE, "Failed to check updates server:  " + site.getUrl());
                 return v;
             }
         }
@@ -2185,7 +2184,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             FormValidation v = d.updateNow();
             if (v.kind != FormValidation.Kind.OK) {
                 // Stop with an error
-                LOGGER.log(Level.SEVERE, "Failed to update downloadable: " + d.getUrl());
                 return v;
             }
         }
