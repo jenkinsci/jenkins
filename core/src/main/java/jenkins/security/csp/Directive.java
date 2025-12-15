@@ -36,7 +36,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *  directives based on {@link jenkins.security.csp.FetchDirective}.
  * @param values {@code 'self'}, {@code data:}, {@code jenkins.io}, etc.
  *
- * @since TODO
+ * @since 2.539
  */
 @Restricted(Beta.class)
 public record Directive(String name, Boolean inheriting, List<String> values) {

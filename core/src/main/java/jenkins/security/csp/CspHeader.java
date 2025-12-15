@@ -24,18 +24,20 @@
 
 package jenkins.security.csp;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * The possible CSP headers.
  *
- * @since TODO
+ * @since 2.539
  */
 @Restricted(Beta.class)
 public enum CspHeader {
     ContentSecurityPolicy("Content-Security-Policy"),
-    ContentSecurityPolicyReportOnly("Content-Security-Policy-Report-Only");
+    ContentSecurityPolicyReportOnly("Content-Security-Policy-Report-Only"),
+    None(null);
 
     private final String headerName;
 
@@ -43,6 +45,7 @@ public enum CspHeader {
         this.headerName = headerName;
     }
 
+    @CheckForNull
     public String getHeaderName() {
         return headerName;
     }

@@ -80,6 +80,7 @@ public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor
         NavigableMap<Integer, LocalDate> supportedVersions = new TreeMap<>();
         supportedVersions.put(17, LocalDate.of(2026, 3, 31)); // Temurin: 2027-10-31
         supportedVersions.put(21, LocalDate.of(2027, 9, 30)); // Temurin: 2029-09-30
+        supportedVersions.put(25, LocalDate.of(2029, 9, 30)); // Temurin: 2031-09-30
         SUPPORTED_JAVA_VERSIONS = Collections.unmodifiableNavigableMap(supportedVersions);
     }
 

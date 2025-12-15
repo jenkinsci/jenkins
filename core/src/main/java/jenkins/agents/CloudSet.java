@@ -25,6 +25,7 @@
 package jenkins.agents;
 
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.AbstractModelObject;
@@ -32,6 +33,7 @@ import hudson.model.AutoCompletionCandidates;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
+import hudson.model.ManagementLink;
 import hudson.model.RootAction;
 import hudson.model.UpdateCenter;
 import hudson.slaves.Cloud;
@@ -99,6 +101,12 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Override
     public String getSearchUrl() {
         return "/cloud/";
+    }
+
+    @SuppressWarnings("unused")
+    @Restricted(DoNotUse.class) // used by jelly
+    public ManagementLink getManagementLink() {
+        return ExtensionList.lookupSingleton(CloudsLink.class);
     }
 
     @SuppressWarnings("unused") // stapler
