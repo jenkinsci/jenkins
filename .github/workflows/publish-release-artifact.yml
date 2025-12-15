@@ -16,9 +16,9 @@ jobs:
       is-lts: ${{ steps.set-version.outputs.is-lts }}
       is-rc: ${{ steps.set-version.outputs.is-rc }}
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - name: Set up JDK 21
-        uses: actions/setup-java@4e7e684fbb6e33f88ecb2cf1e6b3797739cf499b #v 5.0.0
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e #v 5.0.0
         with:
           distribution: "temurin"
           java-version: 21
