@@ -60,7 +60,7 @@ function registerTooltip(element) {
     (htmlTooltip === null || htmlTooltip.trim().length == 0)
   ) {
     tippy(
-      reference, 
+      reference,
       Object.assign(
         {
           content: () => tooltip.replace(/<br[ /]?\/?>|\\n/g, "\n"),
