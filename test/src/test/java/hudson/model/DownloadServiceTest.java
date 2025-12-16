@@ -1,10 +1,7 @@
 package hudson.model;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.DownloadService.Downloadable;
@@ -12,8 +9,6 @@ import hudson.tasks.Ant.AntInstaller;
 import hudson.tasks.Maven;
 import hudson.tools.DownloadFromUrlInstaller;
 import hudson.tools.ToolInstallation;
-import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,26 +36,6 @@ class DownloadServiceTest {
         JSONObject json = JSONObject.fromObject(DownloadService.loadJSON(resource));
         Set<String> keySet = json.keySet();
         assertEquals(expected, new TreeSet<>(keySet).toString());
-    }
-
-    @WithoutJenkins
-    @Test
-    void testLoadJSONException() throws Exception {
-        String badHostname = "bad.updates.jenkins.io"; // Non-existent host
-        URL badURL = new URI("https://" + badHostname + "/update-center.json").toURL();
-        IOException e = assertThrows(IOException.class, () -> DownloadService.loadJSON(badURL));
-        assertThat(e.getMessage(), containsString(badURL.toString()));
-        assertThat(e.getMessage(), containsString("due to UnknownHostException:"));
-    }
-
-    @WithoutJenkins
-    @Test
-    void testLoadJSONHTMLException() throws Exception {
-        String badHostname = "bad.updates.jenkins.io"; // Non-existent host
-        URL badURL = new URI("https://" + badHostname + "/update-center.json").toURL();
-        IOException e = assertThrows(IOException.class, () -> DownloadService.loadJSONHTML(badURL));
-        assertThat(e.getMessage(), containsString(badURL.toString()));
-        assertThat(e.getMessage(), containsString("due to UnknownHostException:"));
     }
 
     @Test

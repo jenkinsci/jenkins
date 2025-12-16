@@ -79,6 +79,7 @@ public class DownloadService {
      * the prefix for the signature validator name
      */
     private static final String signatureValidatorPrefix = "downloadable";
+    private static final Logger LOGGER = Logger.getLogger(DownloadService.class.getName());
     /**
      * Builds up an HTML fragment that starts all the download jobs.
      *
@@ -101,6 +102,21 @@ public class DownloadService {
         return null;
     }
 
+    private static InputStream openConnection(URL src) throws IOException {
+        URLConnection con = ProxyConfiguration.open(src);
+        if (con instanceof HttpURLConnection) {
+            ((HttpURLConnection) con).setInstanceFollowRedirects(true);
+        }
+        try {
+            return con.getInputStream();
+        } catch (IOException ioe) {
+            // Log with URL, but rethrow original exception
+            String ioeMessage = ioe.getClass().getSimpleName() + ": " + ioe.getMessage();
+            LOGGER.log(Level.SEVERE, "Failed to connect to " + src + " due to " + ioeMessage, ioe);
+            throw ioe;
+        }
+    }
+
     /**
      * Loads JSON from a JSONP URL.
      * Metadata for downloadables and update centers is offered in two formats, both designed for download from the browser (a feature since removed):
@@ -119,7 +135,7 @@ public class DownloadService {
             // prevent problems from misbehaving plugins disabling redirects by default
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
         }
-        try (InputStream is = con.getInputStream()) {
+        try (InputStream is = openConnection(src)) {
             String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             int start = jsonp.indexOf('{');
             int end = jsonp.lastIndexOf('}');
@@ -128,13 +144,6 @@ public class DownloadService {
             } else {
                 throw new IOException("Could not find JSON in " + src);
             }
-        } catch (IOException ioe) {
-            // Include basename of exception and original message text
-            // in the new message so that the person reading the
-            // message understands the exception type and the text
-            // provided by the original exception.
-            String ioeMessage = ioe.getClass().getSimpleName() + ": " + ioe.getMessage();
-            throw new IOException("Could not load JSON from " + src + " due to " + ioeMessage);
         }
     }
 
@@ -151,7 +160,7 @@ public class DownloadService {
             // prevent problems from misbehaving plugins disabling redirects by default
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
         }
-        try (InputStream is = con.getInputStream()) {
+            try (InputStream is = openConnection(src)) {
             String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             String preamble = "window.parent.postMessage(JSON.stringify(";
             int start = jsonp.indexOf(preamble);
@@ -161,13 +170,6 @@ public class DownloadService {
             } else {
                 throw new IOException("Could not find JSON in " + src);
             }
-        } catch (IOException ioe) {
-            // Include basename of exception and original message text
-            // in the new message so that the person reading the
-            // message understands the exception type and the text
-            // provided by the original exception.
-            String ioeMessage = ioe.getClass().getSimpleName() + ": " + ioe.getMessage();
-            throw new IOException("Could not load JSON as HTML from " + src + " due to " + ioeMessage);
         }
     }
 
