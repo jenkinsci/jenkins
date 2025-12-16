@@ -1,17 +1,6 @@
 import tippy from "tippy.js";
 import behaviorShim from "@/util/behavior-shim";
 
-const rootStyles = getComputedStyle(document.documentElement);
-const sectionPaddingVar =
-  rootStyles.getPropertyValue("--section-padding") || "1";
-let sectionPaddingRem = Number.parseFloat(sectionPaddingVar);
-if (Number.isNaN(sectionPaddingRem)) {
-  sectionPaddingRem = 1;
-}
-
-const rootFontSize = Number.parseFloat(rootStyles.fontSize) || 16;
-const sectionPaddingPx = sectionPaddingRem * rootFontSize;
-
 const TOOLTIP_BASE = {
   arrow: false,
   theme: "tooltip",
@@ -23,7 +12,12 @@ const TOOLTIP_BASE = {
         name: "preventOverflow",
         options: {
           boundary: "viewport",
-          padding: sectionPaddingPx,
+          padding:
+            parseFloat(
+              getComputedStyle(document.documentElement).getPropertyValue(
+                "--section-padding",
+              ),
+            ) * 16,
         },
       },
     ],
@@ -43,8 +37,8 @@ function registerTooltip(element) {
   }
 
   let reference = element;
-  if (element.classList && element.classList.contains("jenkins-badge")) {
-    let clickableAncestor = element.closest(
+  if (element.classList.contains("jenkins-badge")) {
+    const clickableAncestor = element.closest(
       ".task-link, .jenkins-section__item > a, .jenkins-section__item, a, button",
     );
     if (clickableAncestor) {
@@ -52,10 +46,10 @@ function registerTooltip(element) {
     }
   }
 
-  let tooltip = element.getAttribute("tooltip");
-  let htmlTooltip = element.getAttribute("data-html-tooltip");
-  let defaultDelay = 250;
-  let delay = element.getAttribute("data-tooltip-delay") || defaultDelay;
+  const tooltip = element.getAttribute("tooltip");
+  const htmlTooltip = element.getAttribute("data-html-tooltip");
+  const defaultDelay = 250;
+  const delay = element.getAttribute("data-tooltip-delay") || defaultDelay;
   let appendTo = document.body;
   if (element.hasAttribute("data-tooltip-append-to-parent")) {
     appendTo = "parent";
@@ -66,11 +60,9 @@ function registerTooltip(element) {
     (htmlTooltip === null || htmlTooltip.trim().length == 0)
   ) {
     tippy(
-      reference,
+      reference, 
       Object.assign(
         {
-          trigger: "mouseenter focus",
-          delay: [delay, 0],
           content: () => tooltip.replace(/<br[ /]?\/?>|\\n/g, "\n"),
           onCreate(instance) {
             instance.reference.setAttribute("title", instance.props.content);
@@ -82,6 +74,7 @@ function registerTooltip(element) {
             instance.reference.setAttribute("title", instance.props.content);
           },
           appendTo: appendTo,
+          delay: [delay, null],
         },
         TOOLTIP_BASE,
       ),
@@ -93,8 +86,6 @@ function registerTooltip(element) {
       reference,
       Object.assign(
         {
-          trigger: "mouseenter focus",
-          delay: [delay, 0],
           content: () => htmlTooltip,
           allowHTML: true,
           onCreate(instance) {
@@ -103,6 +94,7 @@ function registerTooltip(element) {
               "true";
           },
           appendTo: appendTo,
+          delay: [delay, null],
         },
         TOOLTIP_BASE,
       ),
