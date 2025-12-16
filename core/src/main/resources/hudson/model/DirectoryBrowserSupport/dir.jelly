@@ -35,10 +35,7 @@ THE SOFTWARE.
         <div class="parentPath">
           <form>
             <a href="${topPath}">
-              <j:choose>
-                <j:when test="${empty(it.owner.name)}">${%Root}</j:when>
-                <j:otherwise>${it.owner.displayName}</j:otherwise>
-              </j:choose>
+              ${it.owner.displayName}
             </a> /
             <j:forEach var="p" items="${parentPath}">
               <a href="${p.href}">${p.title}</a>
