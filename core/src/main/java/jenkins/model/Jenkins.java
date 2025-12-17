@@ -2431,6 +2431,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     @Override
                     protected Collection<View> all() { return getAllViews(); }
                 });
+
+        // Add GlobalConfiguration items to search index so users can find configuration sections
+        for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassifiedReadable()) {
+            builder.add("/manage/configure", d.getDisplayName());
+        }
+
         return builder;
     }
 

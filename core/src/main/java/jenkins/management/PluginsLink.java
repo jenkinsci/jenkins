@@ -78,6 +78,6 @@ public class PluginsLink extends ManagementLink {
 
     @Override
     public @NonNull String getSearchKeywords() {
-        return "proxy http proxy update site update center";
+        return "update site update center";
     }
 }
