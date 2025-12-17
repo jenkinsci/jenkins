@@ -107,7 +107,6 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                 StringBuilder buffer = new StringBuilder();
                 Authentication a = Jenkins.getAuthentication2();
                 buffer.append(a.getName());
-                buffer.append(';');
                 if (!EXCLUDE_SESSION_ID) {
                     buffer.append(';');
                     buffer.append(req.getSession().getId());
