@@ -166,7 +166,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             return false;
         }
         Result result = upstreamBuild.getResult();
-        return result != null && result.isBetterOrEqualTo(threshold);
+        return result != null && result.isBetterOrEqualTo(threshold != null ? threshold : Result.SUCCESS);
     }
 
     @Override public void buildDependencyGraph(final AbstractProject downstream, DependencyGraph graph) {
