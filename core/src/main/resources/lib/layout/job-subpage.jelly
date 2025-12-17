@@ -115,6 +115,7 @@ THE SOFTWARE.
           </div>
 
           <div class="app-build-content">
+            <l:shutdown-banner />
             <d:invokeBody />
           </div>
         </l:main-panel>
