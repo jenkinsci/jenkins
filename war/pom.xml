@@ -318,7 +318,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1361.vfed194a_de34a_</version>
+                  <version>1380.v491ff054cd35</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -347,6 +347,13 @@ THE SOFTWARE.
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>checks-api</artifactId>
                   <version>373.vfe7645102093</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>prism-api</artifactId>
+                  <version>1.30.0-630.va_e19d17f83b_0</version>
                   <type>hpi</type>
                 </artifactItem>
 
