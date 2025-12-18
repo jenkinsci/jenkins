@@ -283,7 +283,7 @@ THE SOFTWARE.
                   <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>522.va_995fa_cfb_8b_d</version>
+                  <version>525.v2458b_d8a_1a_71</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -318,7 +318,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1361.vfed194a_de34a_</version>
+                  <version>1380.v491ff054cd35</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -349,12 +349,19 @@ THE SOFTWARE.
                   <version>373.vfe7645102093</version>
                   <type>hpi</type>
                 </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>prism-api</artifactId>
+                  <version>1.30.0-630.va_e19d17f83b_0</version>
+                  <type>hpi</type>
+                </artifactItem>
 
                 <artifactItem>
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>1004.veee3a_d67cdb_9</version>
+                  <version>1010.vb_b_39488a_9841</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -429,7 +436,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>712.v8846fdd68c88</version>
+                  <version>724.v7d839074eb_5c</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -478,7 +485,7 @@ THE SOFTWARE.
                   <!-- detached after 2.184 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>trilead-api</artifactId>
-                  <version>2.209.v0e69b_c43c245</version>
+                  <version>2.284.v1974ea_324382</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -513,21 +520,21 @@ THE SOFTWARE.
                   <!-- dependency of scm-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>asm-api</artifactId>
-                  <version>9.9-185.va_6c6b_3348b_c3</version>
+                  <version>9.9.1-189.vb_5ef2964da_91</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of bootstrap5-api, checks-api, commons-text-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-lang3-api</artifactId>
-                  <version>3.19.0-104.v12125f33a_255</version>
+                  <version>3.20.0-109.ve43756e2d2b_4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of bootstrap5-api, checks-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-text-api</artifactId>
-                  <version>1.14.0-194.v804a_dc3a_1b_d8</version>
+                  <version>1.15.0-210.v7480a_da_70b_9e</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -661,7 +668,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.1.4</version>
+        <version>12.1.5</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
