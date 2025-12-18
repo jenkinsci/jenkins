@@ -6,10 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -25,7 +28,7 @@ class PrivateKeyProviderTest {
     */
     @Test
     void loadKeyDSA() throws IOException, GeneralSecurityException {
-        File file = new File(this.getClass().getResource("dsa").getFile());
+        File file = resourceAsFile("dsa");
         assertKeyPairNotNull(file, null);
     }
 
@@ -41,12 +44,21 @@ class PrivateKeyProviderTest {
         assertNotNull(keyPair.getPublic());
     }
 
+    private File resourceAsFile(String name) {
+        URL url = Objects.requireNonNull(getClass().getResource(name), "Missing test resource " + name);
+        try {
+            return new File(url.toURI());
+        } catch (URISyntaxException e) {
+            throw new AssertionError("Invalid URI for test resource " + name + ": " + url, e);
+        }
+    }
+
     /**
     key command: ssh-keygen -f dsa-password -t dsa -b 1024 -m PEM -P password
     */
     @Test
     void loadKeyDSAPassword() throws IOException, GeneralSecurityException {
-        File file = new File(this.getClass().getResource("dsa-password").getFile());
+        File file = resourceAsFile("dsa-password");
         String password = "password";
         assertKeyPairNotNull(file, password);
     }
@@ -56,7 +68,7 @@ class PrivateKeyProviderTest {
     */
     @Test
     void loadKeyRSA() throws IOException, GeneralSecurityException {
-        File file = new File(this.getClass().getResource("rsa").getFile());
+        File file = resourceAsFile("rsa");
         assertKeyPairNotNull(file, null);
     }
 
@@ -65,7 +77,7 @@ class PrivateKeyProviderTest {
     */
     @Test
     void loadKeyRSAPassword() throws IOException, GeneralSecurityException {
-        File file = new File(this.getClass().getResource("rsa-password").getFile());
+        File file = resourceAsFile("rsa-password");
         String password = "password";
         assertKeyPairNotNull(file, password);
     }
@@ -75,7 +87,7 @@ class PrivateKeyProviderTest {
     */
     @Test
     void loadKeyOpenSSH() throws IOException, GeneralSecurityException {
-        File file = new File(this.getClass().getResource("openssh").getFile());
+        File file = resourceAsFile("openssh");
         assertKeyPairNotNull(file, null);
     }
 
@@ -84,7 +96,7 @@ class PrivateKeyProviderTest {
      */
     @Test
     void loadKeyOpenSSHPKCS8() throws IOException, GeneralSecurityException {
-        File file = new File(this.getClass().getResource("openssh-pkcs8").getFile());
+        File file = resourceAsFile("openssh-pkcs8");
         String password = "password";
         assertKeyPairNotNull(file, password);
     }
@@ -94,7 +106,7 @@ class PrivateKeyProviderTest {
      */
     @Test
     void loadKeyOpenSSHRFC4716() throws IOException, GeneralSecurityException {
-        File file = new File(this.getClass().getResource("openssh-rfc4716").getFile());
+        File file = resourceAsFile("openssh-rfc4716");
         String password = "password";
         assertKeyPairNotNull(file, password);
     }
@@ -105,7 +117,7 @@ class PrivateKeyProviderTest {
      */
     @Test
     void loadKeyOpenSSHMultipleKeys() {
-        File file = new File(this.getClass().getResource("openssh-multiple-keys").getFile());
+        File file = resourceAsFile("openssh-multiple-keys");
         String password = "password";
         assertThrows(InvalidKeySpecException.class, () -> PrivateKeyProvider.loadKey(file, password));
     }
@@ -115,7 +127,7 @@ class PrivateKeyProviderTest {
      */
     @Test
     void loadBlankKey() {
-        File file = new File(this.getClass().getResource("blank").getFile());
+        File file = resourceAsFile("blank");
         String password = "password";
         assertThrows(InvalidKeyException.class, () -> PrivateKeyProvider.loadKey(file, password));
     }
@@ -126,7 +138,7 @@ class PrivateKeyProviderTest {
     */
     @Test
     void loadKeyBroken() {
-        File file = new File(this.getClass().getResource("openssh-broken").getFile());
+        File file = resourceAsFile("openssh-broken");
         String password = "password";
         assertThrows(IllegalArgumentException.class, () -> PrivateKeyProvider.loadKey(file, password));
     }
