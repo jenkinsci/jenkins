@@ -105,9 +105,11 @@ THE SOFTWARE.
             <div class="app-settings-container__inner">
               <j:if test="${!attrs.containsKey('header')}">
                 <l:app-bar title="${managementLink.displayName}" />
-                <div class="jenkins-page-description">
-                  ${managementLink.description}
-                </div>
+                <j:if test="${!empty(managementLink.description)}">
+                  <div class="jenkins-page-description">
+                    ${managementLink.description}
+                  </div>
+                </j:if>
               </j:if>
 
               <j:out value="${attrs.header}" />
