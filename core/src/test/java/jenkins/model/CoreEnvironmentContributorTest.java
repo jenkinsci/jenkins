@@ -1,5 +1,6 @@
 package jenkins.model;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -76,9 +77,9 @@ class CoreEnvironmentContributorTest {
             EnvVars env = new EnvVars();
             instance.buildEnvironmentFor(job, env, listener);
 
-            assert env.get("JOB_URL") == null;
-            assert env.get("JENKINS_URL") == null;
-            assert env.get("HUDSON_URL") == null;
+            assertNull(env.get("JOB_URL"));
+            assertNull(env.get("JENKINS_URL"));
+            assertNull(env.get("HUDSON_URL"));
         }
     }
 }
