@@ -30,13 +30,9 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.FilePath;
 import hudson.model.DownloadService;
 import hudson.model.UpdateSite;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.SecurityRealm;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -63,6 +59,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.Callback;
 import org.htmlunit.Page;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlFormUtil;
+import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -83,20 +82,17 @@ class SetupWizardTest {
 
     private JenkinsRule j;
 
+    private String initialAdminPassword;
+
     @BeforeEach
     void setUp(JenkinsRule rule) throws Exception {
         j = rule;
 
         tmpdir = Files.createTempDirectory("junit-").toFile();
 
-        final SetupWizard wizard = j.jenkins.getSetupWizard();
-        wizard.init(true);
+        j.jenkins.setInstallState(jenkins.install.InstallState.INITIAL_SECURITY_SETUP);
 
-        // Retrieve admin credentials
-        final FilePath adminPassFile = wizard.getInitialAdminPasswordFile();
-        ByteArrayOutputStream ostream = new ByteArrayOutputStream();
-        adminPassFile.copyTo(ostream);
-        final String password = ostream.toString(StandardCharsets.UTF_8);
+        initialAdminPassword = j.jenkins.getSetupWizard().getInitialAdminPasswordFile().readToString().trim();
     }
 
     @AfterEach
@@ -104,18 +100,22 @@ class SetupWizardTest {
         tmpdir.delete();
     }
 
-    @Test
-    void shouldReturnPluginListsByDefault() {
-        JenkinsRule.WebClient wc = j.createWebClient();
-        // TODO: This is a hack, wc.login does not work with the form
-        j.jenkins.setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-        j.jenkins.setAuthorizationStrategy(AuthorizationStrategy.UNSECURED);
-        // wc.setCredentialsProvider(adminCredentialsProvider);
-        // wc.login("admin");
+    private void wizardLogin(JenkinsRule.WebClient wc) throws Exception {
+        HtmlPage page = wc.goTo("login");
+        HtmlForm form = page.getForms().get(0);
+        form.getInputByName("j_password").setValue(initialAdminPassword);
+        HtmlFormUtil.submit(form, null);
+    }
 
-        String response = jsonRequest(wc, "setupWizard/platformPluginList");
-        assertThat("Missing plugin is suggestions ", response, containsString("active-directory"));
-        assertThat("Missing category is suggestions ", response, containsString("Pipelines and Continuous Delivery"));
+    @Test
+    void shouldReturnPluginListsByDefault() throws Exception {
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            wizardLogin(wc);
+
+            String response = jsonRequest(wc, "setupWizard/platformPluginList");
+            assertThat("Missing plugin is suggestions ", response, containsString("active-directory"));
+            assertThat("Missing category is suggestions ", response, containsString("Pipelines and Continuous Delivery"));
+        }
     }
 
     @Test
@@ -126,19 +126,15 @@ class SetupWizardTest {
         us.init();
         j.jenkins.getUpdateCenter().getSites().add(us);
 
-        // Prepare the connection
-        JenkinsRule.WebClient wc = j.createWebClient();
-        // TODO: This is a hack, wc.login does not work with the form
-        j.jenkins.setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-        j.jenkins.setAuthorizationStrategy(AuthorizationStrategy.UNSECURED);
-        // wc.setCredentialsProvider(adminCredentialsProvider);
-        // wc.login("admin");
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            wizardLogin(wc);
 
-        String response = jsonRequest(wc, "setupWizard/platformPluginList");
-        assertThat("Missing plugin in suggestions ", response, containsString("antisamy-markup-formatter"));
-        assertThat("Missing category in suggestions ", response, containsString("Organization and Administration"));
-        assertThat("Unexpected plugin in suggestions ", response, not(containsString("active-directory")));
-        assertThat("Unexpected category in suggestions ", response, not(containsString("Pipelines and Continuous Delivery")));
+            String response = jsonRequest(wc, "setupWizard/platformPluginList");
+            assertThat("Missing plugin in suggestions ", response, containsString("antisamy-markup-formatter"));
+            assertThat("Missing category in suggestions ", response, containsString("Organization and Administration"));
+            assertThat("Unexpected plugin in suggestions ", response, not(containsString("active-directory")));
+            assertThat("Unexpected category in suggestions ", response, not(containsString("Pipelines and Continuous Delivery")));
+        }
     }
 
     @Test
@@ -149,19 +145,15 @@ class SetupWizardTest {
         us.init();
         j.jenkins.getUpdateCenter().getSites().add(us);
 
-        // Prepare the connection
-        JenkinsRule.WebClient wc = j.createWebClient();
-        // TODO: This is a hack, wc.login does not work with the form
-        j.jenkins.setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-        j.jenkins.setAuthorizationStrategy(AuthorizationStrategy.UNSECURED);
-        // wc.setCredentialsProvider(adminCredentialsProvider);
-        // wc.login("admin");
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            wizardLogin(wc);
 
-        String response = jsonRequest(wc, "setupWizard/platformPluginList");
-        assertThat("Missing plugin in suggestions ", response, containsString("dashboard-view"));
-        assertThat("Missing category in suggestions ", response, containsString("Administration and Organization"));
-        assertThat("Unexpected plugin in suggestions ", response, not(containsString("matrix-auth")));
-        assertThat("Unexpected category in suggestions ", response, not(containsString("Pipelines and Continuous Delivery")));
+            String response = jsonRequest(wc, "setupWizard/platformPluginList");
+            assertThat("Missing plugin in suggestions ", response, containsString("dashboard-view"));
+            assertThat("Missing category in suggestions ", response, containsString("Administration and Organization"));
+            assertThat("Unexpected plugin in suggestions ", response, not(containsString("matrix-auth")));
+            assertThat("Unexpected category in suggestions ", response, not(containsString("Pipelines and Continuous Delivery")));
+        }
     }
 
     @Test
@@ -235,18 +227,14 @@ class SetupWizardTest {
             CustomRemoteUpdateSite us = new CustomRemoteUpdateSite(baseUrl.toString(), false);
             j.jenkins.getUpdateCenter().getSites().add(us);
 
-            // Prepare the connection
-            JenkinsRule.WebClient wc = j.createWebClient();
-            // TODO: This is a hack, wc.login does not work with the form
-            j.jenkins.setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-            j.jenkins.setAuthorizationStrategy(AuthorizationStrategy.UNSECURED);
-            // wc.setCredentialsProvider(adminCredentialsProvider);
-            // wc.login("admin");
+            try (JenkinsRule.WebClient wc = j.createWebClient()) {
+                wizardLogin(wc);
 
-            String response = jsonRequest(wc, "setupWizard/platformPluginList");
-            // We need to assert that signature check fails, and we're falling back to the bundled resource
-            assertThat("Missing plugin in suggestions ", response, not(containsString("my-plugin")));
-            assertThat("Missing category in suggestions ", response, not(containsString("Very Useful Category")));
+                String response = jsonRequest(wc, "setupWizard/platformPluginList");
+                // We need to assert that signature check fails, and we're falling back to the bundled resource
+                assertThat("Missing plugin in suggestions ", response, not(containsString("my-plugin")));
+                assertThat("Missing category in suggestions ", response, not(containsString("Very Useful Category")));
+            }
         } finally {
             server.stop();
         }
@@ -269,21 +257,16 @@ class SetupWizardTest {
             CustomRemoteUpdateSite us = new CustomRemoteUpdateSite(baseUrl.toString(), false);
             j.jenkins.getUpdateCenter().getSites().add(us);
 
+            try (JenkinsRule.WebClient wc = j.createWebClient()) {
+                wizardLogin(wc);
 
-            // Prepare the connection
-            JenkinsRule.WebClient wc = j.createWebClient();
-            // TODO: This is a hack, wc.login does not work with the form
-            j.jenkins.setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-            j.jenkins.setAuthorizationStrategy(AuthorizationStrategy.UNSECURED);
-            // wc.setCredentialsProvider(adminCredentialsProvider);
-            // wc.login("admin");
-
-            String response = jsonRequest(wc, "setupWizard/platformPluginList");
-            // We need to assert that signature check fails, and we're falling back to the bundled resource
-            assertThat("Missing plugin in suggestions ", response, containsString("my-plugin"));
-            assertThat("Missing category in suggestions ", response, containsString("Very Useful Category"));
-            assertThat("Unexpected plugin in suggestions ", response, not(containsString("matrix-auth")));
-            assertThat("Unexpected category in suggestions ", response, not(containsString("Pipelines and Continuous Delivery")));
+                String response = jsonRequest(wc, "setupWizard/platformPluginList");
+                // We need to assert that signature check fails, and we're falling back to the bundled resource
+                assertThat("Missing plugin in suggestions ", response, containsString("my-plugin"));
+                assertThat("Missing category in suggestions ", response, containsString("Very Useful Category"));
+                assertThat("Unexpected plugin in suggestions ", response, not(containsString("matrix-auth")));
+                assertThat("Unexpected category in suggestions ", response, not(containsString("Pipelines and Continuous Delivery")));
+            }
         } finally {
             DownloadService.signatureCheck = true;
             server.stop();
@@ -306,21 +289,16 @@ class SetupWizardTest {
             CustomRemoteUpdateSite us = new CustomRemoteUpdateSite(baseUrl.toString(), true);
             j.jenkins.getUpdateCenter().getSites().add(us);
 
+            try (JenkinsRule.WebClient wc = j.createWebClient()) {
+                wizardLogin(wc);
 
-            // Prepare the connection
-            JenkinsRule.WebClient wc = j.createWebClient();
-            // TODO: This is a hack, wc.login does not work with the form
-            j.jenkins.setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-            j.jenkins.setAuthorizationStrategy(AuthorizationStrategy.UNSECURED);
-            // wc.setCredentialsProvider(adminCredentialsProvider);
-            // wc.login("admin");
-
-            String response = jsonRequest(wc, "setupWizard/platformPluginList");
-            // We need to assert that signature check fails, and we're falling back to the bundled resource
-            assertThat("Missing plugin in suggestions ", response, containsString("my-plugin"));
-            assertThat("Missing category in suggestions ", response, containsString("Very Useful Category"));
-            assertThat("Unexpected plugin in suggestions ", response, not(containsString("matrix-auth")));
-            assertThat("Unexpected category in suggestions ", response, not(containsString("Pipelines and Continuous Delivery")));
+                String response = jsonRequest(wc, "setupWizard/platformPluginList");
+                // We need to assert that signature check fails, and we're falling back to the bundled resource
+                assertThat("Missing plugin in suggestions ", response, containsString("my-plugin"));
+                assertThat("Missing category in suggestions ", response, containsString("Very Useful Category"));
+                assertThat("Unexpected plugin in suggestions ", response, not(containsString("matrix-auth")));
+                assertThat("Unexpected category in suggestions ", response, not(containsString("Pipelines and Continuous Delivery")));
+            }
         } finally {
             server.stop();
         }
