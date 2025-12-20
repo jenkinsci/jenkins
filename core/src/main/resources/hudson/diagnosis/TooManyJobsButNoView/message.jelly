@@ -28,7 +28,9 @@ THE SOFTWARE.
     <l:isAdmin>
       <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
         <f:submit name="yes" value="${%Create a view now}"/>
-        <f:submit name="no" value="${%Dismiss}"/>
+        <button name="no" class="jenkins-button jenkins-button--tertiary" title="${%Dismiss}">
+          <l:icon src="symbol-close" />
+        </button>
       </form>
     </l:isAdmin>
     ${%blurb}
