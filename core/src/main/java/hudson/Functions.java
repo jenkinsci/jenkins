@@ -1789,11 +1789,17 @@ public class Functions {
             return;
         }
         if (Util.isOverridden(Throwable.class, t.getClass(), "printStackTrace", PrintWriter.class)) {
-            StringWriter sw = new StringWriter();
-            t.printStackTrace(new PrintWriter(sw));
-            s.append(sw);
-            return;
+        StringWriter sw = new StringWriter();
+        t.printStackTrace(new PrintWriter(sw));
+        String out = sw.toString();
+        if (!out.isEmpty()) {
+            String[] lines = out.split("\\r?\\n");
+            for (String line : lines) {
+                s.append(prefix).append(line).append('\n');
+            }
         }
+        return;
+    }
         Throwable lower = t.getCause();
         if (lower != null) {
             doPrintStackTrace(s, lower, t, prefix, encountered);
