@@ -2800,13 +2800,6 @@ var layoutUpdateCallback = {
 
   function initializePostHandlers() {
     var buttons = document.querySelectorAll(".post-link, [data-post-url]");
-    buttons.forEach(function (btn) {
-      if (!btn[HANDLER_MARKER]) {
-        btn.setAttribute("data-original-disabled", btn.disabled);
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
-      }
-    });
 
     Behaviour.specify("A.post-link", "post-link", 100, attachPostHandler);
     Behaviour.specify(
@@ -2816,13 +2809,6 @@ var layoutUpdateCallback = {
       attachPostHandler,
     );
     Behaviour.apply();
-
-    buttons.forEach(function (btn) {
-      if (btn.getAttribute("data-original-disabled") !== "true") {
-        btn.disabled = false;
-      }
-      btn.style.opacity = "";
-    });
 
     handlersAttached = true;
 
