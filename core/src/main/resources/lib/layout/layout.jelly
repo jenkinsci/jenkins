@@ -123,6 +123,12 @@ THE SOFTWARE.
     <link rel="apple-touch-icon" href="${resURL}/apple-touch-icon.png" sizes="180x180" />
     <link rel="mask-icon" href="${resURL}/mask-icon.svg" color="#191717" />
 
+    <!-- CSRF Crumb meta tags for JavaScript access - Fix for JENKINS-76241 -->
+    <j:if test="${h.getCrumbRequestField() != null}">
+      <meta name="jenkins-crumb-field" content="${h.getCrumbRequestField()}" />
+      <meta name="jenkins-crumb-value" content="${h.getCrumb(request2)}" />
+    </j:if>
+
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
     <st:adjunct includes="org.kohsuke.stapler.bind"/>

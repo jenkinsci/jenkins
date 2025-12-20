@@ -2709,3 +2709,157 @@ var layoutUpdateCallback = {
     }
   },
 };
+
+/**
+ * Fix for JENKINS-76241: Prevent race condition where POST handlers
+ * aren't attached before user clicks button
+ */
+(function () {
+  "use strict";
+
+  var HANDLER_MARKER = "_jenkinsPostHandlerAttached";
+  var handlersAttached = false;
+
+  function attachPostHandler(element) {
+    if (element[HANDLER_MARKER]) {
+      return;
+    }
+
+    element[HANDLER_MARKER] = true;
+
+    var url = element.href || element.getAttribute("data-post-url");
+    if (!url) {
+      return;
+    }
+
+    element.addEventListener(
+      "click",
+      function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        var crumb = getCrumb();
+        var formData = new FormData();
+
+        if (crumb.crumbRequestField && crumb.crumb) {
+          formData.append(crumb.crumbRequestField, crumb.crumb);
+        }
+
+        element.classList.add("jenkins-loading");
+
+        fetch(url, {
+          method: "POST",
+          body: formData,
+          credentials: "same-origin",
+        })
+          .then(function (response) {
+            if (response.ok) {
+              if (response.redirected) {
+                window.location.href = response.url;
+              } else {
+                window.location.reload();
+              }
+            } else {
+              alert("Request failed: " + response.statusText);
+            }
+          })
+          .catch(function (error) {
+            alert("Request failed: " + error.message);
+          })
+          .finally(function () {
+            element.classList.remove("jenkins-loading");
+          });
+
+        return false;
+      },
+      true,
+    );
+  }
+
+  function getCrumb() {
+    var crumbField = document.querySelector('meta[name="jenkins-crumb-field"]');
+    var crumbValue = document.querySelector('meta[name="jenkins-crumb-value"]');
+
+    if (crumbField && crumbValue) {
+      return {
+        crumbRequestField: crumbField.content,
+        crumb: crumbValue.content,
+      };
+    }
+
+    var input = document.querySelector('input[name^=".crumb"]');
+    if (input) {
+      return {
+        crumbRequestField: input.name,
+        crumb: input.value,
+      };
+    }
+
+    return {};
+  }
+
+  function initializePostHandlers() {
+    var buttons = document.querySelectorAll(".post-link, [data-post-url]");
+    buttons.forEach(function (btn) {
+      if (!btn[HANDLER_MARKER]) {
+        btn.setAttribute("data-original-disabled", btn.disabled);
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+      }
+    });
+
+    Behaviour.specify("A.post-link", "post-link", 100, attachPostHandler);
+    Behaviour.specify(
+      "BUTTON[data-post-url]",
+      "post-button",
+      100,
+      attachPostHandler,
+    );
+    Behaviour.apply();
+
+    buttons.forEach(function (btn) {
+      if (btn.getAttribute("data-original-disabled") !== "true") {
+        btn.disabled = false;
+      }
+      btn.style.opacity = "";
+    });
+
+    handlersAttached = true;
+
+    if (typeof MutationObserver !== "undefined") {
+      var observer = new MutationObserver(function (mutations) {
+        var needsReapply = false;
+        mutations.forEach(function (mutation) {
+          mutation.addedNodes.forEach(function (node) {
+            if (
+              node.nodeType === 1 &&
+              ((node.matches &&
+                (node.matches(".post-link") ||
+                  node.matches("[data-post-url]"))) ||
+                (node.querySelector &&
+                  node.querySelector(".post-link, [data-post-url]")))
+            ) {
+              needsReapply = true;
+            }
+          });
+        });
+        if (needsReapply) {
+          Behaviour.apply();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializePostHandlers);
+  } else {
+    initializePostHandlers();
+  }
+
+  window.addEventListener("load", function () {
+    if (!handlersAttached) {
+      initializePostHandlers();
+    }
+  });
+})();
