@@ -515,7 +515,16 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner,
                        String verificationRoot, OpenOption... openOptions) throws IOException, InterruptedException {
-        final OutputStream out = channel != null ? new RemoteOutputStream(os) : os;
+
+        OutputStream toWrap = os;
+        if (channel != null) {
+            try {
+                toWrap = hudson.util.io.DiskSpaceLimitedOutputStream.forController(os);
+            } catch (Throwable t) {
+
+            }
+        }
+        final OutputStream out = channel != null ? new RemoteOutputStream(toWrap) : toWrap;
         return act(new Archive(factory, out, scanner, verificationRoot, openOptions));
     }
 
@@ -2672,7 +2681,15 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Sends the contents of this file into the given {@link OutputStream}.
      */
     public void copyTo(OutputStream os) throws IOException, InterruptedException {
-        final OutputStream out = new RemoteOutputStream(os);
+        OutputStream toWrap = os;
+        if (channel != null) {
+            try {
+                toWrap = hudson.util.io.DiskSpaceLimitedOutputStream.forController(os);
+            } catch (Throwable t) {
+
+            }
+        }
+        final OutputStream out = new RemoteOutputStream(toWrap);
 
         act(new CopyTo(out));
 
