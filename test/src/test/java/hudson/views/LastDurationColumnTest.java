@@ -1,49 +1,41 @@
 package hudson.views;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 import hudson.model.Result;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
-class LastDurationColumnTest {
-
-    private JenkinsRule j;
-
-    @BeforeEach
-    void setUp(JenkinsRule rule) {
-        j = rule;
-    }
+public class LastDurationColumnTest {
 
     @Test
-    void lastDurationShouldShowLastCompletedBuild() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
+    public void lastDurationShouldShowLastCompletedBuild(JenkinsRule j) throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("test-project");
 
         // 1. Run a successful build
         FreeStyleBuild s = j.buildAndAssertSuccess(p);
         String sDurationString = s.getDurationString();
 
-        // 2. Run a failed build (make it fail)
+        // 2. Run a failed build
         p.getBuildersList().add(new hudson.tasks.Shell("exit 1"));
         FreeStyleBuild f = j.buildAndAssertStatus(Result.FAILURE, p);
         String fDurationString = f.getDurationString();
 
-        JenkinsRule.WebClient wc = j.createWebClient();
-
-        ListView view = new ListView("testView", j.jenkins);
+        // 3. Verify the view shows the last completed build's duration (the failed one)
+        ListView view = new ListView("lastDurationTestView", j.jenkins);
         view.getColumns().add(new LastDurationColumn());
         view.add(p);
         j.jenkins.addView(view);
 
-        String viewContent = wc.goTo("view/testView").asNormalizedText();
+        JenkinsRule.WebClient wc = j.createWebClient();
+        String viewContent = wc.goTo("view/lastDurationTestView").asText();
 
-        assertThat("View should contain failed build's duration", viewContent, containsString(fDurationString));
+        assertTrue(viewContent.contains(fDurationString), 
+            "View should contain the failed build's duration (" + fDurationString + ")");
     }
 }
