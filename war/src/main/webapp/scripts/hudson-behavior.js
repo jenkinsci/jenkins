@@ -2712,38 +2712,38 @@ var layoutUpdateCallback = {
 
 /**
  * Fix for JENKINS-76241: Prevent POST race condition
- *
- * Ensure Behaviour rules are applied on DOMContentLoaded instead of
- * waiting for window.load, eliminating the race condition window.
+ * Apply Behaviour rules earlier to prevent race conditions with POST handlers
  */
 (function () {
   "use strict";
 
-  // Check if already applied
+  // Only apply once
   if (window._jenkinsPostHandlerFixApplied) {
     return;
   }
   window._jenkinsPostHandlerFixApplied = true;
 
-  // Apply Behaviour rules early on DOMContentLoaded
+  // Wait for DOMContentLoaded, then apply Behaviour rules
   function applyBehaviourEarly() {
     if (typeof Behaviour !== "undefined" && Behaviour.apply) {
-      Behaviour.apply();
+      try {
+        Behaviour.apply();
+      } catch (e) {
+        // Silently ignore errors during early application
+        console.log("Early Behaviour application:", e);
+      }
     }
   }
 
-  // Trigger on DOMContentLoaded instead of window.load
+  // Apply on DOMContentLoaded (earlier than window.load)
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", applyBehaviourEarly);
-  } else if (
-    document.readyState === "interactive" ||
-    document.readyState === "complete"
-  ) {
-    // DOM already loaded, apply now
+  } else {
+    // DOM already ready
     applyBehaviourEarly();
   }
 
-  // Watch for dynamically added POST elements and reapply Behaviour
+  // Watch for dynamically added POST elements
   if (typeof MutationObserver !== "undefined") {
     var observer = new MutationObserver(function (mutations) {
       var needsReapply = false;
@@ -2751,7 +2751,6 @@ var layoutUpdateCallback = {
       mutations.forEach(function (mutation) {
         mutation.addedNodes.forEach(function (node) {
           if (node.nodeType === 1) {
-            // Check if added node contains POST links/buttons
             if (
               (node.matches &&
                 (node.matches(".post-link") ||
@@ -2766,7 +2765,11 @@ var layoutUpdateCallback = {
       });
 
       if (needsReapply && typeof Behaviour !== "undefined" && Behaviour.apply) {
-        Behaviour.apply();
+        try {
+          Behaviour.apply();
+        } catch (e) {
+          console.log("Behaviour reapply:", e);
+        }
       }
     });
 
