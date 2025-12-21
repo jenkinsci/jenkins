@@ -2712,38 +2712,79 @@ var layoutUpdateCallback = {
 
 /**
  * Fix for JENKINS-76241: Prevent POST race condition
- * Apply Behaviour rules earlier to prevent race conditions with POST handlers
+ * Apply Behaviour rules immediately to forms to prevent race conditions
  */
 (function () {
   "use strict";
 
-  // Only apply once
   if (window._jenkinsPostHandlerFixApplied) {
     return;
   }
   window._jenkinsPostHandlerFixApplied = true;
 
-  // Wait for DOMContentLoaded, then apply Behaviour rules
-  function applyBehaviourEarly() {
-    if (typeof Behaviour !== "undefined" && Behaviour.apply) {
-      try {
-        Behaviour.apply();
-      } catch (e) {
-        // Silently ignore errors during early application
-        console.log("Early Behaviour application:", e);
-      }
+  // CRITICAL: Apply behaviour to existing forms IMMEDIATELY
+  // This ensures buildFormTree is attached before tests can submit
+  function applyToExistingForms() {
+    if (typeof Behaviour === "undefined" || !Behaviour.apply) {
+      return;
+    }
+
+    try {
+      // Apply to all forms that exist right now
+      var forms = document.querySelectorAll("FORM");
+      forms.forEach(function (form) {
+        if (!form.classList.contains("no-json") && !form._behaviourApplied) {
+          // Mark as processed
+          form._behaviourApplied = true;
+
+          // Manually ensure crumb and json field exist
+          crumb.appendToForm(form);
+
+          var hasJsonField = false;
+          for (var i = 0; i < form.elements.length; i++) {
+            if (form.elements[i].name === "json") {
+              hasJsonField = true;
+              break;
+            }
+          }
+
+          if (!hasJsonField) {
+            var div = document.createElement("div");
+            div.classList.add("jenkins-!-display-contents");
+            div.innerHTML = "<input type=hidden name=json value=init>";
+            form.appendChild(div);
+          }
+
+          // Attach the submission handler
+          var oldOnsubmit = form.onsubmit;
+          if (typeof oldOnsubmit === "function") {
+            form.onsubmit = function () {
+              return buildFormTree(this) && oldOnsubmit.call(this);
+            };
+          } else {
+            form.onsubmit = function () {
+              return buildFormTree(this);
+            };
+          }
+        }
+      });
+
+      // Now apply all other Behaviour rules
+      Behaviour.apply();
+    } catch (e) {
+      console.log("Error applying behaviours:", e);
     }
   }
 
-  // Apply on DOMContentLoaded (earlier than window.load)
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyBehaviourEarly);
+  // Apply immediately if DOM is already loaded
+  if (document.readyState !== "loading") {
+    applyToExistingForms();
   } else {
-    // DOM already ready
-    applyBehaviourEarly();
+    // Otherwise wait for DOMContentLoaded
+    document.addEventListener("DOMContentLoaded", applyToExistingForms);
   }
 
-  // Watch for dynamically added POST elements
+  // Watch for dynamically added forms
   if (typeof MutationObserver !== "undefined") {
     var observer = new MutationObserver(function (mutations) {
       var needsReapply = false;
@@ -2751,39 +2792,28 @@ var layoutUpdateCallback = {
       mutations.forEach(function (mutation) {
         mutation.addedNodes.forEach(function (node) {
           if (node.nodeType === 1) {
-            if (
-              (node.matches &&
-                (node.matches(".post-link") ||
-                  node.matches("[data-post-url]"))) ||
-              (node.querySelector &&
-                node.querySelector(".post-link, [data-post-url]"))
-            ) {
+            if (node.tagName === "FORM" || node.querySelector("FORM")) {
               needsReapply = true;
             }
           }
         });
       });
 
-      if (needsReapply && typeof Behaviour !== "undefined" && Behaviour.apply) {
-        try {
-          Behaviour.apply();
-        } catch (e) {
-          console.log("Behaviour reapply:", e);
-        }
+      if (needsReapply) {
+        applyToExistingForms();
       }
     });
 
-    // Start observing after DOM is ready
     function startObserving() {
       if (document.body) {
         observer.observe(document.body, { childList: true, subtree: true });
       }
     }
 
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", startObserving);
-    } else {
+    if (document.readyState !== "loading") {
       startObserving();
+    } else {
+      document.addEventListener("DOMContentLoaded", startObserving);
     }
   }
 })();
