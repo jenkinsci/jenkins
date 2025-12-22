@@ -299,4 +299,24 @@ public class UpdateSiteTest {
                 new ArrayList<>()
         );
     }
+
+    @Test
+    void signatureVerificationFailureIncludesUpdateSiteUrl() throws Exception {
+        // Create an UpdateSite with an invalid/malformed signature that will trigger an error
+        URL url = new URL(baseUrl, "/plugins/invalid-signature-update-center.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        overrideUpdateSite(site);
+
+        FormValidation validation = site.updateDirectlyNow(true);
+
+        assertEquals(FormValidation.Kind.ERROR, validation.kind);
+
+        String message = validation.getMessage();
+        assertNotNull(message);
+        assertTrue(
+                message.contains(url.toString()),
+                "Signature verification error should include update site URL"
+        );
+    }
+
 }

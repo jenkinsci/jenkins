@@ -1,0 +1,17 @@
+{
+  "updateCenterVersion": "1",
+  "connectionCheckUrl": "http://www.google.com/",
+  "core": {
+    "name": "core",
+    "version": "2.0",
+    "url": "http://updates.jenkins-ci.org/download/war/2.0/jenkins.war"
+  },
+  "plugins": {},
+  "signature": {
+    "certificates": [
+      "InvalidBase64CertificateDataThatWillFailValidation=="
+    ],
+    "correct_digest": "invalid_digest_value",
+    "correct_signature": "invalid_signature_value"
+  }
+}
