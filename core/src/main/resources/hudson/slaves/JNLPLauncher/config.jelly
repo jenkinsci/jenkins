@@ -31,7 +31,7 @@ THE SOFTWARE.
   <!-- This property is included only if used directly. Causes JENKINS-45895 in the case of includes otherwise -->
   <j:if test="${descriptor.workDirSupported}"> 
     <f:property title="${%Enable work directory}" field="workDirSettings" />
-  </j:if>
+    </j:if>
   <f:entry field="webSocket">
     <f:checkbox title="${%Use WebSocket}"/>
   </f:entry>
@@ -42,3 +42,5 @@ THE SOFTWARE.
   </f:advanced>
  </j:if>
 </j:jelly>
+
+

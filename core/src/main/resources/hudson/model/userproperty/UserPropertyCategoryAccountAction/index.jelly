@@ -38,7 +38,7 @@ THE SOFTWARE.
                 <j:set var="instance" value="${it}"/>
 
                 <f:section title="${%General}">
-                    <f:entry title="${%Full name}" description="${%Full name.Description}">
+                    <f:entry title="TESTING NAME FIELD" description="${%Full name.Description}">
                         <f:textbox field="fullName" />
                     </f:entry>
                     <f:entry title="${%Description}" description="${%Description.Description}">
