@@ -2712,7 +2712,7 @@ var layoutUpdateCallback = {
 
 /**
  * Fix for JENKINS-76241: Prevent POST race condition
- * Apply Behaviour rules as early as possible
+ * Apply Behaviour rules synchronously after all rules are registered
  */
 (function () {
   "use strict";
@@ -2722,22 +2722,24 @@ var layoutUpdateCallback = {
   }
   window._jenkinsPostHandlerFixApplied = true;
 
-  // Simply apply Behaviour rules earlier than normal
-  function applyBehavioursEarly() {
+  // Apply Behaviour rules as soon as they're all registered
+  function applyBehavioursImmediately() {
     if (typeof Behaviour !== "undefined" && Behaviour.apply) {
       try {
         Behaviour.apply();
       } catch (e) {
-        console.log("Behaviour.apply() error:", e);
+        // Silently ignore errors - Behaviour.apply() will be called again later
+        console.log("Early Behaviour.apply():", e);
       }
     }
   }
 
-  // Apply immediately if possible, otherwise on DOMContentLoaded
-  if (document.readyState !== "loading") {
-    applyBehavioursEarly();
-  } else {
-    document.addEventListener("DOMContentLoaded", applyBehavioursEarly);
+  // Execute immediately - this runs RIGHT NOW, not waiting for any event
+  applyBehavioursImmediately();
+
+  // Also apply on DOMContentLoaded as a safety net
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyBehavioursImmediately);
   }
 
   // Watch for dynamically added content
@@ -2759,7 +2761,7 @@ var layoutUpdateCallback = {
       });
 
       if (needsReapply) {
-        applyBehavioursEarly();
+        applyBehavioursImmediately();
       }
     });
 
