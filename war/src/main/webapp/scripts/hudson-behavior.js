@@ -2712,7 +2712,7 @@ var layoutUpdateCallback = {
 
 /**
  * Fix for JENKINS-76241: Prevent POST race condition
- * Ensure buildFormTree is attached before any form submission
+ * Apply Behaviour rules as early as possible
  */
 (function () {
   "use strict";
@@ -2722,53 +2722,7 @@ var layoutUpdateCallback = {
   }
   window._jenkinsPostHandlerFixApplied = true;
 
-  // Helper function to ensure buildFormTree is attached to a form
-  function ensureBuildFormTreeAttached(form) {
-    // Skip if already attached or form is marked no-json
-    if (form._buildFormTreeAttached || form.classList.contains("no-json")) {
-      return true;
-    }
-
-    // Check if buildFormTree is already in onsubmit
-    if (form.onsubmit && form.onsubmit.toString().indexOf('buildFormTree') !== -1) {
-      form._buildFormTreeAttached = true;
-      return true;
-    }
-
-    // Attach buildFormTree now
-    var oldOnsubmit = form.onsubmit;
-    form.onsubmit = function () {
-      var result = buildFormTree(this);
-      if (oldOnsubmit && typeof oldOnsubmit === "function") {
-        return result && oldOnsubmit.call(this);
-      }
-      return result;
-    };
-    form._buildFormTreeAttached = true;
-
-    // Ensure json field exists
-    var hasJsonField = false;
-    for (var i = 0; i < form.elements.length; i++) {
-      if (form.elements[i].name === "json") {
-        hasJsonField = true;
-        break;
-      }
-    }
-
-    if (!hasJsonField) {
-      var div = document.createElement("div");
-      div.classList.add("jenkins-!-display-contents");
-      div.innerHTML = "<input type=hidden name=json value=init>";
-      form.appendChild(div);
-    }
-
-    // Ensure crumb is present
-    crumb.appendToForm(form);
-
-    return true;
-  }
-
-  // Apply Behaviour rules early
+  // Simply apply Behaviour rules earlier than normal
   function applyBehavioursEarly() {
     if (typeof Behaviour !== "undefined" && Behaviour.apply) {
       try {
@@ -2779,47 +2733,17 @@ var layoutUpdateCallback = {
     }
   }
 
-  // Override form.submit() to ensure buildFormTree runs
-  // This catches forms submitted via JavaScript (form.submit())
-  var originalSubmit = HTMLFormElement.prototype.submit;
-  HTMLFormElement.prototype.submit = function () {
-    ensureBuildFormTreeAttached(this);
-
-    // Call onsubmit before actual submission
-    if (this.onsubmit && typeof this.onsubmit === "function") {
-      var result = this.onsubmit.call(this);
-      if (result === false) {
-        return; // Don't submit if onsubmit returns false
-      }
-    }
-
-    // Call original submit
-    originalSubmit.call(this);
-  };
-
-  // Intercept submit events (for button clicks)
-  document.addEventListener(
-    "submit",
-    function (event) {
-      var form = event.target;
-      if (form.tagName === "FORM") {
-        ensureBuildFormTreeAttached(form);
-      }
-    },
-    true
-  ); // Capture phase
-
-  // Apply Behaviour.apply() as early as possible
+  // Apply immediately if possible, otherwise on DOMContentLoaded
   if (document.readyState !== "loading") {
     applyBehavioursEarly();
   } else {
     document.addEventListener("DOMContentLoaded", applyBehavioursEarly);
   }
 
-  // Watch for dynamically added forms
+  // Watch for dynamically added content
   if (typeof MutationObserver !== "undefined") {
     var observer = new MutationObserver(function (mutations) {
-      var hasNewForms = false;
+      var needsReapply = false;
 
       mutations.forEach(function (mutation) {
         mutation.addedNodes.forEach(function (node) {
@@ -2828,13 +2752,13 @@ var layoutUpdateCallback = {
               node.tagName === "FORM" ||
               (node.querySelector && node.querySelector("FORM"))
             ) {
-              hasNewForms = true;
+              needsReapply = true;
             }
           }
         });
       });
 
-      if (hasNewForms) {
+      if (needsReapply) {
         applyBehavioursEarly();
       }
     });
