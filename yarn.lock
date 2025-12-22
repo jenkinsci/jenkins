@@ -4516,7 +4516,7 @@ __metadata:
     postcss-preset-env: "npm:10.5.0"
     postcss-scss: "npm:4.0.9"
     prettier: "npm:3.7.4"
-    sass: "npm:1.97.0"
+    sass: "npm:1.97.1"
     sass-loader: "npm:16.0.6"
     sortablejs: "npm:1.15.6"
     style-loader: "npm:4.0.0"
@@ -4524,7 +4524,7 @@ __metadata:
     stylelint-checkstyle-reporter: "npm:1.1.1"
     stylelint-config-standard-scss: "npm:16.0.0"
     tippy.js: "npm:6.3.7"
-    webpack: "npm:5.104.0"
+    webpack: "npm:5.104.1"
     webpack-cli: "npm:6.0.1"
     webpack-remove-empty-scripts: "npm:1.1.1"
     window-handle: "npm:1.0.1"
@@ -6516,9 +6516,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.97.0":
-  version: 1.97.0
-  resolution: "sass@npm:1.97.0"
+"sass@npm:1.97.1":
+  version: 1.97.1
+  resolution: "sass@npm:1.97.1"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -6529,7 +6529,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10c0/4c0e2596131054089beeeb6e98f7318beb909c4775187690656cbb85a45153d04eecd970e6a4431fe47dc94f9749cf8d58c9c5e59055d2cae39f4887a4bb6104
+  checksum: 10c0/c389d5d6405869b49fa2291e8328500fe7936f3b72136bc2c338bee6e7fec936bb9a48d77a1310dea66aa4669ba74ae6b82a112eb32521b9b36d740138a39ea0
   languageName: node
   linkType: hard
 
@@ -7240,9 +7240,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.104.0":
-  version: 5.104.0
-  resolution: "webpack@npm:5.104.0"
+"webpack@npm:5.104.1":
+  version: 5.104.1
+  resolution: "webpack@npm:5.104.1"
   dependencies:
     "@types/eslint-scope": "npm:^3.7.7"
     "@types/estree": "npm:^1.0.8"
@@ -7274,7 +7274,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 10c0/eed83b9bafffb2897724c1f059a8e59006b8b907f068922d54ed383f2902550b869fe305643f50e59e7aef18137b6f0aa19a97dc6459f26dc6974d5ed8de374c
+  checksum: 10c0/ea78c57f80bbd7684f4f1bb38a18408ab0ef4c5b962e25ad382c595d10b9e9701e077f5248a8cef5f127a55902698664c18837e64243bb972fbecf4e5d9aaab0
   languageName: node
   linkType: hard
 
