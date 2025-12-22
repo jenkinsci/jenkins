@@ -2712,7 +2712,7 @@ var layoutUpdateCallback = {
 
 /**
  * Fix for JENKINS-76241: Prevent POST race condition
- * Make form submission more defensive against timing issues
+ * Apply Behaviour rules synchronously after registration
  */
 (function () {
   "use strict";
@@ -2722,59 +2722,30 @@ var layoutUpdateCallback = {
   }
   window._jenkinsPostHandlerFixApplied = true;
 
-  // Store the original buildFormTree function
-  var originalBuildFormTree = window.buildFormTree;
-
-  // Create a defensive wrapper around buildFormTree
-  window.buildFormTree = function (form) {
+  // Apply Behaviour rules immediately
+  if (typeof Behaviour !== "undefined" && Behaviour.apply) {
     try {
-      return originalBuildFormTree(form);
+      Behaviour.apply();
     } catch (e) {
-      // If buildFormTree fails, log it but don't prevent form submission
-      console.warn("buildFormTree error (non-fatal):", e);
-
-      // Try to at least set the json field to empty object instead of "init"
-      var jsonField = null;
-      for (var i = 0; i < form.elements.length; i++) {
-        if (form.elements[i].name === "json") {
-          jsonField = form.elements[i];
-          break;
-        }
-      }
-
-      if (jsonField && jsonField.value === "init") {
-        // Set to empty object so server doesn't get "init"
-        jsonField.value = "{}";
-      }
-
-      // Return true to allow form submission to continue
-      return true;
+      // Silently ignore - will retry on DOMContentLoaded
     }
-  };
+  }
 
-  // Apply Behaviour rules early
-  function applyBehavioursEarly() {
+  // Also apply on DOMContentLoaded as backup
+  document.addEventListener("DOMContentLoaded", function () {
     if (typeof Behaviour !== "undefined" && Behaviour.apply) {
       try {
         Behaviour.apply();
       } catch (e) {
-        console.log("Behaviour.apply() error:", e);
+        // Silently ignore
       }
     }
-  }
+  });
 
-  // Apply immediately
-  applyBehavioursEarly();
-
-  // Also apply on DOMContentLoaded
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyBehavioursEarly);
-  }
-
-  // Watch for dynamically added content
+  // Watch for dynamically added forms
   if (typeof MutationObserver !== "undefined") {
     var observer = new MutationObserver(function (mutations) {
-      var needsReapply = false;
+      var hasNewForms = false;
 
       mutations.forEach(function (mutation) {
         mutation.addedNodes.forEach(function (node) {
@@ -2783,27 +2754,25 @@ var layoutUpdateCallback = {
               node.tagName === "FORM" ||
               (node.querySelector && node.querySelector("FORM"))
             ) {
-              needsReapply = true;
+              hasNewForms = true;
             }
           }
         });
       });
 
-      if (needsReapply) {
-        applyBehavioursEarly();
+      if (hasNewForms && typeof Behaviour !== "undefined" && Behaviour.apply) {
+        try {
+          Behaviour.apply();
+        } catch (e) {
+          // Silently ignore
+        }
       }
     });
 
-    function startObserving() {
+    document.addEventListener("DOMContentLoaded", function () {
       if (document.body) {
         observer.observe(document.body, { childList: true, subtree: true });
       }
-    }
-
-    if (document.readyState !== "loading") {
-      startObserving();
-    } else {
-      document.addEventListener("DOMContentLoaded", startObserving);
-    }
+    });
   }
 })();
