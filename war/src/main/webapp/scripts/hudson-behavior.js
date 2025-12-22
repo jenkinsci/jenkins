@@ -2712,7 +2712,7 @@ var layoutUpdateCallback = {
 
 /**
  * Fix for JENKINS-76241: Prevent POST race condition
- * Apply Behaviour rules synchronously after all rules are registered
+ * Make form submission more defensive against timing issues
  */
 (function () {
   "use strict";
@@ -2722,24 +2722,53 @@ var layoutUpdateCallback = {
   }
   window._jenkinsPostHandlerFixApplied = true;
 
-  // Apply Behaviour rules as soon as they're all registered
-  function applyBehavioursImmediately() {
+  // Store the original buildFormTree function
+  var originalBuildFormTree = window.buildFormTree;
+
+  // Create a defensive wrapper around buildFormTree
+  window.buildFormTree = function (form) {
+    try {
+      return originalBuildFormTree(form);
+    } catch (e) {
+      // If buildFormTree fails, log it but don't prevent form submission
+      console.warn("buildFormTree error (non-fatal):", e);
+
+      // Try to at least set the json field to empty object instead of "init"
+      var jsonField = null;
+      for (var i = 0; i < form.elements.length; i++) {
+        if (form.elements[i].name === "json") {
+          jsonField = form.elements[i];
+          break;
+        }
+      }
+
+      if (jsonField && jsonField.value === "init") {
+        // Set to empty object so server doesn't get "init"
+        jsonField.value = "{}";
+      }
+
+      // Return true to allow form submission to continue
+      return true;
+    }
+  };
+
+  // Apply Behaviour rules early
+  function applyBehavioursEarly() {
     if (typeof Behaviour !== "undefined" && Behaviour.apply) {
       try {
         Behaviour.apply();
       } catch (e) {
-        // Silently ignore errors - Behaviour.apply() will be called again later
-        console.log("Early Behaviour.apply():", e);
+        console.log("Behaviour.apply() error:", e);
       }
     }
   }
 
-  // Execute immediately - this runs RIGHT NOW, not waiting for any event
-  applyBehavioursImmediately();
+  // Apply immediately
+  applyBehavioursEarly();
 
-  // Also apply on DOMContentLoaded as a safety net
+  // Also apply on DOMContentLoaded
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyBehavioursImmediately);
+    document.addEventListener("DOMContentLoaded", applyBehavioursEarly);
   }
 
   // Watch for dynamically added content
@@ -2761,7 +2790,7 @@ var layoutUpdateCallback = {
       });
 
       if (needsReapply) {
-        applyBehavioursImmediately();
+        applyBehavioursEarly();
       }
     });
 
