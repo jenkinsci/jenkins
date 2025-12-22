@@ -145,7 +145,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
         // use restart! to run hudson/jenkins.exe restart in a separate process, so it doesn't kill itself
         // Pass /elevated to skip WinSW's elevation check when the service ACL grants sufficient permissions
         // This allows Jenkins running as a limited user to restart when proper service permissions are configured
-        // See: https://github.com/winsw/winsw/blob/master/docs/extensions.md
+        // See: https://github.com/winsw/winsw/blob/ee29eee8cf98864b786c9b5e6bd6f6ce351b85a3/src/Core/ServiceWrapper/Main.cs#L911-L916
         int r = new LocalLauncher(task).launch().cmds(executable, "/elevated", "restart!")
                 .stdout(task).pwd(home).join();
         if (r != 0)
