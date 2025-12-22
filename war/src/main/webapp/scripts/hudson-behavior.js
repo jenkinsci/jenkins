@@ -2712,7 +2712,7 @@ var layoutUpdateCallback = {
 
 /**
  * Fix for JENKINS-76241: Prevent POST race condition
- * Apply Behaviour rules synchronously after registration
+ * Apply Behaviour rules early - MINIMAL, SAFE VERSION
  */
 (function () {
   "use strict";
@@ -2722,50 +2722,40 @@ var layoutUpdateCallback = {
   }
   window._jenkinsPostHandlerFixApplied = true;
 
-  // Apply Behaviour rules immediately
-  if (typeof Behaviour !== "undefined" && Behaviour.apply) {
-    try {
-      Behaviour.apply();
-    } catch (e) {
-      // Silently ignore - will retry on DOMContentLoaded
-    }
-  }
-
-  // Also apply on DOMContentLoaded as backup
-  document.addEventListener("DOMContentLoaded", function () {
+  // Just apply Behaviour earlier - THAT'S IT
+  function applyEarly() {
     if (typeof Behaviour !== "undefined" && Behaviour.apply) {
       try {
         Behaviour.apply();
       } catch (e) {
-        // Silently ignore
+        // Ignore - will retry on DOMContentLoaded
       }
     }
-  });
+  }
 
-  // Watch for dynamically added forms
+  // Apply immediately
+  applyEarly();
+
+  // Apply on DOMContentLoaded as backup
+  document.addEventListener("DOMContentLoaded", applyEarly);
+
+  // Watch for new content
   if (typeof MutationObserver !== "undefined") {
     var observer = new MutationObserver(function (mutations) {
-      var hasNewForms = false;
-
+      var needsReapply = false;
       mutations.forEach(function (mutation) {
         mutation.addedNodes.forEach(function (node) {
-          if (node.nodeType === 1) {
-            if (
-              node.tagName === "FORM" ||
-              (node.querySelector && node.querySelector("FORM"))
-            ) {
-              hasNewForms = true;
-            }
+          if (
+            node.nodeType === 1 &&
+            (node.tagName === "FORM" ||
+              (node.querySelector && node.querySelector("FORM")))
+          ) {
+            needsReapply = true;
           }
         });
       });
-
-      if (hasNewForms && typeof Behaviour !== "undefined" && Behaviour.apply) {
-        try {
-          Behaviour.apply();
-        } catch (e) {
-          // Silently ignore
-        }
+      if (needsReapply) {
+        applyEarly();
       }
     });
 
