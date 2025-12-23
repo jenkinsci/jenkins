@@ -36,7 +36,7 @@ public class SetBuildDisplayNameCommand extends CLICommand implements Serializab
         run.checkPermission(Run.UPDATE);
 
         if ("-".equals(displayName)) {
-            displayName = IOUtils.toString(stdin);
+            displayName = IOUtils.toString(stdin, getClientCharset());
         }
 
         run.setDisplayName(displayName);
