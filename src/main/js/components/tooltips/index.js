@@ -36,6 +36,16 @@ function registerTooltip(element) {
     element._tippy.destroy();
   }
 
+  let reference = element;
+  if (element.classList.contains("jenkins-badge")) {
+    const clickableAncestor = element.closest(
+      ".task-link, .jenkins-section__item > a, .jenkins-section__item, a, button",
+    );
+    if (clickableAncestor) {
+      reference = clickableAncestor;
+    }
+  }
+
   const tooltip = element.getAttribute("tooltip");
   const htmlTooltip = element.getAttribute("data-html-tooltip");
   const defaultDelay = 250;
@@ -50,7 +60,7 @@ function registerTooltip(element) {
     (htmlTooltip === null || htmlTooltip.trim().length == 0)
   ) {
     tippy(
-      element,
+      reference,
       Object.assign(
         {
           content: () => tooltip.replace(/<br[ /]?\/?>|\\n/g, "\n"),
@@ -73,7 +83,7 @@ function registerTooltip(element) {
 
   if (htmlTooltip !== null && htmlTooltip.trim().length > 0) {
     tippy(
-      element,
+      reference,
       Object.assign(
         {
           content: () => htmlTooltip,
