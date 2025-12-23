@@ -143,7 +143,10 @@ public class WindowsServiceLifecycle extends Lifecycle {
         if (!executable.exists())   executable = new File(home, "jenkins.exe");
 
         // use restart! to run hudson/jenkins.exe restart in a separate process, so it doesn't kill itself
-        int r = new LocalLauncher(task).launch().cmds(executable, "restart!")
+        // Pass /elevated to skip WinSW's elevation check when the service ACL grants sufficient permissions
+        // This allows Jenkins running as a limited user to restart when proper service permissions are configured
+        // See: https://github.com/winsw/winsw/blob/ee29eee8cf98864b786c9b5e6bd6f6ce351b85a3/src/Core/ServiceWrapper/Main.cs#L911-L916
+        int r = new LocalLauncher(task).launch().cmds(executable, "/elevated", "restart!")
                 .stdout(task).pwd(home).join();
         if (r != 0)
             throw new IOException(baos.toString());
