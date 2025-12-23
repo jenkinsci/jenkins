@@ -1,0 +1,73 @@
+// System message styling for different severity levels
+.system-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.375rem;
+  border-left: 4px solid;
+
+  &__icon {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  // Different colors for each severity type
+  &--info {
+    background-color: var(--alert-info-bg-color);
+    border-left-color: var(--info-color);
+    color: var(--alert-info-text-color);
+
+    .system-message__icon {
+      color: var(--info-color);
+    }
+  }
+
+  &--warning {
+    background-color: var(--alert-warning-bg-color);
+    border-left-color: var(--warning-color);
+    color: var(--alert-warning-text-color);
+
+    .system-message__icon {
+      color: var(--warning-color);
+    }
+  }
+
+  &--danger {
+    background-color: color-mix(in sRGB, var(--danger-color) 10%, transparent);
+    border-left-color: var(--danger-color);
+    color: var(--danger-color);
+
+    .system-message__icon {
+      color: var(--danger-color);
+    }
+  }
+
+  &--success {
+    background-color: var(--alert-success-bg-color);
+    border-left-color: var(--success-color);
+    color: var(--alert-success-text-color);
+
+    .system-message__icon {
+      color: var(--success-color);
+    }
+  }
+
+  &--maintenance {
+    background-color: color-mix(in sRGB, var(--orange) 10%, transparent);
+    border-left-color: var(--orange);
+    color: color-mix(in sRGB, var(--orange) 80%, var(--text-color));
+
+    .system-message__icon {
+      color: var(--orange);
+    }
+  }
+}
