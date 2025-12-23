@@ -29,7 +29,9 @@ THE SOFTWARE.
         <form id="${it.id}" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <f:submit name="yes" value="${%More Info}"/>
             <l:isAdmin>
-                <f:submit value="${%Ignore}" name="no"/>
+                <button name="no" class="jenkins-button jenkins-button--tertiary" title="${%Ignore}">
+                    <l:icon src="symbol-close" />
+                </button>
             </l:isAdmin>
         </form>
         <h2 class="h3">${it.displayName}</h2>

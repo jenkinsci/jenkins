@@ -6,12 +6,13 @@ import jenkins.model.Jenkins
 import org.apache.commons.jelly.tags.fmt.FmtTagLibrary
 
 SlowTriggerAdminMonitor tam = my
+def l = namespace(lib.LayoutTagLib)
 
 dl {
     div(class: "jenkins-alert jenkins-alert-warning") {
         form(method: "post", name: "clear", action: rootURL + "/" + tam.url + "/clear") {
-            button(name: "clear", type: "submit", class: "jenkins-button jenkins-submit-button jenkins-button--primary") {
-                raw _("Dismiss")
+            button(name: "clear", type: "submit", class: "jenkins-button jenkins-button--tertiary", title: _("Dismiss")) {
+                l.icon(src: "symbol-close")
             }
         }
 

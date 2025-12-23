@@ -22,11 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
     <div class="jenkins-alert jenkins-alert-info">
         <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <f:submit name="more" value="${%Learn more}"/>
-            <f:submit name="dismiss" primary="false" value="${%Dismiss}"/>
+            <button name="dismiss" class="jenkins-button jenkins-button--tertiary" title="${%Dismiss}">
+                <l:icon src="symbol-close" />
+            </button>
         </form>
         ${%blurb}
     </div>
