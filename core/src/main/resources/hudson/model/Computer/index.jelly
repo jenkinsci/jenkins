@@ -28,6 +28,11 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
+      <div style="float:right">
+        <j:forEach var="a" items="${it.allActions}">
+          <st:include page="floatingBox.jelly" from="${a}" optional="true" />
+        </j:forEach>
+      </div>
       <l:app-bar title="${it.caption}">
         <t:editDescriptionButton permission="${it.CONFIGURE}"/>
         <j:if test="${it.manualLaunchAllowed}">
