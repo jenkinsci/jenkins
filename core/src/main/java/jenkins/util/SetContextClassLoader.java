@@ -41,7 +41,7 @@ import java.io.ObjectInputStream;
  * unclear, {@link #SetContextClassLoader(ClassLoader)} can be used as a fallback with {@link
  * PluginManager.UberClassLoader} as the argument, though this is not as safe since lookups could be
  * ambiguous in case two unrelated plugins both bundle the same library. In functional tests, {@code
- * RealJenkinsRule.Endpoint} can be used to reference a class loader that has access to the plugins
+ * RealJenkinsFixture.Endpoint} can be used to reference a class loader that has access to the plugins
  * defined in the test scenario.
  *
  * <p>See <a

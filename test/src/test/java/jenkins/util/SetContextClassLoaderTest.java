@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.fixtures.RealJenkinsFixture;
 import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 
 class SetContextClassLoaderTest {
@@ -20,7 +20,7 @@ class SetContextClassLoaderTest {
     }
 
     private static void _positive(JenkinsRule r) throws ClassNotFoundException {
-        try (SetContextClassLoader sccl = new SetContextClassLoader(RealJenkinsRule.Endpoint.class)) {
+        try (SetContextClassLoader sccl = new SetContextClassLoader(RealJenkinsFixture.Endpoint.class)) {
             assertEquals("hudson.tasks.Mailer$UserProperty", getUserPropertyClass().getName());
         }
     }
