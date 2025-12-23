@@ -2709,3 +2709,60 @@ var layoutUpdateCallback = {
     }
   },
 };
+
+/**
+ * Fix for JENKINS-76241: Prevent POST race condition
+ * Apply Behaviour rules early - MINIMAL, SAFE VERSION
+ */
+(function () {
+  "use strict";
+
+  if (window._jenkinsPostHandlerFixApplied) {
+    return;
+  }
+  window._jenkinsPostHandlerFixApplied = true;
+
+  // Just apply Behaviour earlier - THAT'S IT
+  function applyEarly() {
+    if (typeof Behaviour !== "undefined" && Behaviour.apply) {
+      try {
+        Behaviour.apply();
+      } catch (e) {
+        // Ignore - will retry on DOMContentLoaded
+      }
+    }
+  }
+
+  // Apply immediately
+  applyEarly();
+
+  // Apply on DOMContentLoaded as backup
+  document.addEventListener("DOMContentLoaded", applyEarly);
+
+  // Watch for new content
+  if (typeof MutationObserver !== "undefined") {
+    var observer = new MutationObserver(function (mutations) {
+      var needsReapply = false;
+      mutations.forEach(function (mutation) {
+        mutation.addedNodes.forEach(function (node) {
+          if (
+            node.nodeType === 1 &&
+            (node.tagName === "FORM" ||
+              (node.querySelector && node.querySelector("FORM")))
+          ) {
+            needsReapply = true;
+          }
+        });
+      });
+      if (needsReapply) {
+        applyEarly();
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      if (document.body) {
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
+    });
+  }
+})();
