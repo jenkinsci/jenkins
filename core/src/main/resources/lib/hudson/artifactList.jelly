@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     Generates a listing of the build artifacts.
     Depending on the size of the artifact, this will either produce a list or a link to the directory view.
@@ -39,12 +39,9 @@ THE SOFTWARE.
     <j:when test="${build == null}">
       <!-- nothing to render -->
     </j:when>
-    <j:when test="${build.hasCustomArtifactManager()}">
+    <j:otherwise>
       <tbody class="artifact-list" data-url="${rootURL}/${build.url}artifactList" data-caption="${caption}"/>
       <st:adjunct includes="lib.hudson.artifactList"/>
-    </j:when>
-    <j:otherwise>
-      <st:include it="${build}" page="artifactList"/>
     </j:otherwise>
   </j:choose>
 </j:jelly>
