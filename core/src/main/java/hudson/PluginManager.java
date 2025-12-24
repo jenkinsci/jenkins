@@ -1941,88 +1941,106 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     private HttpResponse doUploadPluginImpl(StaplerRequest2 req) throws IOException, ServletException {
+    try {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+
+        String fileName = "";
+        PluginCopier copier;
+        File tmpDir = Files.createTempDirectory("uploadDir").toFile();
+        JakartaServletFileUpload<DiskFileItem, DiskFileItemFactory> upload = new JakartaServletDiskFileUpload(DiskFileItemFactory.builder().setFile(tmpDir).get());
+        List<DiskFileItem> items = upload.parseRequest(req);
+        String string = items.get(1).getString();
+        if (string != null && !string.isBlank()) {
+            // this is a URL deployment
+            fileName = string;
+            copier = new UrlPluginCopier(fileName);
+        } else {
+            // this is a file upload
+            FileItem fileItem = items.get(0);
+            fileName = Util.getFileName(fileItem.getName());
+            copier = new FileUploadPluginCopier(fileItem);
+        }
+
+        if ("".equals(fileName)) {
+            return new HttpRedirect("advanced");
+        }
+        if (!fileName.endsWith(".jpi") && !fileName.endsWith(".hpi")) {
+            throw new Failure(hudson.model.Messages.Hudson_NotAPlugin(fileName));
+        }
+
+        File t = File.createTempFile("uploaded", ".jpi", tmpDir);
+        tmpDir.deleteOnExit();
+        t.deleteOnExit();
+        Files.delete(Util.fileToPath(t));
         try {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-
-            String fileName = "";
-            PluginCopier copier;
-            File tmpDir = Files.createTempDirectory("uploadDir").toFile();
-            JakartaServletFileUpload<DiskFileItem, DiskFileItemFactory> upload = new JakartaServletDiskFileUpload(DiskFileItemFactory.builder().setFile(tmpDir).get());
-            List<DiskFileItem> items = upload.parseRequest(req);
-            String string = items.get(1).getString();
-            if (string != null && !string.isBlank()) {
-                // this is a URL deployment
-                fileName = string;
-                copier = new UrlPluginCopier(fileName);
-            } else {
-                // this is a file upload
-                FileItem fileItem = items.get(0);
-                fileName = Util.getFileName(fileItem.getName());
-                copier = new FileUploadPluginCopier(fileItem);
-            }
-
-            if ("".equals(fileName)) {
-                return new HttpRedirect("advanced");
-            }
-            // we allow the upload of the new jpi's and the legacy hpi's
-            if (!fileName.endsWith(".jpi") && !fileName.endsWith(".hpi")) {
-                throw new Failure(hudson.model.Messages.Hudson_NotAPlugin(fileName));
-            }
-
-            // first copy into a temporary file name
-            File t = File.createTempFile("uploaded", ".jpi", tmpDir);
-            tmpDir.deleteOnExit();
-            t.deleteOnExit();
-            // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
-            Files.delete(Util.fileToPath(t));
-            try {
-                copier.copy(t);
-            } catch (Exception e) {
-                // Exception thrown is too generic so at least limit the scope where it can occur
-                throw new ServletException(e);
-            }
-            copier.cleanup();
-
-            final String baseName = identifyPluginShortName(t);
-
-            pluginUploaded = true;
-
-            JSONArray dependencies = new JSONArray();
-            try {
-                Manifest m;
-                try (JarFile jarFile = new JarFile(t)) {
-                    m = jarFile.getManifest();
-                }
-                String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
-
-                if (deps != null && !deps.isBlank()) {
-                    // now we get to parse it!
-                    String[] plugins = deps.split(",");
-                    for (String p : plugins) {
-                        // should have name:version[;resolution:=optional]
-                        String[] attrs = p.split("[:;]");
-                        dependencies.add(new JSONObject()
-                                .element("name", attrs[0])
-                                .element("version", attrs[1])
-                                .element("optional", p.contains("resolution:=optional")));
-                    }
-                }
-            } catch (IOException e) {
-                LOGGER.log(WARNING, "Unable to setup dependency list for plugin upload", e);
-            }
-
-            // Now create a dummy plugin that we can dynamically load (the InstallationJob will force a restart if one is needed):
-            JSONObject cfg = new JSONObject().
-                    element("name", baseName).
-                    element("version", "0"). // unused but mandatory
-                    element("url", t.toURI().toString()).
-                    element("dependencies", dependencies);
-            new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
-            return new HttpRedirect("updates/");
-        } catch (FileUploadException e) {
+            copier.copy(t);
+        } catch (Exception e) {
             throw new ServletException(e);
         }
+        copier.cleanup();
+
+        final String baseName = identifyPluginShortName(t);
+
+        pluginUploaded = true;
+
+        JSONArray dependencies = new JSONArray();
+        String extractedVersion = "0";
+        String shortName = baseName; // Store for logging
+
+        try {
+            Manifest m;
+            try (JarFile jarFile = new JarFile(t)) {
+                m = jarFile.getManifest();
+            }
+
+            // Extract version - this is critical for display after restart
+            String manifestVersion = m.getMainAttributes().getValue("Plugin-Version");
+            if (manifestVersion != null && !manifestVersion.isBlank()) {
+                extractedVersion = manifestVersion;
+                LOGGER.log(Level.INFO, "Extracted version {0} for plugin {1}",
+                          new Object[]{extractedVersion, shortName});
+            } else {
+                LOGGER.log(Level.WARNING, "No Plugin-Version found in manifest for {0}, using default", shortName);
+            }
+
+            // Extract short name from manifest if available (more reliable)
+            String manifestShortName = m.getMainAttributes().getValue("Short-Name");
+            if (manifestShortName != null && !manifestShortName.isBlank()) {
+                shortName = manifestShortName;
+            }
+
+            String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
+
+            if (deps != null && !deps.isBlank()) {
+                String[] plugins = deps.split(",");
+                for (String p : plugins) {
+                    String[] attrs = p.split("[:;]");
+                    dependencies.add(new JSONObject()
+                            .element("name", attrs[0])
+                            .element("version", attrs[1])
+                            .element("optional", p.contains("resolution:=optional")));
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(WARNING, "Unable to read manifest for plugin upload", e);
+        }
+
+        // Create plugin configuration with extracted metadata
+        JSONObject cfg = new JSONObject()
+                .element("name", shortName)
+                .element("version", extractedVersion)
+                .element("url", t.toURI().toString())
+                .element("dependencies", dependencies);
+
+        LOGGER.log(Level.INFO, "Deploying plugin {0} version {1} from URL",
+                  new Object[]{shortName, extractedVersion});
+
+        new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
+        return new HttpRedirect("updates/");
+    } catch (FileUploadException e) {
+        throw new ServletException(e);
     }
+}
 
     @Restricted(NoExternalUse.class)
     @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest2 request, @QueryParameter String value) throws IOException {
