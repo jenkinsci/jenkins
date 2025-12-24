@@ -157,6 +157,37 @@ class PluginManagerTest {
 
     }
 
+    @Test
+    @Issue("JENKINS-25982")
+    void pluginVersionExtractedFromManifestDuringUrlDeployment() throws Exception {
+        // Create a test plugin with version in manifest
+        File tempPlugin = new File(tmp.toFile(), "test-plugin.jpi");
+
+        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(tempPlugin.toPath()))) {
+            // Create manifest with version
+            ZipEntry manifestEntry = new ZipEntry("META-INF/MANIFEST.MF");
+            zos.putNextEntry(manifestEntry);
+
+            String manifestContent = """
+                    Manifest-Version: 1.0
+                    Plugin-Version: 1.2.3
+                    Short-Name: test-plugin
+                    Jenkins-Version: 2.0
+                    """;
+            byte[] data = manifestContent.getBytes(StandardCharsets.UTF_8);
+            zos.write(data, 0, data.length);
+            zos.closeEntry();
+        }
+
+        // Test version extraction using parsePluginManifest
+        Manifest manifest = PluginManager.parsePluginManifest(tempPlugin.toURI().toURL());
+        assertThat("manifest should have been parsed", manifest, notNullValue());
+
+        String extractedVersion = manifest.getMainAttributes().getValue("Plugin-Version");
+        assertThat("Plugin version should be extracted from manifest",
+                extractedVersion, equalTo("1.2.3"));
+    }
+
     private static void assertAttribute(Manifest manifest, String attributeName, String value) {
         Attributes attributes = manifest.getMainAttributes();
         assertThat("Main attributes must not be empty", attributes, notNullValue());
