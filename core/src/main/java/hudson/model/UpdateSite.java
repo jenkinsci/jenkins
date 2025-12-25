@@ -294,7 +294,29 @@ public class UpdateSite {
      */
     @Restricted(NoExternalUse.class)
     public final FormValidation verifySignatureInternal(JSONObject o) throws IOException {
-        return getJsonSignatureValidator().verifySignature(o);
+        FormValidation result = getJsonSignatureValidator(null).verifySignature(o);
+
+        if (result.kind == FormValidation.Kind.ERROR) {
+            String message = result.getMessage();
+            if (message != null) {
+//                String siteUrl = getUrl();
+                String updatedMessage;
+
+                if (message.contains("update site") && message.contains(" Path") && !message.contains(url)) {
+                    // Ensure the update site URL is included in error messages by replacing the site identifier in messages of the 'update site … Path' pattern or appending it otherwise.
+                    updatedMessage = message.replaceAll(
+                            "(update site\\s+).*?(\\s+Path)",
+                            "$1" + url + "$2"
+                    );
+                } else {
+                    // Do not alter message structure; only add URL context
+                    updatedMessage = message + " (URL: " + url + ")";
+                }
+                return FormValidation.error(updatedMessage);
+            }
+        }
+
+        return result;
     }
 
     /**

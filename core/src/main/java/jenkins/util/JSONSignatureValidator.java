@@ -1,5 +1,6 @@
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.FormValidation;
@@ -138,7 +139,9 @@ public class JSONSignatureValidator {
             if (warning != null)  return warning;
             return FormValidation.ok();
         } catch (GeneralSecurityException e) {
-            return FormValidation.error(e, "Signature verification failed in " + name);
+            // Return a user-friendly error message without the full stack trace
+            String rootCauseMessage = getRootCauseMessage(e);
+            return FormValidation.error("Signature verification failed in " + name + ": " + rootCauseMessage);
         }
     }
 
@@ -319,6 +322,26 @@ public class JSONSignatureValidator {
             }
         }
         return anchors;
+    }
+
+    /**
+     * Extracts a user-friendly message from an exception chain.
+     *
+     * @param e the exception to extract the message from
+     * @return a concise, readable error message
+     */
+    private String getRootCauseMessage(@NonNull Throwable e) {
+        Throwable cause = e;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+
+        String message = cause.getMessage();
+        if (message != null && !message.isEmpty()) {
+            return message;
+        }
+
+        return cause.getClass().getSimpleName();
     }
 
     private static final Logger LOGGER = Logger.getLogger(JSONSignatureValidator.class.getName());
