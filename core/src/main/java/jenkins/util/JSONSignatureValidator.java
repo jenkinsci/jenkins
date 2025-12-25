@@ -1,5 +1,6 @@
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.FormValidation;
@@ -329,7 +330,7 @@ public class JSONSignatureValidator {
      * @param e the exception to extract the message from
      * @return a concise, readable error message
      */
-    private String getRootCauseMessage(Throwable e) {
+    private String getRootCauseMessage(@NonNull Throwable e) {
         Throwable cause = e;
         while (cause.getCause() != null && cause.getCause() != cause) {
             cause = cause.getCause();

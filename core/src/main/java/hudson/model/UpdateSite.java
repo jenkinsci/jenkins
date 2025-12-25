@@ -294,7 +294,7 @@ public class UpdateSite {
      */
     @Restricted(NoExternalUse.class)
     public final FormValidation verifySignatureInternal(JSONObject o) throws IOException {
-        FormValidation result = getJsonSignatureValidator().verifySignature(o);
+        FormValidation result = getJsonSignatureValidator(null).verifySignature(o);
 
         if (result.kind == FormValidation.Kind.ERROR) {
             String message = result.getMessage();
