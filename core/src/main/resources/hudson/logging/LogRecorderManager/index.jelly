@@ -28,11 +28,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set var="header">
-    <j:set var="previousIt" value="${it}" />
-    <j:new var="it" className="jenkins.management.SystemLogLink" />
-
     <l:view>
-      <l:app-bar title="${it.displayName}">
+      <l:app-bar title="${it.managementLink.displayName}">
         <l:isAdmin>
           <a href="new" class="jenkins-button jenkins-button--primary">
             <l:icon src="symbol-add" />
@@ -46,13 +43,12 @@ THE SOFTWARE.
       </l:app-bar>
 
       <div class="jenkins-page-description">
-        <j:out value="${it.description}" />
+        <j:out value="${it.managementLink.description}" />
       </div>
     </l:view>
   </j:set>
 
-  <l:settings-subpage header="${header}" xmlns:local="local">
-    <j:set var="it" value="${previousIt}" />
+  <l:settings-subpage header="${header}" managementLink="${it.managementLink}" xmlns:local="local">
     <d:taglib uri="local">
       <d:tag name="row">
         <tr>
