@@ -5726,7 +5726,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Restricted(NoExternalUse.class)
     public boolean shouldShowStackTrace() {
         // Used by oops.jelly
-        return Boolean.getBoolean(Jenkins.class.getName() + ".SHOW_STACK_TRACE");
+        return SystemProperties.getBoolean(Jenkins.class.getName() + ".SHOW_STACK_TRACE");
     }
 
     /**
