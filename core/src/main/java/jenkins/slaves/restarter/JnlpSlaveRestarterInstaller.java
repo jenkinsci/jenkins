@@ -37,7 +37,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
     /**
      * To force installer to run on all agents, set this system property to true.
      */
-    private static final boolean FORCE_INSTALL = SystemProperties.getBoolean(JnlpSlaveRestarterInstaller.class.getName() + ".forceInstall");
+    private static final boolean FORCE_INSTALL = Boolean.getBoolean(JnlpSlaveRestarterInstaller.class.getName() + ".forceInstall");
 
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
     @Override
