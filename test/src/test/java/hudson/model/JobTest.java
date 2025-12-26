@@ -297,6 +297,20 @@ class JobTest {
         assertEquals(1, r.getArtifactsUpTo(1).size());
     }
 
+    @Test
+    void displayNameAndDescriptionSurviveConfigRoundtrip() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("p");
+
+        project.setDisplayName("My Display Name");
+        project.setDescription("My description text");
+
+        j.configRoundtrip(project);
+
+        assertEquals("My Display Name", project.getDisplayName());
+        assertEquals("My description text", project.getDescription());
+    }
+
+
     @Issue("JENKINS-10182")
     @Test
     void emptyDescriptionReturnsEmptyPage() throws Exception {
