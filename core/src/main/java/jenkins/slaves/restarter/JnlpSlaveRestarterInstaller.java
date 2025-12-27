@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import jenkins.security.MasterToSlaveCallable;
-import jenkins.util.SystemProperties;
 
 /**
  * Actual agent restart logic.
