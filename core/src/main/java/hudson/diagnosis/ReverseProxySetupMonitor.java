@@ -45,17 +45,23 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- * Looks out for a broken reverse proxy setup that doesn't rewrite the location header correctly.
+ * Looks out for a broken reverse proxy setup that doesn't rewrite the location
+ * header correctly.
  *
  * <p>
- * Have the JavaScript make an AJAX call, to which we respond with 302 redirect. If the reverse proxy
- * is done correctly, this will be handled by web methods, but otherwise we'll report that as an error.
- * Unfortunately, {@code XmlHttpRequest} doesn't expose properties that allow the client-side JavaScript
- * to learn the details of the failure, so we have to make do with limited information.
+ * Have the JavaScript make an AJAX call, to which we respond with 302 redirect.
+ * If the reverse proxy
+ * is done correctly, this will be handled by web methods, but otherwise we'll
+ * report that as an error.
+ * Unfortunately, {@code XmlHttpRequest} doesn't expose properties that allow
+ * the client-side JavaScript
+ * to learn the details of the failure, so we have to make do with limited
+ * information.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension @Symbol("reverseProxy")
+@Extension
+@Symbol("reverseProxy")
 public class ReverseProxySetupMonitor extends AdministrativeMonitor {
 
     private static final Logger LOGGER = Logger.getLogger(ReverseProxySetupMonitor.class.getName());
@@ -77,20 +83,25 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
         String referer = request.getReferer();
         Jenkins j = Jenkins.get();
         String redirect;
-        // May need to send an absolute URL, since handling of HttpRedirect with a relative URL does not currently honor X-Forwarded-Proto/Port at all.
+        // May need to send an absolute URL, since handling of HttpRedirect with a
+        // relative URL does not currently honor X-Forwarded-Proto/Port at all.
         if (testWithContext) {
             // Some of the possible values: "/jenkins" or ""
             String contextPath = request.getServletContext().getContextPath();
             if (contextPath.startsWith("/")) {
-                // getRootUrl's contract is to end with /, we need to ensure the contextPath is not starting with one
-                // and as only the empty string does not contain a leading slash, we have to also add one at the end
+                // getRootUrl's contract is to end with /, we need to ensure the contextPath is
+                // not starting with one
+                // and as only the empty string does not contain a leading slash, we have to
+                // also add one at the end
                 contextPath = contextPath.substring(1) + "/";
             }
-            redirect = j.getRootUrl() + contextPath + "administrativeMonitor/" + id + "/testForReverseProxySetup/" + (referer != null ? Util.rawEncode(referer) : "NO-REFERER") + "/";
+            redirect = j.getRootUrl() + contextPath + "administrativeMonitor/" + id + "/testForReverseProxySetup/"
+                    + (referer != null ? Util.rawEncode(referer) : "NO-REFERER") + "/";
         } else {
-            redirect = j.getRootUrl() + "administrativeMonitor/" + id + "/testForReverseProxySetup/" + (referer != null ? Util.rawEncode(referer) : "NO-REFERER") + "/";
+            redirect = j.getRootUrl() + "administrativeMonitor/" + id + "/testForReverseProxySetup/"
+                    + (referer != null ? Util.rawEncode(referer) : "NO-REFERER") + "/";
         }
-        LOGGER.log(Level.FINE, "coming from {0} and redirecting to {1}", new Object[] {referer, redirect});
+        LOGGER.log(Level.FINE, "coming from {0} and redirecting to {1}", new Object[] { referer, redirect });
         return new HttpRedirect(redirect);
     }
 
@@ -98,13 +109,17 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     @RestrictedSince("2.235")
     @StaplerDispatchable
     public void getTestForReverseProxySetup(String rest) {
+        if (rest == null) {
+            throw HttpResponses.errorWithoutStack(404, "rest parameter is null");
+        }
         Jenkins j = Jenkins.get();
         String inferred = j.getRootUrlFromRequest() + "manage";
-        // TODO this could also verify that j.getRootUrl() has been properly configured, and send a different message if not
+        // TODO this could also verify that j.getRootUrl() has been properly configured,
+        // and send a different message if not
         if (rest.startsWith(inferred)) { // not using equals due to JENKINS-24014
             throw HttpResponses.ok();
         } else {
-            LOGGER.log(Level.WARNING, "{0} vs. {1}", new Object[] {inferred, rest});
+            LOGGER.log(Level.WARNING, "{0} vs. {1}", new Object[] { inferred, rest });
             throw HttpResponses.errorWithoutStack(404, inferred + " vs. " + rest);
         }
     }
@@ -115,7 +130,8 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     }
 
     /**
-     * Depending on whether the user said "yes" or "no", send him to the right place.
+     * Depending on whether the user said "yes" or "no", send him to the right
+     * place.
      */
     @Restricted(DoNotUse.class) // WebOnly
     @RestrictedSince("2.235")

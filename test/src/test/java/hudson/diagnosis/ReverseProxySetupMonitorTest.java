@@ -61,7 +61,8 @@ class ReverseProxySetupMonitorTest {
         WebRequest request = new WebRequest(new URL(j.getURL(), getAdminMonitorTestUrl(j)));
         request.setAdditionalHeader("Referer", j.getURL() + "manage");
 
-        // As the context was already set inside the referer, adding another one will fail
+        // As the context was already set inside the referer, adding another one will
+        // fail
         request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
         assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
     }
@@ -96,7 +97,8 @@ class ReverseProxySetupMonitorTest {
         // As the rootURL is missing the context, a regular test will fail
         assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
 
-        // When testing with the context, it will be OK, allowing to display an additional message
+        // When testing with the context, it will be OK, allowing to display an
+        // additional message
         request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
         wc.getPage(request);
     }
@@ -158,7 +160,8 @@ class ReverseProxySetupMonitorTest {
         request.setAdditionalHeader("Referer", getRootUrlWithIp(j) + "manage");
 
         // by default the JenkinsRule set the rootURL to localhost:<port>/jenkins
-        // even with similar request and referer, if the root URL is set, this will show a wrong proxy setting
+        // even with similar request and referer, if the root URL is set, this will show
+        // a wrong proxy setting
         assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
     }
 
@@ -188,7 +191,8 @@ class ReverseProxySetupMonitorTest {
         // As the rootURL is missing the context, a regular test will fail
         assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
 
-        // When testing with the context, it will be OK, allowing to display an additional message
+        // When testing with the context, it will be OK, allowing to display an
+        // additional message
         request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
         wc.getPage(request);
     }
@@ -199,5 +203,14 @@ class ReverseProxySetupMonitorTest {
 
     private URL getRootUrlWithIp(JenkinsRule j) throws Exception {
         return new URL(j.getURL().toString().replace("localhost", "127.0.0.1"));
+    }
+
+    @Test
+    void testNullRest() {
+        ReverseProxySetupMonitor monitor = new ReverseProxySetupMonitor();
+        // Should not throw NullPointerException
+        assertThrows(org.kohsuke.stapler.HttpResponses.HttpResponseException.class, () -> {
+            monitor.getTestForReverseProxySetup(null);
+        });
     }
 }
