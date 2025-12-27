@@ -1,16 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", ":semanticCommitsDisabled"],
+  "extends": ["github>jenkinsci/renovate-config"],
   "prHourlyLimit": 0,
   "prConcurrentLimit": 0,
-  "postUpdateOptions": ["yarnDedupeHighest"],
   "packageRules": [
-    {
-      "matchDatasources": ["npm"],
-      "addLabels": ["javascript"],
-      "minimumReleaseAge": "3 days",
-      "reviewers": ["team:sig-ux"]
-    },
     {
       "description": "Should be upgraded in lockstep in order to keep their corresponding Jetty versions aligned",
       "matchManagers": ["maven"],
@@ -111,15 +104,5 @@
       "datasourceTemplate": "maven"
     }
   ],
-  "labels": ["dependencies", "skip-changelog"],
-  "rebaseWhen": "conflicted",
-  "ignorePaths": [
-    "**/node_modules/**",
-    "**/bower_components/**",
-    "**/vendor/**",
-    "**/examples/**",
-    "**/__tests__/**",
-    "**/tests/**",
-    "**/__fixtures__/**"
-  ]
+  "labels": ["dependencies", "skip-changelog"]
 }
