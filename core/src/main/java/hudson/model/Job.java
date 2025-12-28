@@ -1053,6 +1053,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public List<RunT> getLastBuildsOverThreshold(int numberOfBuilds, Result threshold) {
         RunT r = getLastBuild();
+        if (r == null) {
+            return Collections.emptyList();
+        }
         return r.getBuildsOverThreshold(numberOfBuilds, threshold);
     }
 
