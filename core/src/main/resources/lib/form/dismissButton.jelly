@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc.
+Copyright (c) 2024
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,28 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="jenkins-alert jenkins-alert-warning">
-    <form method="post" action="${rootURL}/${it.url}/disable">
-      <f:dismissButton/>
-    </form>
-    ${%blurb(rootURL)}
-  </div>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation> <![CDATA[
+    Icon-based dismiss button for administrative monitors.
+    Uses symbol-close icon for visual consistency with other Jenkins UI elements.
+    ]]>
+    <st:attribute name="name" use="optional">
+      Name attribute for the submit button (e.g., "no", "dismiss").
+      If not specified, the button will submit without a name attribute.
+    </st:attribute>
+  </st:documentation>
+
+  <j:set var="buttonName" value="${attrs.name}" />
+  <j:choose>
+    <j:when test="${buttonName != null}">
+      <button type="submit" name="${buttonName}" class="jenkins-button jenkins-button--tertiary" tooltip="${%Dismiss}">
+        <l:icon src="symbol-close" />
+      </button>
+    </j:when>
+    <j:otherwise>
+      <button type="submit" class="jenkins-button jenkins-button--tertiary" tooltip="${%Dismiss}">
+        <l:icon src="symbol-close" />
+      </button>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
