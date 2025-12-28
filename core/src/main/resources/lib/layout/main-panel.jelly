@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
   <st:documentation>
     Generates the body as the main content part of a Jenkins page.
   </st:documentation>
@@ -56,6 +56,38 @@ THE SOFTWARE.
           </div>
         </j:otherwise>
       </j:choose>
+    </j:if>
+    <j:if test="${app.systemMessage!=null}">
+        <j:set var="severity" value="${app.systemMessageSeverity}"/>
+        
+        <div class="system-message system-message--${severity.toLowerCase()}" id="systemmessage">
+            <div class="system-message__icon">
+                <j:choose>
+                    <j:when test="${severity == 'INFO'}">
+                        <l:icon src="symbol-information-circle"/>
+                    </j:when>
+                    <j:when test="${severity == 'WARNING'}">
+                        <l:icon src="symbol-warning-outline"/>
+                    </j:when>
+                    <j:when test="${severity == 'DANGER'}">
+                        <l:icon src="symbol-close-circle"/>
+                    </j:when>
+                    <j:when test="${severity == 'SUCCESS'}">
+                        <l:icon src="symbol-check"/>
+                    </j:when>
+                    <j:when test="${severity == 'MAINTENANCE'}">
+                        <l:icon src="symbol-construct-outline"/>
+                    </j:when>
+                    <j:otherwise>
+                        <l:icon src="symbol-information-circle"/>
+                    </j:otherwise>
+                </j:choose>
+            </div>
+
+            <div class="system-message__content">
+                <j:out value="${app.markupFormatter.translate(app.systemMessage)}" />
+            </div>
+        </div>
     </j:if>
     <a id="skip2content" />
     <x:comment>&#10;start of main content ⇒&#10;</x:comment>

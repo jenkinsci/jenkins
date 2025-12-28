@@ -1,29 +1,44 @@
 // System message styling for different severity levels
 .system-message {
-  display: flex;
-  align-items: flex-start;
+  flex-direction: row;
+  display: flex !important;
+  align-items: center;
   gap: 0.75rem;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 0.375rem;
-  border-left: 4px solid;
+  padding: 1.25rem 1.75rem;
+  margin-bottom: 1.25rem;
+  border: 2.5px solid;
+  border-radius: var(--form-input-border-radius);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   &__icon {
     flex-shrink: 0;
     width: 1.25rem;
     height: 1.25rem;
-    margin-top: 0.125rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      display: block;
+    }
   }
 
   &__content {
     flex: 1;
-    min-width: 0;
+    min-width: 0; 
+
+    p {
+      margin: 0;
+    }
   }
 
   // Different colors for each severity type
   &--info {
     background-color: var(--alert-info-bg-color);
-    border-left-color: var(--info-color);
+    border: 2.5px solid #e4effd;
     color: var(--alert-info-text-color);
 
     .system-message__icon {
@@ -33,7 +48,7 @@
 
   &--warning {
     background-color: var(--alert-warning-bg-color);
-    border-left-color: var(--warning-color);
+    border: 2.5px solid #f6d9c3;
     color: var(--alert-warning-text-color);
 
     .system-message__icon {
@@ -43,7 +58,7 @@
 
   &--danger {
     background-color: color-mix(in sRGB, var(--danger-color) 10%, transparent);
-    border-left-color: var(--danger-color);
+    border: 2.5px solid #ffc9c9;
     color: var(--danger-color);
 
     .system-message__icon {
@@ -53,7 +68,7 @@
 
   &--success {
     background-color: var(--alert-success-bg-color);
-    border-left-color: var(--success-color);
+    border: 2.5px solid #c0f6d6;
     color: var(--alert-success-text-color);
 
     .system-message__icon {
@@ -63,7 +78,7 @@
 
   &--maintenance {
     background-color: color-mix(in sRGB, var(--orange) 10%, transparent);
-    border-left-color: var(--orange);
+    border: 2.5px solid rgba(255, 202, 160, 1); //ffdabf
     color: color-mix(in sRGB, var(--orange) 80%, var(--text-color));
 
     .system-message__icon {

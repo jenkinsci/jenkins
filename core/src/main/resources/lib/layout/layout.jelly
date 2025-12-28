@@ -168,7 +168,6 @@ THE SOFTWARE.
                     searchHelpUrl="${%searchBox.url}"
                     logout="${%logout}"/>
     </j:if>
-
     <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">
       <j:if test="${layoutType=='two-column'}">
         <j:set var="mode" value="side-panel" />
