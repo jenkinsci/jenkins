@@ -28,7 +28,7 @@
 
   &__content {
     flex: 1;
-    min-width: 0; 
+    min-width: 0;
 
     p {
       margin: 0;
@@ -78,7 +78,7 @@
 
   &--maintenance {
     background-color: color-mix(in sRGB, var(--orange) 10%, transparent);
-    border: 2.5px solid rgba(255, 202, 160, 1); //ffdabf
+    border: 2.5px solid rgb(255 202 160 / 1); // ffdabf
     color: color-mix(in sRGB, var(--orange) 80%, var(--text-color));
 
     .system-message__icon {

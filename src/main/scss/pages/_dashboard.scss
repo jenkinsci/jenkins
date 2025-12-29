@@ -98,16 +98,14 @@ $min-button-size: 2.375rem;
       grid-template-columns: auto 1fr;
       gap: 1rem;
       text-decoration: none !important;
-      overflow-x: hidden;
-      overflow-y: visible;
+      overflow: hidden visible;
     }
 
     &__details__text {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      overflow-x: hidden;
-      overflow-y: visible;
+      overflow: hidden visible;
     }
 
     &__actions {
@@ -214,7 +212,7 @@ div.listview-jobs {
 }
 
 #main-panel {
-  padding-top: .75rem;
+  padding-top: 0.75rem;
 }
 
 .app-build-bar {
@@ -226,7 +224,7 @@ div.listview-jobs {
 }
 
 .app-build-content > *:first-child {
-    margin-top: 1rem;
+  margin-top: 1rem;
 }
 
 /* System and shutdown messages styling */
@@ -239,13 +237,12 @@ div.listview-jobs {
   margin: 1.25rem var(--section-padding);
   padding: 1.25rem 1.75rem;
   border-radius: var(--form-input-border-radius);
-  background: var(--alert-danger-bg, #ff0000);
+  background: var(--alert-danger-bg, #f00);
   border: 1px solid var(--alert-danger-border, #f1f1f1);
   color: var(--alert-danger-text, #721c24);
 }
 
-:where(#main-panel) :where(.alert, .jenkins-alert, [class*="message"])
-{
+:where(#main-panel) :where(.alert, .jenkins-alert, [class*="message"]) {
   position: relative;
   z-index: 150;
   display: block;
