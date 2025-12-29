@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
@@ -48,6 +49,8 @@ import java.io.IOException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.Page;
 import org.htmlunit.WebResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -227,5 +230,52 @@ class SlaveComputerTest {
         } else {
             return pathObj.toString();
         }
+    }
+
+    @Test
+    void testAgentSecretWithAgentConnectPermission() throws Exception {
+        DumbSlave testAgent = j.createOnlineSlave();
+
+        // Setup user with Agent/Connect permission
+        String userWithConnect = "user-with-connect";
+        MockAuthorizationStrategy authStrategy = new MockAuthorizationStrategy();
+        authStrategy.grant(Computer.CONNECT, Jenkins.READ).everywhere().to(userWithConnect);
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(authStrategy);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login(userWithConnect);
+
+        Page page = wc.goTo("computer/" + testAgent.getNodeName() + "/agent-secret", "text/plain");
+        WebResponse response = page.getWebResponse();
+
+        // Verify response
+        assertEquals(200, response.getStatusCode());
+
+        String secret = response.getContentAsString().trim();
+        assertNotNull(secret);
+        assertEquals(testAgent.getComputer().getJnlpMac(), secret);
+    }
+
+    @Test
+    void testAgentSecretWithoutAgentConnectPermission() throws Exception {
+        DumbSlave testAgent = j.createOnlineSlave();
+
+        // Setup user without Agent/Connect permission
+        String userWithoutConnect = "user-without-connect";
+        MockAuthorizationStrategy authStrategy = new MockAuthorizationStrategy();
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(authStrategy);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        // Expect 403 Forbidden
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> {
+            wc.goTo("computer/" + testAgent.getNodeName() + "/agent-secret", "text/plain");
+        });
+
+        // Verify it's a 403 Forbidden
+        assertEquals(403, e.getStatusCode());
     }
 }
