@@ -271,6 +271,8 @@ class SlaveComputerTest {
         j.jenkins.setAuthorizationStrategy(authStrategy);
 
         JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login(userWithoutConnect);
+
         // Expect 403 Forbidden
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> {
             wc.goTo("computer/" + testAgent.getNodeName() + "/agent-secret", "text/plain");
