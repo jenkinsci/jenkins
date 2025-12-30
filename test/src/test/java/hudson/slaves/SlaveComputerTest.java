@@ -265,6 +265,7 @@ class SlaveComputerTest {
         // Setup user without Agent/Connect permission
         String userWithoutConnect = "user-without-connect";
         MockAuthorizationStrategy authStrategy = new MockAuthorizationStrategy();
+        authStrategy.grant(Jenkins.READ).everywhere().to(userWithoutConnect);
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(authStrategy);
