@@ -2,6 +2,8 @@ $jenkins-dialog-padding: 1.25rem;
 
 .jenkins-dialog {
   --background: var(--dialog-background);
+  --section-padding: #{$jenkins-dialog-padding};
+  --bottom-app-bar-padding: #{$jenkins-dialog-padding};
 
   border-radius: 1rem;
   border: none;
@@ -13,7 +15,8 @@ $jenkins-dialog-padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: $jenkins-dialog-padding;
-  outline: none;
+  // Thin highlight for dark themes to differentiate the dialog from its backdrop
+  outline: 1px solid rgb(255 255 255 / 0.05);
 
   &::backdrop {
     background: color-mix(
@@ -32,7 +35,7 @@ $jenkins-dialog-padding: 1.25rem;
     color: var(--text-color);
     overflow-wrap: anywhere;
     text-box: cap alphabetic;
-    margin-top: 0.5625rem;
+    margin-top: 0.625rem;
   }
 
   &__contents {
