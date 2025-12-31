@@ -157,15 +157,15 @@ public class AvatarContributor implements Contributor {
     /**
      * Normalizes a URL for use in Content-Security-Policy.
      * <p>
-     * This method performs several important steps:
+     * This method performs several steps:
+     * </p>
      * <ul>
-     * <li>Only http or https schemes are accepted.</li>
+     * <li>Only http or https are accepted.</li>
      * <li>Removes embedded credentials for security.</li>
      * <li>Converts IDN to ASCII.</li>
      * <li>Normalizes IPv6 addresses.</li>
      * <li>Removes default ports.</li>
      * </ul>
-     * </p>
      *
      * @param url The raw input URL.
      * @return A canonical, safe string representation of the URL, or null if the URL is invalid or unsafe.
