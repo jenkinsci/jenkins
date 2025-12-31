@@ -2,8 +2,10 @@ package jenkins.security.csp;
 
 import static jenkins.security.csp.AvatarContributor.extractDomainFromUrl;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
@@ -85,4 +87,74 @@ public class AvatarContributorTest {
     void testExtractDomainFromUrl_CaseInsensitivity() {
         assertThat(extractDomainFromUrl("hTTps://EXAMPLE.com/path/to/avatar.png"), is("https://example.com"));
     }
+
+    @Test
+    void testNormalizeUrl_BasicHttps() {
+        assertThat(
+            AvatarContributor.normalizeUrl("https://example.com/avatars/u1.png"), is("https://example.com/avatars/u1.png")
+        );
+    }
+
+    @Test
+    void testNormalizeUrl_PreservesEncodedPathAndQuery() {
+        assertThat(
+            AvatarContributor.normalizeUrl("https://example.com/a%20b.png?size=64"), is("https://example.com/a%20b.png?size=64")
+        );
+    }
+
+    @Test
+    void testNormalizeUrl_StripsFragment() {
+        assertThat(
+            AvatarContributor.normalizeUrl("https://example.com/a.png#fragment"), is("https://example.com/a.png")
+        );
+    }
+
+    @Test
+    void testNormalizeUrl_RejectsUserInfo() {
+        assertThat(
+            AvatarContributor.normalizeUrl("https://user:pass@example.com/a.png"), is(nullValue())
+        );
+    }
+
+    @Test
+    void testNormalizeUrl_RejectsUnsupportedScheme() {
+        assertThat(
+            AvatarContributor.normalizeUrl("ftp://example.com/a.png"), is(nullValue())
+        );
+    }
+
+    @Test
+    void testNormalizeUrl_OmitsDefaultHttpsPort() {
+        assertThat(
+            AvatarContributor.normalizeUrl("https://example.com:443/a.png"), is("https://example.com/a.png")
+        );
+    }
+
+    @Test
+    void testNormalizeUrl_OmitsDefaultHttpPort() {
+        assertThat(
+            AvatarContributor.normalizeUrl("http://example.com:80/a.png"), is("http://example.com/a.png")
+        );
+    }
+
+    @Test
+    void testNormalizeUrl_KeepsNonDefaultPort() {
+        assertThat(
+            AvatarContributor.normalizeUrl("https://example.com:8443/a.png"), is("https://example.com:8443/a.png")
+        );
+    }
+
+    @Test
+    void testNormalizeUrl_Ipv6HostIsBracketed() {
+        String normalized = AvatarContributor.normalizeUrl("https://[2001:db8::1]/a.png");
+        assertThat(normalized, startsWith("https://[2001:db8::1]"));
+        assertThat(normalized, containsString("/a.png"));
+    }
+
+    @Test
+    void testNormalizeUrl_IdnIsConvertedToAscii() {
+        String normalized = AvatarContributor.normalizeUrl("https://例え.テスト/a.png");
+        assertThat(normalized, startsWith("https://xn--r8jz45g.xn--zckzah"));
+    }
+
 }
