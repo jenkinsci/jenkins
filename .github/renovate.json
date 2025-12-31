@@ -77,13 +77,6 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["/.gitpod/Dockerfile/"],
-      "matchStrings": ["ARG MAVEN_VERSION=(?<currentValue>.*?)\n"],
-      "depNameTemplate": "org.apache.maven:maven-core",
-      "datasourceTemplate": "maven"
-    },
-    {
-      "customType": "regex",
       "managerFilePatterns": ["/core/src/site/site.xml/"],
       "matchStrings": ["lit@(?<currentValue>.*?)/"],
       "depNameTemplate": "lit",
