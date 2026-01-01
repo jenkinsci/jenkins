@@ -76,7 +76,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     }
 
     /**
-     * @deprecated as of 2.540
+     * @deprecated as of TODO
      *             The caller should use
      *             {@link #StreamTaskListener(OutputStream, Charset)} to pass in
      *             the charset and output stream separately, so that this class can
