@@ -115,10 +115,15 @@
   }
 }
 
+.jenkins-quieting-down .jenkins-app-bar--sticky {
+  position: static !important;
+}
+
 .jenkins-build-caption {
   display: flex;
   flex-direction: row !important;
-  align-items: center;
+  align-items: center !important;
+
   justify-content: start !important;
   gap: 0.875rem;
   max-width: 1200px;

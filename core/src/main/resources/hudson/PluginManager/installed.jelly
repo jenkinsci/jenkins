@@ -37,7 +37,7 @@ THE SOFTWARE.
       <j:set var="noPlugins"
              value="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}" />
 
-      <div class="jenkins-app-bar ${app.isQuietingDown() ? '' : 'jenkins-app-bar--sticky'}">
+      <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"
                         placeholder="${%Search installed plugins}"

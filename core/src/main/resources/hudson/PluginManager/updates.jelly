@@ -35,7 +35,7 @@ THE SOFTWARE.
     </l:header>
 
     <l:main-panel>
-      <div class="jenkins-app-bar ${app.isQuietingDown() ? '' : 'jenkins-app-bar--sticky'}" style="${app.isQuietingDown() ? 'position: static !important;' : ''}">
+      <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"
                         placeholder="${%Search plugin updates}"
