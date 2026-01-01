@@ -64,9 +64,11 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
 
     /**
      * @deprecated as of 1.349
-     *      The caller should use {@link #StreamTaskListener(OutputStream, Charset)} to pass in
-     *      the charset and output stream separately, so that this class can handle encoding correctly,
-     *      or use {@link #fromStdout()} or {@link #fromStderr()}.
+     *             The caller should use
+     *             {@link #StreamTaskListener(OutputStream, Charset)} to pass in
+     *             the charset and output stream separately, so that this class can
+     *             handle encoding correctly,
+     *             or use {@link #fromStdout()} or {@link #fromStderr()}.
      */
     @Deprecated
     public StreamTaskListener(@NonNull PrintStream out) {
@@ -74,10 +76,12 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     }
 
     /**
-     * @deprecated as of TODO
-     *      The caller should use {@link #StreamTaskListener(OutputStream, Charset)} to pass in
-     *      the charset and output stream separately, so that this class can handle encoding correctly,
-     *      or use {@link #fromStdout()} or {@link #fromStderr()}.
+     * @deprecated as of 2.540
+     *             The caller should use
+     *             {@link #StreamTaskListener(OutputStream, Charset)} to pass in
+     *             the charset and output stream separately, so that this class can
+     *             handle encoding correctly,
+     *             or use {@link #fromStdout()} or {@link #fromStderr()}.
      */
     @Deprecated
     public StreamTaskListener(@NonNull OutputStream out) {
@@ -86,7 +90,8 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
 
     public StreamTaskListener(@NonNull OutputStream out, @CheckForNull Charset charset) {
         if (charset == null) {
-            this.out = out instanceof PrintStream ? (PrintStream) out : new PrintStream(out, false, Charset.defaultCharset());
+            this.out = out instanceof PrintStream ? (PrintStream) out
+                    : new PrintStream(out, false, Charset.defaultCharset());
         } else {
             this.out = new PrintStream(out, false, charset);
         }
@@ -94,9 +99,11 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     }
 
     /**
-     * @deprecated as of TODO
-     *      The caller should use {@link #StreamTaskListener(File, Charset)} to pass in
-     *      the charset and file separately, so that this class can handle encoding correctly.
+     * @deprecated as of 2.540
+     *             The caller should use {@link #StreamTaskListener(File, Charset)}
+     *             to pass in
+     *             the charset and file separately, so that this class can handle
+     *             encoding correctly.
      */
     @Deprecated
     public StreamTaskListener(@NonNull File out) throws IOException {
@@ -119,10 +126,12 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     }
 
     /**
-     * Constructs a {@link StreamTaskListener} that sends the output to a specified file.
+     * Constructs a {@link StreamTaskListener} that sends the output to a specified
+     * file.
      *
      * @param out     the file.
-     * @param append  if {@code true}, then output will be written to the end of the file rather than the beginning.
+     * @param append  if {@code true}, then output will be written to the end of the
+     *                file rather than the beginning.
      * @param charset if non-{@code null} then the charset to use when writing.
      * @throws IOException if the file could not be opened.
      * @since 1.651
@@ -133,10 +142,8 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
         // served to the browser immediately
         this(Files.newOutputStream(
                 asPath(out),
-                StandardOpenOption.CREATE, append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING
-                ),
-                charset
-        );
+                StandardOpenOption.CREATE, append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING),
+                charset);
     }
 
     public StreamTaskListener(@NonNull Writer w) throws IOException {
@@ -145,7 +152,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
 
     /**
      * @deprecated as of 1.349
-     *      Use {@link #NULL}
+     *             Use {@link #NULL}
      */
     @Deprecated
     public StreamTaskListener() throws IOException {
@@ -185,8 +192,10 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     }
     /**
      * Restores eager remote flushing behavior.
-     * By default, remote tasks are expected to call {@link PrintStream#flush} before exiting.
-     * This flag will ensure that no output is lost from tasks which neglect to do so,
+     * By default, remote tasks are expected to call {@link PrintStream#flush}
+     * before exiting.
+     * This flag will ensure that no output is lost from tasks which neglect to do
+     * so,
      * at the expense of heavier Remoting traffic and reduced performance.
      */
 

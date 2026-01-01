@@ -51,15 +51,19 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
- * Base class that provides the framework for doing on-the-fly form field validation.
+ * Base class that provides the framework for doing on-the-fly form field
+ * validation.
  *
  * <p>
- * The {@link #check()} method is to be implemented by derived classes to perform
- * the validation. See hudson-behavior.js 'validated' CSS class and 'checkUrl' attribute.
+ * The {@link #check()} method is to be implemented by derived classes to
+ * perform
+ * the validation. See hudson-behavior.js 'validated' CSS class and 'checkUrl'
+ * attribute.
  *
  * @author Kohsuke Kawaguchi
  * @deprecated as of 1.294
- *      Use {@link FormValidation} as a return value in your check method.
+ *             Use {@link FormValidation} as a return value in your check
+ *             method.
  */
 @Deprecated
 public abstract class FormFieldValidator {
@@ -80,9 +84,11 @@ public abstract class FormFieldValidator {
 
     /**
      * @param adminOnly
-     *      Pass true to only let admin users to run the check. This is necessary
-     *      for security reason, so that unauthenticated user cannot obtain sensitive
-     *      information or run a process that may have side-effect.
+     *                  Pass true to only let admin users to run the check. This is
+     *                  necessary
+     *                  for security reason, so that unauthenticated user cannot
+     *                  obtain sensitive
+     *                  information or run a process that may have side-effect.
      */
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, boolean adminOnly) {
         this(request, response, adminOnly ? Jenkins.get() : null, adminOnly ? CHECK : null);
@@ -90,8 +96,9 @@ public abstract class FormFieldValidator {
 
     /**
      * @deprecated
-     *      Use {@link #FormFieldValidator(Permission)} and remove {@link StaplerRequest} and {@link StaplerResponse}
-     *      from your "doCheck..." method parameter
+     *             Use {@link #FormFieldValidator(Permission)} and remove
+     *             {@link StaplerRequest} and {@link StaplerResponse}
+     *             from your "doCheck..." method parameter
      */
     @Deprecated
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, Permission permission) {
@@ -100,7 +107,8 @@ public abstract class FormFieldValidator {
 
     /**
      * @param permission
-     *      Permission needed to perform this validation, or null if no permission is necessary.
+     *                   Permission needed to perform this validation, or null if no
+     *                   permission is necessary.
      */
     protected FormFieldValidator(Permission permission) {
         this(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), permission);
@@ -108,11 +116,13 @@ public abstract class FormFieldValidator {
 
     /**
      * @deprecated
-     *      Use {@link #FormFieldValidator(AccessControlled,Permission)} and remove {@link StaplerRequest} and {@link StaplerResponse}
-     *      from your "doCheck..." method parameter
+     *             Use {@link #FormFieldValidator(AccessControlled,Permission)} and
+     *             remove {@link StaplerRequest} and {@link StaplerResponse}
+     *             from your "doCheck..." method parameter
      */
     @Deprecated
-    protected FormFieldValidator(StaplerRequest request, StaplerResponse response, AccessControlled subject, Permission permission) {
+    protected FormFieldValidator(StaplerRequest request, StaplerResponse response, AccessControlled subject,
+            Permission permission) {
         this.request = request;
         this.response = response;
         this.subject = subject;
@@ -134,7 +144,8 @@ public abstract class FormFieldValidator {
                 subject.checkPermission(permission);
             } catch (AccessDeniedException e) {
                 // if the user has hudson-wide admin permission, all checks are allowed
-                // this is to protect Hudson administrator from broken ACL/SecurityRealm implementation/configuration.
+                // this is to protect Hudson administrator from broken ACL/SecurityRealm
+                // implementation/configuration.
                 if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER))
                     throw e;
             }
@@ -171,8 +182,8 @@ public abstract class FormFieldValidator {
      * Sends out a string error message that indicates an error.
      *
      * @param message
-     *      Human readable message to be sent. {@code error(null)}
-     *      can be used as {@code ok()}.
+     *                Human readable message to be sent. {@code error(null)}
+     *                can be used as {@code ok()}.
      */
     public void error(String message) throws IOException, ServletException {
         errorWithMarkup(message == null ? null : Util.escape(message));
@@ -210,8 +221,8 @@ public abstract class FormFieldValidator {
      * attack.
      *
      * @param message
-     *      Human readable message to be sent. {@code error(null)}
-     *      can be used as {@code ok()}.
+     *                Human readable message to be sent. {@code error(null)}
+     *                can be used as {@code ok()}.
      */
     public void errorWithMarkup(String message) throws IOException, ServletException {
         _errorWithMarkup(message, "error");
@@ -242,7 +253,7 @@ public abstract class FormFieldValidator {
      * Convenient base class for checking the validity of URLs
      *
      * @deprecated as of 1.294
-     *      Use {@link FormValidation.URLCheck}
+     *             Use {@link FormValidation.URLCheck}
      */
     @Deprecated
     public abstract static class URLCheck extends FormFieldValidator {
@@ -260,17 +271,15 @@ public abstract class FormFieldValidator {
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
             URLConnection con = ProxyConfiguration.open(url);
-            if (con == null) { // TODO is this even permitted by URL.openConnection?
-                throw new IOException(url.toExternalForm());
-            }
             return new BufferedReader(
-                new InputStreamReader(con.getInputStream(), getCharset(con)));
+                    new InputStreamReader(con.getInputStream(), getCharset(con)));
         }
 
         /**
          * Finds the string literal from the given reader.
+         * 
          * @return
-         *      true if found, false otherwise.
+         *         true if found, false otherwise.
          */
         protected boolean findText(BufferedReader in, String literal) throws IOException {
             String line;
@@ -282,10 +291,11 @@ public abstract class FormFieldValidator {
 
         /**
          * Calls the {@link #error(String)} method with a reasonable error message.
-         * Use this method when the {@link #open(URL)} or {@link #findText(BufferedReader, String)} fails.
+         * Use this method when the {@link #open(URL)} or
+         * {@link #findText(BufferedReader, String)} fails.
          *
          * @param url
-         *      Pass in the URL that was connected. Used for error diagnosis.
+         *            Pass in the URL that was connected. Used for error diagnosis.
          */
         protected void handleIOException(String url, IOException e) throws IOException, ServletException {
             // any invalid URL comes here
@@ -315,6 +325,7 @@ public abstract class FormFieldValidator {
 
     /**
      * Checks if the given value is an URL to some Hudson's top page.
+     * 
      * @since 1.192
      */
     public static class HudsonURL extends URLCheck {
@@ -330,14 +341,15 @@ public abstract class FormFieldValidator {
                 return;
             }
 
-            if (!value.endsWith("/")) value += '/';
+            if (!value.endsWith("/"))
+                value += '/';
 
             try {
                 URL url = new URL(value);
                 HttpURLConnection con = openConnection(url);
                 con.connect();
                 if (con.getResponseCode() != 200
-                || con.getHeaderField("X-Hudson") == null) {
+                        || con.getHeaderField("X-Hudson") == null) {
                     error(value + " is not Hudson (" + con.getResponseMessage() + ")");
                     return;
                 }
@@ -357,8 +369,10 @@ public abstract class FormFieldValidator {
     /**
      * Checks the file mask (specified in the 'value' query parameter) against
      * the current workspace.
+     * 
      * @since 1.90.
-     * @deprecated as of 1.294. Use {@link FilePath#validateFileMask(String, boolean, boolean)}
+     * @deprecated as of 1.294. Use
+     *             {@link FilePath#validateFileMask(String, boolean, boolean)}
      */
     @Deprecated
     public static class WorkspaceFileMask extends FormFieldValidator {
@@ -393,8 +407,10 @@ public abstract class FormFieldValidator {
                 }
 
                 String msg = ws.validateAntFileMask(value, FilePath.VALIDATE_ANT_FILE_MASK_BOUND);
-                if (errorIfNotExist)     error(msg);
-                else                    warning(msg);
+                if (errorIfNotExist)
+                    error(msg);
+                else
+                    warning(msg);
             } catch (InterruptedException e) {
                 ok(Messages.FormFieldValidator_did_not_manage_to_validate_may_be_too_sl(value));
             }
@@ -409,11 +425,14 @@ public abstract class FormFieldValidator {
     }
 
     /**
-     * Checks a valid directory name (specified in the 'value' query parameter) against
+     * Checks a valid directory name (specified in the 'value' query parameter)
+     * against
      * the current workspace.
+     * 
      * @since 1.116
-     * @deprecated as of 1.294. Use {@link FilePath#validateRelativeDirectory(String, boolean)}
-     *      (see javadoc plugin for the example)
+     * @deprecated as of 1.294. Use
+     *             {@link FilePath#validateRelativeDirectory(String, boolean)}
+     *             (see javadoc plugin for the example)
      */
     @Deprecated
     public static class WorkspaceDirectory extends WorkspaceFilePath {
@@ -427,17 +446,21 @@ public abstract class FormFieldValidator {
     }
 
     /**
-     * Checks a valid file name or directory (specified in the 'value' query parameter) against
+     * Checks a valid file name or directory (specified in the 'value' query
+     * parameter) against
      * the current workspace.
+     * 
      * @since 1.160
-     * @deprecated as of 1.294. Use {@link FilePath#validateRelativePath(String, boolean, boolean)}
+     * @deprecated as of 1.294. Use
+     *             {@link FilePath#validateRelativePath(String, boolean, boolean)}
      */
     @Deprecated
     public static class WorkspaceFilePath extends FormFieldValidator {
         private final boolean errorIfNotExist;
         private final boolean expectingFile;
 
-        public WorkspaceFilePath(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist, boolean expectingFile) {
+        public WorkspaceFilePath(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist,
+                boolean expectingFile) {
             // Require CONFIGURE permission on this job
             super(request, response, request.findAncestorObject(AbstractProject.class), Item.CONFIGURE);
             this.errorIfNotExist = errorIfNotExist;
@@ -487,8 +510,10 @@ public abstract class FormFieldValidator {
                     }
                 } else {
                     String msg = "No such " + (expectingFile ? "file" : "directory") + ": " + value;
-                    if (errorIfNotExist)     error(msg);
-                    else                    warning(msg);
+                    if (errorIfNotExist)
+                        error(msg);
+                    else
+                        warning(msg);
                 }
             } catch (InterruptedException e) {
                 ok(); // couldn't check
@@ -515,7 +540,8 @@ public abstract class FormFieldValidator {
      * needed.
      *
      * @since 1.124
-     * @deprecated as of 1.294. Use {@link FormValidation#validateExecutable(String)}
+     * @deprecated as of 1.294. Use
+     *             {@link FormValidation#validateExecutable(String)}
      */
     @Deprecated
     public static class Executable extends FormFieldValidator {
@@ -529,7 +555,7 @@ public abstract class FormFieldValidator {
         protected void check() throws IOException, ServletException {
             String exe = fixEmpty(request.getParameter("value"));
             FormFieldValidator.Executable self = this;
-            Exception[] exceptions = {null};
+            Exception[] exceptions = { null };
             DOSToUnixPathHelper.iteratePath(exe, new DOSToUnixPathHelper.Helper() {
                 @Override
                 public void ok() {
@@ -577,7 +603,8 @@ public abstract class FormFieldValidator {
         }
 
         /**
-         * Provides an opportunity for derived classes to do additional checks on the executable.
+         * Provides an opportunity for derived classes to do additional checks on the
+         * executable.
          */
         protected void checkExecutable(File exe) throws IOException, ServletException {
             ok();
@@ -589,7 +616,9 @@ public abstract class FormFieldValidator {
      *
      * @since 1.257
      * @deprecated as of 1.305
-     *      Use {@link FormValidation#validateBase64(String, boolean, boolean, String)} instead.
+     *             Use
+     *             {@link FormValidation#validateBase64(String, boolean, boolean, String)}
+     *             instead.
      */
     @Deprecated
     public static class Base64 extends FormFieldValidator {
@@ -597,7 +626,8 @@ public abstract class FormFieldValidator {
         private final boolean allowEmpty;
         private final String errorMessage;
 
-        public Base64(StaplerRequest request, StaplerResponse response, boolean allowWhitespace, boolean allowEmpty, String errorMessage) {
+        public Base64(StaplerRequest request, StaplerResponse response, boolean allowWhitespace, boolean allowEmpty,
+                String errorMessage) {
             super(request, response, false);
             this.allowWhitespace = allowWhitespace;
             this.allowEmpty = allowEmpty;
