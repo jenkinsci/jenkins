@@ -82,6 +82,10 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
      *             the charset and output stream separately, so that this class can
      *             handle encoding correctly,
      *             or use {@link #fromStdout()} or {@link #fromStderr()}.
+     * @deprecated as of 2.328
+     *      The caller should use {@link #StreamTaskListener(OutputStream, Charset)} to pass in
+     *      the charset and output stream separately, so that this class can handle encoding correctly,
+     *      or use {@link #fromStdout()} or {@link #fromStderr()}.
      */
     @Deprecated
     public StreamTaskListener(@NonNull OutputStream out) {
@@ -104,6 +108,9 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
      *             to pass in
      *             the charset and file separately, so that this class can handle
      *             encoding correctly.
+     * @deprecated as of 2.329
+     *      The caller should use {@link #StreamTaskListener(File, Charset)} to pass in
+     *      the charset and file separately, so that this class can handle encoding correctly.
      */
     @Deprecated
     public StreamTaskListener(@NonNull File out) throws IOException {
