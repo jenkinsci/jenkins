@@ -23,9 +23,9 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-      <j:set var="lBuild" value="${job.lastSuccessfulBuild ?: job.lastFailedBuild}"/>
-      <td data="${lBuild.duration ?: '0'}">
+<j:jelly xmlns:j="jelly:core">
+    <j:set var="lBuild" value="${job.lastCompletedBuild}"/>
+    <td data="${lBuild.duration ?: '0'}">
           <j:choose>
               <j:when test="${lBuild!=null}">
                   ${lBuild.durationString}
