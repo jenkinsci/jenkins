@@ -32,7 +32,7 @@ THE SOFTWARE.
     <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
     <l:main-panel>
-      <div class="jenkins-app-bar jenkins-app-bar--sticky">
+      <div class="jenkins-app-bar ${app.isQuietingDown() ? '' : 'jenkins-app-bar--sticky'}">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"
                         placeholder="${%Search available plugins}"
