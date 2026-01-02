@@ -844,7 +844,7 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object result = page.executeJavaScript("Array.from(document.querySelectorAll('.label')).filter(el => el.innerText.indexOf('" + customizableTLID.customDisplayName + "') !== -1)[0].parentElement.parentElement").getJavaScriptResult();
+        Object result = page.executeJavaScript("Array.from(document.querySelectorAll('.jenkins-choice-list__item__label')).filter(el => el.innerText.indexOf('" + customizableTLID.customDisplayName + "') !== -1)[0].parentElement.parentElement").getJavaScriptResult();
         assertThat(result, instanceOf(HTMLElement.class));
         HTMLElement resultElement = (HTMLElement) result;
         assertThat(resultElement.getAttribute("onclick"), nullValue());
@@ -861,7 +861,7 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object result = page.executeJavaScript("document.querySelector('.xss-dn .label').innerHTML").getJavaScriptResult();
+        Object result = page.executeJavaScript("document.querySelector('.xss-dn .jenkins-choice-list__item__label').innerHTML").getJavaScriptResult();
         assertThat(result, instanceOf(String.class));
         String resultString = (String) result;
         assertThat(resultString, not(containsString("<")));
@@ -877,7 +877,7 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object result = page.executeJavaScript("document.querySelector('.html-desc .desc strong')").getJavaScriptResult();
+        Object result = page.executeJavaScript("document.querySelector('.html-desc .jenkins-choice-list__item__description strong')").getJavaScriptResult();
         assertThat(result, instanceOf(HTMLElement.class));
         assertThat(((HTMLElement) result).getTagName(), is("STRONG"));
     }
