@@ -1762,19 +1762,16 @@ function rowvgStartEachRow(recursive, f) {
     },
   );
 
-  window.addEventListener("load", function () {
     // Add a class to the bottom bar when it's stuck to the bottom of the screen
     Behaviour.specify(".jenkins-bottom-app-bar__shadow", "jenkins-bottom-app-bar__shadow", 0, function (el) {
       const dialog = el.closest("dialog");
 
       const observer = new IntersectionObserver(
-        function (entries) {
-          const e = entries[0];
-          el.classList.toggle(
+        ([e]) =>
+          e.target.classList.toggle(
             "jenkins-bottom-app-bar__shadow--stuck",
             e.intersectionRatio < 1,
-          );
-        },
+          ),
         {
           threshold: [1],
           root: dialog || null,
@@ -1783,7 +1780,6 @@ function rowvgStartEachRow(recursive, f) {
 
       observer.observe(el);
     });
-  });
 
   /**
    * Function that provides compatibility to the checkboxes without title on an f:entry

@@ -126,7 +126,7 @@
 }
 
 .jenkins-bottom-app-bar__shadow {
-  --semi-translucent: color-mix(in sRGB, var(--background) 100%, transparent);
+  --semi-translucent: color-mix(in sRGB, var(--background) 70%, transparent);
 
   position: sticky;
   height: calc(
@@ -162,11 +162,13 @@
   }
 
   &--stuck {
+    backdrop-filter: blur(20px);
     background: linear-gradient(
       to right,
       var(--background),
-      var(--semi-translucent) 3rem,
-      var(--semi-translucent) calc(100% - 3rem),
+      var(--background) 3rem,
+      var(--semi-translucent),
+      var(--background) calc(100% - 3rem),
       var(--background)
     );
 
