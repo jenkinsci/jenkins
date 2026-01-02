@@ -54,7 +54,6 @@ import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -62,8 +61,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,12 +68,10 @@ import java.util.stream.Collectors;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
-import jenkins.security.UpdateSiteWarningsMonitor;
 import jenkins.util.URLClassLoader2;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -98,9 +93,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * At the runtime, a plugin has two distinct state axis.
  * <ol>
  *  <li>Enabled/Disabled. If enabled, Jenkins is going to use it
- *      next time Jenkins runs. Otherwise the next run will ignore it.
+ *      next time Jenkins runs. Otherwise, the next run will ignore it.
  *  <li>Activated/Deactivated. If activated, that means Jenkins is using
- *      the plugin in this session. Otherwise it's not.
+ *      the plugin in this session. Otherwise, it's not.
  * </ol>
  * <p>
  * For example, an activated but disabled plugin is still running but the next
@@ -162,7 +157,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * True if this plugin is activated for this session.
-     * The snapshot of {@code disableFile.exists()} as of the start up.
+     * The snapshot of {@code disableFile.exists()} as of the start-up.
      */
     private final boolean active;
 
@@ -175,18 +170,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return List.copyOf(dependencyErrors.keySet());
     }
 
-    @Restricted(NoExternalUse.class) // Jelly use
-    public List<String> getOriginalDependencyErrors() {
-        Predicate<Map.Entry<String, Boolean>> p = Map.Entry::getValue;
-        return dependencyErrors.entrySet().stream().filter(p.negate()).map(Map.Entry::getKey).collect(Collectors.toList());
-    }
-
-    @Restricted(NoExternalUse.class) // Jelly use
-    public boolean hasOriginalDependencyErrors() {
-        return !getOriginalDependencyErrors().isEmpty();
-    }
-
-    @Restricted(NoExternalUse.class) // Jelly use
+        @Restricted(NoExternalUse.class) // Jelly use
     public List<String> getDerivedDependencyErrors() {
         return dependencyErrors.entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toList());
     }
@@ -220,7 +204,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * The core can depend on a plugin if it is bundled. Sometimes it's the only thing that
      * depends on the plugin e.g. UI support library bundle plugin.
      */
-    private static Set<String> CORE_ONLY_DEPENDANT = Set.of("jenkins-core");
+    private static final Set<String> CORE_ONLY_DEPENDANT = Set.of("jenkins-core");
 
     private Integer healthScore;
 
@@ -277,17 +261,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return getDependents();
     }
 
-    /**
-     * Like {@link #getDependents} but excluding optional dependencies.
-     * @since 2.181
-     */
-    public @NonNull Set<String> getMandatoryDependents() {
-        Set<String> s = new HashSet<>(dependents);
-        s.removeAll(optionalDependents);
-        return s;
-    }
-
-    /**
+        /**
      * @return The list of components that depend optionally on this plugin.
      */
     public @NonNull Set<String> getOptionalDependents() {
@@ -312,18 +286,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return isBundled || !dependents.isEmpty();
     }
 
-    /**
-     * Like {@link #hasDependents} but excluding optional dependencies.
-     * @since 2.181
-     */
-    public boolean hasMandatoryDependents() {
-        if (isBundled) {
-            return true;
-        }
-        return dependents.stream().anyMatch(d -> !optionalDependents.contains(d));
-    }
-
-    /**
+        /**
      * @deprecated Please use {@link #hasDependents}.
      */
     @Deprecated
@@ -348,24 +311,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return hasOptionalDependents();
     }
 
-    /**
-     * Does this plugin depend on any other plugins.
-     * Note that this include optional dependencies.
-     * @return {@code true} if this plugin depends on other plugins, otherwise {@code false}.
-     */
-    public boolean hasDependencies() {
-        return !dependencies.isEmpty();
-    }
-
-    /**
-     * Like {@link #hasDependencies} but omitting optional dependencies.
-     * @since 2.181
-     */
-    public boolean hasMandatoryDependencies() {
-        return dependencies.stream().anyMatch(d -> !d.optional);
-    }
-
-    /**
+        /**
      * Is this plugin deprecated?
      *
      * @return {@code true} if and only if an update site reports deprecations for this plugin.
@@ -445,13 +391,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return "bottom";
     }
 
-    @Restricted(NoExternalUse.class) // Jelly use only
-    public String getHealthScoreClass() {
-        if (this.healthScore == null) return null;
-        return getHealthScoreClassForScore(this.healthScore);
-    }
-
-    @ExportedBean
+        @ExportedBean
     public static final class Dependency {
         @Exported
         public final String shortName;
@@ -468,7 +408,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             String version = Util.intern(s.substring(idx + 1));
 
             boolean isOptional = false;
-            String[] osgiProperties = version.split("[;]");
+            String[] osgiProperties = version.split(";");
             for (int i = 1; i < osgiProperties.length; i++) {
                 String osgiProperty = osgiProperties[i].trim();
                 if (osgiProperty.equalsIgnoreCase("resolution:=optional")) {
@@ -537,24 +477,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return new Api(this);
     }
 
-    /**
-     * Returns the URL of the index page jelly script.
-     */
-    public URL getIndexPage() {
-        // In the current impl dependencies are checked first, so the plugin itself
-        // will add the last entry in the getResources result.
-        URL idx = null;
-        try {
-            Enumeration<URL> en = classLoader.getResources("index.jelly");
-            while (en.hasMoreElements())
-                idx = en.nextElement();
-        } catch (IOException ignore) { }
-        // In case plugin has dependencies but is missing its own index.jelly,
-        // check that result has this plugin's artifactId in it:
-        return idx != null && idx.toString().contains(shortName) ? idx : null;
-    }
-
-    static String computeShortName(Manifest manifest, String fileName) {
+        static String computeShortName(Manifest manifest, String fileName) {
         // use the name captured in the manifest, as often plugins
         // depend on the specific short name in its URLs.
         String n = manifest.getMainAttributes().getValue("Short-Name");
@@ -579,15 +502,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return dependencies;
     }
 
-    /**
-     * Like {@link #getDependencies} but omits optional dependencies.
-     * @since 2.181
-     */
-    public List<Dependency> getMandatoryDependencies() {
-        return dependencies.stream().filter(d -> !d.optional).collect(Collectors.toList());
-    }
-
-    public List<Dependency> getOptionalDependencies() {
+        public List<Dependency> getOptionalDependencies() {
         return optionalDependencies;
     }
 
@@ -602,7 +517,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Gets the instance of {@link Plugin} contributed by this plugin.
-     * @return Plugin instace or {@code null} if it is not present in the plugin instance store.
+     * @return Plugin instance or {@code null} if it is not present in the plugin instance store.
      */
     public @CheckForNull Plugin getPlugin() {
         PluginInstanceStore pis = Jenkins.lookup(PluginInstanceStore.class);
@@ -710,9 +625,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         if (v != null) return v;
 
         v = manifest.getMainAttributes().getValue("Hudson-Version");
-        if (v != null) return v;
-        return null;
-    }
+                return v;
+        }
 
     /**
      * Returns the version number of this plugin
@@ -786,10 +700,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * Disable a plugin wihout checking any dependency. Only add the disable file.
+     * Disable a plugin without checking any dependency. Only add the disable file.
      */
     private void disableWithoutCheck() throws IOException {
-        try (OutputStream os = Files.newOutputStream(disableFile.toPath())) {
+        try (OutputStream ignored = Files.newOutputStream(disableFile.toPath())) {
             // creates an empty file
         } catch (InvalidPathException e) {
             throw new IOException(e);
@@ -879,17 +793,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     private Set<String> dependentsToCheck(PluginDisableStrategy strategy) {
         Set<String> dependentsToCheck;
-        switch (strategy) {
-            case ALL:
-                // getDependents returns all the dependent plugins, mandatory or optional.
-                dependentsToCheck = this.getDependents();
-                break;
-            default:
-                // It includes MANDATORY, NONE:
-                // with NONE, the process only fail if mandatory dependent plugins exists
-                // As of getDependents has all the dependents, we get the difference between them and only the optionals
-                dependentsToCheck = Sets.difference(this.getDependents(), this.getOptionalDependents());
-        }
+                if (Objects.requireNonNull(strategy) ==
+                        PluginDisableStrategy.ALL) {// getDependents returns all the dependent plugins, mandatory or optional.
+                        dependentsToCheck = this.getDependents();
+                } else {// It includes MANDATORY, NONE:
+                        // with NONE, the process only fail if mandatory dependent plugins exists
+                        // As of getDependents has all the dependents, we get the difference between them and only the optionals
+                        dependentsToCheck = Sets.difference(this.getDependents(), this.getOptionalDependents());
+                }
         return dependentsToCheck;
     }
 
@@ -933,7 +844,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     public void setPlugin(Plugin plugin) {
-        Jenkins.lookup(PluginInstanceStore.class).store.put(this, plugin);
+        Objects.requireNonNull(Jenkins.lookup(PluginInstanceStore.class)).store.put(this, plugin);
         plugin.wrapper = this;
     }
 
@@ -941,21 +852,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return manifest.getMainAttributes().getValue("Plugin-Class");
     }
 
-    public boolean hasLicensesXml() {
-        try {
-            new URL(baseResourceURL, "WEB-INF/licenses.xml").openStream().close();
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
-    /**
+        /**
      * Makes sure that all the dependencies exist, and then accept optional dependencies
      * as real dependencies.
      *
      * @throws IOException
-     *             thrown if one or several mandatory dependencies doesn't exists.
+     *             thrown if one or several mandatory dependencies doesn't exist.
      */
     /*package*/ void resolvePluginDependencies() throws IOException {
         if (ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK) {
@@ -964,7 +866,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 LOGGER.warning(shortName + " doesn't declare required core version.");
             } else {
                 VersionNumber actualVersion = Jenkins.getVersion();
-                if (actualVersion.isOlderThan(new VersionNumber(requiredCoreVersion))) {
+                                assert actualVersion != null;
+                                if (actualVersion.isOlderThan(new VersionNumber(requiredCoreVersion))) {
                     versionDependencyError(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion), Jenkins.getVersion().toString(), requiredCoreVersion);
                 }
             }
@@ -1095,7 +998,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Returns true if this plugin is deleted.
-     *
      * The plugin continues to function in this session, but in the next session it'll disappear.
      */
     @Exported
@@ -1112,43 +1014,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return DetachedPluginsUtil.isDetachedPlugin(shortName);
     }
 
-    @Restricted(NoExternalUse.class)
-    public boolean hasImpliedDependents() {
-        if (!isDetached()) {
-            return false;
-        }
-        for (PluginWrapper p : Jenkins.get().getPluginManager().getPlugins()) {
-            for (Dependency dependency : DetachedPluginsUtil.getImpliedDependencies(p.shortName, p.getRequiredCoreVersion())) {
-                if (dependency.shortName.equals(shortName)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Get list of implied dependencies.
-     * @since 2.296
-     */
-    @Restricted(NoExternalUse.class)
-    public @NonNull Set<String> getImpliedDependents() {
-        if (!isDetached()) {
-            return Collections.emptySet();
-        }
-
-        Set<String> implied = new HashSet<>();
-        for (PluginWrapper p : Jenkins.get().getPluginManager().getPlugins()) {
-            for (Dependency dependency : DetachedPluginsUtil.getImpliedDependencies(p.shortName, p.getRequiredCoreVersion())) {
-                if (dependency.shortName.equals(shortName)) {
-                    implied.add(p.shortName);
-                }
-            }
-        }
-        return implied;
-    }
-
-    /**
+        /**
      * Sort by short name.
      */
     @Override
@@ -1171,28 +1037,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return new File(Jenkins.get().getRootDir(), "plugins/" + getShortName() + ".bak");
     }
 
-    /**
-     * returns the version of the backed up plugin,
-     * or null if there's no back up.
-     */
-    @Exported
-    public String getBackupVersion() {
-        File backup = getBackupFile();
-        if (backup.exists()) {
-            try {
-                try (JarFile backupPlugin = new JarFile(backup)) {
-                    return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
-                }
-            } catch (IOException e) {
-                LOGGER.log(WARNING, "Failed to get backup version from " + backup, e);
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    /**
+        /**
      * Checks if this plugin is pinned and that's forcing us to use an older version than the bundled one.
      * @deprecated removed without replacement
      */
@@ -1219,12 +1064,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             return !plugins.isEmpty();
         }
 
-        @Restricted(DoNotUse.class) // Jelly
-        public boolean hasAnyDerivedDependencyErrors() {
-            return plugins.values().stream().anyMatch(PluginWrapper::hasDerivedDependencyErrors);
-        }
-
-        @Override
+                @Override
         public String getDisplayName() {
             return Messages.PluginWrapper_PluginWrapperAdministrativeMonitor_DisplayName();
         }
@@ -1256,10 +1096,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * The result of the disablement of a plugin and its dependents plugins.
      */
     public static class PluginDisableResult {
-        private String plugin;
+        private final String plugin;
         private PluginDisableStatus status;
         private String message;
-        private Set<PluginDisableResult> dependentsDisableStatus = new HashSet<>();
+        private final Set<PluginDisableResult> dependentsDisableStatus = new HashSet<>();
 
         public PluginDisableResult(String plugin) {
             this.plugin = plugin;
@@ -1360,7 +1200,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     @RequirePOST
     @Deprecated
-    public HttpResponse doPin() throws IOException {
+    public HttpResponse doPin() {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
         LOGGER.log(WARNING, "Call to pin plugin has been ignored. Plugin name: " + shortName);
@@ -1369,7 +1209,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     @RequirePOST
     @Deprecated
-    public HttpResponse doUnpin() throws IOException {
+    public HttpResponse doUnpin() {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
         LOGGER.log(WARNING, "Call to unpin plugin has been ignored. Plugin name: " + shortName);
@@ -1390,12 +1230,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return HttpResponses.redirectViaContextPath("/manage/pluginManager/installed");   // send back to plugin manager
     }
 
-    @Restricted(DoNotUse.class) // Jelly
-    public List<UpdateSite.Warning> getActiveWarnings() {
-        return ExtensionList.lookupSingleton(UpdateSiteWarningsMonitor.class).getActivePluginWarningsByPlugin().getOrDefault(this, Collections.emptyList());
-    }
-
-    @Restricted(NoExternalUse.class)
+        @Restricted(NoExternalUse.class)
     public List<UpdateSite.Deprecation> getDeprecations() {
         /* Would be much nicer to go through getInfoFromAllSites but that only works for currently published plugins */
         List<UpdateSite.Deprecation> deprecations = new ArrayList<>();
@@ -1415,28 +1250,17 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return deprecations;
     }
 
-    @Restricted(NoExternalUse.class)
-    public String getIssueTrackerReportUrl() {
-        final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
-        if (updateCenter.isSiteDataReady()) {
-            for (UpdateSite site : updateCenter.getSites()) {
-                final UpdateSite.Plugin sitePlugin = site.getPlugin(this.shortName);
-                if (sitePlugin != null && sitePlugin.issueTrackers != null) {
-                    for (UpdateSite.IssueTracker issueTracker : sitePlugin.issueTrackers) {
-                        if (issueTracker.reportUrl != null) {
-                            return issueTracker.reportUrl;
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());
+        private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());
 
     /**
      * Name of the plugin manifest file (to help find where we parse them.)
      */
     public static final String MANIFEST_FILENAME = "META-INF/MANIFEST.MF";
+
+    /**
+         * Redirects the plugin wrapper root URL to the third-party licenses view used by the About page.
+     */
+    public void doIndex(StaplerResponse2 rsp) throws IOException {
+        rsp.sendRedirect2("thirdPartyLicenses");
+    }
 }
