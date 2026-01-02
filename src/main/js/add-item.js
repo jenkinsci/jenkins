@@ -1,4 +1,4 @@
-import { createElementFromHtml } from "@/util/dom";
+import { getI18n } from "@/util/i18n";
 
 const nameInput = document.querySelector(`#createItem input[name="name"]`);
 const copyFromInput = document.querySelector(`#createItem input[name="from"]`);
@@ -60,22 +60,25 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    function activateValidationMessage(messageId, context, message) {
-      if (message !== undefined && message !== "") {
-        document.querySelector(context + " " + messageId).textContent =
-          "» " + message;
+    /**
+     * Shows or clears the validation message for the name input.
+     *
+     * Only updates the UI after the user has interacted with the input, which is
+     * indicated by `nameInput.dataset.dirty` being set.
+     */
+    function activateValidationMessage(message) {
+      if (!nameInput.dataset.dirty) {
+        return;
       }
-      cleanValidationMessages(context);
-      document
-        .querySelector(messageId)
-        .classList.remove("input-message-disabled");
-      refreshSubmitButtonState();
-    }
 
-    function cleanValidationMessages(context) {
-      document
-        .querySelectorAll(context + " .input-validation-message")
-        .forEach((element) => element.classList.add("input-message-disabled"));
+      updateValidationArea(
+        document.querySelector(".validation-error-area"),
+        message !== undefined && message !== ""
+          ? `<div class="error">${message}</div>`
+          : `<div/>`,
+      );
+
+      refreshSubmitButtonState();
     }
 
     function refreshSubmitButtonState() {
@@ -97,14 +100,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function cleanItemSelection() {
       document
-        .querySelector('.categories li[role="radio"]')
-        .setAttribute("aria-checked", "false");
-      document
         .querySelector('#createItem input[type="radio"][name="mode"]')
         .removeAttribute("checked");
-      document.querySelectorAll(".categories .active").forEach((item) => {
-        item.classList.remove("active");
-      });
       setFieldValidationStatus("items", false);
     }
 
@@ -119,43 +116,15 @@ document.addEventListener("DOMContentLoaded", () => {
     //////////////////////////////////
     // Draw functions
 
-    function drawCategory(category) {
-      var $category = createElementFromHtml("<div class='category' />");
-      $category.setAttribute(
-        "id",
-        "j-add-item-type-" + cleanClassName(category.id),
-      );
-      var $items = createElementFromHtml(`<ul class="j-item-options" />`);
-      var $catHeader = createElementFromHtml(`<div class="header" />`);
-      var title = "<h2>" + category.name + "</h2>";
-      var description = "<p>" + category.description + "</p>";
-
-      // Add items
-      category.items.forEach((elem) => {
-        $items.append(drawItem(elem));
-      });
-
-      $catHeader.append(title);
-      $catHeader.append(description);
-      $category.append($catHeader);
-      $category.append($items);
-
-      return $category;
-    }
-
     function drawItem(elem) {
-      var item = document.createElement("li");
-      item.tabIndex = 0;
-      item.className = cleanClassName(elem.class);
-      item.setAttribute("role", "radio");
-      item.setAttribute("aria-checked", "false");
+      var item = document.createElement("div");
+      item.className =
+        cleanClassName(elem.class) + " jenkins-choice-list__item";
+
+      var label = item.appendChild(document.createElement("label"));
 
       var iconDiv = drawIcon(elem);
-      item.appendChild(iconDiv);
-      var labelContainer = document.createElement("div");
-      item.appendChild(labelContainer);
-
-      var label = labelContainer.appendChild(document.createElement("label"));
+      label.appendChild(iconDiv);
 
       var radio = label.appendChild(document.createElement("input"));
       radio.type = "radio";
@@ -163,12 +132,11 @@ document.addEventListener("DOMContentLoaded", () => {
       radio.value = elem.class;
 
       var displayName = label.appendChild(document.createElement("span"));
-      displayName.className = "label";
-
+      displayName.className = "jenkins-choice-list__item__label";
       displayName.appendChild(document.createTextNode(elem.displayName));
 
-      var desc = labelContainer.appendChild(document.createElement("div"));
-      desc.className = "desc";
+      var desc = label.appendChild(document.createElement("div"));
+      desc.className = "jenkins-choice-list__item__description";
       desc.innerHTML = checkForLink(elem.description);
 
       function select(e) {
@@ -176,9 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
         cleanCopyFromOption();
         cleanItemSelection();
 
-        item.setAttribute("aria-checked", "true");
         radio.checked = true;
-        item.classList.add("active");
 
         setFieldValidationStatus("items", true);
         if (getFieldValidationStatus("name")) {
@@ -200,10 +166,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function drawIcon(elem) {
       var iconDiv = document.createElement("div");
       if (elem.iconXml) {
-        iconDiv.className = "icon";
+        iconDiv.className = "jenkins-choice-list__item__icon";
         iconDiv.innerHTML = elem.iconXml;
       } else if (elem.iconClassName && elem.iconQualifiedUrl) {
-        iconDiv.className = "icon";
+        iconDiv.className = "jenkins-choice-list__item__icon";
 
         var img1 = document.createElement("img");
         img1.src = elem.iconQualifiedUrl;
@@ -212,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Example for Freestyle project
         // <div class="icon"><img class="icon-freestyle-project icon-xlg" src="/jenkins/static/108b2346/images/48x48/freestyleproject.png"></div>
       } else if (elem.iconFilePathPattern) {
-        iconDiv.className = "icon";
+        iconDiv.className = "jenkins-choice-list__item__icon";
 
         var iconFilePath =
           jRoot + "/" + elem.iconFilePathPattern.replace(":size", "48x48");
@@ -238,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
         spanFakeImgB.className = "b";
         spanFakeImgB.innerText = b;
         iconDiv.appendChild(spanFakeImgB);
-        iconDiv.className = "default-icon";
+        iconDiv.className = "jenkins-choice-list__item__icon";
 
         // Example for MockFolder
         // <div class="default-icon c-49728B"><span class="a">M</span><span class="b">o</span></div>
@@ -250,9 +216,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#add-item-panel").removeAttribute("style");
 
     // Render all categories
-    var $categories = document.querySelector("div.categories");
+    var $categories = document.querySelector(".categories template");
     data.categories.forEach((elem) => {
-      $categories.append(drawCategory(elem));
+      elem.items.forEach((elem) => {
+        $categories.before(drawItem(elem));
+      });
     });
 
     // Focus
@@ -268,13 +236,9 @@ document.addEventListener("DOMContentLoaded", () => {
             response.text().then((data) => {
               var message = parseResponseFromCheckJobName(data);
               if (message !== "") {
-                activateValidationMessage(
-                  "#itemname-invalid",
-                  ".add-item-name",
-                  message,
-                );
+                activateValidationMessage(message);
               } else {
-                cleanValidationMessages(".add-item-name");
+                activateValidationMessage("");
                 setFieldValidationStatus("name", true);
                 refreshSubmitButtonState();
               }
@@ -283,14 +247,16 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       } else {
         setFieldValidationStatus("name", false);
-        cleanValidationMessages(".add-item-name");
-        activateValidationMessage("#itemname-required", ".add-item-name");
+        activateValidationMessage(getI18n("empty-name"));
         refreshSubmitButtonState();
       }
     }
 
     nameInput.addEventListener("blur", nameFieldEvent);
-    nameInput.addEventListener("input", nameFieldEvent);
+    nameInput.addEventListener("input", () => {
+      nameInput.dataset.dirty = "true";
+      nameFieldEvent();
+    });
 
     // Init CopyFromField
     function copyFromFieldEvent() {
@@ -301,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
         copyRadio.setAttribute("checked", true);
         setFieldValidationStatus("from", true);
         if (!getFieldValidationStatus("name")) {
-          activateValidationMessage("#itemname-required", ".add-item-name");
+          activateValidationMessage(getI18n("empty-name"));
           setTimeout(function () {
             var parentName = copyFromInput.value;
 
@@ -332,21 +298,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!getFormValidationStatus()) {
           event.preventDefault();
           if (!getFieldValidationStatus("name")) {
-            activateValidationMessage("#itemname-required", ".add-item-name");
+            activateValidationMessage(getI18n("empty-name"));
             nameInput.focus();
-          } else {
-            if (
-              !getFieldValidationStatus("items") &&
-              !getFieldValidationStatus("from")
-            ) {
-              activateValidationMessage("#itemtype-required", ".add-item-name");
-              nameInput.focus();
-            }
           }
         }
       });
 
     // Disable the submit button
     refreshSubmitButtonState();
+  });
+
+  copyRadio.addEventListener("change", () => {
+    copyFromInput.focus();
   });
 });

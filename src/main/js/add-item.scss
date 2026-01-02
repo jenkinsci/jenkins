@@ -1,4 +1,43 @@
-/*
- * Widget styles
- */
-@use "widgets/add/addform";
+#add-item-panel {
+  max-width: 750px;
+  margin: auto;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-padding);
+
+    #bottom-sticker {
+      margin-top: calc(var(--section-padding) * -1);
+    }
+  }
+
+  .categories {
+    .jenkins-choice-list__item {
+      .categoryexport {
+        display: none;
+        margin-left: 4rem;
+        margin-top: -0.25rem;
+        margin-bottom: 0.875rem;
+      }
+
+      // Default icons' text placeholder don't appear unless z-index is set
+      .jenkins-choice-list__item__icon {
+        span {
+          z-index: 1;
+        }
+      }
+
+      &:has(input:checked) {
+        .categoryexport {
+          display: block;
+        }
+      }
+
+      input {
+        width: 100%;
+        max-width: 400px;
+      }
+    }
+  }
+}
