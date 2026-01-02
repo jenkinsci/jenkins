@@ -1,6 +1,7 @@
 Behaviour.specify("A.post", "link.post", 0, function (element) {
   element.onclick = function () {
-    const url = element.getAttribute("data-post-href") || element.getAttribute("href");
+    const url =
+      element.getAttribute("data-post-href") || element.getAttribute("href");
     if (!url) {
       return false;
     }
