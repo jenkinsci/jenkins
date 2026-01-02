@@ -1439,11 +1439,4 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Name of the plugin manifest file (to help find where we parse them.)
      */
     public static final String MANIFEST_FILENAME = "META-INF/MANIFEST.MF";
-
-    /**
-     * Redirects the plugin wrapper root URL to the third-party licenses view used by the About page.
-     */
-    public void doIndex(StaplerResponse2 rsp) throws IOException {
-        rsp.sendRedirect2("thirdPartyLicenses");
-    }
 }
