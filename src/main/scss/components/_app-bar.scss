@@ -115,7 +115,7 @@
   }
 }
 
-.jenkins-quieting-down .jenkins-app-bar--sticky {
+.jenkins-app-bar--sticky {
   position: static !important;
 
   &::before,
@@ -127,8 +127,7 @@
 .jenkins-build-caption {
   display: flex;
   flex-direction: row !important;
-  align-items: center !important;
-
+  align-items: center;
   justify-content: start !important;
   gap: 0.875rem;
   max-width: 1200px;
