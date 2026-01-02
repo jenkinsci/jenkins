@@ -844,7 +844,8 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object result = page.executeJavaScript("Array.from(document.querySelectorAll('.jenkins-choice-list__item__label')).filter(el => el.innerText.indexOf('" + customizableTLID.customDisplayName + "') !== -1)[0].parentElement.parentElement").getJavaScriptResult();
+        Object result = page.executeJavaScript("Array.from(document.querySelectorAll('.jenkins-choice-list__item__label'))" +
+                ".filter(el => el.innerText.indexOf('" + customizableTLID.customDisplayName + "') !== -1)[0].parentElement.parentElement").getJavaScriptResult();
         assertThat(result, instanceOf(HTMLElement.class));
         HTMLElement resultElement = (HTMLElement) result;
         assertThat(resultElement.getAttribute("onclick"), nullValue());

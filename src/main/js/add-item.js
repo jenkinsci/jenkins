@@ -139,26 +139,17 @@ document.addEventListener("DOMContentLoaded", () => {
       desc.className = "jenkins-choice-list__item__description";
       desc.innerHTML = checkForLink(elem.description);
 
-      function select(e) {
-        e.preventDefault();
+      function select() {
         cleanCopyFromOption();
         cleanItemSelection();
-
-        radio.checked = true;
-
         setFieldValidationStatus("items", true);
+
         if (getFieldValidationStatus("name")) {
           refreshSubmitButtonState();
         }
       }
 
-      item.addEventListener("click", select);
-      item.addEventListener("keydown", function (evt) {
-        if (evt.code === "Space" || evt.code === "Enter") {
-          this.click();
-          evt.stopPropagation();
-        }
-      });
+      radio.addEventListener("change", select);
 
       return item;
     }
