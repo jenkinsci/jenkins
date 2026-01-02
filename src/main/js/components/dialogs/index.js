@@ -39,11 +39,10 @@ Dialog.prototype.init = function () {
   this.dialog.style.minWidth = this.options.minWidth;
   document.body.appendChild(this.dialog);
 
-  if (this.options.title != null) {
-    const title = createElementFromHtml(`<div class='jenkins-dialog__title'/>`);
-    this.dialog.appendChild(title);
-    title.innerText = this.options.title;
-  }
+  // Append title element
+  const title = createElementFromHtml(`<div class='jenkins-dialog__title'><span></span></div>`);
+  this.dialog.appendChild(title);
+  title.querySelector("span").innerText = this.options.title;
 
   if (this.dialogType === "modal") {
     if (this.options.content != null) {
@@ -55,12 +54,12 @@ Dialog.prototype.init = function () {
     }
     if (this.options.hideCloseButton !== true) {
       const closeButton = createElementFromHtml(`
-          <button class="jenkins-dialog__close-button jenkins-button">
+          <button class="jenkins-dialog__title__button jenkins-dialog__title__close-button jenkins-dialog__close-button jenkins-button">
             <span class="jenkins-visually-hidden">Close</span>
             ${CLOSE}
           </button>
         `);
-      this.dialog.appendChild(closeButton);
+      title.append(closeButton);
       closeButton.addEventListener("click", () =>
         this.dialog.dispatchEvent(new Event("cancel")),
       );

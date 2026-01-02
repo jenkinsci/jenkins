@@ -162,7 +162,13 @@
   }
 
   &--stuck {
-    backdrop-filter: blur(20px);
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      backdrop-filter: blur(20px);
+    }
+
     background: linear-gradient(
       to right,
       var(--background),
