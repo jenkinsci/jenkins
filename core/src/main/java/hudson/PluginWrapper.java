@@ -429,11 +429,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     public Integer getHealthScore() {
         if (this.healthScore == null) {
             this.healthScore = getInfoFromAllSites().stream()
-                .filter(Objects::nonNull)
-                .filter(p -> p.healthScore != null)
-                .findFirst()
-                .map(plugin -> plugin.healthScore)
-                .orElse(null);
+							.filter(Objects::nonNull)
+							.filter(p -> p.healthScore != null)
+							.findFirst()
+							.map(plugin -> plugin.healthScore)
+							.orElse(null);
         }
         return this.healthScore;
     }
@@ -505,8 +505,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *  @param optionalDependencies a list of optional dependencies
      */
     public PluginWrapper(PluginManager parent, File archive, Manifest manifest, URL baseResourceURL,
-                                             ClassLoader classLoader, File disableFile,
-                                             List<Dependency> dependencies, List<Dependency> optionalDependencies) {
+						 ClassLoader classLoader, File disableFile,
+						 List<Dependency> dependencies, List<Dependency> optionalDependencies) {
         this.parent = parent;
         this.manifest = manifest;
         this.shortName = Util.intern(computeShortName(manifest, archive.getName()));
@@ -827,20 +827,20 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 PluginDisableResult dependentStatus = new PluginDisableResult(dependent, NO_SUCH_PLUGIN, Messages.PluginWrapper_NoSuchPlugin(dependent));
                 result.addDependentDisableStatus(dependentStatus);
 
-                // If the strategy is none and there is some enabled dependent plugin, the plugin cannot be disabled. If
-                // this dependent plugin is not enabled, continue searching for one enabled.
+						// If the strategy is none and there is some enabled dependent plugin, the plugin cannot be disabled. If
+						// this dependent plugin is not enabled, continue searching for one enabled.
             } else if (strategy.equals(PluginDisableStrategy.NONE)) {
                 if (dependentPlugin.isEnabled()) {
                     aDependentNotDisabled = dependent;
                     break; // in this case, we don't need to continue with the rest of its dependents
                 }
 
-                // If the strategy is not none and this dependent plugin is not enabled, add it as already disabled
+						// If the strategy is not none and this dependent plugin is not enabled, add it as already disabled
             } else if (!dependentPlugin.isEnabled()) {
                 PluginDisableResult dependentStatus = new PluginDisableResult(dependent, ALREADY_DISABLED, Messages.PluginWrapper_Already_Disabled(dependent));
                 result.addDependentDisableStatus(dependentStatus);
 
-                // If the strategy is not none and this dependent plugin is enabled, disable it
+						// If the strategy is not none and this dependent plugin is enabled, disable it
             } else {
                 // As there is no cycles in the plugin dependencies, the recursion shouldn't be infinite. The
                 // strategy used is the same for its dependents plugins
@@ -867,8 +867,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 result.setMessage(Messages.PluginWrapper_Error_Disabling(shortName, io.toString()));
                 result.setStatus(ERROR_DISABLING);
             }
-            // if there is yet some not disabled dependent plugin (only possible with none strategy), this plugin cannot
-            // be disabled.
+				// if there is yet some not disabled dependent plugin (only possible with none strategy), this plugin cannot
+				// be disabled.
         } else {
             result.setMessage(Messages.PluginWrapper_Plugin_Has_Dependent(shortName, aDependentNotDisabled, strategy));
             result.setStatus(NOT_DISABLED_DEPENDANTS);
@@ -1339,7 +1339,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         }
     }
 
-    //
+//
 //
 // Action methods
 //
