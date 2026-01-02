@@ -14,6 +14,7 @@ $jenkins-dialog-padding: 1.25rem;
   padding: 0;
   display: flex;
   flex-direction: column;
+
   // Thin highlight for dark themes to differentiate the dialog from its backdrop
   outline: 1px solid rgb(255 255 255 / 0.05);
 
@@ -101,6 +102,12 @@ $jenkins-dialog-padding: 1.25rem;
     &::backdrop {
       animation: jenkins-dialog-backdrop-animate-out 0.1s linear;
     }
+  }
+
+  .jenkins-bottom-app-bar__shadow {
+    margin-bottom: calc(
+      (2.375rem + calc(var(--bottom-app-bar-padding) * 2)) * -1
+    );
   }
 }
 

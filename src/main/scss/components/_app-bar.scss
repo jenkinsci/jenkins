@@ -130,10 +130,11 @@
 
   position: sticky;
   height: calc(
-    2.375rem + (var(--bottom-app-bar-padding) * 2) + 1px + var(--jenkins-border-width)
+    2.375rem + (var(--bottom-app-bar-padding) * 2) + 1px +
+      var(--jenkins-border-width)
   );
   bottom: -1px;
-  margin-bottom: calc((2.375rem + calc(var(--bottom-app-bar-padding) * 2)) * -1);
+  margin-bottom: calc((2.375rem + var(--bottom-app-bar-padding)) * -1);
   border-top: var(--jenkins-border-width) solid var(--jenkins-border-color);
   z-index: 997;
 
@@ -159,6 +160,12 @@
 
   &--borderless:not(&--stuck) {
     border-top-color: transparent;
+  }
+
+  &--borderless {
+    margin-top: calc(
+      (var(--bottom-app-bar-padding) + var(--jenkins-border-width)) * -1
+    );
   }
 
   &--stuck {

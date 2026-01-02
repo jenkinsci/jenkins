@@ -1762,8 +1762,12 @@ function rowvgStartEachRow(recursive, f) {
     },
   );
 
-    // Add a class to the bottom bar when it's stuck to the bottom of the screen
-    Behaviour.specify(".jenkins-bottom-app-bar__shadow", "jenkins-bottom-app-bar__shadow", 0, function (el) {
+  // Add a class to the bottom bar when it's stuck to the bottom of the screen
+  Behaviour.specify(
+    ".jenkins-bottom-app-bar__shadow",
+    "jenkins-bottom-app-bar__shadow",
+    0,
+    function (el) {
       const dialog = el.closest("dialog");
 
       const observer = new IntersectionObserver(
@@ -1779,7 +1783,8 @@ function rowvgStartEachRow(recursive, f) {
       );
 
       observer.observe(el);
-    });
+    },
+  );
 
   /**
    * Function that provides compatibility to the checkboxes without title on an f:entry

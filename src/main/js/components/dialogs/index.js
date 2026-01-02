@@ -40,7 +40,9 @@ Dialog.prototype.init = function () {
   document.body.appendChild(this.dialog);
 
   // Append title element
-  const title = createElementFromHtml(`<div class='jenkins-dialog__title'><span></span></div>`);
+  const title = createElementFromHtml(
+    `<div class='jenkins-dialog__title'><span></span></div>`,
+  );
   this.dialog.appendChild(title);
   title.querySelector("span").innerText = this.options.title;
 
