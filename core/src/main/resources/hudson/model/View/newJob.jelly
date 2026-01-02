@@ -42,7 +42,7 @@ THE SOFTWARE.
 
           <form method="post" action="createItem" name="createItem" id="createItem">
             <div class="header">
-              <div class="jenkins-form-item jenkins-!-margin-bottom-0 add-item-name">
+              <div class="jenkins-form-item add-item-name">
                 <label for="name" class="jenkins-form-label">${%ItemName.label}</label>
                 <input name="name" class="jenkins-input" id="name" data-valid="false" type="text" tabindex="0" />
                 <div class="validation-error-area" />
@@ -50,7 +50,7 @@ THE SOFTWARE.
             </div>
 
             <fieldset class="jenkins-!-display-contents">
-              <div>
+              <div class="jenkins-form-item">
                 <legend class="jenkins-form-label">${%ItemType.label}</legend>
                 <div id="items" class="jenkins-choice-list categories" data-valid="false">
                   <template id="insertion-point">
@@ -70,7 +70,7 @@ THE SOFTWARE.
                         <div class="jenkins-choice-list__item__description">${%CopyOption.description}</div>
                       </label>
 
-                      <div class="categoryexport">
+                      <div class="jenkins-choice-list__item__conditional">
                         <j:set var="descriptor" value="${it.descriptor}" />
                         <s:textbox id="from" data-valid="false" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
                       </div>

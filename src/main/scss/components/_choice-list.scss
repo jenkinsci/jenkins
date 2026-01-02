@@ -113,6 +113,10 @@
             inset 0 0 18px 18px var(--accent-color);
         }
       }
+
+      .jenkins-choice-list__item__conditional {
+        display: block;
+      }
     }
 
     &:first-of-type {
@@ -190,6 +194,13 @@
       color: var(--text-color-secondary);
       grid-column: 2;
       padding-right: 2rem;
+    }
+
+    &__conditional {
+      display: none;
+      margin-left: 4rem;
+      margin-top: -0.25rem;
+      margin-bottom: 0.875rem;
     }
   }
 }
