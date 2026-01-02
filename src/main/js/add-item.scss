@@ -11,7 +11,7 @@
     }
 
     // Make 'Duplicate an existing item' input not full width
-    input {
+    input[type="text"] {
       width: 100%;
       max-width: 400px;
     }

@@ -237,6 +237,8 @@ document.addEventListener("DOMContentLoaded", () => {
               var message = parseResponseFromCheckJobName(data);
               if (message !== "") {
                 activateValidationMessage(message);
+                setFieldValidationStatus("name", false);
+                refreshSubmitButtonState();
               } else {
                 activateValidationMessage("");
                 setFieldValidationStatus("name", true);
@@ -308,7 +310,9 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshSubmitButtonState();
   });
 
-  copyRadio.addEventListener("change", () => {
-    copyFromInput.focus();
-  });
+  if (copyRadio !== null) {
+    copyRadio.addEventListener("change", () => {
+      copyFromInput.focus();
+    });
+  }
 });

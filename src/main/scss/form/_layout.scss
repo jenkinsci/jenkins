@@ -57,8 +57,6 @@
     --focus-input-border: var(--warning-color);
     --form-input-glow--focus: 0 0 0 0.25rem
       color-mix(in sRGB, var(--warning-color) 20%, transparent);
-
-    caret-color: var(--warning-color);
   }
 
   &:has(> .validation-error-area .error) {
@@ -67,8 +65,6 @@
     --focus-input-border: var(--error-color);
     --form-input-glow--focus: 0 0 0 0.25rem
       color-mix(in sRGB, var(--error-color) 20%, transparent);
-
-    caret-color: var(--error-color);
   }
 }
 

@@ -894,12 +894,12 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object resultIconChildrenCount = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .icon').children.length").getJavaScriptResult();
+        Object resultIconChildrenCount = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .jenkins-choice-list__item__icon').children.length").getJavaScriptResult();
         assertThat(resultIconChildrenCount, instanceOf(Integer.class));
         int resultIconChildrenCountInt = (int) resultIconChildrenCount;
         assertEquals(1, resultIconChildrenCountInt);
 
-        Object resultImgAttributesCount = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .icon img').attributes.length").getJavaScriptResult();
+        Object resultImgAttributesCount = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .jenkins-choice-list__item__icon img').attributes.length").getJavaScriptResult();
         assertThat(resultImgAttributesCount, instanceOf(Integer.class));
         int resultImgAttributesCountInt = (int) resultImgAttributesCount;
         assertEquals(1, resultImgAttributesCountInt);
@@ -929,7 +929,7 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object resultSrc = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .icon img').src").getJavaScriptResult();
+        Object resultSrc = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .jenkins-choice-list__item__icon img').src").getJavaScriptResult();
 
         assertThat(resultSrc, instanceOf(String.class));
         String resultSrcString = (String) resultSrc;
@@ -944,7 +944,7 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object result = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .icon svg')").getJavaScriptResult();
+        Object result = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .jenkins-choice-list__item__icon svg')").getJavaScriptResult();
         assertThat(result, instanceOf(SVGElement.class));
         SVGElement svg = (SVGElement) result;
         assertThat(svg.getClassName_js(), is("icon-xlg"));
@@ -962,7 +962,7 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object result = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .default-icon')").getJavaScriptResult();
+        Object result = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .jenkins-choice-list__item__icon')").getJavaScriptResult();
         assertThat(result, instanceOf(HTMLElement.class));
         HTMLElement resultHtml = (HTMLElement) result;
         HTMLElement spanA = (HTMLElement) resultHtml.getFirstElementChild();

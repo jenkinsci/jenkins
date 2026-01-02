@@ -46,7 +46,7 @@
     }
 
     &:active,
-    &:focus-visible {
+    &:has(input[type="radio"]:focus) {
       z-index: 10;
       border-radius: calc(var(--form-input-border-radius) / 2);
 
@@ -79,7 +79,7 @@
 
     &:hover,
     &:active,
-    &:focus {
+    &:has(input[type="radio"]:focus) {
       .jenkins-choice-list__item__icon::before {
         background: rgb(from var(--text-color-secondary) r g b / 0.1);
         box-shadow:
@@ -89,7 +89,7 @@
       }
     }
 
-    &:focus {
+    &:has(input[type="radio"]:focus) {
       &::before {
         box-shadow: 0 0 0 0.2rem var(--text-color) !important;
       }
@@ -110,7 +110,7 @@
         &::before {
           box-shadow:
             inset var(--jenkins-border--subtle-shadow),
-            inset 0 0 18px 18px var(--accent-color);
+            inset 0 0 18px 18px var(--accent-color) !important;
         }
       }
 
@@ -146,7 +146,8 @@
     }
 
     label > input[type="radio"] {
-      display: none;
+      position: absolute;
+      opacity: 0;
     }
 
     &__icon {
