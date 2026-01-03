@@ -383,7 +383,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-
     /**
      * Try to make this user a super-user
      */
