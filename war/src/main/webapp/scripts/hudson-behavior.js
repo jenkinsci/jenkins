@@ -2723,7 +2723,9 @@ Behaviour.specify(
     }
 
     const date = new Date(parseInt(timestampVal));
-    if (isNaN(date.getTime())) return;
+    if (isNaN(date.getTime())) {
+      return;
+    }
 
     if (formatPref === "iso8601") {
       try {
@@ -2736,7 +2738,7 @@ Behaviour.specify(
           hour12: false,
         });
         element.innerText = isoFormatter.format(date);
-      } catch (e) {
+      } catch {
         const pad = (n) => String(n).padStart(2, "0");
         element.innerText =
           date.getFullYear() +
