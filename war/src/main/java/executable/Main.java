@@ -76,7 +76,7 @@ public class Main {
      * This list must remain synchronized with the one in {@code
      * JavaVersionRecommendationAdminMonitor}.
      */
-    private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS = new TreeSet<>(List.of(17, 21, 25));
+    private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS = new TreeSet<>(List.of(21, 25));
 
     /**
      * Sets custom session cookie name.
