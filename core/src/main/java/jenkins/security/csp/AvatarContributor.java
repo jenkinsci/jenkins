@@ -97,8 +97,16 @@ public class AvatarContributor implements Contributor {
     public static void allowUrl(@CheckForNull String url) {
         AvatarContributor self = ExtensionList.lookupSingleton(AvatarContributor.class);
 
-        if (addNormalizedUrl(url, self.allowedSources)) {
-            LOGGER.log(Level.CONFIG, "Adding allowed avatar URL: {0}", url);
+        String normalized = normalizeUrl(url);
+        if (normalized == null) {
+            LOGGER.log(Level.FINE, "Skipping invalid or unsupported avatar URL: {0}", url);
+            return;
+        }
+
+        if (self.allowedSources.add(normalized)) {
+            LOGGER.log(Level.CONFIG, "Adding allowed avatar URL: {0} (normalized: {1})", new Object[] { url, normalized });
+        } else {
+            LOGGER.log(Level.FINEST, "Skipped adding duplicate allowed avatar URL: {0} (normalized: {1})", new Object[] { url, normalized });
         }
     }
 
@@ -173,7 +181,7 @@ public class AvatarContributor implements Contributor {
      *   </li>
      *   <li>
      *     <strong>Converts IDN to ASCII</strong> —
-     *     Browser internally normalize hostnames to their ASCII representation. Normalizing here ensures Jenkins
+     *     Browsers internally normalize hostnames to their ASCII representation. Normalizing here ensures Jenkins
      *     generates CSP entries that match browser behavior consistently.
      *   </li>
      *   <li>
@@ -182,7 +190,7 @@ public class AvatarContributor implements Contributor {
      *   </li>
      *   <li>
      *     <strong>Removes default ports</strong> —
-     *     Ports  80 (HTTP) and 443 (HTTPS) are removed. Removing them avoids duplicate CSP entries that differ only
+     *     Ports 80 (HTTP) and 443 (HTTPS) are removed. Removing them avoids duplicate CSP entries that differ only
      *     by the presence of a default port.
      *   </li>
      * </ul>
@@ -214,6 +222,8 @@ public class AvatarContributor implements Contributor {
                 return null;
             }
 
+            // Used rawAuthority instead of uri.getHost() so we can strictly validate and canonicalize the authority
+            // component for CSP usage, including explicit handling of IPv6 literals and malformed authorities.
             String rawAuthority = uri.getRawAuthority();
             if (rawAuthority == null) {
                 LOGGER.log(Level.FINER, "Ignoring URI without authority: " + url);
@@ -226,6 +236,7 @@ public class AvatarContributor implements Contributor {
             if (rawAuthority.startsWith("[")) {
                 int end = rawAuthority.indexOf(']');
                 if (end == -1) {
+                    LOGGER.log(Level.FINER, "Ignoring malformed IPv6 authority: {0}", url);
                     return null;
                 }
                 host = rawAuthority.substring(1, end);
