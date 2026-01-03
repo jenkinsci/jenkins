@@ -357,23 +357,32 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
+     * Lock used to make initial admin account creation atomic.
+     */
+    private static final Object CREATE_FIRST_ACCOUNT_LOCK = new Object();
+
+    /**
      * Creates a first admin user account.
      *
      * <p>
      * This can be run by anyone, but only to create the very first user account.
      */
     @RequirePOST
-    public void doCreateFirstAccount(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        if (hasSomeUser()) {
-            rsp.sendError(SC_UNAUTHORIZED, "First user was already created");
-            return;
-        }
-        User u = createAccount(req, rsp, false, "firstUser.jelly");
-        if (u != null) {
-            tryToMakeAdmin(u);
-            loginAndTakeBack(req, rsp, u);
+    public void doCreateFirstAccount(StaplerRequest2 req, StaplerResponse2 rsp)
+            throws IOException, ServletException {
+        synchronized (CREATE_FIRST_ACCOUNT_LOCK) {
+            if (hasSomeUser()) {
+                rsp.sendError(SC_UNAUTHORIZED, "First user was already created");
+                return;
+            }
+            User u = createAccount(req, rsp, false, "firstUser.jelly");
+            if (u != null) {
+                tryToMakeAdmin(u);
+                loginAndTakeBack(req, rsp, u);
+            }
         }
     }
+
 
     /**
      * Try to make this user a super-user
