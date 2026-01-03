@@ -56,7 +56,7 @@ Dialog.prototype.init = function () {
     }
     if (this.options.hideCloseButton !== true) {
       const closeButton = createElementFromHtml(`
-          <button class="jenkins-dialog__title__button jenkins-dialog__title__close-button jenkins-dialog__close-button jenkins-button">
+          <button class="jenkins-dialog__title__button jenkins-dialog__title__close-button jenkins-button">
             <span class="jenkins-visually-hidden">Close</span>
             ${CLOSE}
           </button>

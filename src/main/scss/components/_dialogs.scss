@@ -78,7 +78,7 @@ $jenkins-dialog-padding: 1.25rem;
 
   &__buttons {
     display: flex;
-    padding: 0 $jenkins-dialog-padding $jenkins-dialog-padding;
+    padding: $jenkins-dialog-padding;
     justify-content: right;
     flex-direction: row-reverse;
     gap: 1.25rem;
