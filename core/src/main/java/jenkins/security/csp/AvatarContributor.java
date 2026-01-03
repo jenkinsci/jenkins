@@ -49,13 +49,13 @@ public class AvatarContributor implements Contributor {
     private static final Logger LOGGER = Logger.getLogger(AvatarContributor.class.getName());
 
     private final Set<String> domains = ConcurrentHashMap.newKeySet();
-        private final Set<String> allowedSources = ConcurrentHashMap.newKeySet();
+    private final Set<String> allowedSources = ConcurrentHashMap.newKeySet();
 
-        @Override
-        public void apply(CspBuilder cspBuilder) {
-                domains.forEach(d -> cspBuilder.add("img-src", d));
-                allowedSources.forEach(s -> cspBuilder.add("img-src", s));
-        }
+    @Override
+    public void apply(CspBuilder cspBuilder) {
+        domains.forEach(d -> cspBuilder.add("img-src", d));
+        allowedSources.forEach(s -> cspBuilder.add("img-src", s));
+    }
 
     /**
      * Request addition of the domain of the specified URL to the allowed set of avatar image domains.
@@ -94,20 +94,21 @@ public class AvatarContributor implements Contributor {
      * @param url The full avatar image URL to allow.
      */
     @SuppressWarnings("unused")
-        public static void allowUrl(@CheckForNull String url) {
-                String normalized = normalizeUrl(url);
+    public static void allowUrl(@CheckForNull String url) {
+        AvatarContributor self = ExtensionList.lookupSingleton(AvatarContributor.class);
 
-                if (normalized == null) {
-                        LOGGER.log(Level.FINE, "Skipping invalid or unsupported avatar URL: " + url);
-                        return;
-                }
-
-                if (ExtensionList.lookupSingleton(AvatarContributor.class).allowedSources.add(normalized)) {
-                        LOGGER.log(Level.CONFIG, "Adding allowed avatar URL: " + normalized + " (from: " + url + ")");
-                } else {
-                        LOGGER.log(Level.FINEST, "Skipped adding duplicate allowed url: " + normalized + " (from: " + url + ")");
-                }
+        if (addNormalizedUrl(url, self.allowedSources)) {
+            LOGGER.log(Level.CONFIG, "Adding allowed avatar URL: {0}", url);
         }
+    }
+
+    static boolean addNormalizedUrl(@CheckForNull String url, Set<String> target) {
+        String normalized = normalizeUrl(url);
+        if (normalized == null) {
+            return false;
+        }
+        return target.add(normalized);
+    }
 
     /**
      * Utility method extracting the domain specification for CSP fetch directives from a specified URL.
@@ -157,14 +158,33 @@ public class AvatarContributor implements Contributor {
     /**
      * Normalizes a URL for use in Content-Security-Policy.
      * <p>
-     * This method performs several steps:
+     * This method validates and canonicalizes the URL to ensure it is safe for use in a CSP header.
      * </p>
      * <ul>
-     * <li>Only http or https are accepted.</li>
-     * <li>Removes embedded credentials for security.</li>
-     * <li>Converts IDN to ASCII.</li>
-     * <li>Normalizes IPv6 addresses.</li>
-     * <li>Removes default ports.</li>
+     *   <li>
+     *     <strong>Accepts only http and https schemes</strong> -
+     *     Avatar images are fetched over the network. Other schemes such as file, data, or JavaScript are either unsafe
+     *     or meaningless in a CSP img-src context.
+     *   </li>
+     *   <li>
+     *     <strong>Rejects URLs with embedded credentials</strong> —
+     *     URLs containing user:password@host can accidentally expose credentials in logs or browser requests. Such URLs
+     *     are then rejected.
+     *   </li>
+     *   <li>
+     *     <strong>Converts IDN to ASCII</strong> —
+     *     Browser internally normalize hostnames to their ASCII representation. Normalizing here ensures Jenkins
+     *     generates CSP entries that match browser behavior consistently.
+     *   </li>
+     *   <li>
+     *     <strong>Normalizes IPv6 literals</strong> —
+     *     IPv6 addresses must be enclosed in square brackets in URLs.
+     *   </li>
+     *   <li>
+     *     <strong>Removes default ports</strong> —
+     *     Ports  80 (HTTP) and 443 (HTTPS) are removed. Removing them avoids duplicate CSP entries that differ only
+     *     by the presence of a default port.
+     *   </li>
      * </ul>
      *
      * @param url The raw input URL.

@@ -2,11 +2,15 @@ package jenkins.security.csp;
 
 import static jenkins.security.csp.AvatarContributor.extractDomainFromUrl;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 
@@ -144,6 +148,8 @@ public class AvatarContributorTest {
         );
     }
 
+    // This test does not assert the exact full string. Its purpose is to verify that IPv6 literals are correctly bracketed,
+    // while the path and other components are covered by separate tests.
     @Test
     void testNormalizeUrl_Ipv6HostIsBracketed() {
         String normalized = AvatarContributor.normalizeUrl("https://[2001:db8::1]/a.png");
@@ -151,10 +157,43 @@ public class AvatarContributorTest {
         assertThat(normalized, containsString("/a.png"));
     }
 
+    // Verifies that the Unicode hostname is converted to its ASCII representation while preserving the
+    // rest of the URL structure.
     @Test
     void testNormalizeUrl_IdnIsConvertedToAscii() {
         String normalized = AvatarContributor.normalizeUrl("https://例え.テスト/a.png");
         assertThat(normalized, startsWith("https://xn--r8jz45g.xn--zckzah"));
+    }
+
+    @Test
+    void testAddNormalizedUrl_AddsValidUrl() {
+        Set<String> set = new HashSet<>();
+
+        boolean added = AvatarContributor.addNormalizedUrl("https://example.com/a.png", set);
+
+        assertThat(added, is(true));
+        assertThat(set, contains("https://example.com/a.png"));
+    }
+
+    @Test
+    void testAddNormalizedUrl_RejectsInvalidUrl() {
+        Set<String> set = new HashSet<>();
+
+        boolean added = AvatarContributor.addNormalizedUrl("ftp://example.com/a.png", set);
+
+        assertThat(added, is(false));
+        assertThat(set, empty());
+    }
+
+    @Test
+    void testAddNormalizedUrl_Deduplicates() {
+        Set<String> set = new HashSet<>();
+
+        AvatarContributor.addNormalizedUrl("https://example.com/a.png", set);
+        boolean addedAgain = AvatarContributor.addNormalizedUrl("https://example.com/a.png", set);
+
+        assertThat(addedAgain, is(false));
+        assertThat(set.size(), is(1));
     }
 
 }
