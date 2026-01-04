@@ -80,7 +80,7 @@ class RobustCollectionConverterTest {
         set.add('z');
         set.add(Instant.now());
 
-        // to get an ArrayList and not a Arrays.ArrayLis
+        // to get an ArrayList and not a Arrays.ArrayList
         List<Object> payload = new ArrayList<>(Arrays.asList(123, "abc", map, new Date(), set));
 
         String xmlContent = xstream2.toXML(payload);
@@ -90,8 +90,7 @@ class RobustCollectionConverterTest {
     }
 
     /**
-     * As RobustCollectionConverter is the replacer of the defaul
-     * CollectionConverter
+     * As RobustCollectionConverter is the replacer of the default CollectionConverter
      * We had to patch it in order to not be impacted by CVE-2021-43859
      */
     // force timeout to prevent DoS due to test in the case the DoS prevention is
@@ -142,8 +141,7 @@ class RobustCollectionConverterTest {
         }
     }
 
-    // force timeout to prevent DoS due to test in the case the DoS prevention is
-    // broken
+    // force timeout to prevent DoS due to test in the case the DoS prevention is broken
     @Test
     @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
     @Issue("SECURITY-2602")
@@ -161,28 +159,24 @@ class RobustCollectionConverterTest {
         assertTrue(ime.getMessage().contains("exceeds 5 seconds"), "Limit expected in message");
     }
 
-    // Inspired by
-    // https://github.com/x-stream/xstream/commit/e8e88621ba1c85ac3b8620337dd672e0c0c3a846#diff-9fde4ecf1bb4dc9850c031cb161960d2e61e069b386fa0b3db0d57e0e9f5baa
-    // which seems to be inspired by
-    // https://owasp.org/www-community/vulnerabilities/Deserialization_of_untrusted_data
+    // Inspired by https://github.com/x-stream/xstream/commit/e8e88621ba1c85ac3b8620337dd672e0c0c3a846#diff-9fde4ecf1bb4dc9850c031cb161960d2e61e069b386fa0b3db0d57e0e9f5baa
+    // which seems to be inspired by https://owasp.org/www-community/vulnerabilities/Deserialization_of_untrusted_data
     private Set<Object> preparePayload() {
         /*
-         * On a i7-1185G7@3.00GHz (2021)
-         * Full test time:
-         * max=10 => ~1s
-         * max=15 => ~1s
-         * max=20 => ~1s
-         * max=25 => ~3s
-         * max=26 => ~6s
-         * max=27 => ~11s
-         * max=28 => ~22s
-         * max=29 => ~47s
-         * max=30 => >1m30
-         * max=32 => est. 6m
-         *
-         * With the protection in place, each test is taking ~15 seconds before the
-         * protection triggers
-         */
+            On a i7-1185G7@3.00GHz (2021)
+            Full test time:
+            max=10 => ~1s
+            max=15 => ~1s
+            max=20 => ~1s
+            max=25 => ~3s
+            max=26 => ~6s
+            max=27 => ~11s
+            max=28 => ~22s
+            max=29 => ~47s
+            max=30 => >1m30
+            max=32 => est. 6m
+            With the protection in place, each test is taking ~15 seconds before the protection triggers
+        */
 
         final Set<Object> set = new HashSet<>();
         Set<Object> s1 = set;
@@ -205,7 +199,8 @@ class RobustCollectionConverterTest {
     @Issue("JENKINS-63343")
     @Test
     void checkElementTypes() {
-        var xmlContent = """
+        var xmlContent =
+                """
                 <hudson.util.RobustCollectionConverterTest_-Data>
                   <numbers>
                     <int>1</int>
@@ -222,7 +217,8 @@ class RobustCollectionConverterTest {
 
     @Test
     void rawtypes() {
-        var xmlContent = """
+        var xmlContent =
+                """
                 <hudson.util.RobustCollectionConverterTest_-DataRaw>
                   <values>
                     <int>1</int>
@@ -241,8 +237,7 @@ class RobustCollectionConverterTest {
 
         @Override
         public void save() throws IOException {
-            // We only implement Saveable so that RobustReflectionConverter logs
-            // deserialization problems.
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
         }
     }
 
@@ -251,8 +246,7 @@ class RobustCollectionConverterTest {
 
         @Override
         public void save() throws IOException {
-            // We only implement Saveable so that RobustReflectionConverter logs
-            // deserialization problems.
+            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
         }
     }
 
@@ -262,8 +256,7 @@ class RobustCollectionConverterTest {
         List<Object> payload = new ArrayList<>();
         payload.add("valid");
 
-        // Construct XML with an invalid element that causes an exception during
-        // unmarshalling
+        // Construct XML with an invalid element that causes an exception during unmarshalling
         String xml = xstream2.toXML(payload);
         final String finalXml = xml.replace("</list>", "  <this-class-does-not-exist/>\n</list>");
 
