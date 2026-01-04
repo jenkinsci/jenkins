@@ -42,6 +42,7 @@ import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
 import jenkins.util.xstream.CriticalXStreamException;
 import org.jvnet.tiger_types.Types;
 
@@ -50,15 +51,17 @@ import org.jvnet.tiger_types.Types;
  *
  * <p>
  * This allows Hudson to load XML files that contain non-existent classes
- * (the expected scenario is that those classes belong to plugins that were unloaded.)
+ * (the expected scenario is that those classes belong to plugins that were
+ * unloaded.)
  *
  * @author Kohsuke Kawaguchi
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class RobustCollectionConverter extends CollectionConverter {
     private final SerializableConverter sc;
     /**
-     * When available, this field holds the declared type of the collection being deserialized.
+     * When available, this field holds the declared type of the collection being
+     * deserialized.
      */
     private final @CheckForNull Class<?> elementType;
 
@@ -71,12 +74,19 @@ public class RobustCollectionConverter extends CollectionConverter {
     }
 
     /**
-     * Creates a converter that will validate the types of collection elements during deserialization.
-     * <p>Elements with invalid types will be omitted from deserialized collections and may result in an
+     * Creates a converter that will validate the types of collection elements
+     * during deserialization.
+     * <p>
+     * Elements with invalid types will be omitted from deserialized collections and
+     * may result in an
      * {@link OldDataMonitor} warning.
-     * <p>This type checking currently uses the erasure of the type argument, so for example, the element type for a
-     * {@code List<Optional<Integer>>} is just a raw {@code Optional}, so non-integer values inside of the optional
-     * would still deserialize successfully and the resulting optional would be included in the list.
+     * <p>
+     * This type checking currently uses the erasure of the type argument, so for
+     * example, the element type for a
+     * {@code List<Optional<Integer>>} is just a raw {@code Optional}, so
+     * non-integer values inside of the optional
+     * would still deserialize successfully and the resulting optional would be
+     * included in the list.
      *
      * @see RobustReflectionConverter#unmarshalField
      */
@@ -109,8 +119,12 @@ public class RobustCollectionConverter extends CollectionConverter {
         }
     }
 
+    private static boolean FAIL_ON_LOAD_ERROR = SystemProperties
+            .getBoolean(RobustCollectionConverter.class.getName() + ".failOnLoadError", false);
+
     @Override
-    protected void populateCollection(HierarchicalStreamReader reader, UnmarshallingContext context, Collection collection) {
+    protected void populateCollection(HierarchicalStreamReader reader, UnmarshallingContext context,
+            Collection collection) {
         while (reader.hasMoreChildren()) {
             reader.moveDown();
             try {
@@ -133,10 +147,14 @@ public class RobustCollectionConverter extends CollectionConverter {
             } catch (InputManipulationException e) {
                 Logger.getLogger(RobustCollectionConverter.class.getName()).warning(
                         "DoS detected and prevented. If the heuristic was too aggressive, " +
-                                "you can customize the behavior by setting the hudson.util.XStream2.collectionUpdateLimit system property. " +
+                                "you can customize the behavior by setting the hudson.util.XStream2.collectionUpdateLimit system property. "
+                                +
                                 "See https://www.jenkins.io/redirect/xstream-dos-prevention for more information.");
                 throw new CriticalXStreamException(e);
             } catch (XStreamException | LinkageError e) {
+                if (FAIL_ON_LOAD_ERROR) {
+                    throw new ConversionException(e);
+                }
                 RobustReflectionConverter.addErrorInContext(context, e);
             }
             reader.moveUp();
