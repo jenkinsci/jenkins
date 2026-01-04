@@ -93,8 +93,7 @@ class RobustCollectionConverterTest {
      * As RobustCollectionConverter is the replacer of the default CollectionConverter
      * We had to patch it in order to not be impacted by CVE-2021-43859
      */
-    // force timeout to prevent DoS due to test in the case the DoS prevention is
-    // broken
+    // force timeout to prevent DoS due to test in the case the DoS prevention is broken
     @Test
     @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
     @Issue("SECURITY-2602")
@@ -175,6 +174,7 @@ class RobustCollectionConverterTest {
             max=29 => ~47s
             max=30 => >1m30
             max=32 => est. 6m
+
             With the protection in place, each test is taking ~15 seconds before the protection triggers
         */
 
