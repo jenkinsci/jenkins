@@ -229,10 +229,12 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     private final class ConnectionHandler extends Thread {
-        private static final String DEFAULT_RESPONSE_404 = "HTTP/1.0 404 Not Found\r\n" +
-                        "Content-Type: text/plain;charset=UTF-8\r\n" +
-                        "\r\n" +
-                        "Not Found\r\n";
+        private static final String DEFAULT_RESPONSE_404 = """
+                HTTP/1.0 404 Not Found\r
+                Content-Type: text/plain;charset=UTF-8\r
+                \r
+                Not Found\r
+                """;
         private final Socket s;
         /**
          * Unique number to identify this connection. Used in the log.
