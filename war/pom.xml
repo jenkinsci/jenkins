@@ -48,7 +48,7 @@ THE SOFTWARE.
     <port>8080</port>
     <mina-sshd-api.version>2.16.0-167.va_269f38cc024</mina-sshd-api.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
-    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
 
   </properties>
 
@@ -346,7 +346,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>checks-api</artifactId>
-                  <version>373.vfe7645102093</version>
+                  <version>402.vca_263b_f200e3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -397,7 +397,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jakarta-xml-bind-api</artifactId>
-                  <version>4.0.6-10.v9b_7e1d1fc40b_</version>
+                  <version>4.0.6-12.vb_1833c1231d3</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -471,7 +471,7 @@ THE SOFTWARE.
                   <!-- detached after 2.163 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jaxb</artifactId>
-                  <version>2.3.9-133.vb_ec76a_73f706</version>
+                  <version>2.3.9-143.v5979df3304e6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
