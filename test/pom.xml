@@ -39,7 +39,7 @@ THE SOFTWARE.
   <properties>
     <mavenDebug>false</mavenDebug>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
-    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
     <!--
@@ -238,7 +238,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1453.v9b_a_29777a_b_fd</version>
+      <version>1460.v48765a_c7d849</version>
       <scope>test</scope>
     </dependency>
     <dependency>
