@@ -137,10 +137,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     }
 
     public Result getThreshold() {
-        if (threshold == null)
-            return Result.SUCCESS;
-        else
-            return threshold;
+        return Objects.requireNonNullElse(threshold, Result.SUCCESS);
     }
 
     /**

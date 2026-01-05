@@ -5097,12 +5097,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             // Calculating future will be the most recent one --> Return
-            if (calculatingFutureDependencyGraph != null) {
-                return calculatingFutureDependencyGraph;
-            }
+            return Objects.requireNonNullElseGet(calculatingFutureDependencyGraph, () -> CompletableFuture.completedFuture(dependencyGraph));
 
             // No scheduled or calculating future --> Already completed dependency graph is the most recent one
-            return CompletableFuture.completedFuture(dependencyGraph);
         }
     }
 
@@ -5129,11 +5126,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
         synchronized (dependencyGraphLock) {
             // Collect calls to this method to avoid unnecessary calculation of the dependency graph
-            if (scheduledFutureDependencyGraph != null) {
-                return scheduledFutureDependencyGraph;
-            }
+            return Objects.requireNonNullElseGet(scheduledFutureDependencyGraph, () -> scheduledFutureDependencyGraph = scheduleCalculationOfFutureDependencyGraph(500, TimeUnit.MILLISECONDS));
             // Schedule new calculation
-            return scheduledFutureDependencyGraph = scheduleCalculationOfFutureDependencyGraph(500, TimeUnit.MILLISECONDS);
         }
     }
 
