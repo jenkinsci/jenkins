@@ -248,15 +248,11 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      */
     private static VariableResolver<String> propertiesGeneratingResolver(final VariableResolver<String> original) {
 
-        return new VariableResolver<>() {
-
-            @Override
-            public String resolve(String name) {
-                final String value = original.resolve(name);
-                if (value == null) return null;
-                // Substitute one backslash with two
-                return value.replaceAll("\\\\", "\\\\\\\\");
-            }
+        return name -> {
+            final String value = original.resolve(name);
+            if (value == null) return null;
+            // Substitute one backslash with two
+            return value.replaceAll("\\\\", "\\\\\\\\");
         };
     }
 

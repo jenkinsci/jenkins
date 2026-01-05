@@ -86,12 +86,9 @@ class SSHCLI {
 
         try (SshClient client = SshClient.setUpDefaultClient()) {
 
-            KnownHostsServerKeyVerifier verifier = new DefaultKnownHostsServerKeyVerifier(new ServerKeyVerifier() {
-                @Override
-                public boolean verifyServerKey(ClientSession clientSession, SocketAddress remoteAddress, PublicKey serverKey) {
-                    CLI.LOGGER.log(Level.WARNING, "Unknown host key for {0}", remoteAddress.toString());
-                    return !strictHostKey;
-                }
+            KnownHostsServerKeyVerifier verifier = new DefaultKnownHostsServerKeyVerifier((clientSession, remoteAddress, serverKey) -> {
+                CLI.LOGGER.log(Level.WARNING, "Unknown host key for {0}", remoteAddress.toString());
+                return !strictHostKey;
             }, true);
 
             client.setServerKeyVerifier(verifier);

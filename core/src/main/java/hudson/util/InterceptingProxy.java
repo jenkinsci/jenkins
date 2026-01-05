@@ -17,14 +17,11 @@ public abstract class InterceptingProxy {
     protected abstract Object call(Object o, Method m, Object[] args) throws Throwable;
 
     public final <T> T wrap(Class<T> type, final T object) {
-        return type.cast(Proxy.newProxyInstance(type.getClassLoader(), new Class[]{type}, new InvocationHandler() {
-            @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                try {
-                    return call(object, method, args);
-                } catch (InvocationTargetException e) {
-                    throw e.getTargetException();
-                }
+        return type.cast(Proxy.newProxyInstance(type.getClassLoader(), new Class[]{type}, (proxy, method, args) -> {
+            try {
+                return call(object, method, args);
+            } catch (InvocationTargetException e) {
+                throw e.getTargetException();
             }
         }));
     }

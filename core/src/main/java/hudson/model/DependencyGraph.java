@@ -342,12 +342,9 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         return Collections.unmodifiableMap(m);
     }
 
-    private static final Comparator<DependencyGroup> NAME_COMPARATOR = new Comparator<>() {
-        @Override
-        public int compare(DependencyGroup lhs, DependencyGroup rhs) {
-            int cmp = lhs.getUpstreamProject().getName().compareTo(rhs.getUpstreamProject().getName());
-            return cmp != 0 ? cmp : lhs.getDownstreamProject().getName().compareTo(rhs.getDownstreamProject().getName());
-        }
+    private static final Comparator<DependencyGroup> NAME_COMPARATOR = (lhs, rhs) -> {
+        int cmp = lhs.getUpstreamProject().getName().compareTo(rhs.getUpstreamProject().getName());
+        return cmp != 0 ? cmp : lhs.getDownstreamProject().getName().compareTo(rhs.getDownstreamProject().getName());
     };
 
     public static final DependencyGraph EMPTY = new DependencyGraph(false);

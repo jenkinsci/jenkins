@@ -2520,13 +2520,10 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Sort by date. Newer ones first.
      */
-    public static final Comparator<Run> ORDER_BY_DATE = new Comparator<>() {
-        @Override
-        public int compare(@NonNull Run lhs, @NonNull Run rhs) {
-            long lt = lhs.getTimeInMillis();
-            long rt = rhs.getTimeInMillis();
-            return Long.compare(rt, lt);
-        }
+    public static final Comparator<Run> ORDER_BY_DATE = (lhs, rhs) -> {
+        long lt = lhs.getTimeInMillis();
+        long rt = rhs.getTimeInMillis();
+        return Long.compare(rt, lt);
     };
 
     /**
