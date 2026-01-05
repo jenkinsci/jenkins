@@ -273,6 +273,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   ".add-item-name",
                   message,
                 );
+                setFieldValidationStatus("name", false);
+                refreshSubmitButtonState();
               } else {
                 cleanValidationMessages(".add-item-name");
                 setFieldValidationStatus("name", true);
