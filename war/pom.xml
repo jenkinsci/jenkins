@@ -397,7 +397,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jakarta-xml-bind-api</artifactId>
-                  <version>4.0.6-10.v9b_7e1d1fc40b_</version>
+                  <version>4.0.6-12.vb_1833c1231d3</version>
                   <type>hpi</type>
                 </artifactItem>
 
