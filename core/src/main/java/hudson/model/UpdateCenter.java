@@ -378,8 +378,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         List<UpdateCenterJob> jobList = getJobs();
         Collections.reverse(jobList);
         for (UpdateCenterJob job : jobList)
-            if (job instanceof InstallationJob) {
-                InstallationJob ij = (InstallationJob) job;
+            if (job instanceof InstallationJob ij) {
                 if (ij.plugin.name.equals(plugin.name) && ij.plugin.sourceId.equals(plugin.sourceId))
                     return ij;
             }
@@ -535,8 +534,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
 
         boolean activeInstalls = false;
         for (UpdateCenterJob job : jobs) {
-            if (job instanceof InstallationJob) {
-                InstallationJob installationJob = (InstallationJob) job;
+            if (job instanceof InstallationJob installationJob) {
                 if (!installationJob.status.isSuccess()) {
             activeInstalls = true;
                 }
@@ -571,10 +569,9 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
             List<UpdateCenterJob> jobCopy = getJobs();
 
             for (UpdateCenterJob job : jobCopy) {
-                if (job instanceof InstallationJob) {
+                if (job instanceof InstallationJob installationJob) {
                     UUID jobCorrelationId = job.getCorrelationId();
                     if (correlationId == null || (jobCorrelationId != null && correlationId.equals(jobCorrelationId.toString()))) {
-                        InstallationJob installationJob = (InstallationJob) job;
                         Map<String, String> pluginInfo = new LinkedHashMap<>();
                         pluginInfo.put("name", installationJob.plugin.name);
                         pluginInfo.put("version", installationJob.plugin.version);
@@ -2483,8 +2480,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                         // we need it to continue installing
                         return false;
                     }
-                    if (job instanceof InstallationJob) {
-                        InstallationJob ij = (InstallationJob) job;
+                    if (job instanceof InstallationJob ij) {
                         if (ij.plugin.equals(plugin) && ij.plugin.version.equals(plugin.version)) {
                             // wait until other install is completed
                             synchronized (ij) {

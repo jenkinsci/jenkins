@@ -212,8 +212,7 @@ public final class TcpSlaveAgentListener extends Thread {
         shuttingDown = true;
         try {
             SocketAddress localAddress = serverSocket.getLocalAddress();
-            if (localAddress instanceof InetSocketAddress) {
-                InetSocketAddress address = (InetSocketAddress) localAddress;
+            if (localAddress instanceof InetSocketAddress address) {
                 Socket client = new Socket(address.getHostName(), address.getPort());
                 client.setSoTimeout(1000); // waking the acceptor loop should be quick
                 new PingAgentProtocol().connect(client);

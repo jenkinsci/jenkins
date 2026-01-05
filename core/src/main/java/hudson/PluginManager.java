@@ -1150,8 +1150,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         InputStream in = null;
         // Magic, which allows to avoid using stream generated for JarURLConnection.
         // It prevents getting into JENKINS-37332 due to the file descriptor leak
-        if (uc instanceof JarURLConnection) {
-            final JarURLConnection jarURLConnection = (JarURLConnection) uc;
+        if (uc instanceof JarURLConnection jarURLConnection) {
             final String entryName = jarURLConnection.getEntryName();
 
             try (JarFile jarFile = jarURLConnection.getJarFile()) {
@@ -1191,8 +1190,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // It prevents file descriptor leak if the URL references a file within JAR
         // See JENKINS-37332  for more info
         // The code idea is taken from https://github.com/jknack/handlebars.java/pull/394
-        if (uc instanceof JarURLConnection) {
-            final JarURLConnection connection = (JarURLConnection) uc;
+        if (uc instanceof JarURLConnection connection) {
             final URL jarURL = connection.getJarFileURL();
             if (jarURL.getProtocol().equals("file")) {
                 String file = jarURL.getFile();

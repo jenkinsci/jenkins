@@ -1066,9 +1066,7 @@ public class UpdateSite {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof Warning)) return false;
-
-            Warning warning = (Warning) o;
+            if (!(o instanceof Warning warning)) return false;
 
             return id.equals(warning.id);
         }
@@ -1196,8 +1194,7 @@ public class UpdateSite {
         }
 
         private static IssueTracker createFromJSONObject(Object o) {
-            if (o instanceof JSONObject) {
-                JSONObject jsonObject = (JSONObject) o;
+            if (o instanceof JSONObject jsonObject) {
                 if (jsonObject.has("type") && jsonObject.has("viewUrl") && jsonObject.has("reportUrl")) {
                     return new IssueTracker(jsonObject.getString("type"), jsonObject.getString("viewUrl"), jsonObject.getString("reportUrl"));
                 }

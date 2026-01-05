@@ -116,8 +116,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
-        if (defaultValue instanceof StringParameterValue) {
-            StringParameterValue value = (StringParameterValue) defaultValue;
+        if (defaultValue instanceof StringParameterValue value) {
             return new ChoiceParameterDefinition(getName(), choices, value.value, getDescription());
         } else {
             return this;

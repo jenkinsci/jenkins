@@ -258,8 +258,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      */
     public void addDependencyDeclarers(AbstractProject upstream, Collection<?> possibleDependecyDeclarers) {
         for (Object o : possibleDependecyDeclarers) {
-            if (o instanceof DependencyDeclarer) {
-                DependencyDeclarer dd = (DependencyDeclarer) o;
+            if (o instanceof DependencyDeclarer dd) {
                 dd.buildDependencyGraph(upstream, this);
             }
         }

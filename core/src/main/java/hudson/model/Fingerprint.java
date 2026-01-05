@@ -1457,8 +1457,7 @@ public class Fingerprint implements ModelObject, Saveable {
             if (canDiscoverTheItem) {
                 ItemGroup<?> current = itemBySystemUser.getParent();
                 do {
-                    if (current instanceof Item) {
-                        final Item i = (Item) current;
+                    if (current instanceof Item i) {
                         current = i.getParent();
                         if (!i.hasPermission2(userAuth, Item.READ)) {
                             canDiscoverTheItem = false;

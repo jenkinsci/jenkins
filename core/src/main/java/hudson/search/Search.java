@@ -115,8 +115,7 @@ public class Search implements StaplerProxy {
         List<Ancestor> l = req.getAncestors();
         for (int i = l.size() - 1; i >= 0; i--) {
             Ancestor a = l.get(i);
-            if (a.getObject() instanceof SearchableModelObject) {
-                SearchableModelObject smo = (SearchableModelObject) a.getObject();
+            if (a.getObject() instanceof SearchableModelObject smo) {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("smo.displayName=%s, searchName=%s", smo.getDisplayName(), smo.getSearchName()));
                 }
@@ -263,8 +262,7 @@ public class Search implements StaplerProxy {
     private SearchIndex makeSuggestIndex(StaplerRequest2 req) {
         SearchIndexBuilder builder = new SearchIndexBuilder();
         for (Ancestor a : req.getAncestors()) {
-            if (a.getObject() instanceof SearchableModelObject) {
-                SearchableModelObject smo = (SearchableModelObject) a.getObject();
+            if (a.getObject() instanceof SearchableModelObject smo) {
                 builder.add(smo.getSearchIndex());
             }
         }

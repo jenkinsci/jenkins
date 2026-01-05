@@ -350,15 +350,13 @@ public class ApiTokenProperty extends UserProperty {
         if (tokenStoreData == null) {
             // in case there are no token
             return Collections.emptyMap();
-        } else if (tokenStoreData instanceof JSONObject) {
+        } else if (tokenStoreData instanceof JSONObject singleTokenData) {
             // in case there is only one token
-            JSONObject singleTokenData = (JSONObject) tokenStoreData;
             Map<String, JSONObject> result = new HashMap<>();
             addJSONTokenIntoMap(result, singleTokenData);
             return result;
-        } else if (tokenStoreData instanceof JSONArray) {
+        } else if (tokenStoreData instanceof JSONArray tokenArray) {
             // in case there are multiple tokens
-            JSONArray tokenArray = (JSONArray) tokenStoreData;
             Map<String, JSONObject> result = new HashMap<>();
             for (int i = 0; i < tokenArray.size(); i++) {
                 JSONObject tokenData = tokenArray.getJSONObject(i);

@@ -96,8 +96,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
-        if (defaultValue instanceof RunParameterValue) {
-            RunParameterValue value = (RunParameterValue) defaultValue;
+        if (defaultValue instanceof RunParameterValue value) {
             return new RunParameterDefinition(getName(), getProjectName(), value.getRunId(), getDescription(), getFilter());
         } else {
             return this;
