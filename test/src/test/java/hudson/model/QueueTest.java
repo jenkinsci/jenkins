@@ -480,18 +480,14 @@ public class QueueTest {
 
             // Create a task that will need to wait until the first task is complete that will fail to acquire.
             final AtomicBoolean task2Result = new AtomicBoolean(false);
-            boolean acquired = Queue.tryWithLock(() -> {
-                task2Result.set(true);
-            }, Duration.ofMillis(10));
+            boolean acquired = Queue.tryWithLock(() -> task2Result.set(true), Duration.ofMillis(10));
             assertFalse(acquired);
             assertFalse(task2Result.get());
 
             // Now release the first task and wait (with a long timeout) and we should succeed at getting the lock.
             final AtomicBoolean task3Result = new AtomicBoolean(false);
             task1Release.countDown();
-            acquired = Queue.tryWithLock(() -> {
-                task3Result.set(true);
-            }, Duration.ofSeconds(30));
+            acquired = Queue.tryWithLock(() -> task3Result.set(true), Duration.ofSeconds(30));
 
             // First task should complete
             task1.get();
@@ -526,9 +522,7 @@ public class QueueTest {
 
             // Try to acquire lock with 50ms timeout, expecting that it cannot be acquired
             final AtomicBoolean task2Complete = new AtomicBoolean(false);
-            boolean result = Queue.tryWithLock(() -> {
-                task2Complete.set(true);
-            }, Duration.ofMillis(50));
+            boolean result = Queue.tryWithLock(() -> task2Complete.set(true), Duration.ofMillis(50));
 
             // Results should indicate the task did not run
             assertFalse(result);
@@ -548,9 +542,7 @@ public class QueueTest {
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
             final AtomicBoolean taskComplete = new AtomicBoolean(false);
-            boolean result = Queue.tryWithLock(() -> {
-                taskComplete.set(true);
-            }, Duration.ofMillis(1));
+            boolean result = Queue.tryWithLock(() -> taskComplete.set(true), Duration.ofMillis(1));
             assertTrue(result);
             assertTrue(taskComplete.get());
         } finally {
