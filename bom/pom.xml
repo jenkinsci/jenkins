@@ -250,12 +250,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>symbol-annotation</artifactId>
-        <version>1.25</version>
+        <version>1.26</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>task-reactor</artifactId>
-        <version>1.9</version>
+        <version>1.10</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
