@@ -27,7 +27,15 @@ THE SOFTWARE.
 <div class="jenkins-alert jenkins-alert-warning">
   <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
     <f:submit name="yes" value="${%Tell me more}"/>
-    <f:submit name="no" value="${%Dismiss}"/>
+      <l:isAdmin>
+        <button type="submit"
+                class="jenkins-button jenkins-button--tertiary"
+                name="no"
+                value="${%Dismiss}"
+                title="${%Dismiss}">
+          <l:icon src="symbol-close"/>
+        </button>
+      </l:isAdmin>
   </form>
   ${%blurb(app.rootDir)}
 </div>

@@ -28,7 +28,12 @@ THE SOFTWARE.
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="yes" value="${%More Info}"/>
       <l:isAdmin>
-        <f:submit name="no" value="${%Dismiss}"/>
+        <button type="submit"
+                class="jenkins-button jenkins-button--tertiary"
+                value="${%Dismiss}"
+                name="no">
+          <l:icon src="symbol-close"/>
+        </button>
       </l:isAdmin>
     </form>
     <div>${%blurb}</div>
