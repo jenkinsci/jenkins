@@ -247,7 +247,6 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @see <a href="https://issues.jenkins.io/browse/JENKINS-10539">JENKINS-10539</a>
      */
     private static VariableResolver<String> propertiesGeneratingResolver(final VariableResolver<String> original) {
-
         return name -> {
             final String value = original.resolve(name);
             if (value == null) return null;

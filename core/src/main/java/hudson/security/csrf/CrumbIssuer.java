@@ -276,11 +276,11 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
             String text;
             CrumbIssuer ci = (CrumbIssuer) bean;
             switch (xpath) {
-                case "/*/crumbRequestField/text()" ->  // old FullDuplexHttpStream
+                case "/*/crumbRequestField/text()" ->                   // old FullDuplexHttpStream
                         text = ci.getCrumbRequestField();
-                case "/*/crumb/text()" ->  // ditto
+                case "/*/crumb/text()" ->                               // ditto
                         text = ci.getCrumb();
-                case "concat(//crumbRequestField,\":\",//crumb)" ->  // new FullDuplexHttpStream; Main
+                case "concat(//crumbRequestField,\":\",//crumb)" ->     // new FullDuplexHttpStream; Main
                         text = ci.getCrumbRequestField() + ':' + ci.getCrumb();
                 case "concat(//crumbRequestField,'=',//crumb)" -> {
                     if (ci.getCrumbRequestField().startsWith(".") || ci.getCrumbRequestField().contains("-")) {

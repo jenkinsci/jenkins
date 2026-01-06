@@ -5123,7 +5123,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         synchronized (dependencyGraphLock) {
             // Collect calls to this method to avoid unnecessary calculation of the dependency graph
             return Objects.requireNonNullElseGet(scheduledFutureDependencyGraph, () -> scheduledFutureDependencyGraph = scheduleCalculationOfFutureDependencyGraph(500, TimeUnit.MILLISECONDS));
-            // Schedule new calculation
         }
     }
 

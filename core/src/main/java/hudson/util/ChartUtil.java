@@ -85,7 +85,7 @@ public class ChartUtil {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof NumberOnlyBuildLabel that))    return false;
+            if (!(o instanceof NumberOnlyBuildLabel that)) return false;
             return run == that.run;
         }
 

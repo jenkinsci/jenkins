@@ -47,7 +47,7 @@ public class DisablePluginCommand extends CLICommand {
     private boolean restart;
 
     @Option(name = "-strategy", aliases = "-s", metaVar = "strategy", usage = """
-            How to process the dependent plugins.\s
+            How to process the dependent plugins.
             - none: if a mandatory dependent plugin exists and it is enabled, the plugin cannot be disabled (default value).
             - mandatory: all mandatory dependent plugins are also disabled, optional dependent plugins remain enabled.
             - all: all dependent plugins are also disabled, no matter if its dependency is optional or mandatory.""")

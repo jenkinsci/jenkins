@@ -438,7 +438,7 @@ public class DownloadService {
             try {
                 field = genericList.getFirst().getClass().getDeclaredField(comparator);
             } catch (NoSuchFieldException e) {
-                LOGGER.warning("comparator: " + comparator + "does not exist for " + genericList.getFirst().getClass() + ", " + e);
+                LOGGER.warning("comparator: " + comparator + " does not exist for " + genericList.getFirst().getClass() + ", " + e);
                 return false;
             }
             for (int i = 0; i < genericList.size(); i++) {

@@ -93,7 +93,7 @@ public class AtmostOneTaskExecutor<V> {
      * but {@link #inprogress} is null (meaning none is executing right now),
      * get one going.
      */
-    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
+    @SuppressFBWarnings(value = {"RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", "IS2_INCONSISTENT_SYNC"}, justification = "method signature does not permit plumbing through the return value")
     private synchronized void maybeRun() {
         if (inprogress == null && pending != null) {
             base.submit((Callable<Void>) () -> {

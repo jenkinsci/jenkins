@@ -478,13 +478,15 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 case "FreeBSD" -> {
                     return new FreeBSD(vetoes);
                 }
+                default -> {
+                    return DEFAULT;
+                }
             }
         } catch (LinkageError e) {
             LOGGER.log(Level.FINE, "Failed to load OS-specific implementation; reverting to the default", e);
             enabled = false;
+            return DEFAULT;
         }
-
-        return DEFAULT;
     }
 
     private static class DoVetoersExist extends SlaveToMasterCallable<Boolean, IOException> {

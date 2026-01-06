@@ -200,6 +200,7 @@ public class RobustReflectionConverter implements Converter {
         }
     }
 
+    @SuppressWarnings("deprecation")
     protected void doMarshal(final Object source, final HierarchicalStreamWriter writer, final MarshallingContext context) {
         final Set seenFields = new HashSet();
         final Set seenAsAttributes = new HashSet();

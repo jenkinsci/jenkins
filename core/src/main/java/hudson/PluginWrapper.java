@@ -881,12 +881,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         Set<String> dependentsToCheck = switch (strategy) {
             case ALL ->
                 // getDependents returns all the dependent plugins, mandatory or optional.
-                    this.getDependents();
+                this.getDependents();
             default ->
                 // It includes MANDATORY, NONE:
                 // with NONE, the process only fail if mandatory dependent plugins exists
                 // As of getDependents has all the dependents, we get the difference between them and only the optionals
-                    Sets.difference(this.getDependents(), this.getOptionalDependents());
+                Sets.difference(this.getDependents(), this.getOptionalDependents());
         };
         return dependentsToCheck;
     }

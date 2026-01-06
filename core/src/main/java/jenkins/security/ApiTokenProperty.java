@@ -369,10 +369,9 @@ public class ApiTokenProperty extends UserProperty {
                 return result;
             }
             default -> {
+                throw HttpResponses.error(400, "Unexpected class received for the token store information");
             }
         }
-
-        throw HttpResponses.error(400, "Unexpected class received for the token store information");
     }
 
     private void addJSONTokenIntoMap(Map<String, JSONObject> tokenMap, JSONObject tokenData) {

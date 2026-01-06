@@ -318,8 +318,8 @@ public class Main {
             try {
                 Field f = cl.loadClass("winstone.WinstoneSession").getField("SESSION_COOKIE_NAME");
                 f.setAccessible(true);
-                // Use the user-defined cookie name
-                // Randomize session names by default to prevent collisions when running multiple Jenkins instances on the same host.
+                // Use the user-defined cookie name or
+                // randomized session names as default to prevent collisions when running multiple Jenkins instances on the same host.
                 f.set(null, Objects.requireNonNullElseGet(JSESSIONID_COOKIE_NAME, () -> "JSESSIONID." + UUID.randomUUID().toString().replace("-", "").substring(0, 8)));
             } catch (ClassNotFoundException | NoSuchFieldException e) {
                 throw new AssertionError(e);

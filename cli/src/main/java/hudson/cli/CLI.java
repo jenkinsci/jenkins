@@ -174,6 +174,9 @@ public class CLI {
                     printUsage("-remoting mode is no longer supported");
                     return -1;
                 }
+                default -> {
+                    // continue
+                }
             }
             if (head.equals("-s") && args.size() >= 2) {
                 url = args.get(1);
