@@ -432,14 +432,11 @@ public class Queue extends ResourceController implements Saveable {
                             continue;   // botched persistence. throw this one away
                         }
 
-                        if (item instanceof WaitingItem) {
-                            item.enter(this);
-                        } else if (item instanceof BlockedItem) {
-                            item.enter(this);
-                        } else if (item instanceof BuildableItem) {
-                            item.enter(this);
-                        } else {
-                            throw new IllegalStateException("Unknown item type! " + item);
+                        switch (item) {
+                            case WaitingItem waitingItem -> item.enter(this);
+                            case BlockedItem blockedItem -> item.enter(this);
+                            case BuildableItem buildableItem -> item.enter(this);
+                            default -> throw new IllegalStateException("Unknown item type! " + item);
                         }
                     }
                 }

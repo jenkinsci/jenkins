@@ -347,22 +347,29 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     private Map<String, JSONObject> convertToTokenMap(Object tokenStoreData) {
-        if (tokenStoreData == null) {
-            // in case there are no token
-            return Collections.emptyMap();
-        } else if (tokenStoreData instanceof JSONObject singleTokenData) {
-            // in case there is only one token
-            Map<String, JSONObject> result = new HashMap<>();
-            addJSONTokenIntoMap(result, singleTokenData);
-            return result;
-        } else if (tokenStoreData instanceof JSONArray tokenArray) {
-            // in case there are multiple tokens
-            Map<String, JSONObject> result = new HashMap<>();
-            for (int i = 0; i < tokenArray.size(); i++) {
-                JSONObject tokenData = tokenArray.getJSONObject(i);
-                addJSONTokenIntoMap(result, tokenData);
+        switch (tokenStoreData) {
+            case null -> {
+                // in case there are no token
+                return Collections.emptyMap();
+                // in case there are no token
             }
-            return result;
+            case JSONObject singleTokenData -> {
+                // in case there is only one token
+                Map<String, JSONObject> result = new HashMap<>();
+                addJSONTokenIntoMap(result, singleTokenData);
+                return result;
+            }
+            case JSONArray tokenArray -> {
+                // in case there are multiple tokens
+                Map<String, JSONObject> result = new HashMap<>();
+                for (int i = 0; i < tokenArray.size(); i++) {
+                    JSONObject tokenData = tokenArray.getJSONObject(i);
+                    addJSONTokenIntoMap(result, tokenData);
+                }
+                return result;
+            }
+            default -> {
+            }
         }
 
         throw HttpResponses.error(400, "Unexpected class received for the token store information");

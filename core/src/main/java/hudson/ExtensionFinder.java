@@ -788,16 +788,12 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
     private static Class<?> getClassFromIndex(IndexItem<Extension, Object> item) throws InstantiationException {
         AnnotatedElement e = item.element();
-        Class<?> extType;
-        if (e instanceof Class) {
-            extType = (Class) e;
-        } else if (e instanceof Field) {
-            extType = ((Field) e).getType();
-        } else if (e instanceof Method) {
-            extType = ((Method) e).getReturnType();
-        } else {
-            throw new AssertionError();
-        }
+        Class<?> extType = switch (e) {
+            case Class aClass -> aClass;
+            case Field field -> field.getType();
+            case Method method -> method.getReturnType();
+            case null, default -> throw new AssertionError();
+        };
         return extType;
     }
 
