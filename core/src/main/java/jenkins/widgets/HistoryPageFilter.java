@@ -258,7 +258,7 @@ public class HistoryPageFilter<T> {
         HistoryPageEntry<HistoricalBuild> entry = new HistoryPageEntry<>(run);
         // Assert that runs have been added in descending order
         if (!runs.isEmpty()) {
-            if (entry.getEntryId() > runs.get(runs.size() - 1).getEntryId()) {
+            if (entry.getEntryId() > runs.getLast().getEntryId()) {
                 throw new IllegalStateException("Cannot add newer " + run + " to descending-order list " +
                     runs.stream().map(HistoryPageEntry::getEntry).collect(Collectors.toList()));
             }

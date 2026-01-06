@@ -1931,7 +1931,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 copier = new UrlPluginCopier(fileName);
             } else {
                 // this is a file upload
-                FileItem fileItem = items.get(0);
+                FileItem fileItem = items.getFirst();
                 fileName = Util.getFileName(fileItem.getName());
                 copier = new FileUploadPluginCopier(fileItem);
             }
@@ -2650,7 +2650,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     .filter(PluginWrapper::isDeprecated)
                     .sorted(Comparator.comparing(PluginWrapper::getDisplayName)) // Sort by plugin name
                     .collect(LinkedHashMap::new,
-                            (map, plugin) -> map.put(plugin, plugin.getDeprecations().get(0).url),
+                            (map, plugin) -> map.put(plugin, plugin.getDeprecations().getFirst().url),
                             Map::putAll);
         }
     }

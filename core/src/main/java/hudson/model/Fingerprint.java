@@ -628,7 +628,7 @@ public class Fingerprint implements ModelObject, Saveable {
          * If this range is empty, this method throws an exception.
          */
         public synchronized int min() {
-            return ranges.get(0).start;
+            return ranges.getFirst().start;
         }
 
         /**
@@ -637,7 +637,7 @@ public class Fingerprint implements ModelObject, Saveable {
          * If this range is empty, this method throws an exception.
          */
         public synchronized int max() {
-            return ranges.get(ranges.size() - 1).end;
+            return ranges.getLast().end;
         }
 
         /**
@@ -650,7 +650,7 @@ public class Fingerprint implements ModelObject, Saveable {
         public synchronized boolean isSmallerThan(int n) {
             if (ranges.isEmpty())    return true;
 
-            return ranges.get(ranges.size() - 1).isSmallerThan(n);
+            return ranges.getLast().isSmallerThan(n);
         }
 
         /**

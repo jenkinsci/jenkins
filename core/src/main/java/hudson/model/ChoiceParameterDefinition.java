@@ -140,7 +140,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
             if (choices.isEmpty()) {
                 return null;
             }
-            return new StringParameterValue(getName(), choices.get(0), getDescription());
+            return new StringParameterValue(getName(), choices.getFirst(), getDescription());
         }
         return new StringParameterValue(getName(), defaultValue, getDescription());
     }

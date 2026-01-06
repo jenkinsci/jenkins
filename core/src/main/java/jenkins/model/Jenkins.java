@@ -2120,7 +2120,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (name == null) {
             // if only one JDK is configured, "default JDK" should mean that JDK.
             List<JDK> jdks = getJDKs();
-            if (jdks.size() == 1)  return jdks.get(0);
+            if (jdks.size() == 1)  return jdks.getFirst();
             return null;
         }
         for (JDK j : getJDKs()) {
@@ -2871,7 +2871,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // if we find a new ExtensionFinder, we need it to list up all the extension points as well
         List<ExtensionComponent<ExtensionFinder>> newFinders = new ArrayList<>(delta.find(ExtensionFinder.class));
         while (!newFinders.isEmpty()) {
-            ExtensionFinder f = newFinders.remove(newFinders.size() - 1).getInstance();
+            ExtensionFinder f = newFinders.removeLast().getInstance();
             LOGGER.finer(() -> "found new ExtensionFinder " + f);
 
             ExtensionComponentSet ecs = ExtensionComponentSet.allOf(f).filtered();
@@ -3370,7 +3370,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (views.isEmpty() || primaryView == null) {
             View v = new AllView(AllView.DEFAULT_VIEW_NAME);
             setViewOwner(v);
-            views.add(0, v);
+            views.addFirst(v);
             primaryView = v.getViewName();
         }
         primaryView = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryView);

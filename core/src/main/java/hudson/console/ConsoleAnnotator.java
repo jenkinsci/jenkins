@@ -114,7 +114,7 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
 
             return switch (list.size()) {
                 case 0 -> null;    // no more annotator left
-                case 1 -> list.get(0); // no point in aggregating
+                case 1 -> list.getFirst(); // no point in aggregating
                 default -> this;
             };
         }

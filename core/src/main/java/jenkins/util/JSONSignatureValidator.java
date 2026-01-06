@@ -98,7 +98,7 @@ public class JSONSignatureValidator {
             try {
                 MessageDigest digest = MessageDigest.getInstance("SHA-512");
                 Signature sig = Signature.getInstance("SHA512withRSA");
-                sig.initVerify(certs.get(0));
+                sig.initVerify(certs.getFirst());
                 resultSha512 = checkSpecificSignature(o, signature, digest, "correct_digest512", sig, "correct_signature512", "SHA-512");
                 switch (resultSha512.kind) {
                     case ERROR:
@@ -119,7 +119,7 @@ public class JSONSignatureValidator {
 
             MessageDigest digest = MessageDigest.getInstance("SHA1");
             Signature sig = Signature.getInstance("SHA1withRSA");
-            sig.initVerify(certs.get(0));
+            sig.initVerify(certs.getFirst());
             FormValidation resultSha1 = checkSpecificSignature(o, signature, digest, "correct_digest", sig, "correct_signature", "SHA-1");
 
             switch (resultSha1.kind) {
