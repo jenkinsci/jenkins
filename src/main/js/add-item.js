@@ -214,9 +214,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Focus
-    document.querySelector("#add-item-panel #name").focus();
-
     // Init NameField
     function nameFieldEvent() {
       if (!isItemNameEmpty()) {
@@ -259,44 +256,17 @@ document.addEventListener("DOMContentLoaded", () => {
         cleanItemSelection();
         copyRadio.setAttribute("checked", true);
         setFieldValidationStatus("from", true);
-        if (!getFieldValidationStatus("name")) {
-          setTimeout(function () {
-            var parentName = copyFromInput.value;
-
-            fetch("job/" + parentName + "/api/json?tree=name").then(
-              (response) => {
-                response.json().then((data) => {
-                  if (data.name === parentName) {
-                    //if "name" is invalid, but "from" is a valid job, then switch focus to "name"
-                    nameInput.focus();
-                  }
-                });
-              },
-            );
-          }, 400);
-        } else {
-          refreshSubmitButtonState();
-        }
+        refreshSubmitButtonState();
       }
     }
 
     copyFromInput?.addEventListener("blur", copyFromFieldEvent);
     copyFromInput?.addEventListener("input", copyFromFieldEvent);
 
-    // Client-side validation
-    document
-      .querySelector("#createItem")
-      .addEventListener("submit", function (event) {
-        if (!getFormValidationStatus()) {
-          event.preventDefault();
-          if (!getFieldValidationStatus("name")) {
-            activateValidationMessage(getI18n("empty-name"));
-            nameInput.focus();
-          }
-        }
-      });
+    // Focus the Name input on load
+    document.querySelector("#add-item-panel #name").focus();
 
-    // Disable the submit button
+    // Disable the Submit button on load
     refreshSubmitButtonState();
   });
 
