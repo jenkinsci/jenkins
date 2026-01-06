@@ -260,7 +260,6 @@ document.addEventListener("DOMContentLoaded", () => {
         copyRadio.setAttribute("checked", true);
         setFieldValidationStatus("from", true);
         if (!getFieldValidationStatus("name")) {
-          activateValidationMessage(getI18n("empty-name"));
           setTimeout(function () {
             var parentName = copyFromInput.value;
 
