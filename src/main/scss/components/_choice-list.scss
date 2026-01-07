@@ -7,6 +7,26 @@
   border: var(--card-border-width) solid var(--card-border-color);
   background: var(--card-background);
 
+  &__heading {
+    font-size: 1rem;
+    padding: 0.875rem;
+    border-bottom: var(--card-border-width) solid var(--card-border-color);
+
+    & > * {
+      margin: 0;
+    }
+
+    h2 {
+      font-weight: var(--font-bold-weight);
+      font-size: var(--font-size-sm);
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: var(--text-color-secondary);
+    }
+  }
+
   &__item {
     -webkit-touch-callout: none;
     position: relative;

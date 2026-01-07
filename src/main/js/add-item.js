@@ -1,5 +1,7 @@
 import { getI18n } from "@/util/i18n";
+import { createElementFromHtml } from "@/util/dom";
 
+const enableHeadings = false;
 const nameInput = document.querySelector(`#createItem input[name="name"]`);
 const copyFromInput = document.querySelector(`#createItem input[name="from"]`);
 const copyRadio = document.querySelector(`#createItem input[value="copy"]`);
@@ -116,6 +118,29 @@ document.addEventListener("DOMContentLoaded", () => {
     //////////////////////////////////
     // Draw functions
 
+    function drawCategory(category) {
+      const heading = createElementFromHtml(
+        "<div class='jenkins-choice-list__heading'></div>",
+      );
+      const title = createElementFromHtml("<h2>" + category.name + "</h2>");
+      const description = createElementFromHtml(
+        "<p>" + category.description + "</p>",
+      );
+      heading.appendChild(title);
+      heading.appendChild(description);
+      const response = [];
+
+      if (enableHeadings) {
+        response.push(heading);
+      }
+
+      category.items.forEach((elem) => {
+        response.push(drawItem(elem));
+      });
+
+      return response;
+    }
+
     function drawItem(elem) {
       var item = document.createElement("div");
       item.className =
@@ -209,9 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Render all categories
     var $categories = document.querySelector(".categories template");
     data.categories.forEach((elem) => {
-      elem.items.forEach((elem) => {
-        $categories.before(drawItem(elem));
-      });
+      drawCategory(elem).forEach((e) => $categories.before(e));
     });
 
     // Init NameField
