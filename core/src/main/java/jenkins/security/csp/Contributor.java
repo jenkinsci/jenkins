@@ -32,7 +32,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * Contribute to the Content-Security-Policy rules.
  *
- * @since TODO
+ * @since 2.539
  */
 @Restricted(Beta.class)
 public interface Contributor extends ExtensionPoint {
