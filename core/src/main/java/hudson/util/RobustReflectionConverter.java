@@ -47,7 +47,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Saveable;
 import hudson.security.ACL;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -293,6 +295,11 @@ public class RobustReflectionConverter implements Converter {
     }
 
     public Object doUnmarshal(final Object result, final HierarchicalStreamReader reader, final UnmarshallingContext context) {
+        // Handle records differently - they require constructor-based initialization
+        if (result.getClass().isRecord()) {
+            return doUnmarshalRecord(result, reader, context);
+        }
+
         final SeenFields seenFields = new SeenFields();
         Iterator it = reader.getAttributeNames();
         // Remember outermost Saveable encountered, for reporting below
@@ -417,6 +424,127 @@ public class RobustReflectionConverter implements Converter {
         }
         return result;
     }
+
+    /**
+     * Unmarshal a record instance from XML.
+     * Records are immutable and cannot use field reflection after creation,
+     * so we must use the canonical constructor with all component values.
+     *
+     * @param result the record instance (used only for type information)
+     * @param reader the XML reader
+     * @param context the unmarshalling context
+     * @return a new record instance with values from XML
+     */
+    private Object doUnmarshalRecord(final Object result, final HierarchicalStreamReader reader, final UnmarshallingContext context) {
+        Class<?> recordClass = result.getClass();
+        RecordComponent[] components = recordClass.getRecordComponents();
+        Object[] componentValues = new Object[components.length];
+
+        // Remember outermost Saveable encountered, for reporting below
+        if (result instanceof Saveable && context.get("Saveable") == null) {
+            context.put("Saveable", result);
+        }
+
+        // Process attributes first
+        Iterator it = reader.getAttributeNames();
+        while (it.hasNext()) {
+            String attrAlias = (String) it.next();
+            String attrName = mapper.attributeForAlias(attrAlias);
+
+            // Find matching component
+            for (int i = 0; i < components.length; i++) {
+                if (components[i].getName().equals(attrName)) {
+                    Class<?> componentType = components[i].getType();
+                    SingleValueConverter converter = mapper.getConverterFromAttribute(recordClass, attrName, componentType);
+                    if (converter == null) {
+                        converter = mapper.getConverterFromItemType(componentType);
+                    }
+                    if (converter != null) {
+                        try {
+                            Object value = converter.fromString(reader.getAttribute(attrAlias));
+                            if (componentType.isPrimitive()) {
+                                componentType = Primitives.box(componentType);
+                            }
+                            if (value != null && !componentType.isAssignableFrom(value.getClass())) {
+                                throw new ConversionException("Cannot convert type " + value.getClass().getName() + " to type " + componentType.getName());
+                            }
+                            componentValues[i] = value;
+                        } catch (Exception e) {
+                            addErrorInContext(context, e);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Process child elements
+        while (reader.hasMoreChildren()) {
+            reader.moveDown();
+
+            try {
+                String fieldName = mapper.realMember(recordClass, reader.getNodeName());
+
+                // Find matching component
+                for (int i = 0; i < components.length; i++) {
+                    if (components[i].getName().equals(fieldName)) {
+                        Class<?> componentType = components[i].getType();
+
+                        // Check if there's a class attribute specifying a more specific type
+                        String classAttribute = reader.getAttribute(mapper.aliasForAttribute("class"));
+                        if (classAttribute != null) {
+                            Class<?> specifiedType = mapper.realClass(classAttribute);
+                            if (componentType.isAssignableFrom(specifiedType)) {
+                                componentType = specifiedType;
+                            }
+                        }
+
+                        Object value = context.convertAnother(result, componentType);
+                        componentValues[i] = value;
+                        break;
+                    }
+                }
+            } catch (XStreamException e) {
+                addErrorInContext(context, e);
+            } catch (LinkageError e) {
+                addErrorInContext(context, e);
+            }
+
+            reader.moveUp();
+        }
+
+        // Create the record instance using the canonical constructor
+        try {
+            Class<?>[] paramTypes = new Class<?>[components.length];
+            for (int i = 0; i < components.length; i++) {
+                paramTypes[i] = components[i].getType();
+            }
+            Constructor<?> constructor = recordClass.getDeclaredConstructor(paramTypes);
+            constructor.setAccessible(true);
+            Object recordInstance = constructor.newInstance(componentValues);
+
+            // Report any errors if this is a Saveable
+            if (shouldReportUnloadableDataForCurrentUser() && context.get("ReadError") != null && context.get("Saveable") == result) {
+                try {
+                    OldDataMonitor.report((Saveable) result, (ArrayList<Throwable>) context.get("ReadError"));
+                } catch (Throwable t) {
+                    StringBuilder message = new StringBuilder("There was a problem reporting unmarshalling field errors");
+                    Level level = Level.WARNING;
+                    if (t instanceof IllegalStateException && t.getMessage().contains("Expected 1 instance of " + OldDataMonitor.class.getName())) {
+                        message.append(". Make sure this code is executed after InitMilestone.EXTENSIONS_AUGMENTED stage, for example in Plugin#postInitialize instead of Plugin#start");
+                        level = Level.INFO;
+                    }
+                    LOGGER.log(level, message.toString(), t);
+                }
+                context.put("ReadError", null);
+            }
+
+            return recordInstance;
+        } catch (Exception e) {
+            throw new ConversionException("Cannot construct record " + recordClass.getName(), e);
+        }
+    }
+
 
     /**
      * Returns whether the current user authentication is allowed to have errors loading data reported.

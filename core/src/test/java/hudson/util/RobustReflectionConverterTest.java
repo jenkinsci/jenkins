@@ -98,7 +98,7 @@ class RobustReflectionConverterTest {
     @Test
     void ifWorkaroundNeeded() {
         XStream xs = new XStream(XStream2.getDefaultDriver());
-        xs.allowTypes(new Class[] {Point.class});
+        xs.allowTypes(new Class[] { Point.class });
         final ConversionException e = assertThrows(ConversionException.class, () -> read(xs));
         assertThat(e.getMessage(), containsString("No such field hudson.util.Point.z"));
     }
@@ -118,9 +118,9 @@ class RobustReflectionConverterTest {
         s3.jacket = new Jacket();
         s3.lover = new Jean();
         Bild b = new Bild();
-        b.steppes = new Steppe[] {s1, s2, s3};
+        b.steppes = new Steppe[] { s1, s2, s3 };
         Projekt p = new Projekt();
-        p.bildz = new Bild[] {b};
+        p.bildz = new Bild[] { b };
         XStream xs = new XStream2(clazz -> {
             Owner o = clazz.getAnnotation(Owner.class);
             return o != null ? o.value() : null;
@@ -129,12 +129,14 @@ class RobustReflectionConverterTest {
         String prefix2 = RobustReflectionConverterTest.class.getName() + "$";
         assertEquals("<Projekt><bildz><Bild><steppes>"
                 + "<Enchufla plugin='p1'><number>1</number><direction>North</direction></Enchufla>"
-                // note no plugin='p2' on <boot/> since that would be redundant; <jacket/> is quiet even though unowned
+                // note no plugin='p2' on <boot/> since that would be redundant; <jacket/> is
+                // quiet even though unowned
                 + "<Moonwalk plugin='p2'><number>2</number><boot/><lover class='Billy' plugin='p3'/></Moonwalk>"
                 + "<Moonwalk plugin='p2'><number>3</number><boot/><jacket/><lover class='Jean' plugin='p4'/></Moonwalk>"
                 + "</steppes></Bild></bildz></Projekt>",
                 xs.toXML(p).replace(prefix1, "").replace(prefix2, "").replaceAll("\r?\n *", "").replace('"', '\''));
-        Moonwalk s = (Moonwalk) xs.fromXML("<" + prefix1 + "Moonwalk plugin='p2'><lover class='" + prefix2 + "Billy' plugin='p3'/></" + prefix1 + "Moonwalk>");
+        Moonwalk s = (Moonwalk) xs.fromXML("<" + prefix1 + "Moonwalk plugin='p2'><lover class='" + prefix2
+                + "Billy' plugin='p3'/></" + prefix1 + "Moonwalk>");
         assertEquals(Billy.class, s.lover.getClass());
     }
 
@@ -172,17 +174,18 @@ class RobustReflectionConverterTest {
     void robustAgainstImplicitCollectionElementsWithBadTypes() {
         XStream2 xs = new XStream2();
         xs.alias("hold", Hold.class);
-        // Note that the fix only matters for `addImplicitCollection` overloads like the following where the element type is not provided.
+        // Note that the fix only matters for `addImplicitCollection` overloads like the
+        // following where the element type is not provided.
         xs.addImplicitCollection(Hold.class, "items");
         Hold h = (Hold) xs.fromXML(
                 """
-                <hold>
-                  <int>123</int>
-                  <string>abc</string>
-                  <int>456</int>
-                  <string>def</string>
-                </hold>
-                """);
+                        <hold>
+                          <int>123</int>
+                          <string>abc</string>
+                          <int>456</int>
+                          <string>def</string>
+                        </hold>
+                        """);
         assertThat(h.items, equalTo(List.of("abc", "def")));
     }
 
@@ -191,7 +194,8 @@ class RobustReflectionConverterTest {
 
         @Override
         public void save() {
-            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+            // We only implement Saveable so that RobustReflectionConverter logs
+            // deserialization problems.
         }
     }
 
@@ -202,13 +206,13 @@ class RobustReflectionConverterTest {
         xs.addImplicitCollection(HoldRaw.class, "items");
         var h = (HoldRaw) xs.fromXML(
                 """
-                <hold>
-                  <int>123</int>
-                  <string>abc</string>
-                  <int>456</int>
-                  <string>def</string>
-                </hold>
-                """);
+                        <hold>
+                          <int>123</int>
+                          <string>abc</string>
+                          <int>456</int>
+                          <string>def</string>
+                        </hold>
+                        """);
         assertThat(h.items, equalTo(List.of(123, "abc", 456, "def")));
     }
 
@@ -217,11 +221,13 @@ class RobustReflectionConverterTest {
 
         @Override
         public void save() throws IOException {
-            // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+            // We only implement Saveable so that RobustReflectionConverter logs
+            // deserialization problems.
         }
     }
 
-    @Retention(RetentionPolicy.RUNTIME) @interface Owner {
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Owner {
         String value();
     }
 
@@ -250,18 +256,23 @@ class RobustReflectionConverterTest {
     }
 
     @Owner("p2")
-    public static class Boot {}
+    public static class Boot {
+    }
 
-    public static class Jacket {}
+    public static class Jacket {
+    }
 
     @Owner("p2")
-    public abstract static class Lover {}
+    public abstract static class Lover {
+    }
 
     @Owner("p3")
-    public static class Billy extends Lover {}
+    public static class Billy extends Lover {
+    }
 
     @Owner("p4")
-    public static class Jean extends Lover {}
+    public static class Jean extends Lover {
+    }
 
     @Test
     @Timeout(value = 30 * 1000, unit = TimeUnit.MILLISECONDS)
@@ -308,7 +319,8 @@ class RobustReflectionConverterTest {
     @Issue("SECURITY-2602")
     void customConverter_wrapped_useCriticalXStreamException() {
         XStream2 xstream2 = new XStream2();
-        xstream2.registerConverter(new CustomSet.ConverterImpl(xstream2.getMapper())); // TODO Fix test so it does not pass without this
+        xstream2.registerConverter(new CustomSet.ConverterImpl(xstream2.getMapper())); // TODO Fix test so it does not
+                                                                                       // pass without this
 
         CustomSet customSet = preparePayloadUsingCustomSet();
         // enforce the use of RobustReflectionConverter
@@ -320,7 +332,8 @@ class RobustReflectionConverterTest {
         final String xml = xstream2.toXML(parentObject);
 
         // Without the InputManipulationException catch in RobustReflectionConverter,
-        // the parsing is continued despite the DoS prevention being triggered due to the robustness
+        // the parsing is continued despite the DoS prevention being triggered due to
+        // the robustness
         CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
         Throwable cause = e.getCause();
         assertNotNull(cause);
@@ -331,16 +344,17 @@ class RobustReflectionConverterTest {
 
     private Set<Object> preparePayload() {
         /*
-            On a i7-1185G7@3.00GHz (2021)
-            Full test time:
-            max=27 => ~11s
-            max=28 => ~22s
-            max=29 => ~47s
-            max=30 => >1m30
-            max=32 => est. 6m
-
-            With the protection in place, each test is taking ~15 seconds before the protection triggers
-        */
+         * On a i7-1185G7@3.00GHz (2021)
+         * Full test time:
+         * max=27 => ~11s
+         * max=28 => ~22s
+         * max=29 => ~47s
+         * max=30 => >1m30
+         * max=32 => est. 6m
+         *
+         * With the protection in place, each test is taking ~15 seconds before the
+         * protection triggers
+         */
 
         final Set<Object> set = new HashSet<>();
         Set<Object> s1 = set;
@@ -362,19 +376,20 @@ class RobustReflectionConverterTest {
 
     private CustomSet preparePayloadUsingCustomSet() {
         /*
-            On a i7-1185G7@3.00GHz (2021)
-            Full test time:
-            max=24 => ~3s
-            max=25 => ~4s
-            max=26 => ~7s
-            max=27 => ~13s // trigger DoS prevention
-            max=28 => ~25s
-            max=29 => ~50s
-            max=29 => ~1m40s
-            max=30 => >3m0
-
-            With the protection in place, each test is taking ~15 seconds before the protection triggers
-        */
+         * On a i7-1185G7@3.00GHz (2021)
+         * Full test time:
+         * max=24 => ~3s
+         * max=25 => ~4s
+         * max=26 => ~7s
+         * max=27 => ~13s // trigger DoS prevention
+         * max=28 => ~25s
+         * max=29 => ~50s
+         * max=29 => ~1m40s
+         * max=30 => >3m0
+         *
+         * With the protection in place, each test is taking ~15 seconds before the
+         * protection triggers
+         */
         final CustomSet customSet = new CustomSet();
         CustomSet s1 = customSet;
         CustomSet s2 = new CustomSet();
@@ -426,8 +441,10 @@ class RobustReflectionConverterTest {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
             CustomSet customSet = (CustomSet) o;
             return Objects.equals(internalSet, customSet.internalSet);
         }
@@ -461,5 +478,183 @@ class RobustReflectionConverterTest {
                 return new HashSet<>();
             }
         }
+    }
+
+    // Record support tests for issue #26077
+
+    @Issue("JENKINS-26077")
+    @Test
+    void testSimpleRecordSerialization() {
+        XStream2 xs = new XStream2();
+        SimplePerson person = new SimplePerson("Alice", 30);
+
+        String xml = xs.toXML(person);
+        SimplePerson deserialized = (SimplePerson) xs.fromXML(xml);
+
+        assertEquals(person.name(), deserialized.name());
+        assertEquals(person.age(), deserialized.age());
+        assertEquals(person, deserialized);
+    }
+
+    @Issue("JENKINS-26077")
+    @Test
+    void testRecordWithNullValues() {
+        XStream2 xs = new XStream2();
+        SimplePerson person = new SimplePerson(null, 25);
+
+        String xml = xs.toXML(person);
+        SimplePerson deserialized = (SimplePerson) xs.fromXML(xml);
+
+        assertEquals(person.name(), deserialized.name());
+        assertEquals(person.age(), deserialized.age());
+        assertEquals(person, deserialized);
+    }
+
+    @Issue("JENKINS-26077")
+    @Test
+    void testNestedRecords() {
+        XStream2 xs = new XStream2();
+        Address address = new Address("123 Main St", "Springfield", "12345");
+        PersonWithAddress person = new PersonWithAddress("Bob", address);
+
+        String xml = xs.toXML(person);
+        PersonWithAddress deserialized = (PersonWithAddress) xs.fromXML(xml);
+
+        assertEquals(person.name(), deserialized.name());
+        assertEquals(person.address().street(), deserialized.address().street());
+        assertEquals(person.address().city(), deserialized.address().city());
+        assertEquals(person.address().zip(), deserialized.address().zip());
+        assertEquals(person, deserialized);
+    }
+
+    @Issue("JENKINS-26077")
+    @Test
+    void testRecordWithCollections() {
+        XStream2 xs = new XStream2();
+        Team team = new Team("Engineering", List.of("Alice", "Bob", "Charlie"));
+
+        String xml = xs.toXML(team);
+        Team deserialized = (Team) xs.fromXML(xml);
+
+        assertEquals(team.name(), deserialized.name());
+        assertEquals(team.members(), deserialized.members());
+        assertEquals(team, deserialized);
+    }
+
+    @Issue("JENKINS-26077")
+    @Test
+    void testRecordWithEmptyCollection() {
+        XStream2 xs = new XStream2();
+        Team team = new Team("Empty Team", List.of());
+
+        String xml = xs.toXML(team);
+        Team deserialized = (Team) xs.fromXML(xml);
+
+        assertEquals(team.name(), deserialized.name());
+        assertEquals(team.members(), deserialized.members());
+        assertEquals(team, deserialized);
+    }
+
+    @Issue("JENKINS-26077")
+    @Test
+    void testRecordWithPrimitiveTypes() {
+        XStream2 xs = new XStream2();
+        Coordinates coords = new Coordinates(10.5, 20.3, 100);
+
+        String xml = xs.toXML(coords);
+        Coordinates deserialized = (Coordinates) xs.fromXML(xml);
+
+        assertEquals(coords.x(), deserialized.x());
+        assertEquals(coords.y(), deserialized.y());
+        assertEquals(coords.elevation(), deserialized.elevation());
+        assertEquals(coords, deserialized);
+    }
+
+    @Issue("JENKINS-26077")
+    @Test
+    void testRecordBackwardCompatibility() {
+        XStream2 xs = new XStream2();
+        // Simulate XML that might have been written before record support
+        String xml = """
+                <hudson.util.RobustReflectionConverterTest_-SimplePerson>
+                  <name>Charlie</name>
+                  <age>35</age>
+                </hudson.util.RobustReflectionConverterTest_-SimplePerson>""";
+
+        SimplePerson deserialized = (SimplePerson) xs.fromXML(xml);
+
+        assertEquals("Charlie", deserialized.name());
+        assertEquals(35, deserialized.age());
+    }
+
+    @Issue("JENKINS-26077")
+    @Test
+    void testRecordWithMissingField() {
+        XStream2 xs = new XStream2();
+        // XML missing the 'age' field - this should fail for primitive types
+        // because we can't pass null to a primitive int parameter
+        String xml = """
+                <hudson.util.RobustReflectionConverterTest_-SimplePerson>
+                  <name>Dave</name>
+                </hudson.util.RobustReflectionConverterTest_-SimplePerson>""";
+
+        // Records with primitive fields require all fields to be present
+        assertThrows(ConversionException.class, () -> xs.fromXML(xml));
+    }
+
+    @Issue("JENKINS-26077")
+    @Test
+    void testRecordWithMissingNullableField() {
+        XStream2 xs = new XStream2();
+        // Test with a record that has nullable (reference type) fields
+        String xml = """
+                <hudson.util.RobustReflectionConverterTest_-PersonWithAddress>
+                  <name>Eve</name>
+                </hudson.util.RobustReflectionConverterTest_-PersonWithAddress>""";
+
+        PersonWithAddress deserialized = (PersonWithAddress) xs.fromXML(xml);
+
+        assertEquals("Eve", deserialized.name());
+        assertEquals(null, deserialized.address()); // Reference types can be null
+    }
+
+    @Issue("JENKINS-26077")
+    @Test
+    void testComplexNestedRecord() {
+        XStream2 xs = new XStream2();
+        Address homeAddress = new Address("456 Oak Ave", "Portland", "97201");
+        Address workAddress = new Address("789 Pine St", "Portland", "97202");
+        PersonWithMultipleAddresses person = new PersonWithMultipleAddresses(
+                "Eve",
+                homeAddress,
+                workAddress);
+
+        String xml = xs.toXML(person);
+        PersonWithMultipleAddresses deserialized = (PersonWithMultipleAddresses) xs.fromXML(xml);
+
+        assertEquals(person.name(), deserialized.name());
+        assertEquals(person.home(), deserialized.home());
+        assertEquals(person.work(), deserialized.work());
+        assertEquals(person, deserialized);
+    }
+
+    // Test record definitions
+
+    public record SimplePerson(String name, int age) {
+    }
+
+    public record Address(String street, String city, String zip) {
+    }
+
+    public record PersonWithAddress(String name, Address address) {
+    }
+
+    public record Team(String name, List<String> members) {
+    }
+
+    public record Coordinates(double x, double y, int elevation) {
+    }
+
+    public record PersonWithMultipleAddresses(String name, Address home, Address work) {
     }
 }
