@@ -61,7 +61,6 @@
       <And>
         <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
         <Or>
-          <Class name="hudson.cli.BuildCommand"/>
           <Class name="hudson.cli.DeleteNodeCommand"/>
           <Class name="hudson.cli.UpdateNodeCommand"/>
           <Class name="hudson.cli.WaitNodeOfflineCommand"/>

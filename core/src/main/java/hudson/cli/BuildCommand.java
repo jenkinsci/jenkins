@@ -37,6 +37,7 @@ import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.User;
@@ -201,7 +202,12 @@ public class BuildCommand extends CLICommand {
                     }
                     f.get();    // wait for the completion
                     stdout.println("Completed " + b.getFullDisplayName() + " : " + b.getResult());
-                    return b.getResult().ordinal;
+                    Result result = b.getResult();
+                    if (result != null) {
+                        return result.ordinal;
+                    } else {
+                        return -1;
+                    }
                 } catch (InterruptedException e) {
                     if (follow) {
                         return 125;
