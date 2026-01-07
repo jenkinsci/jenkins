@@ -40,6 +40,7 @@ import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
@@ -63,6 +64,8 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import jenkins.UserAgentURLConnectionDecorator;
 import jenkins.model.Jenkins;
@@ -99,11 +102,13 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
      */
     private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = SystemProperties.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", (int) TimeUnit.SECONDS.toMillis(20));
 
+    private static final Logger LOGGER = Logger.getLogger(ProxyConfiguration.class.getName());
+
     public final String name;
     public final int port;
 
     /**
-     * Possibly null proxy user name.
+     * Possibly null proxy username.
      */
     private String userName;
 
@@ -284,6 +289,7 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
         SaveableListener.fireOnChange(this, config);
     }
 
+    @Serial
     private Object readResolve() {
         authenticator = newAuthenticator();
         userName = Util.fixEmptyAndTrim(userName);
@@ -296,10 +302,16 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
 
     public static ProxyConfiguration load() throws IOException {
         XmlFile f = getXmlFile();
-        if (f.exists())
+        if (f.exists()) {
             return (ProxyConfiguration) f.read();
-        else
-            return null;
+        } else {
+            ProxyConfiguration pc = createFromSystemProperties();
+            if (pc != null) {
+                LOGGER.log(Level.INFO,
+                    "No proxy.xml found; using proxy configuration from JVM system properties");
+            }
+            return pc;
+        }
     }
 
     /**
@@ -342,10 +354,10 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
     public static InputStream getInputStream(URL url) throws IOException {
         final ProxyConfiguration p = get();
         if (p == null)
-            return ((HttpURLConnection) url.openConnection()).getInputStream();
+            return url.openConnection().getInputStream();
 
         Proxy proxy = p.createProxy(url.getHost());
-        InputStream is = ((HttpURLConnection) url.openConnection(proxy)).getInputStream();
+        InputStream is = url.openConnection(proxy).getInputStream();
         if (p.getUserName() != null) {
             // Add an authenticator which provides the credentials for proxy authentication
             Authenticator.setDefault(p.authenticator);
@@ -456,7 +468,7 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
     }
 
     /**
-     * If the first URL we try to access with a HTTP proxy is HTTPS then the authentication cache will not have been
+     * If the first URL we try to access with an HTTP proxy is HTTPS then the authentication cache will not have been
      * pre-populated, so we try to access at least one HTTP URL before the very first HTTPS url.
      * @param url the actual URL being opened.
      */
@@ -476,10 +488,7 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
                 }
             }
             authCacheSeeded = true;
-        } else if ("https".equals(url.getProtocol())) {
-            // if we access any http url using a proxy then the auth cache will have been seeded
-            authCacheSeeded = authCacheSeeded || proxy != Proxy.NO_PROXY;
-        }
+        }  // if we access any http url using a proxy then the auth cache will have been seeded
     }
 
     @CheckForNull
@@ -505,6 +514,7 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
 
     private static final XStream XSTREAM = new XStream2();
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     static {
@@ -638,5 +648,52 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
                 }
             };
         }
+    }
+
+    /**
+     * Creates a {@link ProxyConfiguration} instance from the standard JVM system properties.
+     * <p>
+     * This method checks for https.proxyHost and http.proxyHost. If a host is found, it attempts
+     * to populate the configuration with the corresponding port, user, password, and non-proxy hosts.
+     *
+     * @return a new {@link ProxyConfiguration} instance if a proxy host is defined in system properties,
+     * otherwise null.
+     */
+    @CheckForNull
+    public static ProxyConfiguration createFromSystemProperties() {
+        String host = SystemProperties.getString("https.proxyHost");
+        if (host == null || host.trim().isEmpty()) {
+            host = SystemProperties.getString("http.proxyHost");
+        }
+
+        if (host == null || host.trim().isEmpty()) {
+            return null;
+        }
+
+        String portStr = SystemProperties.getString("https.proxyPort");
+        if (portStr == null || portStr.trim().isEmpty()) {
+            portStr = SystemProperties.getString("http.proxyPort");
+        }
+
+        int port = 80;
+        if (portStr != null && !portStr.trim().isEmpty()) {
+            try {
+                port = Integer.parseInt(portStr.trim());
+            } catch (NumberFormatException ignore) {}
+        }
+
+        String user = SystemProperties.getString("https.proxyUser");
+        if (user == null) {
+            user = SystemProperties.getString("http.proxyUser");
+        }
+
+        String password = SystemProperties.getString("https.proxyPassword");
+        if (password == null) {
+            password = SystemProperties.getString("http.proxyPassword");
+        }
+
+        String noProxyHost = SystemProperties.getString("http.nonProxyHosts");
+
+        return new ProxyConfiguration(host.trim(), port, user, password, noProxyHost);
     }
 }
