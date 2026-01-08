@@ -55,12 +55,12 @@ class Security914Test {
     void cannotUseInvalidLocale_toTraverseFolder() throws Exception {
         assumeTrue(Functions.isWindows());
 
-        assertNotNull(j.getPluginManager().getPlugin("maven-plugin"));
-        j.createWebClient().goTo("plugin/maven-plugin/images/mavenmoduleset.svg", "image/svg+xml");
+        assertNotNull(j.getPluginManager().getPlugin("matrix-project"));
+        j.createWebClient().goTo("plugin/matrix-project/images/matrixproject.svg", "image/svg+xml");
 
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
-        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/maven-plugin/.xml").toURL());
+        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/matrix-project/.xml").toURL());
         // plugin deployed in: test\target\jenkins7375296945862059919tmp
         // rootDir is in     : test\target\jenkinsTests.tmp\jenkins1274934531848159942test
         // j.jenkins.getRootDir().getName() = jenkins1274934531848159942test
