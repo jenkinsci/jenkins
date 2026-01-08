@@ -679,7 +679,9 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
         if (portStr != null && !portStr.trim().isEmpty()) {
             try {
                 port = Integer.parseInt(portStr.trim());
-            } catch (NumberFormatException ignore) {}
+            } catch (NumberFormatException ignore) {
+                // ignore invalid port value and fall back to default
+            }
         }
 
         String user = SystemProperties.getString("https.proxyUser");
