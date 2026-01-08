@@ -81,7 +81,16 @@ var Behaviour = (function () {
     },
 
     start: function () {
-      addEventListener("DOMContentLoaded", (event) => { Behaviour.apply() });
+      if (document.readyState === "loading") {
+        // Loading hasn't finished yet
+        addEventListener("DOMContentLoaded", Behaviour.apply);
+      } else {
+        // `DOMContentLoaded` has already fired
+        console.warn(
+          "[JENKINS-76249] DOMContentLoaded already fired before Behaviour.apply has been called, this may result in multiple entries for dynamically added form entries",
+        );
+        Behaviour.apply();
+      }
     },
 
     apply: function () {
@@ -139,7 +148,7 @@ var Behaviour = (function () {
         }
       });
     },
-     
+
     addLoadEvent: function (func) {
       var oldonload = window.onload;
 
