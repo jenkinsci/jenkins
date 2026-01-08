@@ -26,7 +26,10 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.Failure;
+import hudson.model.Item;
+import hudson.model.ModifiableViewGroup;
 import hudson.model.View;
+import hudson.security.AccessControlled;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
@@ -50,22 +53,47 @@ public class CreateViewCommand extends CLICommand {
     protected int run() throws Exception {
 
         final Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(View.CREATE);
+        ModifiableViewGroup targetGroup = jenkins;
+        AccessControlled targetGroupACL = jenkins;
+
+        String name = viewName;
+
+        if (name != null && name.indexOf('/') > 0) {
+            int i = name.lastIndexOf('/');
+            String groupName = name.substring(0, i);
+            Item item = jenkins.getItemByFullName(groupName);
+
+            if (item == null) {
+                throw new IllegalArgumentException("Unknown ItemGroup " + groupName);
+            }
+
+            if (item instanceof ModifiableViewGroup) {
+                targetGroup = (ModifiableViewGroup) item;
+            } else {
+                throw new IllegalStateException("Item '" + groupName + "' is not a modifiable view group");
+            }
+
+            targetGroupACL = item;
+
+            name = name.substring(i + 1);
+        }
+
+        targetGroupACL.checkPermission(View.CREATE);
 
         View newView;
         try {
-
-            newView = View.createViewFromXML(viewName, stdin);
+            newView = View.createViewFromXML(name, stdin);
         } catch (Failure ex) {
             throw new IllegalArgumentException("Invalid view name: " + ex.getMessage());
         }
 
         final String newName = newView.getViewName();
-        if (jenkins.getView(newName) != null) {
-            throw new IllegalStateException("View '" + newName + "' already exists");
+        if (targetGroup.getView(newName) != null) {
+            String targetUrl = (targetGroup instanceof Item) ? ((Item) targetGroup).getUrl() : "Jenkins";
+            throw new IllegalStateException("View '" + newName + "' already exists in " + targetUrl);
         }
 
-        jenkins.addView(newView);
+        targetGroup.addView(newView);
 
         return 0;
     }

@@ -30,16 +30,21 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import hudson.model.ListView;
 import hudson.model.View;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import jenkins.model.Jenkins;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
@@ -80,6 +85,7 @@ class CreateViewCommandTest {
         assertThat(result, succeededSilently());
 
         final View updatedView = j.jenkins.getView("ViewFromXML");
+        assert updatedView != null;
         assertThat(updatedView.getViewName(), equalTo("ViewFromXML"));
         assertThat(updatedView.isFilterExecutors(), equalTo(true));
         assertThat(updatedView.isFilterQueue(), equalTo(false));
@@ -98,6 +104,7 @@ class CreateViewCommandTest {
         assertThat("A view with original name should not exist", j.jenkins.getView("ViewFromXML"), nullValue());
 
         final View updatedView = j.jenkins.getView("CustomViewName");
+        assert updatedView != null;
         assertThat(updatedView.getViewName(), equalTo("CustomViewName"));
         assertThat(updatedView.isFilterExecutors(), equalTo(true));
         assertThat(updatedView.isFilterQueue(), equalTo(false));
@@ -130,5 +137,73 @@ class CreateViewCommandTest {
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: Invalid view name"));
+    }
+
+    @Test
+    void createViewInsideFolderShouldSucceed() throws Exception {
+
+        MockFolder folder = j.createFolder("FolderA");
+
+        j.jenkins.setAuthorizationStrategy(
+            new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toAuthenticated()
+                .grant(View.CREATE).everywhere().toAuthenticated()
+                .grant(hudson.model.Item.READ).everywhere().toAuthenticated()
+        );
+
+        String viewXml = "<hudson.model.ListView><name>MyNestedView</name></hudson.model.ListView>";
+
+        final CLICommandInvoker.Result result = command
+            .withStdin(new ByteArrayInputStream(viewXml.getBytes(StandardCharsets.UTF_8)))
+            .invokeWithArgs("FolderA/MyNestedView");
+
+        assertThat(result, succeededSilently());
+        View nestedView = folder.getView("MyNestedView");
+        assertThat("View should exist inside FolderA", nestedView, notNullValue());
+        assertThat(nestedView, instanceOf(ListView.class));
+        assertThat(nestedView.getViewName(), equalTo("MyNestedView"));
+        assertThat("View should NOT exist in Jenkins root", j.jenkins.getView("MyNestedView"), nullValue());
+    }
+
+    @Test
+    void createViewInsideNonExistentFolderShouldFail() {
+        j.jenkins.setAuthorizationStrategy(
+            new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toAuthenticated()
+                .grant(View.CREATE).everywhere().toAuthenticated()
+                .grant(hudson.model.Item.READ).everywhere().toAuthenticated()
+        );
+
+        String viewXml = "<hudson.model.ListView><name>ViewX</name></hudson.model.ListView>";
+
+        final CLICommandInvoker.Result result = command
+            .withStdin(new ByteArrayInputStream(viewXml.getBytes(StandardCharsets.UTF_8)))
+            .invokeWithArgs("MissingFolder/ViewX");
+
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("Unknown ItemGroup MissingFolder"));
+    }
+
+    @Test
+    void createViewInsideFolderShouldFailIfAlreadyExists() throws Exception {
+        MockFolder folder = j.createFolder("FolderA");
+        folder.addView(new ListView("ExistingView"));
+
+        j.jenkins.setAuthorizationStrategy(
+            new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toAuthenticated()
+                .grant(View.CREATE).everywhere().toAuthenticated()
+                .grant(hudson.model.Item.READ).everywhere().toAuthenticated()
+        );
+
+        String viewXml = "<hudson.model.ListView><name>ExistingView</name></hudson.model.ListView>";
+
+        final CLICommandInvoker.Result result = command
+            .withStdin(new ByteArrayInputStream(viewXml.getBytes(StandardCharsets.UTF_8)))
+            .invokeWithArgs("FolderA/ExistingView");
+
+        assertThat(result, failedWith(4));
+        assertThat(result.stderr(), containsString("View 'ExistingView' already exists"));
     }
 }
