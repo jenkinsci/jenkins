@@ -81,9 +81,7 @@ var Behaviour = (function () {
     },
 
     start: function () {
-      Behaviour.addLoadEvent(function () {
-        Behaviour.apply();
-      });
+      addEventListener("DOMContentLoaded", (event) => { Behaviour.apply() });
     },
 
     apply: function () {
@@ -141,7 +139,7 @@ var Behaviour = (function () {
         }
       });
     },
-
+     
     addLoadEvent: function (func) {
       var oldonload = window.onload;
 
