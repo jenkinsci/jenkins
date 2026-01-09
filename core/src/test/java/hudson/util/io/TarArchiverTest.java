@@ -100,7 +100,7 @@ class TarArchiverTest {
             // extract via the zip command
             e.deleteContents();
             run(e, "unzip", zip.getAbsolutePath());
-            e = e.listDirectories().get(0);
+            e = e.listDirectories().getFirst();
 
             assertEquals(0755, e.child("a.txt").mode());
             assertEquals(dirMode, e.child("subdir").mode());

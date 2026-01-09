@@ -59,8 +59,7 @@ public class NonSerializableSecurityContext implements SecurityContext {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof SecurityContext) {
-            SecurityContext test = (SecurityContext) obj;
+        if (obj instanceof SecurityContext test) {
 
             if (this.getAuthentication() == null && test.getAuthentication() == null) {
                 return true;

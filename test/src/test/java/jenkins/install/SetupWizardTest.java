@@ -102,7 +102,7 @@ class SetupWizardTest {
 
     private void wizardLogin(JenkinsRule.WebClient wc) throws Exception {
         HtmlPage page = wc.goTo("login");
-        HtmlForm form = page.getForms().get(0);
+        HtmlForm form = page.getForms().getFirst();
         form.getInputByName("j_password").setValue(initialAdminPassword);
         HtmlFormUtil.submit(form, null);
     }

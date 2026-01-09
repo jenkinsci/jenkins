@@ -116,8 +116,8 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         // otherwise leave it as is.
         List<FilePath> children = root.list();
         if (children.size() != 1)    return null;
-        if (children.get(0).isDirectory())
-            return children.get(0);
+        if (children.getFirst().isDirectory())
+            return children.getFirst();
         return null;
     }
 
@@ -153,7 +153,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * @return true if the schema is the default one (id, name, url), false otherwise
          */
         private boolean isDefaultSchema(List<JSONObject> jsonList) {
-            JSONObject jsonToolInstallerList = jsonList.get(0);
+            JSONObject jsonToolInstallerList = jsonList.getFirst();
             ToolInstallerList toolInstallerList = (ToolInstallerList) JSONObject.toBean(jsonToolInstallerList, ToolInstallerList.class);
 
             if (toolInstallerList != null) {

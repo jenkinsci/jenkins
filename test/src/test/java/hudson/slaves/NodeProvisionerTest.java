@@ -263,7 +263,7 @@ class NodeProvisionerTest {
         assertEquals("", build.getBuiltOnStr());
         List<MatrixRun> runs = build.getRuns();
         assertEquals(1, runs.size());
-        assertEquals("slave0", runs.get(0).getBuiltOnStr());
+        assertEquals("slave0", runs.getFirst().getBuiltOnStr());
     }
 
     /**

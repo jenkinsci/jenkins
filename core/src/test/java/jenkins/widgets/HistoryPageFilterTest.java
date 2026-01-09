@@ -117,9 +117,9 @@ class HistoryPageFilterTest {
         assertEquals(2, historyPageFilter.queueItems.size());
         assertEquals(3, historyPageFilter.runs.size());
 
-        assertEquals(12, historyPageFilter.queueItems.get(0).getEntryId());
+        assertEquals(12, historyPageFilter.queueItems.getFirst().getEntryId());
         assertEquals(12, historyPageFilter.newestOnPage);
-        assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.runs.get(0).getEntryId());
+        assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.runs.getFirst().getEntryId());
     }
 
     /**
@@ -285,7 +285,7 @@ class HistoryPageFilterTest {
         assertEquals(0, historyPageFilter.queueItems.size());
         assertEquals(5, historyPageFilter.runs.size());
 
-        assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.runs.get(0).getEntryId());
+        assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.runs.getFirst().getEntryId());
         assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.newestOnPage);
         assertEquals(HistoryPageEntry.getEntryId(6), historyPageFilter.oldestOnPage);
     }
@@ -328,7 +328,7 @@ class HistoryPageFilterTest {
 
         //then
         assertEquals(1, historyPageFilter.runs.size());
-        assertEquals(HistoryPageEntry.getEntryId(23), historyPageFilter.runs.get(0).getEntryId());
+        assertEquals(HistoryPageEntry.getEntryId(23), historyPageFilter.runs.getFirst().getEntryId());
     }
 
     @Test
@@ -384,7 +384,7 @@ class HistoryPageFilterTest {
 
         //then
         assertEquals(1, historyPageFilter.runs.size());
-        assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+        assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.getFirst().getEntryId());
     }
 
     private List<QueueItem> newQueueItems(long startId, long endId) {

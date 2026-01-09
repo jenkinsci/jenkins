@@ -83,15 +83,15 @@ public class DescriptorTest {
         rule.configRoundtrip(p);
         List<Builder> builders = p.getBuildersList();
         assertEquals(1, builders.size());
-        assertEquals(BuilderImpl.class, builders.get(0).getClass());
-        assertEquals("builder-a", ((BuilderImpl) builders.get(0)).id);
+        assertEquals(BuilderImpl.class, builders.getFirst().getClass());
+        assertEquals("builder-a", ((BuilderImpl) builders.getFirst()).id);
         rule.assertLogContains("running builder-a", rule.buildAndAssertSuccess(p));
         p.getBuildersList().replace(new BuilderImpl("builder-b"));
         rule.configRoundtrip(p);
         builders = p.getBuildersList();
         assertEquals(1, builders.size());
-        assertEquals(BuilderImpl.class, builders.get(0).getClass());
-        assertEquals("builder-b", ((BuilderImpl) builders.get(0)).id);
+        assertEquals(BuilderImpl.class, builders.getFirst().getClass());
+        assertEquals("builder-b", ((BuilderImpl) builders.getFirst()).id);
         rule.assertLogContains("running builder-b", rule.buildAndAssertSuccess(p));
     }
 
