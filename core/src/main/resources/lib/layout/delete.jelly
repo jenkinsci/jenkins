@@ -75,7 +75,8 @@ THE SOFTWARE.
 
   <j:set var="url" value="doDelete" />
   <j:if test="${attrs.urlPrefix != null}">
-    <j:set var="url" value="${urlPrefix}/doDelete" />
+    <j:set var="basePrefix" value="${urlPrefix.endsWith('/') ? urlPrefix.substring(0, urlPrefix.length() - 1) : urlPrefix}" />
+    <j:set var="url" value="${basePrefix}/doDelete" />
   </j:if>
 
 
