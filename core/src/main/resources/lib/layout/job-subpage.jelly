@@ -103,7 +103,7 @@ THE SOFTWARE.
                 </j:when>
               </j:choose>
 
-              <l:overflowButton>
+              <l:overflowButton id="more-item-actions">
                 <dd:custom>
                   <div class="app-build-overflow">
                     <j:set var="mode" value="side-panel" />
