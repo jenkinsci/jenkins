@@ -89,7 +89,7 @@ class RunMapTest {
         p = r.jenkins.getItemByFullName("p", FreeStyleProject.class);
         assertNotNull(p);
         FreeStyleBuild b1 = p.getLastBuild();
-        assert b1 != null;
+        assertNotNull(b1);
         assertEquals(1, b1.getNumber());
         /* Currently fails since Run.project is final. But anyway that is not the problem:
         assertEquals(p, b1.getParent());
