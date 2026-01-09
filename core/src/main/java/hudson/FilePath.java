@@ -2606,7 +2606,21 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 // JENKINS-16846: if f.getName() is the same as one of the files/directories in f,
                 // the rename op will fail
                 File tmp = new File(f.getAbsolutePath() + ".__rename");
-                if (!f.renameTo(tmp))
+                int attempts = 5;
+                boolean renamed = false;
+
+                try {
+                    do {
+                        renamed = f.renameTo(tmp);
+                        attempts--;
+                        if (!renamed && attempts > 0) {
+                            Thread.sleep(300);
+                        }
+                    } while (!renamed && attempts > 0);
+                } catch (InterruptedException e) {
+                    // Ignore
+                }
+                if (!renamed)
                     throw new IOException("Failed to rename " + f + " to " + tmp);
 
                 File t = new File(target.getRemote());
