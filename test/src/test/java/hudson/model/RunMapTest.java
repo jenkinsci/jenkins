@@ -87,7 +87,7 @@ class RunMapTest {
         // Note that the bug does not reproduce simply from p.doReload(), since in that case Job identity remains intact:
         r.jenkins.reload();
         p = r.jenkins.getItemByFullName("p", FreeStyleProject.class);
-        assert p != null;
+        assertNotNull(p);
         FreeStyleBuild b1 = p.getLastBuild();
         assert b1 != null;
         assertEquals(1, b1.getNumber());
