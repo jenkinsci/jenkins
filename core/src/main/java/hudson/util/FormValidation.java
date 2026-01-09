@@ -71,21 +71,27 @@ import org.kohsuke.stapler.StaplerResponse2;
  * Represents the result of the form field validation.
  *
  * <p>
- * Use one of the factory methods to create an instance, then return it from your {@code doCheckXyz}
- * method. (Via {@link HttpResponse}, the returned object will render the result into {@link StaplerResponse2}.)
- * This way of designing form field validation allows you to reuse {@code doCheckXyz()} methods
+ * Use one of the factory methods to create an instance, then return it from
+ * your {@code doCheckXyz}
+ * method. (Via {@link HttpResponse}, the returned object will render the result
+ * into {@link StaplerResponse2}.)
+ * This way of designing form field validation allows you to reuse
+ * {@code doCheckXyz()} methods
  * programmatically as well (by using {@link #kind}.
  *
  * <p>
- * For typical validation needs, this class offers a number of {@code validateXXX(...)} methods, such as
- * {@link #validateExecutable(String)}. {@link FilePath} also has a number of {@code validateXXX(...)} methods
+ * For typical validation needs, this class offers a number of
+ * {@code validateXXX(...)} methods, such as
+ * {@link #validateExecutable(String)}. {@link FilePath} also has a number of
+ * {@code validateXXX(...)} methods
  * that you may be able to reuse.
  *
  * <p>
  * Also see {@code doCheckCvsRoot} in {@code CVSSCM} as an example.
  *
  * <p>
- * This class extends {@link IOException} so that it can be thrown from a method. This allows one to reuse
+ * This class extends {@link IOException} so that it can be thrown from a
+ * method. This allows one to reuse
  * the checking logic as a part of the real computation, such as:
  *
  * <pre>
@@ -118,7 +124,9 @@ import org.kohsuke.stapler.StaplerResponse2;
  * @since 1.294
  */
 public abstract class FormValidation extends IOException implements HttpResponse {
-    /* package */ static /* non-final for Groovy */ boolean APPLY_CONTENT_SECURITY_POLICY_HEADERS = SystemProperties.getBoolean(FormValidation.class.getName() + ".applyContentSecurityPolicyHeaders", true);
+    /* package */ static /* non-final for Groovy */ boolean APPLY_CONTENT_SECURITY_POLICY_HEADERS = SystemProperties
+            .getBoolean(FormValidation.class.getName() + ".applyContentSecurityPolicyHeaders", true);
+
     /**
      * Indicates the kind of result.
      */
@@ -143,8 +151,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * Sends out a string error message that indicates an error.
      *
      * @param message
-     *      Human readable message to be sent. {@code error(null)}
-     *      can be used as {@code ok()}.
+     *                Human readable message to be sent. {@code error(null)}
+     *                can be used as {@code ok()}.
      */
     public static FormValidation error(String message) {
         return errorWithMarkup(message == null ? null : Util.escape(message));
@@ -184,11 +192,14 @@ public abstract class FormValidation extends IOException implements HttpResponse
     }
 
     /**
-     * Sends out a string error message, with optional "show details" link that expands to the full stack trace.
+     * Sends out a string error message, with optional "show details" link that
+     * expands to the full stack trace.
      *
      * <p>
-     * Use this with caution, so that anonymous users do not gain too much insights into the state of the system,
-     * as error stack trace often reveals a lot of information. Consider if a check operation needs to be exposed
+     * Use this with caution, so that anonymous users do not gain too much insights
+     * into the state of the system,
+     * as error stack trace often reveals a lot of information. Consider if a check
+     * operation needs to be exposed
      * to everyone or just those who have higher access to job/hudson/etc.
      */
     public static FormValidation error(Throwable e, String message) {
@@ -200,15 +211,15 @@ public abstract class FormValidation extends IOException implements HttpResponse
     }
 
     private static FormValidation _error(Kind kind, Throwable e, String message) {
-        if (e == null)    return _errorWithMarkup(Util.escape(message), kind);
+        if (e == null)
+            return _errorWithMarkup(Util.escape(message), kind);
 
         return _errorWithMarkup(Util.escape(message) +
-            " </div><div><a href='#' class='showDetails'>"
-            + Messages.FormValidation_Error_Details()
-            + "</a><pre style='display:none'>"
-            + Util.escape(Functions.printThrowable(e)) +
-            "</pre>", kind
-        );
+                " </div><div><a href='#' class='showDetails'>"
+                + Messages.FormValidation_Error_Details()
+                + "</a><pre style='display:none'>"
+                + Util.escape(Functions.printThrowable(e)) +
+                "</pre>", kind);
     }
 
     public static FormValidation error(Throwable e, String format, Object... args) {
@@ -222,14 +233,17 @@ public abstract class FormValidation extends IOException implements HttpResponse
     /**
      * Aggregate multiple validations into one.
      *
-     * @return Validation of the least successful kind aggregating all child messages.
+     * @return Validation of the least successful kind aggregating all child
+     *         messages.
      * @since 1.590
      */
     @SuppressFBWarnings(value = "POTENTIAL_XML_INJECTION", justification = "intentional; caller's responsibility to escape HTML")
     public static @NonNull FormValidation aggregate(@NonNull Collection<FormValidation> validations) {
-        if (validations == null || validations.isEmpty()) return FormValidation.ok();
+        if (validations == null || validations.isEmpty())
+            return FormValidation.ok();
 
-        if (validations.size() == 1) return validations.iterator().next();
+        if (validations.size() == 1)
+            return validations.iterator().next();
 
         final StringBuilder sb = new StringBuilder("<ul style='list-style-type: none; padding-left: 0; margin: 0'>");
         FormValidation.Kind worst = Kind.OK;
@@ -253,8 +267,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * attack.
      *
      * @param message
-     *      Human readable message to be sent. {@code error(null)}
-     *      can be used as {@code ok()}.
+     *                Human readable message to be sent. {@code error(null)}
+     *                can be used as {@code ok()}.
      */
     public static FormValidation errorWithMarkup(String message) {
         return _errorWithMarkup(message, Kind.ERROR);
@@ -282,7 +296,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
                         message + "</div>";
             }
 
-            @Override public String toString() {
+            @Override
+            public String toString() {
                 return kind + ": " + message;
             }
         };
@@ -298,7 +313,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 return html;
             }
 
-            @Override public String toString() {
+            @Override
+            public String toString() {
                 return kind + ": " + html;
             }
         };
@@ -335,14 +351,17 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * Makes sure that the given string points to an executable file.
      *
      * @param exeValidator
-     *      If the validation process discovers a valid executable program on the given path,
-     *      the specified {@link FileValidator} can perform additional checks (such as making sure
-     *      that it has the right version, etc.)
+     *                     If the validation process discovers a valid executable
+     *                     program on the given path,
+     *                     the specified {@link FileValidator} can perform
+     *                     additional checks (such as making sure
+     *                     that it has the right version, etc.)
      */
     public static FormValidation validateExecutable(String exe, FileValidator exeValidator) {
         // insufficient permission to perform validation?
-        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) return ok();
-        final FormValidation[] result = {null};
+        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER))
+            return ok();
+        final FormValidation[] result = { null };
 
         try {
             DOSToUnixPathHelper.iteratePath(exe, new DOSToUnixPathHelper.Helper() {
@@ -386,7 +405,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
     }
 
     /**
-     * Make sure that the given string is an integer in the range specified by the lower and upper bounds (both inclusive)
+     * Make sure that the given string is an integer in the range specified by the
+     * lower and upper bounds (both inclusive)
      *
      * @param value the value to check
      * @param lower the lower bound (inclusive)
@@ -435,14 +455,15 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * Makes sure that the given string is a base64 encoded text.
      *
      * @param allowWhitespace
-     *      if you allow whitespace (CR,LF,etc) in base64 encoding
+     *                        if you allow whitespace (CR,LF,etc) in base64 encoding
      * @param allowEmpty
-     *      Is empty string allowed?
+     *                        Is empty string allowed?
      * @param errorMessage
-     *      Error message.
+     *                        Error message.
      * @since 1.305
      */
-    public static FormValidation validateBase64(String value, boolean allowWhitespace, boolean allowEmpty, String errorMessage) {
+    public static FormValidation validateBase64(String value, boolean allowWhitespace, boolean allowEmpty,
+            String errorMessage) {
         try {
             String v = value;
             if (!allowWhitespace) {
@@ -464,15 +485,18 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * Convenient base class for checking the validity of URLs.
      *
      * <p>
-     * This allows the check method to call various utility methods in a concise syntax.
+     * This allows the check method to call various utility methods in a concise
+     * syntax.
      */
     public abstract static class URLCheck {
         /**
-         * Open the given URI and read text content from it. This method honors the Content-type
+         * Open the given URI and read text content from it. This method honors the
+         * Content-type
          * header.
          *
-         * @throws IOException if the URI scheme is not supported, the connection was interrupted,
-         *     or the response was an error
+         * @throws IOException if the URI scheme is not supported, the connection was
+         *                     interrupted,
+         *                     or the response was an error
          * @since 2.382
          */
         protected Stream<String> open(URI uri) throws IOException {
@@ -485,8 +509,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
             }
             java.net.http.HttpResponse<Stream<String>> httpResponse;
             try {
-                httpResponse =
-                        httpClient.send(httpRequest, java.net.http.HttpResponse.BodyHandlers.ofLines());
+                httpResponse = httpClient.send(httpRequest, java.net.http.HttpResponse.BodyHandlers.ofLines());
             } catch (InterruptedException e) {
                 throw new IOException(e);
             }
@@ -510,11 +533,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
             URLConnection con = ProxyConfiguration.open(url);
-            if (con == null) { // TODO is this even permitted by URL.openConnection?
-                throw new IOException(url.toExternalForm());
-            }
             return new BufferedReader(
-                new InputStreamReader(con.getInputStream(), getCharset(con)));
+                    new InputStreamReader(con.getInputStream(), getCharset(con)));
         }
 
         /**
@@ -531,8 +551,9 @@ public abstract class FormValidation extends IOException implements HttpResponse
 
         /**
          * Finds the string literal from the given reader.
+         * 
          * @return
-         *      true if found, false otherwise.
+         *         true if found, false otherwise.
          * @deprecated use {@link #findText(Stream, String)}
          */
         @Deprecated
@@ -545,11 +566,13 @@ public abstract class FormValidation extends IOException implements HttpResponse
         }
 
         /**
-         * Calls the {@link FormValidation#error(String)} method with a reasonable error message.
-         * Use this method when the {@link #open(URL)} or {@link #findText(BufferedReader, String)} fails.
+         * Calls the {@link FormValidation#error(String)} method with a reasonable error
+         * message.
+         * Use this method when the {@link #open(URL)} or
+         * {@link #findText(BufferedReader, String)} fails.
          *
          * @param url
-         *      Pass in the URL that was connected. Used for error diagnosis.
+         *            Pass in the URL that was connected. Used for error diagnosis.
          */
         protected FormValidation handleIOException(String url, IOException e) throws IOException {
             // any invalid URL comes here
@@ -577,13 +600,12 @@ public abstract class FormValidation extends IOException implements HttpResponse
         }
 
         /**
-         * Implement the actual form validation logic, by using other convenience methods defined in this class.
+         * Implement the actual form validation logic, by using other convenience
+         * methods defined in this class.
          * If you are not using any of those, you don't need to extend from this class.
          */
         protected abstract FormValidation check() throws IOException;
     }
-
-
 
     public final Kind kind;
 
@@ -600,7 +622,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
     }
 
     @Override
-    public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
+    public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node)
+            throws IOException, ServletException {
         respond(rsp, renderHtml());
     }
 
@@ -630,12 +653,13 @@ public abstract class FormValidation extends IOException implements HttpResponse
          */
         private final List<String> names;
 
-        private volatile String checkUrl;    // cached once computed
-        private volatile String dependsOn;  //  cached once computed
+        private volatile String checkUrl; // cached once computed
+        private volatile String dependsOn; // cached once computed
 
         public CheckMethod(Descriptor descriptor, String fieldName) {
             this.descriptor = descriptor;
-            this.capitalizedFieldName = fieldName == null || fieldName.isEmpty() ? fieldName : Character.toTitleCase(fieldName.charAt(0)) + fieldName.substring(1);
+            this.capitalizedFieldName = fieldName == null || fieldName.isEmpty() ? fieldName
+                    : Character.toTitleCase(fieldName.charAt(0)) + fieldName.substring(1);
 
             method = ReflectionUtils.getPublicMethodNamed(descriptor.getClass(), "doCheck" + capitalizedFieldName);
             if (method != null) {
@@ -654,11 +678,12 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 QueryParameter qp = p.annotation(QueryParameter.class);
                 if (qp != null) {
                     String name = qp.value();
-                    if (name.isEmpty()) name = p.name();
+                    if (name.isEmpty())
+                        name = p.name();
                     if (name == null || name.isEmpty())
-                        continue;   // unknown parameter name. we'll report the error when the form is submitted.
+                        continue; // unknown parameter name. we'll report the error when the form is submitted.
                     if (name.equals("value"))
-                        continue;   // 'value' parameter is implicit
+                        continue; // 'value' parameter is implicit
 
                     RelativePath rp = p.annotation(RelativePath.class);
                     if (rp != null)
@@ -669,19 +694,22 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 }
 
                 Method m = ReflectionUtils.getPublicMethodNamed(p.type(), "fromStapler");
-                if (m != null)    findParameters(m);
+                if (m != null)
+                    findParameters(m);
             }
         }
 
         /**
          * Obtains the 1.526-compatible single string representation.
          *
-         * This method computes JavaScript expression, which evaluates to the URL that the client should request
+         * This method computes JavaScript expression, which evaluates to the URL that
+         * the client should request
          * the validation to.
          * A modern version depends on {@link #toStemUrl()} and {@link #getDependsOn()}
          */
         public String toCheckUrl() {
-            if (names == null)    return null;
+            if (names == null)
+                return null;
 
             if (checkUrl == null) {
                 StringBuilder buf = new StringBuilder(singleQuote(relativePath()));
@@ -697,21 +725,25 @@ public abstract class FormValidation extends IOException implements HttpResponse
             }
 
             // put this under the right contextual umbrella.
-            // 'a' in getCurrentDescriptorByNameUrl is always non-null because we already have Hudson as the sentinel
+            // 'a' in getCurrentDescriptorByNameUrl is always non-null because we already
+            // have Hudson as the sentinel
             return '\'' + jsStringEscape(Descriptor.getCurrentDescriptorByNameUrl()) + "/'+" + checkUrl;
         }
 
         /**
-         * Returns the URL that the JavaScript should hit to perform form validation, except
+         * Returns the URL that the JavaScript should hit to perform form validation,
+         * except
          * the query string portion (which is built on the client side.)
          */
         public String toStemUrl() {
-            if (names == null)    return null;
+            if (names == null)
+                return null;
             return Descriptor.getCurrentDescriptorByNameUrl() + '/' + relativePath();
         }
 
         public String getDependsOn() {
-            if (names == null)    return null;
+            if (names == null)
+                return null;
 
             if (dependsOn == null)
                 dependsOn = String.join(" ", names);
