@@ -56,7 +56,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * <p>
  * This class is multi-thread safe by using copy-on-write technique,
- * and it also updates the bi-directional links within {@link Run}
+ * and it also updates the bidirectional links within {@link Run}
  * accordingly.
  *
  * @author Kohsuke Kawaguchi
@@ -223,11 +223,30 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
         return super._put(r);
     }
 
+	/**
+	 * Lookup a build by its numeric ID.
+	 */
     @CheckForNull
-    @Override public R getById(String id) {
+    public R getById(int id) {
+        return getByNumber(id);
+    }
+
+
+	/**
+	 * Lookup a build by a String ID.
+	 *
+	 * @deprecated Use {@link #getById(int)} instead.
+	 * Jenkins build IDs were sometimes date-time strings.
+	 * This method preserves backward compatibility by attempting to parse
+	 * the ID as an integer and returning null if parsing fails.
+	 */
+    @Deprecated
+    @CheckForNull
+    @Override
+    public R getById(String id) {
         try {
-            return getByNumber(Integer.parseInt(id));
-        } catch (NumberFormatException e) { // see https://issues.jenkins.io/browse/JENKINS-75476
+            return getById(Integer.parseInt(id));
+        } catch (NumberFormatException e) {
             return null;
         }
     }
@@ -306,8 +325,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
     }
 
     /**
-     * Backward compatibility method that notifies {@link RunMap} of who the owner is.
-     *
+     * Backward compatibility method that notifies {@link RunMap} of whom the owner is.
      * Traditionally, this method blocked and loaded all the build records on the disk,
      * but now all the actual loading happens lazily.
      *
