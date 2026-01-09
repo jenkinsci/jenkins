@@ -273,6 +273,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   ".add-item-name",
                   message,
                 );
+                setFieldValidationStatus("name", false);
+                refreshSubmitButtonState();
               } else {
                 cleanValidationMessages(".add-item-name");
                 setFieldValidationStatus("name", true);
@@ -301,7 +303,6 @@ document.addEventListener("DOMContentLoaded", () => {
         copyRadio.setAttribute("checked", true);
         setFieldValidationStatus("from", true);
         if (!getFieldValidationStatus("name")) {
-          activateValidationMessage("#itemname-required", ".add-item-name");
           setTimeout(function () {
             var parentName = copyFromInput.value;
 
