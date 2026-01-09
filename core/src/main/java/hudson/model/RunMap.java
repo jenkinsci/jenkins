@@ -248,7 +248,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
     public R getById(String id) {
         try {
             return getById(Integer.parseInt(id));
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException e) { // see https://issues.jenkins.io/browse/JENKINS-75476
             return null;
         }
     }
