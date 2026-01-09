@@ -33,7 +33,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Objects;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -109,9 +111,10 @@ class XMLUtilsTest {
      * tests for each).
      */
     @Test
-    void testGetValue() throws XPathExpressionException, SAXException, IOException {
-        URL configUrl = getClass().getResource("/jenkins/xml/config.xml");
-        File configFile = new File(configUrl.getFile());
+    void testGetValue() throws XPathExpressionException, SAXException, IOException, URISyntaxException {
+        URL configUrl = Objects.requireNonNull(getClass().getResource("/jenkins/xml/config.xml"),
+                "Missing test resource /jenkins/xml/config.xml");
+        File configFile = new File(configUrl.toURI());
 
         assertEquals("1.480.1", XMLUtils.getValue("/hudson/version", configFile));
         assertEquals("", XMLUtils.getValue("/hudson/unknown-element", configFile));
