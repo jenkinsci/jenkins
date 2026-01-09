@@ -115,6 +115,15 @@
   }
 }
 
+.jenkins-app-bar--sticky {
+  position: static !important;
+
+  &::before,
+  &::after {
+    display: none !important;
+  }
+}
+
 .jenkins-build-caption {
   display: flex;
   flex-direction: row !important;
