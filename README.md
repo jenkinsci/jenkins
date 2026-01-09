@@ -8,6 +8,8 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3538/badge)](https://bestpractices.coreinfrastructure.org/projects/3538)
 [![Reproducible Builds](https://img.shields.io/badge/Reproducible_Builds-ok-green)](https://maven.apache.org/guides/mini/guide-reproducible-builds.html)
 [![Gitter](https://img.shields.io/gitter/room/jenkinsci/jenkins)](https://app.gitter.im/#/room/#jenkinsci_jenkins:gitter.im)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/jenkinsci/jenkins/badge)](https://api.securityscorecards.dev/projects/github.com/jenkinsci/jenkins)
+
 
 ---
 
