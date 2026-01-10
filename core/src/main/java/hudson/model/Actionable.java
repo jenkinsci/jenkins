@@ -199,15 +199,20 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             throw new IllegalArgumentException("Action must be non-null");
         }
 
+        // Collect existing actions of the same concrete type to avoid
+        // modifying the underlying actions list while iterating over it.
         List<Action> current = getActions();
         List<Action> toRemove = new ArrayList<>();
 
         for (Action existing : current) {
+            // Actions are considered replaceable only if they are of the same class
             if (existing.getClass() == a.getClass()) {
                 toRemove.add(existing);
             }
         }
 
+        // Remove all matching actions first, then add the new one
+        // to guarantee a single instance of this action type.
         current.removeAll(toRemove);
         addAction(a);
 
