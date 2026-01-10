@@ -198,22 +198,20 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         if (a == null) {
             throw new IllegalArgumentException("Action must be non-null");
         }
-        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
-        List<Action> old = new ArrayList<>(1);
+
         List<Action> current = getActions();
-        boolean found = false;
-        for (Action a2 : current) {
-            if (!found && a.equals(a2)) {
-                found = true;
-            } else  if (a2.getClass() == a.getClass()) {
-                old.add(a2);
+        List<Action> toRemove = new ArrayList<>();
+
+        for (Action existing : current) {
+            if (existing.getClass() == a.getClass()) {
+                toRemove.add(existing);
             }
         }
-        current.removeAll(old);
-        if (!found) {
-            addAction(a);
-        }
-        return !found || !old.isEmpty();
+
+        current.removeAll(toRemove);
+        addAction(a);
+
+        return true;
     }
 
     /**
