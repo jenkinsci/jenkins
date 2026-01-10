@@ -721,6 +721,23 @@ class DirectoryBrowserSupportTest {
         }
     }
 
+    private static boolean canCreateSymlink(Path dir) {
+        try {
+            Path target = Files.createTempFile(dir, "symlink-target", ".tmp");
+            Path link = dir.resolve("symlink-link");
+
+            Files.createSymbolicLink(link, target.getFileName());
+
+            Files.deleteIfExists(link);
+            Files.deleteIfExists(target);
+
+            return true;
+        } catch (IOException | UnsupportedOperationException | SecurityException e) {
+            return false;
+        }
+    }
+
+
     /*
      * If the glob filter is used, we do not want that it leaks some information.
      * Presence of a folder means that the folder contains one or multiple results, so we need to hide it completely
@@ -728,7 +745,16 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
-        assumeFalse(Functions.isWindows(), "Symbolic links are not reliably supported on Windows");
+        FreeStyleProject probe = j.createFreeStyleProject();
+        j.buildAndAssertSuccess(probe);
+
+        FilePath ws = probe.getSomeWorkspace();
+        Path root = new File(ws.getRemote()).toPath();
+
+        assumeTrue(
+                canCreateSymlink(root),
+                "Skipping test: symbolic links are not supported on this system"
+        );
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
