@@ -589,6 +589,8 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_outsideWorkspace_areNotAllowed() throws Exception {
+        Path root = j.jenkins.getRootDir().toPath();
+        assumeSymlinksSupported(root);
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -721,6 +723,21 @@ class DirectoryBrowserSupportTest {
         }
     }
 
+    // Helper Function
+    private static void assumeSymlinksSupported(Path dir) throws IOException {
+        Path target = Files.createTempFile(dir, "symlink-target", ".tmp");
+        Path link = dir.resolve("symlink-link");
+
+        try {
+            Files.createSymbolicLink(link, target.getFileName());
+        } catch (UnsupportedOperationException | IOException e) {
+            assumeTrue(false, "Symbolic links are not supported on this system");
+        } finally {
+            Files.deleteIfExists(link);
+            Files.deleteIfExists(target);
+        }
+    }
+
     /*
      * If the glob filter is used, we do not want that it leaks some information.
      * Presence of a folder means that the folder contains one or multiple results, so we need to hide it completely
@@ -728,6 +745,9 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
+        Path root = j.jenkins.getRootDir().toPath();
+        assumeSymlinksSupported(root);
+
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
