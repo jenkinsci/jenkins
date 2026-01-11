@@ -90,8 +90,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,7 +110,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
@@ -132,7 +129,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
@@ -149,8 +145,6 @@ import org.springframework.security.core.Authentication;
  */
 @WithJenkins
 public class QueueTest {
-
-    private final LogRecorder logging = new LogRecorder().record(Queue.class, Level.FINE);
 
     private JenkinsRule r;
 
@@ -172,8 +166,6 @@ public class QueueTest {
         FreeStyleProject testProject = r.createFreeStyleProject("test");
         assertNotNull(testProject.scheduleBuild2(0, new UserIdCause()));
         q.save();
-
-        System.out.println(Files.readString(r.jenkins.getRootDir().toPath().resolve("queue.xml"), StandardCharsets.UTF_8));
 
         assertEquals(1, q.getItems().length);
         q.clear();
@@ -227,8 +219,6 @@ public class QueueTest {
         FreeStyleProject testProject = r.createFreeStyleProject("test");
         assertNotNull(testProject.scheduleBuild2(0, new UserIdCause()));
         q.save();
-
-        System.out.println(Files.readString(r.jenkins.getRootDir().toPath().resolve("queue.xml"), StandardCharsets.UTF_8));
 
         assertEquals(1, q.getItems().length);
         q.clear();
@@ -372,7 +362,6 @@ public class QueueTest {
                         Started by remote host 4.3.2.1 with note: test
                         Started by remote host 1.2.3.4 with note: foo"""),
                    "Build page should combine duplicates and show counts: " + buildPage);
-        System.out.println(new XmlFile(new File(build.getRootDir(), "build.xml")).asString());
     }
 
     @Issue("JENKINS-8790")
@@ -1243,7 +1232,22 @@ public class QueueTest {
 
         assertEquals(expected.getShortDescription(), actual.getShortDescription());
         Queue.getInstance().doCancelItem(r.jenkins.getQueue().getBlockedItems().get(0).getId());
-        r.assertBuildStatusSuccess(r.waitForCompletion(build));
+
+        build.doStop(); // Stop build 1 early
+        r.waitForCompletion(build);
+        build.delete(); // Delete build 1
+
+        // Stop and delete build 2 if it is running.  Seen running on slower Windows computers
+        if (t1.isBuilding()) {
+            FreeStyleBuild build2 = t1.getLastBuild();
+            build2.doStop();
+            r.waitForCompletion(build2);
+            build2.delete();
+        }
+
+        assertFalse(t1.isBuilding(), "Job unexpectedly building");
+        assertNull(t1.getQueueItem(), "Job unexpectedly has non-null entry in queue " + t1.getQueueItem());
+        assertFalse(t1.isInQueue(), "Job unexpectedly in queue");
     }
 
     @Test
