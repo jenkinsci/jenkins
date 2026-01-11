@@ -981,6 +981,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void directSymlink_forTestingZip() throws Exception {
+        assumeSymlinksSupported(j.jenkins.getRootDir().toPath());
         FreeStyleProject p = j.createFreeStyleProject();
 
         j.buildAndAssertSuccess(p);
