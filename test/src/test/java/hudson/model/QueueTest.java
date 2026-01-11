@@ -1232,7 +1232,22 @@ public class QueueTest {
 
         assertEquals(expected.getShortDescription(), actual.getShortDescription());
         Queue.getInstance().doCancelItem(r.jenkins.getQueue().getBlockedItems().get(0).getId());
-        r.assertBuildStatusSuccess(r.waitForCompletion(build));
+
+        build.doStop(); // Stop build 1 early
+        r.waitForCompletion(build);
+        build.delete(); // Delete build 1
+
+        // Stop and delete build 2 if it is running.  Seen running on slower Windows computers
+        if (t1.isBuilding()) {
+            FreeStyleBuild build2 = t1.getLastBuild();
+            build2.doStop();
+            r.waitForCompletion(build2);
+            build2.delete();
+        }
+
+        assertFalse(t1.isBuilding(), "Job unexpectedly building");
+        assertNull(t1.getQueueItem(), "Job unexpectedly has non-null entry in queue " + t1.getQueueItem());
+        assertFalse(t1.isInQueue(), "Job unexpectedly in queue");
     }
 
     @Test
