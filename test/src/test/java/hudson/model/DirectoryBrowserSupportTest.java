@@ -26,7 +26,6 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -52,7 +51,7 @@ import hudson.slaves.WorkspaceList;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
-import hudson.util.StreamTaskListener;
+import hudson.util.SymlinkTestUtil;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -85,7 +84,6 @@ import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.MatcherAssert;
 import org.htmlunit.Page;
 import org.htmlunit.UnexpectedPage;
 import org.htmlunit.html.HtmlPage;
@@ -589,154 +587,97 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_outsideWorkspace_areNotAllowed() throws Exception {
-        Path root = j.jenkins.getRootDir().toPath();
-        assumeSymlinksSupported(root);
+        SymlinkTestUtil.assumeSymlinksSupported();
+
         FreeStyleProject p = j.createFreeStyleProject();
-
-        File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
-        File secretTarget = new File(secretsFolder, "goal.txt");
-        String secretContent = "secret";
-        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
-
-        /*
-         *  secrets/
-         *      goal.txt
-         *  workspace/
-         *      intermediateFolder/
-         *          public2.key
-         *          otherFolder/
-         *              to_secret3 -> ../../../../secrets/
-         *          to_secret2 -> ../../../secrets/
-         *          to_secret_goal2 -> ../../../secrets/goal.txt
-         *      public1.key
-         *      to_secret1 -> ../../secrets/
-         *      to_secret_goal1 -> ../../secrets/goal.txt
-         *
-         */
-        if (Functions.isWindows()) {
-            // no need to test mklink /H since we cannot create an hard link to a non-existing file
-            // and so you need to have access to the master file system directly which is already a problem
-
-            String script = loadContentFromResource("outsideWorkspaceStructure.bat");
-            p.getBuildersList().add(new BatchFile(script));
-        } else {
-            String script = loadContentFromResource("outsideWorkspaceStructure.sh");
-            p.getBuildersList().add(new Shell(script));
-        }
-
-        j.buildAndAssertSuccess(p);
-
-        JenkinsRule.WebClient wc = getWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        { // workspace root must be reachable (regular case)
-            Page page = wc.goTo(p.getUrl() + "ws/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-            String workspaceContent = page.getWebResponse().getContentAsString();
-            assertThat(workspaceContent, allOf(
-                    containsString("public1.key"),
-                    containsString("intermediateFolder"),
-                    not(containsString("to_secrets1")),
-                    not(containsString("to_secrets_goal1")),
-                    not(containsString("to_secrets2")),
-                    not(containsString("to_secrets_goal2"))
-            ));
-        }
-        { // to_secrets1 not reachable
-            Page page = wc.goTo(p.getUrl() + "ws/to_secrets1/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // to_secrets_goal1 not reachable
-            Page page = wc.goTo(p.getUrl() + "ws/to_secrets_goal1/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // intermediateFolder must be reachable (regular case)
-            Page page = wc.goTo(p.getUrl() + "ws/intermediateFolder/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-            String workspaceContent = page.getWebResponse().getContentAsString();
-            assertThat(workspaceContent, allOf(
-                    not(containsString("to_secrets1")),
-                    not(containsString("to_secrets_goal1")),
-                    not(containsString("to_secrets2")),
-                    not(containsString("to_secrets_goal2"))
-            ));
-        }
-        { // to_secrets2 not reachable
-            Page page = wc.goTo(p.getUrl() + "ws/intermediateFolder/to_secrets2/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // using symbolic in the intermediate path
-            Page page = wc.goTo(p.getUrl() + "ws/intermediateFolder/to_secrets2/master.key", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // to_secrets_goal2 not reachable
-            Page page = wc.goTo(p.getUrl() + "ws/intermediateFolder/to_secrets_goal2/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-
-        // pattern search feature
-        { // the pattern allow us to search inside the files / folders,
-            // without the patch the master.key from inside the outside symlinks would have been linked
-            Page page = wc.goTo(p.getUrl() + "ws/**/*.key", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-            String workspaceContent = page.getWebResponse().getContentAsString();
-            assertThat(workspaceContent, allOf(
-                    not(containsString("master.key")),
-                    containsString("public1.key"),
-                    containsString("public2.key")
-            ));
-        }
-
-        // zip feature
-        { // all the outside folders / files are not included in the zip, also the parent folder is included
-            Page zipPage = wc.goTo(p.getUrl() + "ws/*zip*/ws.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, containsInAnyOrder(
-                    p.getName() + "/intermediateFolder/public2.key",
-                    p.getName() + "/public1.key"
-            ));
-        }
-        { // workaround for JENKINS-19947 is still supported, i.e. no parent folder
-            Page zipPage = wc.goTo(p.getUrl() + "ws/**/*zip*/ws.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, containsInAnyOrder(
-                    "intermediateFolder/public2.key",
-                    "public1.key"
-            ));
-        }
-        { // all the outside folders / files are not included in the zip
-            Page zipPage = wc.goTo(p.getUrl() + "ws/intermediateFolder/*zip*/intermediateFolder.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, contains("intermediateFolder/public2.key"));
-        }
-        { // workaround for JENKINS-19947 is still supported, i.e. no parent folder, even inside a sub-folder
-            Page zipPage = wc.goTo(p.getUrl() + "ws/intermediateFolder/**/*zip*/intermediateFolder.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, contains("public2.key"));
-        }
-    }
-
-    // Helper Function
-    private static void assumeSymlinksSupported(Path dir) throws IOException {
-        Path target = Files.createTempFile(dir, "symlink-target", ".tmp");
-        Path link = dir.resolve("symlink-link");
+        Path secretsFolder = Files.createTempDirectory("secrets");
 
         try {
-            Files.createSymbolicLink(link, target.getFileName());
-        } catch (UnsupportedOperationException | IOException e) {
-            assumeTrue(false, "Symbolic links are not supported on this system");
+            Path secretTarget = secretsFolder.resolve("goal.txt");
+            Files.writeString(secretTarget, "secret", StandardCharsets.UTF_8);
+
+            /*
+             *  secrets/
+             *      goal.txt
+             *  workspace/
+             *      intermediateFolder/
+             *          public2.key
+             *          otherFolder/
+             *              to_secret3 -> ../../../../secrets/
+             *          to_secret2 -> ../../../secrets/
+             *          to_secret_goal2 -> ../../../secrets/goal.txt
+             *      public1.key
+             *      to_secret1 -> ../../secrets/
+             *      to_secret_goal1 -> ../../secrets/goal.txt
+             */
+            if (Functions.isWindows()) {
+                String script = loadContentFromResource("outsideWorkspaceStructure.bat");
+                p.getBuildersList().add(new BatchFile(script));
+            } else {
+                String script = loadContentFromResource("outsideWorkspaceStructure.sh");
+                p.getBuildersList().add(new Shell(script));
+            }
+
+            j.buildAndAssertSuccess(p);
+
+            JenkinsRule.WebClient wc = getWebClient();
+            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+            { // workspace root must be reachable
+                Page page = wc.goTo(p.getUrl() + "ws/", null);
+                assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+                String workspaceContent = page.getWebResponse().getContentAsString();
+                assertThat(workspaceContent, allOf(
+                        containsString("public1.key"),
+                        containsString("intermediateFolder"),
+                        not(containsString("to_secrets1")),
+                        not(containsString("to_secrets_goal1")),
+                        not(containsString("to_secrets2")),
+                        not(containsString("to_secrets_goal2"))
+                ));
+            }
+
+            { // to_secrets1 not reachable
+                Page page = wc.goTo(p.getUrl() + "ws/to_secrets1/", null);
+                assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
+            }
+
+            { // to_secrets_goal1 not reachable
+                Page page = wc.goTo(p.getUrl() + "ws/to_secrets_goal1/", null);
+                assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
+            }
+
+            { // intermediateFolder reachable
+                Page page = wc.goTo(p.getUrl() + "ws/intermediateFolder/", null);
+                assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+            }
+
+            { // pattern search
+                Page page = wc.goTo(p.getUrl() + "ws/**/*.key", null);
+                assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+                String workspaceContent = page.getWebResponse().getContentAsString();
+                assertThat(workspaceContent, allOf(
+                        not(containsString("master.key")),
+                        containsString("public1.key"),
+                        containsString("public2.key")
+                ));
+            }
+
+            { // zip feature
+                Page zipPage = wc.goTo(p.getUrl() + "ws/*zip*/ws.zip", null);
+                List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
+                assertThat(entryNames, containsInAnyOrder(
+                        p.getName() + "/intermediateFolder/public2.key",
+                        p.getName() + "/public1.key"
+                ));
+            }
+
         } finally {
-            Files.deleteIfExists(link);
-            Files.deleteIfExists(target);
+            Util.deleteRecursive(secretsFolder.toFile());
+
         }
     }
+
 
     /*
      * If the glob filter is used, we do not want that it leaks some information.
@@ -745,75 +686,74 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
-        Path root = j.jenkins.getRootDir().toPath();
-        assumeSymlinksSupported(root);
+        SymlinkTestUtil.assumeSymlinksSupported();
 
         FreeStyleProject p = j.createFreeStyleProject();
-
-        File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
-        File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
-        Files.writeString(secretsFolder.toPath().resolve("public_fake1.key"), secretContent, StandardCharsets.UTF_8);
-        Files.writeString(secretsFolder.toPath().resolve("public_fake2.key"), secretContent, StandardCharsets.UTF_8);
-        Files.writeString(secretsFolder.toPath().resolve("public_fake3.key"), secretContent, StandardCharsets.UTF_8);
 
-        /*
-         *  secrets/
-         *      goal.txt
-         *      public_fake1.key
-         *      public_fake2.key
-         *      public_fake3.key
-         *  workspace/
-         *      intermediateFolder/
-         *          public2.key
-         *          otherFolder/
-         *              to_secret3 -> ../../../../secrets/
-         *          to_secret2 -> ../../../secrets/
-         *          to_secret_goal2 -> ../../../secrets/goal.txt
-         *      public1.key
-         *      to_secret1 -> ../../secrets/
-         *      to_secret_goal1 -> ../../secrets/goal.txt
-         *
-         */
-        if (Functions.isWindows()) {
-            // no need to test mklink /H since we cannot create an hard link to a non-existing file
-            // and so you need to have access to the master file system directly which is already a problem
+        Path secretsFolder = Files.createTempDirectory("secrets");
 
-            String script = loadContentFromResource("outsideWorkspaceStructure.bat");
-            p.getBuildersList().add(new BatchFile(script));
-        } else {
-            String script = loadContentFromResource("outsideWorkspaceStructure.sh");
-            p.getBuildersList().add(new Shell(script));
-        }
+        try {
+            Path secretTarget = secretsFolder.resolve("goal.txt");
+            Files.writeString(secretTarget, secretContent, StandardCharsets.UTF_8);
+            Files.writeString(secretsFolder.resolve("public_fake1.key"), secretContent, StandardCharsets.UTF_8);
+            Files.writeString(secretsFolder.resolve("public_fake2.key"), secretContent, StandardCharsets.UTF_8);
+            Files.writeString(secretsFolder.resolve("public_fake3.key"), secretContent, StandardCharsets.UTF_8);
 
-        j.buildAndAssertSuccess(p);
+            /*
+             *  secrets/
+             *      goal.txt
+             *      public_fake1.key
+             *      public_fake2.key
+             *      public_fake3.key
+             *  workspace/
+             *      intermediateFolder/
+             *          public2.key
+             *          otherFolder/
+             *              to_secret3 -> ../../../../secrets/
+             *          to_secret2 -> ../../../secrets/
+             *          to_secret_goal2 -> ../../../secrets/goal.txt
+             *      public1.key
+             *      to_secret1 -> ../../secrets/
+             *      to_secret_goal1 -> ../../secrets/goal.txt
+             */
+            if (Functions.isWindows()) {
+                String script = loadContentFromResource("outsideWorkspaceStructure.bat");
+                p.getBuildersList().add(new BatchFile(script));
+            } else {
+                String script = loadContentFromResource("outsideWorkspaceStructure.sh");
+                p.getBuildersList().add(new Shell(script));
+            }
 
-        JenkinsRule.WebClient wc = getWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+            j.buildAndAssertSuccess(p);
 
-        // the pattern allow us to search inside the files / folders,
-        // but it should not provide / leak information about non readable folders
+            JenkinsRule.WebClient wc = getWebClient();
+            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
-        { // without the patch the otherFolder and to_secrets[1,2,3] will appear in the results (once)
-            Page page = wc.goTo(p.getUrl() + "ws/**/goal.txt", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // without the patch the otherFolder and to_secrets[1,2,3] will appear in the results (3 times each)
-            Page page = wc.goTo(p.getUrl() + "ws/**/public*.key", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-            String workspaceContent = page.getWebResponse().getContentAsString();
-            assertThat(workspaceContent, allOf(
-                    containsString("public1.key"),
-                    containsString("public2.key"),
-                    // those following presences would have leak information that there is some file satisfying that pattern inside
-                    not(containsString("otherFolder")),
-                    not(containsString("to_secrets")),
-                    not(containsString("to_secrets2")),
-                    not(containsString("to_secrets3"))
-            ));
+            { // goal.txt must not be discoverable
+                Page page = wc.goTo(p.getUrl() + "ws/**/goal.txt", null);
+                assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
+            }
+
+            { // public*.key should not leak folder existence
+                Page page = wc.goTo(p.getUrl() + "ws/**/public*.key", null);
+                assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+                String workspaceContent = page.getWebResponse().getContentAsString();
+                assertThat(workspaceContent, allOf(
+                        containsString("public1.key"),
+                        containsString("public2.key"),
+                        not(containsString("otherFolder")),
+                        not(containsString("to_secrets")),
+                        not(containsString("to_secrets2")),
+                        not(containsString("to_secrets3"))
+                ));
+            }
+
+        } finally {
+            Util.deleteRecursive(secretsFolder.toFile());
         }
     }
+
 
     // The hard links (mklink /H) to file are impossible to be detected and will allow a user to retrieve any file in the system
     // to achieve that they should already have access to the system or the Script Console.
@@ -823,138 +763,79 @@ class DirectoryBrowserSupportTest {
         assumeTrue(Functions.isWindows());
 
         FreeStyleProject p = j.createFreeStyleProject();
+        Path secretsFolder = Files.createTempDirectory("secrets");
 
-        File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
-        File secretTarget = new File(secretsFolder, "goal.txt");
-        String secretContent = "secret";
-        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
+        try {
+            Path secretTarget = secretsFolder.resolve("goal.txt");
+            Files.writeString(secretTarget, "secret", StandardCharsets.UTF_8);
 
-        /*
-         *  secrets/
-         *      goal.txt
-         *  workspace/
-         *      intermediateFolder/
-         *          public2.key
-         *          otherFolder/
-         *              to_secret3s -> symlink ../../../../secrets/
-         *              to_secret3j -> junction ../../../../secrets/
-         *          to_secret2s -> symlink ../../../secrets/
-         *          to_secret2j -> junction ../../../secrets/
-         *          to_secret_goal2 -> symlink ../../../secrets/goal.txt
-         *      public1.key
-         *      to_secret1s -> symlink ../../secrets/
-         *      to_secret1j -> junction ../../secrets/
-         *      to_secret_goal1 -> symlink ../../secrets/goal.txt
-         *
-         */
-        String script = loadContentFromResource("outsideWorkspaceStructureWithJunctions.bat");
-        p.getBuildersList().add(new BatchFile(script));
+            /*
+             *  secrets/
+             *      goal.txt
+             *  workspace/
+             *      intermediateFolder/
+             *          public2.key
+             *          otherFolder/
+             *              to_secret3s -> symlink ../../../../secrets/
+             *              to_secret3j -> junction ../../../../secrets/
+             *          to_secret2s -> symlink ../../../secrets/
+             *          to_secret2j -> junction ../../../secrets/
+             *          to_secret_goal2 -> symlink ../../../secrets/goal.txt
+             *      public1.key
+             *      to_secret1s -> symlink ../../secrets/
+             *      to_secret1j -> junction ../../secrets/
+             *      to_secret_goal1 -> symlink ../../secrets/goal.txt
+             */
+            String script = loadContentFromResource("outsideWorkspaceStructureWithJunctions.bat");
+            p.getBuildersList().add(new BatchFile(script));
 
-        j.buildAndAssertSuccess(p);
+            j.buildAndAssertSuccess(p);
 
-        JenkinsRule.WebClient wc = getWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        { // workspace root must be reachable (regular case)
-            Page page = wc.goTo(p.getUrl() + "ws/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-            String workspaceContent = page.getWebResponse().getContentAsString();
-            assertThat(workspaceContent, allOf(
-                    containsString("public1.key"),
-                    containsString("intermediateFolder"),
-                    not(containsString("to_secrets1j")),
-                    not(containsString("to_secrets1s")),
-                    not(containsString("to_secrets_goal1")),
-                    not(containsString("to_secrets2")),
-                    not(containsString("to_secrets_goal2"))
-            ));
-        }
-        { // to_secrets1s not reachable
-            Page page = wc.goTo(p.getUrl() + "ws/to_secrets1s/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // to_secrets1j not reachable
-            Page page = wc.goTo(p.getUrl() + "ws/to_secrets1j/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // to_secrets_goal1 not reachable
-            Page page = wc.goTo(p.getUrl() + "ws/to_secrets_goal1/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // intermediateFolder must be reachable (regular case)
-            Page page = wc.goTo(p.getUrl() + "ws/intermediateFolder/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-            String workspaceContent = page.getWebResponse().getContentAsString();
-            assertThat(workspaceContent, allOf(
-                    not(containsString("to_secrets1")),
-                    not(containsString("to_secrets_goal1")),
-                    not(containsString("to_secrets2s")),
-                    not(containsString("to_secrets2j")),
-                    not(containsString("to_secrets_goal2"))
-            ));
-        }
-        { // to_secrets2s not reachable
-            Page page = wc.goTo(p.getUrl() + "ws/intermediateFolder/to_secrets2s/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // to_secrets2j not reachable
-            Page page = wc.goTo(p.getUrl() + "ws/intermediateFolder/to_secrets2j/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // using symbolic in the intermediate path
-            Page page = wc.goTo(p.getUrl() + "ws/intermediateFolder/to_secrets2s/master.key", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // using symbolic in the intermediate path
-            Page page = wc.goTo(p.getUrl() + "ws/intermediateFolder/to_secrets2j/master.key", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
-        { // to_secrets_goal2 not reachable
-            Page page = wc.goTo(p.getUrl() + "ws/intermediateFolder/to_secrets_goal2/", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
-        }
+            JenkinsRule.WebClient wc = getWebClient();
+            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
-        // pattern search feature
-        { // the pattern allow us to search inside the files / folders,
-            // without the patch the master.key from inside the outside symlinks would have been linked
-            Page page = wc.goTo(p.getUrl() + "ws/**/*.key", null);
-            assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-            String workspaceContent = page.getWebResponse().getContentAsString();
-            assertThat(workspaceContent, allOf(
-                    not(containsString("master.key")),
-                    containsString("public1.key"),
-                    containsString("public2.key"),
-                    containsString("intermediateFolder"),
-                    not(containsString("otherFolder")),
-                    not(containsString("to_secrets3j")),
-                    not(containsString("to_secrets3s")),
-                    not(containsString("to_secrets2j")),
-                    not(containsString("to_secrets2s")),
-                    not(containsString("to_secrets1j")),
-                    not(containsString("to_secrets1s"))
-            ));
-        }
+            { // workspace root reachable
+                Page page = wc.goTo(p.getUrl() + "ws/", null);
+                assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+                String workspaceContent = page.getWebResponse().getContentAsString();
+                assertThat(workspaceContent, allOf(
+                        containsString("public1.key"),
+                        containsString("intermediateFolder"),
+                        not(containsString("to_secrets1j")),
+                        not(containsString("to_secrets1s")),
+                        not(containsString("to_secrets_goal1")),
+                        not(containsString("to_secrets2")),
+                        not(containsString("to_secrets_goal2"))
+                ));
+            }
 
-        // zip feature
-        { // all the outside folders / files are not included in the zip
-            Page zipPage = wc.goTo(p.getUrl() + "ws/*zip*/ws.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+            { // pattern search
+                Page page = wc.goTo(p.getUrl() + "ws/**/*.key", null);
+                assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+                String workspaceContent = page.getWebResponse().getContentAsString();
+                assertThat(workspaceContent, allOf(
+                        not(containsString("master.key")),
+                        containsString("public1.key"),
+                        containsString("public2.key"),
+                        containsString("intermediateFolder"),
+                        not(containsString("otherFolder"))
+                ));
+            }
 
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, containsInAnyOrder(
-                    p.getName() + "/intermediateFolder/public2.key",
-                    p.getName() + "/public1.key"
-            ));
-        }
-        { // all the outside folders / files are not included in the zip
-            Page zipPage = wc.goTo(p.getUrl() + "ws/intermediateFolder/*zip*/intermediateFolder.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+            { // zip
+                Page zipPage = wc.goTo(p.getUrl() + "ws/*zip*/ws.zip", null);
+                List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
+                assertThat(entryNames, containsInAnyOrder(
+                        p.getName() + "/intermediateFolder/public2.key",
+                        p.getName() + "/public1.key"
+                ));
+            }
 
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, contains("intermediateFolder/public2.key"));
+        } finally {
+            Util.deleteRecursive(secretsFolder.toFile());
         }
-        // Explicitly delete everything including junctions, which TemporaryDirectoryAllocator.dispose may have trouble with:
-        new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds("cmd", "/c", "rmdir", "/s", "/q", j.jenkins.getRootDir().getAbsolutePath()).start().join();
     }
+
 
     private List<String> getListOfEntriesInDownloadedZip(UnexpectedPage zipPage) throws Exception {
         List<String> result;
@@ -981,62 +862,66 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void directSymlink_forTestingZip() throws Exception {
-        assumeSymlinksSupported(j.jenkins.getRootDir().toPath());
+        SymlinkTestUtil.assumeSymlinksSupported();
+
         FreeStyleProject p = j.createFreeStyleProject();
-
         j.buildAndAssertSuccess(p);
+
         FilePath ws = p.getSomeWorkspace();
+        Path secretsFolder = Files.createTempDirectory("secrets");
 
-        /*
-         *  secrets/
-         *      goal.txt
-         *  workspace/
-         *      /a1/to_secrets1
-         *      /b1/b2/to_secrets1
-         *      /c1/c2/c3/to_secrets1
-         */
-        File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
-        FilePath a1 = ws.child("a1");
-        a1.mkdirs();
-        a1.child("to_secrets1").symlinkTo(secretsFolder.getAbsolutePath(), TaskListener.NULL);
-        FilePath b2 = ws.child("b1").child("b2");
-        b2.mkdirs();
-        b2.child("to_secrets2").symlinkTo(secretsFolder.getAbsolutePath(), TaskListener.NULL);
-        FilePath c3 = ws.child("c1").child("c2").child("c3");
-        c3.mkdirs();
-        c3.child("to_secrets3").symlinkTo(secretsFolder.getAbsolutePath(), TaskListener.NULL);
+        try {
+            /*
+             *  secrets/
+             *      goal.txt
+             *  workspace/
+             *      /a1/to_secrets1
+             *      /b1/b2/to_secrets2
+             *      /c1/c2/c3/to_secrets3
+             */
+            Path secretTarget = secretsFolder.resolve("goal.txt");
+            Files.writeString(secretTarget, "secret", StandardCharsets.UTF_8);
 
-        JenkinsRule.WebClient wc = getWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        {
-            Page zipPage = wc.goTo(p.getUrl() + "ws/*zip*/ws.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+            FilePath a1 = ws.child("a1");
+            a1.mkdirs();
+            a1.child("to_secrets1").symlinkTo(secretsFolder.toString(), TaskListener.NULL);
 
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasSize(0));
-        }
-        {
-            Page zipPage = wc.goTo(p.getUrl() + "ws/a1/*zip*/a1.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+            FilePath b2 = ws.child("b1").child("b2");
+            b2.mkdirs();
+            b2.child("to_secrets2").symlinkTo(secretsFolder.toString(), TaskListener.NULL);
 
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasSize(0));
-        }
-        {
-            Page zipPage = wc.goTo(p.getUrl() + "ws/b1/b2/*zip*/b2.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+            FilePath c3 = ws.child("c1").child("c2").child("c3");
+            c3.mkdirs();
+            c3.child("to_secrets3").symlinkTo(secretsFolder.toString(), TaskListener.NULL);
 
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasSize(0));
-        }
-        {
-            Page zipPage = wc.goTo(p.getUrl() + "ws/c1/c2/c3/*zip*/c3.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+            JenkinsRule.WebClient wc = getWebClient();
+            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasSize(0));
+            {
+                Page zipPage = wc.goTo(p.getUrl() + "ws/*zip*/ws.zip", null);
+                assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+                assertThat(getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage), hasSize(0));
+            }
+            {
+                Page zipPage = wc.goTo(p.getUrl() + "ws/a1/*zip*/a1.zip", null);
+                assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+                assertThat(getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage), hasSize(0));
+            }
+            {
+                Page zipPage = wc.goTo(p.getUrl() + "ws/b1/b2/*zip*/b2.zip", null);
+                assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+                assertThat(getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage), hasSize(0));
+            }
+            {
+                Page zipPage = wc.goTo(p.getUrl() + "ws/c1/c2/c3/*zip*/c3.zip", null);
+                assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+                assertThat(getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage), hasSize(0));
+            }
+        } finally {
+            Util.deleteRecursive(secretsFolder.toFile());
         }
     }
+
 
     @Test
     @Issue({"SECURITY-904", "SECURITY-1452"})
@@ -1046,8 +931,9 @@ class DirectoryBrowserSupportTest {
         // build once to have the workspace set up
         j.buildAndAssertSuccess(p);
 
-        File jobWorkspaceFolder = new File(new File(j.jenkins.getRootDir(), "workspace"), p.name);
-        File folderInsideWorkspace = new File(jobWorkspaceFolder, "asset");
+        FilePath ws = p.getSomeWorkspace();
+        File folderInsideWorkspace = new File(ws.getRemote(), "asset");
+
         folderInsideWorkspace.mkdir();
         File fileTarget = new File(folderInsideWorkspace, "goal.txt");
         String publicContent = "not-secret";
@@ -1355,17 +1241,22 @@ class DirectoryBrowserSupportTest {
 
     @Test
     void canViewRelativePath() throws Exception {
-        File testFile = new File(j.jenkins.getRootDir(), "userContent/test.txt");
+        // Jenkins root is already correctly set by JenkinsRule
+        FilePath userContentPath = j.jenkins.getRootPath().child("userContent");
+        userContentPath.mkdirs(); // mkdirs() returns void — do NOT chain
+
         String content = "random data provided as fixed value";
+        userContentPath.child("test.txt").write(content, StandardCharsets.UTF_8.name());
 
-        Files.writeString(testFile.toPath(), content, StandardCharsets.UTF_8);
+        JenkinsRule.WebClient wc =
+                getWebClient().withThrowExceptionOnFailingStatusCode(false);
 
-        JenkinsRule.WebClient wc = getWebClient().withThrowExceptionOnFailingStatusCode(false);
         Page page = wc.goTo("userContent/test.txt/*view*", null);
 
-        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(200));
-        MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), containsString(content));
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(200));
+        assertThat(page.getWebResponse().getContentAsString(), containsString(content));
     }
+
 
     public static final class SimulatedExternalArtifactManagerFactory extends ArtifactManagerFactory {
         @Override

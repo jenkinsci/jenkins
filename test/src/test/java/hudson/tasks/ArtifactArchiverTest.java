@@ -48,9 +48,9 @@ import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Slave;
-import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
+import hudson.util.SymlinkTestUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -279,28 +279,12 @@ class ArtifactArchiverTest {
         assertEquals("fizz", linkkids[0].getName());
     }
 
-    private static void assumeSymlinksSupported(FilePath ws) throws Exception {
-        FilePath target = ws.child("symlink-target.tmp");
-        FilePath link = ws.child("symlink-link.tmp");
-
-        try {
-            target.write("test", "UTF-8");
-            link.symlinkTo(target.getName(), TaskListener.NULL);
-        } catch (UnsupportedOperationException | IOException e) {
-            assumeTrue(false, "Symbolic links are not supported on this system");
-        } finally {
-            link.delete();
-            target.delete();
-        }
-    }
-
-
     @Issue("SECURITY-162")
     @Test
     void outsideSymlinks() throws Exception {
         final FreeStyleProject p = j.createFreeStyleProject();
         j.buildAndAssertSuccess(p);
-        assumeSymlinksSupported(p.getSomeWorkspace());
+        SymlinkTestUtil.assumeSymlinksSupported();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath ws = build.getWorkspace();
@@ -540,7 +524,7 @@ class ArtifactArchiverTest {
     void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         j.buildAndAssertSuccess(p);
-        assumeSymlinksSupported(p.getSomeWorkspace());
+        SymlinkTestUtil.assumeSymlinksSupported();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath ws = build.getWorkspace();
