@@ -96,9 +96,9 @@ body:has(.jenkins-form-skeleton) {
   }
 }
 /*
- * Fix anchor links being obscured by the fixed Jenkins header
+ * Prevent anchor targets from being hidden behind the Jenkins header
  * See: https://github.com/jenkinsci/jenkins/issues/16803
  */
-html {
-  scroll-padding-top: 64px;
+[id] {
+  scroll-margin-top: 4rem;
 }
