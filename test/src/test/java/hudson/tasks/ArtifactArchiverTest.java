@@ -50,6 +50,7 @@ import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
+import hudson.util.SymlinkTestUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -102,7 +103,7 @@ class ArtifactArchiverTest {
     @Issue("JENKINS-3227")
     void testEmptyDirectories() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        Publisher artifactArchiver = new ArtifactArchiver("dir/");
+        ArtifactArchiver artifactArchiver = new ArtifactArchiver("dir/");
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
             @Override
@@ -282,6 +283,8 @@ class ArtifactArchiverTest {
     @Test
     void outsideSymlinks() throws Exception {
         final FreeStyleProject p = j.createFreeStyleProject();
+        j.buildAndAssertSuccess(p);
+        SymlinkTestUtil.assumeSymlinksSupported();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath ws = build.getWorkspace();
@@ -377,7 +380,7 @@ class ArtifactArchiverTest {
     void testDefaultExcludesOn() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
 
-        Publisher artifactArchiver = new ArtifactArchiver("**", "", false, false, true, true);
+        ArtifactArchiver artifactArchiver = new ArtifactArchiver("**", "", false, false, true, true);
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact()));
 
@@ -520,6 +523,8 @@ class ArtifactArchiverTest {
     @Issue("JENKINS-55049")
     void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
+        j.buildAndAssertSuccess(p);
+        SymlinkTestUtil.assumeSymlinksSupported();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath ws = build.getWorkspace();
