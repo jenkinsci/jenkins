@@ -591,10 +591,10 @@ class DirectoryBrowserSupportTest {
     void symlink_outsideWorkspace_areNotAllowed() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
-        File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
-        File secretTarget = new File(secretsFolder, "goal.txt");
+        Path secretsFolder = Files.createTempDirectory("secrets");
+        Path secretTarget = secretsFolder.resolve("goal.txt");
         String secretContent = "secret";
-        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget, secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -730,10 +730,10 @@ class DirectoryBrowserSupportTest {
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
-        File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
-        File secretTarget = new File(secretsFolder, "goal.txt");
+        Path secretsFolder = Files.createTempDirectory("secrets");
+        Path secretTarget = secretsFolder.resolve("goal.txt");
         String secretContent = "secret";
-        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget, secretContent, StandardCharsets.UTF_8);
         Files.writeString(secretsFolder.toPath().resolve("public_fake1.key"), secretContent, StandardCharsets.UTF_8);
         Files.writeString(secretsFolder.toPath().resolve("public_fake2.key"), secretContent, StandardCharsets.UTF_8);
         Files.writeString(secretsFolder.toPath().resolve("public_fake3.key"), secretContent, StandardCharsets.UTF_8);
@@ -804,10 +804,10 @@ class DirectoryBrowserSupportTest {
 
         FreeStyleProject p = j.createFreeStyleProject();
 
-        File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
-        File secretTarget = new File(secretsFolder, "goal.txt");
+        Path secretsFolder = Files.createTempDirectory("secrets");
+        Path secretTarget = secretsFolder.resolve("goal.txt");
         String secretContent = "secret";
-        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget, secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -932,8 +932,6 @@ class DirectoryBrowserSupportTest {
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
             assertThat(entryNames, contains("intermediateFolder/public2.key"));
         }
-        // Explicitly delete everything including junctions, which TemporaryDirectoryAllocator.dispose may have trouble with:
-        new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds("cmd", "/c", "rmdir", "/s", "/q", j.jenkins.getRootDir().getAbsolutePath()).start().join();
     }
 
     private List<String> getListOfEntriesInDownloadedZip(UnexpectedPage zipPage) throws Exception {
@@ -974,16 +972,16 @@ class DirectoryBrowserSupportTest {
          *      /b1/b2/to_secrets1
          *      /c1/c2/c3/to_secrets1
          */
-        File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
+        Path secretsFolder = Files.createTempDirectory("secrets");
         FilePath a1 = ws.child("a1");
         a1.mkdirs();
-        a1.child("to_secrets1").symlinkTo(secretsFolder.getAbsolutePath(), TaskListener.NULL);
+        a1.child("to_secrets1").symlinkTo(secretsFolder.toAbsolutePath().toString(), TaskListener.NULL);
         FilePath b2 = ws.child("b1").child("b2");
         b2.mkdirs();
-        b2.child("to_secrets2").symlinkTo(secretsFolder.getAbsolutePath(), TaskListener.NULL);
+        b2.child("to_secrets2").symlinkTo(secretsFolder.toAbsolutePath().toString(), TaskListener.NULL);
         FilePath c3 = ws.child("c1").child("c2").child("c3");
         c3.mkdirs();
-        c3.child("to_secrets3").symlinkTo(secretsFolder.getAbsolutePath(), TaskListener.NULL);
+        c3.child("to_secrets3").symlinkTo(secretsFolder.toAbsolutePath().toString(), TaskListener.NULL);
 
         JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -1335,8 +1333,9 @@ class DirectoryBrowserSupportTest {
     @Test
     void canViewRelativePath() throws Exception {
         File testFile = new File(j.jenkins.getRootDir(), "userContent/test.txt");
-        String content = "random data provided as fixed value";
+        Files.createDirectories(testFile.getParentFile().toPath());
 
+        String content = "random data provided as fixed value";
         Files.writeString(testFile.toPath(), content, StandardCharsets.UTF_8);
 
         JenkinsRule.WebClient wc = getWebClient().withThrowExceptionOnFailingStatusCode(false);
