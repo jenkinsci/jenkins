@@ -5091,11 +5091,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public Future<DependencyGraph> getFutureDependencyGraph() {
         synchronized (dependencyGraphLock) {
             // Scheduled future will be the most recent one --> Return
-            return Objects.requireNonNullElseGet(scheduledFutureDependencyGraph, () -> Objects.requireNonNullElseGet(calculatingFutureDependencyGraph, () -> CompletableFuture.completedFuture(dependencyGraph)));
-
+            return Objects.requireNonNullElseGet(scheduledFutureDependencyGraph,
             // Calculating future will be the most recent one --> Return
-
+                                                 () -> Objects.requireNonNullElseGet(calculatingFutureDependencyGraph,
             // No scheduled or calculating future --> Already completed dependency graph is the most recent one
+                                                                                     () -> CompletableFuture.completedFuture(dependencyGraph)));
         }
     }
 
