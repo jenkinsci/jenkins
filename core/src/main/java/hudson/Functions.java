@@ -1280,7 +1280,6 @@ public class Functions {
         else {
             AccessControlled ac = Stapler.getCurrentRequest2().findAncestorObject(AccessControlled.class);
             return hasAnyPermission(Objects.requireNonNullElseGet(ac, Jenkins::get), permissions);
-
         }
     }
 
