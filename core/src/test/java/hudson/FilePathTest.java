@@ -1297,4 +1297,17 @@ class FilePathTest {
         }
         return result;
     }
+
+    @Test
+    @Issue("SpotBugs")
+    public void testIsDescendantWithParentTraversal() throws Exception {
+        File tmp = Util.createTempDir();
+        try {
+            FilePath parent = new FilePath(tmp);
+            // This checks the specific case that causes getDirectChild to return null
+            assertFalse(parent.isDescendant(".."), "Parent directory '..' should not be a descendant");
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
+    }
 }
