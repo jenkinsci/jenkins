@@ -34,7 +34,7 @@
     "eslint": "9.39.2",
     "eslint-config-prettier": "10.1.8",
     "eslint-formatter-checkstyle": "9.0.1",
-    "globals": "16.5.0",
+    "globals": "17.0.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.9.4",
     "postcss": "8.5.6",
