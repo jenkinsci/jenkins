@@ -351,7 +351,6 @@ public class ApiTokenProperty extends UserProperty {
             case null -> {
                 // in case there are no token
                 return Collections.emptyMap();
-                // in case there are no token
             }
             case JSONObject singleTokenData -> {
                 // in case there is only one token
