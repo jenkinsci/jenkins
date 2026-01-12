@@ -1,0 +1,240 @@
+# Java Coding Standards
+
+## Code Style
+
+### Formatting
+- **MUST** use Spotless for automatic code formatting
+- **MUST** run `mvn spotless:apply` before committing
+- **MUST** use 4 spaces for indentation (no tabs)
+- **MUST** end files with newline
+- **MUST** remove unused imports
+- **MUST** trim trailing whitespace
+- **MUST** follow import order defined by Spotless
+
+### Line Length
+- **MUST** keep lines under 240 characters (Checkstyle rule)
+- **SHOULD** keep lines under 120 characters for readability
+- **MAY** exceed limit for URLs, package declarations, import statements
+
+### Naming Conventions
+- **MUST** use PascalCase for class names: `UserManager`
+- **MUST** use camelCase for method and variable names: `getUserName()`
+- **MUST** use UPPER_SNAKE_CASE for constants: `MAX_RETRY_COUNT`
+- **MUST** use descriptive names that indicate purpose
+- **MUST** avoid abbreviations unless widely understood: `config` ✅, `cfg` ❌
+
+## Null Safety
+
+### Annotations
+- **MUST** use SpotBugs null annotations for null safety:
+  - `@CheckForNull` - Method may return null, callers must check
+  - `@Nonnull` - Parameter/return value cannot be null
+  - `@Nullable` - Parameter/return value may be null
+- **MUST** annotate public API methods with null annotations
+- **SHOULD** annotate internal methods for clarity
+
+### Null Handling
+- **MUST** check for null before dereferencing `@CheckForNull` return values
+- **MUST** handle null cases explicitly
+- **SHOULD** use `Objects.requireNonNull()` for parameter validation
+- **SHOULD** use Optional for methods that may not return a value
+
+## Access Modifiers
+
+### API Visibility
+- **MUST** use `@Restricted` annotation for API visibility control
+- **MUST** use appropriate Java access modifiers:
+  - `public` - Public API, stable
+  - `protected` - Extension points, may change
+  - `package-private` - Internal use only
+  - `private` - Implementation detail
+- **MUST** document public APIs with JavaDoc
+
+### Extension Points
+- **MUST** use `@Extension` annotation for Jenkins extension points
+- **MUST** use `@Symbol` annotation for pipeline step symbols
+- **MUST** implement proper `equals()` and `hashCode()` for extension classes
+
+## Class Design
+
+### Single Responsibility
+- **MUST** follow Single Responsibility Principle
+- **MUST** keep classes focused on one purpose
+- **SHOULD** split large classes into smaller, focused classes
+
+### Immutability
+- **SHOULD** prefer immutable objects where possible
+- **SHOULD** use `final` for fields that don't change
+- **SHOULD** use builder pattern for complex immutable objects
+
+### Inheritance
+- **MUST** use `@Override` annotation when overriding methods
+- **SHOULD** prefer composition over inheritance
+- **SHOULD** use interfaces for contracts
+- **MUST** implement `equals()` and `hashCode()` consistently
+
+## Exception Handling
+
+### Exception Types
+- **MUST** use checked exceptions for recoverable errors
+- **MUST** use unchecked exceptions for programming errors
+- **SHOULD** create specific exception types for domain errors
+- **MUST** preserve exception context when rethrowing
+
+### Exception Handling Patterns
+- **MUST** catch specific exceptions, not generic `Exception`
+- **MUST** handle exceptions appropriately (log, wrap, or rethrow)
+- **SHOULD** use try-with-resources for AutoCloseable resources
+- **MUST** clean up resources in finally blocks or try-with-resources
+
+## Serialization
+
+### XStream Compatibility
+- **MUST** use `@XStreamAlias` for class name aliases
+- **MUST** use `@XStreamOmitField` for fields that shouldn't be serialized
+- **MUST** maintain backward compatibility for serialized data
+- **MUST** test serialization/deserialization in tests
+
+### Version Compatibility
+- **MUST** handle version migration for serialized data
+- **SHOULD** use `readResolve()` for object replacement
+- **SHOULD** use `readObject()` for custom deserialization
+
+## Concurrency
+
+### Thread Safety
+- **MUST** document thread-safety guarantees
+- **MUST** use appropriate synchronization mechanisms
+- **SHOULD** prefer `java.util.concurrent` classes over synchronized blocks
+- **MUST** avoid shared mutable state where possible
+
+### Common Patterns
+- **SHOULD** use `ConcurrentHashMap` for thread-safe maps
+- **SHOULD** use `AtomicReference` for single-value updates
+- **SHOULD** use `CompletableFuture` for async operations
+- **MUST** properly handle thread interruption
+
+## Collections
+
+### Collection Usage
+- **MUST** use appropriate collection types:
+  - `List` - Ordered, allows duplicates
+  - `Set` - No duplicates
+  - `Map` - Key-value pairs
+- **SHOULD** prefer `ArrayList` over `LinkedList` for most cases
+- **SHOULD** prefer `HashMap` over `Hashtable`
+- **SHOULD** use `Collections.emptyList()` for empty lists
+
+### Iteration
+- **SHOULD** use enhanced for-loops when possible
+- **SHOULD** use `forEach()` for simple operations
+- **MUST** avoid modifying collections during iteration
+
+## String Handling
+
+### String Operations
+- **MUST** use `StringBuilder` for string concatenation in loops
+- **SHOULD** use `String.format()` or `MessageFormat` for complex formatting
+- **SHOULD** use `StringUtils` from Apache Commons for common operations
+- **MUST** avoid string concatenation with `+` in loops
+
+### Internationalization
+- **MUST** use `Messages.properties` for user-facing strings
+- **MUST** use `@Localized` annotation for localized messages
+- **MUST** never hardcode user-facing strings in code
+- **SHOULD** use `Messages` class generated by localizer-maven-plugin
+
+## Logging
+
+### Logging Framework
+- **MUST** use `java.util.logging.Logger` (Jenkins standard)
+- **MUST** use appropriate log levels:
+  - `SEVERE` - Errors that require attention
+  - `WARNING` - Warnings that may indicate problems
+  - `INFO` - Informational messages
+  - `FINE` - Debug information
+- **SHOULD** include context in log messages
+- **MUST** avoid logging sensitive information (passwords, tokens)
+
+### Logging Patterns
+- **SHOULD** use parameterized logging: `logger.log(Level.INFO, "User {0} logged in", username)`
+- **SHOULD** check log level before expensive operations: `if (logger.isLoggable(Level.FINE))`
+- **MUST** use appropriate logger names (usually class name)
+
+## Testing
+
+### Test Structure
+- **MUST** write tests for all new code
+- **MUST** use JUnit 5 (`@Test`, `@BeforeEach`, `@AfterEach`)
+- **MUST** use descriptive test method names: `testGetUserReturnsNullWhenNotFound()`
+- **SHOULD** follow Arrange-Act-Assert pattern
+
+### Test Utilities
+- **MUST** use `JenkinsRule` for integration tests
+- **MUST** use `JenkinsSessionRule` for session-scoped tests
+- **MUST** use `@TestExtension` for test extensions
+- **SHOULD** use Mockito for mocking dependencies
+
+### Test Coverage
+- **MUST** maintain test coverage thresholds (configured via JaCoCo)
+- **SHOULD** aim for high coverage of critical paths
+- **SHOULD** test edge cases and error conditions
+
+## Code Quality Tools
+
+### SpotBugs
+- **MUST** fix all Medium and High priority SpotBugs warnings
+- **SHOULD** review Low priority warnings
+- **MUST** use `@SuppressFBWarnings` sparingly with justification
+
+### Checkstyle
+- **MUST** follow Checkstyle rules in `src/checkstyle/checkstyle-configuration.xml`
+- **MUST** fix all Checkstyle violations
+- **MUST** use `@SuppressWarnings` sparingly with justification
+
+### Spotless
+- **MUST** run Spotless before committing: `mvn spotless:apply`
+- **MUST** ensure code passes Spotless checks in CI
+- **SHOULD** configure IDE to run Spotless on save
+
+## Documentation
+
+### JavaDoc
+- **MUST** write JavaDoc for all public APIs
+- **MUST** include `@param` for all parameters
+- **MUST** include `@return` for return values
+- **MUST** include `@throws` for exceptions
+- **SHOULD** include usage examples for complex APIs
+- **MUST** keep JavaDoc up-to-date with code changes
+
+### Code Comments
+- **SHOULD** write comments for complex logic
+- **SHOULD** explain "why" not "what" in comments
+- **MUST** keep comments up-to-date with code
+- **SHOULD** remove commented-out code before committing
+
+## Performance
+
+### General Guidelines
+- **SHOULD** avoid premature optimization
+- **SHOULD** profile before optimizing
+- **MUST** fix performance issues identified in profiling
+
+### Common Optimizations
+- **SHOULD** use lazy initialization for expensive operations
+- **SHOULD** cache expensive computations
+- **SHOULD** use connection pooling for database access
+- **SHOULD** avoid creating unnecessary objects in loops
+
+## Security
+
+### Input Validation
+- **MUST** validate and sanitize user input
+- **MUST** prevent XSS attacks in web output
+- **MUST** use parameterized queries for database access
+- **MUST** avoid command injection vulnerabilities
+
+### Access Control
+- **MUST** check permissions before sensitive operations
+- **MUST** use ACL (Access Control List) for resource-level permissions
+- **MUST** implement proper authentication and authorization

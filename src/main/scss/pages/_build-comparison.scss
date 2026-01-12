@@ -1,0 +1,114 @@
+@use "../components/cards";
+
+.build-comparison-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  label {
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  select {
+    min-width: 200px;
+  }
+}
+
+.build-comparison-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--section-padding);
+  margin-top: var(--section-padding);
+
+  @media (width < 1000px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.build-comparison-panel {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--text-color);
+
+    &:hover {
+      color: var(--link-color);
+    }
+  }
+
+  &__number {
+    font-weight: 600;
+    font-size: 1.125rem;
+  }
+
+  &__actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: var(--jenkins-border-width) solid var(--card-border-color);
+  }
+}
+
+.build-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    font-weight: 500;
+    padding: 0.5rem 1rem 0.5rem 0;
+    color: var(--text-color-secondary);
+    white-space: nowrap;
+    vertical-align: top;
+  }
+
+  td {
+    padding: 0.5rem 0;
+    vertical-align: top;
+
+    svg {
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+  }
+
+  tr:not(:last-child) {
+    th,
+    td {
+      border-bottom: var(--jenkins-border-width) solid var(--card-border-color);
+    }
+  }
+}
+
+.build-comparison-empty {
+  text-align: center;
+  padding: var(--section-padding);
+  color: var(--text-color-secondary);
+  margin-top: var(--section-padding);
+}
+
+.app-builds-container__item__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  padding-right: 0.5rem;
+}
+
+.build-comparison-diff {
+  background-color: color-mix(
+    in sRGB,
+    var(--accent-color) 10%,
+    transparent
+  );
+  font-weight: 500;
+}

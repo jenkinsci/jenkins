@@ -54,6 +54,9 @@ module.exports = (env, argv) => ({
     "pages/project/builds-card": [
       path.join(__dirname, "src/main/js/pages/project/builds-card.js"),
     ],
+    "lib/jenkins/run/build-comparison": [
+      path.join(__dirname, "src/main/js/pages/build-comparison.js"),
+    ],
     "simple-page": [path.join(__dirname, "src/main/scss/simple-page.scss")],
     styles: [path.join(__dirname, "src/main/scss/styles.scss")],
   },
@@ -154,12 +157,17 @@ module.exports = (env, argv) => ({
   },
   optimization: {
     splitChunks: {
-      chunks: "async",
+      // Vendor chunk splitting configuration
+      // The vendors cacheGroup below specifies chunks: "all" to ensure vendor
+      // dependencies are extracted from both initial and async chunks for optimal caching.
+      // This allows the vendors.js bundle to be cached separately and reused across pages.
       cacheGroups: {
         commons: {
           test: /[\\/]node_modules[\\/]/,
           name: "vendors",
           chunks: "all",
+          // Ensure vendors bundle is created even if it's small
+          minChunks: 1,
         },
       },
     },

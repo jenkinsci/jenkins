@@ -1,0 +1,284 @@
+# Jenkins Architecture Standards
+
+## Project Overview
+This is a Java-based CI/CD application built with Maven, using a multi-module architecture. The project combines server-side Java code with a JavaScript/SCSS frontend.
+
+## Build System & Module Structure
+
+### Maven Multi-Module Architecture
+- **MUST** follow Maven standard directory layout: `src/main/java`, `src/main/resources`, `src/test/java`
+- **MUST** use parent POM for shared configuration and dependency management
+- **MUST** organize modules by functional boundaries:
+  - `core`: Core business logic and domain models
+  - `war`: Web application resources and deployment artifacts
+  - `cli`: Command-line interface components
+  - `websocket`: WebSocket implementation modules
+  - `test`: Integration and system tests
+- **MUST** use `${revision}${changelist}` versioning pattern for multi-module projects
+- **MUST** configure Spotless, Checkstyle, and SpotBugs in parent POM for consistent code quality
+
+### Dependency Management
+- **MUST** use BOM (Bill of Materials) for dependency version management
+- **MUST** exclude transitive dependencies that conflict with bundled versions
+- **MUST** use `provided` scope for servlet API and other container-provided dependencies
+- **MUST** ban specific libraries (e.g., `commons-logging`, `sisu-guice`) via Maven enforcer plugin
+
+## Java Code Standards
+
+### Package Structure
+- **MUST** follow Java package naming conventions: `org.jenkinsci.main` or `hudson.*`
+- **MUST** organize packages by feature/domain, not by technical layer
+- **MUST** place core domain models in `jenkins.model.*` or `hudson.model.*`
+- **MUST** place utility classes in `jenkins.util.*` or `hudson.util.*`
+- **MUST** place security-related code in `jenkins.security.*`
+
+### Code Quality
+- **MUST** use SpotBugs annotations (`@CheckForNull`, `@Nonnull`) for null safety
+- **MUST** use access modifier annotations (`@Restricted`) for API visibility control
+- **MUST** write JUnit 5 tests for all new code
+- **MUST** maintain test coverage thresholds (configured via JaCoCo)
+- **MUST** use Spotless for code formatting (Java, ANTLR)
+- **MUST** follow Checkstyle rules defined in `src/checkstyle/checkstyle-configuration.xml`
+
+### Extension Points
+- **MUST** use `@Extension` annotation for Jenkins extension points
+- **MUST** use `@Symbol` annotation for pipeline step symbols
+- **MUST** implement proper `equals()` and `hashCode()` for model classes
+- **MUST** use `XStream` annotations for serialization compatibility
+
+## Frontend Architecture
+
+### JavaScript/TypeScript Standards
+- **MUST** use Webpack for bundling JavaScript and SCSS
+- **MUST** organize JavaScript by feature/page: `src/main/js/pages/*`
+- **MUST** use Handlebars templates for server-rendered views
+- **MUST** place reusable components in `src/main/js/components/*`
+- **MUST** use ES6+ features (transpiled via Babel)
+- **MUST** use ESLint and Prettier for code quality
+- **MUST** use `@/` alias for imports from `src/main/js`
+
+### Styling Standards
+- **MUST** use SCSS for all stylesheets
+- **MUST** organize SCSS using BEM-like naming conventions
+- **MUST** use PostCSS with `postcss-preset-env` for CSS processing
+- **MUST** extract CSS to separate bundles using `mini-css-extract-plugin`
+- **MUST** use Stylelint for SCSS linting
+
+### Frontend Build
+- **MUST** output bundles to `war/src/main/webapp/jsbundles/`
+- **MUST** use source maps in development (`inline-cheap-module-source-map`)
+- **MUST** use production source maps (`source-map`) for debugging
+- **MUST** split vendor chunks for better caching
+
+## Testing Standards
+
+### Unit Tests
+- **MUST** place unit tests in `src/test/java` mirroring main source structure
+- **MUST** use JUnit 5 (`@Test`, `@BeforeEach`, `@AfterEach`)
+- **MUST** use Mockito for mocking dependencies
+- **MUST** use `@TestExtension` annotation for Jenkins test extensions
+- **MUST** use `JenkinsRule` or `JenkinsSessionRule` for integration tests
+
+### Test Resources
+- **MUST** place test resources in `src/test/resources`
+- **MUST** use `.jelly` files for view testing
+- **MUST** use XML files for configuration testing
+
+## Internationalization (i18n)
+
+### Localization
+- **MUST** use `Messages.properties` files for all user-facing strings
+- **MUST** use `@Localized` annotation for localized messages
+- **MUST** generate Java classes via `localizer-maven-plugin`
+- **MUST** place property files in `src/main/resources` following package structure
+
+## API Design Standards
+
+### REST API Patterns
+- **SHOULD** use Stapler framework for web routing and data binding
+- **SHOULD** follow RESTful conventions for URL structure
+- **SHOULD** use JSON for API responses (via Stapler's JSON support)
+- **SHOULD** implement proper HTTP status codes
+
+### API Versioning
+- **SHOULD** version APIs when making breaking changes
+- **SHOULD** maintain backward compatibility for plugin ecosystem
+- **SHOULD** document API changes in changelog
+
+## Security Standards
+
+### Authentication & Authorization
+- **MUST** use Spring Security for authentication
+- **MUST** implement proper access control checks
+- **MUST** use `ACL` (Access Control List) for resource-level permissions
+- **MUST** sanitize user input to prevent XSS attacks
+- **MUST** use CSRF tokens for state-changing operations
+
+## Documentation Standards
+
+### Code Documentation
+- **MUST** write JavaDoc for all public APIs
+- **SHOULD** document extension points and their contracts
+- **SHOULD** include usage examples in JavaDoc
+- **MUST** keep JavaDoc up-to-date with code changes
+
+---
+
+## Architecture Patterns NOT Currently Used (Future Considerations)
+
+### Microservices Architecture
+- **NOTE**: This project uses a monolithic architecture. If migrating to microservices:
+  - **SHOULD** use API Gateway pattern for external access
+  - **SHOULD** implement service mesh (Istio/Linkerd) for inter-service communication
+  - **SHOULD** use gRPC for high-performance inter-service calls
+  - **SHOULD** implement distributed tracing (Jaeger/Zipkin)
+  - **SHOULD** use service discovery (Consul/Eureka)
+
+### Modern REST API Standards
+- **NOTE**: This project uses Stapler framework. For modern REST APIs:
+  - **SHOULD** use JAX-RS (Jersey) or Spring MVC for REST endpoints
+  - **SHOULD** implement OpenAPI/Swagger documentation
+  - **SHOULD** use API versioning in URL path (`/api/v1/`, `/api/v2/`)
+  - **SHOULD** implement HATEOAS for resource navigation
+  - **SHOULD** use JSON:API or HAL for standardized JSON responses
+
+### Modern Frontend Frameworks
+- **NOTE**: This project uses jQuery/Handlebars. For modern frontend:
+  - **SHOULD** use React, Vue, or Angular for component-based UI
+  - **SHOULD** use TypeScript instead of JavaScript
+  - **SHOULD** implement state management (Redux, Vuex, Zustand)
+  - **SHOULD** use CSS-in-JS or CSS Modules instead of global SCSS
+  - **SHOULD** implement server-side rendering (Next.js, Nuxt.js) if needed
+
+### Clean Architecture / Hexagonal Architecture
+- **NOTE**: This project uses traditional layered architecture. For Clean Architecture:
+  - **SHOULD** separate domain logic from infrastructure concerns
+  - **SHOULD** use dependency inversion principle (DIP)
+  - **SHOULD** implement ports and adapters pattern
+  - **SHOULD** keep domain models framework-agnostic
+  - **SHOULD** use interfaces for external dependencies
+
+### Domain-Driven Design (DDD)
+- **NOTE**: This project uses anemic domain models. For DDD:
+  - **SHOULD** implement rich domain models with business logic
+  - **SHOULD** use aggregates, entities, and value objects
+  - **SHOULD** implement domain events for cross-aggregate communication
+  - **SHOULD** use bounded contexts for large domains
+  - **SHOULD** implement CQRS (Command Query Responsibility Segregation) for complex domains
+
+### Event-Driven Architecture
+- **NOTE**: This project uses synchronous request-response. For event-driven:
+  - **SHOULD** use message brokers (Kafka, RabbitMQ, AWS SQS)
+  - **SHOULD** implement event sourcing for audit trails
+  - **SHOULD** use publish-subscribe pattern for decoupling
+  - **SHOULD** implement saga pattern for distributed transactions
+  - **SHOULD** use event stores for event persistence
+
+### GraphQL APIs
+- **NOTE**: This project uses REST/Stapler. For GraphQL:
+  - **SHOULD** use GraphQL for flexible client queries
+  - **SHOULD** implement GraphQL schema with proper types
+  - **SHOULD** use DataLoader for N+1 query prevention
+  - **SHOULD** implement field-level authorization
+  - **SHOULD** use GraphQL subscriptions for real-time updates
+
+### Container & Orchestration Standards
+- **NOTE**: This project doesn't emphasize container-first development. For containers:
+  - **SHOULD** use Docker for containerization
+  - **SHOULD** use multi-stage builds for smaller images
+  - **SHOULD** use Kubernetes for orchestration
+  - **SHOULD** implement health checks (`/health`, `/ready`)
+  - **SHOULD** use ConfigMaps and Secrets for configuration
+  - **SHOULD** implement resource limits and requests
+
+### Modern Java Features
+- **NOTE**: This project may not use latest Java features. For modern Java:
+  - **SHOULD** use records for immutable data carriers
+  - **SHOULD** use sealed classes for restricted inheritance
+  - **SHOULD** use pattern matching for switch expressions
+  - **SHOULD** use text blocks for multi-line strings
+  - **SHOULD** use virtual threads (Project Loom) for concurrency
+
+### CI/CD Modernization
+- **NOTE**: This project uses Jenkinsfile. For modern CI/CD:
+  - **SHOULD** use GitHub Actions or GitLab CI for CI/CD
+  - **SHOULD** implement pipeline as code (Jenkinsfile, GitHub Actions workflows)
+  - **SHOULD** use container-based builds for reproducibility
+  - **SHOULD** implement automated security scanning (Snyk, Dependabot)
+  - **SHOULD** use feature flags for gradual rollouts
+
+### Observability Standards
+- **NOTE**: This project may lack comprehensive observability. For production:
+  - **SHOULD** implement structured logging (JSON format)
+  - **SHOULD** use distributed tracing (OpenTelemetry)
+  - **SHOULD** implement metrics collection (Prometheus)
+  - **SHOULD** use centralized logging (ELK stack, Loki)
+  - **SHOULD** implement alerting based on SLIs/SLOs
+
+---
+
+## File Organization Rules
+
+### Java Files
+- **MUST** place Java source files in `src/main/java`
+- **MUST** match package structure to directory structure
+- **MUST** use one public class per file
+- **MUST** name files after the primary public class
+
+### Resources
+- **MUST** place `.jelly` view files alongside Java classes in `src/main/resources`
+- **MUST** place static assets in `war/src/main/webapp/`
+- **MUST** place images in `war/src/main/webapp/images/`
+- **MUST** place JavaScript bundles in `war/src/main/webapp/jsbundles/`
+
+### Configuration Files
+- **MUST** place Maven configuration in `pom.xml`
+- **MUST** place Checkstyle config in `src/checkstyle/`
+- **MUST** place Webpack config in `webpack.config.js`
+- **MUST** place ESLint config in `eslint.config.cjs`
+
+## Git & Version Control
+
+### Commit Standards
+- **MUST** use conventional commit format: `type(scope): description`
+- **MUST** use types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- **MUST** reference issue numbers in commit messages when applicable
+- **SHOULD** keep commits atomic and focused
+
+### Branch Strategy
+- **SHOULD** use feature branches for new development
+- **SHOULD** keep `main` branch stable and deployable
+- **SHOULD** use pull requests for code review
+
+---
+
+## Performance Standards
+
+### Java Performance
+- **SHOULD** avoid premature optimization
+- **SHOULD** use lazy initialization for expensive operations
+- **SHOULD** implement proper caching strategies
+- **SHOULD** use connection pooling for database access
+- **SHOULD** monitor memory usage and GC performance
+
+### Frontend Performance
+- **SHOULD** minimize JavaScript bundle sizes
+- **SHOULD** implement code splitting for large applications
+- **SHOULD** use lazy loading for routes/components
+- **SHOULD** optimize images and use appropriate formats
+- **SHOULD** implement service workers for offline support (if needed)
+
+---
+
+## Migration & Compatibility
+
+### Backward Compatibility
+- **MUST** maintain backward compatibility for plugin ecosystem
+- **MUST** deprecate APIs before removing them
+- **MUST** provide migration guides for breaking changes
+- **SHOULD** use `@Deprecated` annotation with removal version
+
+### Version Management
+- **MUST** follow semantic versioning (major.minor.patch)
+- **MUST** document breaking changes in release notes
+- **SHOULD** maintain LTS (Long Term Support) branches for stability

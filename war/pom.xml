@@ -170,9 +170,22 @@ THE SOFTWARE.
                     <exclude>org.kohsuke.stapler:stapler</exclude>
                     <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
                     <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
+                    <!--
+                      Spring Security dependencies are excluded from bytecode version enforcement
+                      (not from the WAR bundle). These dependencies are still included in the WAR
+                      via the jenkins-core module dependency (see core/pom.xml).
+                      
+                      Spring Security IS used for authentication per architecture standards.
+                      These exclusions are necessary because Spring Security libraries may contain
+                      bytecode compiled for newer JDK versions, but are still compatible at runtime.
+                    -->
                     <exclude>org.springframework.security:spring-security-core</exclude>
                     <exclude>org.springframework.security:spring-security-crypto</exclude>
                     <exclude>org.springframework.security:spring-security-web</exclude>
+                    <!--
+                      Spring Framework dependencies are also excluded from bytecode version enforcement
+                      for the same reason - they're still included via jenkins-core module.
+                    -->
                     <exclude>org.springframework:spring-aop</exclude>
                     <exclude>org.springframework:spring-beans</exclude>
                     <exclude>org.springframework:spring-context</exclude>

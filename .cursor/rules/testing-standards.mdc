@@ -1,0 +1,231 @@
+# Testing Standards
+
+## Test Organization
+
+### Test Structure
+- **MUST** mirror main source structure in test directories
+- **MUST** place unit tests in `src/test/java/`
+- **MUST** place test resources in `src/test/resources/`
+- **MUST** use `*Test.java` suffix for test classes
+- **MUST** use `*IT.java` suffix for integration tests (if applicable)
+
+### Test Naming
+- **MUST** use descriptive test method names: `testGetUserReturnsNullWhenNotFound()`
+- **SHOULD** use pattern: `test[MethodName][Scenario][ExpectedResult]`
+- **SHOULD** group related tests in same test class
+- **SHOULD** organize tests by feature/class being tested
+
+## Unit Testing
+
+### JUnit 5 Standards
+- **MUST** use JUnit 5 (`@Test`, `@BeforeEach`, `@AfterEach`)
+- **MUST** use `@Test` annotation for test methods
+- **SHOULD** use `@DisplayName` for readable test names
+- **SHOULD** use `@Nested` for grouping related tests
+- **MUST** avoid JUnit 4 imports (banned by Maven enforcer)
+
+### Test Structure
+- **MUST** follow Arrange-Act-Assert pattern:
+  ```java
+  @Test
+  void testGetUserReturnsNullWhenNotFound() {
+      // Arrange
+      UserManager manager = new UserManager();
+      
+      // Act
+      User result = manager.getUser("nonexistent");
+      
+      // Assert
+      assertNull(result);
+  }
+  ```
+
+### Assertions
+- **MUST** use JUnit 5 assertions: `assertEquals()`, `assertNotNull()`, etc.
+- **SHOULD** use assertion messages for clarity: `assertEquals("Expected message", expected, actual)`
+- **SHOULD** use `assertThrows()` for exception testing
+- **SHOULD** use `assertAll()` for multiple assertions
+
+### Mocking
+- **MUST** use Mockito for mocking dependencies
+- **SHOULD** use `@Mock` annotation for mock objects
+- **SHOULD** use `@InjectMocks` for class under test
+- **MUST** verify interactions when necessary: `verify(mock).method()`
+
+## Integration Testing
+
+### JenkinsRule
+- **MUST** use `JenkinsRule` for integration tests requiring Jenkins instance
+- **MUST** use `@Rule` annotation: `@Rule public JenkinsRule j = new JenkinsRule();`
+- **SHOULD** use `JenkinsRule` for tests that need:
+  - Jenkins instance
+  - Web UI testing
+  - Plugin testing
+  - Configuration testing
+
+### JenkinsSessionRule
+- **MUST** use `JenkinsSessionRule` for session-scoped tests
+- **MUST** use `@Rule` annotation: `@Rule public JenkinsSessionRule j = new JenkinsSessionRule();`
+- **SHOULD** use for tests that need:
+  - Session persistence
+  - Multi-step workflows
+  - Stateful operations
+
+### Test Extensions
+- **MUST** use `@TestExtension` for Jenkins test extensions
+- **MUST** annotate extension classes: `@TestExtension public class TestExtensionImpl extends ExtensionPoint`
+- **SHOULD** use for testing extension points
+
+## Test Resources
+
+### Resource Organization
+- **MUST** place test `.jelly` files in `src/test/resources/`
+- **MUST** place test XML configs in `src/test/resources/`
+- **MUST** place test data files in `src/test/resources/`
+- **MUST** mirror package structure for test resources
+
+### Test Data
+- **SHOULD** use fixtures for test data
+- **SHOULD** create test data in `@BeforeEach` methods
+- **SHOULD** clean up test data in `@AfterEach` methods
+- **MUST** avoid using production data in tests
+
+## Test Coverage
+
+### Coverage Requirements
+- **MUST** maintain test coverage thresholds (configured via JaCoCo)
+- **SHOULD** aim for high coverage of critical paths
+- **SHOULD** test edge cases and error conditions
+- **MUST** test all public APIs
+
+### Coverage Goals
+- **SHOULD** achieve 80%+ coverage for new code
+- **SHOULD** prioritize coverage of:
+  - Business logic
+  - Security-sensitive code
+  - Error handling paths
+  - Public APIs
+
+## Test Profiles
+
+### Maven Test Profiles
+- **MUST** use `light-test` profile for unit tests only
+- **MUST** use `smoke-test` profile for unit + selected functional tests
+- **MUST** use `all-tests` profile for full test suite (default)
+- **SHOULD** run `light-test` before committing
+
+### Running Tests
+- **MUST** run `mvn test -Plight-test` for quick feedback
+- **SHOULD** run `mvn test -Psmoke-test` before pushing
+- **SHOULD** let CI run `all-tests` profile
+- **MUST** ensure tests pass before creating PR
+
+## Test Best Practices
+
+### Test Independence
+- **MUST** make tests independent (no shared state)
+- **MUST** avoid test order dependencies
+- **SHOULD** use `@BeforeEach` for test setup
+- **SHOULD** use `@AfterEach` for test cleanup
+
+### Test Speed
+- **SHOULD** keep unit tests fast (< 100ms each)
+- **SHOULD** avoid I/O operations in unit tests
+- **SHOULD** use mocks for external dependencies
+- **MUST** mark slow tests appropriately
+
+### Test Clarity
+- **MUST** write readable test code
+- **SHOULD** use descriptive test names
+- **SHOULD** add comments for complex test logic
+- **SHOULD** extract helper methods for repeated patterns
+
+### Test Maintenance
+- **MUST** keep tests up-to-date with code changes
+- **MUST** remove obsolete tests
+- **SHOULD** refactor tests when code is refactored
+- **SHOULD** review test failures carefully
+
+## Frontend Testing
+
+### JavaScript Testing
+- **SHOULD** write tests for complex JavaScript logic
+- **SHOULD** test user interactions
+- **SHOULD** use ATH (Acceptance Test Harness) for UI tests
+- **MUST** test in multiple browsers
+
+### ATH Testing
+- **MUST** use ATH for UI/acceptance tests
+- **MUST** create ATH tests for complex UI changes
+- **SHOULD** place ATH tests in separate repository
+- **SHOULD** test critical user workflows
+
+## Test Data Management
+
+### Test Fixtures
+- **SHOULD** create reusable test fixtures
+- **SHOULD** use builder pattern for complex test objects
+- **SHOULD** use factories for test data creation
+- **MUST** avoid hardcoding test data in test methods
+
+### Test Isolation
+- **MUST** ensure tests don't affect each other
+- **MUST** clean up after tests
+- **SHOULD** use unique identifiers for test data
+- **SHOULD** use test-specific directories/files
+
+## Performance Testing
+
+### Performance Tests
+- **SHOULD** write performance tests for critical paths
+- **SHOULD** use `@Timeout` for test timeouts
+- **SHOULD** measure and assert performance metrics
+- **MUST** mark performance tests appropriately
+
+### Load Testing
+- **SHOULD** use load testing tools for stress testing
+- **SHOULD** test with realistic data volumes
+- **SHOULD** test concurrent operations
+- **MUST** run load tests separately from unit tests
+
+## Security Testing
+
+### Security Test Requirements
+- **MUST** test authentication and authorization
+- **MUST** test input validation
+- **MUST** test XSS prevention
+- **MUST** test CSRF protection
+
+### Security Test Patterns
+- **SHOULD** test with malicious input
+- **SHOULD** test permission checks
+- **SHOULD** test access control
+- **MUST** test security-sensitive operations
+
+## Test Documentation
+
+### Test Documentation
+- **SHOULD** document complex test scenarios
+- **SHOULD** explain test setup in comments
+- **SHOULD** document test data requirements
+- **MUST** keep test documentation up-to-date
+
+### Test Naming
+- **MUST** use descriptive test method names
+- **SHOULD** use `@DisplayName` for readable names
+- **SHOULD** group related tests with `@Nested`
+- **MUST** make test purpose clear from name
+
+## Continuous Integration
+
+### CI Test Execution
+- **MUST** ensure tests run in CI pipeline
+- **MUST** fix failing tests before merging
+- **SHOULD** run tests in parallel when possible
+- **MUST** ensure test environment is consistent
+
+### Test Reporting
+- **SHOULD** review test reports in CI
+- **SHOULD** investigate flaky tests
+- **SHOULD** track test coverage trends
+- **MUST** address test failures promptly

@@ -1,0 +1,352 @@
+# Frontend Coding Standards
+
+## JavaScript Standards
+
+### Code Style
+
+#### Formatting
+- **MUST** use Prettier for automatic code formatting
+- **MUST** run `yarn lint:fix` before committing
+- **MUST** use 2 spaces for indentation
+- **MUST** use semicolons
+- **MUST** use single quotes for strings (unless escaping)
+- **MUST** use trailing commas in multi-line objects/arrays
+
+#### Naming Conventions
+- **MUST** use camelCase for variables and functions: `getUserName()`
+- **MUST** use PascalCase for constructor functions/classes: `class UserManager`
+- **MUST** use UPPER_SNAKE_CASE for constants: `MAX_RETRY_COUNT`
+- **MUST** use descriptive names that indicate purpose
+- **SHOULD** use verb-noun pattern for functions: `getUser()`, `createItem()`
+
+#### File Organization
+- **MUST** use kebab-case for file names: `add-item.js`
+- **MUST** organize by feature/page, not by file type
+- **MUST** place page-specific code in `src/main/js/pages/`
+- **MUST** place reusable components in `src/main/js/components/`
+- **MUST** place utilities in `src/main/js/util/`
+
+### ES6+ Features
+
+#### Modern JavaScript
+- **MUST** use ES6+ features (transpiled via Babel)
+- **SHOULD** use `const` for values that don't change
+- **SHOULD** use `let` for values that change
+- **MUST** avoid `var` (use `const` or `let`)
+- **SHOULD** use arrow functions for callbacks: `items.map(item => item.id)`
+- **SHOULD** use template literals for string interpolation: `` `Hello ${name}` ``
+
+#### Destructuring
+- **SHOULD** use destructuring for object/array access:
+  ```javascript
+  const { name, age } = user;
+  const [first, second] = items;
+  ```
+
+#### Spread Operator
+- **SHOULD** use spread operator for copying arrays/objects:
+  ```javascript
+  const newArray = [...oldArray];
+  const newObject = { ...oldObject };
+  ```
+
+### Module System
+
+#### Imports/Exports
+- **MUST** use ES6 module syntax: `import`/`export`
+- **SHOULD** use named exports for utilities
+- **SHOULD** use default exports for main component/class
+- **MUST** use `@/` alias for imports from `src/main/js`
+
+#### Import Organization
+- **SHOULD** group imports:
+  1. External dependencies (jQuery, Handlebars, etc.)
+  2. Internal modules (`@/components/...`)
+  3. Relative imports (`./utils`)
+
+### jQuery Usage
+
+#### jQuery Patterns
+- **MUST** use jQuery for DOM manipulation (project standard)
+- **SHOULD** cache jQuery selections: `const $element = $('.selector');`
+- **SHOULD** use event delegation for dynamic content
+- **MUST** avoid mixing jQuery and vanilla DOM APIs
+
+#### Best Practices
+- **SHOULD** use `$(document).ready()` or `$(function() { ... })`
+- **SHOULD** namespace event handlers: `$(document).on('click', '.button', handler)`
+- **MUST** clean up event handlers when components are destroyed
+
+### Handlebars Templates
+
+#### Template Organization
+- **MUST** place templates in `src/main/js/templates/`
+- **MUST** use `.hbs` extension for Handlebars templates
+- **MUST** use descriptive template names: `user-profile.hbs`
+- **SHOULD** organize templates by feature/page
+
+#### Template Best Practices
+- **MUST** escape user input to prevent XSS: `{{name}}` (auto-escaped)
+- **SHOULD** use `{{{html}}}` only when necessary (trusted HTML)
+- **SHOULD** use Handlebars helpers for complex logic
+- **MUST** keep templates simple and focused
+
+### Component Patterns
+
+#### Component Structure
+- **SHOULD** organize components by feature
+- **SHOULD** keep components small and focused
+- **SHOULD** use composition over large monolithic components
+- **MUST** export components for reuse
+
+#### Component Example
+```javascript
+// components/user-card/index.js
+import { formatDate } from '@/util/date';
+
+export function initUserCard(container) {
+  const $container = $(container);
+  
+  function render(user) {
+    $container.html(`
+      <div class="user-card">
+        <h3>${user.name}</h3>
+        <p>Joined: ${formatDate(user.joinDate)}</p>
+      </div>
+    `);
+  }
+  
+  return { render };
+}
+```
+
+### Error Handling
+
+#### Error Patterns
+- **MUST** handle errors appropriately
+- **SHOULD** use try-catch for async operations
+- **SHOULD** log errors for debugging
+- **MUST** provide user-friendly error messages
+
+#### Async Error Handling
+```javascript
+async function fetchUser(id) {
+  try {
+    const response = await fetch(`/api/users/${id}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    throw error;
+  }
+}
+```
+
+## SCSS Standards
+
+### Code Style
+
+#### Formatting
+- **MUST** use Stylelint for SCSS linting
+- **MUST** run `yarn lint:fix` before committing
+- **MUST** use 2 spaces for indentation
+- **MUST** use single quotes for strings
+- **MUST** use trailing commas in multi-line lists/maps
+
+#### Naming Conventions
+- **MUST** use BEM-like naming: `.block__element--modifier`
+- **MUST** use kebab-case for class names: `.user-profile`
+- **MUST** use descriptive names that indicate purpose
+- **SHOULD** avoid deep nesting (max 3-4 levels)
+
+### File Organization
+
+#### SCSS Structure
+```
+src/main/scss/
+├── abstracts/          # Variables, mixins, functions
+│   ├── _variables.scss
+│   ├── _mixins.scss
+│   └── _functions.scss
+├── base/               # Base styles (reset, typography)
+│   ├── _reset.scss
+│   └── _typography.scss
+├── components/          # Component styles
+│   ├── _button.scss
+│   └── _card.scss
+├── form/               # Form-specific styles
+│   └── _input.scss
+└── pages/              # Page-specific styles
+    └── _dashboard.scss
+```
+
+#### Partial Files
+- **MUST** prefix partial files with underscore: `_variables.scss`
+- **MUST** import partials without underscore: `@import 'abstracts/variables';`
+- **SHOULD** organize partials by feature/component
+
+### BEM Naming
+
+#### BEM Structure
+- **MUST** use block-element-modifier pattern:
+  ```scss
+  .user-card {              // Block
+    &__header {             // Element
+      &--highlighted {     // Modifier
+        background: blue;
+      }
+    }
+  }
+  ```
+
+#### BEM Best Practices
+- **MUST** keep blocks independent and reusable
+- **SHOULD** avoid nesting elements more than one level deep
+- **SHOULD** use modifiers for variations, not separate classes
+- **MUST** avoid using IDs for styling
+
+### Variables and Mixins
+
+#### Variables
+- **MUST** use SCSS variables for colors, spacing, typography
+- **MUST** organize variables by category:
+  ```scss
+  // Colors
+  $color-primary: #f54e00;
+  $color-text: #26251e;
+  
+  // Spacing
+  $spacing-small: 8px;
+  $spacing-medium: 16px;
+  ```
+
+#### Mixins
+- **SHOULD** create mixins for repeated patterns
+- **SHOULD** use mixins for vendor prefixes
+- **MUST** document mixin parameters
+
+### Responsive Design
+
+#### Breakpoints
+- **SHOULD** use consistent breakpoints
+- **SHOULD** use mobile-first approach
+- **SHOULD** define breakpoints as variables
+
+#### Media Queries
+- **SHOULD** use SCSS nesting for media queries:
+  ```scss
+  .component {
+    width: 100%;
+    
+    @media (min-width: 768px) {
+      width: 50%;
+    }
+  }
+  ```
+
+### Performance
+
+#### Optimization
+- **SHOULD** avoid deep nesting (increases CSS size)
+- **SHOULD** use efficient selectors
+- **SHOULD** avoid `@import` in production (use bundler)
+- **MUST** use PostCSS for CSS processing
+
+#### Best Practices
+- **SHOULD** minimize specificity conflicts
+- **SHOULD** use classes instead of complex selectors
+- **SHOULD** avoid `!important` unless necessary
+- **MUST** use CSS extraction plugin for production builds
+
+## Build Configuration
+
+### Webpack
+
+#### Entry Points
+- **MUST** define entry points in `webpack.config.js`
+- **MUST** organize entry points by page/feature
+- **SHOULD** use descriptive entry point names
+
+#### Output Configuration
+- **MUST** output bundles to `war/src/main/webapp/jsbundles/`
+- **MUST** use source maps in development
+- **SHOULD** use production source maps for debugging
+- **SHOULD** split vendor chunks for better caching
+
+### Development Workflow
+
+#### Development Server
+- **MUST** run webpack dev server for frontend development
+- **MUST** run Maven Jetty server separately (with `-Dskip.yarn`)
+- **SHOULD** use hot module replacement when available
+
+#### Build Commands
+- **MUST** use `yarn build` for production builds
+- **MUST** use `yarn start` for development (watch mode)
+- **MUST** use `yarn lint` to check code quality
+- **MUST** use `yarn lint:fix` to auto-fix issues
+
+## Code Quality Tools
+
+### ESLint
+- **MUST** fix all ESLint errors before committing
+- **SHOULD** fix ESLint warnings
+- **MUST** use ESLint config from `eslint.config.cjs`
+- **SHOULD** configure IDE to show ESLint errors
+
+### Prettier
+- **MUST** use Prettier for code formatting
+- **MUST** run Prettier before committing
+- **SHOULD** configure IDE to format on save
+- **MUST** ensure Prettier config is consistent across team
+
+### Stylelint
+- **MUST** fix all Stylelint errors before committing
+- **SHOULD** fix Stylelint warnings
+- **MUST** use Stylelint config for SCSS
+- **SHOULD** configure IDE to show Stylelint errors
+
+## Testing
+
+### Frontend Testing
+- **SHOULD** write tests for complex JavaScript logic
+- **SHOULD** test user interactions
+- **SHOULD** use ATH (Acceptance Test Harness) for UI tests
+- **MUST** test in multiple browsers
+
+### Test Organization
+- **SHOULD** organize tests alongside source files
+- **SHOULD** use descriptive test names
+- **SHOULD** test edge cases and error conditions
+
+## Accessibility
+
+### A11y Standards
+- **MUST** use semantic HTML elements
+- **MUST** provide alt text for images
+- **MUST** ensure keyboard navigation works
+- **SHOULD** use ARIA attributes when necessary
+- **SHOULD** test with screen readers
+
+### Best Practices
+- **SHOULD** use proper heading hierarchy (h1, h2, h3)
+- **SHOULD** provide focus indicators
+- **SHOULD** ensure sufficient color contrast
+- **MUST** make forms accessible
+
+## Performance
+
+### Optimization
+- **SHOULD** minimize JavaScript bundle sizes
+- **SHOULD** implement code splitting for large applications
+- **SHOULD** use lazy loading for routes/components
+- **SHOULD** optimize images and use appropriate formats
+- **SHOULD** minimize CSS bundle sizes
+
+### Best Practices
+- **SHOULD** avoid blocking JavaScript in `<head>`
+- **SHOULD** defer non-critical JavaScript
+- **SHOULD** use efficient DOM queries
+- **SHOULD** avoid memory leaks (clean up event handlers)

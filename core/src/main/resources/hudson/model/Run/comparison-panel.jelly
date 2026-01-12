@@ -1,0 +1,79 @@
+<!--
+The MIT License
+
+Copyright (c) 2025, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt">
+  <j:if test="${h.isUserTimeZoneOverride()}">
+    <i:setTimeZone value="${h.getUserTimeZone()}" />
+  </j:if>
+
+  <l:card title="${label}">
+    <div class="build-comparison-panel__header">
+      <a href="${build.url}" class="build-comparison-panel__link">
+        <l:icon src="symbol-status-${build.iconColor.iconName}" alt="${build.iconColor.description}" />
+        <span class="build-comparison-panel__number">${build.displayName}</span>
+      </a>
+    </div>
+
+    <table class="build-comparison-table">
+      <tr>
+        <th>${%Status}</th>
+        <td>
+          <l:icon src="symbol-status-${build.iconColor.iconName}" alt="${build.iconColor.description}" />
+          <span>${build.result ? build.result.toString() : (build.building ? 'Building' : 'Unknown')}</span>
+        </td>
+      </tr>
+      <tr>
+        <th>${%Duration}</th>
+        <td>
+          <j:if test="${build.building}">
+            ${%Building...}
+          </j:if>
+          <j:if test="${!build.building}">
+            ${build.durationString}
+          </j:if>
+        </td>
+      </tr>
+      <tr>
+        <th>${%Started}</th>
+        <td>
+          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium" />
+          ${h.getUserTimeZonePostfix()}
+        </td>
+      </tr>
+      <j:if test="${build.displayName != null and build.displayName != '' and build.displayName != '#' + build.number}">
+        <tr>
+          <th>${%Display Name}</th>
+          <td>${build.displayName}</td>
+        </tr>
+      </j:if>
+    </table>
+
+    <div class="build-comparison-panel__actions">
+      <a href="${build.url}" class="jenkins-button jenkins-button--tertiary">
+        ${%View Build}
+      </a>
+    </div>
+  </l:card>
+</j:jelly>

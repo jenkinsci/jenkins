@@ -79,6 +79,13 @@ THE SOFTWARE.
       </div>
     </div>
 
+    <div class="app-builds-container__item__actions">
+      <a href="${link}compare" class="jenkins-button jenkins-button--tertiary jenkins-button--small" tooltip="${%Compare this build with another}" data-tooltip-append-to-parent="true">
+        <l:icon src="symbol-details" />
+        ${%Compare}
+      </a>
+    </div>
+
     <button class="jenkins-card__reveal jenkins-jumplist-link" data-href="${link}">
       <l:icon src="symbol-chevron-down" />
     </button>

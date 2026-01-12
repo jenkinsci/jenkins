@@ -1,0 +1,221 @@
+# Jenkins Project Structure Rules
+
+## Module Organization
+
+### Core Modules
+- **MUST** place core business logic in `core/` module
+- **MUST** place web application resources in `war/` module
+- **MUST** place command-line interface code in `cli/` module
+- **MUST** place WebSocket implementations in `websocket/` module
+- **MUST** place integration/system tests in `test/` module
+- **MUST** place BOM (Bill of Materials) in `bom/` module
+- **MUST** place coverage tools in `coverage/` module
+
+### Directory Structure Per Module
+
+#### Java Source Structure
+```
+module-name/
+├── pom.xml
+├── src/
+│   ├── main/
+│   │   ├── java/          # Java source files
+│   │   └── resources/     # Resource files (.properties, .jelly, .xml)
+│   ├── test/
+│   │   ├── java/          # Test source files
+│   │   └── resources/     # Test resources
+│   └── filter/
+│       └── resources/     # Filtered resources (Maven property substitution)
+└── target/                # Build output (generated, not committed)
+```
+
+#### Frontend Source Structure (Root Level)
+```
+src/
+├── main/
+│   ├── js/                # JavaScript source files
+│   │   ├── pages/         # Page-specific JavaScript
+│   │   ├── components/    # Reusable UI components
+│   │   ├── api/           # API client code
+│   │   ├── templates/     # Handlebars templates
+│   │   ├── util/          # Utility functions
+│   │   └── widgets/       # Widget components
+│   └── scss/              # SCSS stylesheets
+│       ├── abstracts/     # Variables, mixins, functions
+│       ├── base/          # Base styles (reset, typography)
+│       ├── components/    # Component styles
+│       ├── form/          # Form-specific styles
+│       └── pages/         # Page-specific styles
+└── checkstyle/            # Checkstyle configuration
+```
+
+#### Web Application Structure (war module)
+```
+war/
+└── src/
+    └── main/
+        └── webapp/        # Web application root
+            ├── jsbundles/ # Generated JavaScript bundles (from webpack)
+            ├── images/    # Image assets
+            ├── css/       # Generated CSS files
+            └── ...        # Other web resources
+```
+
+## Package Naming Conventions
+
+### Java Packages
+- **MUST** use `hudson.*` for legacy/core packages
+- **MUST** use `jenkins.*` for newer packages
+- **MUST** use `org.jenkinsci.main.*` for main application packages
+- **MUST** organize by domain/feature, not by technical layer:
+  - ✅ `jenkins.model.*` - Domain models
+  - ✅ `jenkins.security.*` - Security features
+  - ✅ `jenkins.util.*` - Utility classes
+  - ❌ `jenkins.controller.*` - Avoid layer-based naming
+  - ❌ `jenkins.service.*` - Avoid layer-based naming
+
+### Resource File Organization
+- **MUST** mirror Java package structure for `.properties` files
+- **MUST** place `.jelly` view files alongside corresponding Java classes
+- **MUST** use `Messages.properties` for internationalization
+- **MUST** place static web assets in `war/src/main/webapp/`
+
+## File Naming Conventions
+
+### Java Files
+- **MUST** use PascalCase for class names: `UserManager.java`
+- **MUST** use one public class per file
+- **MUST** name file after primary public class
+- **MUST** use descriptive names that indicate purpose
+
+### JavaScript Files
+- **MUST** use kebab-case for file names: `add-item.js`
+- **MUST** use camelCase for JavaScript identifiers: `addItem()`
+- **MUST** use PascalCase for constructor functions/classes: `class UserManager`
+- **MUST** use descriptive names that indicate purpose
+
+### SCSS Files
+- **MUST** use kebab-case for file names: `add-item.scss`
+- **MUST** prefix partial files with underscore: `_variables.scss`
+- **MUST** use BEM-like naming for CSS classes: `.block__element--modifier`
+
+### Configuration Files
+- **MUST** place Maven config in `pom.xml` at module root
+- **MUST** place Checkstyle config in `src/checkstyle/checkstyle-configuration.xml`
+- **MUST** place Webpack config in `webpack.config.js` at project root
+- **MUST** place ESLint config in `eslint.config.cjs` at project root
+- **MUST** place PostCSS config in `postcss.config.js` at project root
+- **MUST** place package.json at project root
+
+## Build Artifacts
+
+### Generated Directories (Not Committed)
+- **MUST** never commit `target/` directories
+- **MUST** never commit `node_modules/`
+- **MUST** never commit `node/` directory (downloaded Node.js)
+- **MUST** never commit `.yarn/` directory
+- **MUST** never commit `war/src/main/webapp/jsbundles/` (generated bundles)
+
+### Build Output Locations
+- **MUST** output Java classes to `target/classes/`
+- **MUST** output test classes to `target/test-classes/`
+- **MUST** output JAR files to `target/`
+- **MUST** output WAR file to `war/target/jenkins.war`
+- **MUST** output JavaScript bundles to `war/src/main/webapp/jsbundles/`
+
+## Module Dependencies
+
+### Dependency Rules
+- **MUST** declare dependencies in module's `pom.xml`
+- **MUST** use parent POM for version management
+- **MUST** use BOM for dependency version coordination
+- **MUST** avoid circular dependencies between modules
+- **SHOULD** minimize inter-module dependencies
+
+### Module Dependency Graph
+```
+bom (Bill of Materials)
+  └── Defines dependency versions
+
+core
+  └── Core business logic (no dependencies on war/cli)
+
+websocket/spi
+  └── WebSocket SPI definitions
+
+websocket/jetty12-ee9
+  ├── Depends on: websocket/spi
+  └── Jetty-specific WebSocket implementation
+
+war
+  ├── Depends on: core
+  └── Web application resources
+
+cli
+  ├── Depends on: core
+  └── Command-line interface
+
+test
+  ├── Depends on: core, war, cli
+  └── Integration and system tests
+
+coverage
+  └── Code coverage tools
+```
+
+## Resource Organization
+
+### Java Resources
+- **MUST** place `.properties` files in `src/main/resources/` mirroring package structure
+- **MUST** place `.jelly` view files alongside Java classes in `src/main/resources/`
+- **MUST** place `.xml` configuration files in `src/main/resources/`
+- **MUST** use UTF-8 encoding for all resource files
+
+### Frontend Resources
+- **MUST** place JavaScript source in `src/main/js/`
+- **MUST** place SCSS source in `src/main/scss/`
+- **MUST** place Handlebars templates in `src/main/js/templates/`
+- **MUST** organize by feature/page, not by file type
+
+### Static Web Resources
+- **MUST** place images in `war/src/main/webapp/images/`
+- **MUST** place generated bundles in `war/src/main/webapp/jsbundles/`
+- **MUST** place other static assets in `war/src/main/webapp/`
+
+## Test Structure
+
+### Test Organization
+- **MUST** mirror main source structure in test directories
+- **MUST** place unit tests in `src/test/java/`
+- **MUST** place test resources in `src/test/resources/`
+- **MUST** use `*Test.java` suffix for test classes
+- **MUST** use `*IT.java` suffix for integration tests (if applicable)
+
+### Test Resources
+- **MUST** place test `.jelly` files in `src/test/resources/`
+- **MUST** place test XML configs in `src/test/resources/`
+- **MUST** place test data files in `src/test/resources/`
+
+## Documentation Structure
+
+### Documentation Files
+- **MUST** place project-level docs in root: `README.md`, `CONTRIBUTING.md`
+- **MUST** place maintainer docs in `docs/MAINTAINERS.adoc`
+- **SHOULD** place Cursor-specific rules in `.cursor/rules/`
+- **SHOULD** place JavaDoc in source code comments
+
+## Version Control Structure
+
+### Git Organization
+- **MUST** use `.gitignore` to exclude build artifacts
+- **MUST** keep `main` branch stable and deployable
+- **SHOULD** use feature branches for development
+- **SHOULD** use conventional commit messages
+
+### Ignored Files/Directories
+- `target/` - Maven build output
+- `node_modules/` - Node.js dependencies
+- `node/` - Downloaded Node.js runtime
+- `.yarn/` - Yarn cache
+- `war/src/main/webapp/jsbundles/` - Generated bundles
+- IDE-specific files (`.idea/`, `.vscode/`, etc.)
