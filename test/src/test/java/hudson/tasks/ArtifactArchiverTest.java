@@ -58,6 +58,8 @@ import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import hudson.util.SymlinkTestUtil;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.StandardArtifactManager;
 import jenkins.util.VirtualFile;
@@ -102,7 +104,7 @@ class ArtifactArchiverTest {
     @Issue("JENKINS-3227")
     void testEmptyDirectories() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        Publisher artifactArchiver = new ArtifactArchiver("dir/");
+        ArtifactArchiver artifactArchiver = new ArtifactArchiver("dir/");
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
             @Override
@@ -217,7 +219,10 @@ class ArtifactArchiverTest {
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
-        assumeTrue(ws.child("dir/lodge").exists(), "May not be testable on Windows:\n" + JenkinsRule.getLog(b));
+        assumeTrue(
+                SymlinkTestUtil.isSymlinkSupported(),
+                "Symlinks are not supported on this system"
+        );
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(1, artifacts.size());
         FreeStyleBuild.Artifact artifact = artifacts.get(0);
@@ -253,7 +258,10 @@ class ArtifactArchiverTest {
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
-        assumeTrue(ws.child("dir/lodge").exists(), "May not be testable on Windows:\n" + JenkinsRule.getLog(b));
+        assumeTrue(
+                SymlinkTestUtil.isSymlinkSupported(),
+                "Symlinks are not supported on this system"
+        );
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(0, artifacts.size());
     }
@@ -377,7 +385,8 @@ class ArtifactArchiverTest {
     void testDefaultExcludesOn() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
 
-        Publisher artifactArchiver = new ArtifactArchiver("**", "", false, false, true, true);
+        ArtifactArchiver artifactArchiver =
+                new ArtifactArchiver("**", "", false, false, true, true);
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact()));
 
