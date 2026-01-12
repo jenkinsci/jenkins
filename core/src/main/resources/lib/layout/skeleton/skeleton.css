@@ -95,10 +95,3 @@ body:has(.jenkins-form-skeleton) {
     margin: 0 !important;
   }
 }
-/*
- * Prevent anchor targets from being hidden behind the Jenkins header
- * See: https://github.com/jenkinsci/jenkins/issues/16803
- */
-[id] {
-  scroll-margin-top: 4rem;
-}

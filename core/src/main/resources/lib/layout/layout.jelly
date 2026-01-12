@@ -115,6 +115,15 @@ THE SOFTWARE.
     <j:if test="${attrs.nogrid==null or attrs.nogrid.equals(false)}">
       <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
     </j:if>
+    <style>
+      /*
+       * Prevent anchor targets from being hidden behind the fixed Jenkins header
+       * See: https://github.com/jenkinsci/jenkins/issues/16803
+       */
+      :target {
+        scroll-margin-top: 4rem;
+      }
+    </style>
     <j:if test="${attrs.css!=null}">
       <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
     </j:if>
