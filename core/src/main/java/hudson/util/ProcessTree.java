@@ -462,26 +462,14 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return new Windows(vetoes);
 
             String os = Util.fixNull(System.getProperty("os.name"));
-            switch (os) {
-                case "Linux" -> {
-                    return new Linux(vetoes);
-                }
-                case "AIX" -> {
-                    return new AIX(vetoes);
-                }
-                case "SunOS" -> {
-                    return new Solaris(vetoes);
-                }
-                case "Mac OS X" -> {
-                    return new Darwin(vetoes);
-                }
-                case "FreeBSD" -> {
-                    return new FreeBSD(vetoes);
-                }
-                default -> {
-                    return DEFAULT;
-                }
-            }
+            return switch (os) {
+                case "Linux" -> new Linux(vetoes);
+                case "AIX" -> new AIX(vetoes);
+                case "SunOS" -> new Solaris(vetoes);
+                case "Mac OS X" -> new Darwin(vetoes);
+                case "FreeBSD" -> new FreeBSD(vetoes);
+                default -> DEFAULT;
+            };
         } catch (LinkageError e) {
             LOGGER.log(Level.FINE, "Failed to load OS-specific implementation; reverting to the default", e);
             enabled = false;
