@@ -3762,6 +3762,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             }
 
             Path parentAbsolutePath = Util.fileToPath(parentFile.getAbsoluteFile());
+            // --- FIX START: Handle potential null from Util.fileToPath ---
+            if (parentAbsolutePath == null) {
+                LOGGER.log(Level.FINE, "Invalid path characters in parentFile: {0}", parentFile);
+                return false;
+            }
+            // --- FIX END ---
             Path parentRealPath;
             try {
                 if (Functions.isWindows()) {
@@ -3781,6 +3787,11 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             Path currentFilePath = parentFile.toPath();
             while (!remainingPath.isEmpty()) {
                 Path directChild = this.getDirectChild(currentFilePath, remainingPath);
+                // --- FIX #2: Handle if directChild is null ---
+                if (directChild == null) {
+                    return false;
+                }
+                // ---------------------------------------------
                 Path childUsingFullPath = currentFilePath.resolve(remainingPath);
                 String childUsingFullPathAbs = childUsingFullPath.toAbsolutePath().toString();
                 String directChildAbs = directChild.toAbsolutePath().toString();
