@@ -50,6 +50,7 @@ import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
+import hudson.util.SymlinkTestUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,8 +59,6 @@ import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import hudson.util.SymlinkTestUtil;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.StandardArtifactManager;
 import jenkins.util.VirtualFile;
