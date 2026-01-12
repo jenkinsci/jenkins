@@ -734,9 +734,9 @@ class DirectoryBrowserSupportTest {
         Path secretTarget = secretsFolder.resolve("goal.txt");
         String secretContent = "secret";
         Files.writeString(secretTarget, secretContent, StandardCharsets.UTF_8);
-        Files.writeString(secretsFolder.toPath().resolve("public_fake1.key"), secretContent, StandardCharsets.UTF_8);
-        Files.writeString(secretsFolder.toPath().resolve("public_fake2.key"), secretContent, StandardCharsets.UTF_8);
-        Files.writeString(secretsFolder.toPath().resolve("public_fake3.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.resolve("public_fake1.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.resolve("public_fake2.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.resolve("public_fake3.key"), secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
