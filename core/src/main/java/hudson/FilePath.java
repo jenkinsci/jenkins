@@ -3828,6 +3828,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             while (current != null && !parentPath.equals(current.getParent())) {
                 current = current.getParent();
             }
+            if (current == null) {
+                throw new IllegalStateException("Invalid path traversal: " + parentPath + " -> " + childPath);
+            }
             return current;
         }
 
