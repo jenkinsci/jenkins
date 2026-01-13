@@ -113,7 +113,7 @@ class ProxyConfigurationSystemPropertiesTest {
     private void clearProxyProperties() {
         String[] keys = {
             "http.proxyHost", "http.proxyPort", "http.proxyUser", "http.proxyPassword", "http.nonProxyHosts",
-            "https.proxyHost", "https.proxyPort", "https.proxyUser", "https.proxyPassword"
+            "https.proxyHost", "https.proxyPort", "https.proxyUser", "https.proxyPassword",
         };
         for (String k : keys) {
             System.clearProperty(k);
