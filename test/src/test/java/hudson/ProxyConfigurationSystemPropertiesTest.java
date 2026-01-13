@@ -36,17 +36,33 @@ import org.junit.jupiter.api.Test;
 
 class ProxyConfigurationSystemPropertiesTest {
 
-    private Properties originalProperties;
+    private static final String[] PROXY_KEYS = {
+        "http.proxyHost", "http.proxyPort", "http.proxyUser", "http.proxyPassword", "http.nonProxyHosts",
+        "https.proxyHost", "https.proxyPort", "https.proxyUser", "https.proxyPassword",
+    };
+
+    private Properties saved;
 
     @BeforeEach
-    void backupProperties() {
-        originalProperties = (Properties) System.getProperties().clone();
-        clearProxyProperties();
+    void saveAndClear() {
+        saved = new Properties();
+        for (String k : PROXY_KEYS) {
+            String v = System.getProperty(k);
+            if (v != null) {
+                saved.setProperty(k, v);
+            }
+            System.clearProperty(k);
+        }
     }
 
     @AfterEach
-    void restoreProperties() {
-        System.setProperties(originalProperties);
+    void restore() {
+        for (String k : PROXY_KEYS) {
+            System.clearProperty(k);
+        }
+        for (String k : saved.stringPropertyNames()) {
+            System.setProperty(k, saved.getProperty(k));
+        }
     }
 
     @Test
@@ -108,16 +124,6 @@ class ProxyConfigurationSystemPropertiesTest {
         assertThat(cfg, notNullValue());
         assertThat(cfg.getName(), is("trimmed.example.com"));
         assertThat(cfg.getPort(), is(9090));
-    }
-
-    private void clearProxyProperties() {
-        String[] keys = {
-            "http.proxyHost", "http.proxyPort", "http.proxyUser", "http.proxyPassword", "http.nonProxyHosts",
-            "https.proxyHost", "https.proxyPort", "https.proxyUser", "https.proxyPassword",
-        };
-        for (String k : keys) {
-            System.clearProperty(k);
-        }
     }
 
     @Test
