@@ -3781,11 +3781,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             Path currentFilePath = parentFile.toPath();
             while (!remainingPath.isEmpty()) {
                 Path directChild = this.getDirectChild(currentFilePath, remainingPath);
-                // --- FIX #2: Handle if directChild is null ---
-                if (directChild == null) {
-                    return false;
-                }
-                // ---------------------------------------------
                 Path childUsingFullPath = currentFilePath.resolve(remainingPath);
                 String childUsingFullPathAbs = childUsingFullPath.toAbsolutePath().toString();
                 String directChildAbs = directChild.toAbsolutePath().toString();
@@ -3828,7 +3823,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return true;
         }
 
-        private @CheckForNull Path getDirectChild(Path parentPath, String childPath) {
+        private @NonNull Path getDirectChild(Path parentPath, String childPath) {
             Path current = parentPath.resolve(childPath);
             while (current != null && !parentPath.equals(current.getParent())) {
                 current = current.getParent();

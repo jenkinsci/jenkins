@@ -1299,15 +1299,9 @@ class FilePathTest {
     }
 
     @Test
-    @Issue("SpotBugs")
-    public void testIsDescendantWithParentTraversal() throws Exception {
-        File tmp = Util.createTempDir();
-        try {
-            FilePath parent = new FilePath(tmp);
-            // This checks the specific case that causes getDirectChild to return null
-            assertFalse(parent.isDescendant(".."), "Parent directory '..' should not be a descendant");
-        } finally {
-            Util.deleteRecursive(tmp);
-        }
+    public void testIsDescendantWithParentTraversal(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tempDir) throws Exception {
+        FilePath parent = new FilePath(tempDir.toFile());
+        // Confirms that '..' does not crash the system (proving getDirectChild is safe)
+        assertFalse(parent.isDescendant(".."), "Parent directory '..' should not be a descendant");
     }
 }
