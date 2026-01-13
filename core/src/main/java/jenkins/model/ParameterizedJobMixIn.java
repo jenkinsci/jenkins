@@ -40,6 +40,7 @@ import hudson.model.BuildableItem;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.ParameterDefinition;
@@ -231,7 +232,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             // TODO JENKINS-66105 use SC_SEE_OTHER if !ScheduleResult.created
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
         } else {
-            rsp.sendRedirect(".");
+            throw HttpResponses.errorWithoutStack(SC_CONFLICT, asJob().getFullName() + " is not buildable");
         }
     }
 
@@ -563,7 +564,17 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         }
 
         default boolean isBuildable() {
-            return !isDisabled() && !((Job) this).isHoldOffBuildUntilSave();
+            if (isDisabled() || ((Job) this).isHoldOffBuildUntilSave()) {
+                return false;
+            }
+            ItemGroup<? extends Item> parentGroup = ((Job) this).getParent();
+            if (parentGroup instanceof Item) {
+                Item parent = (Item) parentGroup;
+                if (parent instanceof ParameterizedJob && ((ParameterizedJob) parent).isDisabled()) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         @Extension
