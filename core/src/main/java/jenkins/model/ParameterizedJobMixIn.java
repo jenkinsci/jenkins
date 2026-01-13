@@ -567,6 +567,8 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             if (isDisabled() || ((Job) this).isHoldOffBuildUntilSave()) {
                 return false;
             }
+            // Check if parent (e.g., multibranch project) is disabled
+            // If parent is disabled, child jobs (e.g., branch jobs) should not be buildable
             ItemGroup<? extends Item> parentGroup = ((Job) this).getParent();
             if (parentGroup instanceof Item) {
                 Item parent = (Item) parentGroup;
