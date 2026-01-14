@@ -1,0 +1,45 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler">
+  <s:documentation> <![CDATA[
+    Dismiss button with red cross icon. Used in administrative monitor alerts.
+    ]]>
+    <s:attribute name="name">
+      If specified, becomes the value of the name attribute.
+      When you have more than one submit button on the form, this can be used to determine
+      which button is pressed, as the server will get a parameter by this name.
+      Defaults to 'Submit'.
+    </s:attribute>
+    <s:attribute name="value">
+      The value attribute of the button, defaults to localized 'Dismiss' text.
+    </s:attribute>
+  </s:documentation>
+
+  <button name="${attrs.name ?: 'Submit'}" value="${attrs.value ?: '%Dismiss'}" formNoValidate="formNoValidate" class="jenkins-button jenkins-submit-button" style="padding: 0; width: 38px; height: 38px; border-radius: 100%; background: transparent;">
+      <span class="jenkins-visually-hidden">${attrs.value ?: '%Dismiss'}</span>
+      <svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512" style="width: 1.125rem; height: 1.125rem;"><path fill="none" stroke="#e53935" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M368 368L144 144M368 144L144 368"/></svg>
+  </button>
+</j:jelly>
