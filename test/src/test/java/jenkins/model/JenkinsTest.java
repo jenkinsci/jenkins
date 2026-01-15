@@ -99,6 +99,8 @@ import org.htmlunit.Page;
 import org.htmlunit.TextPage;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
@@ -139,11 +141,38 @@ public class JenkinsTest {
 
     @Test
     @Issue("SECURITY-3498")
-    void testPaneToggleCollapse() {
+    void testPaneToggleCollapseGetFails() {
         try (WebClient wc = j.createWebClient()) {
             final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("toggleCollapse?paneId=foo"));
             // @POST responds 404 when the verb is wrong; @RequirePOST would respond 405.
             assertThat(ex.getStatusCode(), is(HttpServletResponse.SC_NOT_FOUND));
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-3498")
+    void testPaneToggleCollapsePostSucceeds() throws Exception {
+        try (WebClient wc = j.createWebClient()) {
+
+            HtmlPage page = wc.goTo("");
+
+            wc.waitForBackgroundJavaScript(2000);
+
+            HtmlAnchor collapseLink = page.querySelector("a.collapse.post");
+
+            if (collapseLink != null) {
+                String paneId = collapseLink.getAttribute("data-post-href");
+                assertNotNull(paneId, "Collapse link should have data-post-href");
+
+                HtmlElementUtil.click(collapseLink);
+    
+                wc.waitForBackgroundJavaScript(500);
+
+                HtmlPage currentPage = (HtmlPage) wc.getCurrentWindow().getEnclosedPage();
+                assertFalse(
+                        currentPage.getWebResponse().getContentAsString().contains("This URL requires POST"),
+                        "POST link should work without showing 'This URL requires POST' error");
+            }
         }
     }
 
