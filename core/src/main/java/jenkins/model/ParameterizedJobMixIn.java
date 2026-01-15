@@ -231,7 +231,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             // TODO JENKINS-66105 use SC_SEE_OTHER if !ScheduleResult.created
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
         } else {
-            throw HttpResponses.errorWithoutStack(SC_CONFLICT, asJob().getFullName() + " is not buildable");
+            rsp.sendRedirect(".");
         }
     }
 
