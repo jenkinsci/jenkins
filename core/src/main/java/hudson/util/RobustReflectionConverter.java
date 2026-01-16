@@ -47,14 +47,18 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Saveable;
 import hudson.security.ACL;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -293,115 +297,30 @@ public class RobustReflectionConverter implements Converter {
     }
 
     public Object doUnmarshal(final Object result, final HierarchicalStreamReader reader, final UnmarshallingContext context) {
-        final SeenFields seenFields = new SeenFields();
-        Iterator it = reader.getAttributeNames();
+        Class<?> type = result.getClass();
+        boolean isRecord = type.isRecord();
+
+        CollectedFields collectedFields = collectFieldsFromXML(result, reader, context, isRecord);
+        Object finalResult;
+        if (isRecord) {
+            finalResult = constructRecordFromFields(type, collectedFields);
+        } else {
+            applyFieldsToObject(result, collectedFields, reader, context);
+            finalResult = result;
+        }
+
         // Remember outermost Saveable encountered, for reporting below
-        if (result instanceof Saveable && context.get("Saveable") == null)
-            context.put("Saveable", result);
-
-        // Process attributes before recursing into child elements.
-        while (it.hasNext()) {
-            String attrAlias = (String) it.next();
-            String attrName = mapper.attributeForAlias(attrAlias);
-            Class classDefiningField = determineWhichClassDefinesField(reader);
-            boolean fieldExistsInClass = fieldDefinedInClass(result, attrName);
-            if (fieldExistsInClass) {
-                Field field = reflectionProvider.getField(result.getClass(), attrName);
-                SingleValueConverter converter = mapper.getConverterFromAttribute(field.getDeclaringClass(), attrName, field.getType());
-                Class type = field.getType();
-                if (converter == null) {
-                    converter = mapper.getConverterFromItemType(type); // TODO add fieldName & definedIn args
-                }
-                if (converter != null) {
-                    Object value = converter.fromString(reader.getAttribute(attrAlias));
-                    if (type.isPrimitive()) {
-                        type = Primitives.box(type);
-                    }
-                    if (value != null && !type.isAssignableFrom(value.getClass())) {
-                        throw new ConversionException("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
-                    }
-                    reflectionProvider.writeField(result, attrName, value, classDefiningField);
-                    seenFields.add(classDefiningField, attrName);
-                }
-            }
-        }
-
-        Map<String, Collection<Object>> implicitCollectionsForCurrentObject = new HashMap<>();
-        Map<String, Class<?>> implicitCollectionElementTypesForCurrentObject = new HashMap<>();
-        while (reader.hasMoreChildren()) {
-            reader.moveDown();
-
-            boolean critical = false;
-            try {
-                String fieldName = mapper.realMember(result.getClass(), reader.getNodeName());
-                for (Class<?> concrete = result.getClass(); concrete != null; concrete = concrete.getSuperclass()) {
-                    // Not quite right since a subclass could shadow a field, but probably suffices:
-                    if (hasCriticalField(concrete, fieldName)) {
-                        critical = true;
-                        break;
-                    }
-                }
-                boolean implicitCollectionHasSameName = mapper.getImplicitCollectionDefForFieldName(result.getClass(), reader.getNodeName()) != null;
-
-                Class classDefiningField = determineWhichClassDefinesField(reader);
-                boolean fieldExistsInClass = !implicitCollectionHasSameName && fieldDefinedInClass(result, fieldName);
-
-                Class type = determineType(reader, fieldExistsInClass, result, fieldName, classDefiningField);
-                final Object value;
-                if (fieldExistsInClass) {
-                    Field field = reflectionProvider.getField(result.getClass(), fieldName);
-                    value = unmarshalField(context, result, type, field);
-                    // TODO the reflection provider should have returned the proper field in first place ....
-                    Class definedType = reflectionProvider.getFieldType(result, fieldName, classDefiningField);
-                    if (!definedType.isPrimitive()) {
-                        type = definedType;
-                    }
-                } else {
-                    value = context.convertAnother(result, type);
-                }
-
-                if (value != null && !type.isAssignableFrom(value.getClass())) {
-                    LOGGER.warning("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
-                    // behave as if we didn't see this element
-                } else {
-                    if (fieldExistsInClass) {
-                        reflectionProvider.writeField(result, fieldName, value, classDefiningField);
-                        seenFields.add(classDefiningField, fieldName);
-                    } else {
-                        writeValueToImplicitCollection(reader, context, value, implicitCollectionsForCurrentObject, implicitCollectionElementTypesForCurrentObject, result, fieldName);
-                    }
-                }
-            } catch (CriticalXStreamException e) {
-                throw e;
-            } catch (InputManipulationException e) {
-                LOGGER.warning(
-                        "DoS detected and prevented. If the heuristic was too aggressive, " +
-                                "you can customize the behavior by setting the hudson.util.XStream2.collectionUpdateLimit system property. " +
-                                "See https://www.jenkins.io/redirect/xstream-dos-prevention for more information.");
-                throw new CriticalXStreamException(e);
-            } catch (XStreamException e) {
-                if (critical) {
-                    throw new CriticalXStreamException(e);
-                }
-                addErrorInContext(context, e);
-            } catch (LinkageError e) {
-                if (critical) {
-                    throw e;
-                }
-                addErrorInContext(context, e);
-            }
-
-            reader.moveUp();
-        }
+        if (finalResult instanceof Saveable && context.get("Saveable") == null)
+            context.put("Saveable", finalResult);
 
         // Report any class/field errors in Saveable objects if it happens during loading of existing data from disk
-        if (shouldReportUnloadableDataForCurrentUser() && context.get("ReadError") != null && context.get("Saveable") == result) {
+        if (shouldReportUnloadableDataForCurrentUser() && context.get("ReadError") != null && context.get("Saveable") == finalResult) {
             // Avoid any error in OldDataMonitor to be catastrophic. See JENKINS-62231 and JENKINS-59582
             // The root cause is the OldDataMonitor extension is not ready before a plugin triggers an error, for
             // example when trying to load a field that was created by a new version and you downgrade to the previous
             // one.
             try {
-                OldDataMonitor.report((Saveable) result, (ArrayList<Throwable>) context.get("ReadError"));
+                OldDataMonitor.report((Saveable) finalResult, (ArrayList<Throwable>) context.get("ReadError"));
             } catch (Throwable t) {
                 // it should be already reported, but we report with INFO just in case
                 StringBuilder message = new StringBuilder("There was a problem reporting unmarshalling field errors");
@@ -415,7 +334,7 @@ public class RobustReflectionConverter implements Converter {
             }
             context.put("ReadError", null);
         }
-        return result;
+        return finalResult;
     }
 
     /**
@@ -444,6 +363,227 @@ public class RobustReflectionConverter implements Converter {
         if (list == null)
             context.put("ReadError", list = new ArrayList<>());
         list.add(e);
+    }
+
+    private CollectedFields collectFieldsFromXML(Object result, HierarchicalStreamReader reader, UnmarshallingContext context,
+                                                   boolean isRecord) {
+        CollectedFields collected = new CollectedFields();
+        Class<?> resultClass = result.getClass();
+        Map<String, RecordComponent> componentMap = isRecord ? getComponentMap(resultClass) : Collections.emptyMap();
+
+        Iterator it = reader.getAttributeNames();
+        while (it.hasNext()) {
+            String attrAlias = (String) it.next();
+            String attrName = mapper.attributeForAlias(attrAlias);
+            Class classDefiningField = determineWhichClassDefinesField(reader);
+
+            boolean fieldExists = isRecord ? componentMap.containsKey(attrName) : fieldDefinedInClass(result, attrName);
+            if (fieldExists) {
+                try {
+                    Class<?> fieldType = isRecord ? componentMap.get(attrName).getType() : reflectionProvider.getField(resultClass, attrName).getType();
+
+                    SingleValueConverter converter = mapper.getConverterFromAttribute(classDefiningField != null ? classDefiningField : resultClass, attrName, fieldType);
+                    if (converter == null) {
+                        converter = mapper.getConverterFromItemType(fieldType);
+                    }
+
+                    if (converter != null) {
+                        Object value = converter.fromString(reader.getAttribute(attrAlias));
+                        Class<?> type = fieldType;
+                        if (type.isPrimitive()) {
+                            type = Primitives.box(type);
+                        }
+                        if (value != null && !type.isAssignableFrom(value.getClass())) {
+                            throw new ConversionException("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
+                        }
+                        collected.addField(attrName, value, classDefiningField, false);
+                    }
+                } catch (Exception e) {
+                    addErrorInContext(context, e);
+                }
+            }
+        }
+
+        while (reader.hasMoreChildren()) {
+            reader.moveDown();
+
+            boolean critical = false;
+            try {
+                String fieldName = mapper.realMember(resultClass, reader.getNodeName());
+                for (Class<?> concrete = resultClass; concrete != null; concrete = concrete.getSuperclass()) {
+                    if (hasCriticalField(concrete, fieldName)) {
+                        critical = true;
+                        break;
+                    }
+                }
+
+                boolean implicitCollectionHasSameName = mapper.getImplicitCollectionDefForFieldName(resultClass, reader.getNodeName()) != null;
+                Class classDefiningField = determineWhichClassDefinesField(reader);
+                boolean fieldExistsInClass = !implicitCollectionHasSameName && (isRecord ? componentMap.containsKey(fieldName) : fieldDefinedInClass(result, fieldName));
+                Class type = determineType(reader, fieldExistsInClass, result, fieldName, classDefiningField);
+
+                final Object value;
+                if (fieldExistsInClass) {
+                    if (isRecord) {
+                        value = context.convertAnother(result, type);
+                    } else {
+                        Field field = reflectionProvider.getField(resultClass, fieldName);
+                        value = unmarshalField(context, result, type, field);
+                        Class definedType = reflectionProvider.getFieldType(result, fieldName, classDefiningField);
+                        if (!definedType.isPrimitive()) {
+                            type = definedType;
+                        }
+                    }
+                } else {
+                    value = context.convertAnother(result, type);
+                }
+
+                if (value != null && !type.isAssignableFrom(value.getClass())) {
+                    LOGGER.warning("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
+                } else {
+                    if (fieldExistsInClass) {
+                        collected.addField(fieldName, value, classDefiningField, critical);
+                    } else {
+                        collected.addImplicitCollectionItem(reader.getNodeName(), value, result, fieldName);
+                    }
+                }
+
+            } catch (CriticalXStreamException e) {
+                throw e;
+            } catch (InputManipulationException e) {
+                LOGGER.warning(
+                        "DoS detected and prevented. If the heuristic was too aggressive, " +
+                                "you can customize the behavior by setting the hudson.util.XStream2.collectionUpdateLimit system property. " +
+                                "See https://www.jenkins.io/redirect/xstream-dos-prevention for more information.");
+                throw new CriticalXStreamException(e);
+            } catch (XStreamException e) {
+                if (critical) {
+                    throw new CriticalXStreamException(e);
+                }
+                addErrorInContext(context, e);
+            } catch (LinkageError e) {
+                if (critical) {
+                    throw e;
+                }
+                addErrorInContext(context, e);
+            }
+            reader.moveUp();
+        }
+        return collected;
+    }
+
+    // For regular classes
+    private void applyFieldsToObject(Object result, CollectedFields collected, HierarchicalStreamReader reader, UnmarshallingContext context) {
+        final SeenFields seenFields = new SeenFields();
+
+        for (CollectedFields.FieldData field : collected.getFields()) {
+            reflectionProvider.writeField(result, field.name(), field.value(), field.definedIn());
+            seenFields.add(field.definedIn(), field.name());
+        }
+
+        Map<String, Collection<Object>> implicitCollections = new HashMap<>();
+        Map<String, Class<?>> implicitCollectionElementTypes = new HashMap<>();
+
+        for (CollectedFields.ImplicitItem item : collected.getImplicitItems()) {
+            writeValueToImplicitCollection(reader, context, item.value(), implicitCollections, implicitCollectionElementTypes, item.parent(), item.itemFieldName());
+        }
+    }
+
+    private Object constructRecordFromFields(Class<?> recordType, CollectedFields collected) {
+        try {
+            RecordComponent[] components = recordType.getRecordComponents();
+            Class<?>[] paramTypes = new Class<?>[components.length];
+            Object[] args = new Object[components.length];
+            Map<String, Object> implicitCollections = resolveImplicitCollections(recordType, collected);
+
+            for (int i = 0; i < components.length; i++) {
+                RecordComponent component = components[i];
+                paramTypes[i] = component.getType();
+                String componentName = component.getName();
+                Object value = collected.getFieldValue(componentName);
+
+                if (value == null && implicitCollections.containsKey(componentName)) {
+                    value = implicitCollections.get(componentName);
+                }
+
+                if (value == null && paramTypes[i].isPrimitive()) {
+                    value = ReflectionUtils.getVmDefaultValueForPrimitiveType(paramTypes[i]);
+                }
+
+                args[i] = value;
+            }
+            Constructor<?> constructor = recordType.getDeclaredConstructor(paramTypes);
+            constructor.setAccessible(true);
+            return constructor.newInstance(args);
+
+        } catch (Exception e) {
+            throw new ConversionException("Failed to construct Record " + recordType.getName(), e);
+        }
+    }
+
+    // Needed for records as the collections are immutable
+    private Map<String, Object> resolveImplicitCollections(Class<?> targetClass, CollectedFields collected) {
+        Map<String, Object> resolvedCollections = new HashMap<>();
+        Map<String, List<Object>> itemsByField = new HashMap<>();
+
+        for (CollectedFields.ImplicitItem item : collected.getImplicitItems()) {
+            String fieldName = mapper.getFieldNameForItemTypeAndName(targetClass, item.value().getClass(), item.itemFieldName());
+
+            if (fieldName != null) {
+                itemsByField.computeIfAbsent(fieldName, k -> new ArrayList<>())
+                            .add(item.value());
+            } else {
+                LOGGER.warning("Could not resolve field name for implicit collection item: " + item.itemFieldName());
+            }
+        }
+
+        for (Map.Entry<String, List<Object>> entry : itemsByField.entrySet()) {
+            String fieldName = entry.getKey();
+            List<Object> items = entry.getValue();
+
+            try {
+                Field field = reflectionProvider.getField(targetClass, fieldName);
+                Class<?> fieldType = field.getType();
+
+                if (!Collection.class.isAssignableFrom(fieldType)) {
+                    LOGGER.warning("Field " + fieldName + " is not a Collection but has implicit items.");
+                    continue;
+                }
+
+                Class<?> collectionImplType = mapper.defaultImplementationOf(fieldType);
+                if (pureJavaReflectionProvider == null) {
+                    pureJavaReflectionProvider = new PureJavaReflectionProvider();
+                }
+                Collection collection = (Collection) pureJavaReflectionProvider.newInstance(collectionImplType);
+
+                Type fieldGenericType = field.getGenericType();
+                Type elementGenericType = Types.getTypeArgument(Types.getBaseClass(fieldGenericType, Collection.class), 0, Object.class);
+                Class<?> elementType = Types.erasure(elementGenericType);
+
+                for (Object item : items) {
+                    if (!elementType.isInstance(item)) {
+                        LOGGER.warning("Item type " + item.getClass().getName() +
+                                " does not match expected type " + elementType.getName() +
+                                " for field " + fieldName + ".");
+                        continue;
+                    }
+                    collection.add(item);
+                }
+                resolvedCollections.put(fieldName, collection);
+
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to resolve implicit collection for field: " + fieldName, e);
+            }
+        }
+        return resolvedCollections;
+    }
+
+    private Map<String, RecordComponent> getComponentMap(Class<?> recordType) {
+        Map<String, RecordComponent> map = new HashMap<>();
+        for (RecordComponent component : recordType.getRecordComponents()) {
+            map.put(component.getName(), component);
+        }
+        return map;
     }
 
     private boolean fieldDefinedInClass(Object result, String attrName) {
@@ -544,6 +684,41 @@ public class RobustReflectionConverter implements Converter {
         }
 
     }
+
+    private static class CollectedFields {
+        private final List<FieldData> fields = new ArrayList<>();
+        private final List<ImplicitItem> implicitItems = new ArrayList<>();
+
+        void addField(String name, Object value, Class<?> definedIn, boolean critical) {
+            fields.add(new FieldData(name, value, definedIn, critical));
+        }
+
+        void addImplicitCollectionItem(String nodeName, Object value, Object parent, String itemFieldName) {
+            implicitItems.add(new ImplicitItem(nodeName, value, parent, itemFieldName));
+        }
+
+        Object getFieldValue(String name) {
+            for (FieldData field : fields) {
+                if (field.name().equals(name)) {
+                    return field.value();
+                }
+            }
+            return null;
+        }
+
+        List<FieldData> getFields() {
+            return fields;
+        }
+
+        List<ImplicitItem> getImplicitItems() {
+            return implicitItems;
+        }
+
+        record FieldData(String name, Object value, Class<?> definedIn, boolean critical) {}
+
+        record ImplicitItem(String nodeName, Object value, Object parent, String itemFieldName) {}
+    }
+
 
     private Class determineType(HierarchicalStreamReader reader, boolean validField, Object result, String fieldName, Class definedInCls) {
         String classAttribute = reader.getAttribute(mapper.aliasForAttribute("class"));
