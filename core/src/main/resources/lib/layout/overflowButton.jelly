@@ -44,6 +44,9 @@ THE SOFTWARE.
     <st:attribute name="id">
       Optional ID for the button
     </st:attribute>
+    <st:attribute name="testid">
+      Optional test id for the button. Will be rendered as `data-testid`. Defaults to id if provided or empty.
+    </st:attribute>
 
     Displays a button which when clicked displays a dropdown of the component's children
   </st:documentation>
@@ -51,6 +54,7 @@ THE SOFTWARE.
   <button class="jenkins-button ${attrs.clazz}"
           tooltip="${attrs.containsKey('tooltip') ? attrs.tooltip : '%More actions'}"
           id="${attrs.id}"
+          data-testid="${attrs.containsKey('testId') ? attrs.testid  : attrs.containsKey('id') ? attrs.id : ''}"
           type="button" data-dropdown="true">
     <j:choose>
       <j:when test="${attrs.containsKey('icon')}">

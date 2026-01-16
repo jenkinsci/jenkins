@@ -24,12 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:set var="previousIt" value="${it}" />
-  <j:new var="it" className="hudson.diagnosis.OldDataMonitor$ManagementLinkImpl" />
-
-  <l:settings-subpage>
-    <j:set var="it" value="${previousIt}" />
-
+  <l:settings-subpage managementLink="${it.managementLink}">
     <p class="jenkins-!-margin-top-0">${%blurb.1}</p>
     <p>${%blurb.2}</p>
     

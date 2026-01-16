@@ -253,7 +253,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     @Deprecated
     public void setOptionalDependants(@NonNull Set<String> optionalDependents) {
-        setOptionalDependents(dependents);
+        setOptionalDependents(optionalDependents);
     }
 
     /**
