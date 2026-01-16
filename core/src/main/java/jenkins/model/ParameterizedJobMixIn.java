@@ -571,9 +571,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             // If parent is disabled, child jobs (e.g., branch jobs) should not be buildable
             ItemGroup<? extends Item> parentGroup = ((Job) this).getParent();
             if (parentGroup instanceof BuildableItem bi) {
-                if (!bi.isBuildable()) {
-                    return false;
-                }
+                return bi.isBuildable();
             }
             return true;
         }
