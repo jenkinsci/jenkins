@@ -58,7 +58,13 @@ public interface BuildableItem extends Item, Task {
 
     boolean scheduleBuild(int quietPeriod, Cause c);
 
+    /**
+     * Whether the item is buildable.
+     *
+     * @return true, if the item can be built.
+     * @since TODO
+     */
     default boolean isBuildable() {
         return true;
-    };
+    }
 }
