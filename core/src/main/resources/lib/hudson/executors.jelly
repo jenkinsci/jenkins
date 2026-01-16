@@ -23,9 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson"
-         xmlns:local="local">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
   <st:documentation>
     Displays the status of executors.
     <st:attribute name="computers">
@@ -178,7 +176,7 @@ THE SOFTWARE.
       </j:if>
       <st:adjunct includes="lib.form.link.link"/>
       <!-- TODO improve l:link so the `a` can be changed to `l:link`. -->
-        <a class="collapse post" href="#" data-post-href="${rootURL}/toggleCollapse?paneId=executors"
+      <a class="collapse post" href="#" data-post-href="${rootURL}/toggleCollapse?paneId=executors"
          tooltip="${paneIsCollapsed ? '%Expand' : '%Collapse'}" data-tooltip-append-to-parent="true">
         <j:set var="svgIconId" value="${paneIsCollapsed ? 'chevron-up' : 'chevron-down'}" />
         <l:icon src="symbol-${svgIconId}" />
