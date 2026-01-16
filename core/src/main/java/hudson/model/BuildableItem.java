@@ -57,4 +57,8 @@ public interface BuildableItem extends Item, Task {
     }
 
     boolean scheduleBuild(int quietPeriod, Cause c);
+
+    default boolean isBuildable() {
+        return true;
+    };
 }
