@@ -303,3 +303,11 @@ body:has(.app-settings-container) {
     margin-block: 1.0625rem;
   }
 }
+
+// Fix for JENKINS-76029: Prevent pipeline branch labels from overflowing into sidebar
+// The Pipeline plugin uses ::before pseudo-elements with position:absolute and translateX(-100%)
+// to place labels in the left margin. Override this to display inline instead.
+.console-output [class*="pipeline-node-"]::before {
+  position: static !important;
+  transform: none !important;
+}
