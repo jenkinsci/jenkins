@@ -2302,7 +2302,7 @@ function ensureVisible(e) {
 function findFormParent(e, form, isStatic) {
   isStatic = isStatic || false;
 
-  const originalElement = e
+  const originalElement = e;
 
   if (form == null) {
     // caller can pass in null to have this method compute the owning form
@@ -2320,7 +2320,10 @@ function findFormParent(e, form, isStatic) {
     }
 
     if (!e) {
-      console.warn('findFormParent: reached document root without finding form', originalElement);
+      console.warn(
+        "findFormParent: reached document root without finding form",
+        originalElement,
+      );
       return null;
     }
 
