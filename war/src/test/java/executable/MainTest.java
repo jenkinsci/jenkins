@@ -13,26 +13,26 @@ class MainTest {
         assertJavaCheckFails(8, true);
         assertJavaCheckFails(11, false);
         assertJavaCheckFails(11, true);
+        assertJavaCheckFails(17, false);
+        assertJavaCheckFails(17, true);
     }
 
     @Test
     void supported() {
-        assertJavaCheckPasses(17, false);
-        assertJavaCheckPasses(17, true);
         assertJavaCheckPasses(21, false);
         assertJavaCheckPasses(21, true);
+        assertJavaCheckPasses(25, false);
+        assertJavaCheckPasses(25, true);
     }
 
     @Test
     void future() {
-        assertJavaCheckFails(18, false);
-        assertJavaCheckFails(19, false);
-        assertJavaCheckFails(20, false);
         assertJavaCheckFails(22, false);
-        assertJavaCheckPasses(18, true);
-        assertJavaCheckPasses(19, true);
-        assertJavaCheckPasses(20, true);
+        assertJavaCheckFails(23, false);
+        assertJavaCheckFails(24, false);
         assertJavaCheckPasses(22, true);
+        assertJavaCheckPasses(23, true);
+        assertJavaCheckPasses(24, true);
     }
 
     private static void assertJavaCheckFails(int releaseVersion, boolean enableFutureJava) {

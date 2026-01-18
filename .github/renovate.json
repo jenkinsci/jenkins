@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>jenkinsci/renovate-config"],
+  "extends": ["github>jenkinsci/renovate-config", "schedule:daily"],
   "prHourlyLimit": 0,
   "prConcurrentLimit": 0,
   "packageRules": [
