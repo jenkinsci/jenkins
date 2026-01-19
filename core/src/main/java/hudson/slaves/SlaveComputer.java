@@ -752,7 +752,6 @@ public class SlaveComputer extends Computer {
             defaultCharset = Charset.forName(defaultCharsetName);
 
             // Reset the flag for the new connection
-
             afterDisconnectCalled = false;
 
             synchronized (statusChangeLock) {
