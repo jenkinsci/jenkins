@@ -137,7 +137,6 @@ public class SlaveComputer extends Computer {
     /**
      * Flag to ensure afterDisconnect() is called only once per connection.
      */
-
     private volatile boolean afterDisconnectCalled = false;
 
 
