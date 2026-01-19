@@ -779,13 +779,13 @@ public class SlaveComputer extends Computer {
     }
 
     private void safeAfterDisconnect() {
-        if(!afterDisconnectCalled){
-            synchronized (this){
-                if(!afterDisconnectCalled){
+        if (!afterDisconnectCalled) {
+            synchronized (this) {
+                if (!afterDisconnectCalled) {
                     afterDisconnectCalled = true;
-                    try{
+                    try {
                         launcher.afterDisconnect(SlaveComputer.this, taskListener);
-                    } catch (Throwable t){
+                    } catch (Throwable t) {
                         LogRecord lr = new LogRecord(Level.SEVERE,
                                 "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
                         lr.setThrown(t);
