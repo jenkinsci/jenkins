@@ -134,6 +134,12 @@ public class SlaveComputer extends Computer {
      */
     private final TaskListener taskListener;
 
+    /**
+     * Flag to ensure afterDisconnect() is called only once per connection.
+     */
+
+    private volatile boolean afterDisconnectCalled = false;
+
 
     /**
      * Number of failed attempts to reconnect to this node
@@ -650,6 +656,7 @@ public class SlaveComputer extends Computer {
                     Functions.printStackTrace(cause, taskListener.error("Connection terminated"));
                 }
                 closeChannel();
+                safeAfterDisconnect(); // changed from direct call to safe method to avoid multiple calls
                 try {
                     launcher.afterDisconnect(SlaveComputer.this, taskListener);
                 } catch (Throwable t) {
@@ -745,6 +752,10 @@ public class SlaveComputer extends Computer {
             this.absoluteRemoteFs = remoteFS;
             defaultCharset = Charset.forName(defaultCharsetName);
 
+            // Reset the flag for the new connection
+
+            afterDisconnectCalled = false;
+
             synchronized (statusChangeLock) {
                 statusChangeLock.notifyAll();
             }
@@ -767,6 +778,25 @@ public class SlaveComputer extends Computer {
         }
         log.println("Agent successfully connected and online");
         Jenkins.get().getQueue().scheduleMaintenance();
+    }
+
+    private void safeAfterDisconnect() {
+        if(!afterDisconnectCalled){
+            synchronized (this){
+                if(!afterDisconnectCalled){
+                    afterDisconnectCalled = true;
+                    try{
+                        launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                    } catch (Throwable t){
+                        LogRecord lr = new LogRecord(Level.SEVERE,
+                                "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
+                        lr.setThrown(t);
+                        lr.setParameters(new Object[]{launcher, SlaveComputer.this.getName(), t.getMessage()});
+                        logger.log(lr);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -825,7 +855,8 @@ public class SlaveComputer extends Computer {
                 // (which could be typical) won't block UI thread.
                 launcher.beforeDisconnect(SlaveComputer.this, taskListener);
                 closeChannel();
-                launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                safeAfterDisconnect();
+//                launcher.afterDisconnect(SlaveComputer.this, taskListener);
             }
         });
     }
