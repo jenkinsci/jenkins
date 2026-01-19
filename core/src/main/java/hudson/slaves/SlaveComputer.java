@@ -854,7 +854,6 @@ public class SlaveComputer extends Computer {
                 launcher.beforeDisconnect(SlaveComputer.this, taskListener);
                 closeChannel();
                 safeAfterDisconnect();
-//                launcher.afterDisconnect(SlaveComputer.this, taskListener);
             }
         });
     }
