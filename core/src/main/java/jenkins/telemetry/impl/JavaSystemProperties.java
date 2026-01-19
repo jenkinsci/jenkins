@@ -70,13 +70,13 @@ public class JavaSystemProperties extends Telemetry {
     @NonNull
     @Override
     public LocalDate getStart() {
-        return LocalDate.of(2023, 12, 17);
+        return LocalDate.of(2026, 1, 4);
     }
 
     @NonNull
     @Override
     public LocalDate getEnd() {
-        return LocalDate.of(2024, 4, 1);
+        return LocalDate.of(2026, 4, 1);
     }
 
     @Override
