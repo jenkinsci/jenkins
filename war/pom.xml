@@ -383,7 +383,7 @@ THE SOFTWARE.
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>eddsa-api</artifactId>
-                  <version>0.3.0.1-19.vc432d923e5ee</version>
+                  <version>0.3.0.1-27.v6ea_07b_e90d1a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -606,7 +606,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.lib</groupId>
                   <artifactId>support-log-formatter</artifactId>
-                  <version>122.vb_e396a_69dc84</version>
+                  <version>123.v72513b_f61500</version>
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}</outputDirectory>
