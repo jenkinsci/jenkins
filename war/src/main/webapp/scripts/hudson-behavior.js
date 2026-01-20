@@ -2302,19 +2302,29 @@ function ensureVisible(e) {
 function findFormParent(e, form, isStatic) {
   isStatic = isStatic || false;
 
+  const originalElement = e;
+
   if (form == null) {
     // caller can pass in null to have this method compute the owning form
     form = e.closest("FORM");
   }
 
-  while (e != form) {
+  while (e !== form) {
     // this is used to create a group where no single containing parent node exists,
     // like <optionalBlock>
-    var nameRef = e.getAttribute("nameRef");
+    const nameRef = e.getAttribute("nameRef");
     if (nameRef != null) {
       e = document.getElementById(nameRef);
     } else {
       e = e.parentNode;
+    }
+
+    if (!e) {
+      console.warn(
+        "findFormParent: reached document root without finding form",
+        originalElement,
+      );
+      return null;
     }
 
     if (!isStatic && e.getAttribute("field-disabled") != null) {
@@ -2522,6 +2532,7 @@ function buildFormTree(form) {
 
     return true;
   } catch (e) {
+    console.error("Form not submitted", e);
     alert(e + "\n(form not submitted)");
     return false;
   }
