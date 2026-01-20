@@ -232,9 +232,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#add-item-panel").removeAttribute("style");
 
     // Render all categories
-    var $categories = document.querySelector(".categories template");
+    var $categories = document.querySelector(".categories");
     data.categories.forEach((elem) => {
-      drawCategory(elem).forEach((e) => $categories.before(e));
+      drawCategory(elem).forEach((e) => $categories.append(e));
     });
 
     // Init NameField

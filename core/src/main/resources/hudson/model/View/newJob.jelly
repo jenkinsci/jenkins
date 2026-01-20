@@ -52,12 +52,10 @@ THE SOFTWARE.
             <fieldset class="jenkins-!-display-contents">
               <div class="jenkins-form-item">
                 <legend class="jenkins-form-label">${%ItemType.label}</legend>
-                <div id="items" class="jenkins-choice-list categories" data-valid="false">
-                  <template id="insertion-point">
-                    <!-- Job types need to be added above this point -->
-                  </template>
+                <div id="items" class="jenkins-choice-list categories" data-valid="false" />
 
-                  <j:if test="${!empty(app.items)}">
+                <j:if test="${!empty(app.items)}">
+                  <div class="jenkins-choice-list jenkins-!-margin-top-2">
                     <div class="jenkins-choice-list__item">
                       <label id="duplicate-job">
                         <div class="jenkins-choice-list__item__icon">
@@ -75,8 +73,8 @@ THE SOFTWARE.
                         <s:textbox id="from" data-valid="false" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
                       </div>
                     </div>
-                  </j:if>
-                </div>
+                  </div>
+                </j:if>
               </div>
             </fieldset>
 
