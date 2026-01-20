@@ -11,7 +11,7 @@
   text-wrap: pretty;
 }
 
-.jenkins-app-bar+.jenkins-page-description {
+.jenkins-app-bar + .jenkins-page-description {
   margin-top: -0.5rem;
 }
 
@@ -33,6 +33,7 @@
   // (eg Global Credentials' Verify Configuration button being hidden by the floating submit bar)
   &::after {
     content: " ";
+
     /* Older browser do not support empty content */
     visibility: hidden;
     display: block;
@@ -40,7 +41,7 @@
     clear: both;
   }
 
-  &--tight+.jenkins-form-item--tight {
+  &--tight + .jenkins-form-item--tight {
     margin-top: -0.9rem;
   }
 
