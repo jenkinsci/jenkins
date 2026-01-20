@@ -2234,11 +2234,12 @@ public class DomainValidator implements Serializable {
             //            (ideographic full stop), U+FF0E (fullwidth full stop), U+FF61
             //            (halfwidth ideographic full stop).
             char lastChar = input.charAt(length - 1); // fetch original last char
-            return switch (lastChar) { // "." full stop
-                // ideographic full stop
-                // fullwidth full stop
-                case '\u002E', '\u3002', '\uFF0E', '\uFF61' -> // halfwidth ideographic full stop
-                        ascii + "."; // restore the missing stop
+            return switch (lastChar) {
+                case '\u002E', // "." full stop
+                     '\u3002', // ideographic full stop
+                     '\uFF0E', // fullwidth full stop
+                     '\uFF61'  // halfwidth ideographic full stop
+                        -> ascii + "."; // restore the missing stop
                 default -> ascii;
             };
         } catch (IllegalArgumentException e) { // input is not valid
