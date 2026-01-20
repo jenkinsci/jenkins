@@ -98,7 +98,6 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     }
 
     int resolveNumber(Job<?, ?> job) {
-        // TODO Java 21+ use patterns
         var pt = get(job);
         if (pt instanceof Cache.Some(int number)) {
             return number;
