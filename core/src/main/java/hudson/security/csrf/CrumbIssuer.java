@@ -282,7 +282,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
                         text = ci.getCrumb();
                 case "concat(//crumbRequestField,\":\",//crumb)" ->     // new FullDuplexHttpStream; Main
                         text = ci.getCrumbRequestField() + ':' + ci.getCrumb();
-                case "concat(//crumbRequestField,'=',//crumb)" -> {
+                case "concat(//crumbRequestField,'=',//crumb)" -> {     // NetBeans
                     if (ci.getCrumbRequestField().startsWith(".") || ci.getCrumbRequestField().contains("-")) {
                         text = ci.getCrumbRequestField() + '=' + ci.getCrumb();
                     } else {
