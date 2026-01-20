@@ -1929,9 +1929,9 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         // Project specific log filters
-        if (project instanceof BuildableItemWithBuildWrappers biwbw && build instanceof AbstractBuild) {
+        if (project instanceof BuildableItemWithBuildWrappers biwbw && build instanceof AbstractBuild abstractBuild) {
             for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
-                logger = bw.decorateLogger((AbstractBuild) build, logger);
+                logger = bw.decorateLogger(abstractBuild, logger);
             }
         }
 
