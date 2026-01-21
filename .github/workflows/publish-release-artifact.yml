@@ -136,7 +136,7 @@ jobs:
           REPO=rpm
           if [ ${IS_LTS} = 'true' ]
           then
-            REPO=redhat-stable
+            REPO=rpm-stable
             FILE_NAME=jenkins-${PROJECT_VERSION}-1.1.noarch.rpm
           fi
 
