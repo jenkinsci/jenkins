@@ -273,7 +273,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return temporaryOfflineCause != null;
     }
 
-    private volatile OfflineCause temporaryOfflineCause;
+    private transient volatile OfflineCause temporaryOfflineCause;
 
     /**
      * Enable a {@link Computer} to inform its node when it is taken
