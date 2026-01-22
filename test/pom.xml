@@ -39,7 +39,7 @@ THE SOFTWARE.
   <properties>
     <mavenDebug>false</mavenDebug>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
-    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
     <!--
@@ -192,7 +192,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2533.vb_b_4e14045e01</version>
+      <version>2545.va_5c4d760c7ef</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -238,13 +238,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1453.v9b_a_29777a_b_fd</version>
+      <version>1480.v2246fd131e83</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1361.vfed194a_de34a_</version>
+      <version>1380.v491ff054cd35</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -353,7 +353,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>403.v0787db_1c972b_</version>
+                  <version>417.vce0571393f5b_</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
