@@ -81,15 +81,9 @@ var Behaviour = (function () {
     },
 
     start: function () {
-      if (document.addEventListener) {
-        document.addEventListener("DOMContentLoaded", function () {
-          Behaviour.apply();
-        });
-      } else {
-        Behaviour.addLoadEvent(function () {
-          Behaviour.apply();
-        });
-      }
+      document.addEventListener("DOMContentLoaded", function () {
+        Behaviour.apply();
+      });
     },
 
     apply: function () {
