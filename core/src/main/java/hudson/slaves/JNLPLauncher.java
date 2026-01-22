@@ -185,7 +185,7 @@ public class JNLPLauncher extends ComputerLauncher {
     }
 
     /**
-     * @deprecated as of 1.XXX
+     * @deprecated as of 2.2
      *      Use {@link Jenkins#getDescriptor(Class)}
      */
     @Deprecated
