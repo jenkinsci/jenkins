@@ -26,7 +26,7 @@
     ).then((rsp) => {
       if (!rsp.ok) {
         rsp.text().then((responseText) => {
-          document.getElementById("needRestart").innerHTML = responseText;
+          document.getElementById("needRestart").textContent = responseText;
         });
       }
       updateMsg();
