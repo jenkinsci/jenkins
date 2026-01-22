@@ -48,8 +48,6 @@ THE SOFTWARE.
     <j:set var="it" value="${it.object}" />
     <st:include page="console-log.jelly" />
 
-    <button class="jenkins-back-to-top jenkins-button" aria-label="${%Back to top}">
-      <l:icon src="symbol-chevron-up" />
-    </button>
+    <l:backToTop />
   </l:run-subpage>
 </j:jelly>
