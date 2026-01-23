@@ -45,6 +45,8 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.io.IOError;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -201,6 +203,45 @@ class SlaveComputerTest {
             }
         }
     }
+    @Test
+    @Issue("JENKINS-35272")
+    void afterDisconnectShouldBeCalledOnlyOnce() throws Exception {
+        DumbSlave node = j.createOnlineSlave();
+        SlaveComputer computer = (SlaveComputer) node.getComputer();
+        assertNotNull(computer);
+
+        // Reset counter before test
+        AfterDisconnectListener.reset();
+
+        // Trigger disconnect twice
+        computer.disconnect(null);
+        computer.disconnect(null);
+
+        // Wait until Jenkins finishes processing
+        j.waitUntilNoActivity();
+
+        assertEquals(1, AfterDisconnectListener.count.get(),
+                "afterDisconnect should be called exactly once");
+    }
+
+    @TestExtension
+    public static class AfterDisconnectListener extends ComputerListener {
+
+        static final AtomicInteger count = new AtomicInteger();
+
+        static void reset() {
+            count.set(0);
+        }
+
+        @Override
+        public void onOffline(Computer c, OfflineCause cause) {
+            if (c instanceof SlaveComputer) {
+                count.incrementAndGet();
+            }
+        }
+    }
+
+
 
 
     /**
