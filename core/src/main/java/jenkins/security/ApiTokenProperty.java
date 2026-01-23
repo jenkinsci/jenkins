@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
@@ -44,6 +45,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -274,7 +276,8 @@ public class ApiTokenProperty extends UserProperty {
             if (expirationDate == null) {
                 this.expirationDate = "never";
             } else {
-                this.expirationDate = expirationDate.toString();
+                this.expirationDate = expirationDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                        .withLocale(Functions.getCurrentLocale()));
             }
 
             this.useCounter = stats.getUseCounter();
@@ -617,7 +620,8 @@ public class ApiTokenProperty extends UserProperty {
             TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
             String expirationDateString = "never";
             if (expirationDate != null) {
-                expirationDateString = expirationDate.toString();
+                expirationDateString = expirationDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                        .withLocale(Functions.getCurrentLocale()));
             }
 
             Map<String, String> data = new HashMap<>();
@@ -634,7 +638,7 @@ public class ApiTokenProperty extends UserProperty {
             }
             expirationDuration = expirationDuration.trim();
 
-            return  switch (expirationDuration) {
+            return switch (expirationDuration) {
                 case "", "never" -> {
                     yield null;
                 }

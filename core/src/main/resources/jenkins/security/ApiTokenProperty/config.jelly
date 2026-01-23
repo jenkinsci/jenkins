@@ -91,12 +91,9 @@ THE SOFTWARE.
                 <div class="token-card__title">
                     <span class="token-name">${token.name}</span>
                 </div>
-                <div>
+                <div class="token-stats">
                     <span class="api-token-new-expiration" data-never="${%This token does not expire}"
                           data-expires-on="${%tokenExpiresOn('__DATA__')}"/>
-                </div>
-                <div class="token-stats">
-                    <span class="token-creation" tooltip="${%Just Now}">${%Created just now}</span>
                     <span class="token-last-used">${%TokenNeverUsed}</span>
                 </div>
             </div>
@@ -162,32 +159,29 @@ THE SOFTWARE.
                                         </j:if>
                                         <span class="token-name">${token.name}</span>
                                 </div>
-                                <div>
-                                    <j:choose>
-                                        <j:when test="${token.expired}">
-                                            <span class="error">
-                                                ${%This token has expired}
-                                            </span>
-                                        </j:when>
-                                        <j:when test="${token.expirationDate == 'never'}">
-                                            <span class="warning">
-                                                ${%This token does not expire}
-                                            </span>
-                                        </j:when>
-                                        <j:otherwise>
-                                            <span class="${token.aboutToExpire ? 'warning' : ''}">
-                                                ${%tokenExpiresOn(token.expirationDate)}
-                                            </span>
-                                        </j:otherwise>
-                                    </j:choose>
-                                </div>
                                 <j:set var="creationDateFormat" value="${%NoCreationDate}" />
                                 <j:if test="${token.creationDate != null}">
                                     <i:formatDate var="creationDateFormat" value="${token.creationDate}" type="both" dateStyle="medium" timeStyle="medium" />
                                     <!--TODO convert to "Today", "Tomorrow", "4 days ago", "2 weeks ago", etc. -->
                                 </j:if>
                                 <div class="token-stats">
-                                    <span class="token-creation ${oldClazz}" tooltip="${creationDateFormat}">${token.createdDaysAgo()}</span>
+                                    <j:choose>
+                                        <j:when test="${token.expired}">
+                                            <span class="error" tooltip="${%tokenCreatedOn(creationDateFormat)}">
+                                                ${%This token has expired}
+                                            </span>
+                                        </j:when>
+                                        <j:when test="${token.expirationDate == 'never'}">
+                                            <span class="warning" tooltip="${%tokenCreatedOn(creationDateFormat)}">
+                                                ${%This token does not expire}
+                                            </span>
+                                        </j:when>
+                                        <j:otherwise>
+                                            <span class="${token.aboutToExpire ? 'warning' : ''}" tooltip="${%tokenCreatedOn(creationDateFormat)}">
+                                                ${%tokenExpiresOn(token.expirationDate)}
+                                            </span>
+                                        </j:otherwise>
+                                    </j:choose>
                                     <span class="token-last-used">
                                         <j:choose>
                                             <j:when test="${isStatisticsEnabled}">

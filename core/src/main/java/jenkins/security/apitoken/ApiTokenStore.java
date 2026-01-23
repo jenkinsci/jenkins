@@ -178,7 +178,7 @@ public class ApiTokenStore {
     }
 
     /**
-     * Create a new token with the given name and expiration and return it id and secret value.
+     * Create a new token with the given name and expiration and return its id and secret value.
      * Result meant to be sent / displayed and then discarded.
      */
     public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) {
