@@ -68,7 +68,6 @@
 
 .token-stats {
   justify-content: space-between;
-  gap: unset;
 }
 
 .token-expiration {
@@ -125,15 +124,25 @@
   padding: 0.5rem 1rem;
 }
 
-.token-creation {
-  font-size: var(--font-size-xs);
-  color: var(--text-color-secondary);
-  width: fit-content;
-}
-
+.token-creation,
 .token-last-used {
   font-size: var(--font-size-xs);
   color: var(--text-color-secondary);
+}
+
+.token-creation::before {
+  width: 20px;
+  height: 20px;
+}
+
+.token-creation.warning {
+  padding-left: calc(20px + 0.4rem);
+  color: var(--warning-color);
+}
+
+.token-creation.error {
+  padding-left: calc(20px + 0.4rem);
+  color: var(--error-color);
 }
 
 .legacy-token {

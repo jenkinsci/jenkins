@@ -184,8 +184,8 @@ function addToken(button) {
       okText: button.dataset.generate,
       cancelText: button.dataset.cancel,
       submitButton: false,
-      maxWidth: "600px",
-      minWidth: "400px",
+      maxWidth: "550px",
+      minWidth: "550px",
     })
     .then(
       (formData) => {

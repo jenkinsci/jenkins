@@ -92,7 +92,7 @@ THE SOFTWARE.
                     <span class="token-name">${token.name}</span>
                 </div>
                 <div class="token-stats">
-                    <span class="api-token-new-expiration" data-never="${%This token does not expire}"
+                    <span class="api-token-new-expiration token-creation" data-never="${%This token does not expire}"
                           data-expires-on="${%tokenExpiresOn('__DATA__')}"/>
                     <span class="token-last-used">${%TokenNeverUsed}</span>
                 </div>
@@ -167,17 +167,16 @@ THE SOFTWARE.
                                 <div class="token-stats">
                                     <j:choose>
                                         <j:when test="${token.expired}">
-                                            <span class="error" tooltip="${%tokenCreatedOn(creationDateFormat)}">
+                                            <span class="error token-creation" tooltip="${%tokenCreatedOn(creationDateFormat)}">
                                                 ${%This token has expired}
                                             </span>
                                         </j:when>
                                         <j:when test="${token.expirationDate == 'never'}">
-                                            <span class="warning" tooltip="${%tokenCreatedOn(creationDateFormat)}">
-                                                ${%This token does not expire}
+                                            <span class="warning token-creation" tooltip="${%tokenCreatedOn(creationDateFormat)}">
                                             </span>
                                         </j:when>
                                         <j:otherwise>
-                                            <span class="${token.aboutToExpire ? 'warning' : ''}" tooltip="${%tokenCreatedOn(creationDateFormat)}">
+                                            <span class="${token.aboutToExpire ? 'warning' : ''} token-creation" tooltip="${%tokenCreatedOn(creationDateFormat)}">
                                                 ${%tokenExpiresOn(token.expirationDate)}
                                             </span>
                                         </j:otherwise>
