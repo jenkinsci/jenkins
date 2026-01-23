@@ -17,7 +17,7 @@ public class BaseContributorTest {
         assertThat(csp, containsString("default-src 'self';"));
         assertThat(csp, containsString("style-src 'report-sample' 'self';"));
         assertThat(csp, containsString("script-src 'report-sample' 'self';"));
-        assertThat(csp, containsString("form-action 'self';"));
+        assertThat(csp, containsString("form-action 'self'https://www.jenkins.io https://jenkins.io;;"));
         assertThat(csp, containsString("base-uri 'none';"));
         assertThat(csp, containsString("frame-ancestors 'self';"));
     }

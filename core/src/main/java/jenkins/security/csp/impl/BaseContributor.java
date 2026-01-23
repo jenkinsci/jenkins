@@ -47,7 +47,7 @@ public final class BaseContributor implements Contributor {
                 .initialize(FetchDirective.DEFAULT_SRC, SELF)
                 .add(Directive.STYLE_SRC, REPORT_SAMPLE)
                 .add(Directive.SCRIPT_SRC, REPORT_SAMPLE)
-                .add(Directive.FORM_ACTION, SELF)
+                .add(Directive.FORM_ACTION, SELF, "https://www.jenkins.io", "https://jenkins.io")
                 .add(Directive.BASE_URI) // 'none'
                 .add(Directive.FRAME_ANCESTORS, SELF);
     }
