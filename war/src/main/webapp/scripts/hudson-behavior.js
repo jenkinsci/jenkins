@@ -658,15 +658,8 @@ function registerValidator(e) {
     var depends = this.getAttribute("checkDependsOn");
 
     if (depends == null) {
-      // legacy behaviour where checkUrl is a JavaScript
-      try {
-        return eval(url); // need access to 'this', so no 'geval'
-      } catch (e) {
-        console.warn(
-          "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
-        );
-        return url; // return plain url as fallback
-      }
+      // legacy behaviour removed for security - treat checkUrl as plain URL
+      return url;
     } else {
       var q = qs(this).addThis();
       if (depends.length > 0) {
