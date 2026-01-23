@@ -1713,11 +1713,11 @@ function rowvgStartEachRow(recursive, f) {
             renderOnDemand(f.nextElementSibling, function () {
               const current = e.selectedIndex == idx;
               if (!current) {
-                console.log(
-                  "**** renderOnDemandCallback, selection no longer valid, form submission would have been corrupted",
+                console.warn(
+                  "renderOnDemandCallback: selection is no longer valid, rebuilding correct DOM",
                 );
                 // our form div has changed (but the index is stable) so go and re-get the new domtree
-                var subForm = buildSubForms(e)[idx];
+                const subForm = buildSubForms(e)[idx];
                 updateDropDownFormRowVisibility(subForm, false);
               }
             });
