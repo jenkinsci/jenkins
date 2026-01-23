@@ -1711,7 +1711,7 @@ function rowvgStartEachRow(recursive, f) {
           if (show) {
             const idx = i; // capture the index so that it is not mutated in the loop
             renderOnDemand(f.nextElementSibling, function () {
-              var current = e.selectedIndex == idx;
+              const current = e.selectedIndex == idx;
               if (!current) {
                 console.log(
                   "**** renderOnDemandCallback, selection no longer valid, form submission would have been corrupted",
