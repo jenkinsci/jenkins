@@ -353,7 +353,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.30.0-630.va_e19d17f83b_0</version>
+                  <version>1.30.0-701.vf8f8f1f3fd55</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -383,7 +383,7 @@ THE SOFTWARE.
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>eddsa-api</artifactId>
-                  <version>0.3.0.1-27.v6ea_07b_e90d1a_</version>
+                  <version>0.3.0.1-29.v67e9a_1c969b_b_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
