@@ -227,7 +227,13 @@ function addToken(button) {
     );
 }
 
-function showToken(tokenName, tokenValue, expirationDate, aboutToExpire, doneText) {
+function showToken(
+  tokenName,
+  tokenValue,
+  expirationDate,
+  aboutToExpire,
+  doneText,
+) {
   const tokenTemplate = document.getElementById("api-token-template");
   const apiTokenMessage = tokenTemplate.firstElementChild.cloneNode(true);
 
