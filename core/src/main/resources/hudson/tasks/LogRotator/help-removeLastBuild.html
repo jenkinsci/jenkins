@@ -21,11 +21,11 @@
     enabled, that build will also be removed.
   </p>
 
-  <p>
-    This option is also available in Pipelines using the
-    <code>options {
-        buildDiscarder logRotator(removeLastBuild: true)
-        }</code>
-    syntax.
-  </p>
+  <p>This option is also available in Pipelines with:</p>
+
+  <pre>
+options {
+    buildDiscarder logRotator(removeLastBuild: true)
+}
+  </pre>
 </div>
