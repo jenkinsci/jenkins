@@ -140,7 +140,11 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * @return Jenkins relative URL.
      */
     public @NonNull String getUrl() {
-        return "cloud/" + Util.rawEncode(name) + "/";
+        if (Jenkins.get().getCloud(name) != this) { // this cloud is not the first occurrence with this name
+            return "cloud/cloudByIndex/" + Jenkins.get().clouds.indexOf(this) + "/";
+        } else {
+            return "cloud/" + Util.rawEncode(name) + "/";
+        }
     }
 
     @Override

@@ -3,6 +3,7 @@ package hudson.slaves;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,6 +16,7 @@ import hudson.model.Label;
 import hudson.security.Permission;
 import hudson.security.SidACL;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,16 +67,28 @@ class CloudTest {
     }
 
     @Test
+    @Issue("#26174")
+    void url() {
+        ACloud aCloud = new ACloud("a", "0");
+        j.jenkins.clouds.add(aCloud);
+        ACloud aCloud2 = new ACloud("a", "0");
+        j.jenkins.clouds.add(aCloud2);
+        assertEquals("cloud/cloudByIndex/1/", aCloud2.getUrl());
+    }
+
+    @Test
     void ui() throws Exception {
         ACloud aCloud = new ACloud("a", "0");
         j.jenkins.clouds.add(aCloud);
+        ACloud aCloud2 = new ACloud("a", "0");
+        j.jenkins.clouds.add(aCloud2);
 
         assertThat(aCloud.getAllActions(), containsInAnyOrder(
                 instanceOf(TaskCloudAction.class),
                 instanceOf(ReportingCloudAction.class)
         ));
 
-        HtmlPage page = j.createWebClient().goTo(aCloud.getUrl());
+        HtmlPage page = j.createWebClient().goTo(aCloud2.getUrl());
         String out = page.getWebResponse().getContentAsString();
         assertThat(out, containsString("Cloud a")); // index.jelly
         assertThat(out, containsString("Top cloud view.")); // top.jelly
@@ -84,6 +98,8 @@ class CloudTest {
         assertThat(out, containsString("Report Here")); // ReportingCloudAction/summary.jelly
 
         HtmlPage actionPage = page.getAnchorByText("Task Action").click();
+        URL url = actionPage.getUrl();
+        assertThat(url.getPath(), endsWith("/cloud/cloudByIndex/1/task/")); // TaskCloudAction URL
         out = actionPage.getWebResponse().getContentAsString();
         assertThat(out, containsString("doIndex called")); // doIndex
     }
