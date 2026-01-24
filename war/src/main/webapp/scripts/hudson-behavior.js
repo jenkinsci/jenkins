@@ -1683,21 +1683,25 @@ function rowvgStartEachRow(recursive, f) {
         return;
       }
 
-      var subForms = [];
-      var start = findInFollowingTR(e, "dropdownList-container");
+      function buildSubForms(e) {
+        var subForms = [];
+        var start = findInFollowingTR(e, "dropdownList-container");
 
-      do {
-        start = start.firstElementChild;
-      } while (start && !isTR(start));
+        do {
+          start = start.firstElementChild;
+        } while (start && !isTR(start));
 
-      if (start && !start.classList.contains("dropdownList-start")) {
-        start = findFollowingTR(start, "dropdownList-start");
+        if (start && !start.classList.contains("dropdownList-start")) {
+          start = findFollowingTR(start, "dropdownList-start");
+        }
+        while (start != null) {
+          subForms.push(start);
+          start = findFollowingTR(start, "dropdownList-start");
+        }
+        return subForms;
       }
-      while (start != null) {
-        subForms.push(start);
-        start = findFollowingTR(start, "dropdownList-start");
-      }
 
+      var subForms = buildSubForms(e);
       // control visibility
       function updateDropDownList() {
         for (var i = 0; i < subForms.length; i++) {
@@ -1705,23 +1709,38 @@ function rowvgStartEachRow(recursive, f) {
           var f = subForms[i];
 
           if (show) {
-            renderOnDemand(f.nextElementSibling);
+            const idx = i; // capture the index so that it is not mutated in the loop
+            renderOnDemand(f.nextElementSibling, function () {
+              const current = e.selectedIndex == idx;
+              if (!current) {
+                console.warn(
+                  "renderOnDemandCallback: selection is no longer valid, rebuilding correct DOM",
+                );
+                // our form div has changed (but the index is stable) so go and re-get the new domtree
+                const subForm = buildSubForms(e)[idx];
+                updateDropDownFormRowVisibility(subForm, false);
+              }
+            });
           }
-          f.rowVisibilityGroup.makeInnerVisible(show);
-
-          // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
-          // so far dropdownList doesn't create such a situation.
-          f.rowVisibilityGroup.eachRow(
-            true,
-            show
-              ? function (e) {
-                  e.removeAttribute("field-disabled");
-                }
-              : function (e) {
-                  e.setAttribute("field-disabled", "true");
-                },
-          );
+          updateDropDownFormRowVisibility(f, show);
         }
+      }
+
+      function updateDropDownFormRowVisibility(f, show) {
+        f.rowVisibilityGroup.makeInnerVisible(show);
+
+        // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
+        // so far dropdownList doesn't create such a situation.
+        f.rowVisibilityGroup.eachRow(
+          true,
+          show
+            ? function (e) {
+                e.removeAttribute("field-disabled");
+              }
+            : function (e) {
+                e.setAttribute("field-disabled", "true");
+              },
+        );
       }
 
       e.onchange = updateDropDownList;
