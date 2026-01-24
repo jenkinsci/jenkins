@@ -757,16 +757,8 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     private static class None extends SecurityRealm {
         @Override
         public SecurityComponents createSecurityComponents() {
-            return new SecurityComponents(new AuthenticationManager() {
-                @Override
-                public Authentication authenticate(Authentication authentication) {
-                    return authentication;
-                }
-            }, new UserDetailsService() {
-                @Override
-                public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                    throw new UsernameNotFoundException(username);
-                }
+            return new SecurityComponents((AuthenticationManager) authentication -> authentication, username -> {
+                throw new UsernameNotFoundException(username);
             });
         }
 

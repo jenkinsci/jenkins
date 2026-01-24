@@ -61,8 +61,7 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
         long now = System.currentTimeMillis();
         for (Computer c : Jenkins.get().getComputers()) {
             VirtualChannel ch = c.getChannel();
-            if (ch instanceof Channel) {
-                Channel channel = (Channel) ch;
+            if (ch instanceof Channel channel) {
                 if (now - channel.getLastHeard() > TIME_TILL_PING) {
                     // haven't heard from this agent for a while.
                     Long lastPing = (Long) channel.getProperty(ConnectionActivityMonitor.class);

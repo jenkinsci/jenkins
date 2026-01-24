@@ -457,7 +457,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
         } else if (all.size() != 1) {
             throw new IllegalStateException("Expected 1 instance of " + type.getName() + " but got " + all.size());
         }
-        return all.get(0);
+        return all.getFirst();
     }
 
     /**
@@ -474,7 +474,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     public static @NonNull <U> U lookupFirst(Class<U> type) {
         var all = lookup(type);
         if (!all.isEmpty()) {
-            return all.get(0);
+            return all.getFirst();
         } else {
             if (Main.isUnitTest) {
                 throw new IllegalStateException("Found no instances of " + type.getName() +

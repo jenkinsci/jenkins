@@ -469,18 +469,14 @@ public class QueueTest {
 
             // Create a task that will need to wait until the first task is complete that will fail to acquire.
             final AtomicBoolean task2Result = new AtomicBoolean(false);
-            boolean acquired = Queue.tryWithLock(() -> {
-                task2Result.set(true);
-            }, Duration.ofMillis(10));
+            boolean acquired = Queue.tryWithLock(() -> task2Result.set(true), Duration.ofMillis(10));
             assertFalse(acquired);
             assertFalse(task2Result.get());
 
             // Now release the first task and wait (with a long timeout) and we should succeed at getting the lock.
             final AtomicBoolean task3Result = new AtomicBoolean(false);
             task1Release.countDown();
-            acquired = Queue.tryWithLock(() -> {
-                task3Result.set(true);
-            }, Duration.ofSeconds(30));
+            acquired = Queue.tryWithLock(() -> task3Result.set(true), Duration.ofSeconds(30));
 
             // First task should complete
             task1.get();
@@ -515,9 +511,7 @@ public class QueueTest {
 
             // Try to acquire lock with 50ms timeout, expecting that it cannot be acquired
             final AtomicBoolean task2Complete = new AtomicBoolean(false);
-            boolean result = Queue.tryWithLock(() -> {
-                task2Complete.set(true);
-            }, Duration.ofMillis(50));
+            boolean result = Queue.tryWithLock(() -> task2Complete.set(true), Duration.ofMillis(50));
 
             // Results should indicate the task did not run
             assertFalse(result);
@@ -537,9 +531,7 @@ public class QueueTest {
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
             final AtomicBoolean taskComplete = new AtomicBoolean(false);
-            boolean result = Queue.tryWithLock(() -> {
-                taskComplete.set(true);
-            }, Duration.ofMillis(1));
+            boolean result = Queue.tryWithLock(() -> taskComplete.set(true), Duration.ofMillis(1));
             assertTrue(result);
             assertTrue(taskComplete.get());
         } finally {
@@ -1022,7 +1014,7 @@ public class QueueTest {
         project1.scheduleBuild2(0);
         QueueTaskFuture<FreeStyleBuild> v = project2.scheduleBuild2(0);
         projectError.scheduleBuild2(0);
-        Executor e = r.jenkins.toComputer().getExecutors().get(0);
+        Executor e = r.jenkins.toComputer().getExecutors().getFirst();
         Thread.sleep(2000);
         while (project2.getLastBuild() == null) {
              if (!e.isAlive()) {
@@ -1188,7 +1180,7 @@ public class QueueTest {
         //james has DISCOVER permission on the project and will only be able to see the task name.
         List projects = p3.getByXPath("/queue/discoverableItem/task/name/text()");
         assertEquals(1, projects.size());
-        assertEquals("project", projects.get(0).toString());
+        assertEquals("project", projects.getFirst().toString());
 
         // Also check individual item exports.
         String url = project.getQueueItem().getUrl() + "api/xml";
@@ -1227,11 +1219,11 @@ public class QueueTest {
         queue.maintain();
 
         assertEquals(1, r.jenkins.getQueue().getBlockedItems().size());
-        CauseOfBlockage actual = r.jenkins.getQueue().getBlockedItems().get(0).getCauseOfBlockage();
+        CauseOfBlockage actual = r.jenkins.getQueue().getBlockedItems().getFirst().getCauseOfBlockage();
         CauseOfBlockage expected = new BlockedBecauseOfBuildInProgress(t1.getFirstBuild());
 
         assertEquals(expected.getShortDescription(), actual.getShortDescription());
-        Queue.getInstance().doCancelItem(r.jenkins.getQueue().getBlockedItems().get(0).getId());
+        Queue.getInstance().doCancelItem(r.jenkins.getQueue().getBlockedItems().getFirst().getId());
 
         build.doStop(); // Stop build 1 early
         r.waitForCompletion(build);
@@ -1533,7 +1525,7 @@ public class QueueTest {
         var computer = onlineSlave.toComputer();
         Timer.get().execute(() -> {
             // Simulate a computer failure just after the executor is created
-            while (computer.getExecutors().get(0).getStartTime() == 0) {
+            while (computer.getExecutors().getFirst().getStartTime() == 0) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {

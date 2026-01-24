@@ -633,7 +633,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         List<UpdateSite.Plugin> siteMetadataList = getInfoFromAllSites();
         String firstSiteUrl = null;
         if (!siteMetadataList.isEmpty()) {
-            firstSiteUrl = siteMetadataList.get(0).wiki;
+            firstSiteUrl = siteMetadataList.getFirst().wiki;
             if (allUrlsMatch(firstSiteUrl, siteMetadataList)) {
                 return firstSiteUrl;
             }
@@ -878,18 +878,16 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     private Set<String> dependentsToCheck(PluginDisableStrategy strategy) {
-        Set<String> dependentsToCheck;
-        switch (strategy) {
-            case ALL:
+        Set<String> dependentsToCheck = switch (strategy) {
+            case ALL ->
                 // getDependents returns all the dependent plugins, mandatory or optional.
-                dependentsToCheck = this.getDependents();
-                break;
-            default:
+                this.getDependents();
+            default ->
                 // It includes MANDATORY, NONE:
                 // with NONE, the process only fail if mandatory dependent plugins exists
                 // As of getDependents has all the dependents, we get the difference between them and only the optionals
-                dependentsToCheck = Sets.difference(this.getDependents(), this.getOptionalDependents());
-        }
+                Sets.difference(this.getDependents(), this.getOptionalDependents());
+        };
         return dependentsToCheck;
     }
 

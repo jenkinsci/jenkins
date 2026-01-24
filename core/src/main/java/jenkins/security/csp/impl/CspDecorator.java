@@ -79,7 +79,7 @@ public class CspDecorator extends PageDecorator {
         if (staplerRequest2 != null) {
             final List<Ancestor> ancestors = staplerRequest2.getAncestors();
             if (!ancestors.isEmpty()) {
-                final Ancestor nearest = ancestors.get(ancestors.size() - 1);
+                final Ancestor nearest = ancestors.getLast();
                 restOfPath = nearest.getRestOfUrl();
                 modelObjectClass = nearest.getObject().getClass();
             }
