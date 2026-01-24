@@ -23,7 +23,9 @@
 
   <p>
     This option is also available in Pipelines using the
-    <code>buildDiscarder(logRotator(..., removeLastBuild: true))</code>
+    <code>options {
+        buildDiscarder logRotator(removeLastBuild: true)
+        }</code>
     syntax.
   </p>
 </div>
