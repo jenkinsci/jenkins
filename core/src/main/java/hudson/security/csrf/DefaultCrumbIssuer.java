@@ -101,9 +101,8 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     @Override
     @SuppressFBWarnings(value = "NM_WRONG_PACKAGE", justification = "false positive")
     protected synchronized String issueCrumb(ServletRequest request, String salt) {
-        if (request instanceof HttpServletRequest) {
+        if (request instanceof HttpServletRequest req) {
             if (md != null) {
-                HttpServletRequest req = (HttpServletRequest) request;
                 StringBuilder buffer = new StringBuilder();
                 Authentication a = Jenkins.getAuthentication2();
                 buffer.append(a.getName());

@@ -345,7 +345,7 @@ class ComputerTest {
 
         // Connect the computer
         computer.connect(false);
-        await("computer should be online after connect").atMost(Duration.ofSeconds(30)).until(() -> computer.isOnline(), is(true));
+        await("computer should be online after connect").atMost(Duration.ofSeconds(30)).until(computer::isOnline, is(true));
         assertThat(computer.isConnected(), is(true));
         assertThat(computer.isOffline(), is(false));
 
@@ -363,7 +363,7 @@ class ComputerTest {
         // Disconnect the computer
         computer.disconnect(new OfflineCause.UserCause(null, null));
         // wait for the slave process to be killed
-        await("disconnected agent is not available for scheduling").until(() -> computer.isOnline(), is(false));
+        await("disconnected agent is not available for scheduling").until(computer::isOnline, is(false));
         assertThat(computer.isConnected(), is(false));
         assertThat(computer.isOffline(), is(true));
     }
