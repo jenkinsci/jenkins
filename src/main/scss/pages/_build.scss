@@ -172,7 +172,6 @@ body:has(.app-settings-container) {
   &__inner {
     max-width: 900px;
     margin: auto;
-    overflow-x: clip;
     padding: var(--section-padding);
     display: flex;
     flex-direction: column;
