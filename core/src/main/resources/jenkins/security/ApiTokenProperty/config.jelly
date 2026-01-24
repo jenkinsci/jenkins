@@ -54,9 +54,10 @@ THE SOFTWARE.
                 <button class="api-token-property-add jenkins-button jenkins-button--secondary" type="button"
                         data-target-url="${descriptor.descriptorFullUrl}/generateNewToken"
                         data-prompt-message="${%Create new API token}"
-                        data-generate="${%GenerateNewToken}" data-success-title="${%successfully created}"
+                        data-generate="${%GenerateNewToken}"
                         data-cancel="${%Cancel}"
                         data-button-done="${%Done}"
+                        data-not-added="${%TokenNotAdded}"
                         data-message-name="${%Name}">${%AddNewToken}</button>
             </j:if>
         </d:tag>
@@ -173,6 +174,7 @@ THE SOFTWARE.
                                         </j:when>
                                         <j:when test="${token.expirationDate == 'never'}">
                                             <span class="warning token-creation" tooltip="${%tokenCreatedOn(creationDateFormat)}">
+                                                ${%This token does not expire}
                                             </span>
                                         </j:when>
                                         <j:otherwise>

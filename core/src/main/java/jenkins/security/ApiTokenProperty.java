@@ -617,18 +617,24 @@ public class ApiTokenProperty extends UserProperty {
                 u.addProperty(p);
             }
 
-            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
             String expirationDateString = "never";
             if (expirationDate != null) {
                 expirationDateString = expirationDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
                         .withLocale(Functions.getCurrentLocale()));
             }
 
-            Map<String, String> data = new HashMap<>();
+            Map<String, Object> data = new HashMap<>();
+            if (expirationDate != null && LocalDate.now().isAfter(expirationDate)) {
+                return HttpResponses.errorJSON(Messages.ApiTokenProperty_expirationInPast());
+            }
+
+            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
+
             data.put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
             data.put("tokenName", tokenName);
             data.put("tokenValue", tokenUuidAndPlainValue.plainValue);
             data.put("expirationDate", expirationDateString);
+            data.put("aboutToExpire", tokenUuidAndPlainValue.aboutToExpire);
             return HttpResponses.okJSON(data);
         }
 
@@ -810,13 +816,13 @@ public class ApiTokenProperty extends UserProperty {
         long expiredTokenCount = getTokenList().stream().filter(t -> t.expired).count();
         StringBuilder tooltip = new StringBuilder();
         if (expiringTokenCount > 0) {
-            tooltip.append(jenkins.model.navigation.Messages.UserAction_aboutToExpireTokens(expiringTokenCount));
+            tooltip.append(Messages.ApiTokenProperty_aboutToExpireTokens(expiringTokenCount));
         }
         if (expiredTokenCount > 0) {
             if (expiringTokenCount > 0) {
                 tooltip.append("\n");
             }
-            tooltip.append(jenkins.model.navigation.Messages.UserAction_expiredTokens(expiredTokenCount));
+            tooltip.append(Messages.ApiTokenProperty_expiredTokens(expiredTokenCount));
         }
         if (expiredTokenCount + expiringTokenCount > 0) {
             return new Badge(Long.toString(expiringTokenCount + expiredTokenCount), tooltip.toString(), Badge.Severity.WARNING);

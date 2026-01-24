@@ -50,9 +50,12 @@ public class TokenUuidAndPlainValue {
 
     public final String expirationDate;
 
-    public TokenUuidAndPlainValue(String tokenUuid, String plainValue, LocalDate expirationDate) {
+    public final boolean aboutToExpire;
+
+    public TokenUuidAndPlainValue(String tokenUuid, String plainValue, LocalDate expirationDate, boolean aboutToExpire) {
         this.tokenUuid = tokenUuid;
         this.plainValue = plainValue;
+        this.aboutToExpire = aboutToExpire;
         if (expirationDate != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E, L d u");
             this.expirationDate = formatter.format(expirationDate);

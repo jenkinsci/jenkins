@@ -192,7 +192,7 @@ public class ApiTokenStore {
 
         HashedToken token = prepareAndStoreToken(name, secretValue, expirationDate);
 
-        return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse, expirationDate);
+        return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse, expirationDate, token.isAboutToExpire());
     }
 
     private static final int VERSION_LENGTH = 2;

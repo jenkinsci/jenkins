@@ -108,6 +108,9 @@ function appendTokenToTable(data) {
         "__DATA__",
         data.expirationDate,
       );
+    if (data.aboutToExpire) {
+      tokenExpirationSpan.classList.add("warning");
+    }
   }
 
   apiTokenRow.id = data.tokenUuid;
@@ -168,7 +171,6 @@ function addToken(button) {
   const form = document.createElement("form");
   const dateInput = formTemplate.querySelector('input[name="tokenExpiration"]');
   const now = new Date();
-  now.setDate(now.getDate() + 1);
   const nextYear = new Date();
   const presetDate = new Date();
   presetDate.setDate(now.getDate() + 30);
@@ -203,7 +205,8 @@ function addToken(button) {
           if (rsp.ok) {
             rsp.json().then((json) => {
               if (json.status === "error") {
-                dialog.alert(json.message, {
+                dialog.alert(button.dataset.notAdded, {
+                  message: json.message,
                   type: "destructive",
                 });
               } else {
@@ -212,6 +215,7 @@ function addToken(button) {
                   json.data.tokenName,
                   json.data.tokenValue,
                   json.data.expirationDate,
+                  json.data.aboutToExpire,
                   button.dataset.buttonDone,
                 );
               }
@@ -223,7 +227,7 @@ function addToken(button) {
     );
 }
 
-function showToken(tokenName, tokenValue, expirationDate, doneText) {
+function showToken(tokenName, tokenValue, expirationDate, aboutToExpire, doneText) {
   const tokenTemplate = document.getElementById("api-token-template");
   const apiTokenMessage = tokenTemplate.firstElementChild.cloneNode(true);
 
@@ -238,6 +242,9 @@ function showToken(tokenName, tokenValue, expirationDate, doneText) {
   } else {
     tokenExpirationSpan.innerText =
       tokenExpirationSpan.dataset.expiresOn.replace("__DATA__", expirationDate);
+    if (aboutToExpire) {
+      tokenExpirationSpan.classList.add("warning");
+    }
   }
 
   if (isSecureContext) {
@@ -252,7 +259,7 @@ function showToken(tokenName, tokenValue, expirationDate, doneText) {
   dialog.alert(tokenName, {
     content: apiTokenMessage,
     okText: doneText,
-    maxWidth: "500px",
+    maxWidth: "600px",
   });
 }
 
