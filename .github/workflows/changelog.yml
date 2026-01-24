@@ -24,7 +24,7 @@ jobs:
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - name: Generate GitHub Release Draft
         id: release-drafter
-        uses: release-drafter/release-drafter@267d2e0268deae5d44f3ba5029dd4d6e85f9d52d # v6.1.1
+        uses: release-drafter/release-drafter@6db134d15f3909ccc9eefd369f02bd1e9cffdf97 # v6.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
@@ -52,7 +52,7 @@ jobs:
           owner: jenkins-infra
           repositories: jenkins.io
       - name: Check out
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
       - name: Publish jenkins.io changelog draft

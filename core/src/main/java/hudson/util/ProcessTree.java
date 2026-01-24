@@ -462,22 +462,19 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return new Windows(vetoes);
 
             String os = Util.fixNull(System.getProperty("os.name"));
-            if (os.equals("Linux"))
-                return new Linux(vetoes);
-            if (os.equals("AIX"))
-                return new AIX(vetoes);
-            if (os.equals("SunOS"))
-                return new Solaris(vetoes);
-            if (os.equals("Mac OS X"))
-                return new Darwin(vetoes);
-            if (os.equals("FreeBSD"))
-                return new FreeBSD(vetoes);
+            return switch (os) {
+                case "Linux" -> new Linux(vetoes);
+                case "AIX" -> new AIX(vetoes);
+                case "SunOS" -> new Solaris(vetoes);
+                case "Mac OS X" -> new Darwin(vetoes);
+                case "FreeBSD" -> new FreeBSD(vetoes);
+                default -> DEFAULT;
+            };
         } catch (LinkageError e) {
             LOGGER.log(Level.FINE, "Failed to load OS-specific implementation; reverting to the default", e);
             enabled = false;
+            return DEFAULT;
         }
-
-        return DEFAULT;
     }
 
     private static class DoVetoersExist extends SlaveToMasterCallable<Boolean, IOException> {
