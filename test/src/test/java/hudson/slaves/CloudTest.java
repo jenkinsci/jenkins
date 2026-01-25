@@ -154,7 +154,7 @@ class CloudTest {
     public static final class ACloud extends AbstractCloudImpl {
 
         @DataBoundConstructor
-        public ACloud(String name, String instanceCapStr) {
+        ACloud(String name, String instanceCapStr) {
             super(name, instanceCapStr);
         }
 
