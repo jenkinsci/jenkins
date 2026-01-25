@@ -170,12 +170,28 @@ body:has(.app-settings-container) {
   min-height: calc(100vh - var(--header-height) - var(--section-padding));
 
   &__inner {
-    max-width: 900px;
+    width: 100%;
     margin: auto;
-    overflow-x: clip;
+    overflow-x: auto;
     padding: var(--section-padding);
-    display: flex;
-    flex-direction: column;
+    // Ensure wide tables like the authorization matrix can expand
+    table.matrix-auth-model,
+    table.matrix-auth-table,
+    .matrix-auth-table {
+      width: max-content;
+      min-width: 100%;
+
+      td:first-child {
+        min-width: 200px;
+        white-space: nowrap;
+      }
+
+      // Ensure the "Select All" / "Unselect All" buttons are visible
+      .selectall,
+      .unselectall {
+        display: inline-flex !important;
+      }
+    }
   }
 }
 
