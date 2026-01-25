@@ -92,20 +92,22 @@ class CloudTest {
                 instanceOf(ReportingCloudAction.class)
         ));
 
-        HtmlPage page = j.createWebClient().goTo(aCloud2.getUrl());
-        String out = page.getWebResponse().getContentAsString();
-        assertThat(out, containsString("Cloud a")); // index.jelly
-        assertThat(out, containsString("Top cloud view.")); // top.jelly
-        assertThat(out, containsString("custom cloud main groovy")); // main.jelly
-        assertThat(out, containsString("Task Action")); // TaskCloudAction
-        assertThat(out, containsString("Sidepanel action box.")); // TaskCloudAction/box.jelly
-        assertThat(out, containsString("Report Here")); // ReportingCloudAction/summary.jelly
+        try (JenkinsRule.WebClient client = j.createWebClient()) {
+            HtmlPage page = client.goTo(aCloud2.getUrl());
+            String out = page.getWebResponse().getContentAsString();
+            assertThat(out, containsString("Cloud a")); // index.jelly
+            assertThat(out, containsString("Top cloud view.")); // top.jelly
+            assertThat(out, containsString("custom cloud main groovy")); // main.jelly
+            assertThat(out, containsString("Task Action")); // TaskCloudAction
+            assertThat(out, containsString("Sidepanel action box.")); // TaskCloudAction/box.jelly
+            assertThat(out, containsString("Report Here")); // ReportingCloudAction/summary.jelly
 
-        HtmlPage actionPage = page.getAnchorByText("Task Action").click();
-        URL url = actionPage.getUrl();
-        assertThat(url.getPath(), endsWith("/cloud/cloudByIndex/1/task/")); // TaskCloudAction URL
-        out = actionPage.getWebResponse().getContentAsString();
-        assertThat(out, containsString("doIndex called")); // doIndex
+            HtmlPage actionPage = page.getAnchorByText("Task Action").click();
+            URL url = actionPage.getUrl();
+            assertThat(url.getPath(), endsWith("/cloud/cloudByIndex/1/task/")); // TaskCloudAction URL
+            out = actionPage.getWebResponse().getContentAsString();
+            assertThat(out, containsString("doIndex called")); // doIndex
+        }
     }
 
     @Test
@@ -120,13 +122,25 @@ class CloudTest {
                 instanceOf(ReportingCloudAction.class)
         ));
 
-        HtmlPage page = j.createWebClient().goTo(aCloud2.getUrl());
+        // save the first cloud
+        try (JenkinsRule.WebClient client = j.createWebClient()) {
+            HtmlPage page = client.goTo(aCloud.getUrl());
 
-        HtmlPage configurePage = page.getAnchorByText("Configure").click();
-        HtmlForm form = configurePage.getFormByName("config");
-        page = form.getButtonByName("Submit").click();
-        URL url = page.getUrl();
-        assertThat(url.getPath(), endsWith("/cloud/cloudByIndex/1/")); // TaskCloudAction URL
+            HtmlPage configurePage = page.getAnchorByText("Configure").click();
+            HtmlForm form = configurePage.getFormByName("config");
+            page = form.getButtonByName("Submit").click();
+            URL url = page.getUrl();
+            assertThat(url.getPath(), endsWith("/cloud/a/"));
+
+            // save second cloud
+            page = client.goTo(aCloud2.getUrl());
+
+            configurePage = page.getAnchorByText("Configure").click();
+            form = configurePage.getFormByName("config");
+            page = form.getButtonByName("Submit").click();
+            url = page.getUrl();
+            assertThat(url.getPath(), endsWith("/cloud/cloudByIndex/1/"));
+        }
     }
 
     @Test
