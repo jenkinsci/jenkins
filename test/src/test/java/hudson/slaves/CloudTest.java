@@ -10,8 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.Computer;
+import hudson.model.Descriptor;
 import hudson.model.Label;
 import hudson.security.Permission;
 import hudson.security.SidACL;
@@ -23,6 +25,7 @@ import java.util.Collections;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
 import org.acegisecurity.acls.sid.Sid;
+import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +34,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerResponse2;
 
 @WithJenkins
@@ -105,15 +109,38 @@ class CloudTest {
     }
 
     @Test
+    void save() throws Exception {
+        ACloud aCloud = new ACloud("a", "0");
+        j.jenkins.clouds.add(aCloud);
+        ACloud aCloud2 = new ACloud("a", "0");
+        j.jenkins.clouds.add(aCloud2);
+
+        assertThat(aCloud.getAllActions(), containsInAnyOrder(
+                instanceOf(TaskCloudAction.class),
+                instanceOf(ReportingCloudAction.class)
+        ));
+
+        HtmlPage page = j.createWebClient().goTo(aCloud2.getUrl());
+
+        HtmlPage configurePage = page.getAnchorByText("Configure").click();
+        HtmlForm form = configurePage.getFormByName("config");
+        page = form.getButtonByName("Submit").click();
+        URL url = page.getUrl();
+        assertThat(url.getPath(), endsWith("/cloud/cloudByIndex/1/")); // TaskCloudAction URL
+    }
+
+    @Test
     void cloudNameIsEncodedInGetUrl() {
         ACloud aCloud = new ACloud("../../gibberish", "0");
+        j.jenkins.clouds.add(aCloud);
 
         assertEquals("cloud/..%2F..%2Fgibberish/", aCloud.getUrl(), "Cloud name is encoded in Cloud#getUrl");
     }
 
     public static final class ACloud extends AbstractCloudImpl {
 
-        protected ACloud(String name, String instanceCapStr) {
+        @DataBoundConstructor
+        public ACloud(String name, String instanceCapStr) {
             super(name, instanceCapStr);
         }
 
@@ -121,8 +148,16 @@ class CloudTest {
             return Collections.emptyList();
         }
 
+
         @Override public boolean canProvision(Label label) {
             return false;
+        }
+
+        @Extension
+        public static class DescriptorImpl extends Descriptor<Cloud> {
+            @Override public String getDisplayName() {
+                return "ACloud";
+            }
         }
     }
 
