@@ -170,12 +170,17 @@ body:has(.app-settings-container) {
   min-height: calc(100vh - var(--header-height) - var(--section-padding));
 
   &__inner {
-    max-width: 900px;
-    margin: auto;
-    overflow-x: clip;
+    max-width: none;
+    width: 100%;
+    overflow-x: auto;
     padding: var(--section-padding);
-    display: flex;
-    flex-direction: column;
+     // Ensure wide tables can scroll
+    // 1. Allows tables to grow
+    // 2. Leaves column sizing to browser
+    // 3. Doesn't affect non-settings pages
+    .app-settings-container table {
+      min-width: 100%;
+    }
   }
 }
 
