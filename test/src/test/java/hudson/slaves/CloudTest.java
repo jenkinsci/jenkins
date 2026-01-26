@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
@@ -38,7 +37,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerResponse2;
 
 @WithJenkins
-class CloudTest {
+public class CloudTest {
 
     private JenkinsRule j;
 
@@ -111,6 +110,7 @@ class CloudTest {
     }
 
     @Test
+    @Issue("#26183")
     void save() throws Exception {
         ACloud aCloud = new ACloud("a", "0");
         j.jenkins.clouds.add(aCloud);
@@ -154,7 +154,7 @@ class CloudTest {
     public static final class ACloud extends AbstractCloudImpl {
 
         @DataBoundConstructor
-        ACloud(String name, String instanceCapStr) {
+        public ACloud(String name, String instanceCapStr) {
             super(name, instanceCapStr);
         }
 
@@ -167,7 +167,7 @@ class CloudTest {
             return false;
         }
 
-        @Extension
+        @TestExtension
         public static class DescriptorImpl extends Descriptor<Cloud> {
             @Override public String getDisplayName() {
                 return "ACloud";
