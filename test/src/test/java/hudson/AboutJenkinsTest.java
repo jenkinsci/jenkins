@@ -84,11 +84,11 @@ class AboutJenkinsTest {
                 .grant(Jenkins.READ).everywhere().to(READ_AND_SYSTEM_READ_USER)
                 .grant(Jenkins.SYSTEM_READ).everywhere().to(READ_AND_SYSTEM_READ_USER)
 
-                // Read access only (should NOT access About Jenkins page)
-                .grant(Jenkins.READ).everywhere().to(REGULAR_USER)
-
                 // System read-only (should NOT access About Jenkins page)
                 .grant(Jenkins.SYSTEM_READ).everywhere().to(READONLY_USER)
+
+                // Only Read access (should NOT access About Jenkins page)
+                .grant(Jenkins.READ).everywhere().to(REGULAR_USER)
         );
     }
 
