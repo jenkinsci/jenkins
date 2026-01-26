@@ -169,6 +169,7 @@ import jenkins.model.SimplePageDecorator;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
+import jenkins.telemetry.impl.PasswordMasking;
 import jenkins.util.SystemProperties;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -2261,10 +2262,12 @@ public class Functions {
                 if (NON_RECURSIVE_PASSWORD_MASKING_PERMISSION_CHECK) {
                     Item item = req.findAncestorObject(Item.class);
                     if (item != null && !item.hasPermission(Item.CONFIGURE)) {
+                        PasswordMasking.recordMasking("Item");
                         return "********";
                     }
                     Computer computer = req.findAncestorObject(Computer.class);
                     if (computer != null && !computer.hasPermission(Computer.CONFIGURE)) {
+                        PasswordMasking.recordMasking("Computer");
                         return "********";
                     }
                 } else {
@@ -2273,18 +2276,21 @@ public class Functions {
                         Object type = ancestor.getObject();
                         if (type instanceof Item item) {
                             if (!item.hasPermission(Item.CONFIGURE)) {
+                                PasswordMasking.recordMasking("Item");
                                 return "********";
                             }
                             break;
                         }
                         if (type instanceof Computer computer) {
                             if (!computer.hasPermission(Computer.CONFIGURE)) {
+                                PasswordMasking.recordMasking("Computer");
                                 return "********";
                             }
                             break;
                         }
                         if (type instanceof View view) {
                             if (!view.hasPermission(View.CONFIGURE)) {
+                                PasswordMasking.recordMasking("View");
                                 return "********";
                             }
                             break;

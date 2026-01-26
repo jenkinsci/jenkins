@@ -1,0 +1,10 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    This trial collects how often password fields are masked due to users lacking Configure permission on Items, Computers, or Views.
+    <p>
+        This masking behavior is a fallback that should normally be rare, as views rendering content for users without Configure permission should use read-only mode instead.
+    </p>
+    <p>
+        Additionally, this trial collects the list of installed plugins, their version, and the version of Jenkins.
+    </p>
+</j:jelly>
