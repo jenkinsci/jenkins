@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import jenkins.telemetry.Telemetry;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -47,14 +48,17 @@ public class PasswordMasking extends Telemetry {
     /**
      * Records when password masking occurs.
      *
-     * @param parentContext the parent context type (Item, Computer, View)
+     * @param className the class name of the object
+     * @param closestAncestor the closest ancestor class name
+     * @param jellyView the Jelly view where masking occurred
      */
-    public static void recordMasking(String parentContext) {
+    public static void recordMasking(String className, String closestAncestor, String jellyView) {
         if (Telemetry.isDisabled()) {
             return;
         }
 
-        maskingCounts.computeIfAbsent(parentContext, k -> new AtomicLong(0)).incrementAndGet();
+        String key = className + "|" + closestAncestor + "|" + jellyView;
+        maskingCounts.computeIfAbsent(key, k -> new AtomicLong(0)).incrementAndGet();
     }
 
     @NonNull
@@ -81,10 +85,27 @@ public class PasswordMasking extends Telemetry {
             return null;
         }
 
-        JSONObject payload = new JSONObject();
+        JSONArray events = new JSONArray();
+        for (Map.Entry<String, AtomicLong> entry : maskingCounts.entrySet()) {
+            String[] parts = entry.getKey().split("\\|", 3);
+            if (parts.length == 3) {
+                String className = parts[0];
+                String closestAncestor = parts[1];
+                String jellyView = parts[2];
+                long count = entry.getValue().longValue();
 
+                JSONObject event = new JSONObject();
+                event.put("className", className);
+                event.put("closestAncestor", closestAncestor);
+                event.put("jellyView", jellyView);
+                event.put("count", count);
+                events.add(event);
+            }
+        }
+
+        JSONObject payload = new JSONObject();
         payload.put("components", buildComponentInformation());
-        payload.put("maskingCounts", maskingCounts);
+        payload.put("masking", events);
 
         return payload;
     }
