@@ -54,7 +54,7 @@ class AboutJenkinsTest {
 
     private static final String ADMIN_USER = "admin";
     private static final String MANAGER_USER = "manager";
-    private static final String MANAGER_READONLY_USER = "manager-readonly";
+    private static final String MANAGER_READ_ONLY_USER = "manager-readonly";
     private static final String READ_AND_SYSTEM_READ_USER = "read-and-system-read";
     private static final String SYSTEM_READ_ONLY_USER = "readonly";
     private static final String REGULAR_USER = "user";
@@ -76,9 +76,9 @@ class AboutJenkinsTest {
                 .grant(Jenkins.MANAGE).everywhere().to(MANAGER_USER)
 
                 // Read, Manage and System read
-                .grant(Jenkins.READ).everywhere().to(MANAGER_READONLY_USER)
-                .grant(Jenkins.MANAGE).everywhere().to(MANAGER_READONLY_USER)
-                .grant(Jenkins.SYSTEM_READ).everywhere().to(MANAGER_READONLY_USER)
+                .grant(Jenkins.READ).everywhere().to(MANAGER_READ_ONLY_USER)
+                .grant(Jenkins.MANAGE).everywhere().to(MANAGER_READ_ONLY_USER)
+                .grant(Jenkins.SYSTEM_READ).everywhere().to(MANAGER_READ_ONLY_USER)
 
                 // Read and System read
                 .grant(Jenkins.READ).everywhere().to(READ_AND_SYSTEM_READ_USER)
@@ -128,7 +128,7 @@ class AboutJenkinsTest {
         assertThat(managerPage.getTitleText(), containsString(ABOUT_PAGE_TITLE));
 
         // MANAGE + SYSTEM_READ permissions: manager-readonly should see About Jenkins page
-        HtmlPage managerReadonlyPage = accessAsUser(MANAGER_READONLY_USER);
+        HtmlPage managerReadonlyPage = accessAsUser(MANAGER_READ_ONLY_USER);
         assertEquals(HttpURLConnection.HTTP_OK, managerReadonlyPage.getWebResponse().getStatusCode());
         assertThat(managerReadonlyPage.getWebResponse().getContentAsString(), containsString(MAVENIZED_DEPS_TEXT));
         assertThat(managerReadonlyPage.getTitleText(), containsString(ABOUT_PAGE_TITLE));
