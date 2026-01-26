@@ -56,7 +56,7 @@ class AboutJenkinsTest {
     private static final String MANAGER_USER = "manager";
     private static final String MANAGER_READONLY_USER = "manager-readonly";
     private static final String READ_AND_SYSTEM_READ_USER = "read-and-system-read";
-    private static final String READONLY_USER = "readonly";
+    private static final String SYSTEM_READ_ONLY_USER = "readonly";
     private static final String REGULAR_USER = "user";
 
     @BeforeEach
@@ -85,7 +85,7 @@ class AboutJenkinsTest {
                 .grant(Jenkins.SYSTEM_READ).everywhere().to(READ_AND_SYSTEM_READ_USER)
 
                 // System read-only (should NOT access About Jenkins page)
-                .grant(Jenkins.SYSTEM_READ).everywhere().to(READONLY_USER)
+                .grant(Jenkins.SYSTEM_READ).everywhere().to(SYSTEM_READ_ONLY_USER)
 
                 // Only Read access (should NOT access About Jenkins page)
                 .grant(Jenkins.READ).everywhere().to(REGULAR_USER)
@@ -158,7 +158,7 @@ class AboutJenkinsTest {
         assertThat(userPage.getTitleText(), containsString(JENKINS_PAGE_TITLE));
 
         // SYSTEM_READ permission: readonly should not see About Jenkins page -> redirect to Access Denied Jenkins page
-        HtmlPage readonlyPage = accessAsUser(READONLY_USER);
+        HtmlPage readonlyPage = accessAsUser(SYSTEM_READ_ONLY_USER);
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, readonlyPage.getWebResponse().getStatusCode());
         assertThat(readonlyPage.getTitleText(), containsString(JENKINS_PAGE_TITLE));
     }
