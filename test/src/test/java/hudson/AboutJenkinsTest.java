@@ -45,11 +45,11 @@ class AboutJenkinsTest {
 
     private JenkinsRule j;
 
-    private static final String ABOUT_PAGE_URL = "about/";
+    private static final String JENKINS_ABOUT_PAGE_URL = "about/";
 
-    private static final String ABOUT_PAGE_TITLE = "About Jenkins";
+    private static final String JENKINS_ABOUT_PAGE_TITLE = "About Jenkins";
     private static final String JENKINS_PAGE_TITLE = "Jenkins";
-    private static final String SIGN_IN_PAGE_TITLE = "Sign in";
+    private static final String JENKINS_SIGN_IN_PAGE_TITLE = "Sign in";
     private static final String MAVENIZED_DEPS_TEXT = "Mavenized dependencies";
 
     private static final String ADMIN_USER = "admin";
@@ -96,14 +96,14 @@ class AboutJenkinsTest {
         try (JenkinsRule.WebClient webClient = j.createWebClient()) {
             webClient.withThrowExceptionOnFailingStatusCode(false);
             webClient.login(username);
-            return webClient.goTo(ABOUT_PAGE_URL);
+            return webClient.goTo(JENKINS_ABOUT_PAGE_URL);
         }
     }
 
     private HtmlPage accessAsAnonymous() throws Exception {
         try (JenkinsRule.WebClient webClient = j.createWebClient()) {
             webClient.withThrowExceptionOnFailingStatusCode(false);
-            return webClient.goTo(ABOUT_PAGE_URL);
+            return webClient.goTo(JENKINS_ABOUT_PAGE_URL);
         }
     }
 
@@ -119,25 +119,25 @@ class AboutJenkinsTest {
         HtmlPage adminPage = accessAsUser(ADMIN_USER);
         assertEquals(HttpURLConnection.HTTP_OK, adminPage.getWebResponse().getStatusCode());
         assertThat(adminPage.getWebResponse().getContentAsString(), containsString(MAVENIZED_DEPS_TEXT));
-        assertThat(adminPage.getTitleText(), containsString(ABOUT_PAGE_TITLE));
+        assertThat(adminPage.getTitleText(), containsString(JENKINS_ABOUT_PAGE_TITLE));
 
         // MANAGE permission: manager should see About Jenkins page
         HtmlPage managerPage = accessAsUser(MANAGER_USER);
         assertEquals(HttpURLConnection.HTTP_OK, managerPage.getWebResponse().getStatusCode());
         assertThat(managerPage.getWebResponse().getContentAsString(), containsString(MAVENIZED_DEPS_TEXT));
-        assertThat(managerPage.getTitleText(), containsString(ABOUT_PAGE_TITLE));
+        assertThat(managerPage.getTitleText(), containsString(JENKINS_ABOUT_PAGE_TITLE));
 
         // MANAGE + SYSTEM_READ permissions: manager-readonly should see About Jenkins page
         HtmlPage managerReadonlyPage = accessAsUser(MANAGER_READ_ONLY_USER);
         assertEquals(HttpURLConnection.HTTP_OK, managerReadonlyPage.getWebResponse().getStatusCode());
         assertThat(managerReadonlyPage.getWebResponse().getContentAsString(), containsString(MAVENIZED_DEPS_TEXT));
-        assertThat(managerReadonlyPage.getTitleText(), containsString(ABOUT_PAGE_TITLE));
+        assertThat(managerReadonlyPage.getTitleText(), containsString(JENKINS_ABOUT_PAGE_TITLE));
 
         // READ + SYSTEM_READ permissions: a combination should grant access to see About Jenkins page
         HtmlPage readSystemReadPage = accessAsUser(READ_AND_SYSTEM_READ_USER);
         assertEquals(HttpURLConnection.HTTP_OK, readSystemReadPage.getWebResponse().getStatusCode());
         assertThat(readSystemReadPage.getWebResponse().getContentAsString(), containsString(MAVENIZED_DEPS_TEXT));
-        assertThat(readSystemReadPage.getTitleText(), containsString(ABOUT_PAGE_TITLE));
+        assertThat(readSystemReadPage.getTitleText(), containsString(JENKINS_ABOUT_PAGE_TITLE));
     }
 
     /**
@@ -150,7 +150,7 @@ class AboutJenkinsTest {
         // anonymous user should not see About Jenkins page -> redirect to sign in page
         HtmlPage anonymousPage = accessAsAnonymous();
         assertEquals(HttpURLConnection.HTTP_OK, anonymousPage.getWebResponse().getStatusCode());
-        assertThat(anonymousPage.getTitleText(), containsString(SIGN_IN_PAGE_TITLE));
+        assertThat(anonymousPage.getTitleText(), containsString(JENKINS_SIGN_IN_PAGE_TITLE));
 
         // only READ permission: user should not see About Jenkins page -> redirect to Access Denied Jenkins page
         HtmlPage userPage = accessAsUser(REGULAR_USER);
