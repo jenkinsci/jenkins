@@ -18,8 +18,6 @@
     <mina-sshd.version>2.16.0</mina-sshd.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
-    <!-- Intentionally run only one test to reduce cycle time -->
-    <test>QuotedStringTokenizerTest</test>
   </properties>
 
   <dependencyManagement>
