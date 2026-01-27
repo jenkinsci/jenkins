@@ -26,7 +26,9 @@ package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
@@ -43,6 +45,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -51,6 +54,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStats;
@@ -255,6 +259,9 @@ public class ApiTokenProperty extends UserProperty {
         public final int useCounter;
         public final Date lastUseDate;
         public final long numDaysUse;
+        public final String expirationDate;
+        public final boolean expired;
+        public final boolean aboutToExpire;
 
         public TokenInfoAndStats(@NonNull ApiTokenStore.HashedToken token, @NonNull ApiTokenStats.SingleTokenStats stats) {
             this.uuid = token.getUuid();
@@ -262,6 +269,16 @@ public class ApiTokenProperty extends UserProperty {
             this.creationDate = token.getCreationDate();
             this.numDaysCreation = token.getNumDaysCreation();
             this.isLegacy = token.isLegacy();
+            this.expired = token.isExpired();
+            this.aboutToExpire = token.isAboutToExpire();
+
+            LocalDate expirationDate = token.getExpirationDate();
+            if (expirationDate == null) {
+                this.expirationDate = "never";
+            } else {
+                this.expirationDate = expirationDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                        .withLocale(Functions.getCurrentLocale()));
+            }
 
             this.useCounter = stats.getUseCounter();
             this.lastUseDate = stats.getLastUseDate();
@@ -427,7 +444,13 @@ public class ApiTokenProperty extends UserProperty {
     // essentially meant for scripting
     @Restricted(Beta.class)
     public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue) throws IOException {
-        String tokenUuid = this.tokenStore.addFixedNewToken(name, tokenPlainValue);
+        return addFixedNewToken(name, tokenPlainValue, null);
+    }
+
+    // essentially meant for scripting
+    @Restricted(Beta.class)
+    public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) throws IOException {
+        String tokenUuid = this.tokenStore.addFixedNewToken(name, tokenPlainValue, expirationDate);
         user.save();
         return tokenUuid;
     }
@@ -435,7 +458,13 @@ public class ApiTokenProperty extends UserProperty {
     // essentially meant for scripting
     @Restricted(Beta.class)
     public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) throws IOException {
-        TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name);
+        return generateNewToken(name, null);
+    }
+
+    // essentially meant for scripting
+    @Restricted(Beta.class)
+    public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) throws IOException {
+        TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name, expirationDate);
         user.save();
         return tokenUuidAndPlainValue;
     }
@@ -538,7 +567,7 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         /**
-         * @deprecated use {@link #doGenerateNewToken(User, String)} instead
+         * @deprecated use {@link #doGenerateNewToken(User, String, String, String)} instead
          */
         @Deprecated
         @RequirePOST
@@ -570,7 +599,8 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         @RequirePOST
-        public HttpResponse doGenerateNewToken(@AncestorInPath User u, @QueryParameter String newTokenName) throws IOException {
+        public HttpResponse doGenerateNewToken(@AncestorInPath User u, @QueryParameter String newTokenName,
+                                               @QueryParameter String tokenExpiration, @QueryParameter String expirationDuration) throws IOException {
             if (!hasCurrentUserRightToGenerateNewToken(u)) {
                 return HttpResponses.forbidden();
             }
@@ -582,19 +612,55 @@ public class ApiTokenProperty extends UserProperty {
                 tokenName = newTokenName;
             }
 
+            LocalDate expirationDate = getExpirationDate(tokenExpiration, expirationDuration);
+
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
                 p = forceNewInstance(u, false);
                 u.addProperty(p);
             }
 
-            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName);
+            String expirationDateString = "never";
+            if (expirationDate != null) {
+                expirationDateString = expirationDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                        .withLocale(Functions.getCurrentLocale()));
+            }
 
-            Map<String, String> data = new HashMap<>();
+            Map<String, Object> data = new HashMap<>();
+            if (expirationDate != null && LocalDate.now().isAfter(expirationDate)) {
+                return HttpResponses.errorJSON(Messages.ApiTokenProperty_expirationInPast());
+            }
+
+            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
+
             data.put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
             data.put("tokenName", tokenName);
             data.put("tokenValue", tokenUuidAndPlainValue.plainValue);
+            data.put("expirationDate", expirationDateString);
+            data.put("aboutToExpire", tokenUuidAndPlainValue.aboutToExpire);
             return HttpResponses.okJSON(data);
+        }
+
+        private LocalDate getExpirationDate(String tokenExpiration, String expirationDuration) {
+            if (expirationDuration == null) {
+                expirationDuration = "";
+            }
+            expirationDuration = expirationDuration.trim();
+
+            return switch (expirationDuration) {
+                case "", "never" -> {
+                    yield null;
+                }
+                case "custom" -> {
+                    yield LocalDate.parse(tokenExpiration);
+                }
+                default -> {
+                    LocalDate now = LocalDate.now();
+                    int days = Integer.parseInt(expirationDuration);
+                    yield now.plusDays(days);
+                }
+            };
+
         }
 
         /**
@@ -606,7 +672,9 @@ public class ApiTokenProperty extends UserProperty {
         @Restricted(NoExternalUse.class)
         public HttpResponse doAddFixedToken(@AncestorInPath User u,
                                             @QueryParameter String newTokenName,
-                                            @QueryParameter String newTokenPlainValue) throws IOException {
+                                            @QueryParameter String newTokenPlainValue,
+                                            @QueryParameter String tokenExpiration,
+                                            @QueryParameter String expirationDuration) throws IOException {
             if (!hasCurrentUserRightToGenerateNewToken(u)) {
                 return HttpResponses.forbidden();
             }
@@ -618,13 +686,15 @@ public class ApiTokenProperty extends UserProperty {
                 tokenName = newTokenName;
             }
 
+            LocalDate expirationDate = getExpirationDate(tokenExpiration, expirationDuration);
+
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
                 p = forceNewInstance(u, false);
                 u.addProperty(p);
             }
 
-            String tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue);
+            String tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue, expirationDate);
             u.save();
 
             Map<String, String> data = new HashMap<>();
@@ -742,4 +812,25 @@ public class ApiTokenProperty extends UserProperty {
     @Deprecated
     @Restricted(NoExternalUse.class)
     public static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class, "seed", 16);
+
+    @Restricted(NoExternalUse.class)
+    public Badge getBadge() {
+        long expiringTokenCount = getTokenList().stream().filter(t -> t.aboutToExpire && !t.expired).count();
+        long expiredTokenCount = getTokenList().stream().filter(t -> t.expired).count();
+        StringBuilder tooltip = new StringBuilder();
+        if (expiringTokenCount > 0) {
+            tooltip.append(Messages.ApiTokenProperty_aboutToExpireTokens(expiringTokenCount));
+        }
+        if (expiredTokenCount > 0) {
+            if (expiringTokenCount > 0) {
+                tooltip.append("\n");
+            }
+            tooltip.append(Messages.ApiTokenProperty_expiredTokens(expiredTokenCount));
+        }
+        if (expiredTokenCount + expiringTokenCount > 0) {
+            return new Badge(Long.toString(expiringTokenCount + expiredTokenCount), tooltip.toString(), Badge.Severity.WARNING);
+        } else {
+            return null;
+        }
+    }
 }
