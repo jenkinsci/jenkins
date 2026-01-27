@@ -45,15 +45,10 @@ public enum IconType {
      */
     public String toQualifiedUrl(String url, String resURL) {
 
-        switch (this) {
-            case CORE: {
-                return resURL + "/images/" + url;
-            }
-            case PLUGIN: {
-                return resURL + "/plugin/" + url;
-            }
-            default:
-                throw new AssertionError("Unknown icon type: " + this);
-        }
+        return switch (this) {
+            case CORE -> resURL + "/images/" + url;
+            case PLUGIN -> resURL + "/plugin/" + url;
+            default -> throw new AssertionError("Unknown icon type: " + this);
+        };
     }
 }

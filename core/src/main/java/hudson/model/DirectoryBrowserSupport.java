@@ -800,9 +800,9 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                                     sub.add(vf);
                                 }
                             }
-                            if (sub.size() != 1 || !sub.get(0).isDirectory())
+                            if (sub.size() != 1 || !sub.getFirst().isDirectory())
                                 break;
-                            f = sub.get(0);
+                            f = sub.getFirst();
                             relPath += '/' + Util.rawEncode(f.getName());
                             l.add(new Path(relPath, f.getName(), true, f.length(), f.canRead(), f.lastModified()));
                         }
