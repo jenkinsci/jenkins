@@ -83,7 +83,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class Build<P extends Project<P, B>, B extends Build<P, B>>
+public abstract class   Build<P extends Project<P, B>, B extends Build<P, B>>
     extends AbstractBuild<P, B> {
 
     /**
