@@ -142,6 +142,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -1278,11 +1279,7 @@ public class Functions {
             return hasAnyPermission((AccessControlled) object, permissions);
         else {
             AccessControlled ac = Stapler.getCurrentRequest2().findAncestorObject(AccessControlled.class);
-            if (ac != null) {
-                return hasAnyPermission(ac, permissions);
-            }
-
-            return hasAnyPermission(Jenkins.get(), permissions);
+            return hasAnyPermission(Objects.requireNonNullElseGet(ac, Jenkins::get), permissions);
         }
     }
 

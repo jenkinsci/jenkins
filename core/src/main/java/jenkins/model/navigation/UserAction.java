@@ -32,6 +32,8 @@ import hudson.model.RootAction;
 import hudson.model.User;
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.management.Badge;
+import jenkins.security.ApiTokenProperty;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -81,6 +83,20 @@ public class UserAction implements RootAction {
     @Restricted(NoExternalUse.class)
     public User getUser() {
         return User.current();
+    }
+
+    @Override
+    public Badge getBadge() {
+        User current = User.current();
+
+        if (User.current() == null) {
+            return null;
+        }
+        ApiTokenProperty apiTokenProperty = current.getProperty(ApiTokenProperty.class);
+        if (apiTokenProperty != null) {
+            return apiTokenProperty.getBadge();
+        }
+        return null;
     }
 
     @Override
