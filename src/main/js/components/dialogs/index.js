@@ -13,6 +13,7 @@ let _defaults = {
   hideCloseButton: false,
   allowEmpty: false,
   submitButton: false,
+  preventCloseOnOutsideClick: false,
 };
 
 let _typeClassMap = {
@@ -66,12 +67,14 @@ Dialog.prototype.init = function () {
         this.dialog.dispatchEvent(new Event("cancel")),
       );
     }
-    this.dialog.addEventListener("click", function (e) {
-      if (e.target !== e.currentTarget) {
-        return;
-      }
-      this.dispatchEvent(new Event("cancel"));
-    });
+    if (!this.options.preventCloseOnOutsideClick) {
+      this.dialog.addEventListener("click", function (e) {
+        if (e.target !== e.currentTarget) {
+          return;
+        }
+        this.dispatchEvent(new Event("cancel"));
+      });
+    }
     this.ok = null;
   } else {
     this.form = null;
