@@ -24,14 +24,52 @@
 
 package hudson.model;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * Utility methods for Windows specific details on tests.
  *
  * @author Mark Waite
  */
 public class WindowsUtil {
-    public static boolean isWindowsSymlinkSupported() {
-        // TODO: Replace with more accurate check for symlink support
-        return false;
+
+    private static final AtomicReference<Boolean> symlinkSupported = new AtomicReference<>();
+
+    /**
+     * Returns true if Windows allows a symbolic link to be created.
+     *
+     * @return true if Windows allows a symbolic link to be created.
+     * @throws IOException if creation or removal of temporary files fails
+     */
+    public static boolean isWindowsSymlinkSupported() throws IOException {
+        // Fast path, don't acquire unnecessary lock
+        Boolean supported = symlinkSupported.get();
+        if (supported != null) {
+            return supported;
+        }
+        synchronized (WindowsUtil.class) {
+            supported = symlinkSupported.get();
+            if (supported != null) {
+                return supported;
+            }
+            Path tempDir = Files.createTempDirectory("symlink-check");
+            Path target = Files.createFile(tempDir.resolve("target.txt"));
+            Path link = tempDir.resolve("link.txt");
+
+            try {
+                Files.createSymbolicLink(link, target);
+                Files.delete(link);
+                symlinkSupported.set(true);
+            } catch (IOException | UnsupportedOperationException uoe) {
+                symlinkSupported.set(false);
+            } finally {
+                Files.delete(target);
+                Files.delete(tempDir);
+            }
+        }
+        return symlinkSupported.get();
     }
 }
