@@ -21,29 +21,23 @@ import jenkins.util.Timer;
 @Extension
 public class NodeMonitorUpdater extends ComputerListener {
 
-    private static final Runnable MONITOR_UPDATER = new Runnable() {
-        @Override
-        public void run() {
-            for (NodeMonitor nm : ComputerSet.getMonitors()) {
-                nm.triggerUpdate();
-            }
+    private static final Runnable MONITOR_UPDATER = () -> {
+        for (NodeMonitor nm : ComputerSet.getMonitors()) {
+            nm.triggerUpdate();
         }
     };
 
-    private static final Runnable MARKEDOFFLINE_UPDATER = new Runnable() {
-        @Override
-        public void run() {
-            MonitorMarkedNodeOffline no = AdministrativeMonitor.all().get(MonitorMarkedNodeOffline.class);
-            if (no != null) {
-                boolean markedOffline = false;
-                for (Computer c : Jenkins.get().getComputers()) {
-                    if (c.getChannel() != null && c.getOfflineCause() instanceof MonitorOfflineCause) {
-                        markedOffline = true;
-                        break;
-                    }
+    private static final Runnable MARKEDOFFLINE_UPDATER = () -> {
+        MonitorMarkedNodeOffline no = AdministrativeMonitor.all().get(MonitorMarkedNodeOffline.class);
+        if (no != null) {
+            boolean markedOffline = false;
+            for (Computer c : Jenkins.get().getComputers()) {
+                if (c.getChannel() != null && c.getOfflineCause() instanceof MonitorOfflineCause) {
+                    markedOffline = true;
+                    break;
                 }
-                no.active = markedOffline;
             }
+            no.active = markedOffline;
         }
     };
 

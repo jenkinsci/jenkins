@@ -74,8 +74,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
-        if (defaultValue instanceof StringParameterValue) {
-            StringParameterValue value = (StringParameterValue) defaultValue;
+        if (defaultValue instanceof StringParameterValue value) {
             return new StringParameterDefinition(getName(), value.value, getDescription());
         } else {
             return this;

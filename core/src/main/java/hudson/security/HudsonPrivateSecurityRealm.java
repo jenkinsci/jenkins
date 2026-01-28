@@ -64,6 +64,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
@@ -363,11 +364,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This can be run by anyone, but only to create the very first user account.
      */
     @RequirePOST
-    public void doCreateFirstAccount(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+    public synchronized void doCreateFirstAccount(StaplerRequest2 req, StaplerResponse2 rsp)
+            throws IOException, ServletException {
+
         if (hasSomeUser()) {
             rsp.sendError(SC_UNAUTHORIZED, "First user was already created");
             return;
         }
+
         User u = createAccount(req, rsp, false, "firstUser.jelly");
         if (u != null) {
             tryToMakeAdmin(u);
@@ -507,11 +511,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     private boolean containsOnlyAcceptableCharacters(@NonNull String value) {
-        if (ID_REGEX == null) {
-            return value.matches(DEFAULT_ID_REGEX);
-        } else {
-            return value.matches(ID_REGEX);
-        }
+        return value.matches(Objects.requireNonNullElse(ID_REGEX, DEFAULT_ID_REGEX));
     }
 
     @Restricted(NoExternalUse.class) // _entryForm.jelly and signup.jelly

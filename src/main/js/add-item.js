@@ -135,8 +135,8 @@ document.addEventListener("DOMContentLoaded", () => {
         $items.append(drawItem(elem));
       });
 
-      $catHeader.append(title);
-      $catHeader.append(description);
+      $catHeader.append(createElementFromHtml(title));
+      $catHeader.append(createElementFromHtml(description));
       $category.append($catHeader);
       $category.append($items);
 

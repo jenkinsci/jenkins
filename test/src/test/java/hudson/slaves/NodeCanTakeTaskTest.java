@@ -76,7 +76,7 @@ class NodeCanTakeTaskTest {
         assertNotNull(buildables);
         assertEquals(1, buildables.size());
 
-        BuildableItem item = buildables.get(0);
+        BuildableItem item = buildables.getFirst();
         assertEquals(project, item.task);
         assertNotNull(item.getCauseOfBlockage());
         assertEquals("rejecting everything", item.getCauseOfBlockage().getShortDescription());

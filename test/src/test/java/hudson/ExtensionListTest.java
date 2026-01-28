@@ -217,6 +217,6 @@ public class ExtensionListTest {
     @Issue("JENKINS-62056")
     @Test
     void checkSort(JenkinsRule j) {
-        ExtensionList.lookup(Object.class).get(0); // exceptions are a problem
+        ExtensionList.lookup(Object.class).getFirst(); // exceptions are a problem
     }
 }

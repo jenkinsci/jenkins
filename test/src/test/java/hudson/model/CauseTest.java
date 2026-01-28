@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
@@ -304,11 +305,7 @@ class CauseTest {
         @NonNull
         @Override
         public String getName() {
-            if (virtualName != null) {
-                return virtualName;
-            } else {
-                return super.getName();
-            }
+            return Objects.requireNonNullElseGet(virtualName, super::getName);
         }
 
         @Override

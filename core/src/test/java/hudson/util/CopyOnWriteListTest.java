@@ -73,7 +73,7 @@ class CopyOnWriteListTest {
         assertThat(out, isSimilarTo(expected).ignoreWhitespace()
                 .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)));
         td2 = (TestData) xs.fromXML(out);
-        assertEquals("foobar1", td2.list1.getView().get(0));
-        assertEquals("foobar2", td2.list2.get(0));
+        assertEquals("foobar1", td2.list1.getView().getFirst());
+        assertEquals("foobar2", td2.list2.getFirst());
     }
 }

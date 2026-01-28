@@ -98,7 +98,7 @@ public class JSONSignatureValidator {
             try {
                 MessageDigest digest = MessageDigest.getInstance("SHA-512");
                 Signature sig = Signature.getInstance("SHA512withRSA");
-                sig.initVerify(certs.get(0));
+                sig.initVerify(certs.getFirst());
                 resultSha512 = checkSpecificSignature(o, signature, digest, "correct_digest512", sig, "correct_signature512", "SHA-512");
                 switch (resultSha512.kind) {
                     case ERROR:
@@ -119,7 +119,7 @@ public class JSONSignatureValidator {
 
             MessageDigest digest = MessageDigest.getInstance("SHA1");
             Signature sig = Signature.getInstance("SHA1withRSA");
-            sig.initVerify(certs.get(0));
+            sig.initVerify(certs.getFirst());
             FormValidation resultSha1 = checkSpecificSignature(o, signature, digest, "correct_digest", sig, "correct_signature", "SHA-1");
 
             switch (resultSha1.kind) {
@@ -261,8 +261,7 @@ public class JSONSignatureValidator {
             try (InputStream in = j.getServletContext().getResourceAsStream(cert)) {
                 if (in == null) continue; // our test for paths ending in / should prevent this from happening
                 certificate = cf.generateCertificate(in);
-                if (certificate instanceof X509Certificate) {
-                    X509Certificate c = (X509Certificate) certificate;
+                if (certificate instanceof X509Certificate c) {
                     LOGGER.log(Level.FINE, "Add CA certificate found in webapp resources:\n\tsubjectDN: {0}\n\tissuer: {1}\n\tnotBefore: {2}\n\tnotAfter: {3}",
                             new Object[] { c.getSubjectDN(), c.getIssuerDN(), c.getNotBefore(), c.getNotAfter() });
                 }
@@ -294,8 +293,7 @@ public class JSONSignatureValidator {
                 Certificate certificate;
                 try (InputStream in = Files.newInputStream(cert.toPath())) {
                     certificate = cf.generateCertificate(in);
-                    if (certificate instanceof X509Certificate) {
-                        X509Certificate c = (X509Certificate) certificate;
+                    if (certificate instanceof X509Certificate c) {
                         LOGGER.log(Level.FINE, "Add CA certificate found in Jenkins home:\n\tsubjectDN: {0}\n\tissuer: {1}\n\tnotBefore: {2}\n\tnotAfter: {3}",
                                 new Object[] { c.getSubjectDN(), c.getIssuerDN(), c.getNotBefore(), c.getNotAfter() });
                     }

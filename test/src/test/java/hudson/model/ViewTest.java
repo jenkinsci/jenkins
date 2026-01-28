@@ -175,7 +175,7 @@ class ViewTest {
         WebClient wc = j.createWebClient();
         HtmlForm form = wc.goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValue("foo");
-        form.getRadioButtonsByName("mode").get(0).setChecked(true);
+        form.getRadioButtonsByName("mode").getFirst().setChecked(true);
         j.submit(form);
         assertNotNull(j.jenkins.getView("foo"));
 
@@ -259,7 +259,7 @@ class ViewTest {
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlForm form = wc.goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValue("..");
-        form.getRadioButtonsByName("mode").get(0).setChecked(true);
+        form.getRadioButtonsByName("mode").getFirst().setChecked(true);
 
         HtmlPage page = j.submit(form);
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST,
@@ -274,7 +274,7 @@ class ViewTest {
         HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
         String name = "I ♥ NY";
         form.getInputByName("name").setValue(name);
-        form.getRadioButtonsByName("mode").get(0).setChecked(true);
+        form.getRadioButtonsByName("mode").getFirst().setChecked(true);
         j.submit(form);
         View view = j.jenkins.getView(name);
         assertNotNull(view);
