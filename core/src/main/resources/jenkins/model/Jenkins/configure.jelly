@@ -59,6 +59,16 @@ THE SOFTWARE.
           <f:textarea name="system_message" value="${it.systemMessage}" disabled="${readOnlyMode?'true':null}" readonly="${readOnlyMode?'true':null}"
                       codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
+        
+        <f:entry title="${%Message Severity}" description="${%Choose the severity level for the system message display}">
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <f:radioBlock name="systemMessageSeverity" value="INFO" title="Info" checked="${it.systemMessageSeverity=='INFO' || it.systemMessageSeverity==null}"/>
+            <f:radioBlock name="systemMessageSeverity" value="WARNING" title="Warning" checked="${it.systemMessageSeverity=='WARNING'}"/>
+            <f:radioBlock name="systemMessageSeverity" value="DANGER" title="Danger" checked="${it.systemMessageSeverity=='DANGER'}"/>
+            <f:radioBlock name="systemMessageSeverity" value="SUCCESS" title="Success" checked="${it.systemMessageSeverity=='SUCCESS'}"/>
+            <f:radioBlock name="systemMessageSeverity" value="MAINTENANCE" title="Maintenance" checked="${it.systemMessageSeverity=='MAINTENANCE'}"/>
+          </div>
+        </f:entry>
       </f:section>
 
       <!-- TODO remove after January 2026 LTS line -->
