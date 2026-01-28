@@ -1,0 +1,43 @@
+@use "../abstracts/mixins";
+
+.jenkins-back-to-top {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 900;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  padding: 0;
+  box-shadow: var(--dropdown-box-shadow);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--standard-transition),
+    visibility var(--standard-transition),
+    transform var(--standard-transition),
+    background-color var(--standard-transition);
+  transform: translateY(0.625rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &--visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  &:hover {
+    background-color: var(--button-background--hover);
+  }
+
+  &:active {
+    background-color: var(--button-background--active);
+  }
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}

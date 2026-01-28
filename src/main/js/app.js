@@ -7,6 +7,7 @@ import StopButtonLink from "@/components/stop-button-link";
 import ConfirmationLink from "@/components/confirmation-link";
 import Dialogs from "@/components/dialogs";
 import Defer from "@/components/defer";
+import BackToTop from "@/components/back-to-top";
 
 Dropdowns.init();
 CommandPalette.init();
@@ -17,3 +18,4 @@ Tooltips.init();
 StopButtonLink.init();
 ConfirmationLink.init();
 Dialogs.init();
+BackToTop.init();
