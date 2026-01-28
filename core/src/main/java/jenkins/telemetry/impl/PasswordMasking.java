@@ -81,10 +81,6 @@ public class PasswordMasking extends Telemetry {
 
     @Override
     public JSONObject createContent() {
-        if (maskingCounts.isEmpty()) {
-            return null;
-        }
-
         JSONArray events = new JSONArray();
         for (Map.Entry<String, AtomicLong> entry : maskingCounts.entrySet()) {
             String[] parts = entry.getKey().split("\\|", 3);
@@ -102,6 +98,8 @@ public class PasswordMasking extends Telemetry {
                 events.add(event);
             }
         }
+
+        maskingCounts.clear();
 
         JSONObject payload = new JSONObject();
         payload.put("components", buildComponentInformation());
