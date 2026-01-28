@@ -1297,4 +1297,11 @@ class FilePathTest {
         }
         return result;
     }
+
+    @Test
+    public void testIsDescendantWithParentTraversal(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tempDir) throws Exception {
+        FilePath parent = new FilePath(tempDir.toFile());
+        // Confirms that '..' does not crash the system (proving getDirectChild is safe)
+        assertFalse(parent.isDescendant(".."), "Parent directory '..' should not be a descendant");
+    }
 }
