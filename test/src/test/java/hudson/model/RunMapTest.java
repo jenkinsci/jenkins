@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.Spliterator;
 import java.util.TreeMap;
@@ -86,7 +87,9 @@ class RunMapTest {
         // Note that the bug does not reproduce simply from p.doReload(), since in that case Job identity remains intact:
         r.jenkins.reload();
         p = r.jenkins.getItemByFullName("p", FreeStyleProject.class);
+        assertNotNull(p);
         FreeStyleBuild b1 = p.getLastBuild();
+        assertNotNull(b1);
         assertEquals(1, b1.getNumber());
         /* Currently fails since Run.project is final. But anyway that is not the problem:
         assertEquals(p, b1.getParent());
@@ -95,17 +98,17 @@ class RunMapTest {
         assertEquals(1, items.length);
         assertEquals(p, items[0].task); // the real issue: assignBuildNumber was being called on the wrong Job
         QueueTaskFuture<Queue.Executable> b2f = items[0].getFuture();
-        b1.getExecutor().interrupt();
+        Objects.requireNonNull(b1.getExecutor()).interrupt();
         r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(b1));
         FreeStyleBuild b2 = (FreeStyleBuild) b2f.waitForStart();
         assertEquals(2, b2.getNumber());
         assertEquals(p, b2.getParent());
-        b2.getExecutor().interrupt();
+        Objects.requireNonNull(b2.getExecutor()).interrupt();
         r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(b2));
         FreeStyleBuild b3 = p.scheduleBuild2(0).waitForStart();
         assertEquals(3, b3.getNumber());
         assertEquals(p, b3.getParent());
-        b3.getExecutor().interrupt();
+        Objects.requireNonNull(b3.getExecutor()).interrupt();
         r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(b3));
     }
 
@@ -166,7 +169,7 @@ class RunMapTest {
         }
         RunMap<FreeStyleBuild> runMap = p._getRuns();
 
-        assertEquals(builds.size(), runMap.entrySet().size());
+        assertEquals(builds.size(), runMap.size());
         assertTrue(
                 runMap.entrySet().stream().spliterator().hasCharacteristics(Spliterator.DISTINCT));
         assertTrue(
@@ -209,7 +212,7 @@ class RunMapTest {
         }
         assertEquals(
                 10,
-                RunLoadCounter.assertMaxLoads(p, 2, () -> p.getBuilds().stream().findFirst().orElse(null).number).intValue());
+                RunLoadCounter.assertMaxLoads(p, 2, () -> Objects.requireNonNull(p.getBuilds().stream().findFirst().orElse(null)).number).intValue());
     }
 
     @Test
@@ -220,6 +223,24 @@ class RunMapTest {
         }
         assertEquals(
                 6,
-                RunLoadCounter.assertMaxLoads(p, 6, () -> Streams.findLast(p.getBuilds().stream().limit(5)).orElse(null).number).intValue());
+                RunLoadCounter.assertMaxLoads(p, 6, () -> Objects.requireNonNull(
+                                    Streams.findLast(p.getBuilds().stream().limit(5)).orElse(null)).number).intValue());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Issue("JENKINS-75465")
+    @Test
+    void getByIdLegacyAndNumeric() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
+        RunMap<FreeStyleBuild> runs = p._getRuns();
+
+        assertSame(b1, runs.getById(b1.getNumber()), "getById(int) should find the build");
+        assertNull(runs.getById(999), "getById(int) should return null for missing ID");
+        assertSame(b1, runs.getById(String.valueOf(b1.getNumber())), "getById(String) should find the build via parsing");
+        assertNull(runs.getById("not-a-number"), "getById(String) should return null for non-numeric input");
+        assertNull(runs.getById(""), "getById(String) should return null for empty string");
+        assertNull(runs.getById("2007-11-12_12-23-45"), "getById(String) should return null for historical date-time IDs");
+        assertNull(runs.getById(" " + b1.getNumber()), "getById(String) must strictly follow Integer.parseInt behavior (no trimming)");
     }
 }
