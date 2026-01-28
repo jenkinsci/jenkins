@@ -254,6 +254,16 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     }
 
     /**
+     * Returns cloud panel boxes associated with this cloud.
+     *
+     * @return list of {@link CloudPanelBox}s associated with this cloud.
+     * @since 2.491
+     */
+    public java.util.List<CloudPanelBox> getCloudPanelBoxes() {
+        return CloudPanelBox.all(this);
+    }
+
+    /**
      * All registered {@link Cloud} implementations.
      *
      * @deprecated as of 1.286

@@ -95,6 +95,20 @@ class CloudTest {
         assertEquals("cloud/..%2F..%2Fgibberish/", aCloud.getUrl(), "Cloud name is encoded in Cloud#getUrl");
     }
 
+    @Test
+    void cloudPanelBoxes() throws Exception {
+        ACloud aCloud = new ACloud("a", "0");
+        j.jenkins.clouds.add(aCloud);
+
+        assertThat(aCloud.getCloudPanelBoxes(), containsInAnyOrder(
+                instanceOf(TestCloudPanelBox.class)
+        ));
+
+        HtmlPage page = j.createWebClient().goTo(aCloud.getUrl());
+        String out = page.getWebResponse().getContentAsString();
+        assertThat(out, containsString("CloudPanel box content")); // TestCloudPanelBox/box.jelly
+    }
+
     public static final class ACloud extends AbstractCloudImpl {
 
         protected ACloud(String name, String instanceCapStr) {
@@ -156,5 +170,10 @@ class CloudTest {
         @Override public String getUrlName() {
             return null; // not URL space
         }
+    }
+
+    @TestExtension
+    public static final class TestCloudPanelBox extends CloudPanelBox {
+        // This class intentionally left empty, the jelly rendering is what matters
     }
 }

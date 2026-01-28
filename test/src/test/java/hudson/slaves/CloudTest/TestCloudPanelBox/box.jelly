@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2017 Red Hat, inc.
+Copyright (c) 2025 Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,6 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-    <l:header />
-    <l:side-panel>
-        <l:tasks>
-            <l:task contextMenu="false" href="." icon="symbol-computer" title="${%Status}"/>
-            <l:task href="configure" icon="symbol-settings"
-                    title="${app.hasPermission(app.ADMINISTER) ? '%Configure' : '%View Configuration'}"/>
-            <l:delete permission="${app.ADMINISTER}" title="${%Delete Cloud}" message="${%delete.cloud(it.displayName)}"/>
-            <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for plugins to add more items -->
-            <t:actions />
-        </l:tasks>
-        <j:forEach var="action" items="${it.allActions}">
-            <st:include it="${action}" page="box.jelly" optional="true"/>
-        </j:forEach>
-        <j:forEach var="box" items="${it.cloudPanelBoxes}">
-            <st:include it="${box}" page="box.jelly" />
-        </j:forEach>
-    </l:side-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <div>CloudPanel box content</div>
 </j:jelly>
