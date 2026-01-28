@@ -31,6 +31,7 @@ THE SOFTWARE.
             <l:task href="configure" icon="symbol-settings"
                     title="${app.hasPermission(app.ADMINISTER) ? '%Configure' : '%View Configuration'}"/>
             <l:delete permission="${app.ADMINISTER}" title="${%Delete Cloud}" message="${%delete.cloud(it.displayName)}"/>
+            <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for plugins to add more items -->
             <t:actions />
         </l:tasks>
         <j:forEach var="action" items="${it.allActions}">
