@@ -75,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -149,6 +150,13 @@ public class SlaveComputer extends Computer {
     private volatile Future<?> lastConnectActivity = null;
 
     private Object constructed = new Object();
+
+    /**
+     * Flag to ensure afterDisconnect() is only called once per disconnect cycle.
+     * Reset when a new connection is established.
+     * Thread-safe to handle concurrent disconnect scenarios.
+     */
+    private final AtomicBoolean afterDisconnectCalled = new AtomicBoolean(false);
 
     private transient volatile String absoluteRemoteFs;
 
@@ -632,6 +640,9 @@ public class SlaveComputer extends Computer {
         if (this.channel != null)
             throw new IllegalStateException("Already connected");
 
+        // Reset the flag for the new connection
+        afterDisconnectCalled.set(false);
+
         final TaskListener taskListener = launchLog != null ? new StreamTaskListener(launchLog) : TaskListener.NULL;
         PrintStream log = taskListener.getLogger();
 
@@ -651,7 +662,9 @@ public class SlaveComputer extends Computer {
                 }
                 closeChannel();
                 try {
-                    launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                    if (afterDisconnectCalled.compareAndSet(false, true)) {
+                        launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                    }
                 } catch (Throwable t) {
                     LogRecord lr = new LogRecord(Level.SEVERE,
                             "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
@@ -823,7 +836,10 @@ public class SlaveComputer extends Computer {
             // (which could be typical) won't block UI thread.
             launcher.beforeDisconnect(SlaveComputer.this, taskListener);
             closeChannel();
-            launcher.afterDisconnect(SlaveComputer.this, taskListener);
+            // Only call afterDisconnect if it hasn't been called yet
+            if (afterDisconnectCalled.compareAndSet(false, true)) {
+                launcher.afterDisconnect(SlaveComputer.this, taskListener);
+            }
         });
     }
 
