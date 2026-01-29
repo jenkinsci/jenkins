@@ -100,9 +100,9 @@ class FreeStyleProjectTest {
 
         List<Builder> builders = project.getBuilders();
         assertEquals(1, builders.size());
-        assertEquals(Shell.class, builders.get(0).getClass());
-        assertEquals("echo hello", ((Shell) builders.get(0)).getCommand().trim());
-        assertNotSame(builders.get(0), shell);
+        assertEquals(Shell.class, builders.getFirst().getClass());
+        assertEquals("echo hello", ((Shell) builders.getFirst()).getCommand().trim());
+        assertNotSame(builders.getFirst(), shell);
     }
 
     /**
@@ -148,9 +148,9 @@ class FreeStyleProjectTest {
         j.submit(form);
         List<Builder> builders = project.getBuilders();
         assertEquals(1, builders.size());
-        assertEquals(Shell.class, builders.get(0).getClass());
-        assertEquals("echo hello", ((Shell) builders.get(0)).getCommand().trim());
-        assertNotSame(builders.get(0), shell);
+        assertEquals(Shell.class, builders.getFirst().getClass());
+        assertEquals("echo hello", ((Shell) builders.getFirst()).getCommand().trim());
+        assertNotSame(builders.getFirst(), shell);
         System.out.println(project.getConfigFile().asString());
     }
 
