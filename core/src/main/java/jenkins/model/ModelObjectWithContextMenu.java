@@ -21,8 +21,8 @@ import java.util.List;
 import jenkins.management.Badge;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
-import jenkins.model.menu.event.DropdownEvent;
 import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.SplitButtonEvent;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
@@ -140,15 +140,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 return this;
             }
 
-            if (action.getEvent() instanceof DropdownEvent dropdownEvent) {
+            if (action.getEvent() instanceof SplitButtonEvent splitButtonEvent) {
                 menuItem.subMenu = new ContextMenu();
-                menuItem.subMenu.addAll(dropdownEvent.getActions());
+                menuItem.subMenu.addAll(splitButtonEvent.getActions());
             }
 
             // Set icon
             String icon = action.getIconFileName();
             if (action instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null) {
                 icon = iconSpec.getIconClassName();
+            } else {
+                Icon tmpIcon = Functions.tryGetIcon(icon);
+                if (tmpIcon != null) {
+                    icon = IconSet.tryTranslateTangoIconToSymbol(tmpIcon.getClassSpec());
+                }
             }
             menuItem.icon = icon;
 

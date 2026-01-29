@@ -29,7 +29,7 @@ public class KeepRunAction extends TransientActionFactory<Run> {
             return Set.of(new Action() {
                 @Override
                 public String getDisplayName() {
-                    return "Don't keep this build forever";
+                    return Messages.KeepRunAction_DisplayName_UnKeep();
                 }
 
                 @Override
@@ -58,7 +58,7 @@ public class KeepRunAction extends TransientActionFactory<Run> {
             return Set.of(new Action() {
                 @Override
                 public String getDisplayName() {
-                    return "Keep this build forever";
+                    return Messages.KeepRunAction_DisplayName_Keep();
                 }
 
                 @Override

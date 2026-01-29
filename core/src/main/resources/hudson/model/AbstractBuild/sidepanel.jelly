@@ -34,15 +34,13 @@ THE SOFTWARE.
       <j:set var="buildUrl" value="${h.decompose(request2)}" />
 
       <j:choose>
-        <j:when test="${newBuildPage}">
+        <j:when>
           <st:include page="tasks.jelly"/>
           <st:include page="actions.jelly" />
           <t:actions actions="${it.transientActions}"/>
-          <st:include page="delete.jelly" />
         </j:when>
         <j:otherwise>
           <st:include page="tasks.jelly"/>
-          <st:include page="delete.jelly" />
           <st:include page="actions.jelly" />
           <t:actions actions="${it.transientActions}"/>
           <j:if test="${it.previousBuild!=null}">

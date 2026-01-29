@@ -1,14 +1,17 @@
 package jenkins.model.run;
 
 import hudson.Extension;
+import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.Run;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.JavaScriptEvent;
 import jenkins.model.menu.event.LinkEvent;
 
 @Extension
@@ -48,7 +51,7 @@ public class StopRunAction extends TransientActionFactory<Run> {
 
             @Override
             public Event getEvent() {
-                return LinkEvent.of("stop", LinkEvent.LinkEventType.POST);
+                return JavaScriptEvent.of(Map.of("1", "abcd"), "jsbundles/pages/run/stop.js");
             }
 
             @Override

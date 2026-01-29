@@ -5,15 +5,18 @@ import java.util.List;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+/**
+ * A primary button with a dropdown of additional actions.
+ */
 @ExportedBean
-public final class DropdownEvent implements Event {
+public final class SplitButtonEvent implements Event {
 
     private final Event event;
 
     private final List<Action> actions;
 
-    private DropdownEvent(Event event, List<Action> actions) {
-        if (event instanceof DropdownEvent) {
+    private SplitButtonEvent(Event event, List<Action> actions) {
+        if (event instanceof SplitButtonEvent) {
             throw new IllegalArgumentException("Cannot nest dropdown events");
         }
 
@@ -21,12 +24,13 @@ public final class DropdownEvent implements Event {
         this.actions = actions;
     }
 
-    public static DropdownEvent of(Event event, List<Action> actions) {
-        return new DropdownEvent(event, actions);
-    }
-
-    public static DropdownEvent of(List<Action> actions) {
-        return new DropdownEvent(null, actions);
+    /**
+     * Creates a split button event
+     * @param event the primary action in the split button
+     * @param actions actions to render in the overflow
+     */
+    public static SplitButtonEvent of(Event event, List<Action> actions) {
+        return new SplitButtonEvent(event, actions);
     }
 
     @Exported

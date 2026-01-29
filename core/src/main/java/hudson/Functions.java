@@ -2634,7 +2634,10 @@ public class Functions {
     @Restricted(NoExternalUse.class)
     public static String convertActionsToJson(List<Action> actions) {
         ModelObjectWithContextMenu.ContextMenu contextMenu = new ModelObjectWithContextMenu.ContextMenu();
-        contextMenu.addAll(actions);
+        contextMenu.addAll(actions
+                .stream()
+                .filter(action -> action.getIconFileName() != null)
+                .toList());
         return JSONObject.fromObject(contextMenu).toString();
     }
 
