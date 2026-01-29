@@ -161,6 +161,18 @@ class ComputerTest {
     }
 
     @Test
+    @Issue("#26146")
+    void computerTemporaryOfflineCauseStaysOnConfigRound() throws Exception {
+        var agent = j.createSlave();
+        var computer = agent.toComputer();
+        var offlineCause = new OfflineCause.UserCause(User.getOrCreateByIdOrFullName("username"), "Initial cause");
+        computer.setTemporaryOfflineCause(offlineCause);
+        j.configRoundtrip(agent);
+        agent = (DumbSlave) j.jenkins.getNode(agent.getNodeName());
+        assertThat(agent.getTemporaryOfflineCause(), equalTo(offlineCause));
+    }
+
+    @Test
     @LocalData
     void removeUserDetailsFromOfflineCause() throws Exception {
         Computer computer = j.jenkins.getComputer("deserialized");
