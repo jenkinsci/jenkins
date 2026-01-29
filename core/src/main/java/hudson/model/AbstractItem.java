@@ -546,7 +546,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
             }
             List<Ancestor> ancestors = req.getAncestors();
             if (!ancestors.isEmpty()) {
-                Ancestor last = ancestors.get(ancestors.size() - 1);
+                Ancestor last = ancestors.getLast();
                 if (last.getObject() instanceof View view) {
                     if (view.getOwner().getItemGroup() == getParent() && !view.isDefault()) {
                         // Showing something inside a view, so should use that as the base URL.

@@ -95,7 +95,7 @@ class DefaultCLIListenerTest {
                 messages.get(1),
                 containsString("Failed call to CLI command list-jobs, with 1 arguments, as user %s.".formatted(USER)));
         assertThat(
-                logging.getRecords().get(0).getThrown().getMessage(),
+                logging.getRecords().getFirst().getThrown().getMessage(),
                 containsString("No view or item group with the given name 'view-not-found' found"));
     }
 
@@ -113,7 +113,7 @@ class DefaultCLIListenerTest {
         assertThat(
                 messages.get(1),
                 containsString("Unexpected exception occurred while performing throws-test-command command."));
-        assertThat(logging.getRecords().get(0).getThrown().getMessage(), containsString("unexpected"));
+        assertThat(logging.getRecords().getFirst().getThrown().getMessage(), containsString("unexpected"));
     }
 
     @Test
@@ -147,7 +147,7 @@ class DefaultCLIListenerTest {
                 containsString(
                         "Failed call to CLI command disable-job, with 1 arguments, as user %s.".formatted(USER)));
         assertThat(
-                logging.getRecords().get(0).getThrown().getMessage(),
+                logging.getRecords().getFirst().getThrown().getMessage(),
                 containsString("No such job ‘job-not-found’ exists."));
     }
 
@@ -162,7 +162,7 @@ class DefaultCLIListenerTest {
                 messages.get(0),
                 containsString("Invoking CLI command restart, with 0 arguments, as user %s.".formatted(USER)));
         assertThat(messages.get(1), containsString("Unexpected exception occurred while performing restart command."));
-        assertThat(logging.getRecords().get(0).getThrown(), notNullValue());
+        assertThat(logging.getRecords().getFirst().getThrown(), notNullValue());
     }
 
     @TestExtension
