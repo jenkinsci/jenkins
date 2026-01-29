@@ -2321,19 +2321,29 @@ function ensureVisible(e) {
 function findFormParent(e, form, isStatic) {
   isStatic = isStatic || false;
 
+  const originalElement = e;
+
   if (form == null) {
     // caller can pass in null to have this method compute the owning form
     form = e.closest("FORM");
   }
 
-  while (e != form) {
+  while (e !== form) {
     // this is used to create a group where no single containing parent node exists,
     // like <optionalBlock>
-    var nameRef = e.getAttribute("nameRef");
+    const nameRef = e.getAttribute("nameRef");
     if (nameRef != null) {
       e = document.getElementById(nameRef);
     } else {
       e = e.parentNode;
+    }
+
+    if (!e) {
+      console.warn(
+        "findFormParent: reached document root without finding form",
+        originalElement,
+      );
+      return null;
     }
 
     if (!isStatic && e.getAttribute("field-disabled") != null) {
@@ -2541,6 +2551,7 @@ function buildFormTree(form) {
 
     return true;
   } catch (e) {
+    console.error("Form not submitted", e);
     alert(e + "\n(form not submitted)");
     return false;
   }
@@ -2655,6 +2666,16 @@ function validateButton(checkUrl, paramList, button) {
       target.innerHTML = `<div class="validation-error-area" />`;
       updateValidationArea(target.children[0], responseText);
       layoutUpdateCallback.call();
+      let json = rsp.headers.get("X-Jenkins-ValidateButton-Callback");
+      if (json != null) {
+        let callInfo = JSON.parse(json);
+        let callback = callInfo["callback"];
+        let args = callInfo["arguments"];
+        if (window[callback] && typeof window[callback] === "function") {
+          window[callback].apply(window, args);
+        }
+      }
+
       var s = rsp.headers.get("script");
       try {
         geval(s);

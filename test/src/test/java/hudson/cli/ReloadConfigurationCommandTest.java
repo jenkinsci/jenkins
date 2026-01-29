@@ -81,7 +81,7 @@ class ReloadConfigurationCommandTest {
 
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the Overall/Administer permission"));
+        assertThat(result.stderr(), containsString("user is missing the Overall/Manage permission"));
     }
 
     @Test
@@ -168,7 +168,7 @@ class ReloadConfigurationCommandTest {
     @Disabled // Until fixed JENKINS-8217
     @Test
     void reloadDescriptorConfig() {
-        Mailer.DescriptorImpl desc = j.jenkins.getExtensionList(Mailer.DescriptorImpl.class).get(0);
+        Mailer.DescriptorImpl desc = j.jenkins.getExtensionList(Mailer.DescriptorImpl.class).getFirst();
         desc.setDefaultSuffix("@oldSuffix");
         desc.save();
 

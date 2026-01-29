@@ -192,23 +192,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     private long queueId = Run.QUEUE_ID_UNKNOWN;
 
     /**
-     * Previous build. Can be null.
-     * TODO JENKINS-22052 this is not actually implemented any more
-     *
-     * External code should use {@link #getPreviousBuild()}
-     */
-    @Restricted(NoExternalUse.class)
-    protected transient volatile RunT previousBuild;
-
-    /**
-     * Next build. Can be null.
-     *
-     * External code should use {@link #getNextBuild()}
-     */
-    @Restricted(NoExternalUse.class)
-    protected transient volatile RunT nextBuild;
-
-    /**
      * Pointer to the next younger build in progress. This data structure is lazily updated,
      * so it may point to the build that's already completed. This pointer is set to 'this'
      * if the computation determines that everything earlier than this build is already completed.
@@ -801,23 +784,19 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Called by {@link RunMap} to drop bi-directional links in preparation for
-     * deleting a build.
+     * Called by {@link RunMap} in preparation for deleting a build.
      * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#dropLinks
      * @since 1.556
      */
     protected void dropLinks() {
-        if (nextBuild != null)
-            nextBuild.previousBuild = previousBuild;
-        if (previousBuild != null)
-            previousBuild.nextBuild = nextBuild;
     }
 
     /**
      * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#getPreviousBuild
      */
     public @CheckForNull RunT getPreviousBuild() {
-        return previousBuild;
+        // TODO could be implemented for benefit of ExternalRun
+        return null;
     }
 
     /**
@@ -960,7 +939,8 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#getNextBuild
      */
     public @CheckForNull RunT getNextBuild() {
-        return nextBuild;
+        // TODO could be implemented for benefit of ExternalRun
+        return null;
     }
 
 
@@ -1949,10 +1929,9 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         // Project specific log filters
-        if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
-            BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+        if (project instanceof BuildableItemWithBuildWrappers biwbw && build instanceof AbstractBuild abstractBuild) {
             for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
-                logger = bw.decorateLogger((AbstractBuild) build, logger);
+                logger = bw.decorateLogger(abstractBuild, logger);
             }
         }
 
@@ -2540,13 +2519,10 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Sort by date. Newer ones first.
      */
-    public static final Comparator<Run> ORDER_BY_DATE = new Comparator<>() {
-        @Override
-        public int compare(@NonNull Run lhs, @NonNull Run rhs) {
-            long lt = lhs.getTimeInMillis();
-            long rt = rhs.getTimeInMillis();
-            return Long.compare(rt, lt);
-        }
+    public static final Comparator<Run> ORDER_BY_DATE = (lhs, rhs) -> {
+        long lt = lhs.getTimeInMillis();
+        long rt = rhs.getTimeInMillis();
+        return Long.compare(rt, lt);
     };
 
     /**

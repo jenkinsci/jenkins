@@ -119,7 +119,7 @@ class FingerprintTest {
         f2 = Fingerprint.load(SOME_MD5);
         assertEquals(f.toString(), f2.toString());
         assertEquals(1, f2.facets.size());
-        TestFacet facet = (TestFacet) f2.facets.get(0);
+        TestFacet facet = (TestFacet) f2.facets.getFirst();
         assertEquals(f2, facet.getFingerprint());
     }
 
@@ -224,13 +224,13 @@ class FingerprintTest {
             assertEquals(project1.getName(), original.getName(), "user1 should be able to see the origin's project name");
             assertEquals(build.getNumber(), original.getNumber(), "user1 should be able to see the origin's build number");
             assertEquals(1, fp._getUsages().size(), "Only one usage should be visible to user1");
-            assertEquals(project1.getFullName(), fp._getUsages().get(0).name, "Only project1 should be visible to user1");
+            assertEquals(project1.getFullName(), fp._getUsages().getFirst().name, "Only project1 should be visible to user1");
         }
 
         try (ACLContext acl = ACL.as(user2)) {
             assertThat("user2 should be unable to see the origin", fp.getOriginal(), nullValue());
             assertEquals(1, fp._getUsages().size(), "Only one usage should be visible to user2");
-            assertEquals(project2.getFullName(), fp._getUsages().get(0).name, "Only project2 should be visible to user2");
+            assertEquals(project2.getFullName(), fp._getUsages().getFirst().name, "Only project2 should be visible to user2");
         }
 
         try (ACLContext acl = ACL.as(user3)) {
