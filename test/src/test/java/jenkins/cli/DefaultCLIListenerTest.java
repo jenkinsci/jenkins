@@ -44,6 +44,9 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
+// Verifies that DefaultCLIListener logs consistent messages for
+// CLI command invocation outcomes (success, expected failure, unexpected failure).
+
 @WithJenkins
 class DefaultCLIListenerTest {
 
@@ -66,7 +69,7 @@ class DefaultCLIListenerTest {
     }
 
     @Test
-    void commandOnCompletedIsLogged() {
+    void logsCommandCompletionOnSuccess() {
         CLICommandInvoker command = new CLICommandInvoker(j, new ListJobsCommand());
         command.asUser(USER).invoke();
 
@@ -82,7 +85,7 @@ class DefaultCLIListenerTest {
     }
 
     @Test
-    void commandOnThrowableIsLogged() {
+    void logsCommandFailureOnExpectedException() {
         CLICommandInvoker command = new CLICommandInvoker(j, new ListJobsCommand());
         command.asUser(USER).invokeWithArgs("view-not-found");
 
@@ -100,7 +103,7 @@ class DefaultCLIListenerTest {
     }
 
     @Test
-    void commandOnThrowableUnexpectedIsLogged() {
+    void logsCommandFailureOnUnexpectedException() {
         CLICommandInvoker command = new CLICommandInvoker(j, new ThrowsTestCommand());
         command.asUser(USER).invoke();
 
@@ -117,7 +120,7 @@ class DefaultCLIListenerTest {
     }
 
     @Test
-    void methodOnCompletedIsLogged() {
+    void logsMethodBasedCommandCompletionOnSuccess() {
         CLICommandInvoker command = new CLICommandInvoker(j, "disable-job");
         command.asUser(USER).invokeWithArgs("p");
 
@@ -133,7 +136,7 @@ class DefaultCLIListenerTest {
     }
 
     @Test
-    void methodOnThrowableIsLogged() {
+    void logsMethodBasedCommandFailureOnExpectedException() {
         CLICommandInvoker command = new CLICommandInvoker(j, "disable-job");
         command.asUser(USER).invokeWithArgs("job-not-found");
 
@@ -152,7 +155,7 @@ class DefaultCLIListenerTest {
     }
 
     @Test
-    void methodOnThrowableUnexpectedIsLogged() {
+    void logsMethodBasedCommandFailureOnUnexpectedException() {
         CLICommandInvoker command = new CLICommandInvoker(j, "restart");
         command.asUser(USER).invoke();
 
