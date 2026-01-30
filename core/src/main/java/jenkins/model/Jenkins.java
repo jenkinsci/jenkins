@@ -570,6 +570,62 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return null;
         }
 
+        /**
+         * Gets a cloud by its unique ID.
+         *
+         * @param id the unique identifier
+         * @return the cloud, or null if not found
+         */
+        @CheckForNull
+        public Cloud getById(String id) {
+            if (id == null || id.trim().isEmpty()) {
+                return null;
+            }
+            for (Cloud c : this) {
+                if (id.equals(c.getUniqueId())) {
+                    return c;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Gets the dispatcher for accessing clouds by their unique ID.
+         *
+         * @return dispatcher for cloud-by-id routing
+         * @since 2.548
+         */
+        @Restricted(NoExternalUse.class)
+        public CloudByIdDispatcher getCloudById() {
+            return new CloudByIdDispatcher();
+        }
+
+        /**
+         * Dispatcher that routes requests to clouds based on their unique ID.
+         *
+         * @since 2.548
+         */
+        @Restricted(NoExternalUse.class)
+        public class CloudByIdDispatcher {
+            /**
+             * Gets a cloud by its unique ID.
+             *
+             * @param id the unique identifier of the cloud
+             * @return the cloud with the given ID, or null if not found
+             */
+            public Cloud getDynamic(String id) {
+                if (id == null || id.trim().isEmpty()) {
+                    return null;
+                }
+                for (Cloud cloud : Jenkins.get().clouds) {
+                    if (id.equals(cloud.getUniqueId())) {
+                        return cloud;
+                    }
+                }
+                return null;
+            }
+        }
+
         @Override
         protected void onModified() throws IOException {
             super.onModified();
@@ -2149,6 +2205,26 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public Cloud getCloud(String name) {
         return clouds.getByName(name);
+    }
+
+    /**
+     * Gets a {@link Cloud} by its unique ID.
+     *
+     * @param id the unique identifier
+     * @return the cloud, or null if not found
+     */
+    @SuppressWarnings("unused") // stapler
+    @Restricted(DoNotUse.class) // stapler
+    public Cloud getCloudById(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return null;
+        }
+        for (Cloud cloud : Jenkins.get().clouds) {
+            if (id.equals(cloud.getUniqueId())) {
+                return cloud;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -5543,7 +5619,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
          * {@link LocalChannel} instance that can be used to execute programs locally.
          *
          * @deprecated as of 1.558
-         *      Use {@link FilePath#localChannel}
+         *             Use {@link FilePath#localChannel}
          */
         @Deprecated
         public static final LocalChannel localChannel = FilePath.localChannel;

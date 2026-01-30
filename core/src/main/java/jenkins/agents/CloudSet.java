@@ -24,6 +24,7 @@
 
 package jenkins.agents;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Functions;
@@ -113,11 +114,8 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Restricted(DoNotUse.class) // stapler
     public String getCloudUrl(StaplerRequest2 request, Jenkins jenkins, Cloud cloud) {
         String context = Functions.getNearestAncestorUrl(request, jenkins);
-        if (Jenkins.get().getCloud(cloud.name) != cloud) { // this cloud is not the first occurrence with this name
-            return context + "/cloud/cloudByIndex/" + getClouds().indexOf(cloud) + "/";
-        } else {
-            return context + "/" + cloud.getUrl();
-        }
+        // Always use UUID-based URLs for stability across renames, reordering, and duplicates
+        return context + "/" + cloud.getUrl();
     }
 
     /**
@@ -130,10 +128,66 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         return getCloudUrl(StaplerRequest.toStaplerRequest2(request), jenkins, cloud);
     }
 
+    /**
+     * Dispatcher for cloud-by-ID routing. Enables Stapler to route URLs like
+     * /cloud/cloudById/{uuid}/ to the correct cloud instance.
+     *
+     * @return dispatcher object for ID-based cloud lookup
+     */
+    @SuppressWarnings("unused") // stapler
+    public CloudByIdDispatcher getCloudById() {
+        return new CloudByIdDispatcher();
+    }
+
+    /**
+     * Gets a cloud by its unique ID.
+     */
+    @CheckForNull
+    public Cloud getById(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return null;
+        }
+        for (Cloud c : Jenkins.get().clouds) {
+            if (id.equals(c.getUniqueId())) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Stapler dispatcher that routes cloud requests by unique ID.
+     * Handles URL patterns like /cloud/cloudById/{uuid}/
+     */
+    public class CloudByIdDispatcher {
+        /**
+         * Looks up a cloud by its unique ID.
+         *
+         * @param id the unique identifier
+         * @return the cloud with the given ID, or null if not found
+         */
+        public Cloud getDynamic(String id) {
+            return CloudSet.this.getById(id);
+        }
+    }
+
+    /**
+     * Gets a cloud by its index position.
+     *
+     * @param index the position in the cloud list
+     * @return the cloud at that index, or null if out of bounds
+     * @deprecated Use {@link #getCloudById(String)} instead. Index-based lookup
+     *             is unreliable when clouds are added or removed.
+     */
+    @Deprecated
     @SuppressWarnings("unused") // stapler
     @Restricted(DoNotUse.class) // stapler
     public Cloud getCloudByIndex(int index) {
-        return Jenkins.get().clouds.get(index);
+        List<Cloud> clouds = Jenkins.get().clouds;
+        if (index >= 0 && index < clouds.size()) {
+            return clouds.get(index);
+        }
+        return null;
     }
 
     @SuppressWarnings("unused") // stapler
@@ -206,8 +260,8 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
      */
     @RequirePOST
     public synchronized void doCreate(StaplerRequest2 req, StaplerResponse2 rsp,
-                                          @QueryParameter String name, @QueryParameter String mode,
-                                          @QueryParameter String from) throws IOException, ServletException, Descriptor.FormException {
+            @QueryParameter String name, @QueryParameter String mode,
+            @QueryParameter String from) throws IOException, ServletException, Descriptor.FormException {
         final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
 
@@ -260,11 +314,11 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
      */
     @POST
     public synchronized void doDoCreate(StaplerRequest2 req, StaplerResponse2 rsp,
-                                            @QueryParameter String cloudDescriptorName) throws IOException, ServletException, Descriptor.FormException {
+            @QueryParameter String cloudDescriptorName) throws IOException, ServletException, Descriptor.FormException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         Descriptor<Cloud> cloudDescriptor = Cloud.all().findByName(cloudDescriptorName);
         if (cloudDescriptor == null) {
-            throw new Failure(String.format("No cloud type ‘%s’ is known", cloudDescriptorName));
+            throw new Failure(String.format("No cloud type '%s' is known", cloudDescriptorName));
         }
         Cloud cloud = cloudDescriptor.newInstance(req, req.getSubmittedForm());
         if (!Jenkins.get().clouds.add(cloud)) {

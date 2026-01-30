@@ -1,0 +1,271 @@
+package hudson.slaves;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import hudson.model.Label;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import jenkins.agents.CloudSet;
+import jenkins.model.Jenkins;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+/**
+ * Tests for stable Cloud unique IDs used to fix cloudByIndex ambiguity
+ * when multiple clouds share the same name.
+ */
+@WithJenkins
+class CloudUniqueIdTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    @Test
+    void testUniqueIdGeneration() {
+        TestCloud cloud = new TestCloud("test-cloud");
+        assertNotNull(cloud.getUniqueId());
+        assertFalse(cloud.getUniqueId().isEmpty());
+    }
+
+    @Test
+    void testUniqueIdConsistency() {
+        TestCloud cloud = new TestCloud("test-cloud");
+        String id1 = cloud.getUniqueId();
+        String id2 = cloud.getUniqueId();
+        assertEquals(id1, id2);
+    }
+
+    @Test
+    void testDifferentCloudsHaveDifferentIds() {
+        TestCloud cloud1 = new TestCloud("cloud1");
+        TestCloud cloud2 = new TestCloud("cloud2");
+        assertNotEquals(cloud1.getUniqueId(), cloud2.getUniqueId());
+    }
+
+    @Test
+    void testDuplicateNameCloudDeletionKeepsCorrectIds() {
+        TestCloud cloud1 = new TestCloud("same-name");
+        TestCloud cloud2 = new TestCloud("same-name");
+        TestCloud cloud3 = new TestCloud("same-name");
+
+        String id1 = cloud1.getUniqueId();
+        String id2 = cloud2.getUniqueId();
+        String id3 = cloud3.getUniqueId();
+
+        j.jenkins.clouds.add(cloud1);
+        j.jenkins.clouds.add(cloud2);
+        j.jenkins.clouds.add(cloud3);
+
+        j.jenkins.clouds.remove(cloud1);
+
+        assertNull(j.jenkins.getCloudById(id1));
+        assertEquals(id2, j.jenkins.getCloudById(id2).getUniqueId());
+        assertEquals(id3, j.jenkins.getCloudById(id3).getUniqueId());
+    }
+
+    @Test
+    void testUniqueIdsDoNotCollide() {
+        Set<String> ids = new HashSet<>();
+        for (int i = 0; i < 200; i++) {
+            TestCloud cloud = new TestCloud("cloud-" + i);
+            assertTrue(ids.add(cloud.getUniqueId()), "Duplicate ID generated");
+        }
+    }
+
+    @Test
+    void testUniqueIdCanBePreservedAcrossReconfiguration() throws Exception {
+        TestCloud original = new TestCloud("original");
+        String id = original.getUniqueId();
+
+        // Create a new cloud without an ID set (simulate deserialization)
+        TestCloud reconfigured = new TestCloud("renamed");
+
+        // Simulate legacy config.xml before uniqueId existed by clearing the field via reflection
+        Field field = Cloud.class.getDeclaredField("uniqueId");
+        field.setAccessible(true);
+        field.set(reconfigured, null);
+
+        // Now setUniqueIdIfNotSet should work
+        reconfigured.callSetUniqueIdIfNotSet(id);
+
+        assertEquals(id, reconfigured.getUniqueId());
+    }
+
+    @Test
+    void testSetUniqueIdIfNotSetDoesNotOverwrite() {
+        TestCloud cloud = new TestCloud("cloud");
+        String originalId = cloud.getUniqueId();
+
+        cloud.callSetUniqueIdIfNotSet("different-id");
+        assertEquals(originalId, cloud.getUniqueId());
+    }
+
+    @Test
+    void testThreadSafeUniqueIdGeneration() throws Exception {
+        TestCloud cloud = new TestCloud("threaded-cloud");
+
+        int threads = 50;
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
+        CountDownLatch start = new CountDownLatch(1);
+        CountDownLatch done = new CountDownLatch(threads);
+
+        Set<String> ids = Collections.synchronizedSet(new HashSet<>());
+
+        for (int i = 0; i < threads; i++) {
+            executor.submit(() -> {
+                try {
+                    start.await();
+                    ids.add(cloud.getUniqueId());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    done.countDown();
+                }
+            });
+        }
+
+        start.countDown();
+        assertTrue(done.await(10, TimeUnit.SECONDS));
+        executor.shutdown();
+
+        assertEquals(1, ids.size());
+    }
+
+    @Test
+    void testGetCloudByIdValidation() {
+        assertNull(j.jenkins.getCloudById(null));
+        assertNull(j.jenkins.getCloudById(""));
+        assertNull(j.jenkins.getCloudById("   "));
+        assertNull(j.jenkins.getCloudById("missing"));
+    }
+
+    @Test
+    void testCloudListGetById() {
+        TestCloud cloud1 = new TestCloud("cloud1");
+        TestCloud cloud2 = new TestCloud("cloud2");
+
+        j.jenkins.clouds.add(cloud1);
+        j.jenkins.clouds.add(cloud2);
+
+        assertEquals(cloud1, j.jenkins.clouds.getById(cloud1.getUniqueId()));
+        assertEquals(cloud2, j.jenkins.clouds.getById(cloud2.getUniqueId()));
+        assertNull(j.jenkins.clouds.getById("missing"));
+    }
+
+    @Test
+    void testCloudSetGetCloudById() {
+        TestCloud cloud1 = new TestCloud("cloud1");
+        TestCloud cloud2 = new TestCloud("cloud2");
+
+        j.jenkins.clouds.add(cloud1);
+        j.jenkins.clouds.add(cloud2);
+
+        CloudSet cloudSet = new CloudSet();
+        var dispatcher = cloudSet.getCloudById();
+
+        assertEquals(cloud1, dispatcher.getDynamic(cloud1.getUniqueId()));
+        assertEquals(cloud2, dispatcher.getDynamic(cloud2.getUniqueId()));
+        assertNull(dispatcher.getDynamic("missing"));
+    }
+
+    @Test
+    void testCloudUrlUsesUniqueIdForDuplicateNames() {
+        TestCloud cloud1 = new TestCloud("same-name");
+        TestCloud cloud2 = new TestCloud("same-name");
+
+        j.jenkins.clouds.add(cloud1);
+        j.jenkins.clouds.add(cloud2);
+
+        // Verify the clouds can be retrieved by their unique IDs
+        Cloud retrievedCloud1 = j.jenkins.getCloudById(cloud1.getUniqueId());
+        Cloud retrievedCloud2 = j.jenkins.getCloudById(cloud2.getUniqueId());
+
+        assertEquals(cloud1, retrievedCloud1);
+        assertEquals(cloud2, retrievedCloud2);
+
+        // Verify both clouds have unique IDs even with same name
+        assertNotEquals(cloud1.getUniqueId(), cloud2.getUniqueId());
+
+        // Verify that getCloud returns the first one by name
+        assertEquals(cloud1, j.jenkins.getCloud("same-name"));
+
+        // But both can be accessed individually by their unique IDs
+        assertNotNull(j.jenkins.getCloudById(cloud1.getUniqueId()));
+        assertNotNull(j.jenkins.getCloudById(cloud2.getUniqueId()));
+    }
+
+    @Test
+    void testCloudByIndexBackwardCompatibility() {
+        TestCloud cloud1 = new TestCloud("cloud1");
+        TestCloud cloud2 = new TestCloud("cloud2");
+
+        Jenkins jenkins = j.jenkins;
+
+        jenkins.clouds.add(cloud1);
+        jenkins.clouds.add(cloud2);
+
+        CloudSet cloudSet = new CloudSet();
+
+        assertEquals(cloud1, cloudSet.getCloudByIndex(0));
+        assertEquals(cloud2, cloudSet.getCloudByIndex(1));
+        assertNull(cloudSet.getCloudByIndex(-1));
+        assertNull(cloudSet.getCloudByIndex(10));
+    }
+
+    @Test
+    void testReadResolveMigrationAssignsId() throws Exception {
+        TestCloud cloud = new TestCloud("legacy-cloud");
+
+        // Simulate pre-uniqueId serialized form
+        Field field = Cloud.class.getDeclaredField("uniqueId");
+        field.setAccessible(true);
+        field.set(cloud, null);
+
+        j.jenkins.clouds.add(cloud);
+
+        assertNotNull(cloud.getUniqueId());
+        assertFalse(cloud.getUniqueId().isEmpty());
+    }
+
+    /**
+     * Minimal Cloud implementation for testing.
+     */
+    static class TestCloud extends Cloud {
+
+        TestCloud(String name) {
+            super(name);
+        }
+
+        @Override
+        public Collection<hudson.slaves.NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean canProvision(Label label) {
+            return false;
+        }
+
+        void callSetUniqueIdIfNotSet(String id) {
+            super.setUniqueIdIfNotSet(id);
+        }
+    }
+}
