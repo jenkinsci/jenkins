@@ -60,8 +60,8 @@
           <x:attribute name="data-tooltip-interactive">${interactive}</x:attribute>
           <x:attribute name="data-tippy-animation">tooltip</x:attribute>
           <x:attribute name="data-tippy-theme">${interactive ? 'dropdown' : 'tooltip'}</x:attribute>
-          <x:attribute name="data-tippy-trigger">mouseenter focus</x:attribute>
-          <x:attribute name="data-tippy-touch">false</x:attribute>
+          <x:attribute name="data-tippy-trigger">${interactive ? 'click' : 'mouseenter focus'}</x:attribute>
+          <x:attribute name="data-tippy-touch">${interactive}</x:attribute>
           <x:attribute name="data-type">header-action</x:attribute>
           <x:attribute name="draggable">false</x:attribute>
           <x:attribute name="class">jenkins-button ${isCurrent ? '' : 'jenkins-button--tertiary'}</x:attribute>
