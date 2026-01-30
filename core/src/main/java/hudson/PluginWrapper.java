@@ -1435,7 +1435,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Returns the date when this plugin was installed.
      */
-		@SuppressWarnings("unused")
+    @SuppressWarnings("unused")
     @Exported
     public Date getInstallationDate() {
         if (archive == null) {
