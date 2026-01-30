@@ -1273,6 +1273,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return Collections.unmodifiableList(plugins);
     }
 
+    @Exported
+    public List<PluginSummary> getPluginsSummary() {
+        return plugins.stream()
+                .map(PluginSummary::new)
+                .collect(Collectors.toUnmodifiableList());
+    }
+
     @Restricted(NoExternalUse.class) // used by jelly
     public List<PluginWrapper> getPluginsSortedByTitle() {
         return plugins.stream()
