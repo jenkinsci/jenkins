@@ -26,7 +26,7 @@ THE SOFTWARE.
   Installed plugins
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:s="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%Installed plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
@@ -78,6 +78,7 @@ THE SOFTWARE.
             <thead>
             <tr>
               <th initialSortDir="down">${%Name}</th>
+              <th>${%Installed}</th>
               <j:if test="${app.updateCenter.healthScoresAvailable}">
                 <th>
                   <j:set var="healthTooltip">${%healthTooltip}</j:set>
@@ -168,6 +169,17 @@ THE SOFTWARE.
                         ${%adoptThisPlugin}
                       </div>
                     </j:if>
+                  </td>
+                  <td class="jenkins-table__cell--tight" style="white-space:nowrap;"
+                      data="${p.installationDate != null ? p.installationDate.time : -1}">
+                      <j:choose>
+                          <j:when test="${p.installationDate != null}">
+                              <i:formatDate value="${p.installationDate}" type="both" dateStyle="medium" timeStyle="short"/>
+                          </j:when>
+                          <j:otherwise>
+                              <span class="jenkins-not-applicable">${%N/A}</span>
+                          </j:otherwise>
+                      </j:choose>
                   </td>
                   <j:if test="${app.updateCenter.healthScoresAvailable}">
                     <td class="jenkins-table__cell">
@@ -283,6 +295,10 @@ THE SOFTWARE.
                       <pre>${p.cause.message}</pre>
                     </div>
                   </td>
+                <td/>
+                <j:if test="${app.updateCenter.healthScoresAvailable}">
+                    <td/>
+                </j:if>
                   <td class="jenkins-table__cell--tight">
                     <div class="jenkins-table__cell__button-wrapper">
                       <span class="jenkins-toggle-switch">
@@ -291,7 +307,9 @@ THE SOFTWARE.
                       </span>
                     </div>
                   </td>
+                    <l:isAdmin>
                   <td/>
+                    </l:isAdmin>
                   <td/>
                 </tr>
               </j:forEach>

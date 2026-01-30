@@ -54,6 +54,7 @@ import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1429,6 +1430,18 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the date when this plugin was installed.
+     */
+    @Exported
+    public Date getInstallationDate() {
+        if (archive == null) {
+            return null;
+        }
+        long ts = archive.lastModified();
+        return ts > 0 ? new Date(ts) : null;
     }
 
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());
