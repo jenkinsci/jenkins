@@ -62,7 +62,7 @@ public interface BuildableItem extends Item, Task {
      * Whether the item is buildable.
      *
      * @return true, if the item can be built.
-     * @since TODO
+     * @since 2.547
      */
     default boolean isBuildable() {
         return true;

@@ -179,7 +179,7 @@ class ConfirmationLinkTest {
         HtmlElement document = page.getDocumentElement();
         DomNodeList<HtmlElement> anchors = page.getElementById("test-panel").getElementsByTagName("a");
         assertEquals(1, anchors.size());
-        HtmlAnchor anchor = (HtmlAnchor) anchors.get(0);
+        HtmlAnchor anchor = (HtmlAnchor) anchors.getFirst();
         HtmlElementUtil.click(anchor);
         HtmlButton revokeButtonSelected = document.getOneHtmlElementByAttribute("button", "data-id", "ok");
         return revokeButtonSelected;
