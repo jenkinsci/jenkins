@@ -318,7 +318,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1380.v491ff054cd35</version>
+                  <version>1396.v095840ed8491</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -353,7 +353,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.30.0-701.vf8f8f1f3fd55</version>
+                  <version>1.30.0-703.v116fb_3b_5b_b_a_a_</version>
                   <type>hpi</type>
                 </artifactItem>
 
