@@ -51,7 +51,11 @@ public class StopRunAction extends TransientActionFactory<Run> {
 
             @Override
             public Event getEvent() {
-                return JavaScriptEvent.of(Map.of("1", "abcd"), "jsbundles/pages/run/stop.js");
+                return JavaScriptEvent.of(Map.of(
+                        "type", "stop",
+                        "href", target.getUrl()
+                        ),
+                        "jsbundles/pages/run/stop.js");
             }
 
             @Override
