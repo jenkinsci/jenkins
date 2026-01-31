@@ -176,7 +176,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
      *
      * @param index the position in the cloud list
      * @return the cloud at that index, or null if out of bounds
-     * @deprecated Use {@link #getCloudById(String)} instead. Index-based lookup
+     * @deprecated Use {@link #getById(String)} instead. Index-based lookup
      *             is unreliable when clouds are added or removed.
      */
     @Deprecated
