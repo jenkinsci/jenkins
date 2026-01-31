@@ -170,6 +170,7 @@ import jenkins.model.SimplePageDecorator;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
+import jenkins.telemetry.impl.PasswordMasking;
 import jenkins.util.SystemProperties;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -2256,32 +2257,64 @@ public class Functions {
         if (o instanceof Secret || Secret.BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE) {
             if (req != null) {
                 if (NON_RECURSIVE_PASSWORD_MASKING_PERMISSION_CHECK) {
+                    List<Ancestor> ancestors = req.getAncestors();
+                    String closestAncestor = ancestors.isEmpty() ? "unknown" :
+                        ancestors.getLast().getObject().getClass().getName();
+
                     Item item = req.findAncestorObject(Item.class);
                     if (item != null && !item.hasPermission(Item.CONFIGURE)) {
+                        PasswordMasking.recordMasking(
+                            item.getClass().getName(),
+                            closestAncestor,
+                            getJellyViewsInformationForCurrentRequest()
+                        );
                         return "********";
                     }
                     Computer computer = req.findAncestorObject(Computer.class);
                     if (computer != null && !computer.hasPermission(Computer.CONFIGURE)) {
+                        PasswordMasking.recordMasking(
+                            computer.getClass().getName(),
+                            closestAncestor,
+                            getJellyViewsInformationForCurrentRequest()
+                        );
                         return "********";
                     }
                 } else {
                     List<Ancestor> ancestors = req.getAncestors();
+                    String closestAncestor = ancestors.isEmpty() ? "unknown" :
+                        ancestors.getLast().getObject().getClass().getName();
+
                     for (Ancestor ancestor : Iterators.reverse(ancestors)) {
                         Object type = ancestor.getObject();
                         if (type instanceof Item item) {
                             if (!item.hasPermission(Item.CONFIGURE)) {
+                                PasswordMasking.recordMasking(
+                                    item.getClass().getName(),
+                                    closestAncestor,
+                                    getJellyViewsInformationForCurrentRequest()
+                                );
                                 return "********";
                             }
                             break;
                         }
                         if (type instanceof Computer computer) {
                             if (!computer.hasPermission(Computer.CONFIGURE)) {
+                                PasswordMasking.recordMasking(
+                                    computer.getClass().getName(),
+                                    closestAncestor,
+                                    getJellyViewsInformationForCurrentRequest()
+                                );
                                 return "********";
                             }
                             break;
                         }
                         if (type instanceof View view) {
                             if (!view.hasPermission(View.CONFIGURE)) {
+                                PasswordMasking.recordMasking(
+                                    view.getClass().getName(),
+                                    closestAncestor,
+                                    getJellyViewsInformationForCurrentRequest()
+                                );
                                 return "********";
                             }
                             break;
