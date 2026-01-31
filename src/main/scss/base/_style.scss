@@ -72,7 +72,7 @@ td.no-wrap {
   -moz-border-radius: 0.5em;
   border-radius: var(--form-input-border-radius);
   position: relative;
-  z-index: 5;
+  z-index: 103;
 }
 
 #shutdown-msg {
@@ -85,7 +85,7 @@ td.no-wrap {
   -moz-border-radius: 0.5em;
   border-radius: var(--form-input-border-radius);
   position: relative;
-  z-index: 5;
+  z-index: 103;
 }
 
 a.lowkey:link {
