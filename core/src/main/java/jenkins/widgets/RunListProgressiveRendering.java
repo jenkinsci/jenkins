@@ -46,7 +46,7 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
      * The first increment will be sized as if this many runs will be in the total,
      * but then like Zeno’s paradox we will never seem to finish until we actually do.
      */
-    private static final double MAX_LIKELY_RUNS = 20;
+    private static final double MAX_LIKELY_RUNS = 20; // if (MAX_LIKELY_RUNS / 2) runs are processed, progress is 0.5
     private final List<JSONObject> results = new ArrayList<>();
     private Iterable<? extends Run<?, ?>> builds;
 
@@ -56,7 +56,7 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
     }
 
     @Override protected void compute() throws Exception {
-        double decay = 1;
+        int processed = 0;
         for (Run<?, ?> build : builds) {
             if (canceled()) {
                 return;
@@ -66,8 +66,8 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
             synchronized (this) {
                 results.add(element);
             }
-            decay *= 1 - 1 / MAX_LIKELY_RUNS;
-            progress(1 - decay);
+            processed++;
+            progress(processed / (processed + MAX_LIKELY_RUNS / 2.0));
         }
     }
 
