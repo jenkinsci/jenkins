@@ -245,6 +245,30 @@ class CloudUniqueIdTest {
         assertFalse(cloud.getUniqueId().isEmpty());
     }
 
+    @Test
+    void testUniqueIdPersistedAcrossXStreamSerialization() throws Exception {
+        TestCloud original = new TestCloud("test-cloud");
+        String originalId = original.getUniqueId();
+
+        // Simulate restart: serialize and deserialize
+        String xml = j.jenkins.XSTREAM2.toXML(original);
+        TestCloud deserialized = (TestCloud) j.jenkins.XSTREAM2.fromXML(xml);
+
+        assertEquals(originalId, deserialized.getUniqueId(),
+            "UUID should be preserved across XStream serialization/deserialization");
+    }
+
+    @Test
+    void testProvisionNewIdGeneratesNewUuid() {
+        TestCloud cloud = new TestCloud("test-cloud");
+        String firstId = cloud.getUniqueId();
+
+        cloud.provisionNewId();
+        String secondId = cloud.getUniqueId();
+
+        assertNotEquals(firstId, secondId, "provisionNewId() should generate a new UUID");
+    }
+
     /**
      * Minimal Cloud implementation for testing.
      */

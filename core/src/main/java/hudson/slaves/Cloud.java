@@ -115,8 +115,9 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     /**
      * Unique identifier for this cloud instance.
      * Used for stable URL routing when multiple clouds have the same name.
+     * Not marked transient so it persists across Jenkins restarts.
      */
-    private transient volatile String uniqueId;
+    private volatile String uniqueId;
 
     /**
      * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.

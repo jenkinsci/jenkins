@@ -627,6 +627,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         @Override
+        public boolean add(Cloud c) {
+            if (getById(c.getUniqueId()) != null) {
+                c.provisionNewId();
+            }
+            return super.add(c);
+        }
+
+        @Override
         protected void onModified() throws IOException {
             super.onModified();
             Jenkins.get().trimLabels();
