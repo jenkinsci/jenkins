@@ -61,8 +61,7 @@ public class BuildWrappers {
         for (Descriptor<BuildWrapper> w : BuildWrapper.all()) {
             if (pd instanceof AbstractProjectDescriptor && !((AbstractProjectDescriptor) pd).isApplicable(w))
                 continue;
-            if (w instanceof BuildWrapperDescriptor) {
-                BuildWrapperDescriptor bwd = (BuildWrapperDescriptor) w;
+            if (w instanceof BuildWrapperDescriptor bwd) {
                 if (bwd.isApplicable(project))
                     result.add(bwd);
             } else {

@@ -264,7 +264,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
                     nn = n;
                 } else {
                     // every record fetched this time is frozen. next fetch should start from the next build
-                    nn = adapter.getNextKey(adapter.getKey(items.get(0)));
+                    nn = adapter.getNextKey(adapter.getKey(items.getFirst()));
                 }
             }
 

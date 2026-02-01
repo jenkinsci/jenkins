@@ -48,7 +48,7 @@ THE SOFTWARE.
     <port>8080</port>
     <mina-sshd-api.version>2.16.0-167.va_269f38cc024</mina-sshd-api.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
-    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
 
   </properties>
 
@@ -318,7 +318,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1380.v491ff054cd35</version>
+                  <version>1396.v095840ed8491</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -346,14 +346,14 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>checks-api</artifactId>
-                  <version>373.vfe7645102093</version>
+                  <version>402.vca_263b_f200e3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.30.0-630.va_e19d17f83b_0</version>
+                  <version>1.30.0-703.v116fb_3b_5b_b_a_a_</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -383,7 +383,7 @@ THE SOFTWARE.
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>eddsa-api</artifactId>
-                  <version>0.3.0.1-19.vc432d923e5ee</version>
+                  <version>0.3.0.1-29.v67e9a_1c969b_b_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -397,7 +397,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jakarta-xml-bind-api</artifactId>
-                  <version>4.0.6-10.v9b_7e1d1fc40b_</version>
+                  <version>4.0.6-12.vb_1833c1231d3</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -471,7 +471,7 @@ THE SOFTWARE.
                   <!-- detached after 2.163 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jaxb</artifactId>
-                  <version>2.3.9-133.vb_ec76a_73f706</version>
+                  <version>2.3.9-143.v5979df3304e6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -606,7 +606,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.lib</groupId>
                   <artifactId>support-log-formatter</artifactId>
-                  <version>118.v18c3eb_f88f07</version>
+                  <version>123.v72513b_f61500</version>
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}</outputDirectory>
@@ -668,7 +668,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.1.5</version>
+        <version>12.1.6</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)

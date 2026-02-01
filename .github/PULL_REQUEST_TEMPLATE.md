@@ -24,6 +24,16 @@ For frontend changes, include screenshots of the relevant page(s) before and aft
 For refactoring and code cleanup changes, exercise the code before and after the change and verify the behavior remains the same.
 -->
 
+### Screenshots (UI changes only)
+
+<!--
+If your change involves a UI change, please include screenshots showing the before and after states.
+-->
+
+#### Before
+
+#### After
+
 ### Proposed changelog entries
 
 - human-readable text
