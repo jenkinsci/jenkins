@@ -3,6 +3,9 @@ package jenkins.model.menu;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+/**
+ * Predefined ordinals for grouping menu items.
+ */
 @ExportedBean
 public class Group {
 
@@ -16,18 +19,41 @@ public class Group {
         this.order = order;
     }
 
+    /**
+     * Primary actions shown first in the app bar.
+     */
     public static Group FIRST_IN_APP_BAR = of(0);
 
+    /**
+     * Important actions shown in the app bar.
+     */
     public static Group IN_APP_BAR = of(1);
 
+    /**
+     * Last action to show up in the app bar.
+     */
     public static Group LAST_IN_APP_BAR = of(2);
 
+    /**
+     * Important actions for the menu
+     */
     public static Group FIRST_IN_MENU = of(3);
 
+    /**
+     * Default group for actions shown in the menu.
+     */
     public static Group IN_MENU = of(100);
 
+    /**
+     * Last action to show up in the menu. Should be used for deleting objects.
+     */
     public static Group LAST_IN_MENU = of(Integer.MAX_VALUE);
 
+    /**
+     * Create a custom group with the given order.
+     * @param customOrder the order of the group.
+     * @return the group
+     */
     public static Group of(int customOrder) {
         return new Group(customOrder);
     }
