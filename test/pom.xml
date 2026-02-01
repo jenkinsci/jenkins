@@ -238,13 +238,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1460.v48765a_c7d849</version>
+      <version>1480.v2246fd131e83</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1380.v491ff054cd35</version>
+      <version>1396.v095840ed8491</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -361,7 +361,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.30.0-630.va_e19d17f83b_0</version>
+                  <version>1.30.0-703.v116fb_3b_5b_b_a_a_</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>prism-api.jpi</destFileName>

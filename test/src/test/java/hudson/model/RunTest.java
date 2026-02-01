@@ -57,6 +57,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import jenkins.model.ArtifactManager;
@@ -125,7 +126,7 @@ class RunTest  {
         b.keepLog();
         List<BuildBadgeAction> badgeActions = b.getBadgeActions();
         assertEquals(1, badgeActions.size());
-        assertEquals(Run.KeepLogBuildBadge.class, badgeActions.get(0).getClass());
+        assertEquals(Run.KeepLogBuildBadge.class, badgeActions.getFirst().getClass());
     }
 
     @Issue("JENKINS-51819")
@@ -251,11 +252,7 @@ class RunTest  {
         @NonNull
         @Override
         public String getName() {
-            if (virtualName != null) {
-                return virtualName;
-            } else {
-                return super.getName();
-            }
+            return Objects.requireNonNullElseGet(virtualName, super::getName);
         }
 
         @Override
@@ -361,7 +358,7 @@ class RunTest  {
         var response = run.getRunTabs();
 
         assertThat(response, hasSize(1));
-        assertThat(response.get(0).getDisplayName(), equalTo("Test"));
+        assertThat(response.getFirst().getDisplayName(), equalTo("Test"));
     }
 
     public static final class SlowMgr extends ArtifactManager {
