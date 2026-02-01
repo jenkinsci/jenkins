@@ -94,8 +94,8 @@ class CloudTest {
 
         // After UUID changes, URLs use UUID instead of encoded name
         String url = aCloud.getUrl();
-        assertTrue(url.startsWith("cloud/byId/"), "Cloud URL uses UUID-based format");
-        assertTrue(url.matches("cloud/byId/[0-9a-f-]{36}/"), "Cloud URL contains valid UUID");
+        assertTrue(url.startsWith("cloud/"), "Cloud URL uses UUID-based format");
+        assertTrue(url.matches("cloud/[0-9a-f-]{36}/"), "Cloud URL contains valid UUID");
     }
 
     public static final class ACloud extends AbstractCloudImpl {

@@ -130,7 +130,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
 
     /**
      * Dispatcher for cloud-by-ID routing. Enables Stapler to route URLs like
-     * /cloud/cloudById/{uuid}/ to the correct cloud instance.
+     * /cloud/{uuid}/ to the correct cloud instance.
      *
      * @return dispatcher object for ID-based cloud lookup
      */
@@ -157,7 +157,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
 
     /**
      * Stapler dispatcher that routes cloud requests by unique ID.
-     * Handles URL patterns like /cloud/cloudById/{uuid}/
+     * Handles URL patterns like /cloud/{uuid}/
      */
     public class CloudByIdDispatcher {
         /**
@@ -207,8 +207,8 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         return m;
     }
 
-    public Cloud getDynamic(String name, StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        return Jenkins.get().clouds.getByName(name);
+    public Cloud getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        return getById(token);
     }
 
     @SuppressWarnings("unused") // stapler

@@ -192,7 +192,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * @return Jenkins relative URL.
      */
     public @NonNull String getUrl() {
-        return "cloud/byId/" + Util.rawEncode(getUniqueId()) + "/";
+        return "cloud/" + Util.rawEncode(getUniqueId()) + "/";
     }
 
     @Override
@@ -365,7 +365,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(Jenkins.ADMINISTER);
         Jenkins.get().clouds.remove(this);
-        return new HttpRedirect("../../");
+        return new HttpRedirect("..");
     }
 
     /*
