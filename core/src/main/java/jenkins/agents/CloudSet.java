@@ -74,7 +74,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     }
 
     public Cloud getDynamic(String token) {
-        return Jenkins.get().getCloud(token);
+        return getById(token);
     }
 
     @Override
