@@ -4,7 +4,8 @@ import hudson.model.Run;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Displays the duration of the given run, or, if the run has completed, shows the total time it took to execute
+ * Displays if the build is marked to be kept forever.
+ * Only shown if the build is kept forever.
  */
 public class KeptForeverDetail extends Detail {
 
