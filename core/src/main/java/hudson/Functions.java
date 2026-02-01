@@ -2631,14 +2631,16 @@ public class Functions {
     /**
      * Converts the given actions to a JSON object
      */
-    @Restricted(NoExternalUse.class)
-    public static String convertActionsToJson(List<Action> actions) {
+    @Restricted({NoExternalUse.class})
+    public static String convertActionsToJson(String baseUrl, List<Action> actions) {
         ModelObjectWithContextMenu.ContextMenu contextMenu = new ModelObjectWithContextMenu.ContextMenu();
         contextMenu.addAll(actions
                 .stream()
                 .filter(action -> action.getIconFileName() != null)
                 .toList());
-        return JSONObject.fromObject(contextMenu).toString();
+        JSONObject jsonObject = JSONObject.fromObject(contextMenu);
+        jsonObject.put("url", Util.ensureEndsWith(baseUrl, "/"));
+        return jsonObject.toString();
     }
 
     /**

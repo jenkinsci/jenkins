@@ -20,7 +20,7 @@ function init() {
         item.iconXml = null;
       }
       element.parentNode.insertBefore(
-        Templates.menuItem(item, "jenkins-button"),
+        Templates.menuItem(item, "jenkins-button", template.url),
         element,
       );
     });
@@ -28,7 +28,9 @@ function init() {
     // Add any additional items as an overflow menu
     if (overflowItems.length > 0) {
       Utils.generateDropdown(element, (instance) => {
-        instance.setContent(Utils.generateDropdownItems(overflowItems));
+        instance.setContent(
+          Utils.generateDropdownItems(overflowItems, false, template.url),
+        );
       });
     }
   });

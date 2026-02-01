@@ -1,18 +1,16 @@
 package jenkins.model.run;
 
 import hudson.Extension;
-import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.Run;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
+import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
+import jenkins.model.menu.event.ConfirmationEvent;
 import jenkins.model.menu.event.Event;
-import jenkins.model.menu.event.JavaScriptEvent;
-import jenkins.model.menu.event.LinkEvent;
 
 @Extension
 public class StopRunAction extends TransientActionFactory<Run> {
@@ -24,7 +22,8 @@ public class StopRunAction extends TransientActionFactory<Run> {
 
     @Override
     public Collection<? extends Action> createFor(Run target) {
-        if (!target.isBuilding()) {
+        var flag = new NewBuildPageUserExperimentalFlag();
+        if (!target.isBuilding() || !flag.getFlagValue()) {
             return Set.of();
         }
 
@@ -51,11 +50,10 @@ public class StopRunAction extends TransientActionFactory<Run> {
 
             @Override
             public Event getEvent() {
-                return JavaScriptEvent.of(Map.of(
-                        "type", "stop",
-                        "href", target.getUrl()
-                        ),
-                        "jsbundles/pages/run/stop.js");
+                return ConfirmationEvent.of(
+                        Messages.StopRunAction_confirm(target.getFullDisplayName()),
+                        null, "stop"
+                );
             }
 
             @Override

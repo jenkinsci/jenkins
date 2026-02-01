@@ -43,8 +43,9 @@ THE SOFTWARE.
         <span />
       </div>
     </button>
+    <j:set var="url" value="${h.getNearestAncestorUrl(request2,it.object)}"/>
     <template>
-      ${h.convertActionsToJson(actions)}
+      ${h.convertActionsToJson(url, actions)}
     </template>
   </j:if>
 </j:jelly>

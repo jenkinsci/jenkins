@@ -76,10 +76,9 @@ function loadScriptIfNotLoaded(url, item) {
     const script = document.createElement("script");
     script.src = url;
 
-    script.onload = () => {
-      // TODO - This is hacky
+    script.addEventListener("load", () => {
       behaviorShim.applySubtree(item, true);
-    };
+    });
 
     document.body.appendChild(script);
   }
@@ -212,7 +211,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
 
   // Handle special cases
   tryOnClickEvent(item, dropdownItem);
-  tryLoadScripts(item, dropdownItem);
+  tryLoadScripts(item, dropdownItem, context);
   tryPost(item, dropdownItem, context);
   tryConfirmationPost(item, dropdownItem, context);
 
@@ -233,8 +232,8 @@ function tryOnClickEvent(element, opt) {
 /**
  * If scripts have been provided with the menu item, load them
  */
-function tryLoadScripts(element, opt) {
-  if (!opt.event || !opt.event.attributes) {
+function tryLoadScripts(element, opt, context) {
+  if (!opt.event || !opt.event.attributes || !opt.event.javascriptUrl) {
     return;
   }
 
@@ -242,6 +241,7 @@ function tryLoadScripts(element, opt) {
     element.dataset[kebabToCamelCase(key)] =
       opt.event.attributes[key].toString();
   }
+  element.dataset["baseUrl"] = context;
 
   loadScriptIfNotLoaded(opt.event.javascriptUrl, element);
 }
