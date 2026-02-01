@@ -18,10 +18,8 @@
  * } | {
  *   actions: DropdownItem[]
  * }} event
- * @property {string} semantic
- * @property {string} contents - TODO
- * @property {string} clazz - TODO ??? not sure if this is staying
- * @property {() => {}} onClick - TODO ??? not sure if this is staying
+ * @property {string} semantic - semantic type of the item (e.g., "build", "destructive")
+ * @property {string} clazz - class to apply to the item
  */
 
 /**
