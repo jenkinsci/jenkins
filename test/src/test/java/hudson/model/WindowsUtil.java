@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,6 +41,18 @@ public class WindowsUtil {
     private static final AtomicReference<Boolean> symlinkSupported = new AtomicReference<>();
 
     /**
+     * Fail the test if running in CI and symlinks are not supported.
+     * We do not want to fail the test on a developer computer if
+     * symlinks are not enabled, but we do want to fail the test if a
+     * CI agent on Windows does not have symbolic links enabled.
+     */
+    private static void assertConfiguration(boolean supported) {
+        if (System.getenv("CI") != null) {
+            assertTrue(supported, "Jenkins CI configurations must enable symlinks on Windows");
+        }
+    }
+
+    /**
      * Returns true if Windows allows a symbolic link to be created.
      *
      * @return true if Windows allows a symbolic link to be created.
@@ -48,11 +62,13 @@ public class WindowsUtil {
         // Fast path, don't acquire unnecessary lock
         Boolean supported = symlinkSupported.get();
         if (supported != null) {
+            assertConfiguration(supported);
             return supported;
         }
         synchronized (WindowsUtil.class) {
             supported = symlinkSupported.get();
             if (supported != null) {
+                assertConfiguration(supported);
                 return supported;
             }
             Path tempDir = Files.createTempDirectory("symlink-check");
@@ -70,6 +86,7 @@ public class WindowsUtil {
                 Files.delete(tempDir);
             }
         }
+        assertConfiguration(symlinkSupported.get());
         return symlinkSupported.get();
     }
 }
