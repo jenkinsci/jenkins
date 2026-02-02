@@ -22,32 +22,32 @@ public class Group {
     /**
      * Primary actions shown first in the app bar.
      */
-    public static Group FIRST_IN_APP_BAR = of(0);
+    public static final Group FIRST_IN_APP_BAR = of(0);
 
     /**
      * Important actions shown in the app bar.
      */
-    public static Group IN_APP_BAR = of(1);
+    public static final Group IN_APP_BAR = of(1);
 
     /**
      * Last action to show up in the app bar.
      */
-    public static Group LAST_IN_APP_BAR = of(2);
+    public static final Group LAST_IN_APP_BAR = of(2);
 
     /**
      * Important actions for the menu
      */
-    public static Group FIRST_IN_MENU = of(3);
+    public static final Group FIRST_IN_MENU = of(3);
 
     /**
      * Default group for actions shown in the menu.
      */
-    public static Group IN_MENU = of(100);
+    public static final Group IN_MENU = of(100);
 
     /**
      * Last action to show up in the menu. Should be used for deleting objects.
      */
-    public static Group LAST_IN_MENU = of(Integer.MAX_VALUE);
+    public static final Group LAST_IN_MENU = of(Integer.MAX_VALUE);
 
     /**
      * Create a custom group with the given order.
