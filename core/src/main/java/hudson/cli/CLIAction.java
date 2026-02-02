@@ -331,7 +331,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 sendExit(2);
                 return;
             }
-            String commandName = args.get(0);
+            String commandName = args.getFirst();
             CLICommand command = CLICommand.clone(commandName);
             if (command == null) {
                 stderr.println("No such command " + commandName);
