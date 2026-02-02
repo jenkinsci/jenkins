@@ -192,7 +192,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2545.va_5c4d760c7ef</version>
+      <version>2553.vd280528b_dde3</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -244,7 +244,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1380.v491ff054cd35</version>
+      <version>1396.v095840ed8491</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -361,7 +361,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.30.0-701.vf8f8f1f3fd55</version>
+                  <version>1.30.0-703.v116fb_3b_5b_b_a_a_</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>prism-api.jpi</destFileName>
