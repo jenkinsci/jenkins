@@ -343,6 +343,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * Human readable caption of the menu item. Do not use HTML.
          */
         @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String displayName;
 
         /**
@@ -395,7 +396,6 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * If this is a submenu, definition of subitems.
          */
         @Exported(inline = true)
-        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public ContextMenu subMenu;
 
         @Exported
