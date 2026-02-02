@@ -1,0 +1,36 @@
+[1mdiff --git a/core/src/main/java/hudson/console/ConsoleNote.java b/core/src/main/java/hudson/console/ConsoleNote.java[m
+[1mindex 7679a66962..82f231f4dc 100644[m
+[1m--- a/core/src/main/java/hudson/console/ConsoleNote.java[m
+[1m+++ b/core/src/main/java/hudson/console/ConsoleNote.java[m
+[36m@@ -24,6 +24,7 @@[m
+ [m
+ package hudson.console;[m
+ [m
+[32m+[m[32mimport java.nio.charset.StandardCharsets;[m
+ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;[m
+ import hudson.ExtensionPoint;[m
+ import hudson.Functions;[m
+[36m@@ -193,9 +194,9 @@[m [mpublic abstract class ConsoleNote<T> implements Serializable, Describable<Consol[m
+      * Technically, this method only works if the {@link Writer} to {@link OutputStream}[m
+      * encoding is ASCII compatible.[m
+      */[m
+[31m-    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")[m
+[32m+[m
+     public void encodeTo(Writer out) throws IOException {[m
+[31m-        out.write(encodeToBytes().toString());[m
+[32m+[m[32m        out.write(encodeToBytes().toString(StandardCharsets.UTF_8));[m
+     }[m
+ [m
+     private ByteArrayOutputStream encodeToBytes() throws IOException {[m
+[36m@@ -224,9 +225,9 @@[m [mpublic abstract class ConsoleNote<T> implements Serializable, Describable<Consol[m
+     /**[m
+      * Works like {@link #encodeTo(Writer)} but obtain the result as a string.[m
+      */[m
+[31m-    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")[m
+     public String encode() throws IOException {[m
+[31m-        return encodeToBytes().toString();[m
+[32m+[m[32m        return encodeToBytes().toString(StandardCharsets.UTF_8);[m
+[32m+[m
+     }[m
+ [m
+     /**[m

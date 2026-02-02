@@ -64,73 +64,105 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Data that hangs off from a console output.
  *
  * <p>
- * A {@link ConsoleNote} can be put into a console output while it's being written, and it represents
- * a machine readable information about a particular position of the console output.
+ * A {@link ConsoleNote} can be put into a console output while it's being
+ * written, and it represents
+ * a machine readable information about a particular position of the console
+ * output.
  *
  * <p>
- * When Hudson is reading back a console output for display, a {@link ConsoleNote} is used
- * to trigger {@link ConsoleAnnotator}, which in turn uses the information in the note to
- * generate markup. In this way, we can overlay richer information on top of the console output.
+ * When Hudson is reading back a console output for display, a
+ * {@link ConsoleNote} is used
+ * to trigger {@link ConsoleAnnotator}, which in turn uses the information in
+ * the note to
+ * generate markup. In this way, we can overlay richer information on top of the
+ * console output.
  *
  * <h2>Comparison with {@link ConsoleAnnotatorFactory}</h2>
  * <p>
- * Compared to {@link ConsoleAnnotatorFactory}, the main advantage of {@link ConsoleNote} is that
- * it can be emitted into the output by the producer of the output (or by a filter), which can
+ * Compared to {@link ConsoleAnnotatorFactory}, the main advantage of
+ * {@link ConsoleNote} is that
+ * it can be emitted into the output by the producer of the output (or by a
+ * filter), which can
  * have a much better knowledge about the context of what's being executed.
  *
  * <ol>
  * <li>
- * For example, when your plugin is about to report an error message, you can emit a {@link ConsoleNote}
- * that indicates an error, instead of printing an error message as plain text. The {@link #annotate(Object, MarkupText, int)}
- * method will then generate the proper error message, with all the HTML markup that makes error message
+ * For example, when your plugin is about to report an error message, you can
+ * emit a {@link ConsoleNote}
+ * that indicates an error, instead of printing an error message as plain text.
+ * The {@link #annotate(Object, MarkupText, int)}
+ * method will then generate the proper error message, with all the HTML markup
+ * that makes error message
  * more user friendly.
  *
  * <li>
- * Or consider annotating output from Ant. A modified {@link BuildListener} can place a {@link ConsoleNote}
- * every time a new target execution starts. These notes can be then later used to build the outline
- * that shows what targets are executed, hyperlinked to their corresponding locations in the build output.
+ * Or consider annotating output from Ant. A modified {@link BuildListener} can
+ * place a {@link ConsoleNote}
+ * every time a new target execution starts. These notes can be then later used
+ * to build the outline
+ * that shows what targets are executed, hyperlinked to their corresponding
+ * locations in the build output.
  * </ol>
  *
  * <p>
- * Doing these things by {@link ConsoleAnnotatorFactory} would be a lot harder, as they can only rely
+ * Doing these things by {@link ConsoleAnnotatorFactory} would be a lot harder,
+ * as they can only rely
  * on the pattern matching of the output.
  *
  * <h2>Persistence</h2>
  * <p>
- * {@link ConsoleNote}s are serialized and gzip compressed into a byte sequence and then embedded into the
- * console output text file, with a bit of preamble/postamble to allow tools to ignore them. In this way
- * {@link ConsoleNote} always sticks to a particular point in the console output.
+ * {@link ConsoleNote}s are serialized and gzip compressed into a byte sequence
+ * and then embedded into the
+ * console output text file, with a bit of preamble/postamble to allow tools to
+ * ignore them. In this way
+ * {@link ConsoleNote} always sticks to a particular point in the console
+ * output.
  *
  * <p>
- * The preamble and postamble includes a certain ANSI escape sequence designed in such a way to minimize garbage
+ * The preamble and postamble includes a certain ANSI escape sequence designed
+ * in such a way to minimize garbage
  * if this output is observed by a human being directly.
  *
  * <p>
- * Because of this persistence mechanism, {@link ConsoleNote}s need to be serializable, and care should be taken
- * to reduce footprint of the notes, if you are putting a lot of notes. Serialization format compatibility
- * is also important, although {@link ConsoleNote}s that failed to deserialize will be simply ignored, so the
+ * Because of this persistence mechanism, {@link ConsoleNote}s need to be
+ * serializable, and care should be taken
+ * to reduce footprint of the notes, if you are putting a lot of notes.
+ * Serialization format compatibility
+ * is also important, although {@link ConsoleNote}s that failed to deserialize
+ * will be simply ignored, so the
  * worst thing that can happen is that you just lose some notes.
  *
  * <p>
- * Note that {@link #encode}, {@link #encodeTo(OutputStream)}, and {@link #encodeTo(Writer)}
+ * Note that {@link #encode}, {@link #encodeTo(OutputStream)}, and
+ * {@link #encodeTo(Writer)}
  * should be called on the Jenkins master.
  * If called from an agent JVM, a signature will be missing and so as per
- * <a href="https://www.jenkins.io/security/advisory/2017-02-01/#persisted-cross-site-scripting-vulnerability-in-console-notes">SECURITY-382</a>
+ * <a href=
+ * "https://www.jenkins.io/security/advisory/2017-02-01/#persisted-cross-site-scripting-vulnerability-in-console-notes">SECURITY-382</a>
  * the console note will be ignored.
- * This may happen, in particular, if the note was generated by a {@link ConsoleLogFilter} sent to the agent.
- * Alternative solutions include using a {@link ConsoleAnnotatorFactory} where practical;
- * or generating the encoded form of the note on the master side and sending it to the agent,
- * for example by saving that form as instance fields in a {@link ConsoleLogFilter} implementation.
+ * This may happen, in particular, if the note was generated by a
+ * {@link ConsoleLogFilter} sent to the agent.
+ * Alternative solutions include using a {@link ConsoleAnnotatorFactory} where
+ * practical;
+ * or generating the encoded form of the note on the master side and sending it
+ * to the agent,
+ * for example by saving that form as instance fields in a
+ * {@link ConsoleLogFilter} implementation.
  *
  * <h2>Behaviour, JavaScript, and CSS</h2>
  * <p>
- * {@link ConsoleNote} can have associated {@code script.js} and {@code style.css} (put them
- * in the same resource directory that you normally put Jelly scripts), which will be loaded into
- * the HTML page whenever the console notes are used. This allows you to use minimal markup in
- * code generation, and do the styling in CSS and perform the rest of the interesting work as a CSS behaviour/JavaScript.
+ * {@link ConsoleNote} can have associated {@code script.js} and
+ * {@code style.css} (put them
+ * in the same resource directory that you normally put Jelly scripts), which
+ * will be loaded into
+ * the HTML page whenever the console notes are used. This allows you to use
+ * minimal markup in
+ * code generation, and do the styling in CSS and perform the rest of the
+ * interesting work as a CSS behaviour/JavaScript.
  *
  * @param <T>
- *      Contextual model object that this console is associated with, such as {@link Run}.
+ *            Contextual model object that this console is associated with, such
+ *            as {@link Run}.
  *
  * @author Kohsuke Kawaguchi
  * @see ConsoleAnnotationDescriptor
@@ -141,28 +173,37 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
     private static final HMACConfidentialKey MAC = new HMACConfidentialKey(ConsoleNote.class, "MAC");
     /**
-     * Allows historical build records with unsigned console notes to be displayed, at the expense of any security.
-     * Disables checking of {@link #MAC} so do not set this flag unless you completely trust all users capable of affecting build output,
-     * which in practice means that all SCM committers as well as all Jenkins users with any non-read-only access are consider administrators.
+     * Allows historical build records with unsigned console notes to be displayed,
+     * at the expense of any security.
+     * Disables checking of {@link #MAC} so do not set this flag unless you
+     * completely trust all users capable of affecting build output,
+     * which in practice means that all SCM committers as well as all Jenkins users
+     * with any non-read-only access are consider administrators.
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "nonfinal for tests & script console")
-    public static /* nonfinal for tests & script console */ boolean INSECURE = SystemProperties.getBoolean(ConsoleNote.class.getName() + ".INSECURE");
+    public static /* nonfinal for tests & script console */ boolean INSECURE = SystemProperties
+            .getBoolean(ConsoleNote.class.getName() + ".INSECURE");
 
     /**
-     * When the line of a console output that this annotation is attached is read by someone,
-     * a new {@link ConsoleNote} is de-serialized and this method is invoked to annotate that line.
+     * When the line of a console output that this annotation is attached is read by
+     * someone,
+     * a new {@link ConsoleNote} is de-serialized and this method is invoked to
+     * annotate that line.
      *
      * @param context
-     *      The object that owns the console output in question.
+     *                The object that owns the console output in question.
      * @param text
-     *      Represents a line of the console output being annotated.
+     *                Represents a line of the console output being annotated.
      * @param charPos
-     *      The character position in 'text' where this annotation is attached.
+     *                The character position in 'text' where this annotation is
+     *                attached.
      *
      * @return
-     *      if non-null value is returned, this annotator will handle the next line.
-     *      this mechanism can be used to annotate multiple lines starting at the annotated position.
+     *         if non-null value is returned, this annotator will handle the next
+     *         line.
+     *         this mechanism can be used to annotate multiple lines starting at the
+     *         annotated position.
      */
     public abstract ConsoleAnnotator annotate(T context, MarkupText text, int charPos);
 
@@ -175,14 +216,19 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * Prints this note into a stream.
      *
      * <p>
-     * The most typical use of this is {@code n.encodedTo(System.out)} where stdout is connected to Hudson.
-     * The encoded form doesn't include any new line character to work better in the line-oriented nature
+     * The most typical use of this is {@code n.encodedTo(System.out)} where stdout
+     * is connected to Hudson.
+     * The encoded form doesn't include any new line character to work better in the
+     * line-oriented nature
      * of {@link ConsoleAnnotator}.
      */
     public void encodeTo(OutputStream out) throws IOException {
-        // atomically write to the final output, to minimize the chance of something else getting in between the output.
-        // even with this, it is still technically possible to get such a mix-up to occur (for example,
-        // if Java program is reading stdout/stderr separately and copying them into the same final stream.)
+        // atomically write to the final output, to minimize the chance of something
+        // else getting in between the output.
+        // even with this, it is still technically possible to get such a mix-up to
+        // occur (for example,
+        // if Java program is reading stdout/stderr separately and copying them into the
+        // same final stream.)
         out.write(encodeToBytes().toByteArray());
     }
 
@@ -190,18 +236,21 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * Prints this note into a writer.
      *
      * <p>
-     * Technically, this method only works if the {@link Writer} to {@link OutputStream}
+     * Technically, this method only works if the {@link Writer} to
+     * {@link OutputStream}
      * encoding is ASCII compatible.
      */
-    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
+
     public void encodeTo(Writer out) throws IOException {
-        out.write(encodeToBytes().toString());
+        out.write(encodeToBytes().toString(StandardCharsets.UTF_8));
     }
 
     private ByteArrayOutputStream encodeToBytes() throws IOException {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         try (OutputStream gzos = new GZIPOutputStream(buf);
-             ObjectOutputStream oos = JenkinsJVM.isJenkinsJVM() ? AnonymousClassWarnings.checkingObjectOutputStream(gzos) : new ObjectOutputStream(gzos)) {
+                ObjectOutputStream oos = JenkinsJVM.isJenkinsJVM()
+                        ? AnonymousClassWarnings.checkingObjectOutputStream(gzos)
+                        : new ObjectOutputStream(gzos)) {
             oos.writeObject(this);
         }
 
@@ -209,7 +258,8 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
         try (DataOutputStream dos = new DataOutputStream(Base64.getEncoder().wrap(buf2))) {
             buf2.write(PREAMBLE);
-            if (JenkinsJVM.isJenkinsJVM()) { // else we are in another JVM and cannot sign; result will be ignored unless INSECURE
+            if (JenkinsJVM.isJenkinsJVM()) { // else we are in another JVM and cannot sign; result will be ignored
+                                             // unless INSECURE
                 byte[] mac = MAC.mac(buf.toByteArray());
                 dos.writeInt(-mac.length); // negative to differentiate from older form
                 dos.write(mac);
@@ -224,16 +274,16 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     /**
      * Works like {@link #encodeTo(Writer)} but obtain the result as a string.
      */
-    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public String encode() throws IOException {
-        return encodeToBytes().toString();
+        return encodeToBytes().toString(StandardCharsets.UTF_8);
+
     }
 
     /**
      * Reads a note back from {@linkplain #encodeTo(OutputStream) its encoded form}.
      *
      * @param in
-     *      Must point to the beginning of a preamble.
+     *           Must point to the beginning of a preamble.
      *
      * @return null if the encoded form is malformed.
      */
@@ -242,7 +292,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             byte[] preamble = new byte[PREAMBLE.length];
             in.readFully(preamble);
             if (!Arrays.equals(preamble, PREAMBLE))
-                return null;    // not a valid preamble
+                return null; // not a valid preamble
 
             byte[] mac;
             byte[] buf;
@@ -267,7 +317,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             byte[] postamble = new byte[POSTAMBLE.length];
             in.readFully(postamble);
             if (!Arrays.equals(postamble, POSTAMBLE))
-                return null;    // not a valid postamble
+                return null; // not a valid postamble
 
             if (!INSECURE) {
                 if (mac == null) {
@@ -303,10 +353,10 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         byte[] preamble = new byte[PREAMBLE.length];
         in.readFully(preamble);
         if (!Arrays.equals(preamble, PREAMBLE))
-            return;    // not a valid preamble
+            return; // not a valid preamble
 
         DataInputStream decoded = new DataInputStream(Base64.getDecoder().wrap(in));
-        int macSz = - decoded.readInt();
+        int macSz = -decoded.readInt();
         if (macSz > 0) { // new format
             IOUtils.skipFully(decoded, macSz);
             int sz = decoded.readInt();
@@ -343,8 +393,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     public static int findPreamble(byte[] buf, int start, int len) {
         int e = start + len - PREAMBLE.length + 1;
 
-        OUTER:
-        for (int i = start; i < e; i++) {
+        OUTER: for (int i = start; i < e; i++) {
             if (buf[i] == PREAMBLE[0]) {
                 // check for the rest of the match
                 for (int j = 1; j < PREAMBLE.length; j++) {
@@ -377,9 +426,11 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     public static String removeNotes(String line) {
         while (true) {
             int idx = line.indexOf(PREAMBLE_STR);
-            if (idx < 0)  return line;
+            if (idx < 0)
+                return line;
             int e = line.indexOf(POSTAMBLE_STR, idx);
-            if (e < 0)    return line;
+            if (e < 0)
+                return line;
             line = line.substring(0, idx) + line.substring(e + POSTAMBLE_STR.length());
         }
     }
