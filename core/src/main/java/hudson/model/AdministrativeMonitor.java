@@ -31,7 +31,10 @@ import hudson.security.Permission;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -88,6 +91,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see Jenkins#administrativeMonitors
  */
 public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint, StaplerProxy {
+    private static final Logger LOGGER = Logger.getLogger(AdministrativeMonitor.class.getName());
+
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.
      *
@@ -145,7 +150,55 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * he wants to ignore.
      */
     public boolean isEnabled() {
+        if (isSnoozed()) {
+            return false;
+        }
         return !Jenkins.get().getDisabledAdministrativeMonitors().contains(id);
+    }
+
+    /**
+     * @since 2.549
+     */
+    public boolean isSnoozed() {
+        Map<String, Long> snoozed = Jenkins.get().getSnoozedAdministrativeMonitors();
+        Long expiry = snoozed.get(id);
+        if (expiry == null) {
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        if (now >= expiry) {
+            // Cleanup expired entry to prevent memory leak
+            try {
+                AbstractCIBase jenkins = Jenkins.get();
+                Map<String, Long> map = jenkins.getSnoozedAdministrativeMonitors();
+                if (map.remove(id) != null) {
+                    jenkins.setSnoozedAdministrativeMonitors(map);
+                    jenkins.save();
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to cleanup expired snooze for " + id, e);
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @since 2.549
+     */
+    public void snooze(long durationMs) throws IOException {
+        if (durationMs <= 0) {
+            throw new IllegalArgumentException("Duration must be positive");
+        }
+        if (durationMs > 365L * 24 * 60 * 60 * 1000) {
+            throw new IllegalArgumentException("Duration exceeds maximum (1 year)");
+        }
+        long expiryTime = System.currentTimeMillis() + durationMs;
+        AbstractCIBase jenkins = Jenkins.get();
+        Map<String, Long> map = jenkins.getSnoozedAdministrativeMonitors();
+        map.put(id, expiryTime);
+        jenkins.setSnoozedAdministrativeMonitors(map);
+        jenkins.save();
     }
 
     /**
@@ -181,6 +234,42 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     public void doDisable(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         disable(true);
+        rsp.sendRedirect2(req.getContextPath() + "/manage");
+    }
+
+    /**
+     * @since 2.549
+     */
+    @RequirePOST
+    public void doSnooze(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        String duration = req.getParameter("duration");
+        long durationMs;
+        try {
+            if ("custom".equals(duration)) {
+                String minutesStr = req.getParameter("customMinutes");
+                if (minutesStr == null) {
+                    throw new IllegalArgumentException("No customMinutes parameter");
+                }
+                long minutes = Long.parseLong(minutesStr);
+                if (minutes <= 0) {
+                    throw new IllegalArgumentException("Custom minutes must be positive");
+                }
+                durationMs = minutes * 60 * 1000;
+            } else {
+                if (duration == null) {
+                    throw new IllegalArgumentException("No duration parameter");
+                }
+                durationMs = Long.parseLong(duration);
+                if (durationMs <= 0) {
+                    throw new IllegalArgumentException("Duration must be positive");
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            rsp.sendError(StaplerResponse2.SC_BAD_REQUEST, e.getMessage());
+            return;
+        }
+        snooze(durationMs);
         rsp.sendRedirect2(req.getContextPath() + "/manage");
     }
 
