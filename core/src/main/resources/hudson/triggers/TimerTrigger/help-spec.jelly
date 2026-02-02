@@ -91,24 +91,26 @@ H H 1,15 1-11 *
   first line of the field.
   Time zone specification starts with <code>TZ=</code>, followed by the ID of a time zone.
 </p>
-  <p>
-    Complete example of a schedule with a time zone specification:
-  </p>
-  <pre>
-    TZ=Europe/London
-    # This job needs to be run in the morning, London time
-    H 8 * * *
-    # Butlers do not have a five o'clock, so we run the job again
-    H(0-30) 17 * * *
-  </pre>
 <p>
-  The supported time zones depend on the Java runtime Jenkins is running on. The list of supported time zone IDs on this instance is:
+  Complete example of a schedule with a time zone specification:
 </p>
-<j:invokeStatic className="java.util.TimeZone" method="getAvailableIDs" var="timeZones"/>
-<ul>
-  <j:forEach items="${timeZones}" var="timeZone">
-    <li>${timeZone}</li>
-  </j:forEach>
-</ul>
+<pre>
+  TZ=Europe/London
+  # This job needs to be run in the morning, London time
+  H 8 * * *
+  # Butlers do not have a five o'clock, so we run the job again
+  H(0-30) 17 * * *
+</pre>
+<p>
+  The full list of supported time zone IDs depends on the Java runtime Jenkins is running on.
+  A reference list of TZ database time zone IDs can be found here:
+  <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank">
+    List of tz database time zones
+  </a>.
+</p>
+<p>
+  Most users will not need to set a custom time zone. Only specify one if your job must run
+  in a different time zone than the Jenkins controller.
+</p>
 </div>
 </j:jelly>
