@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2025 CloudBees, Inc.
+Copyright (c) 2026 Somil Jain
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,28 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
+
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-    <l:layout title="${%Content Security Policy configuration}" type="one-column">
-        <l:main-panel>
-            <l:app-bar title="${%Enabling Content Security Policy configuration}"/>
-            <p>
-                ${%paragraph1}
-            </p>
-            <p>
-                ${%paragraph2}
-            </p>
-            <p>
-                ${%paragraph3}
-            </p>
-            <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-                <div>
-                    <f:bottomButtonBar>
-                        <f:submit name="setup" value="${%Go to configuration}"/>
-                        <f:submit primary="false" name="defer" value="${%Cancel}"/>
-                    </f:bottomButtonBar>
-                </div>
-            </form>
-        </l:main-panel>
-    </l:layout>
+<j:jelly xmlns:j="jelly:core"
+         xmlns:st="jelly:stapler">
+    <st:redirect url="thirdPartyLicenses"/>
 </j:jelly>
