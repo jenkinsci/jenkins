@@ -2631,7 +2631,7 @@ public class Functions {
     /**
      * Converts the given actions to a JSON object
      */
-    @Restricted({NoExternalUse.class})
+    @Restricted(NoExternalUse.class)
     public static String convertActionsToJson(String baseUrl, List<Action> actions) {
         ModelObjectWithContextMenu.ContextMenu contextMenu = new ModelObjectWithContextMenu.ContextMenu();
         contextMenu.addAll(actions
