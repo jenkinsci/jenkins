@@ -98,7 +98,7 @@ THE SOFTWARE.
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.1029.vd3071f6b_5988</winstone.version>
+    <winstone.version>8.1033.v23d2f156e821</winstone.version>
     <node.version>24.13.0</node.version>
   </properties>
 
@@ -281,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>13.0.0</version>
+              <version>13.1.0</version>
             </dependency>
           </dependencies>
           <executions>
