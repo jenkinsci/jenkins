@@ -24,12 +24,24 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="jenkins-alert jenkins-alert-warning">
-     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="yes" value="${%Manage}"/>
-      <f:submit name="no" value="${%Dismiss}"/>
-     </form>
-
-    ${%ExecutorsWarning}
+  <div class="jenkins-alert jenkins-alert-warning" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+    <div>
+      ${%ExecutorsWarning}
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+      <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}" style="display: inline-flex; gap: 0.5rem;">
+        <f:submit name="yes" value="${%Manage}"/>
+        <f:submit name="no" value="${%Dismiss}"/>
+      </form>
+      <form method="post" action="${rootURL}/${it.url}/snooze" style="display: inline-flex; gap: 0.5rem; align-items: center;">
+        <j:if test="${h.isCrumbEncoded()}">
+          <input type="hidden" name="${h.crumbRequestField}" value="${h.getCrumb(request)}"/>
+        </j:if>
+        <input type="hidden" name="duration" value="custom"/>
+        <label for="snooze-minutes-${it.id}" class="jenkins-visually-hidden">${%snooze.duration.label}</label>
+        <input type="number" id="snooze-minutes-${it.id}" name="customMinutes" placeholder="${%snooze.duration.placeholder}" min="1" max="525600" step="1" style="width: 80px;" class="jenkins-input" required="required" aria-label="${%snooze.duration.label}" title="${%snooze.duration.title}"/>
+        <f:submit value="${%snooze}"/>
+      </form>
+    </div>
   </div>
 </j:jelly>

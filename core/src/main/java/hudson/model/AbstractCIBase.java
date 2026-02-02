@@ -119,6 +119,27 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         }
     }
 
+    private final Map<String, Long> snoozedAdministrativeMonitors = new HashMap<>();
+
+    /**
+     * @since 2.549
+     */
+    public Map<String, Long> getSnoozedAdministrativeMonitors() {
+        synchronized (this.snoozedAdministrativeMonitors) {
+            return new HashMap<>(snoozedAdministrativeMonitors);
+        }
+    }
+
+    /**
+     * @since 2.549
+     */
+    public void setSnoozedAdministrativeMonitors(Map<String, Long> snoozedAdministrativeMonitors) {
+        synchronized (this.snoozedAdministrativeMonitors) {
+            this.snoozedAdministrativeMonitors.clear();
+            this.snoozedAdministrativeMonitors.putAll(snoozedAdministrativeMonitors);
+        }
+    }
+
     /* =================================================================================================================
      * Implementation provided
      * ============================================================================================================== */
