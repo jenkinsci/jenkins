@@ -26,9 +26,6 @@ import pluginSelectList from "./templates/pluginSelectList.hbs";
 
 Handlebars.registerPartial("pluginSelectList", pluginSelectList);
 
-// TODO: see whether this is actually being used or if it can be removed
-window.zq = $;
-
 // Setup the dialog, exported
 var createPluginSetupWizard = function (appendTarget) {
   var $bs = enhanceJQueryWithBootstrap($);
@@ -1191,14 +1188,10 @@ var createPluginSetupWizard = function (appendTarget) {
     pluginManager.restartJenkins(function () {
       setPanel(loadingPanel);
 
-      console.log("-------------------");
-      console.log("Waiting for Jenkins to come back online...");
-      console.log("-------------------");
       var pingUntilRestarted = function () {
         pluginManager.getRestartStatus(function (restartStatus) {
           if (this.isError || restartStatus.restartRequired) {
             if (this.isError || restartStatus.restartSupported) {
-              console.log("Waiting...");
               setTimeout(pingUntilRestarted, 1000);
             } else if (!restartStatus.restartSupported) {
               throw new Error(
@@ -1322,14 +1315,8 @@ var createPluginSetupWizard = function (appendTarget) {
     /* globals defaultUpdateSiteId: true */
     jenkins.testConnectivity(
       defaultUpdateSiteId,
-      handleGenericError(function (isConnected, isFatal, errorMessage) {
+      handleGenericError(function (isConnected) {
         if (!isConnected) {
-          if (isFatal) {
-            console.log(
-              "Default update site connectivity check failed with fatal error: " +
-                errorMessage,
-            );
-          }
           setPanel(offlinePanel);
           return;
         }

@@ -104,7 +104,7 @@ function generateDropdowns() {
               ),
             ),
           )
-          .catch((error) => console.log(`Jumplist request failed: ${error}`))
+          .catch(() => {})
           .finally(() => (instance.loaded = true));
       }),
   );
@@ -181,9 +181,7 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
         }
         instance.setContent(container);
       })
-      .catch((error) => {
-        console.log(`Dropdown fetch failed: ${error}`);
-      })
+      .catch(() => {})
       .finally(() => {
         instance.loaded = true;
       });
