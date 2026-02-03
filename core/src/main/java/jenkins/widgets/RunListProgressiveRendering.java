@@ -27,8 +27,10 @@ package jenkins.widgets;
 import hudson.model.Run;
 import hudson.util.RunList;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import jenkins.util.ProgressiveRendering;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -43,10 +45,11 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
 
     /**
      * Since we cannot predict how many runs there will be, just show an ever-growing progress bar.
-     * The first increment will be sized as if this many runs will be in the total,
+     * The first increments will be sized so that 50% progress is reached when half of this many runs have been processed.
      * but then like Zeno’s paradox we will never seem to finish until we actually do.
      */
-    private static final double MAX_LIKELY_RUNS = 20; // if (MAX_LIKELY_RUNS / 2) runs are processed, progress is 0.5
+    private static final double MAX_LIKELY_RUNS = 20;
+    private static final int LIMIT = SystemProperties.getInteger(RunListProgressiveRendering.class.getName() + ".limit", Integer.MAX_VALUE);
     private final List<JSONObject> results = new ArrayList<>();
     private Iterable<? extends Run<?, ?>> builds;
 
@@ -57,10 +60,9 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
 
     @Override protected void compute() throws Exception {
         int processed = 0;
-        for (Run<?, ?> build : builds) {
-            if (canceled()) {
-                return;
-            }
+        Iterator<? extends Run<?, ?>> iter = builds.iterator();
+        while (iter.hasNext() && !canceled() && processed < LIMIT) {
+            Run<?, ?> build = iter.next();
             JSONObject element = new JSONObject();
             calculate(build, element);
             synchronized (this) {
