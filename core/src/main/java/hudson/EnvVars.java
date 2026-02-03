@@ -355,6 +355,9 @@ public class EnvVars extends TreeMap<String, String> {
         return this;
     }
 
+    /**
+     * Resolves environment variables against each other.
+     */
     public static void resolve(Map<String, String> env) {
         for (Map.Entry<String, String> entry : env.entrySet()) {
             final String key = entry.getKey();
