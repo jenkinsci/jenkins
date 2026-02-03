@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -126,15 +127,16 @@ class FormValidationTest {
             @Override
             protected FormValidation check() throws IOException {
                 String uri = "https://www.jenkins.io/";
-                try {
-                    if (findText(open(URI.create(uri)), "Jenkins")) {
-                        return FormValidation.ok();
-                    } else {
-                        return FormValidation.error("This is a valid URI but it does not look like Jenkins");
-                    }
-                } catch (IOException e) {
-                    return handleIOException(uri, e);
+                if (findText(open(URI.create(uri)), "Jenkins")) {
+                    return FormValidation.ok();
+                } else {
+                    return FormValidation.error("This is a valid URI but it does not look like Jenkins");
                 }
+            }
+
+            @Override
+            protected Stream<String> open(URI uri) {
+                return Stream.of("Safe, reliable mock content containing Jenkins keyword");
             }
         };
         assertThat(urlCheck.check(), is(FormValidation.ok()));
