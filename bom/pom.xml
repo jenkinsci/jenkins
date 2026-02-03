@@ -41,7 +41,7 @@ THE SOFTWARE.
     <commons-fileupload2.version>2.0.0-M4</commons-fileupload2.version>
     <groovy.version>2.4.21</groovy.version>
     <jelly.version>1.1-jenkins-20250731</jelly.version>
-    <stapler.version>2065.v7db_c1fcf0a_d0</stapler.version>
+    <stapler.version>2072.ve00de895a_40c</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -109,7 +109,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.20.0</version>
+        <version>1.21.0</version>
       </dependency>
       <dependency>
         <groupId>commons-collections</groupId>
