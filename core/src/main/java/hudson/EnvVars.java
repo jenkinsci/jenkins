@@ -357,8 +357,8 @@ public class EnvVars extends TreeMap<String, String> {
 
     public static void resolve(Map<String, String> env) {
         for (Map.Entry<String, String> entry : env.entrySet()) {
-            final String excludedKey = entry.getKey();
-            VariableResolver<String> resolver = name -> excludedKey.equals(name) ? null : env.get(name);
+            final String key = entry.getKey();
+            VariableResolver<String> resolver = name -> key.equals(name) ? null : env.get(name);
             entry.setValue(Util.replaceMacro(entry.getValue(), resolver));
         }
     }
