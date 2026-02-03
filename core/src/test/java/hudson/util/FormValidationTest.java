@@ -125,12 +125,12 @@ class FormValidationTest {
         FormValidation.URLCheck urlCheck = new FormValidation.URLCheck() {
             @Override
             protected FormValidation check() throws IOException {
-                String uri = "https://www.jenkins.io/";
+                String uri = "https://example.com/";
                 try {
-                    if (findText(open(URI.create(uri)), "Jenkins")) {
+                    if (findText(open(URI.create(uri)), "Example")) {
                         return FormValidation.ok();
                     } else {
-                        return FormValidation.error("This is a valid URI but it does not look like Jenkins");
+                        return FormValidation.error("This is a valid URI but it does not look as expected");
                     }
                 } catch (IOException e) {
                     return handleIOException(uri, e);
