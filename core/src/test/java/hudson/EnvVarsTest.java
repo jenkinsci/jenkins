@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -162,5 +164,18 @@ class EnvVarsTest {
         filteredMap.put("A", "a");
         env.putAllNonNull(map);
         assertEquals(filteredMap, env);
+    }
+
+    @Test
+    @Timeout(2)
+    void resolveSelfReferenceDoesNotGrowUnbounded() {
+        EnvVars env = new EnvVars();
+        env.put("ORACLE_HOME", "/opt/oracle");
+        env.put("LD_LIBRARY_PATH", "$ORACLE_HOME/lib:$LD_LIBRARY_PATH");
+        EnvVars.resolve(env);
+        String ldPath = env.get("LD_LIBRARY_PATH");
+        assertTrue(ldPath.length() < 500, "Self-reference must not expand unboundedly, got length: " + ldPath.length());
+        assertEquals("/opt/oracle/lib:$LD_LIBRARY_PATH", ldPath,
+            "ORACLE_HOME is expanded; self-reference $LD_LIBRARY_PATH is left as literal");
     }
 }

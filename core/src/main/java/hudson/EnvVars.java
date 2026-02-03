@@ -355,12 +355,11 @@ public class EnvVars extends TreeMap<String, String> {
         return this;
     }
 
-    /**
-     * Resolves environment variables against each other.
-     */
     public static void resolve(Map<String, String> env) {
         for (Map.Entry<String, String> entry : env.entrySet()) {
-            entry.setValue(Util.replaceMacro(entry.getValue(), env));
+            final String excludedKey = entry.getKey();
+            VariableResolver<String> resolver = name -> excludedKey.equals(name) ? null : env.get(name);
+            entry.setValue(Util.replaceMacro(entry.getValue(), resolver));
         }
     }
 

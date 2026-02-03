@@ -63,6 +63,7 @@ import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
@@ -107,6 +108,15 @@ class UtilTest {
         assertEquals("a-aa", Util.replaceMacro("$A-$AA", m));
         assertEquals("/a/foo/can/B/you-believe_aa~it?", Util.replaceMacro("/$A/foo/can/$B/you-believe_$AA~it?", m));
         assertEquals("$$aa$Ba${A}$it", Util.replaceMacro("$$$DOLLAR${AA}$$B${ENCLOSED}$it", m));
+    }
+
+    @Test
+    @Timeout(2)
+    void replaceMacroSelfReferenceDoesNotGrowUnbounded() {
+        Map<String, String> m = new HashMap<>();
+        m.put("PATH", "path1:$PATH");
+        String result = Util.replaceMacro("path1:$PATH", m);
+        assertTrue(result.length() < 500, "Self-reference must not expand unboundedly, got length: " + result.length());
     }
 
     @Test
