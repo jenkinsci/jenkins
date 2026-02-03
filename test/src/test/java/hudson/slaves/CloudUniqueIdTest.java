@@ -259,6 +259,34 @@ class CloudUniqueIdTest {
     }
 
     @Test
+    void testUuidPersistsAcrossRestartAfterMigration() throws Exception {
+        // 1. Create a cloud with no UUID (simulating legacy config)
+        TestCloud legacyCloud = new TestCloud("legacy-cloud");
+        Field field = Cloud.class.getDeclaredField("uniqueId");
+        field.setAccessible(true);
+        field.set(legacyCloud, null);
+
+        // 2. Serialize (simulating config.xml with no uniqueId)
+        String xml = j.jenkins.XSTREAM2.toXML(legacyCloud);
+        assertTrue(xml.contains("<name>legacy-cloud</name>"));
+
+        // 3. Deserialize (triggers readResolve, assigns UUID)
+        TestCloud afterFirstBoot = (TestCloud) j.jenkins.XSTREAM2.fromXML(xml);
+        String assignedUuid = afterFirstBoot.getUniqueId();
+        assertNotNull(assignedUuid, "readResolve should assign a UUID");
+
+        // 4. Serialize again (now WITH the UUID)
+        String xmlWithUuid = j.jenkins.XSTREAM2.toXML(afterFirstBoot);
+        assertTrue(xmlWithUuid.contains(assignedUuid), "UUID should be in serialized form");
+
+        // 5. Deserialize again (simulating second restart)
+        TestCloud afterSecondBoot = (TestCloud) j.jenkins.XSTREAM2.fromXML(xmlWithUuid);
+
+        // 6. UUID should be the same
+        assertEquals(assignedUuid, afterSecondBoot.getUniqueId(), "UUID should persist across restarts after migration");
+    }
+
+    @Test
     void testProvisionNewIdGeneratesNewUuid() {
         TestCloud cloud = new TestCloud("test-cloud");
         String firstId = cloud.getUniqueId();

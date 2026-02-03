@@ -60,6 +60,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -69,7 +70,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
 /**
- * Creates {@link Node}s to dynamically expand/shrink the agents attached to Hudson.
+ * Creates {@link Node}s to dynamically expand/shrink the agents attached to
+ * Hudson.
  *
  * <p>
  * Put another way, this class encapsulates different communication protocols
@@ -77,18 +79,25 @@ import org.kohsuke.stapler.verb.POST;
  *
  * <h2>Notes for implementers</h2>
  * <h3>Automatically delete idle agents</h3>
- * Nodes provisioned from a cloud do not automatically get released just because it's created from {@link Cloud}.
- * Doing so requires a use of {@link RetentionStrategy}. Instantiate your {@link Slave} subtype with something
- * like {@link CloudSlaveRetentionStrategy} so that it gets automatically deleted after some idle time.
+ * Nodes provisioned from a cloud do not automatically get released just because
+ * it's created from {@link Cloud}.
+ * Doing so requires a use of {@link RetentionStrategy}. Instantiate your
+ * {@link Slave} subtype with something
+ * like {@link CloudSlaveRetentionStrategy} so that it gets automatically
+ * deleted after some idle time.
  *
  * <h3>Freeing an external resource when an agent is removed</h3>
- * Whether you do auto scale-down or not, you often want to release an external resource tied to a cloud-allocated
+ * Whether you do auto scale-down or not, you often want to release an external
+ * resource tied to a cloud-allocated
  * agent when it is removed.
  *
  * <p>
- * To do this, have your {@link Slave} subtype remember the necessary handle (such as EC2 instance ID)
- * as a field. Such fields need to survive the user-initiated re-configuration of {@link Slave}, so you'll need to
- * expose it in your {@link Slave} {@code configure-entries.jelly} and read it back in through {@link DataBoundConstructor}.
+ * To do this, have your {@link Slave} subtype remember the necessary handle
+ * (such as EC2 instance ID)
+ * as a field. Such fields need to survive the user-initiated re-configuration
+ * of {@link Slave}, so you'll need to
+ * expose it in your {@link Slave} {@code configure-entries.jelly} and read it
+ * back in through {@link DataBoundConstructor}.
  *
  * <p>
  * You then implement your own {@link Computer} subtype, override {@link Slave#createComputer()}, and instantiate
@@ -115,7 +124,6 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     /**
      * Unique identifier for this cloud instance.
      * Used for stable URL routing when multiple clouds have the same name.
-     * Not marked transient so it persists across Jenkins restarts.
      */
     private volatile String uniqueId;
 
@@ -176,6 +184,18 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      */
     protected void setUniqueIdIfNotSet(String id) {
         if (this.uniqueId == null && id != null) {
+            this.uniqueId = id;
+        }
+    }
+
+    /**
+     * Sets the unique ID from form submission.
+     * Only sets if the current uniqueId is null and the provided id is valid.
+     * @param id the unique identifier from form data
+     */
+    @DataBoundSetter
+    public void setUniqueId(String id) {
+        if (this.uniqueId == null && id != null && !id.trim().isEmpty()) {
             this.uniqueId = id;
         }
     }
@@ -397,7 +417,18 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
             }
         }
 
-        Cloud reconfigured = cloud.reconfigure(req, req.getSubmittedForm());
+        JSONObject submittedForm = req.getSubmittedForm();
+
+        // Validate that the submitted UUID matches this cloud's identity
+        String submittedUuid = submittedForm.optString("uniqueId", null);
+        if (submittedUuid != null && !submittedUuid.isEmpty()
+                && !submittedUuid.equals(this.getUniqueId())) {
+            throw new Descriptor.FormException(
+                    "Cloud identity mismatch. The cloud may have been modified by another user.",
+                    "uniqueId");
+        }
+
+        Cloud reconfigured = this.reconfigure(req, submittedForm);
 
         if (reconfigured == null) {
             j.clouds.remove(cloud);
@@ -418,21 +449,23 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         // Use identity comparison to find the correct cloud to replace
         // This avoids issues where equals() (often based on name) matches multiple
         // clouds
-        List<Cloud> newClouds = new ArrayList<>(j.clouds);
-        boolean replaced = false;
-        for (int i = 0; i < newClouds.size(); i++) {
-            if (newClouds.get(i) == cloud) {
-                newClouds.set(i, reconfigured);
-                replaced = true;
-                break;
+        synchronized (j.clouds) {
+            List<Cloud> newClouds = new ArrayList<>(j.clouds);
+            boolean replaced = false;
+            for (int i = 0; i < newClouds.size(); i++) {
+                if (newClouds.get(i) == cloud) {
+                    newClouds.set(i, reconfigured);
+                    replaced = true;
+                    break;
+                }
             }
-        }
 
-        if (replaced) {
-            j.clouds.replaceBy(newClouds);
-        } else {
-            // Fallback to standard replace if identity match fails (unlikely)
-            j.clouds.replace(cloud, reconfigured);
+            if (replaced) {
+                j.clouds.replaceBy(newClouds);
+            } else {
+                // Fallback to standard replace if identity match fails (unlikely)
+                j.clouds.replace(cloud, reconfigured);
+            }
         }
         j.save();
         return FormApply.success("../" + Util.rawEncode(reconfigured.getUniqueId()) + '/');
