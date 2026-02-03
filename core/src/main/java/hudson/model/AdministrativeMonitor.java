@@ -57,33 +57,42 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * monitoring and activate/deactivate the monitor accordingly. Sometimes
  * this can be done by updating a flag from code (see {@link SCMTrigger}
  * for one such example), while other times it's more convenient to do
- * so by running some code periodically (for this, use {@link TimerTrigger#timer})
+ * so by running some code periodically (for this, use
+ * {@link TimerTrigger#timer})
  *
  * <p>
- * {@link AdministrativeMonitor}s are bound to URL by {@link Jenkins#getAdministrativeMonitor(String)}.
+ * {@link AdministrativeMonitor}s are bound to URL by
+ * {@link Jenkins#getAdministrativeMonitor(String)}.
  * See {@link #getUrl()}.
  *
  * <h3>Views</h3>
  * <dl>
  * <dt>message.jelly</dt>
  * <dd>
- * If {@link #isActivated()} returns true, Jenkins will use the {@code message.jelly}
+ * If {@link #isActivated()} returns true, Jenkins will use the
+ * {@code message.jelly}
  * view of this object to render the warning text. This happens in the
  * {@code http://SERVER/jenkins/manage} page. This view should typically render
- * a DIV box with class='alert alert-danger' or class='alert alert-warning' with a human-readable text
+ * a DIV box with class='alert alert-danger' or class='alert alert-warning' with
+ * a human-readable text
  * inside it. It often also contains a link to a page that provides more details
  * about the problem.<br>
- * Additionally 2 numbers are shown in the Jenkins header of administrators, one with the number or active
- * non-security relevant monitors and one with the number of active security relevant monitors.
+ * Additionally 2 numbers are shown in the Jenkins header of administrators, one
+ * with the number or active
+ * non-security relevant monitors and one with the number of active security
+ * relevant monitors.
  * </dd>
  * </dl>
  *
  * <h3>Use with System Read permission</h3>
  * <p>
- *     By default administrative monitors are visible only to users with Administer permission.
- *     Users with {@link Jenkins#SYSTEM_READ} permission can access administrative monitors that override {@link #getRequiredPermission()}.
- *     Care needs to be taken to ensure users with that permission don't have access to actions modifying system state.
- *     For more details, see {@link #getRequiredPermission()}.
+ * By default administrative monitors are visible only to users with Administer
+ * permission.
+ * Users with {@link Jenkins#SYSTEM_READ} permission can access administrative
+ * monitors that override {@link #getRequiredPermission()}.
+ * Care needs to be taken to ensure users with that permission don't have access
+ * to actions modifying system state.
+ * For more details, see {@link #getRequiredPermission()}.
  * </p>
  *
  * @author Kohsuke Kawaguchi
@@ -94,7 +103,8 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     private static final Logger LOGGER = Logger.getLogger(AdministrativeMonitor.class.getName());
 
     /**
-     * Human-readable ID of this monitor, which needs to be unique within the system.
+     * Human-readable ID of this monitor, which needs to be unique within the
+     * system.
      *
      * <p>
      * This ID is used to remember persisted setting for this monitor,
@@ -111,7 +121,8 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
-     * Returns the URL of this monitor, relative to the context path, like "administrativeMonitor/foobar".
+     * Returns the URL of this monitor, relative to the context path, like
+     * "administrativeMonitor/foobar".
      */
     public String getUrl() {
         return "administrativeMonitor/" + id;
@@ -143,10 +154,12 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
-     * Returns true if this monitor {@link #disable(boolean) isn't disabled} earlier.
+     * Returns true if this monitor {@link #disable(boolean) isn't disabled}
+     * earlier.
      *
      * <p>
-     * This flag implements the ability for the admin to say "no thank you" to the monitor that
+     * This flag implements the ability for the admin to say "no thank you" to the
+     * monitor that
      * he wants to ignore.
      */
     public boolean isEnabled() {
@@ -243,56 +256,83 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     @RequirePOST
     public void doSnooze(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        String duration = req.getParameter("duration");
         long durationMs;
+
         try {
-            if ("custom".equals(duration)) {
+            String preset = req.getParameter("durationPreset");
+            if (preset == null) {
+                throw new IllegalArgumentException("No duration specified");
+            }
+
+            if ("custom".equals(preset)) {
                 String minutesStr = req.getParameter("customMinutes");
-                if (minutesStr == null) {
-                    throw new IllegalArgumentException("No customMinutes parameter");
+                if (minutesStr == null || minutesStr.isEmpty()) {
+                    throw new IllegalArgumentException("Custom duration required");
                 }
                 long minutes = Long.parseLong(minutesStr);
                 if (minutes <= 0) {
-                    throw new IllegalArgumentException("Custom minutes must be positive");
+                    throw new IllegalArgumentException("Minutes must be positive");
                 }
                 durationMs = minutes * 60 * 1000;
             } else {
-                if (duration == null) {
-                    throw new IllegalArgumentException("No duration parameter");
+                long minutes = Long.parseLong(preset);
+                if (minutes <= 0) {
+                    throw new IllegalArgumentException("Invalid preset duration");
                 }
-                durationMs = Long.parseLong(duration);
-                if (durationMs <= 0) {
-                    throw new IllegalArgumentException("Duration must be positive");
-                }
+                durationMs = minutes * 60 * 1000;
             }
+
+            // Validate max duration (1 year = 525600 minutes)
+            if (durationMs > 525600L * 60 * 1000) {
+                throw new IllegalArgumentException("Duration exceeds maximum (1 year)");
+            }
+
         } catch (IllegalArgumentException e) {
             rsp.sendError(StaplerResponse2.SC_BAD_REQUEST, e.getMessage());
             return;
         }
+
         snooze(durationMs);
-        rsp.sendRedirect2(req.getContextPath() + "/manage");
+
+        // AJAX: return 200; otherwise redirect
+        if ("XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
+            rsp.setStatus(StaplerResponse2.SC_OK);
+        } else {
+            rsp.sendRedirect2(req.getContextPath() + "/manage");
+        }
     }
 
     /**
      * Required permission to view this admin monitor.
-     * By default {@link Jenkins#ADMINISTER}, but {@link Jenkins#SYSTEM_READ} or {@link Jenkins#MANAGE} are also supported.
+     * By default {@link Jenkins#ADMINISTER}, but {@link Jenkins#SYSTEM_READ} or
+     * {@link Jenkins#MANAGE} are also supported.
      * <p>
-     *     Changing this permission check to return {@link Jenkins#SYSTEM_READ} will make the active
-     *     administrative monitor appear on {@link ManageJenkinsAction} to users without Administer permission.
-     *     {@link #doDisable(StaplerRequest2, StaplerResponse2)} will still always require Administer permission.
+     * Changing this permission check to return {@link Jenkins#SYSTEM_READ} will
+     * make the active
+     * administrative monitor appear on {@link ManageJenkinsAction} to users without
+     * Administer permission.
+     * {@link #doDisable(StaplerRequest2, StaplerResponse2)} will still always
+     * require Administer permission.
      * </p>
      * <p>
-     *     This method only allows for a single permission to be returned. If more complex permission checks are required,
-     *     override {@link #checkRequiredPermission()} and {@link #hasRequiredPermission()} instead.
+     * This method only allows for a single permission to be returned. If more
+     * complex permission checks are required,
+     * override {@link #checkRequiredPermission()} and
+     * {@link #hasRequiredPermission()} instead.
      * </p>
      * <p>
-     *     Implementers need to ensure that {@code doAct} and other web methods perform necessary permission checks:
-     *     Users with System Read permissions are expected to be limited to read-only access.
-     *     Form UI elements that change system state, e.g. toggling a feature on or off, need to be hidden from users
-     *     lacking Administer permission.
+     * Implementers need to ensure that {@code doAct} and other web methods perform
+     * necessary permission checks:
+     * Users with System Read permissions are expected to be limited to read-only
+     * access.
+     * Form UI elements that change system state, e.g. toggling a feature on or off,
+     * need to be hidden from users
+     * lacking Administer permission.
      * </p>
+     *
      * @since 2.233
-     * @deprecated Callers should use {@link #checkRequiredPermission()} or {@link #hasRequiredPermission()}.
+     * @deprecated Callers should use {@link #checkRequiredPermission()} or
+     *             {@link #hasRequiredPermission()}.
      */
     @Deprecated
     public Permission getRequiredPermission() {
@@ -300,11 +340,16 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
-     * Checks if the current user has the minimum required permission to view this administrative monitor.
+     * Checks if the current user has the minimum required permission to view this
+     * administrative monitor.
      * <p>
-     * Subclasses may override this method and {@link #hasRequiredPermission()} instead of {@link #getRequiredPermission()} to perform more complex permission checks,
-     * for example, checking either {@link Jenkins#MANAGE} or {@link Jenkins#SYSTEM_READ}.
+     * Subclasses may override this method and {@link #hasRequiredPermission()}
+     * instead of {@link #getRequiredPermission()} to perform more complex
+     * permission checks,
+     * for example, checking either {@link Jenkins#MANAGE} or
+     * {@link Jenkins#SYSTEM_READ}.
      * </p>
+     *
      * @see #getRequiredPermission()
      * @see #hasRequiredPermission()
      * @since 2.468
@@ -314,11 +359,16 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
-     * Checks if the current user has the minimum required permission to view this administrative monitor.
+     * Checks if the current user has the minimum required permission to view this
+     * administrative monitor.
      * <p>
-     * Subclasses may override this method and {@link #checkRequiredPermission} instead of {@link #getRequiredPermission()} to perform more complex permission checks,
-     * for example, checking either {@link Jenkins#MANAGE} or {@link Jenkins#SYSTEM_READ}.
+     * Subclasses may override this method and {@link #checkRequiredPermission}
+     * instead of {@link #getRequiredPermission()} to perform more complex
+     * permission checks,
+     * for example, checking either {@link Jenkins#MANAGE} or
+     * {@link Jenkins#SYSTEM_READ}.
      * </p>
+     *
      * @see #getRequiredPermission()
      * @see #checkRequiredPermission()
      * @since 2.468
@@ -328,9 +378,11 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
-     * Checks if the current user has the minimum required permission to view any administrative monitor.
+     * Checks if the current user has the minimum required permission to view any
+     * administrative monitor.
      *
-     * @return true if the current user has the minimum required permission to view any administrative monitor.
+     * @return true if the current user has the minimum required permission to view
+     *         any administrative monitor.
      *
      * @since 2.468
      */
@@ -339,7 +391,8 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
-     * Ensure that URLs in this administrative monitor are only accessible to users with {@link #getRequiredPermission()}.
+     * Ensure that URLs in this administrative monitor are only accessible to users
+     * with {@link #getRequiredPermission()}.
      */
     @Override
     @Restricted(NoExternalUse.class)
