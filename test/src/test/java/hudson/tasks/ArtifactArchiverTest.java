@@ -24,6 +24,7 @@
 
 package hudson.tasks;
 
+import static hudson.model.WindowsUtil.isWindowsSymlinkSupported;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -281,6 +282,7 @@ class ArtifactArchiverTest {
     @Issue("SECURITY-162")
     @Test
     void outsideSymlinks() throws Exception {
+        assumeTrue(!Functions.isWindows() || isWindowsSymlinkSupported());
         final FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -519,6 +521,7 @@ class ArtifactArchiverTest {
     @Test
     @Issue("JENKINS-55049")
     void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
+        assumeTrue(!Functions.isWindows() || isWindowsSymlinkSupported());
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
