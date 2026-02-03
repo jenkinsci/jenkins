@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -120,17 +121,18 @@ class FormValidationTest {
         assertThat(fv.renderHtml(), not(containsString("<html")));
     }
 
+    @Disabled("skip until #26251 is fixed")
     @Test
     void testUrlCheck() throws IOException {
         FormValidation.URLCheck urlCheck = new FormValidation.URLCheck() {
             @Override
             protected FormValidation check() throws IOException {
-                String uri = "https://www.iana.org/";
+                String uri = "https://www.jenkins.io/";
                 try {
-                    if (findText(open(URI.create(uri)), "IANA")) {
+                    if (findText(open(URI.create(uri)), "Jenkins")) {
                         return FormValidation.ok();
                     } else {
-                        return FormValidation.error("This is a valid URI but it does not look as expected");
+                        return FormValidation.error("This is a valid URI but it does not look like Jenkins");
                     }
                 } catch (IOException e) {
                     return handleIOException(uri, e);
