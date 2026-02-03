@@ -60,3 +60,18 @@
     }
   }
 }
+
+// Snooze form styles
+.snooze-form {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.snooze-select {
+  min-width: 100px;
+}
+
+.snooze-custom-input {
+  width: 80px;
+}
