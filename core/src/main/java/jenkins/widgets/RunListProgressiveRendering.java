@@ -49,7 +49,7 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
      * but then like Zeno’s paradox we will never seem to finish until we actually do.
      */
     private static final double MAX_LIKELY_RUNS = 20;
-    private static final int LIMIT = SystemProperties.getInteger(RunListProgressiveRendering.class.getName() + ".limit", Integer.MAX_VALUE);
+    private static final int LIMIT = SystemProperties.getInteger(RunListProgressiveRendering.class.getName() + ".limit", 1000);
     private final List<JSONObject> results = new ArrayList<>();
     private Iterable<? extends Run<?, ?>> builds;
 
