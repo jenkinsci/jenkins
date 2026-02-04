@@ -129,17 +129,6 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     }
 
     /**
-     * Dispatcher for cloud-by-ID routing. Enables Stapler to route URLs like
-     * /cloud/{uuid}/ to the correct cloud instance.
-     *
-     * @return dispatcher object for ID-based cloud lookup
-     */
-    @SuppressWarnings("unused") // stapler
-    public CloudByIdDispatcher getCloudById() {
-        return new CloudByIdDispatcher();
-    }
-
-    /**
      * Gets a cloud by its unique ID.
      */
     @CheckForNull
@@ -151,41 +140,6 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
             if (id.equals(c.getUniqueId())) {
                 return c;
             }
-        }
-        return null;
-    }
-
-    /**
-     * Stapler dispatcher that routes cloud requests by unique ID.
-     * Handles URL patterns like /cloud/{uuid}/
-     */
-    public class CloudByIdDispatcher {
-        /**
-         * Looks up a cloud by its unique ID.
-         *
-         * @param id the unique identifier
-         * @return the cloud with the given ID, or null if not found
-         */
-        public Cloud getDynamic(String id) {
-            return CloudSet.this.getById(id);
-        }
-    }
-
-    /**
-     * Gets a cloud by its index position.
-     *
-     * @param index the position in the cloud list
-     * @return the cloud at that index, or null if out of bounds
-     * @deprecated Use {@link #getById(String)} instead. Index-based lookup
-     *             is unreliable when clouds are added or removed.
-     */
-    @Deprecated
-    @SuppressWarnings("unused") // stapler
-    @Restricted(DoNotUse.class) // stapler
-    public Cloud getCloudByIndex(int index) {
-        List<Cloud> clouds = Jenkins.get().clouds;
-        if (index >= 0 && index < clouds.size()) {
-            return clouds.get(index);
         }
         return null;
     }
@@ -282,6 +236,8 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
             // Not great, but cloud name is final
             xml = xml.replace("<name>" + src.name + "</name>", "<name>" + name + "</name>");
             Cloud result = (Cloud) Jenkins.XSTREAM.fromXML(xml);
+            // Provision a new unique ID for the copied cloud to ensure distinct identity
+            result.provisionNewId();
             jenkins.clouds.add(result);
             // send the browser to the config page
             rsp.sendRedirect2(Functions.getNearestAncestorUrl(req, jenkins) + "/" + result.getUrl() + "configure");

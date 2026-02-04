@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.Label;
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,8 +16,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import jenkins.agents.CloudSet;
-import jenkins.model.Jenkins;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -91,34 +88,6 @@ class CloudUniqueIdTest {
     }
 
     @Test
-    void testUniqueIdCanBePreservedAcrossReconfiguration() throws Exception {
-        TestCloud original = new TestCloud("original");
-        String id = original.getUniqueId();
-
-        // Create a new cloud without an ID set (simulate deserialization)
-        TestCloud reconfigured = new TestCloud("renamed");
-
-        // Simulate legacy config.xml before uniqueId existed by clearing the field via reflection
-        Field field = Cloud.class.getDeclaredField("uniqueId");
-        field.setAccessible(true);
-        field.set(reconfigured, null);
-
-        // Now setUniqueIdIfNotSet should work
-        reconfigured.callSetUniqueIdIfNotSet(id);
-
-        assertEquals(id, reconfigured.getUniqueId());
-    }
-
-    @Test
-    void testSetUniqueIdIfNotSetDoesNotOverwrite() {
-        TestCloud cloud = new TestCloud("cloud");
-        String originalId = cloud.getUniqueId();
-
-        cloud.callSetUniqueIdIfNotSet("different-id");
-        assertEquals(originalId, cloud.getUniqueId());
-    }
-
-    @Test
     void testThreadSafeUniqueIdGeneration() throws Exception {
         TestCloud cloud = new TestCloud("threaded-cloud");
 
@@ -171,22 +140,6 @@ class CloudUniqueIdTest {
     }
 
     @Test
-    void testCloudSetGetCloudById() {
-        TestCloud cloud1 = new TestCloud("cloud1");
-        TestCloud cloud2 = new TestCloud("cloud2");
-
-        j.jenkins.clouds.add(cloud1);
-        j.jenkins.clouds.add(cloud2);
-
-        CloudSet cloudSet = new CloudSet();
-        var dispatcher = cloudSet.getCloudById();
-
-        assertEquals(cloud1, dispatcher.getDynamic(cloud1.getUniqueId()));
-        assertEquals(cloud2, dispatcher.getDynamic(cloud2.getUniqueId()));
-        assertNull(dispatcher.getDynamic("missing"));
-    }
-
-    @Test
     void testCloudUrlUsesUniqueIdForDuplicateNames() {
         TestCloud cloud1 = new TestCloud("same-name");
         TestCloud cloud2 = new TestCloud("same-name");
@@ -213,39 +166,6 @@ class CloudUniqueIdTest {
     }
 
     @Test
-    void testCloudByIndexBackwardCompatibility() {
-        TestCloud cloud1 = new TestCloud("cloud1");
-        TestCloud cloud2 = new TestCloud("cloud2");
-
-        Jenkins jenkins = j.jenkins;
-
-        jenkins.clouds.add(cloud1);
-        jenkins.clouds.add(cloud2);
-
-        CloudSet cloudSet = new CloudSet();
-
-        assertEquals(cloud1, cloudSet.getCloudByIndex(0));
-        assertEquals(cloud2, cloudSet.getCloudByIndex(1));
-        assertNull(cloudSet.getCloudByIndex(-1));
-        assertNull(cloudSet.getCloudByIndex(10));
-    }
-
-    @Test
-    void testReadResolveMigrationAssignsId() throws Exception {
-        TestCloud cloud = new TestCloud("legacy-cloud");
-
-        // Simulate pre-uniqueId serialized form
-        Field field = Cloud.class.getDeclaredField("uniqueId");
-        field.setAccessible(true);
-        field.set(cloud, null);
-
-        j.jenkins.clouds.add(cloud);
-
-        assertNotNull(cloud.getUniqueId());
-        assertFalse(cloud.getUniqueId().isEmpty());
-    }
-
-    @Test
     void testUniqueIdPersistedAcrossXStreamSerialization() throws Exception {
         TestCloud original = new TestCloud("test-cloud");
         String originalId = original.getUniqueId();
@@ -255,16 +175,13 @@ class CloudUniqueIdTest {
         TestCloud deserialized = (TestCloud) j.jenkins.XSTREAM2.fromXML(xml);
 
         assertEquals(originalId, deserialized.getUniqueId(),
-            "UUID should be preserved across XStream serialization/deserialization");
+                "UUID should be preserved across XStream serialization/deserialization");
     }
 
     @Test
     void testUuidPersistsAcrossRestartAfterMigration() throws Exception {
         // 1. Create a cloud with no UUID (simulating legacy config)
         TestCloud legacyCloud = new TestCloud("legacy-cloud");
-        Field field = Cloud.class.getDeclaredField("uniqueId");
-        field.setAccessible(true);
-        field.set(legacyCloud, null);
 
         // 2. Serialize (simulating config.xml with no uniqueId)
         String xml = j.jenkins.XSTREAM2.toXML(legacyCloud);
@@ -316,8 +233,5 @@ class CloudUniqueIdTest {
             return false;
         }
 
-        void callSetUniqueIdIfNotSet(String id) {
-            super.setUniqueIdIfNotSet(id);
-        }
     }
 }

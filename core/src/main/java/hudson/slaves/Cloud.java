@@ -49,9 +49,7 @@ import hudson.util.DescriptorList;
 import hudson.util.FormApply;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Future;
@@ -128,10 +126,9 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     private volatile String uniqueId;
 
     /**
-     * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
-     *
-     * This is expected to be short ID-like string that does not contain any character unsafe as variable name or
-     * URL path token.
+     * Display name for this cloud, shown in the UI.
+     * Note: Multiple clouds may share the same name. Use {@link #getUniqueId()} for
+     * stable identification across renames, reordering, or duplicate names.
      */
     public String name;
 
@@ -175,17 +172,6 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
             }
         }
         return id;
-    }
-
-    /**
-     * Sets the unique ID if it hasn't been set yet.
-     * Used during reconfiguration to preserve identity.
-     * @param id the unique identifier to set
-     */
-    protected void setUniqueIdIfNotSet(String id) {
-        if (this.uniqueId == null && id != null) {
-            this.uniqueId = id;
-        }
     }
 
     /**
@@ -407,66 +393,27 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         checkPermission(Jenkins.ADMINISTER);
 
         Jenkins j = Jenkins.get();
-        Cloud cloud = j.clouds.getById(this.getUniqueId());
-        if (cloud == null) {
-            // Fallback to name-based lookup for backwards compatibility
-            // but this could be problematic if duplicate names exist
-            cloud = j.getCloud(this.name);
-            if (cloud == null) {
-                throw new ServletException("No such cloud " + this.name);
-            }
-        }
 
-        JSONObject submittedForm = req.getSubmittedForm();
-
-        // Validate that the submitted UUID matches this cloud's identity
-        String submittedUuid = submittedForm.optString("uniqueId", null);
-        if (submittedUuid != null && !submittedUuid.isEmpty()
-                && !submittedUuid.equals(this.getUniqueId())) {
-            throw new Descriptor.FormException(
-                    "Cloud identity mismatch. The cloud may have been modified by another user.",
-                    "uniqueId");
-        }
-
-        Cloud reconfigured = this.reconfigure(req, submittedForm);
+        Cloud reconfigured = this.reconfigure(req, req.getSubmittedForm());
 
         if (reconfigured == null) {
-            j.clouds.remove(cloud);
+            j.clouds.remove(this);
             j.save();
             return FormApply.success("../");
         }
 
-        reconfigured.setUniqueIdIfNotSet(this.getUniqueId());
+        // The uniqueId should be set via @DataBoundSetter from the hidden form field
+        if (!this.getUniqueId().equals(reconfigured.getUniqueId())) {
+            throw new Descriptor.FormException("Cloud identity mismatch. The cloud may have been modified by another user.", "uniqueId");
+        }
 
         String proposedName = reconfigured.name;
         if (!proposedName.equals(this.name)
                 && j.getCloud(proposedName) != null) {
-            throw new Descriptor.FormException(
-                    jenkins.agents.Messages.CloudSet_CloudAlreadyExists(proposedName),
-                    "name");
+            throw new Descriptor.FormException(jenkins.agents.Messages.CloudSet_CloudAlreadyExists(proposedName), "name");
         }
 
-        // Use identity comparison to find the correct cloud to replace
-        // This avoids issues where equals() (often based on name) matches multiple
-        // clouds
-        synchronized (j.clouds) {
-            List<Cloud> newClouds = new ArrayList<>(j.clouds);
-            boolean replaced = false;
-            for (int i = 0; i < newClouds.size(); i++) {
-                if (newClouds.get(i) == cloud) {
-                    newClouds.set(i, reconfigured);
-                    replaced = true;
-                    break;
-                }
-            }
-
-            if (replaced) {
-                j.clouds.replaceBy(newClouds);
-            } else {
-                // Fallback to standard replace if identity match fails (unlikely)
-                j.clouds.replace(cloud, reconfigured);
-            }
-        }
+        j.clouds.replace(this, reconfigured);
         j.save();
         return FormApply.success("../" + Util.rawEncode(reconfigured.getUniqueId()) + '/');
     }
