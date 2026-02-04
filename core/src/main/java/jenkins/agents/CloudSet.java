@@ -277,6 +277,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
             throw new Failure(String.format("No cloud type '%s' is known", cloudDescriptorName));
         }
         Cloud cloud = cloudDescriptor.newInstance(req, req.getSubmittedForm());
+        cloud.provisionNewId();
         if (!Jenkins.get().clouds.add(cloud)) {
             LOGGER.log(Level.WARNING, () -> "Creating duplicate cloud name " + cloud.name + ". Plugin " + Jenkins.get().getPluginManager().whichPlugin(cloud.getClass()) + " should be updated to support user provided name.");
         }
