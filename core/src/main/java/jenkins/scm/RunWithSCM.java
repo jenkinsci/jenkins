@@ -26,6 +26,7 @@ package jenkins.scm;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -34,6 +35,7 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.util.AdaptedIterator;
 import java.util.AbstractSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -87,14 +89,25 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
      * @return
      *      can be empty but never null.
      */
+    @SuppressFBWarnings(value = "DCN_NULLPOINTER_EXCEPTION", justification = "Handles corrupted UnmodifiableCollection from XStream deserialization of older configs")
     @Exported
     @NonNull default Set<User> getCulprits() {
         if (shouldCalculateCulprits()) {
             return calculateCulprits();
         }
 
+        Set<String> ids = getCulpritIds();
+
         return new AbstractSet<>() {
-            private Set<String> culpritIds = Set.copyOf(getCulpritIds());
+            private Set<String> culpritIds;
+
+            {
+                try {
+                    culpritIds = (ids == null) ? Collections.emptySet() : Set.copyOf(ids);
+                } catch (NullPointerException e) {
+                    culpritIds = Collections.emptySet();
+                }
+            }
 
             @Override
             public Iterator<User> iterator() {
