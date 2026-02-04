@@ -229,12 +229,9 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     /**
      * Suitable for {@link Job#getBuild}.
      */
+		@SuppressWarnings("deprecation")
     public final RunT getBuild(String id) {
-        try {
-            return builds.getById(Integer.parseInt(id));
-        } catch (NumberFormatException e) {
-            return builds.getById(id);
-        }
+        return builds.getById(id);
     }
 
     /**
