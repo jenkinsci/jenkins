@@ -4,6 +4,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.jvnet.hudson.test.LoggerRule.recorded;
@@ -17,6 +19,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.security.csp.Contributor;
+import jenkins.security.csp.CspBuilder;
+import jenkins.security.csp.Directive;
 import jenkins.util.HttpServletFilter;
 import org.hamcrest.Matcher;
 import org.htmlunit.HttpMethod;
@@ -27,6 +32,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.xml.sax.SAXException;
 
 @WithJenkins
 public class CspFilterTest {
@@ -97,6 +103,48 @@ public class CspFilterTest {
                         "CSP header has unexpected differences: Expected 'base-uri 'none'; default-src 'self'; form-action 'self'; frame-ancestors 'self'; img-src 'self' data:; " +
                                 "script-src 'report-sample' 'self'; style-src 'report-sample' 'self' 'unsafe-inline'; report-to content-security-policy; report-uri http://localhost:"),
                 endsWith(":YW5vbnltb3Vz::L3Rlc3QtZmlsdGVyLXdpdGhvdXQtY3NwL3NvbWUtcGF0aA==' but got 'null'"))));
+    }
+
+    @Test
+    void testCspBuilderNotCalledWithHeaderDisabled(JenkinsRule j) throws IOException, SAXException {
+        try (JenkinsRule.WebClient webClient = j.createWebClient().withJavaScriptEnabled(false)) {
+            {
+                long startTime = System.currentTimeMillis();
+                webClient.goTo("");
+                long endTime = System.currentTimeMillis();
+
+                // SlowCspContributor slowed this down
+                final long difference = endTime - startTime;
+                assertThat(difference, greaterThanOrEqualTo(1000L));
+            }
+
+            System.setProperty(SystemPropertyHeaderDecider.SYSTEM_PROPERTY_NAME, "");
+            try {
+                long startTime = System.currentTimeMillis();
+                webClient.goTo("");
+                long endTime = System.currentTimeMillis();
+
+                // SlowCspContributor did not slow this down
+                final long difference = endTime - startTime;
+                assertThat(difference, lessThan(1000L));
+            } finally {
+                System.clearProperty(SystemPropertyHeaderDecider.SYSTEM_PROPERTY_NAME);
+            }
+        }
+    }
+
+    @TestExtension("testCspBuilderNotCalledWithHeaderDisabled")
+    public static class SlowCspContributor implements Contributor {
+        @Override
+        public void apply(CspBuilder cspBuilder) {
+            try {
+                // Simulate a slow operation
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            cspBuilder.add(Directive.FORM_ACTION, "slow.jenkins.io");
+        }
     }
 
     @TestExtension
