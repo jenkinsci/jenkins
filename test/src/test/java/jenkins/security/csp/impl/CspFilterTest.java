@@ -5,11 +5,12 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.jvnet.hudson.test.LoggerRule.recorded;
 
+import hudson.ExtensionList;
 import hudson.security.csrf.CrumbExclusion;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,11 +18,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.csp.Contributor;
 import jenkins.security.csp.CspBuilder;
-import jenkins.security.csp.Directive;
 import jenkins.util.HttpServletFilter;
 import org.hamcrest.Matcher;
 import org.htmlunit.HttpMethod;
@@ -109,24 +110,23 @@ public class CspFilterTest {
     void testCspBuilderNotCalledWithHeaderDisabled(JenkinsRule j) throws IOException, SAXException {
         try (JenkinsRule.WebClient webClient = j.createWebClient().withJavaScriptEnabled(false)) {
             {
-                long startTime = System.currentTimeMillis();
+                int start = ExtensionList.lookupSingleton(CountingContributor.class).counter.get();
                 webClient.goTo("");
-                long endTime = System.currentTimeMillis();
+                int end = ExtensionList.lookupSingleton(CountingContributor.class).counter.get();
 
-                // SlowCspContributor slowed this down
-                final long difference = endTime - startTime;
-                assertThat(difference, greaterThanOrEqualTo(1000L));
+                final int difference = end - start;
+                assertThat(difference, greaterThanOrEqualTo(1));
             }
 
             System.setProperty(SystemPropertyHeaderDecider.SYSTEM_PROPERTY_NAME, "");
             try {
-                long startTime = System.currentTimeMillis();
+                int start = ExtensionList.lookupSingleton(CountingContributor.class).counter.get();
                 webClient.goTo("");
-                long endTime = System.currentTimeMillis();
+                int end = ExtensionList.lookupSingleton(CountingContributor.class).counter.get();
 
-                // SlowCspContributor did not slow this down
-                final long difference = endTime - startTime;
-                assertThat(difference, lessThan(1000L));
+                // no calls expected
+                final int difference = end - start;
+                assertThat(difference, is(0));
             } finally {
                 System.clearProperty(SystemPropertyHeaderDecider.SYSTEM_PROPERTY_NAME);
             }
@@ -134,16 +134,12 @@ public class CspFilterTest {
     }
 
     @TestExtension("testCspBuilderNotCalledWithHeaderDisabled")
-    public static class SlowCspContributor implements Contributor {
+    public static class CountingContributor implements Contributor {
+        AtomicInteger counter = new AtomicInteger(0);
+
         @Override
         public void apply(CspBuilder cspBuilder) {
-            try {
-                // Simulate a slow operation
-                Thread.sleep(1000L);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            cspBuilder.add(Directive.FORM_ACTION, "slow.jenkins.io");
+            counter.incrementAndGet();
         }
     }
 
