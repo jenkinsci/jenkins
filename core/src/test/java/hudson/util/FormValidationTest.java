@@ -123,6 +123,7 @@ class FormValidationTest {
         FormValidation fv = FormValidation.error(new Exception("<html"), "Message<html");
         assertThat(fv.renderHtml(), not(containsString("<html")));
     }
+
     @Test
     void testUrlCheck() throws IOException {
         HttpServer server = createAndStartMockServer();
