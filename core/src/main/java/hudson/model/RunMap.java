@@ -327,7 +327,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
     }
 
     /**
-     * Backward compatibility method that notifies {@link RunMap} of whom the owner is.
+     * Backward compatibility method that notifies {@link RunMap} of who the owner is.
      * Traditionally, this method blocked and loaded all the build records on the disk,
      * but now all the actual loading happens lazily.
      *
