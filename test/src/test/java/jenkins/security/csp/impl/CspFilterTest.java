@@ -109,10 +109,11 @@ public class CspFilterTest {
     @Test
     void testCspBuilderNotCalledWithHeaderDisabled(JenkinsRule j) throws IOException, SAXException {
         try (JenkinsRule.WebClient webClient = j.createWebClient().withJavaScriptEnabled(false)) {
+            final AtomicInteger counter = ExtensionList.lookupSingleton(CountingContributor.class).counter;
             {
-                int start = ExtensionList.lookupSingleton(CountingContributor.class).counter.get();
+                int start = counter.get();
                 webClient.goTo("");
-                int end = ExtensionList.lookupSingleton(CountingContributor.class).counter.get();
+                int end = counter.get();
 
                 final int difference = end - start;
                 assertThat(difference, greaterThanOrEqualTo(1));
@@ -120,9 +121,9 @@ public class CspFilterTest {
 
             System.setProperty(SystemPropertyHeaderDecider.SYSTEM_PROPERTY_NAME, "");
             try {
-                int start = ExtensionList.lookupSingleton(CountingContributor.class).counter.get();
+                int start = counter.get();
                 webClient.goTo("");
-                int end = ExtensionList.lookupSingleton(CountingContributor.class).counter.get();
+                int end = counter.get();
 
                 // no calls expected
                 final int difference = end - start;
