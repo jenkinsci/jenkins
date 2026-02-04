@@ -207,7 +207,9 @@ class CloudUniqueIdTest {
     void testProvisionNewIdGeneratesNewUuid() {
         TestCloud cloud = new TestCloud("test-cloud");
         String firstId = cloud.getUniqueId();
+        assertNotNull(firstId, "getUniqueId() should generate an ID");
 
+        // provisionNewId() always generates a new ID
         cloud.provisionNewId();
         String secondId = cloud.getUniqueId();
 

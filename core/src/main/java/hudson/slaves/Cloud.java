@@ -384,9 +384,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * supply an ID from form data.
      */
     public synchronized void provisionNewId() {
-        if (uniqueId == null) {
-            uniqueId = UUID.randomUUID().toString();
-        }
+        uniqueId = UUID.randomUUID().toString();
     }
 
     /**

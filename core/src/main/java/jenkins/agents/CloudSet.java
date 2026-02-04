@@ -235,6 +235,8 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
             String xml = Jenkins.XSTREAM.toXML(src);
             // Not great, but cloud name is final
             xml = xml.replace("<name>" + src.name + "</name>", "<name>" + name + "</name>");
+            // Remove uniqueId so the copy gets a new identity via provisionNewId()
+            xml = xml.replaceAll("<uniqueId>[^<]*</uniqueId>", "");
             Cloud result = (Cloud) Jenkins.XSTREAM.fromXML(xml);
             // Provision a new unique ID for the copied cloud to ensure distinct identity
             result.provisionNewId();
@@ -277,7 +279,6 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
             throw new Failure(String.format("No cloud type '%s' is known", cloudDescriptorName));
         }
         Cloud cloud = cloudDescriptor.newInstance(req, req.getSubmittedForm());
-        cloud.provisionNewId();
         if (!Jenkins.get().clouds.add(cloud)) {
             LOGGER.log(Level.WARNING, () -> "Creating duplicate cloud name " + cloud.name + ". Plugin " + Jenkins.get().getPluginManager().whichPlugin(cloud.getClass()) + " should be updated to support user provided name.");
         }

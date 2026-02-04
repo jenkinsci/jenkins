@@ -560,6 +560,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             super(h);
         }
 
+        @Override
+        public void replace(Cloud from, Cloud to) throws IOException {
+            List<Cloud> copy = new ArrayList<>(this.toList());
+            for (int i = 0; i < copy.size(); i++) {
+                if (copy.get(i) == from) {  // Reference equality, not equals()
+                    copy.set(i, to);
+                    break;
+                }
+            }
+            replaceBy(copy);
+        }
+
         public CloudList() {// needed for XStream deserialization
         }
 
