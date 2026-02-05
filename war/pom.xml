@@ -311,7 +311,7 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1385.v7d2d9ec4d909</version>
+                  <version>1399.ve6a_66547f6e1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
