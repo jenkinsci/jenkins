@@ -1149,6 +1149,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         _setLabelString(label);
 
+        // Ensure all clouds have unique IDs and detect/fix duplicates.
+        // Thread-safe: synchronize on clouds and use a local set for tracking.
+        synchronized (clouds) {
+            Set<String> seenIds = new HashSet<>();
+            for (Cloud cloud : clouds) {
+                String id = cloud.getUniqueId();
+                while (!seenIds.add(id)) {
+                    // Duplicate found - assign new ID and retry (very low chances but still possible)
+                    cloud.provisionNewId();
+                    id = cloud.getUniqueId();
+                }
+            }
+        }
+
         return this;
     }
 

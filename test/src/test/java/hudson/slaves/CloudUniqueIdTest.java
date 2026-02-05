@@ -58,7 +58,7 @@ class CloudUniqueIdTest {
     }
 
     @Test
-    void testDuplicateNameCloudDeletionKeepsCorrectIds() {
+    void testDuplicateNameCloudDeletionKeepsCorrectIds() throws Exception {
         TestCloud cloud1 = new TestCloud("same-name");
         TestCloud cloud2 = new TestCloud("same-name");
         TestCloud cloud3 = new TestCloud("same-name");
@@ -73,8 +73,14 @@ class CloudUniqueIdTest {
 
         j.jenkins.clouds.remove(cloud1);
 
+        // Simulate form submission: create new cloud with updated name but same uniqueId
+        TestCloud updatedCloud2 = new TestCloud("updated-name");
+        updatedCloud2.setUniqueId(id2);
+        j.jenkins.clouds.replace(cloud2, updatedCloud2);
+
         assertNull(j.jenkins.getCloudById(id1));
         assertEquals(id2, j.jenkins.getCloudById(id2).getUniqueId());
+        assertEquals("updated-name", j.jenkins.getCloudById(id2).name);
         assertEquals(id3, j.jenkins.getCloudById(id3).getUniqueId());
     }
 
