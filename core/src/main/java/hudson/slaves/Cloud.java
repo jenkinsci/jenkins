@@ -378,10 +378,8 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * Accepts the update to the node configuration.
      */
     /**
-     * Generates a new unique ID for this cloud instance if one is not already set.
+     * Generates a new unique ID for this cloud instance.
      * Useful when copying a cloud to ensure the copy has a distinct identity.
-     * Only assigns a new UUID when uniqueId is null, allowing newInstance() to
-     * supply an ID from form data.
      */
     public synchronized void provisionNewId() {
         uniqueId = UUID.randomUUID().toString();
