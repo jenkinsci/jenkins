@@ -121,13 +121,13 @@ THE SOFTWARE.
         <!-- Required by workflow-support -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>scm-api</artifactId>
-        <version>724.v7d839074eb_5c</version>
+        <version>728.vc30dcf7a_0df5</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1385.v7d2d9ec4d909</version>
+        <version>1399.ve6a_66547f6e1</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -143,7 +143,7 @@ THE SOFTWARE.
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>1010.vb_b_39488a_9841</version>
+        <version>1015.v785e5a_b_b_8b_22</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -232,7 +232,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.1073.va_7888eb_dd514</version>
+      <version>6.1079.vc0975c2de294</version>
       <scope>test</scope>
     </dependency>
     <dependency>
