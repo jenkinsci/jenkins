@@ -233,9 +233,8 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
 
             // copy through XStream
             String xml = Jenkins.XSTREAM.toXML(src);
-            // Not great, but cloud name is final
-            xml = xml.replace("<name>" + src.name + "</name>", "<name>" + name + "</name>");
             Cloud result = (Cloud) Jenkins.XSTREAM.fromXML(xml);
+            result.name = name;
             // Provision a new unique ID for the copied cloud to ensure distinct identity
             result.provisionNewId();
             jenkins.clouds.add(result);
