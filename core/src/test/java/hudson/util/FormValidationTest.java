@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -154,7 +155,7 @@ class FormValidationTest {
 
 
     private static HttpServer createAndStartMockServer() throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
 
         server.createContext("/", exchange -> {
             byte[] response = "<html>Jenkins</html>".getBytes(StandardCharsets.UTF_8);
@@ -163,6 +164,8 @@ class FormValidationTest {
 
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(response);
+            } finally {
+                exchange.close();
             }
         });
 
