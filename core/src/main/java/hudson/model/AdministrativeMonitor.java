@@ -95,6 +95,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
 
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.
+     *
      * <p>
      * This ID is used to remember persisted setting for this monitor,
      * so the ID should remain consistent beyond the Hudson JVM lifespan.
@@ -145,7 +146,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * Returns true if this monitor {@link #disable(boolean) isn't disabled} earlier.
      *
      * <p>
-     * This flag implements the ability for the admin to say "no thank you" to the monitor that 
+     * This flag implements the ability for the admin to say "no thank you" to the monitor that
      * he wants to ignore.
      */
     public boolean isEnabled() {
@@ -306,10 +307,10 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *     override {@link #checkRequiredPermission()} and {@link #hasRequiredPermission()} instead.
      * </p>
      * <p>
-     * Implementers need to ensure that {@code doAct} and other web methods perform necessary permission checks:
-     * Users with System Read permissions are expected to be limited to read-only access.
-     * Form UI elements that change system state, e.g. toggling a feature on or off, need to be hidden from users
-     * lacking Administer permission.
+     *     Implementers need to ensure that {@code doAct} and other web methods perform necessary permission checks:
+     *     Users with System Read permissions are expected to be limited to read-only access.
+     *     Form UI elements that change system state, e.g. toggling a feature on or off, need to be hidden from users
+     *     lacking Administer permission.
      * </p>
      *
      * @since 2.233
