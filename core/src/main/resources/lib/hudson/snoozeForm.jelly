@@ -1,82 +1,38 @@
 <?jelly escape-by-default='true'?>
-<!--
-The MIT License
-
-Copyright (c) 2025, Jenkins Contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
--->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     Reusable snooze form for Administrative Monitors.
-    Provides a trigger button that opens a modal dialog.
-    Uses AJAX to avoid page reload.
+    Provides a trigger button that opens a modal dialog with duration options.
   </st:documentation>
   
-  <st:adjunct includes="lib.hudson.snoozeForm"/>
+  <st:adjunct includes="lib.hudson.snooze"/>
 
-  <button type="button" class="jenkins-button snooze-trigger" data-monitor-id="${it.id}">
-    ${%snooze}
-  </button>
-  
-  <dialog id="snooze-dialog-${it.id}" class="snooze-dialog">
-    <form id="snooze-form-${it.id}" method="post" 
-          action="${rootURL}/${it.url}/snooze" class="snooze-form"
-          data-monitor-id="${it.id}">
-      
-      <div class="snooze-dialog__title">${%snooze.title}</div>
-      
-      <div class="snooze-dialog__contents">
-        <div class="jenkins-form-item">
-          <label for="snooze-duration-${it.id}" class="jenkins-form-label" style="display:block; margin-bottom: 5px;">
-            ${%snooze.duration.label}
-          </label>
-          <select id="snooze-duration-${it.id}" name="durationPreset" 
-                  class="jenkins-select snooze-select" 
-                  data-monitor-id="${it.id}"
-                  style="width: 100%; margin-bottom: 10px;">
+  <!-- Hidden form template for the dialog -->
+  <div id="snooze-form-template-${it.id}" class="jenkins-hidden">
+    <div>
+      <div class="jenkins-form-label">${%snooze.duration.label}</div>
+      <div class="snooze-expiration jenkins-!-margin-bottom-3">
+        <div class="jenkins-select">
+          <select class="jenkins-select__input" name="durationPreset">
             <option value="60">${%snooze.duration.1hour}</option>
             <option value="360">${%snooze.duration.6hours}</option>
-            <option value="1440">${%snooze.duration.1day}</option>
+            <option value="1440" selected="true">${%snooze.duration.1day}</option>
             <option value="4320">${%snooze.duration.3days}</option>
             <option value="10080">${%snooze.duration.1week}</option>
             <option value="custom">${%snooze.duration.custom}</option>
           </select>
         </div>
+        <input type="date" name="snoozeUntil" class="jenkins-hidden jenkins-input snooze-date-input"/>
+      </div>
+    </div>
+  </div>
 
-        <div class="jenkins-form-item">
-            <input type="number" id="snooze-minutes-${it.id}" name="customMinutes"
-                   placeholder="${%snooze.duration.placeholder}" min="1" max="525600"
-                   class="jenkins-input snooze-custom-input"
-                   style="display: none; width: 100%;"
-                   aria-label="${%snooze.duration.customLabel}"/>
-        </div>
-      </div>
-      
-      <div class="snooze-dialog__buttons">
-        <button type="submit" class="jenkins-button jenkins-button--primary">
-          ${%snooze}
-        </button>
-        <button type="button" class="jenkins-button snooze-cancel-btn">
-          ${%Cancel}
-        </button>
-      </div>
-    </form>
-  </dialog>
+  <button type="button" class="jenkins-button snooze-button"
+          data-snooze-url="${rootURL}/${it.url}/snooze"
+          data-template-id="snooze-form-template-${it.id}"
+          data-title="${%snooze.title}"
+          data-button-snooze="${%snooze}"
+          data-button-cancel="${%cancel}">
+      ${%snooze}
+  </button>
 </j:jelly>
