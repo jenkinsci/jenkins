@@ -170,7 +170,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
-     * @since 2.549
+     * @since TODO
      */
     public boolean isSnoozed() {
         Map<String, Long> snoozed = Jenkins.get().getSnoozedAdministrativeMonitors();
@@ -197,7 +197,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
-     * @since 2.549
+     * @since TODO
      */
     public void snooze(long durationMs) throws IOException {
         if (durationMs <= 0) {
@@ -251,7 +251,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
-     * @since 2.549
+     * @since TODO
      */
     @RequirePOST
     public void doSnooze(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
@@ -265,15 +265,20 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
             }
 
             if ("custom".equals(preset)) {
-                String minutesStr = req.getParameter("customMinutes");
-                if (minutesStr == null || minutesStr.isEmpty()) {
-                    throw new IllegalArgumentException("Custom duration required");
+                String snoozeUntilStr = req.getParameter("snoozeUntil");
+                if (snoozeUntilStr == null || snoozeUntilStr.isEmpty()) {
+                    throw new IllegalArgumentException("Custom date required");
                 }
-                long minutes = Long.parseLong(minutesStr);
-                if (minutes <= 0) {
-                    throw new IllegalArgumentException("Minutes must be positive");
+                // Parse date in format yyyy-MM-dd
+                java.time.LocalDate snoozeDate = java.time.LocalDate.parse(snoozeUntilStr);
+                java.time.LocalDate today = java.time.LocalDate.now();
+                if (!snoozeDate.isAfter(today)) {
+                    throw new IllegalArgumentException("Snooze date must be in the future");
                 }
-                durationMs = minutes * 60 * 1000;
+                // Calculate milliseconds until end of that day
+                java.time.ZonedDateTime endOfDay = snoozeDate.atStartOfDay(java.time.ZoneId.systemDefault())
+                        .plusDays(1);
+                durationMs = endOfDay.toInstant().toEpochMilli() - System.currentTimeMillis();
             } else {
                 long minutes = Long.parseLong(preset);
                 if (minutes <= 0) {
@@ -282,12 +287,12 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
                 durationMs = minutes * 60 * 1000;
             }
 
-            // Validate max duration (1 year = 525600 minutes)
-            if (durationMs > 525600L * 60 * 1000) {
+            // Validate max duration (1 year)
+            if (durationMs > 365L * 24 * 60 * 60 * 1000) {
                 throw new IllegalArgumentException("Duration exceeds maximum (1 year)");
             }
 
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | java.time.format.DateTimeParseException e) {
             rsp.sendError(StaplerResponse2.SC_BAD_REQUEST, e.getMessage());
             return;
         }
