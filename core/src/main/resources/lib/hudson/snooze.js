@@ -31,25 +31,23 @@ Behaviour.specify(".snooze-button", "snooze-button", 0, function (button) {
 function addSnoozeFormHandling(form) {
   var durationSelect = form.querySelector('select[name="durationPreset"]');
   var customDateInput = form.querySelector('input[name="snoozeUntil"]');
+  var submitButton = form.querySelector('button[data-id="ok"]');
 
   durationSelect.addEventListener("change", function () {
     if (durationSelect.value === "custom") {
       customDateInput.classList.remove("jenkins-hidden");
-      var submitButton = form.querySelector('button[data-id="ok"]');
       if (customDateInput.value !== "") {
         submitButton.disabled = false;
       } else {
         submitButton.disabled = true;
       }
     } else {
-      var submitButton = form.querySelector('button[data-id="ok"]');
       submitButton.disabled = false;
       customDateInput.classList.add("jenkins-hidden");
     }
   });
 
   customDateInput.addEventListener("change", function () {
-    var submitButton = form.querySelector('button[data-id="ok"]');
     if (customDateInput.value !== "") {
       submitButton.disabled = false;
     } else {
