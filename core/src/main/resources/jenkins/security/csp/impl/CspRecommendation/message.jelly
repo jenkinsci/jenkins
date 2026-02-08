@@ -26,7 +26,7 @@ THE SOFTWARE.
     <div class="jenkins-alert jenkins-alert-info">
         <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <f:submit name="more" value="${%Learn more}"/>
-            <f:submit name="dismiss" primary="false" value="${%Dismiss}"/>
+            <f:submit name="dismiss" primary="false" value="${%Dismiss}" icon="symbol-close-circle"/>
         </form>
         ${%blurb}
     </div>
