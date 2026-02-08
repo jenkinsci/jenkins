@@ -79,7 +79,7 @@ public class CspDecorator extends PageDecorator {
         if (staplerRequest2 != null) {
             final List<Ancestor> ancestors = staplerRequest2.getAncestors();
             if (!ancestors.isEmpty()) {
-                final Ancestor nearest = ancestors.get(ancestors.size() - 1);
+                final Ancestor nearest = ancestors.getLast();
                 restOfPath = nearest.getRestOfUrl();
                 modelObjectClass = nearest.getObject().getClass();
             }
@@ -105,10 +105,11 @@ public class CspDecorator extends PageDecorator {
     }
 
     /**
-     * Determines the name of the HTTP header to set.
+     * Determines the name of the HTTP header to set, or {@code null} if none.
      *
      * @return the name of the HTTP header to set.
      */
+    @CheckForNull
     public String getContentSecurityPolicyHeaderName() {
         final Optional<CspHeaderDecider> decider = CspHeaderDecider.getCurrentDecider();
         if (decider.isPresent()) {
