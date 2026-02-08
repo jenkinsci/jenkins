@@ -1,5 +1,6 @@
 package hudson.diagnosis;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -96,6 +97,7 @@ class HudsonHomeDiskUsageMonitorTest {
         request.setRequestParameters(List.of(param));
 
         HudsonHomeDiskUsageMonitor mon = HudsonHomeDiskUsageMonitor.get();
+        mon.activated = true;
 
         wc.withBasicApiToken(bob);
         Page p = wc.getPage(request);
@@ -120,6 +122,46 @@ class HudsonHomeDiskUsageMonitorTest {
             assertFalse(mon.isEnabled());
         }
         assertThrows(ElementNotFoundException.class, () -> getForm(mon, administrator));
+    }
+
+    @Test
+    void dismissIsUserSpecific() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+
+        // TODO: Use MockAuthorizationStrategy in later versions
+        JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
+        realm.addGroups("administrator", "admins");
+        realm.addGroups("bob", "admins");
+        j.jenkins.setSecurityRealm(realm);
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        auth.add(Jenkins.ADMINISTER, new PermissionEntry(AuthorizationType.GROUP, "admins"));
+        j.jenkins.setAuthorizationStrategy(auth);
+
+        User bob = User.getById("bob", true);
+        User administrator = User.getById("administrator", true);
+
+        WebRequest request = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act").toURL(), HttpMethod.POST);
+        NameValuePair param = new NameValuePair("no", "true");
+        request.setRequestParameters(List.of(param));
+
+        HudsonHomeDiskUsageMonitor mon = HudsonHomeDiskUsageMonitor.get();
+        mon.activated = true;
+
+        wc.withBasicApiToken(bob);
+        Page p = wc.getPage(request);
+        assertEquals(HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
+
+        try (ACLContext c = ACL.as(bob)) {
+            assertFalse(mon.isEnabled());
+        }
+
+        assertThrows(ElementNotFoundException.class, () -> getForm(mon, bob));
+
+        try (ACLContext c = ACL.as(administrator)) {
+            assertTrue(mon.isEnabled());
+        }
+        assertDoesNotThrow(() -> getForm(mon, administrator));
     }
 
     /**
