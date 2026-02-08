@@ -33,6 +33,7 @@ import hudson.triggers.TimerTrigger;
 import java.io.IOException;
 import java.util.Set;
 import jenkins.model.Jenkins;
+import jenkins.user.AdministrativeMonitorsProperty;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
@@ -124,27 +125,48 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
 
     /**
      * Mark this monitor as disabled, to prevent this from showing up in the UI.
+     *
+     * <p>
+     * This is a per-user setting if security is enabled.
+     * </p>
      */
     public void disable(boolean value) throws IOException {
         AbstractCIBase jenkins = Jenkins.get();
-        Set<String> set = jenkins.getDisabledAdministrativeMonitors();
-        if (value) {
-            set.add(id);
+        User user = User.current();
+        if (user != null) {
+            AdministrativeMonitorsProperty property = AdministrativeMonitorsProperty.get(user);
+            property.disableMonitor(id, value);
         } else {
-            set.remove(id);
+            Set<String> set = jenkins.getDisabledAdministrativeMonitors();
+            if (value) {
+                set.add(id);
+            } else {
+                set.remove(id);
+            }
+            jenkins.setDisabledAdministrativeMonitors(set);
+            jenkins.save();
         }
-        jenkins.setDisabledAdministrativeMonitors(set);
-        jenkins.save();
     }
 
     /**
      * Returns true if this monitor {@link #disable(boolean) isn't disabled} earlier.
      *
      * <p>
-     * This flag implements the ability for the admin to say "no thank you" to the monitor that
+     * This flag implements the ability for the admin to say "no, thank you" to the monitor that
      * he wants to ignore.
+     * </p>
+     * <p>
+     * This is a per-user setting if security is enabled. This means that it should not be used to decide if some
+     * check should be performed or not.
+     * If such behavior is desired, implementers should provide their own configuration mechanism.
+     * </p>
      */
     public boolean isEnabled() {
+        User user = User.current();
+        if (user != null) {
+            AdministrativeMonitorsProperty property = AdministrativeMonitorsProperty.get(user);
+            return property.isMonitorEnabled(id);
+        }
         return !Jenkins.get().getDisabledAdministrativeMonitors().contains(id);
     }
 
@@ -179,7 +201,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     @RequirePOST
     public void doDisable(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        checkRequiredPermission();
         disable(true);
         rsp.sendRedirect2(req.getContextPath() + "/manage");
     }

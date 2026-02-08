@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <div class="jenkins-section__description">${%blurb}</div>
+  <f:advanced title="${%Administrative monitors}">
+    <f:entry>
+      <j:forEach var="am" items="${instance.monitors}">
+        <div class="jenkins-!-margin-bottom-1">
+          <div class="jenkins-checkbox-help-wrapper">
+            <j:set var="readOnlyMode" value="${!am.hasRequiredPermission()}"/>
+            <f:checkbox name="administrativeMonitor" title="${am.displayName}" json="${am.id}" checked="${instance.isMonitorEnabled(am.id)}"/>
+            <j:if test="${am.security}">
+              <span style="margin-left: 0.5rem" class="jenkins-badge">${%Security}</span>
+            </j:if>
+          </div>
+          <div class="jenkins-checkbox__description">
+            <st:include it="${am}" page="description" optional="true"/>
+          </div>
+        </div>
+      </j:forEach>
+    </f:entry>
+  </f:advanced>
+</j:jelly>

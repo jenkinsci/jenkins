@@ -91,7 +91,7 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
     }
 
     private void fillOperatingSystemList() throws IOException {
-        if (Jenkins.getInstanceOrNull() != null && !isEnabled()) {
+        if (Jenkins.getInstanceOrNull() != null) {
             /* If not enabled, do not read the data files or perform any checks */
             LOGGER.log(Level.FINEST, "Operating system end of life monitor is not enabled, reading no data");
             return;

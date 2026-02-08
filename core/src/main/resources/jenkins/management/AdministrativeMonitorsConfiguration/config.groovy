@@ -29,23 +29,25 @@ import hudson.model.AdministrativeMonitor
 f = namespace(lib.FormTagLib)
 st = namespace("jelly:stapler")
 
-f.section(title: _("Administrative monitors"), description: _("blurb")) {
-    f.advanced(title: _("Administrative monitors")) {
-        f.entry() {
-            for (AdministrativeMonitor am : new ArrayList<>(AdministrativeMonitor.all())
-                    .sort({ o1, o2 -> o1.getDisplayName() <=> o2.getDisplayName() })) {
-                div(style: "margin-bottom: 0.625rem") {
-                    div(class: "jenkins-checkbox-help-wrapper") {
-                        f.checkbox(name: "administrativeMonitor",
-                                title: am.displayName,
-                                checked: am.enabled,
-                                json: am.id)
-                        if (am.isSecurity()) {
-                            span(style: 'margin-left: 0.5rem', class: 'jenkins-badge', _("Security"))
+div(class: "${app.useSecurity ? 'jenkins-hidden' : null}") {
+    f.section(title: _("Administrative monitors"), description: _("blurb")) {
+        f.advanced(title: _("Administrative monitors")) {
+            f.entry() {
+                for (AdministrativeMonitor am : new ArrayList<>(AdministrativeMonitor.all())
+                        .sort({ o1, o2 -> o1.getDisplayName() <=> o2.getDisplayName() })) {
+                    div(style: "margin-bottom: 0.625rem") {
+                        div(class: "jenkins-checkbox-help-wrapper") {
+                            f.checkbox(name: "administrativeMonitor",
+                                    title: am.displayName,
+                                    checked: instance.isMonitorEnabled(am.id),
+                                    json: am.id)
+                            if (am.isSecurity()) {
+                                span(style: 'margin-left: 0.5rem', class: 'jenkins-badge', _("Security"))
+                            }
                         }
-                    }
-                    div(class: "jenkins-checkbox__description") {
-                        st.include(it: am, page: "description", optional: true)
+                        div(class: "jenkins-checkbox__description") {
+                            st.include(it: am, page: "description", optional: true)
+                        }
                     }
                 }
             }
