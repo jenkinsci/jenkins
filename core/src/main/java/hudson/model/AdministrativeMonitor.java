@@ -127,12 +127,14 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * Mark this monitor as disabled, to prevent this from showing up in the UI.
      *
      * <p>
-     * This is a per-user setting if security is enabled.
+     * This is a per-user setting if security is enabled. This means that it should not be used to disable
+     * the monitor programmatically.
      * </p>
      */
     public void disable(boolean value) throws IOException {
         AbstractCIBase jenkins = Jenkins.get();
         User user = User.current();
+
         if (user != null) {
             AdministrativeMonitorsProperty property = AdministrativeMonitorsProperty.get(user);
             property.disableMonitor(id, value);

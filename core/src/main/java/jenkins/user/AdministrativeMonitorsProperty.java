@@ -40,6 +40,9 @@ public class AdministrativeMonitorsProperty extends UserProperty {
 
     @Override
     public UserProperty reconfigure(StaplerRequest2 req, JSONObject json) throws Descriptor.FormException {
+        if (json == null) {
+            return this;
+        }
         JSONArray monitors = json.optJSONArray("administrativeMonitor");
         synchronized (dismissedMonitors) {
             for (AdministrativeMonitor am : AdministrativeMonitor.all()) {

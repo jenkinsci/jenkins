@@ -108,7 +108,7 @@ public class DoubleLaunchChecker extends AdministrativeMonitor {
         }
 
         try {
-            Files.writeString(Util.fileToPath(timestampFile), getId(), Charset.defaultCharset());
+            Files.writeString(Util.fileToPath(timestampFile), getPid(), Charset.defaultCharset());
             lastWriteTime = timestampFile.lastModified();
         } catch (IOException e) {
             LOGGER.log(Level.FINE, null, e);
@@ -120,7 +120,7 @@ public class DoubleLaunchChecker extends AdministrativeMonitor {
     /**
      * Figures out a string that identifies this instance of Hudson.
      */
-    private String getId() {
+    private String getPid() {
         return Long.toString(ProcessHandle.current().pid());
     }
 

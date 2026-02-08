@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.User;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -19,6 +21,8 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.NameValuePair;
+import org.jenkinsci.plugins.matrixauth.AuthorizationType;
+import org.jenkinsci.plugins.matrixauth.PermissionEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -45,17 +49,27 @@ class HudsonHomeDiskUsageMonitorTest {
         HudsonHomeDiskUsageMonitor mon = HudsonHomeDiskUsageMonitor.get();
         mon.activated = true;
 
+        JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
+        realm.addGroups("administrator", "admins");
+        j.jenkins.setSecurityRealm(realm);
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        auth.add(Jenkins.ADMINISTER, new PermissionEntry(AuthorizationType.GROUP, "admins"));
+        User administrator = User.getById("administrator", true);
+        j.submit(getForm(mon, administrator), "yes");
+
         // clicking yes should take us to somewhere
-        j.submit(getForm(mon), "yes");
-        assertTrue(mon.isEnabled());
+        try (ACLContext c = ACL.as(administrator)) {
+            assertTrue(mon.isEnabled());
+        }
 
         // now dismiss
-        // submit(getForm(mon),"no"); TODO: figure out why this test is fragile
-        mon.doAct("no");
-        assertFalse(mon.isEnabled());
+        j.submit(getForm(mon, administrator),"no");
+        try (ACLContext c = ACL.as(administrator)) {
+            assertFalse(mon.isEnabled());
+        }
 
         // and make sure it's gone
-        assertThrows(ElementNotFoundException.class, () -> getForm(mon));
+        assertThrows(ElementNotFoundException.class, () -> getForm(mon, administrator));
     }
 
     @Issue("SECURITY-371")
@@ -70,8 +84,8 @@ class HudsonHomeDiskUsageMonitorTest {
         realm.addGroups("bob", "users");
         j.jenkins.setSecurityRealm(realm);
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
-        auth.add(Jenkins.ADMINISTER, "admins");
-        auth.add(Jenkins.READ, "users");
+        auth.add(Jenkins.ADMINISTER, new PermissionEntry(AuthorizationType.GROUP, "admins"));
+        auth.add(Jenkins.READ, new PermissionEntry(AuthorizationType.GROUP, "users"));
         j.jenkins.setAuthorizationStrategy(auth);
 
         User bob = User.getById("bob", true);
@@ -89,6 +103,10 @@ class HudsonHomeDiskUsageMonitorTest {
 
         assertTrue(mon.isEnabled());
 
+        try (ACLContext c = ACL.as(administrator)) {
+            assertTrue(mon.isEnabled());
+        }
+
         WebRequest requestReadOnly = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull").toURL(), HttpMethod.GET);
         p = wc.getPage(requestReadOnly);
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, p.getWebResponse().getStatusCode());
@@ -98,14 +116,17 @@ class HudsonHomeDiskUsageMonitorTest {
         request.setRequestParameters(List.of(param));
         p = wc.getPage(request);
         assertEquals(HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
-        assertFalse(mon.isEnabled());
+        try (ACLContext c = ACL.as(administrator)) {
+            assertFalse(mon.isEnabled());
+        }
+        assertThrows(ElementNotFoundException.class, () -> getForm(mon, administrator));
     }
 
     /**
      * Gets the warning form.
      */
-    private HtmlForm getForm(HudsonHomeDiskUsageMonitor mon) throws IOException, SAXException {
-        HtmlPage p = j.createWebClient().goTo("manage");
+    private HtmlForm getForm(HudsonHomeDiskUsageMonitor mon, User user) throws IOException, SAXException {
+        HtmlPage p = j.createWebClient().withBasicApiToken(user).goTo("manage");
         return p.getFormByName(mon.id);
     }
 }
