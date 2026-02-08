@@ -316,8 +316,8 @@ public abstract class Cause {
             indent(listener, depth);
             listener.getLogger().println(
                 Messages.Cause_UpstreamCause_ShortDescription(
-                    ModelHyperlinkNote.encodeTo('/' + upstreamUrl, upstreamProject),
-                    ModelHyperlinkNote.encodeTo('/' + upstreamUrl + upstreamBuild, Integer.toString(upstreamBuild)))
+                    upstreamProject,
+                    Integer.toString(upstreamBuild))
             );
             if (upstreamCauses != null && !upstreamCauses.isEmpty()) {
                 indent(listener, depth);
