@@ -1,4 +1,19 @@
-/*
- * Widget styles
- */
-@use "widgets/add/addform";
+#add-item-panel {
+  max-width: 750px;
+  margin: auto;
+
+  .jenkins-choice-list__item {
+    // Default icons' text placeholder don't appear unless z-index is set
+    .jenkins-choice-list__item__icon {
+      span {
+        z-index: 1;
+      }
+    }
+
+    // Make 'Duplicate an existing item' input not full width
+    input[type="text"] {
+      width: 100%;
+      max-width: 400px;
+    }
+  }
+}
