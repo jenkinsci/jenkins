@@ -95,7 +95,7 @@ public class DoubleLaunchChecker extends AdministrativeMonitor {
         File timestampFile = new File(home, ".owner");
 
         long t = timestampFile.lastModified();
-        if (t != 0 && lastWriteTime != 0 && t != lastWriteTime) {
+        if (t != 0 && lastWriteTime != 0 && t != lastWriteTime && isEnabledGlobally()) {
             try {
                 collidingId = Files.readString(Util.fileToPath(timestampFile), Charset.defaultCharset());
             } catch (IOException e) {

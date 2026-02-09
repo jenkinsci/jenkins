@@ -124,30 +124,42 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
-     * Mark this monitor as disabled, to prevent this from showing up in the UI.
+     * Mark this monitor as disabled for the user, to prevent this from showing up in the UI.
      *
      * <p>
-     * This is a per-user setting if security is enabled. This means that it should not be used to disable
-     * the monitor programmatically.
+     * This is a per-user setting if security is enabled. Use {@link #disableGlobally(boolean)}
+     * to disable the monitor for all users.
      * </p>
      */
     public void disable(boolean value) throws IOException {
-        AbstractCIBase jenkins = Jenkins.get();
         User user = User.current();
 
         if (user != null) {
             AdministrativeMonitorsProperty property = AdministrativeMonitorsProperty.get(user);
             property.disableMonitor(id, value);
         } else {
-            Set<String> set = jenkins.getDisabledAdministrativeMonitors();
-            if (value) {
-                set.add(id);
-            } else {
-                set.remove(id);
-            }
-            jenkins.setDisabledAdministrativeMonitors(set);
-            jenkins.save();
+            disableGlobally(value);
         }
+    }
+
+    /**
+     * Mark this monitor as disabled globally, to prevent this from showing up in the UI for all users.
+     *
+     * <p>
+     * This is a global setting. A monitor that is disabled globally will not show up in the UI for any user,
+     * regardless of their per-user setting.
+     * </p>
+     */
+    public void disableGlobally(boolean value) throws IOException {
+        AbstractCIBase jenkins = Jenkins.get();
+        Set<String> set = jenkins.getDisabledAdministrativeMonitors();
+        if (value) {
+            set.add(id);
+        } else {
+            set.remove(id);
+        }
+        jenkins.setDisabledAdministrativeMonitors(set);
+        jenkins.save();
     }
 
     /**
@@ -157,18 +169,28 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * This flag implements the ability for the admin to say "no, thank you" to the monitor that
      * he wants to ignore.
      * </p>
-     * <p>
-     * This is a per-user setting if security is enabled. This means that it should not be used to decide if some
-     * check should be performed or not.
-     * If such behavior is desired, implementers should provide their own configuration mechanism.
-     * </p>
+     * @return true if this monitor is enabled, false if disabled globally or by the user.
      */
     public boolean isEnabled() {
         User user = User.current();
+        boolean enabledGlobally = isEnabledGlobally();
         if (user != null) {
             AdministrativeMonitorsProperty property = AdministrativeMonitorsProperty.get(user);
-            return property.isMonitorEnabled(id);
+            return property.isMonitorEnabled(id) && enabledGlobally;
         }
+        return enabledGlobally;
+    }
+
+    /**
+     * Returns true if this monitor is enabled globally, regardless of per-user settings.
+     *
+     * <p>
+     *     Monitors that want to avoid execution should use this check.
+     * </p>
+     *
+     * @return true if enabled globally, false otherwise.
+     */
+    public boolean isEnabledGlobally() {
         return !Jenkins.get().getDisabledAdministrativeMonitors().contains(id);
     }
 

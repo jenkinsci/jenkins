@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
@@ -66,6 +67,10 @@ public class AdministrativeMonitorsProperty extends UserProperty {
         synchronized (dismissedMonitors) {
             return !dismissedMonitors.contains(monitorId);
         }
+    }
+
+    public boolean isMonitorGloballyDisabled(String monitorId) {
+        return Jenkins.get().getDisabledAdministrativeMonitors().contains(monitorId);
     }
 
     public void disableMonitor(String monitorId, boolean enabled) throws IOException {

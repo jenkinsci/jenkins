@@ -7,7 +7,11 @@
         <div class="jenkins-!-margin-bottom-1">
           <div class="jenkins-checkbox-help-wrapper">
             <j:set var="readOnlyMode" value="${!am.hasRequiredPermission()}"/>
-            <f:checkbox name="administrativeMonitor" title="${am.displayName}" json="${am.id}" checked="${instance.isMonitorEnabled(am.id)}"/>
+            <f:checkbox name="administrativeMonitor" title="${am.displayName}" json="${am.id}"
+                        checked="${instance.isMonitorEnabled(am.id)}"/>
+            <j:if test="${instance.isMonitorGloballyDisabled(am.id)}">
+              <sup style="margin-left: 0.1rem" class="jenkins-!-warning-color" tooltip="${%This monitor is globally disabled}">*</sup>
+            </j:if>
             <j:if test="${am.security}">
               <span style="margin-left: 0.5rem" class="jenkins-badge">${%Security}</span>
             </j:if>
