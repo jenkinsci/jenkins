@@ -223,6 +223,12 @@ Behaviour.specify(
   "repeatable",
   1,
   function (e) {
+    if (e.nodeName === "BUTTON") {
+      const container = e.closest("div.repeated-container");
+      if (container !== null && parseInt(container.dataset.minimum)) {
+        e.classList.add("show-if-not-only");
+      }
+    }
     e.addEventListener("click", function () {
       repeatableSupport.onDelete(e);
     });
