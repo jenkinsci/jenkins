@@ -66,6 +66,8 @@ THE SOFTWARE.
             permissions="${attrs.permissions}"
             type="${newManageJenkins ? 'two-column' : 'one-column'}">
 
+            <st:adjunct includes="hudson-behavior"/>
+
     <j:if test="${attrs.includeBreadcrumb}">
       <!-- Hacky - this will be improved in subsequent PRs -->
       <j:choose>
@@ -131,13 +133,19 @@ THE SOFTWARE.
                       </j:choose>
                     </l:defer.placeholder>
                     <l:defer.children>
-                      <d:invokeBody />
+                      <div class="jenkins-config">
+                        <d:invokeBody />
+                      </div>
                     </l:defer.children>
+
                   </l:defer>
                 </j:when>
                 <j:otherwise>
-                  <d:invokeBody />
+                  <div class="jenkins-config">
+                    <d:invokeBody />
+                  </div>
                 </j:otherwise>
+
               </j:choose>
             </div>
           </div>
