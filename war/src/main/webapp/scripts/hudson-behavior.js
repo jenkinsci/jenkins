@@ -1775,6 +1775,9 @@ function rowvgStartEachRow(recursive, f) {
   Behaviour.specify(
     "DIV.behavior-loading",
     "div-behavior-loading",
+    // Useless assignment retained for consistency with preceding use in
+    // Behaviour.specify("DIV.jenkins-form-skeleton" and earlier
+    /* eslint-disable-next-line no-useless-assignment */
     ++p,
     function (e) {
       console.warn(
