@@ -784,6 +784,7 @@ function registerRegexpValidator(e, regexp, message) {
     return set;
   };
   e.onchange.call(e);
+  /* eslint-disable-next-line no-useless-assignment */
   e = null; // avoid memory leak
 }
 
@@ -886,6 +887,7 @@ function registerMinMaxValidator(e) {
     return set;
   };
   e.onchange.call(e);
+  /* eslint-disable-next-line no-useless-assignment */
   e = null; // avoid memory leak
 }
 
@@ -1482,7 +1484,7 @@ function rowvgStartEachRow(recursive, f) {
         return buildFormTree(this);
       };
     }
-
+    /* eslint-disable-next-line no-useless-assignment */
     form = null; // memory leak prevention
   });
 
@@ -1657,6 +1659,7 @@ function rowvgStartEachRow(recursive, f) {
       event.preventDefault();
       return false;
     };
+    /* eslint-disable-next-line no-useless-assignment */
     e = null; // memory leak prevention
   });
 
@@ -1756,6 +1759,7 @@ function rowvgStartEachRow(recursive, f) {
       layoutUpdateCallback.call();
       return false;
     };
+    /* eslint-disable-next-line no-useless-assignment */
     e = null; // avoid memory leak
   });
 
