@@ -46,13 +46,16 @@ window.buildTimeTrend_displayBuilds = function (data) {
 
     tr.appendChild(td);
     if (showAgent) {
+      /* eslint-disable-next-line no-useless-assignment */
+      let buildInfo = null;
       let buildInfoStr = escapeHTML(e.builtOnStr || "");
-      let buildInfo = buildInfoStr;
       if (e.builtOn) {
         buildInfo = document.createElement("a");
         buildInfo.href = rootURL + "/computer/" + e.builtOn + "/";
         buildInfo.classList.add("model-link", "inside");
         buildInfo.innerText = buildInfoStr;
+      } else {
+        buildInfo = buildInfoStr;
       }
       td = document.createElement("td");
       if (buildInfo instanceof Node) {
