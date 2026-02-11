@@ -701,7 +701,7 @@ function registerValidator(e) {
   }
 
   var checker = function () {
-    if (e.disabled) {
+    if (this.disabled) {
       return;
     }
     const validationArea = this.targetElement;
