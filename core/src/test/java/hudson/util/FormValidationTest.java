@@ -40,7 +40,6 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 /**
