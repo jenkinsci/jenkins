@@ -684,7 +684,9 @@ function registerValidator(e) {
 
   var url = e.targetUrl();
   try {
-    FormChecker.delayedCheck(url, method, e.targetElement);
+    if (!e.disabled) {
+      FormChecker.delayedCheck(url, method, e.targetElement);
+    }
     // eslint-disable-next-line no-unused-vars
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
@@ -699,6 +701,9 @@ function registerValidator(e) {
   }
 
   var checker = function () {
+    if (e.disabled) {
+      return;
+    }
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
       method: method,
