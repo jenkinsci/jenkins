@@ -1,5 +1,5 @@
 <!-- Comment:
-!!! IMPORTANT !!!
+!!! ⚠️ IMPORTANT ⚠️ !!!
 Do not remove any of the sections below, even if they are not applicable to your change. The sections are used by the
 changelog generator and other tools to extract information about the change. If a section is not applicable,
 leave as is. Carefully read the instructions in each section and provide the necessary information.
