@@ -66,6 +66,8 @@ THE SOFTWARE.
             permissions="${attrs.permissions}"
             type="${newManageJenkins ? 'two-column' : 'one-column'}">
 
+    <st:adjunct includes="lib.form.confirm"/>
+
     <j:if test="${attrs.includeBreadcrumb}">
       <!-- Hacky - this will be improved in subsequent PRs -->
       <j:choose>

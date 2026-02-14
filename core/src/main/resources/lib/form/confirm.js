@@ -117,5 +117,33 @@
   }
 
   window.onbeforeunload = confirmExit;
-  window.addEventListener("load", initConfirm);
+
+  function initWhenFormReady() {
+    var configForm =
+      document.getElementsByName("config")[0] ||
+      document.getElementsByName("viewConfig")[0];
+
+    if (configForm) {
+      initConfirm();
+      return true;
+    }
+    return false;
+  }
+
+  window.addEventListener("load", function () {
+    if (initWhenFormReady()) {
+      return;
+    }
+
+    const observer = new MutationObserver(function () {
+      if (initWhenFormReady()) {
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  });
 })();
