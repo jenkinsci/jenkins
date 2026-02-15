@@ -2,6 +2,7 @@ package hudson.tools;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.FilePath;
@@ -44,11 +45,11 @@ class CommandInstallerTest {
         String javaHome = "/opt/jdk-25"; // ci.jenkins.io Java 25 directory
         File javaHomeDir = new File(javaHome);
         // Use a Unix installation dir that exists and is not writeable
-        assumeTrue(javaHomeDir.exists(), "No java home directory '" + javaHome + "'");
-        assumeTrue(!Functions.isWindows());
-        assumeTrue(!Files.isWritable(javaHomeDir.toPath()), "Java home directory '" + javaHome + "' is writable");
+        assumeTrue(javaHomeDir.exists(), "Test requires the '" + javaHome + "' directory to exist");
+        assumeFalse(Functions.isWindows());
+        assumeFalse(Files.isWritable(javaHomeDir.toPath()), "Test requires the '" + javaHome + "' directory to not be writable");
         JDK jdk = new JDK("my-jdk", javaHome);
-        CommandInstaller installer = new CommandInstaller("", "echo 'Using " + javaHome + " as Java home'", javaHome);
+        CommandInstaller installer = new CommandInstaller("unused-label", "echo 'Using " + javaHome + " as Java home'", javaHome);
         FilePath filePath = installer.performInstallation(jdk, Jenkins.get(), TaskListener.NULL);
         assertThat(filePath.getRemote(), is(javaHome));
     }
