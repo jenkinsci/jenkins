@@ -29,12 +29,22 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
+@WithJenkins
 class RunParameterValueTest {
 
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test
-    void robustness() {
+    void robustness(JenkinsRule jenkinsRule) throws Exception {
+        // Prepare the job for the parameter value
+        final MockFolder folder = jenkinsRule.createFolder("folder");
+        final FreeStyleProject job = folder.createProject(FreeStyleProject.class, "job");
+        job.updateNextBuildNumber(57);
+        jenkinsRule.assertBuildStatusSuccess(job.scheduleBuild2(0));
+
         RunParameterValue rpv = new RunParameterValue("whatever", "folder/job#57");
         assertEquals("whatever", rpv.getName());
         assertEquals("folder/job", rpv.getJobName());

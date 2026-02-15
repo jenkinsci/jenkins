@@ -28,11 +28,13 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.EnvVars;
 import java.util.Locale;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
 public class RunParameterValue extends ParameterValue {
 
+    private static /* non-final for Script console */ boolean SKIP_EXISTENCE_CHECK = SystemProperties.getBoolean(RunParameterValue.class.getName() + ".SKIP_EXISTENCE_CHECK", false);
     private final String runId;
 
     @DataBoundConstructor
@@ -49,9 +51,19 @@ public class RunParameterValue extends ParameterValue {
     private static String check(String runId) {
         if (runId == null || runId.indexOf('#') == -1) {
             throw new IllegalArgumentException(runId);
-        } else {
-            return runId;
         }
+
+        if (!SKIP_EXISTENCE_CHECK) {
+            try {
+                if (Run.fromExternalizableId(runId) == null) {
+                    throw new IllegalArgumentException(runId);
+                }
+            } catch (RuntimeException e) {
+                throw new IllegalArgumentException(runId);
+            }
+        }
+
+        return runId;
     }
 
     /**
