@@ -130,7 +130,7 @@
     return false;
   }
 
-  window.addEventListener("load", function () {
+  function initWhenReady() {
     if (initWhenFormReady()) {
       return;
     }
@@ -145,5 +145,11 @@
       childList: true,
       subtree: true,
     });
-  });
+  }
+
+  if (document.readyState === "complete") {
+    initWhenReady();
+  } else {
+    window.addEventListener("load", initWhenReady);
+  }
 })();
