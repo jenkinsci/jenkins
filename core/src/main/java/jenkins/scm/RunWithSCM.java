@@ -89,7 +89,6 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
      * @return
      *      can be empty but never null.
      */
-    @SuppressFBWarnings(value = "DCN_NULLPOINTER_EXCEPTION", justification = "Handles corrupted UnmodifiableCollection from XStream deserialization of older configs")
     @Exported
     @NonNull default Set<User> getCulprits() {
         if (shouldCalculateCulprits()) {
@@ -99,6 +98,8 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
         Set<String> ids = getCulpritIds();
 
         return new AbstractSet<>() {
+            @SuppressFBWarnings(value = "DCN_NULLPOINTER_EXCEPTION", justification
+                    = "Handles corrupted UnmodifiableCollection from XStream deserialization of older configs")
             private Set<String> culpritIds;
 
             {
