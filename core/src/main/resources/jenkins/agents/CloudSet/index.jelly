@@ -27,9 +27,11 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:t="/lib/hudson">
+  <j:new var="managementLink" className="jenkins.agents.CloudsLink" />
+
   <j:set var="header">
     <l:view>
-      <l:app-bar title="${it.displayName}">
+      <l:app-bar title="${managementLink.displayName}">
         <j:if test="${it.cloudAvailable and it.hasClouds()}">
           <l:isAdmin>
             <a class="jenkins-button jenkins-button--primary" href="new">
@@ -46,7 +48,7 @@ THE SOFTWARE.
             ${%description}
           </j:when>
           <j:otherwise>
-            ${it.description}
+            ${managementLink.description}
           </j:otherwise>
         </j:choose>
       </p>
