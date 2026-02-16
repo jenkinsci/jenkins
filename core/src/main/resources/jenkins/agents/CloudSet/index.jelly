@@ -55,7 +55,7 @@ THE SOFTWARE.
     </l:view>
   </j:set>
 
-  <l:settings-subpage from="${managementLink}" header="${header}" noDefer="true">
+  <l:settings-subpage header="${header}" noDefer="true">
     <l:isAdmin>
       <script src="${resURL}/jsbundles/pages/cloud-set.js" type="text/javascript" />
       <link rel="stylesheet" href="${resURL}/jsbundles/pages/cloud-set.css" type="text/css" />
