@@ -6,9 +6,6 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   const bottomSticker = document.querySelector("#bottom-sticker");
 
-  // Hide the bottom sticker initially
-  hideBottomSticker();
-
   // Hide the bottom sticker when the Save button is clicked
   document
     .querySelector("[name='Apply']")

@@ -94,7 +94,7 @@ THE SOFTWARE.
           </div>
 
           <l:isAdmin>
-            <f:bottomButtonBar>
+            <f:bottomButtonBar hidden="true">
               <f:apply value="${%Save}" clazz="jenkins-button--primary" />
             </f:bottomButtonBar>
           </l:isAdmin>
