@@ -54,14 +54,13 @@ THE SOFTWARE.
   </j:set>
 
   <l:settings-subpage header="${header}" noDefer="true">
-    <l:isAdmin>
-      <script src="${resURL}/jsbundles/pages/cloud-set.js" type="text/javascript" />
-      <link rel="stylesheet" href="${resURL}/jsbundles/pages/cloud-set.css" type="text/css" />
-    </l:isAdmin>
-
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
     <j:choose>
       <j:when test="${it.cloudAvailable and it.hasClouds()}">
+        <l:isAdmin>
+          <script src="${resURL}/jsbundles/pages/cloud-set.js" type="text/javascript" />
+          <link rel="stylesheet" href="${resURL}/jsbundles/pages/cloud-set.css" type="text/css" />
+        </l:isAdmin>
 
         <f:form method="post" name="config" action="reorder">
           <div class="with-drag-drop jenkins-!-margin-bottom-5">
