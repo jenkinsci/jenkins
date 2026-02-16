@@ -104,14 +104,14 @@ THE SOFTWARE.
           <j:when test="${it.cloudAvailable}">
             <l:notice title="${%noCloudAvailable}" icon="symbol-cloud">
               <a href="new">
-                <span>${%newCloud}</span>
+                ${%newCloud}
               </a>
             </l:notice>
           </j:when>
           <j:otherwise>
             <l:notice title="${%noCloudPlugin}" icon="symbol-cloud">
               <a href="${rootURL}/manage/pluginManager/available?filter=${it.cloudUpdateCenterCategoryLabel}">
-                <span>${%installCloudPlugin}</span>
+                ${%installCloudPlugin}
               </a>
             </l:notice>
           </j:otherwise>
