@@ -76,7 +76,7 @@ THE SOFTWARE.
                       ${cloud.name}
                     </a>
                   </div>
-                  <div class="app-cloud-item__actions">
+                  <div class="app-cloud-item__actions ignore-dirty-panel">
                     <a href="${it.getCloudUrl(request2,app,cloud)}configure"
                        class="jenkins-button jenkins-button--tertiary">
                       <l:icon src="symbol-settings" />
