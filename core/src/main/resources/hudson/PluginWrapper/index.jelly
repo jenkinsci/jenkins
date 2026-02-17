@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., CloudBees, Inc.
+Copyright (c) 2026 Somil Jain
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Creates a button bar at the bottom of the page for things like "Submit".
-    The actual buttons should be specified as the body of this tag.
-    This area will always be visible at the bottom of the screen.
-
-    <st:attribute name="borderless">
-      Hides the border of the bottom app bar unless its overlaying content.
-    </st:attribute>
-  </st:documentation>
-
-  <div class="jenkins-bottom-app-bar__shadow ${attrs.borderless ? 'jenkins-bottom-app-bar__shadow--borderless' : ''}"></div>
-  <div id="bottom-sticker">
-    <div class="bottom-sticker-inner jenkins-buttons-row jenkins-buttons-row--equal-width">
-      <d:invokeBody />
-    </div>
-  </div>
+<j:jelly xmlns:j="jelly:core"
+         xmlns:st="jelly:stapler">
+    <st:redirect url="thirdPartyLicenses"/>
 </j:jelly>
