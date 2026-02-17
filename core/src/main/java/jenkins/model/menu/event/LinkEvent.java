@@ -1,5 +1,7 @@
 package jenkins.model.menu.event;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -7,6 +9,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * A link to be added to the app-bar.
  */
 @ExportedBean
+@Restricted(Beta.class)
 public final class LinkEvent implements Event {
 
     private final String url;

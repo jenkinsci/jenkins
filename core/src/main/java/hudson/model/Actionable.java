@@ -45,6 +45,8 @@ import jenkins.model.menu.Group;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.IconSpec;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
@@ -134,8 +136,8 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * then alphabetically by display name. The list is returned as an unmodifiable collection.
      *
      * @return an unmodifiable list of actions suitable for display in the app bar
-     * @since TODO
      */
+    @Restricted(NoExternalUse.class)
     public List<Action> getAppBarActions() {
         return getAllActions().stream()
                 .filter(e -> !(e instanceof Tab))

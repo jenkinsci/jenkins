@@ -2,6 +2,8 @@ package jenkins.model.menu.event;
 
 import java.util.Map;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -10,6 +12,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Attributes are attached to the button or link as data-attributes.
  */
 @ExportedBean
+@Restricted(Beta.class)
 public final class JavaScriptEvent implements Event {
 
     private final Map<String, String> attributes;

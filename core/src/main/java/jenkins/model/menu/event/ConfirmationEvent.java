@@ -1,5 +1,7 @@
 package jenkins.model.menu.event;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -8,6 +10,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * e.g. Delete item.
  */
 @ExportedBean
+@Restricted(Beta.class)
 public final class ConfirmationEvent implements Event {
 
     private final String title;

@@ -2,6 +2,8 @@ package jenkins.model.menu.event;
 
 import hudson.model.Action;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -9,6 +11,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * A primary button with a dropdown of additional actions.
  */
 @ExportedBean
+@Restricted(Beta.class)
 public final class SplitButtonEvent implements Event {
 
     private final Event event;
