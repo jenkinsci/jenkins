@@ -24,15 +24,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.security.HexStringConfidentialKey;
+import jenkins.util.ClientHttpRedirect;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.core.Authentication;
 
@@ -181,15 +183,14 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         }
 
         @POST
-        public void doAct(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String learn, @QueryParameter String dismiss) throws IOException, ServletException {
+        public HttpResponse doAct(StaplerRequest2 req, @QueryParameter String learn, @QueryParameter String dismiss) throws IOException, ServletException {
             if (learn != null) {
-                rsp.sendRedirect("https://www.jenkins.io/redirect/csrf-protection/");
-                return;
+                return new ClientHttpRedirect("https://www.jenkins.io/redirect/csrf-protection/");
             }
             if (dismiss != null) {
                 disable(true);
             }
-            rsp.forwardToPreviousPage(req);
+            return HttpResponses.forwardToPreviousPage();
         }
     }
 
