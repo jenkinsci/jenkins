@@ -1774,7 +1774,7 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       console.warn(
-        ".behavior-loading is deprecated, use <l:skeleton /> instead - since TODO",
+        ".behavior-loading is deprecated, use <l:skeleton /> instead - since 2.515",
         e,
       );
       e.classList.add("behavior-loading--hidden");
