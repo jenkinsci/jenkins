@@ -36,6 +36,32 @@ div.repeated-chunk {
     border-bottom-right-radius: var(--form-input-border-radius);
   }
 
+  .dd-handle {
+    position: relative;
+    width: 44px;
+    height: 46px;
+    cursor: move;
+    opacity: 0.75;
+    color: var(--text-color-secondary);
+    transition: var(--standard-transition);
+    margin-right: -2px;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-color: currentColor;
+      mask-image: url("../images/svgs/mask-reorderable-list__handle.svg");
+      mask-position: center;
+      mask-repeat: no-repeat;
+    }
+
+    &:hover {
+      opacity: 1;
+      color: var(--text-color);
+    }
+  }
+
   &__header {
     position: relative;
     display: flex;
@@ -43,32 +69,6 @@ div.repeated-chunk {
     justify-content: flex-start;
     font-weight: var(--form-label-font-weight);
     min-height: 46px;
-
-    .dd-handle {
-      position: relative;
-      width: 44px;
-      height: 46px;
-      cursor: move;
-      opacity: 0.75;
-      color: var(--text-color-secondary);
-      transition: var(--standard-transition);
-      margin-right: -2px;
-
-      &::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-color: currentColor;
-        mask-image: url("../images/svgs/mask-reorderable-list__handle.svg");
-        mask-position: center;
-        mask-repeat: no-repeat;
-      }
-
-      &:hover {
-        opacity: 1;
-        color: var(--text-color);
-      }
-    }
 
     &--no-handle {
       padding-left: $inset;
