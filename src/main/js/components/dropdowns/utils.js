@@ -82,11 +82,12 @@ function generateDropdownItems(items, compact) {
   const menuItems = document.createElement("div");
   menuItems.classList.add("jenkins-dropdown");
   menuItems.setAttribute("role", "menu");
-  const menuLabel = items.length > 0 && items[0].label 
-    ? `${items[0].label} menu` 
-    : "dropdown menu";
+  const menuLabel =
+    items.length > 0 && items[0].label
+      ? `${items[0].label} menu`
+      : "dropdown menu";
   menuItems.setAttribute("aria-label", menuLabel);
-  
+
   if (compact === true) {
     menuItems.classList.add("jenkins-dropdown--compact");
   }
