@@ -40,6 +40,7 @@ import hudson.model.Computer;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.VirtualChannel;
+import hudson.Util;
 import hudson.util.FormValidation;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -128,6 +129,19 @@ class LogRecorderManagerTest {
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.WARNING.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.SEVERE.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.OFF.getName()));
+    }
+
+    @Test
+    void createLogRecorderWithNonAsciiName() throws Exception {
+        String name = "Journal d’accès";
+
+        HtmlPage page = j.createWebClient().goTo("log/new");
+        HtmlForm form = page.getFormByName("configSubmit");
+        form.getInputByName("name").setValueAttribute(name);
+        j.submit(form);
+
+        assertNotNull(j.jenkins.getLog().getLogRecorder(name));
+        j.createWebClient().goTo("log/" + Util.rawEncode(name) + "/configure");
     }
 
     @Issue({"JENKINS-18274", "JENKINS-63458"})
