@@ -200,6 +200,11 @@ public abstract class Cause {
         }
 
         @Override
+        public void onLoad(@NonNull Run<?, ?> build) {
+            onLoad(build.getParent(), build.getNumber());
+        }
+
+        @Override
         public void onLoad(@NonNull Job<?, ?> _job, int _buildNumber) {
             Item i = Jenkins.get().getItemByFullName(this.upstreamProject);
             if (!(i instanceof Job j)) {
