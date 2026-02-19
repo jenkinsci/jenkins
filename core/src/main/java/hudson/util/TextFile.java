@@ -25,11 +25,9 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
@@ -112,11 +110,10 @@ public class TextFile {
     /**
      * Reads the first N characters or until we hit EOF.
      */
-    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public @NonNull String head(int numChars) throws IOException {
         char[] buf = new char[numChars];
         int read = 0;
-        try (Reader r = new FileReader(file)) {
+        try (Reader r = Files.newBufferedReader(Util.fileToPath(file), StandardCharsets.UTF_8)) {
             while (read < numChars) {
                 int d = r.read(buf, read, buf.length - read);
                 if (d < 0)

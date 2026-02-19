@@ -27,7 +27,6 @@ package hudson.lifecycle;
 import static hudson.util.jna.Kernel32.MOVEFILE_DELAY_UNTIL_REBOOT;
 import static hudson.util.jna.Kernel32.MOVEFILE_REPLACE_EXISTING;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
@@ -119,7 +118,6 @@ public class WindowsServiceLifecycle extends Lifecycle {
     }
 
     @Override
-    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public void restart() throws IOException, InterruptedException {
         Jenkins jenkins = Jenkins.getInstanceOrNull();
         try {
@@ -146,7 +144,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
         int r = new LocalLauncher(task).launch().cmds(executable, "restart!")
                 .stdout(task).pwd(home).join();
         if (r != 0)
-            throw new IOException(baos.toString());
+            throw new IOException(baos.toString(task.getCharset()));
     }
 
     private static File getBaseDir() {
