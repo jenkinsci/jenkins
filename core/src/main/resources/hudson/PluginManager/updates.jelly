@@ -24,23 +24,17 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%Updates} - ${%Plugins}" permission="${app.SYSTEM_READ}">
+  <l:settings-subpage permission="${app.SYSTEM_READ}" header="${null}" noDefer="true" includeSidepanel="true">
     <j:set var="list" value="${app.updateCenter.updates}" />
-
-    <st:include page="sidepanel.jelly"/>
-    <!-- no need for additional breadcrumb here as we're on an "index" page already including breadcrumb -->
-
-    <l:header>
       <script src="${resURL}/jsbundles/components/row-selection-controller.js" type="text/javascript" defer="true" />
-    </l:header>
 
-    <l:main-panel>
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"
                         placeholder="${%Search plugin updates}"
                         id="filter-box"
                         autofocus="true"
+                        hasKeyboardShortcut="false"
                         value="${request2.getParameter('filter')}"
                         enabled="${!empty(list)}" />
         </div>
@@ -54,6 +48,7 @@ THE SOFTWARE.
             </j:if>
           </l:isAdmin>
           <st:include page="check.jelly" />
+          <st:include page="overflow.jelly" />
         </div>
       </div>
 
@@ -257,6 +252,5 @@ THE SOFTWARE.
         </j:choose>
         <d:invokeBody/>
       </form>
-    </l:main-panel>
-  </l:layout>
+  </l:settings-subpage>
 </j:jelly>

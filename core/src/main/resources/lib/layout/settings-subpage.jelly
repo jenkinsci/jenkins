@@ -44,6 +44,16 @@ THE SOFTWARE.
     <st:attribute name="header">
       Optional header for the page, falls back to a default header if not set.
     </st:attribute>
+    <st:attribute name="title">
+      <![CDATA[
+      Optional title for the page, falls back to <code>managementLink.displayName</code> if not set.
+      ]]>
+    </st:attribute>
+    <st:attribute name="description">
+      <![CDATA[
+      Optional description for the page, falls back to <code>managementLink.description</code> if not set.
+      ]]>
+    </st:attribute>
     <st:attribute name="includeBreadcrumb">
       <![CDATA[
       Optional breadcrumb, will add a breadcrumb for the current <code>it</code>
@@ -54,26 +64,33 @@ THE SOFTWARE.
       This can be useful if you need to access 'request2' or do advanced JavaScript.
       Defaults to false if not set.
     </st:attribute>
+    <st:attribute name="includeSidepanel">
+      This is internal only - do not use this.
+      Optional, includes the sidepanel for if the Experimental Manage Jenkins is disabled.
+      Defaults to false if not set.
+    </st:attribute>
   </st:documentation>
 
   <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
   <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
 
   <j:set var="managementLink" value="${attrs.managementLink ?: it}" />
+  <j:set var="pageTitle" value="${attrs.title ?: managementLink.displayName}" />
+  <j:set var="description" value="${attrs.description ?: managementLink.description}" />
 
-  <l:layout title="${managementLink.displayName} - ${manageJenkinsAction.displayName}"
+  <l:layout title="${pageTitle} - ${manageJenkinsAction.displayName}"
             permission="${attrs.permission}"
             permissions="${attrs.permissions}"
-            type="${newManageJenkins ? 'two-column' : 'one-column'}">
+            type="${(newManageJenkins or attrs.includeSidepanel) ? 'two-column' : 'one-column'}">
 
     <j:if test="${attrs.includeBreadcrumb}">
       <!-- Hacky - this will be improved in subsequent PRs -->
       <j:choose>
         <j:when test="${managementLink.class.name eq 'jenkins.management.ConfigureLink'}">
-          <f:breadcrumb-config-outline title="${managementLink.displayName}" />
+          <f:breadcrumb-config-outline title="${pageTitle}" />
         </j:when>
         <j:otherwise>
-          <l:breadcrumb title="${managementLink.displayName}" />
+          <l:breadcrumb title="${pageTitle}" />
         </j:otherwise>
       </j:choose>
     </j:if>
@@ -109,10 +126,12 @@ THE SOFTWARE.
           <div class="app-settings-container">
             <div class="app-settings-container__inner">
               <j:if test="${!attrs.containsKey('header')}">
-                <l:app-bar title="${managementLink.displayName}" />
-                <div class="jenkins-page-description">
-                  ${managementLink.description}
-                </div>
+                <l:app-bar title="${pageTitle}" />
+                <j:if test="${!empty(description)}">
+                  <div class="jenkins-page-description">
+                    ${description}
+                  </div>
+                </j:if>
               </j:if>
 
               <j:out value="${attrs.header}" />
@@ -144,12 +163,18 @@ THE SOFTWARE.
         </l:main-panel>
       </j:when>
       <j:otherwise>
+        <j:if test="${attrs.includeSidepanel}">
+          <st:include page="sidepanel" />
+        </j:if>
+
         <l:main-panel>
           <j:if test="${!attrs.containsKey('header')}">
-            <l:app-bar title="${managementLink.displayName}" />
-            <div class="jenkins-page-description">
-              ${managementLink.description}
-            </div>
+            <l:app-bar title="${pageTitle}" />
+            <j:if test="${!empty(description)}">
+              <div class="jenkins-page-description">
+                ${description}
+              </div>
+            </j:if>
           </j:if>
 
           <j:out value="${attrs.header}" />
