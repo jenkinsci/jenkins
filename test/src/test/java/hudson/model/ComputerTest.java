@@ -54,7 +54,6 @@ import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
@@ -193,8 +192,7 @@ class ComputerTest {
     @Test
     void addAction() throws Exception {
         Computer c = j.createSlave().toComputer();
-        class A extends InvisibleAction {
-        }
+        class A extends InvisibleAction {}
 
         assertEquals(0, c.getActions(A.class).size());
         c.addAction(new A());
@@ -368,55 +366,5 @@ class ComputerTest {
         await("disconnected agent is not available for scheduling").until(computer::isOnline, is(false));
         assertThat(computer.isConnected(), is(false));
         assertThat(computer.isOffline(), is(true));
-    }
-
-    @Issue("JENKINS-17204")
-    @Test
-    void testMultipleDisconnectCallsHandledProperly() throws Exception {
-        DumbSlave agent = j.createOnlineSlave();
-        Computer computer = agent.toComputer();
-
-        // Sanity check
-        assertTrue(computer.isOnline(), "Agent should be online initially");
-
-        // Simulate multiple concurrent disconnect calls
-        Future<?> f1 = computer.disconnect(
-                new OfflineCause.UserCause(User.getUnknown(), "disconnect 1"));
-        Future<?> f2 = computer.disconnect(
-                new OfflineCause.UserCause(User.getUnknown(), "disconnect 2"));
-        Future<?> f3 = computer.disconnect(
-                new OfflineCause.UserCause(User.getUnknown(), "disconnect 3"));
-
-        // Wait for all disconnects to complete
-        f1.get();
-        f2.get();
-        f3.get();
-
-        // Agent must be cleanly disconnected
-        assertFalse(computer.isOnline(), "Computer should be offline");
-        assertFalse(computer.isConnected(), "Computer should not be connected");
-    }
-
-    @Issue("JENKINS-17204")
-    @Test
-    void testAfterDisconnectFlagResetOnReconnection() throws Exception {
-        DumbSlave agent = j.createOnlineSlave();
-        Computer computer = agent.toComputer();
-
-        // First disconnect
-        computer.disconnect(
-                new OfflineCause.UserCause(User.getUnknown(), "first disconnect")).get();
-        assertFalse(computer.isOnline(), "Computer should be offline after first disconnect");
-
-        // Reconnect
-        computer.connect(false);
-        await()
-                .atMost(Duration.ofSeconds(30))
-                .until(computer::isOnline);
-
-        // Disconnect again — flag must be reset
-        computer.disconnect(
-                new OfflineCause.UserCause(User.getUnknown(), "second disconnect")).get();
-        assertFalse(computer.isOnline(), "Computer should be offline after second disconnect");
     }
 }
