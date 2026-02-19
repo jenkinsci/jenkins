@@ -68,7 +68,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         return "";
     }
 
-    /**
+   /**
      * @deprecated
      *      Why are you calling a method that always returns ""?
     *       You probably want to call {@link Jenkins#getRootUrl()}
@@ -122,6 +122,9 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     private final Map<String, Long> snoozedAdministrativeMonitors = new HashMap<>();
 
     /**
+     * Get the snoozed administrative monitors and their expiry times.
+     *
+     * @return a copy of the snoozed administrative monitors map, where keys are monitor IDs and values are expiry timestamps in milliseconds
      * @since TODO
      */
     public Map<String, Long> getSnoozedAdministrativeMonitors() {
@@ -131,6 +134,9 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     }
 
     /**
+     * Set the snoozed administrative monitors and their expiry times.
+     *
+     * @param snoozedAdministrativeMonitors the map of monitor IDs to expiry timestamps in milliseconds
      * @since TODO
      */
     public void setSnoozedAdministrativeMonitors(Map<String, Long> snoozedAdministrativeMonitors) {
@@ -144,7 +150,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * Implementation provided
      * ============================================================================================================== */
 
-    /**
+     /**
      * Returns all {@link Node}s in the system, excluding {@link jenkins.model.Jenkins} instance itself which
      * represents the built-in node in this context.
      */

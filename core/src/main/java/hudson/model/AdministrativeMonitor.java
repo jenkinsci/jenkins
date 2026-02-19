@@ -157,6 +157,15 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
+     * Returns true if this monitor is currently snoozed.
+     *
+     * <p>
+     * A snoozed monitor is temporarily hidden from the management page
+     * until the snooze duration expires. Expired snooze entries are
+     * automatically cleaned up when checked.
+     * </p>
+     *
+     * @return true if this monitor is snoozed and the snooze has not yet expired
      * @since TODO
      */
     public boolean isSnoozed() {
@@ -184,6 +193,11 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
+     * Snooze this monitor for the specified duration, temporarily hiding it from the management page.
+     *
+     * @param durationMs the snooze duration in milliseconds, must be positive and at most 1 year
+     * @throws IOException if persisting the snooze state fails
+     * @throws IllegalArgumentException if the duration is not positive or exceeds 1 year
      * @since TODO
      */
     public void snooze(long durationMs) throws IOException {
@@ -238,6 +252,16 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
+     * URL binding to snooze this monitor for a chosen duration.
+     *
+     * <p>
+     * Accepts a {@code durationPreset} parameter specifying preset minutes, or {@code "custom"}
+     * with a {@code snoozeUntil} date in {@code yyyy-MM-dd} format. Requires {@link Jenkins#ADMINISTER} permission.
+     * </p>
+     *
+     * @param req the request containing snooze duration parameters
+     * @param rsp the response
+     * @throws IOException if persisting the snooze state fails
      * @since TODO
      */
     @RequirePOST
@@ -312,7 +336,6 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *     Form UI elements that change system state, e.g. toggling a feature on or off, need to be hidden from users
      *     lacking Administer permission.
      * </p>
-     *
      * @since 2.233
      * @deprecated Callers should use {@link #checkRequiredPermission()} or {@link #hasRequiredPermission()}.
      */
